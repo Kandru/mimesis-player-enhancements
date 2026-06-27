@@ -33,7 +33,7 @@
   <Target Name="ValidateReferenceAssemblies" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(GameAssemblyPath)/Assembly-CSharp.dll')"
            Text="Assembly-CSharp.dll not found at $(GameAssemblyPath). Run: ./scripts/bootstrap-deps.sh" />
-    <Error Condition="!Exists('$(MelonLoaderPath)/MelonLoader.dll')"
+    <Error Condition="'$(IsInspectionTool)' != 'true' and !Exists('$(MelonLoaderPath)/MelonLoader.dll')"
            Text="MelonLoader.dll not found at $(MelonLoaderPath). Run: ./scripts/bootstrap-deps.sh" />
   </Target>
 </Project>

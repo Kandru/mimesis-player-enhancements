@@ -7,5 +7,6 @@
     <!-- HarmonyX tracks MelonLoader's bundled 0Harmony.dll (upstream: https://github.com/pardeike/Harmony) -->
     <PackageVersion Include="HarmonyX" Version="2.10.2" />
     <PackageVersion Include="System.Collections.Immutable" Version="6.0.0" />
+    <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
   </ItemGroup>
 </Project>
