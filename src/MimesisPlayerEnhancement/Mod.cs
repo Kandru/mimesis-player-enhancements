@@ -17,9 +17,10 @@ public sealed class Mod : MelonMod
         ModConfig.Changed += SyncFromConfig;
 
         _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
-        Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
+        // Apply compile-time patches first so Assembly-CSharp is loaded before MorePlayers resolves targets.
         Features.MoreVoices.MoreVoicesPatches.Apply(_harmony);
         Features.Persistence.PersistencePatches.Apply(_harmony);
+        Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
 
         SyncFromConfig();
         LogStartupSummary();

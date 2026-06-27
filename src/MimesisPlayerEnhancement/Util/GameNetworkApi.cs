@@ -30,8 +30,14 @@ internal static class GameNetworkApi
     {
         try
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
+            var loaded = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name == "Assembly-CSharp");
+            if (loaded != null)
+                return loaded;
+
+            // MelonLoader can run mod init before Assembly-CSharp appears in GetAssemblies().
+            // Touching a compile-time game type forces the same assembly Harmony uses for patches.
+            return typeof(IVroom).Assembly;
         }
         catch
         {

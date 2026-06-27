@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using FishySteamworks.Server;
 using HarmonyLib;
 using MimesisPlayerEnhancement.Util;
-using ReluProtocol.Enum;
 
 // Patch logic derived from NeoMimicry/MorePlayers; networking helpers from MimicAPI are inlined in
 // Util/GameNetworkApi.cs (see upstream: https://github.com/NeoMimicry/MorePlayers ,
@@ -19,19 +17,78 @@ public static class MorePlayersPatches
     private const string Feature = "MorePlayers";
     private const int VanillaMaxPlayers = 4;
 
+    private const BindingFlags InstanceMethodFlags =
+        BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+
     private static readonly MethodInfo GetMaxPlayersMethod =
         AccessTools.Method(typeof(MorePlayersPatches), nameof(GetMaxPlayers))!;
 
     public static void Apply(HarmonyLib.Harmony harmony)
     {
-        harmony.CreateClassProcessor(typeof(MorePlayersPatches)).Patch();
+        _ = GameNetworkApi.GetGameAssembly();
+
+        var patchTypes = typeof(MorePlayersPatches).GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
+            .Where(t => t.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0);
+
+        foreach (var patchType in patchTypes)
+        {
+            try
+            {
+                var patchedMethods = harmony.CreateClassProcessor(patchType).Patch();
+                if (patchedMethods == null || patchedMethods.Count == 0)
+                    ModLog.Warn(Feature, $"Patch class {patchType.Name} did not apply to any methods.");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Patch class {patchType.Name} failed: {ex.Message}");
+            }
+        }
+
         LogPatchAudit(harmony);
         ModLog.Info(Feature, "Patches applied.");
     }
 
+    private static bool IsPatched(IReadOnlyCollection<MethodBase> patched, MethodBase? expected)
+    {
+        if (expected == null)
+            return false;
+
+        foreach (var candidate in patched)
+        {
+            if (candidate.MetadataToken == expected.MetadataToken && ReferenceEquals(candidate.Module, expected.Module))
+                return true;
+
+            if (candidate.Name != expected.Name)
+                continue;
+
+            if (candidate.DeclaringType != expected.DeclaringType)
+                continue;
+
+            var candidateParams = candidate.GetParameters();
+            var expectedParams = expected.GetParameters();
+            if (candidateParams.Length != expectedParams.Length)
+                continue;
+
+            bool paramsMatch = true;
+            for (int i = 0; i < candidateParams.Length; i++)
+            {
+                if (candidateParams[i].ParameterType != expectedParams[i].ParameterType)
+                {
+                    paramsMatch = false;
+                    break;
+                }
+            }
+
+            if (paramsMatch)
+                return true;
+        }
+
+        return false;
+    }
+
     private static void LogPatchAudit(HarmonyLib.Harmony harmony)
     {
-        var patched = new HashSet<MethodBase>(harmony.GetPatchedMethods());
+        var patched = harmony.GetPatchedMethods().ToList();
         var applied = new List<string>();
         var missing = new List<string>();
 
@@ -39,23 +96,28 @@ public static class MorePlayersPatches
         {
             if (method == null)
                 missing.Add($"{label} (type/method not found)");
-            else if (patched.Contains(method))
+            else if (IsPatched(patched, method))
                 applied.Add(label);
             else
                 missing.Add(label);
         }
 
-        Check("CanEnterChannel/IVroom", AccessTools.DeclaredMethod(typeof(IVroom), "CanEnterChannel"));
-        Check("CanEnterChannel/VWaitingRoom", AccessTools.DeclaredMethod(typeof(VWaitingRoom), "CanEnterChannel"));
-        Check("CanEnterChannel/MaintenanceRoom", AccessTools.DeclaredMethod(typeof(MaintenanceRoom), "CanEnterChannel"));
-        Check("GetMemberCount/IVroom", AccessTools.DeclaredMethod(typeof(IVroom), "GetMemberCount"));
-        Check("GetMaximumClients/ServerSocket", AccessTools.Method(typeof(ServerSocket), "GetMaximumClients"));
-        Check("SetMaximumClients/ServerSocket", AccessTools.Method(typeof(ServerSocket), "SetMaximumClients"));
-        Check("ServerSocket.ctor", AccessTools.Constructor(typeof(ServerSocket)));
-        Check("AddPlayerSteamID/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), "AddPlayerSteamID"));
-        Check("CreateLobby/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), "CreateLobby"));
-        Check("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), "EnterWaitingRoom"));
-        Check("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), "EnterMaintenenceRoom"));
+        Check("CanEnterChannel/IVroom", ResolveRoomMethod("IVroom", "CanEnterChannel"));
+        Check("CanEnterChannel/VWaitingRoom", ResolveRoomMethod("VWaitingRoom", "CanEnterChannel"));
+        Check("CanEnterChannel/MaintenanceRoom", ResolveRoomMethod("MaintenanceRoom", "CanEnterChannel"));
+        Check("GetMemberCount/IVroom", GameNetworkApi.GetIVroomType()?.GetMethod("GetMemberCount", InstanceMethodFlags));
+
+        foreach (var method in FindSocketMethods("GetMaximumClients"))
+            Check("GetMaximumClients/ServerSocket", method);
+
+        foreach (var method in FindSocketMethods("SetMaximumClients"))
+            Check("SetMaximumClients/ServerSocket", method);
+
+        Check("ServerSocket.ctor", ResolveServerSocketConstructor());
+        Check("AddPlayerSteamID/GameSessionInfo", ResolveGameSessionInfoMethod("AddPlayerSteamID"));
+        Check("CreateLobby/SteamInviteDispatcher", ResolveSteamInviteDispatcherMethod("CreateLobby"));
+        Check("EnterWaitingRoom/VRoomManager", ResolveVRoomManagerMethod("EnterWaitingRoom"));
+        Check("EnterMaintenenceRoom/VRoomManager", ResolveVRoomManagerMethod("EnterMaintenenceRoom"));
 
         if (applied.Count > 0)
             ModLog.Info(Feature, $"Patch audit — applied: {string.Join(", ", applied)}");
@@ -131,94 +193,59 @@ public static class MorePlayersPatches
     private static CodeInstruction LoadMaxPlayers() =>
         new(OpCodes.Call, GetMaxPlayersMethod);
 
-    private static bool TryHandleCanEnterChannel(ref MsgErrorCode __result, IVroom __instance, long playerUID)
+    private static MethodBase? ResolveRoomMethod(string typeName, string methodName) =>
+        GameNetworkApi.GetGameAssembly()?.GetType(typeName)?.GetMethod(methodName, InstanceMethodFlags);
+
+    private static MethodBase? ResolveGameSessionInfoMethod(string methodName) =>
+        GameNetworkApi.GetGameSessionInfoType()?.GetMethod(methodName, InstanceMethodFlags);
+
+    private static MethodBase? ResolveVRoomManagerMethod(string methodName) =>
+        GameNetworkApi.GetGameAssembly()?.GetType("VRoomManager")?.GetMethod(methodName, InstanceMethodFlags);
+
+    private static MethodBase? ResolveSteamInviteDispatcherMethod(string methodName) =>
+        GameNetworkApi.GetGameAssembly()?.GetTypes().FirstOrDefault(t => t.Name == "SteamInviteDispatcher")
+            ?.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+    private static MethodBase? ResolveServerSocketConstructor()
     {
-        if (!ModConfig.EnableMorePlayers.Value)
-            return true;
-
-        try
+        var assembly = GameNetworkApi.GetGameAssembly();
+        foreach (var typeName in new[] { "FishySteamworks.Server.ServerSocket", "FishyNet.Transporting.Server.ServerSocket" })
         {
-            var vPlayerDict = ReflectionHelper.GetFieldValue(__instance, "_vPlayerDict") as IDictionary;
-            if (vPlayerDict != null)
-            {
-                foreach (var player in vPlayerDict.Values)
-                {
-                    if (player == null)
-                        continue;
-
-                    var uid = ReflectionHelper.GetFieldValue<long>(player, "UID");
-                    if (uid == 0)
-                    {
-                        var uidProp = player.GetType().GetProperty("UID", BindingFlags.Public | BindingFlags.Instance);
-                        if (uidProp != null)
-                            uid = Convert.ToInt64(uidProp.GetValue(player));
-                    }
-
-                    if (uid == playerUID)
-                    {
-                        __result = MsgErrorCode.DuplicatePlayer;
-                        ModLog.Info(
-                            Feature,
-                            $"Join denied — duplicate player uid={playerUID} in {__instance.GetType().Name}.");
-                        return false;
-                    }
-                }
-
-                int connectedClients = vPlayerDict.Count;
-                if (connectedClients >= MaxClientConnections)
-                {
-                    __result = MsgErrorCode.PlayerCountExceeded;
-                    ModLog.Info(
-                        Feature,
-                        $"Join denied — session full ({TotalPlayersInRoom(vPlayerDict)}/{MaxPlayers} players) in {__instance.GetType().Name}, uid={playerUID}.");
-                    return false;
-                }
-            }
-            else if (MaxClientConnections == 0)
-            {
-                __result = MsgErrorCode.PlayerCountExceeded;
-                ModLog.Info(
-                    Feature,
-                    $"Join denied — solo session (max {MaxPlayers} player) in {__instance.GetType().Name}, uid={playerUID}.");
-                return false;
-            }
-
-            __result = MsgErrorCode.Success;
-            int totalAfterJoin = TotalPlayersInRoom(vPlayerDict) + 1;
-            ModLog.Info(
-                Feature,
-                $"Join allowed — uid={playerUID} in {__instance.GetType().Name} ({totalAfterJoin}/{MaxPlayers} players).");
-            return false;
+            var type = assembly?.GetType(typeName);
+            var ctor = type?.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).FirstOrDefault();
+            if (ctor != null)
+                return ctor;
         }
-        catch (Exception ex)
+
+        return null;
+    }
+
+    private static IEnumerable<MethodBase> FindSocketMethods(string methodName)
+    {
+        var assembly = GameNetworkApi.GetGameAssembly();
+        if (assembly == null)
+            yield break;
+
+        foreach (var typeName in new[] { "FishySteamworks.Server.ServerSocket", "FishyNet.Transporting.Server.ServerSocket" })
         {
-            ModLog.Warn(Feature, $"CanEnterChannel patch error: {ex.Message}");
-            return true;
+            var type = assembly.GetType(typeName);
+            var method = type?.GetMethod(methodName, InstanceMethodFlags);
+            if (method != null)
+                yield return method;
         }
     }
 
-    private static void VRoomManagerEnterRoomPrefix(VRoomManager __instance, MethodBase __originalMethod)
-    {
-        if (!ModConfig.EnableMorePlayers.Value)
-            return;
-
-        try
-        {
-            UpdateRoomMaxPlayers(__instance);
-            ModLog.Info(
-                Feature,
-                $"Enter room — {__originalMethod.Name} (session cap {MaxPlayers}, client slots {MaxClientConnections}).");
-        }
-        catch (Exception ex)
-        {
-            ModLog.Warn(Feature, $"VRoomManager enter room patch error: {ex.Message}");
-        }
-    }
-
-    [HarmonyPatch(typeof(IVroom), "CanEnterChannel")]
+    [HarmonyPatch]
     public static class IVroomCanEnterChannelTranspiler
     {
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<MethodBase> TargetMethods()
+        {
+            var method = GameNetworkApi.GetIVroomType()?.GetMethod("CanEnterChannel", InstanceMethodFlags);
+            return method != null ? new[] { method } : Array.Empty<MethodBase>();
+        }
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var codes = new List<CodeInstruction>(instructions);
             for (int i = 0; i < codes.Count; i++)
@@ -237,19 +264,13 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(IVroom), "CanEnterChannel")]
-    [HarmonyPatch(typeof(VWaitingRoom), "CanEnterChannel")]
-    [HarmonyPatch(typeof(MaintenanceRoom), "CanEnterChannel")]
-    public static class AllRoomsCanEnterChannelPatch
-    {
-        static bool Prefix(ref MsgErrorCode __result, IVroom __instance, long playerUID) =>
-            TryHandleCanEnterChannel(ref __result, __instance, playerUID);
-    }
-
-    [HarmonyPatch(typeof(ServerSocket), "GetMaximumClients")]
+    [HarmonyPatch]
     public static class GetMaximumClientsPatch
     {
-        static bool Prefix(ref int __result)
+        public static IEnumerable<MethodBase> TargetMethods() => FindSocketMethods("GetMaximumClients");
+
+        [HarmonyPrefix]
+        public static bool Prefix(ref int __result)
         {
             if (!ModConfig.EnableMorePlayers.Value)
                 return true;
@@ -259,10 +280,13 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(ServerSocket), "SetMaximumClients")]
+    [HarmonyPatch]
     public static class SetMaximumClientsPatch
     {
-        static bool Prefix(ref int value)
+        public static IEnumerable<MethodBase> TargetMethods() => FindSocketMethods("SetMaximumClients");
+
+        [HarmonyPrefix]
+        public static bool Prefix(ref int value)
         {
             if (!ModConfig.EnableMorePlayers.Value)
                 return true;
@@ -272,10 +296,13 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(ServerSocket), MethodType.Constructor)]
+    [HarmonyPatch]
     public static class ServerSocketConstructorPatch
     {
-        static void Postfix(ServerSocket __instance)
+        public static MethodBase? TargetMethod() => ResolveServerSocketConstructor();
+
+        [HarmonyPostfix]
+        public static void Postfix(object __instance)
         {
             if (!ModConfig.EnableMorePlayers.Value)
                 return;
@@ -291,10 +318,17 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(IVroom), "GetMemberCount")]
+    [HarmonyPatch]
     public static class GetMemberCountSmartPatch
     {
-        static bool Prefix(ref int __result, object __instance)
+        public static IEnumerable<MethodBase> TargetMethods()
+        {
+            var method = GameNetworkApi.GetIVroomType()?.GetMethod("GetMemberCount", InstanceMethodFlags);
+            return method != null ? new[] { method } : Array.Empty<MethodBase>();
+        }
+
+        [HarmonyPrefix]
+        public static bool Prefix(ref int __result, object __instance)
         {
             if (!ModConfig.EnableMorePlayers.Value)
                 return true;
@@ -354,18 +388,145 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(VRoomManager), "EnterWaitingRoom")]
-    [HarmonyPatch(typeof(VRoomManager), "EnterMaintenenceRoom")]
-    public static class VRoomManagerEnterRoomPatches
+    [HarmonyPatch]
+    public static class AllRoomsCanEnterChannelPatch
     {
-        static void Prefix(VRoomManager __instance, MethodBase __originalMethod) =>
-            VRoomManagerEnterRoomPrefix(__instance, __originalMethod);
+        public static IEnumerable<MethodBase> TargetMethods()
+        {
+            var assembly = GameNetworkApi.GetGameAssembly();
+            if (assembly == null)
+                return Array.Empty<MethodBase>();
+
+            var methods = new List<MethodBase>();
+            foreach (var typeName in new[] { "VWaitingRoom", "IVroom" })
+            {
+                var method = assembly.GetType(typeName)?.GetMethod("CanEnterChannel", InstanceMethodFlags);
+                if (method != null && !methods.Contains(method))
+                    methods.Add(method);
+            }
+
+            return methods;
+        }
+
+        [HarmonyPrefix]
+        public static bool Prefix(ref object __result, object __instance, long playerUID)
+        {
+            if (!ModConfig.EnableMorePlayers.Value)
+                return true;
+
+            try
+            {
+                var msgErrorCodeType = GameNetworkApi.GetGameAssembly()?.GetTypes().FirstOrDefault(t => t.Name == "MsgErrorCode");
+                if (msgErrorCodeType == null || !msgErrorCodeType.IsEnum)
+                    return true;
+
+                var vPlayerDict = ReflectionHelper.GetFieldValue(__instance, "_vPlayerDict") as IDictionary;
+                if (vPlayerDict != null)
+                {
+                    foreach (var player in vPlayerDict.Values)
+                    {
+                        if (player == null)
+                            continue;
+
+                        var uid = ReflectionHelper.GetFieldValue<long>(player, "UID");
+                        if (uid == 0)
+                        {
+                            var uidProp = player.GetType().GetProperty("UID", BindingFlags.Public | BindingFlags.Instance);
+                            if (uidProp != null)
+                                uid = Convert.ToInt64(uidProp.GetValue(player));
+                        }
+
+                        if (uid == playerUID)
+                        {
+                            __result = Enum.Parse(msgErrorCodeType, "DuplicatePlayer");
+                            ModLog.Info(
+                                Feature,
+                                $"Join denied — duplicate player uid={playerUID} in {__instance.GetType().Name}.");
+                            return false;
+                        }
+                    }
+
+                    int connectedClients = vPlayerDict.Count;
+                    if (connectedClients >= MaxClientConnections)
+                    {
+                        __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
+                        ModLog.Info(
+                            Feature,
+                            $"Join denied — session full ({TotalPlayersInRoom(vPlayerDict)}/{MaxPlayers} players) in {__instance.GetType().Name}, uid={playerUID}.");
+                        return false;
+                    }
+                }
+                else if (MaxClientConnections == 0)
+                {
+                    __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
+                    ModLog.Info(
+                        Feature,
+                        $"Join denied — solo session (max {MaxPlayers} player) in {__instance.GetType().Name}, uid={playerUID}.");
+                    return false;
+                }
+
+                __result = Enum.Parse(msgErrorCodeType, "Success");
+                int totalAfterJoin = TotalPlayersInRoom(vPlayerDict) + 1;
+                ModLog.Info(
+                    Feature,
+                    $"Join allowed — uid={playerUID} in {__instance.GetType().Name} ({totalAfterJoin}/{MaxPlayers} players).");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"CanEnterChannel patch error: {ex.Message}");
+                return true;
+            }
+        }
     }
 
-    [HarmonyPatch(typeof(GameSessionInfo), "AddPlayerSteamID")]
+    [HarmonyPatch]
+    public static class VRoomManagerEnterRoomPatches
+    {
+        public static IEnumerable<MethodBase> TargetMethods()
+        {
+            var vroomManagerType = GameNetworkApi.GetGameAssembly()?.GetType("VRoomManager");
+            if (vroomManagerType == null)
+                return Array.Empty<MethodBase>();
+
+            var methods = new List<MethodBase>();
+            foreach (var name in new[] { "EnterWaitingRoom", "EnterMaintenenceRoom", "EnterMaintenanceRoom" })
+            {
+                var method = vroomManagerType.GetMethod(name, InstanceMethodFlags);
+                if (method != null)
+                    methods.Add(method);
+            }
+
+            return methods;
+        }
+
+        [HarmonyPrefix]
+        public static void Prefix(object __instance, MethodBase __originalMethod)
+        {
+            if (!ModConfig.EnableMorePlayers.Value)
+                return;
+
+            try
+            {
+                UpdateRoomMaxPlayers(__instance);
+                ModLog.Info(
+                    Feature,
+                    $"Enter room — {__originalMethod.Name} (session cap {MaxPlayers}, client slots {MaxClientConnections}).");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"VRoomManager enter room patch error: {ex.Message}");
+            }
+        }
+    }
+
+    [HarmonyPatch]
     public static class GameSessionInfoAddPlayerSteamIdPatch
     {
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        public static MethodBase? TargetMethod() => ResolveGameSessionInfoMethod("AddPlayerSteamID");
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var codes = new List<CodeInstruction>(instructions);
             for (int i = 0; i < codes.Count; i++)
@@ -388,10 +549,13 @@ public static class MorePlayersPatches
         }
     }
 
-    [HarmonyPatch(typeof(SteamInviteDispatcher), "CreateLobby")]
+    [HarmonyPatch]
     public static class SteamLobbyCreationPatch
     {
-        static bool Prefix(bool isOpenForRandomMatch)
+        public static MethodBase? TargetMethod() => ResolveSteamInviteDispatcherMethod("CreateLobby");
+
+        [HarmonyPrefix]
+        public static bool Prefix(bool isOpenForRandomMatch)
         {
             if (!ModConfig.EnableMorePlayers.Value)
                 return true;
