@@ -21,6 +21,7 @@ public static class GameSessionInfoLoadPatches
             return;
 
         StatisticsTracker.LoadForSlot(slotId);
+        StatisticsTracker.RegisterConnectedPlayers();
     }
 }
 

@@ -63,10 +63,41 @@ public static class StatisticsTracker
         ModLog.Info(Feature, $"Loaded statistics for save slot {slotId} ({_players.Count} players).");
     }
 
+    /// <summary>
+    /// Registers players whose archives are active but were missed by earlier hooks
+    /// (e.g. before SaveSlotID was available).
+    /// </summary>
+    public static void RegisterConnectedPlayers()
+    {
+        if (!CanTrack()) return;
+
+        int slotId = StatisticsStore.GetActiveSlotId();
+        LoadForSlot(slotId);
+
+        try
+        {
+            var archives = UnityEngine.Object.FindObjectsByType<SpeechEventArchive>(FindObjectsSortMode.None);
+            if (archives == null) return;
+
+            foreach (var archive in archives)
+            {
+                if (archive == null) continue;
+                ulong steamId = ResolveSteamIdFromArchive(archive);
+                if (steamId == 0) continue;
+                OnPlayerRegistered(steamId);
+            }
+        }
+        catch (Exception ex)
+        {
+            ModLog.Warn(Feature, $"RegisterConnectedPlayers: {ex.Message}");
+        }
+    }
+
     public static void OnPlayerRegistered(ulong steamId)
     {
         if (!CanTrack()) return;
         if (steamId == 0) return;
+        if (_connectedSince.ContainsKey(steamId)) return;
 
         int slotId = StatisticsStore.GetActiveSlotId();
         LoadForSlot(slotId);
@@ -552,6 +583,36 @@ public static class StatisticsTracker
         catch { /* ignore */ }
 
         return total;
+    }
+
+    private static ulong ResolveSteamIdFromArchive(SpeechEventArchive archive)
+    {
+        long playerUid = 0;
+        bool isLocal = false;
+        try
+        {
+            playerUid = archive.PlayerUID;
+            isLocal = archive.IsLocal;
+        }
+        catch
+        {
+            return 0;
+        }
+
+        if (!isLocal && playerUid == 0)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(archive.PlayerId))
+                    return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        return ResolveSteamIdFromUid(playerUid, isLocal);
     }
 
     private static ulong ResolveSteamIdFromActor(ProtoActor actor)

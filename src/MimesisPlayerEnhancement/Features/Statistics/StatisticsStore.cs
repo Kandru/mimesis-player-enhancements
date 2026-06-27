@@ -10,8 +10,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics;
 public static class StatisticsStore
 {
     private const string Feature = "Statistics";
-    private const string ModFolder = "MimesisPlayerEnhancement";
-    private const string SlotPrefix = "Slot";
     private const string StatisticsFolder = "statistics";
     private const string PlayersFolder = "players";
     private const string LeaderboardFile = "leaderboard.json";
@@ -23,11 +21,9 @@ public static class StatisticsStore
 
     public static string? GetStatisticsRootPath(int slotId)
     {
-        var platformMgr = MonoSingleton<PlatformMgr>.Instance;
-        if (platformMgr == null) return null;
-        string baseFolder = platformMgr.GetSaveFileFolderPath();
-        if (string.IsNullOrEmpty(baseFolder)) return null;
-        return Path.Combine(baseFolder, ModFolder, SlotPrefix + slotId, StatisticsFolder);
+        string? slotPath = MimesisSaveManager.GetMimesisSlotPath(slotId);
+        if (string.IsNullOrEmpty(slotPath)) return null;
+        return Path.Combine(slotPath, StatisticsFolder);
     }
 
     public static string? GetPlayerFilePath(int slotId, ulong steamId)
