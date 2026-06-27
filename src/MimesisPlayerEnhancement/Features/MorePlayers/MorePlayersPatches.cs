@@ -23,6 +23,9 @@ public static class MorePlayersPatches
     private static readonly MethodInfo GetMaxPlayersMethod =
         AccessTools.Method(typeof(MorePlayersPatches), nameof(GetMaxPlayers))!;
 
+    private static readonly MethodInfo GetLobbyPlayerCountSuffixMethod =
+        AccessTools.Method(typeof(MorePlayersPatches), nameof(GetLobbyPlayerCountSuffix))!;
+
     public static void Apply(HarmonyLib.Harmony harmony)
     {
         _ = GameNetworkApi.GetGameAssembly();
@@ -116,6 +119,9 @@ public static class MorePlayersPatches
         Check("ServerSocket.ctor", ResolveServerSocketConstructor());
         Check("AddPlayerSteamID/GameSessionInfo", ResolveGameSessionInfoMethod("AddPlayerSteamID"));
         Check("CreateLobby/SteamInviteDispatcher", ResolveSteamInviteDispatcherMethod("CreateLobby"));
+        Check("UpdatePlayerGroupSize/SteamInviteDispatcher", ResolveSteamInviteDispatcherMethod("UpdatePlayerGroupSize"));
+        Check("SetRoomList/UIPrefab_PublicRoomList", ResolveGameTypeMethod("UIPrefab_PublicRoomList", "SetRoomList"));
+        Check("SetRoomData/UiPrefab_RoomCard", ResolveGameTypeMethod("UiPrefab_RoomCard", "SetRoomData"));
         Check("EnterWaitingRoom/VRoomManager", ResolveVRoomManagerMethod("EnterWaitingRoom"));
         Check("EnterMaintenenceRoom/VRoomManager", ResolveVRoomManagerMethod("EnterMaintenenceRoom"));
 
@@ -183,6 +189,9 @@ public static class MorePlayersPatches
     public static int GetMaxPlayers() =>
         ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : VanillaMaxPlayers;
 
+    /// <summary>Called from transpiled UI IL for room list player count labels (e.g. "3/32").</summary>
+    public static string GetLobbyPlayerCountSuffix() => "/" + GetMaxPlayers();
+
     internal static int MaxPlayers => GetMaxPlayers();
 
     internal static int MaxClientConnections => MaxPlayers;
@@ -192,6 +201,33 @@ public static class MorePlayersPatches
 
     private static CodeInstruction LoadMaxPlayers() =>
         new(OpCodes.Call, GetMaxPlayersMethod);
+
+    private static IEnumerable<CodeInstruction> ReplaceVanillaLobbyCap(IEnumerable<CodeInstruction> instructions)
+    {
+        var codes = new List<CodeInstruction>(instructions);
+        for (int i = 0; i < codes.Count; i++)
+        {
+            if (codes[i].opcode == OpCodes.Ldc_I4_4)
+                codes[i] = LoadMaxPlayers();
+        }
+
+        return codes;
+    }
+
+    private static IEnumerable<CodeInstruction> ReplaceLobbyPlayerCountSuffix(IEnumerable<CodeInstruction> instructions)
+    {
+        var codes = new List<CodeInstruction>(instructions);
+        for (int i = 0; i < codes.Count; i++)
+        {
+            if (codes[i].opcode == OpCodes.Ldstr && codes[i].operand is string literal && literal == "/4")
+                codes[i] = new CodeInstruction(OpCodes.Call, GetLobbyPlayerCountSuffixMethod);
+        }
+
+        return codes;
+    }
+
+    private static MethodBase? ResolveGameTypeMethod(string typeName, string methodName) =>
+        GameNetworkApi.GetGameAssembly()?.GetType(typeName)?.GetMethod(methodName, InstanceMethodFlags);
 
     private static MethodBase? ResolveRoomMethod(string typeName, string methodName) =>
         GameNetworkApi.GetGameAssembly()?.GetType(typeName)?.GetMethod(methodName, InstanceMethodFlags);
@@ -552,6 +588,36 @@ public static class MorePlayersPatches
 
             return codes;
         }
+    }
+
+    [HarmonyPatch]
+    public static class PublicRoomListSetRoomListTranspiler
+    {
+        public static MethodBase? TargetMethod() => ResolveGameTypeMethod("UIPrefab_PublicRoomList", "SetRoomList");
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            ReplaceVanillaLobbyCap(instructions);
+    }
+
+    [HarmonyPatch]
+    public static class RoomCardSetRoomDataTranspiler
+    {
+        public static MethodBase? TargetMethod() => ResolveGameTypeMethod("UiPrefab_RoomCard", "SetRoomData");
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            ReplaceLobbyPlayerCountSuffix(instructions);
+    }
+
+    [HarmonyPatch]
+    public static class UpdatePlayerGroupSizeTranspiler
+    {
+        public static MethodBase? TargetMethod() => ResolveSteamInviteDispatcherMethod("UpdatePlayerGroupSize");
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) =>
+            ReplaceVanillaLobbyCap(instructions);
     }
 
     [HarmonyPatch]
