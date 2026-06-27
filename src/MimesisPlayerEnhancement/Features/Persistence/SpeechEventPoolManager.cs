@@ -85,7 +85,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             List<SpeechEvent>? events = MimesisSaveManager.LoadSpeechEvents(slotId);
             if (events == null || events.Count == 0)
             {
-                ModLog.Debug("Persistence", "[SpeechEventPoolManager] No events to load for slot " + slotId);
+                ModLog.Debug("Persistence", "No events to load for slot " + slotId);
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             var claimed = new List<SpeechEvent>();
             if (_pool.Count == 0) return claimed;
 
-            ModLog.Debug("Persistence", $"[SpeechEventPoolManager] ClaimEventsForArchive: PlayerId='{playerId}', " +
+            ModLog.Debug("Persistence", $"ClaimEventsForArchive: PlayerId='{playerId}', " +
                             $"PlayerUID={playerUID}, isLocal={isLocal}, " +
                             $"pool has {_pool.Count} events, playerNames in pool: [{string.Join(", ", _byPlayerName.Keys)}]");
 
@@ -134,7 +134,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             if (!string.IsNullOrEmpty(playerId) && _byPlayerName.ContainsKey(playerId))
             {
                 matchedPlayerNames.Add(playerId);
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Level 1 match: DissonanceID '{playerId}' found directly");
+                ModLog.Debug("Persistence", $"Level 1 match: DissonanceID '{playerId}' found directly");
             }
 
             // Level 2: SteamID-based match
@@ -148,19 +148,19 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     if (_byPlayerName.ContainsKey(oldDissonanceId))
                     {
                         matchedPlayerNames.Add(oldDissonanceId);
-                        ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Level 2 match: SteamID {archiveSteamId} " +
+                        ModLog.Debug("Persistence", $"Level 2 match: SteamID {archiveSteamId} " +
                                         $"-> old DissonanceID '{oldDissonanceId}' (new: '{playerId}')");
                     }
                 }
                 else
                 {
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Level 2: SteamID {archiveSteamId} not in mapping " +
+                    ModLog.Debug("Persistence", $"Level 2: SteamID {archiveSteamId} not in mapping " +
                                     $"({_steamToDissonance.Count} entries)");
                 }
             }
             else
             {
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Level 2: Could not resolve SteamID for " +
+                ModLog.Debug("Persistence", $"Level 2: Could not resolve SteamID for " +
                                 $"PlayerUID={playerUID}");
             }
 
@@ -188,7 +188,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     foreach (var ev in claimed)
                         ev.PlayerName = playerId;
 
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Claimed {claimed.Count} events, " +
+                    ModLog.Debug("Persistence", $"Claimed {claimed.Count} events, " +
                                     $"PlayerName updated to '{playerId}'");
                 }
                 else if (archive != null)
@@ -196,14 +196,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     // PlayerId not available yet (OnStartClient fires before Player init)
                     // Register deferred update - will be applied when PlayerId becomes available
                     _deferredNameUpdates.Add((archive, new List<SpeechEvent>(claimed)));
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Claimed {claimed.Count} events, " +
+                    ModLog.Debug("Persistence", $"Claimed {claimed.Count} events, " +
                                     $"PlayerId empty -> deferred PlayerName update registered");
                 }
             }
             else
             {
                 var (p, i, f) = GetCounts();
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] No events claimed for PlayerId='{playerId}' " +
+                ModLog.Debug("Persistence", $"No events claimed for PlayerId='{playerId}' " +
                                 $"(matched names: [{string.Join(", ", matchedPlayerNames)}], " +
                                 $"pool: {p}P/{i}I/{f}F)");
             }
@@ -233,7 +233,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                             var dict = field.GetValue(pdata) as Dictionary<long, ulong>;
                             if (dict != null && dict.TryGetValue(playerUID, out ulong steamId))
                             {
-                                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Resolved PlayerUID {playerUID} -> SteamID {steamId} (from actorUIDToSteamID)");
+                                ModLog.Debug("Persistence", $"Resolved PlayerUID {playerUID} -> SteamID {steamId} (from actorUIDToSteamID)");
                                 return steamId;
                             }
                         }
@@ -241,7 +241,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn("Persistence", $"[SpeechEventPoolManager] actorUIDToSteamID lookup error: {ex.Message}");
+                    ModLog.Warn("Persistence", $"actorUIDToSteamID lookup error: {ex.Message}");
                 }
             }
 
@@ -253,12 +253,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 ulong hostSteamId = GetLocalSteamId();
                 if (hostSteamId != 0)
                 {
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Resolved host SteamID={hostSteamId} (from PlatformMgr, PlayerUID was {playerUID})");
+                    ModLog.Debug("Persistence", $"Resolved host SteamID={hostSteamId} (from PlatformMgr, PlayerUID was {playerUID})");
                     return hostSteamId;
                 }
             }
 
-            ModLog.Warn("Persistence", $"[SpeechEventPoolManager] Could not resolve SteamID for PlayerUID={playerUID} (isLocal={isLocal})");
+            ModLog.Warn("Persistence", $"Could not resolve SteamID for PlayerUID={playerUID} (isLocal={isLocal})");
             return 0;
         }
 
@@ -282,7 +282,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[SpeechEventPoolManager] GetLocalSteamId error: {ex.Message}");
+                ModLog.Warn("Persistence", $"GetLocalSteamId error: {ex.Message}");
             }
             return 0;
         }
@@ -305,7 +305,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             if (fallback.Count > 0)
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Forced {fallback.Count} events to FALLBACK");
+                ModLog.Debug("Persistence", $"Forced {fallback.Count} events to FALLBACK");
 
             return fallback;
         }
@@ -322,7 +322,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 if (existing == archive) return;
 
             _deferredInjectionArchives.Add(archive);
-            ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Registered archive for deferred injection " +
+            ModLog.Debug("Persistence", $"Registered archive for deferred injection " +
                             $"(waiting for SyncVars, {_deferredInjectionArchives.Count} pending)");
         }
 
@@ -364,7 +364,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                     // SyncVars are ready! Do the full claim+inject
                     _deferredInjectionArchives.RemoveAt(i);
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Deferred injection: SyncVars ready for " +
+                    ModLog.Debug("Persistence", $"Deferred injection: SyncVars ready for " +
                                     $"PlayerId='{playerId}', PlayerUID={playerUID}");
 
                     var eventsList = archive.events;
@@ -413,18 +413,16 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                     if (totalAdded > 0)
                     {
-                        var counts = GetCounts();
                         ModLog.Info(
                             "Persistence",
-                            $"Deferred voice injection OK — injected={totalAdded}, " +
-                            $"{VoiceEventStats.DescribePlayer(archive)} | " +
-                            $"poolState={counts.pending}P/{counts.injected}I/{counts.fallback}F");
+                            $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
+                            $"restored {totalAdded} voice events (deferred injection)");
                     }
                     else
                     {
                         ModLog.Info(
                             "Persistence",
-                            $"Deferred injection complete — no events matched. {VoiceEventStats.DescribePlayer(archive)}");
+                            $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — no matching saved voices (deferred injection)");
                     }
                 }
             }
@@ -457,7 +455,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         ev.PlayerName = newPlayerId;
                 }
 
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Deferred update: {events.Count} events " +
+                ModLog.Debug("Persistence", $"Deferred update: {events.Count} events " +
                                 $"PlayerName updated to '{newPlayerId}'");
                 _deferredNameUpdates.RemoveAt(i);
             }
@@ -620,15 +618,15 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 if (steamId != 0 && !string.IsNullOrEmpty(playerId))
                 {
                     _disconnectedPlayerMappings[steamId] = playerId;
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Cached player mapping: SteamID {steamId} -> '{playerId}'");
+                    ModLog.Debug("Persistence", $"Cached player mapping: SteamID {steamId} -> '{playerId}'");
                 }
 
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Cached {cached} events from disconnected player " +
+                ModLog.Debug("Persistence", $"Cached {cached} events from disconnected player " +
                                 $"'{playerId}' (UID={playerUID}). Total cached: {_disconnectedCache.Count}");
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[SpeechEventPoolManager] CacheEventsFromArchive error: {ex.Message}");
+                ModLog.Warn("Persistence", $"CacheEventsFromArchive error: {ex.Message}");
             }
         }
 
@@ -655,7 +653,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             if (steamId != 0 && _disconnectedPlayerMappings.TryGetValue(steamId, out string oldDissonanceId))
             {
                 matchedPlayerNames.Add(oldDissonanceId);
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Disconnected cache match: SteamID {steamId} -> old DissonanceID '{oldDissonanceId}'");
+                ModLog.Debug("Persistence", $"Disconnected cache match: SteamID {steamId} -> old DissonanceID '{oldDissonanceId}'");
             }
 
             if (matchedPlayerNames.Count == 0) return claimed;
@@ -686,7 +684,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             if (claimed.Count > 0)
             {
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Reclaimed {claimed.Count} events from disconnected cache " +
+                ModLog.Debug("Persistence", $"Reclaimed {claimed.Count} events from disconnected cache " +
                                 $"for PlayerId='{playerId}' (remaining cache: {_disconnectedCache.Count})");
             }
 
@@ -742,7 +740,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             string? slotPath = MimesisSaveManager.GetMimesisSlotPath(slotId);
             if (string.IsNullOrEmpty(slotPath))
             {
-                ModLog.Warn("Persistence", "[SpeechEventPoolManager] SavePlayerMapping: slot path is null/empty!");
+                ModLog.Warn("Persistence", "SavePlayerMapping: slot path is null/empty!");
                 return;
             }
 
@@ -751,11 +749,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 var archives = UnityEngine.Object.FindObjectsByType<SpeechEventArchive>(FindObjectsSortMode.None);
                 if (archives == null || archives.Length == 0)
                 {
-                    ModLog.Warn("Persistence", "[SpeechEventPoolManager] SavePlayerMapping: no SpeechEventArchive found!");
+                    ModLog.Warn("Persistence", "SavePlayerMapping: no SpeechEventArchive found!");
                     return;
                 }
 
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] SavePlayerMapping: found {archives.Length} archives");
+                ModLog.Debug("Persistence", $"SavePlayerMapping: found {archives.Length} archives");
 
                 // mapping: SteamID -> DissonanceID (current)
                 var mapping = new Dictionary<ulong, string>();
@@ -769,13 +767,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                         if (string.IsNullOrEmpty(pid))
                         {
-                            ModLog.Debug("Persistence", $"[SpeechEventPoolManager]   Archive skipped: empty PlayerId (UID={uid})");
+                            ModLog.Debug("Persistence", $"  Archive skipped: empty PlayerId (UID={uid})");
                             continue;
                         }
 
                         // Use isLocal fallback for host (actorUIDToSteamID doesn't have host entry)
                         ulong steamId = GetSteamIdForPlayerUID(uid, isLocal);
-                        ModLog.Debug("Persistence", $"[SpeechEventPoolManager]   Archive: PlayerId='{pid}', PlayerUID={uid}, IsLocal={isLocal}, SteamID={steamId}");
+                        ModLog.Debug("Persistence", $"  Archive: PlayerId='{pid}', PlayerUID={uid}, IsLocal={isLocal}, SteamID={steamId}");
 
                         if (steamId != 0)
                         {
@@ -783,12 +781,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         }
                         else
                         {
-                            ModLog.Warn("Persistence", $"[SpeechEventPoolManager]   Could not resolve SteamID for PlayerUID={uid}");
+                            ModLog.Warn("Persistence", $"  Could not resolve SteamID for PlayerUID={uid}");
                         }
                     }
                     catch (Exception archEx)
                     {
-                        ModLog.Warn("Persistence", $"[SpeechEventPoolManager]   Archive error: {archEx.Message}");
+                        ModLog.Warn("Persistence", $"  Archive error: {archEx.Message}");
                     }
                 }
 
@@ -805,7 +803,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     }
                 }
                 if (disconnectedCount > 0)
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Added {disconnectedCount} disconnected player mappings");
+                    ModLog.Debug("Persistence", $"Added {disconnectedCount} disconnected player mappings");
 
                 // Always create the file, even if empty (so we know save was attempted)
                 // JSON: {"steamId":"dissonanceId", ...}
@@ -820,11 +818,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 Directory.CreateDirectory(slotPath);
                 string filePath = Path.Combine(slotPath, PlayerMappingFile);
                 MimesisSaveManager.SafeWritePlayerMapping(filePath, json);
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Saved player mapping: {mapping.Count} entries ({disconnectedCount} from cache) -> {filePath}");
+                ModLog.Debug("Persistence", $"Saved player mapping: {mapping.Count} entries ({disconnectedCount} from cache) -> {filePath}");
             }
             catch (Exception ex)
             {
-                ModLog.Error("Persistence", $"[SpeechEventPoolManager] SavePlayerMapping FAILED: {ex}");
+                ModLog.Error("Persistence", $"SavePlayerMapping FAILED: {ex}");
             }
         }
 
@@ -842,7 +840,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             string? json = MimesisSaveManager.SafeReadPlayerMapping(filePath);
             if (string.IsNullOrEmpty(json))
             {
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] No player_mapping.json at {filePath}");
+                ModLog.Debug("Persistence", $"No player_mapping.json at {filePath}");
                 return;
             }
 
@@ -856,13 +854,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     _steamToDissonance[kvp.Key] = kvp.Value;
                 }
 
-                ModLog.Debug("Persistence", $"[SpeechEventPoolManager] Loaded player mapping: {_steamToDissonance.Count} entries");
+                ModLog.Debug("Persistence", $"Loaded player mapping: {_steamToDissonance.Count} entries");
                 foreach (var kvp in _steamToDissonance)
-                    ModLog.Debug("Persistence", $"[SpeechEventPoolManager]   SteamID {kvp.Key} -> DissonanceID '{kvp.Value}'");
+                    ModLog.Debug("Persistence", $"  SteamID {kvp.Key} -> DissonanceID '{kvp.Value}'");
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[SpeechEventPoolManager] LoadPlayerMapping: {ex.Message}");
+                ModLog.Warn("Persistence", $"LoadPlayerMapping: {ex.Message}");
             }
         }
 

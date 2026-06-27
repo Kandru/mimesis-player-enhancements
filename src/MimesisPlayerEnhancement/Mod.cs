@@ -73,20 +73,14 @@ public sealed class Mod : MelonMod
 
     private void LogStartupSummary()
     {
-        LoggerInstance.Msg(
-            $"MimesisPlayerEnhancement v{VersionInfo.ModuleVersion} loaded — " +
-            $"MorePlayers={ModConfig.EnableMorePlayers.Value}, " +
-            $"MoreVoices={ModConfig.EnableMoreVoices.Value} (max {ModConfig.MaxVoiceEvents.Value}), " +
-            $"Persistence={ModConfig.EnablePersistence.Value}, " +
+        ModLog.Info(
+            "Startup",
+            $"v{VersionInfo.ModuleVersion} loaded — " +
+            $"MorePlayers={ModConfig.EnableMorePlayers.Value}" +
+            (ModConfig.EnableMorePlayers.Value ? $" (session cap {ModConfig.MaxPlayers.Value})" : "") +
+            $", MoreVoices={ModConfig.EnableMoreVoices.Value}" +
+            (ModConfig.EnableMoreVoices.Value ? $" (max {ModConfig.MaxVoiceEvents.Value})" : "") +
+            $", Persistence={ModConfig.EnablePersistence.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
-
-        if (ModConfig.EnableMorePlayers.Value)
-            ModLog.Info("MorePlayers", $"Enabled — session player cap set to {ModConfig.MaxPlayers.Value}.");
-
-        if (ModConfig.EnableMoreVoices.Value)
-            ModLog.Info("MoreVoices", $"Enabled — per-player voice event cap set to {ModConfig.MaxVoiceEvents.Value}.");
-
-        if (ModConfig.EnablePersistence.Value)
-            ModLog.Info("Persistence", "Enabled — mimic voices will be saved with game saves.");
     }
 }

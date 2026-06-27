@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 try { File.Copy(filePath, bakPath, true); }
                 catch (Exception ex)
                 {
-                    ModLog.Warn("Persistence", $"[Persistence] Backup failed for {Path.GetFileName(filePath)}: {ex.Message}");
+                    ModLog.Warn("Persistence", $"Backup failed for {Path.GetFileName(filePath)}: {ex.Message}");
                 }
             }
 
@@ -88,7 +88,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn("Persistence", $"[Persistence] Main file read failed ({Path.GetFileName(filePath)}): {ex.Message}");
+                    ModLog.Warn("Persistence", $"Main file read failed ({Path.GetFileName(filePath)}): {ex.Message}");
                 }
             }
 
@@ -101,13 +101,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     byte[] data = File.ReadAllBytes(bakPath);
                     if (data != null && data.Length > 0)
                     {
-                        ModLog.Warn("Persistence", $"[Persistence] Recovered from backup: {Path.GetFileName(bakPath)}");
+                        ModLog.Warn("Persistence", $"Recovered from backup: {Path.GetFileName(bakPath)}");
                         return data;
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Error("Persistence", $"[Persistence] Backup also failed ({Path.GetFileName(bakPath)}): {ex.Message}");
+                    ModLog.Error("Persistence", $"Backup also failed ({Path.GetFileName(bakPath)}): {ex.Message}");
                 }
             }
 
@@ -138,7 +138,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn("Persistence", $"[Persistence] Player mapping read failed: {ex.Message}");
+                    ModLog.Warn("Persistence", $"Player mapping read failed: {ex.Message}");
                 }
             }
 
@@ -151,13 +151,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     string text = File.ReadAllText(bakPath);
                     if (!string.IsNullOrEmpty(text))
                     {
-                        ModLog.Warn("Persistence", $"[Persistence] Recovered player mapping from backup");
+                        ModLog.Warn("Persistence", $"Recovered player mapping from backup");
                         return text;
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Error("Persistence", $"[Persistence] Player mapping backup also failed: {ex.Message}");
+                    ModLog.Error("Persistence", $"Player mapping backup also failed: {ex.Message}");
                 }
             }
 
@@ -277,13 +277,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                 if (disconnectedAdded > 0 || pendingAdded > 0)
                 {
-                    ModLog.Debug("Persistence", $"[Persistence] CollectAllSpeechEvents: " +
+                    ModLog.Debug("Persistence", $"CollectAllSpeechEvents: " +
                         $"{liveCount} live + {disconnectedAdded} disconnected + {pendingAdded} pending (absent players) = {list.Count} total");
                 }
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[Persistence] CollectAllSpeechEvents: {ex.Message}");
+                ModLog.Warn("Persistence", $"CollectAllSpeechEvents: {ex.Message}");
             }
             return list;
         }
@@ -358,13 +358,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             if (!IsHost())
             {
-                ModLog.Debug("Persistence", "[Persistence] Skip save: not host.");
+                ModLog.Debug("Persistence", "Skip save: not host.");
                 return;
             }
             string? slotPath = GetMimesisSlotPath(slotId);
             if (string.IsNullOrEmpty(slotPath))
             {
-                ModLog.Warn("Persistence", "[Persistence] Skip save: slot path unavailable.");
+                ModLog.Warn("Persistence", "Skip save: slot path unavailable.");
                 return;
             }
             try
@@ -406,7 +406,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         }
                         
                         SafeWriteAllBytes(Path.Combine(slotPath, SpeechEventsFile), ms.ToArray());
-                        ModLog.Debug("Persistence", $"[Persistence] Serialized {serializedEvents.Count} SpeechEvents, audio={totalAudioBytes / 1024}KB");
+                        ModLog.Debug("Persistence", $"Serialized {serializedEvents.Count} SpeechEvents, audio={totalAudioBytes / 1024}KB");
                     }
                 }
 
@@ -438,7 +438,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
             catch (Exception ex)
             {
-                ModLog.Error("Persistence", $"[Persistence] SaveMimesisData: {ex}");
+                ModLog.Error("Persistence", $"SaveMimesisData: {ex}");
             }
         }
 
@@ -495,13 +495,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         if (ev != null) list.Add(ev);
                     }
                     
-                    ModLog.Debug("Persistence", $"[Persistence] Loaded {list.Count}/{count} SpeechEvents from slot {slotId}, audio={totalAudioBytes / 1024}KB");
+                    ModLog.Debug("Persistence", $"Loaded {list.Count}/{count} SpeechEvents from slot {slotId}, audio={totalAudioBytes / 1024}KB");
                 }
                 return list.Count > 0 ? list : null;
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[Persistence] LoadSpeechEvents: {ex.Message}");
+                ModLog.Warn("Persistence", $"LoadSpeechEvents: {ex.Message}");
                 return null;
             }
         }
@@ -525,7 +525,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 var list = (List<SpeechEvent>?)deserializeMethod.Invoke(null, new object?[] { typeof(List<SpeechEvent>), data, null });
                 if (list != null && list.Count > 0)
                 {
-                    ModLog.Debug("Persistence", $"[Persistence] Loaded {list.Count} SpeechEvents (legacy format)");
+                    ModLog.Debug("Persistence", $"Loaded {list.Count} SpeechEvents (legacy format)");
                     return list;
                 }
             }
@@ -590,7 +590,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[Persistence] LoadReplayPlayData: {ex.Message}");
+                ModLog.Warn("Persistence", $"LoadReplayPlayData: {ex.Message}");
                 return null;
             }
         }
@@ -609,7 +609,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[Persistence] LoadReplayVoiceData: {ex.Message}");
+                ModLog.Warn("Persistence", $"LoadReplayVoiceData: {ex.Message}");
                 return null;
             }
         }
@@ -635,7 +635,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Persistence", $"[Persistence] DeleteMimesisData: {ex.Message}");
+                ModLog.Warn("Persistence", $"DeleteMimesisData: {ex.Message}");
             }
         }
     }

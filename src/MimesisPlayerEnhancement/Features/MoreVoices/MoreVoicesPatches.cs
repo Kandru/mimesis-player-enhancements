@@ -74,7 +74,7 @@ public static class MoreVoicesPatches
             if (!ModConfig.EnableMoreVoices.Value || __instance == null)
                 return;
 
-            ModLog.Info(
+            ModLog.Debug(
                 Feature,
                 $"Voice archive started — maxCap={ModConfig.MaxVoiceEvents.Value}, " +
                 $"maxEvents={GetFieldValue(__instance, MaxEventsField)}, " +

@@ -120,7 +120,7 @@ public static class MorePlayersPatches
         Check("EnterMaintenenceRoom/VRoomManager", ResolveVRoomManagerMethod("EnterMaintenenceRoom"));
 
         if (applied.Count > 0)
-            ModLog.Info(Feature, $"Patch audit — applied: {string.Join(", ", applied)}");
+            ModLog.Debug(Feature, $"Patch audit — applied: {string.Join(", ", applied)}");
 
         foreach (string label in missing)
             ModLog.Warn(Feature, $"Patch audit — not applied: {label}");
@@ -150,7 +150,7 @@ public static class MorePlayersPatches
 
         try
         {
-            UpdateRoomMaxPlayers(GameNetworkApi.GetVRoomManager());
+            UpdateRoomMaxPlayers(GameNetworkApi.GetVRoomManager(), logRefresh: true);
         }
         catch (Exception ex)
         {
@@ -158,7 +158,7 @@ public static class MorePlayersPatches
         }
     }
 
-    private static void UpdateRoomMaxPlayers(object? vroomManager)
+    private static void UpdateRoomMaxPlayers(object? vroomManager, bool logRefresh = false)
     {
         if (vroomManager == null)
             return;
@@ -174,7 +174,8 @@ public static class MorePlayersPatches
 
             var maxPlayersField = room.GetType().BaseType?.GetField("_maxPlayers", BindingFlags.NonPublic | BindingFlags.Instance);
             maxPlayersField?.SetValue(room, MaxPlayers);
-            ModLog.Debug(Feature, $"Room {room.GetType().Name} _maxPlayers refreshed to {MaxPlayers}.");
+            if (logRefresh)
+                ModLog.Debug(Feature, $"Room {room.GetType().Name} max players refreshed to {MaxPlayers}.");
         }
     }
 
@@ -507,9 +508,15 @@ public static class MorePlayersPatches
             try
             {
                 UpdateRoomMaxPlayers(__instance);
+                string roomName = __originalMethod.Name switch
+                {
+                    "EnterWaitingRoom" => "WaitingRoom",
+                    "EnterMaintenenceRoom" or "EnterMaintenanceRoom" => "MaintenanceRoom",
+                    _ => __originalMethod.Name
+                };
                 ModLog.Info(
                     Feature,
-                    $"Enter room — {__originalMethod.Name} (session cap {MaxPlayers}).");
+                    $"Enter room — {roomName} (session cap {MaxPlayers}).");
             }
             catch (Exception ex)
             {

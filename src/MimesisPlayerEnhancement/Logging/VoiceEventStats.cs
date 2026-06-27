@@ -41,6 +41,7 @@ public static class VoiceEventStats
 
         int count = GetEventCount(archive);
         string role = isLocal ? "host" : "client";
-        return $"player={playerId} uid={playerUid} role={role} voiceEvents={count}";
+        string uid = playerUid == 0 ? "(pending)" : playerUid.ToString();
+        return $"uid={uid} player={playerId} role={role} voiceEvents={count}";
     }
 }

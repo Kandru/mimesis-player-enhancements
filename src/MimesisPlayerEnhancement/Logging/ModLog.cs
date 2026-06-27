@@ -3,7 +3,8 @@ using MelonLoader;
 namespace MimesisPlayerEnhancement;
 
 /// <summary>
-/// Central logging. Use <see cref="Info"/> for normal operational feedback;
+/// Central logging. The feature tag is added automatically — do not repeat it in messages.
+/// Use em dashes (—) to separate clauses. <see cref="Info"/> for operational events;
 /// <see cref="Debug"/> only emits when <see cref="ModConfig.EnableDebugLogging"/> is true.
 /// </summary>
 public static class ModLog
