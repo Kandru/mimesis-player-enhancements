@@ -25,6 +25,7 @@ public static class StatisticsTracker
     private static int _loadedSlotId = -999;
     private static long _lastCurrencyBaseline;
     private static int _lastCycleCount;
+    private static Dictionary<ulong, int>? _voiceCountCache;
 
     private sealed class PlayReportSnapshot
     {
@@ -34,7 +35,7 @@ public static class StatisticsTracker
         public long TimeInStartingVolumeMs;
     }
 
-    public static void Reset()
+    internal static void ClearRuntimeState()
     {
         _players.Clear();
         _connectedSince.Clear();
@@ -52,6 +53,7 @@ public static class StatisticsTracker
         if (slotId == _loadedSlotId) return;
         _loadedSlotId = slotId;
         _players.Clear();
+        _connectedSince.Clear();
         _cycleBaselines.Clear();
         _voiceEventBaselines.Clear();
         _lastKillCounts.Clear();
@@ -111,12 +113,14 @@ public static class StatisticsTracker
             doc = GetOrCreatePlayer(steamId);
 
         FlushConnectedTime(steamId, doc);
+        _connectedSince.Remove(steamId);
         if (doc.CurrentSession != null)
         {
             doc.CurrentSession.LastDisconnectedAtUtc = DateTime.UtcNow;
             doc.CurrentSession.IsOpen = true;
         }
 
+        ModLog.Info(Feature, $"Player disconnected — steamId={steamId} displayName={doc.DisplayName}");
         StatisticsStore.SavePlayer(slotId, doc);
         PersistLeaderboard(slotId);
         InGameMessageHelper.ShowLeave(doc.DisplayName);
@@ -141,6 +145,7 @@ public static class StatisticsTracker
             if (now - session.LastDisconnectedAtUtc.Value <= TimeSpan.FromMinutes(graceMinutes))
                 continue;
 
+            ModLog.Info(Feature, $"Session finalized — steamId={kvp.Key} session={session.SessionId} after grace period");
             FinalizeOpenSession(doc, countAsCompleted: true);
             StatisticsStore.SavePlayer(slotId, doc);
             changed = true;
@@ -149,6 +154,8 @@ public static class StatisticsTracker
         foreach (var kvp in _connectedSince)
         {
             if (!_players.TryGetValue(kvp.Key, out var doc)) continue;
+            if (doc.CurrentSession?.LastDisconnectedAtUtc.HasValue == true)
+                continue;
             FlushConnectedTime(kvp.Key, doc);
         }
 
@@ -205,6 +212,7 @@ public static class StatisticsTracker
                 FlushConnectedTime(steamId, connectedDoc);
         }
 
+        _voiceCountCache = BuildVoiceCountCache();
         foreach (ulong steamId in affected)
         {
             var doc = GetOrCreatePlayer(steamId);
@@ -212,6 +220,7 @@ public static class StatisticsTracker
             ApplyVoiceDelta(steamId, doc);
             StatisticsStore.SavePlayer(slotId, doc);
         }
+        _voiceCountCache = null;
 
         ResetCycleBaselines(manager);
         PersistLeaderboard(slotId);
@@ -246,6 +255,7 @@ public static class StatisticsTracker
         doc.CurrentSession.Counters.Deaths++;
         doc.Global.Counters.Deaths++;
         RegisterActorMapping(actor, steamId);
+        PersistCombatStats(steamId, doc);
     }
 
     public static void OnPlayerRevive(ProtoActor actor)
@@ -259,6 +269,7 @@ public static class StatisticsTracker
         doc.CurrentSession.Counters.Revives++;
         doc.Global.Counters.Revives++;
         RegisterActorMapping(actor, steamId);
+        PersistCombatStats(steamId, doc);
     }
 
     public static void OnKillCountChanged(ProtoActor actor, int killCount)
@@ -268,7 +279,15 @@ public static class StatisticsTracker
         if (steamId == 0) return;
 
         RegisterActorMapping(actor, steamId);
+        var doc = GetOrCreatePlayer(steamId);
         int previous = _lastKillCounts.TryGetValue(steamId, out int prev) ? prev : 0;
+
+        if (previous == 0 && killCount <= doc.Global.Counters.Kills)
+        {
+            _lastKillCounts[steamId] = killCount;
+            return;
+        }
+
         if (killCount <= previous)
         {
             _lastKillCounts[steamId] = killCount;
@@ -278,16 +297,22 @@ public static class StatisticsTracker
         int delta = killCount - previous;
         _lastKillCounts[steamId] = killCount;
 
-        var doc = GetOrCreatePlayer(steamId);
         doc.CurrentSession ??= NewSession(DateTime.UtcNow);
         doc.CurrentSession.Counters.Kills += delta;
         doc.Global.Counters.Kills += delta;
+        PersistCombatStats(steamId, doc);
     }
 
     public static void OnUpdate()
     {
         if (!CanTrack()) return;
         ProcessDeferred();
+    }
+
+    private static void PersistCombatStats(ulong steamId, PlayerStatisticsDocument doc)
+    {
+        int slotId = StatisticsStore.GetActiveSlotId();
+        StatisticsStore.SavePlayer(slotId, doc);
     }
 
     private static bool CanTrack() =>
@@ -465,8 +490,42 @@ public static class StatisticsTracker
         }
     }
 
+    private static Dictionary<ulong, int> BuildVoiceCountCache()
+    {
+        var cache = new Dictionary<ulong, int>();
+        try
+        {
+            var archives = UnityEngine.Object.FindObjectsByType<SpeechEventArchive>(FindObjectsSortMode.None);
+            if (archives == null) return cache;
+
+            foreach (var archive in archives)
+            {
+                if (archive == null) continue;
+                long playerUid = 0;
+                bool isLocal = false;
+                try
+                {
+                    playerUid = archive.PlayerUID;
+                    isLocal = archive.IsLocal;
+                }
+                catch { /* not ready */ }
+
+                ulong archiveSteam = ResolveSteamIdFromUid(playerUid, isLocal);
+                if (archiveSteam == 0) continue;
+                cache.TryGetValue(archiveSteam, out int current);
+                cache[archiveSteam] = current + VoiceEventStats.GetEventCount(archive);
+            }
+        }
+        catch { /* ignore */ }
+
+        return cache;
+    }
+
     private static int CountVoiceEventsForSteamId(ulong steamId)
     {
+        if (_voiceCountCache != null && _voiceCountCache.TryGetValue(steamId, out int cached))
+            return cached;
+
         int total = 0;
         try
         {

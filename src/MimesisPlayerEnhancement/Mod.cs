@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement;
 public sealed class Mod : MelonMod
 {
     private HarmonyLib.Harmony? _harmony;
+    private bool _statisticsWasEnabled;
 
     public override void OnInitializeMelon()
     {
@@ -24,6 +25,7 @@ public sealed class Mod : MelonMod
         Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
         Features.JoinAnytime.JoinAnytimePatches.Apply(_harmony);
 
+        _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
         SyncFromConfig();
         LogStartupSummary();
     }
@@ -67,6 +69,11 @@ public sealed class Mod : MelonMod
         Features.MoreVoices.MoreVoicesPatches.RefreshFromConfig();
 
         int sessionCap = ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : 4;
+
+        if (_statisticsWasEnabled && !ModConfig.EnableStatistics.Value)
+            Features.Statistics.StatisticsTracker.ClearRuntimeState();
+
+        _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
 
         ModLog.Debug(
             "Config",

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -19,14 +20,9 @@ internal static class LateJoinManager
     internal static string PendingSceneName { get; set; } = string.Empty;
 
     private static bool voiceCheckRunning;
+    private static readonly HashSet<long> SentPlayingStateUids = new();
 
     internal static bool IsEnabled => ModConfig.EnableJoinAnytime.Value;
-
-    internal static void Log(string message)
-    {
-        if (ModConfig.EnableDebugLogging.Value)
-            ModLog.Debug(Feature, message);
-    }
 
     internal static void OnServerLogin(SessionContext context)
     {
@@ -40,8 +36,9 @@ internal static class LateJoinManager
         if (pdata.main is not GamePlayScene gps)
             return;
 
-        Log($"Login while in-game: uid={context.GetPlayerUID()} dungeon={gps.DungeonMasterID} seed={gps.RandDungeonSeed}");
-        JoinAnytimeNetworkTools.SendOnPlayingStateToClient(context);
+        ModLog.Debug(
+            Feature,
+            $"Login while in-game — uid={context.GetPlayerUID()} dungeon={gps.DungeonMasterID} seed={gps.RandDungeonSeed}");
     }
 
     internal static void OnServerPlayerCreated(VPlayer player)
@@ -53,12 +50,12 @@ internal static class LateJoinManager
         if (pdata?.ClientMode != NetworkClientMode.Host || player.IsHost)
             return;
 
-        Log($"VPlayer created: uid={player.UID} room={player.VRoom?.GetType().Name} main={pdata.main?.GetType().Name}");
+        ModLog.Debug(Feature, $"VPlayer created: uid={player.UID} room={player.VRoom?.GetType().Name} main={pdata.main?.GetType().Name}");
 
         if (pdata.main is InTramWaitingScene
             && player.VRoom is MaintenanceRoom)
         {
-            Log($"Pre-game join detected, sending MoveToWaitingRoomSig to uid={player.UID}");
+            ModLog.Info(Feature, $"Pre-game join detected, sending MoveToWaitingRoomSig to uid={player.UID}");
             player.SendToMe(new MoveToWaitingRoomSig());
             return;
         }
@@ -88,7 +85,7 @@ internal static class LateJoinManager
                 if (pdata?.ClientMode != NetworkClientMode.Participant)
                     return true;
 
-                Log($"Pre-game redirect signal received. main={pdata.main?.GetType().Name ?? "null"}");
+                ModLog.Debug(Feature, $"Pre-game redirect signal received. main={pdata.main?.GetType().Name ?? "null"}");
 
                 RedirectState = LateJoinRedirectState.PendingWaitingRoomRedirect;
                 PendingSceneName = "InTramWaitingScene";
@@ -107,7 +104,7 @@ internal static class LateJoinManager
 
                 pdata.dungeonMasterID = moveToDungeonSig.selectedDungeonMasterID;
                 pdata.randDungeonSeed = moveToDungeonSig.randDungeonSeed;
-                Log($"MoveToDungeonSig: dungeon={pdata.dungeonMasterID} seed={pdata.randDungeonSeed}");
+                ModLog.Debug(Feature, $"MoveToDungeonSig: dungeon={pdata.dungeonMasterID} seed={pdata.randDungeonSeed}");
                 break;
 
             case MakeRoomCompleteSig completeSig:
@@ -120,9 +117,7 @@ internal static class LateJoinManager
                     pdata.dungeonMasterID = completeSig.nextRoomInfo.roomMasterID;
 
                 string sceneName = JoinAnytimeRoomTools.GetSceneNameFromDungeon(pdata.dungeonMasterID);
-                Log(
-                    $"MakeRoomCompleteSig: roomUID={completeSig.nextRoomInfo.roomUID}, " +
-                    $"scene={sceneName}, main={pdata.main?.GetType().Name ?? "null"}");
+                ModLog.Debug(Feature, $"MakeRoomCompleteSig — roomUID={completeSig.nextRoomInfo.roomUID}, scene={sceneName}, main={pdata.main?.GetType().Name ?? "null"}");
 
                 PendingSceneName = sceneName;
 
@@ -130,7 +125,7 @@ internal static class LateJoinManager
                 {
                     if (pdata.main is MaintenanceScene && !string.IsNullOrEmpty(sceneName))
                     {
-                        Log($"Redirect now -> {sceneName}");
+                        ModLog.Info(Feature, $"Redirect now -> {sceneName}");
                         RedirectState = LateJoinRedirectState.EnteringDungeon;
                         Hub.LoadScene(sceneName);
                     }
@@ -159,7 +154,13 @@ internal static class LateJoinManager
         var enteringCompleteAllField = typeof(GamePlayScene).GetField(
             "EnteringCompleteAll",
             BindingFlags.NonPublic | BindingFlags.Instance);
-        if (enteringCompleteAllField?.GetValue(gamePlayScene) is true)
+        if (enteringCompleteAllField == null)
+        {
+            ModLog.Warn(Feature, "EnteringCompleteAll field not found on GamePlayScene");
+            return false;
+        }
+
+        if (enteringCompleteAllField.GetValue(gamePlayScene) is true)
             return false;
 
         if (RedirectState != LateJoinRedirectState.EnteringDungeon)
@@ -176,7 +177,7 @@ internal static class LateJoinManager
             return false;
         }
 
-        Log($"Ignoring early AllMemberEnterRoomSig names={string.Join(",", sig.enterCutsceneNames ?? new List<string>())}");
+        ModLog.Debug(Feature, $"Ignoring early AllMemberEnterRoomSig names={string.Join(",", sig.enterCutsceneNames ?? new List<string>())}");
         return true;
     }
 
@@ -193,9 +194,17 @@ internal static class LateJoinManager
 
         if (sceneName != PendingSceneName)
         {
-            RedirectState = LateJoinRedirectState.None;
-            PendingSceneName = string.Empty;
+            ModLog.Warn(Feature, $"Redirect aborted — loaded {sceneName}, expected {PendingSceneName}");
+            ResetJoinState();
         }
+    }
+
+    internal static void ResetJoinState()
+    {
+        RedirectState = LateJoinRedirectState.None;
+        PendingSceneName = string.Empty;
+        voiceCheckRunning = false;
+        SentPlayingStateUids.Clear();
     }
 
     internal static void OnMaintenanceSceneStart()
@@ -209,16 +218,19 @@ internal static class LateJoinManager
 
         if (RedirectState == LateJoinRedirectState.PendingWaitingRoomRedirect)
         {
-            Log("Pending pre-game redirect -> InTramWaitingScene");
+            ModLog.Info(Feature, "Pending pre-game redirect -> InTramWaitingScene");
             RedirectState = LateJoinRedirectState.None;
             Hub.LoadScene("InTramWaitingScene");
         }
         else if (RedirectState == LateJoinRedirectState.PendingDungeonRedirect)
         {
             if (string.IsNullOrEmpty(PendingSceneName))
+            {
+                ModLog.Warn(Feature, "Pending in-game redirect skipped — scene name is empty");
                 return;
+            }
 
-            Log($"Pending in-game redirect -> {PendingSceneName}");
+            ModLog.Info(Feature, $"Pending in-game redirect -> {PendingSceneName}");
             RedirectState = LateJoinRedirectState.EnteringDungeon;
             Hub.LoadScene(PendingSceneName);
         }
@@ -244,7 +256,7 @@ internal static class LateJoinManager
         if (!sceneAllowed || voiceManager.IsConnected())
             return;
 
-        Log($"Voice reconnect: addr={pdata.GameServerAddressOrSteamId} relay={pdata.WithRelay}");
+        ModLog.Debug(Feature, $"Voice reconnect: addr={pdata.GameServerAddressOrSteamId} relay={pdata.WithRelay}");
         voiceManager.StartCoroutine(ConnectVoiceDelayed(voiceManager));
     }
 
@@ -252,16 +264,28 @@ internal static class LateJoinManager
     {
         voiceCheckRunning = true;
 
-        yield return new WaitForSeconds(0.5f);
-
-        Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-        if (pdata != null && voiceManager != null && !voiceManager.IsConnected())
+        for (int attempt = 1; attempt <= 3; attempt++)
         {
+            yield return new WaitForSeconds(0.5f * attempt);
+
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            if (pdata == null || voiceManager == null || voiceManager.IsConnected())
+                break;
+
             voiceManager.TryRecoverMicrophone();
             voiceManager.ConnectVoiceChat(pdata.GameServerAddressOrSteamId, pdata.WithRelay);
+
+            yield return new WaitForSeconds(1f);
+            if (voiceManager.IsConnected())
+            {
+                ModLog.Info(Feature, $"Voice reconnected on attempt {attempt}");
+                break;
+            }
+
+            if (attempt == 3)
+                ModLog.Warn(Feature, "Voice reconnect failed after 3 attempts");
         }
 
-        yield return new WaitForSeconds(2f);
         voiceCheckRunning = false;
     }
 
@@ -274,7 +298,7 @@ internal static class LateJoinManager
         if (context.GetVRoomType() == VRoomType.Maintenance
             && pdata?.main is InTramWaitingScene)
         {
-            Log("Moving player snapshot Maintenance -> Waiting");
+            ModLog.Debug(Feature, "Moving player snapshot Maintenance -> Waiting");
             JoinAnytimeRoomTools.MoveCurrentPlayerToSnapshot(context);
         }
     }
@@ -288,9 +312,20 @@ internal static class LateJoinManager
         if (context.GetVRoomType() == VRoomType.Maintenance
             && pdata?.main is GamePlayScene)
         {
-            Log($"Moving player snapshot Maintenance -> Dungeon, roomUID={roomUid}");
+            ModLog.Debug(Feature, $"Moving player snapshot Maintenance -> Dungeon, roomUID={roomUid}");
             JoinAnytimeRoomTools.MoveCurrentPlayerToSnapshot(context);
         }
+    }
+
+    internal static bool TryMarkPlayingStateSent(long uid)
+    {
+        if (!SentPlayingStateUids.Add(uid))
+        {
+            ModLog.Debug(Feature, $"Skipping duplicate in-game state signal for uid={uid}");
+            return false;
+        }
+
+        return true;
     }
 
     internal static void KeepLobbyOpen()
@@ -303,9 +338,9 @@ internal static class LateJoinManager
             SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
             dispatcher?.SetLobbyPublic(true);
         }
-        catch
+        catch (Exception ex)
         {
-            /* Steam may be unavailable */
+            ModLog.Debug(Feature, $"KeepLobbyOpen failed — {ex.Message}");
         }
     }
 }

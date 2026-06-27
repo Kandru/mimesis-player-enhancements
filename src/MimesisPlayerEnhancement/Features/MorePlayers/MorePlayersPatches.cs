@@ -135,18 +135,17 @@ public static class MorePlayersPatches
     /// <summary>Re-applies player-cap limits to live networking state after config changes.</summary>
     public static void RefreshFromConfig()
     {
-        if (!ModConfig.EnableMorePlayers.Value)
-            return;
+        int cap = ModConfig.EnableMorePlayers.Value ? MaxClientConnections : 4;
 
         try
         {
             var socket = GameNetworkApi.GetServerSocket();
             if (socket != null)
             {
-                GameNetworkApi.SetMaximumClients(socket, MaxClientConnections);
+                GameNetworkApi.SetMaximumClients(socket, cap);
                 ModLog.Debug(
                     Feature,
-                    $"Server socket max clients refreshed to {MaxClientConnections} (session cap {MaxPlayers}).");
+                    $"Server socket max clients refreshed to {cap} (session cap {(ModConfig.EnableMorePlayers.Value ? MaxPlayers : 4)}).");
             }
         }
         catch (Exception ex)
@@ -178,10 +177,21 @@ public static class MorePlayersPatches
             if (room == null)
                 continue;
 
-            var maxPlayersField = room.GetType().BaseType?.GetField("_maxPlayers", BindingFlags.NonPublic | BindingFlags.Instance);
-            maxPlayersField?.SetValue(room, MaxPlayers);
-            if (logRefresh)
-                ModLog.Debug(Feature, $"Room {room.GetType().Name} max players refreshed to {MaxPlayers}.");
+            var roomType = room.GetType();
+            while (roomType != null)
+            {
+                var maxPlayersField = roomType.GetField("_maxPlayers", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (maxPlayersField != null)
+                {
+                    int cap = ModConfig.EnableMorePlayers.Value ? MaxPlayers : VanillaMaxPlayers;
+                    maxPlayersField.SetValue(room, cap);
+                    if (logRefresh)
+                        ModLog.Debug(Feature, $"Room {room.GetType().Name} max players refreshed to {cap}.");
+                    break;
+                }
+
+                roomType = roomType.BaseType;
+            }
         }
     }
 
@@ -404,6 +414,9 @@ public static class MorePlayersPatches
                 if (isFromEnterCheck)
                 {
                     __result = 0;
+                    ModLog.Debug(
+                        Feature,
+                        $"GetMemberCount returning 0 for enter check in {__instance.GetType().Name}");
                     return false;
                 }
 
@@ -434,7 +447,7 @@ public static class MorePlayersPatches
                 return Array.Empty<MethodBase>();
 
             var methods = new List<MethodBase>();
-            foreach (var typeName in new[] { "VWaitingRoom", "IVroom" })
+            foreach (var typeName in new[] { "VWaitingRoom", "MaintenanceRoom", "IVroom" })
             {
                 var method = assembly.GetType(typeName)?.GetMethod("CanEnterChannel", InstanceMethodFlags);
                 if (method != null && !methods.Contains(method))
@@ -491,18 +504,18 @@ public static class MorePlayersPatches
                         return false;
                     }
                 }
-                else if (MaxPlayers <= 0)
+                else
                 {
-                    __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
-                    ModLog.Info(
+                    ModLog.Warn(
                         Feature,
-                        $"Join denied — session cap is {MaxPlayers} in {__instance.GetType().Name}, uid={playerUID}.");
+                        $"Join denied — player dictionary unavailable in {__instance.GetType().Name}, uid={playerUID}.");
+                    __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
                     return false;
                 }
 
                 __result = Enum.Parse(msgErrorCodeType, "Success");
                 int totalAfterJoin = PlayersInRoom(vPlayerDict) + 1;
-                ModLog.Info(
+                ModLog.Debug(
                     Feature,
                     $"Join allowed — uid={playerUID} in {__instance.GetType().Name} ({totalAfterJoin}/{MaxPlayers} players).");
                 return false;

@@ -33,11 +33,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 if (isLocal)
                     return;
 
-                int before = VoiceEventStats.GetEventCount(__instance);
-                SpeechEventPoolManager.CacheEventsFromArchive(__instance);
+                int cached = SpeechEventPoolManager.CacheEventsFromArchive(__instance);
                 ModLog.Info(
                     Feature,
-                    $"Player disconnecting — {VoiceEventStats.DescribePlayer(__instance)} — cached {before} voice events");
+                    $"Player disconnecting — {VoiceEventStats.DescribePlayer(__instance)} — cached {cached} voice events");
             }
             catch (Exception ex)
             {

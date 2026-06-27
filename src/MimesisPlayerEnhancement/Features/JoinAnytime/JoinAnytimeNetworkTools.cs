@@ -14,6 +14,9 @@ internal static class JoinAnytimeNetworkTools
 
     private static void SendOnPlayingState(long uid, Action<IMsg> send)
     {
+        if (!LateJoinManager.TryMarkPlayingStateSent(uid))
+            return;
+
         Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
         if (pdata?.main is not GamePlayScene gps)
             return;
@@ -21,13 +24,13 @@ internal static class JoinAnytimeNetworkTools
         IVroom? dungeonRoom = JoinAnytimeRoomTools.GetActiveDungeonRoom();
         if (dungeonRoom == null)
         {
-            LateJoinManager.Log("SendOnPlayingState failed: no active DungeonRoom.");
+            ModLog.Warn("JoinAnytime", $"SendOnPlayingState failed — no active DungeonRoom for uid={uid}");
             return;
         }
 
-        LateJoinManager.Log(
-            $"Sending in-game state to uid={uid}: dungeon={gps.DungeonMasterID}, " +
-            $"seed={gps.RandDungeonSeed}, roomUID={dungeonRoom.RoomID}");
+        ModLog.Info(
+            "JoinAnytime",
+            $"Sending in-game state to uid={uid} — dungeon={gps.DungeonMasterID}, seed={gps.RandDungeonSeed}, roomUID={dungeonRoom.RoomID}");
 
         send(new MoveToDungeonSig
         {

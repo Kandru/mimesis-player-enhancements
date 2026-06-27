@@ -153,7 +153,6 @@ internal static class StatisticsJson
         sb.Append(",\"revives\":").Append(c.Revives);
         sb.Append(",\"kills\":").Append(c.Kills);
         sb.Append(",\"cyclesCompleted\":").Append(c.CyclesCompleted);
-        sb.Append(",\"stagesCompleted\":").Append(c.StagesCompleted);
         sb.Append(",\"totalConnectedSeconds\":").Append(c.TotalConnectedSeconds);
     }
 
@@ -171,7 +170,6 @@ internal static class StatisticsJson
             Revives = obj.GetLong("revives"),
             Kills = obj.GetLong("kills"),
             CyclesCompleted = obj.GetInt("cyclesCompleted"),
-            StagesCompleted = obj.GetInt("stagesCompleted"),
             TotalConnectedSeconds = obj.GetLong("totalConnectedSeconds"),
         };
     }
@@ -233,11 +231,6 @@ internal static class StatisticsJson
     {
         if (!first) sb.Append(',');
         sb.Append('"').Append(key).Append("\":").Append(value);
-    }
-
-    private static void AppendLong(StringBuilder sb, string key, long value)
-    {
-        sb.Append(",\"").Append(key).Append("\":").Append(value);
     }
 
     private static void AppendULong(StringBuilder sb, string key, ulong value, bool first = false)

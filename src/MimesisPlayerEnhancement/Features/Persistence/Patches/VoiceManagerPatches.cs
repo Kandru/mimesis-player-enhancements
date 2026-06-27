@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
     /// Patches VoiceManager.GetRandomOtherSpeechEventArchive to fall back
     /// to the local archive when no other archives have events.
     /// This ensures hallucination voices work even when playing solo
-    /// with FALLBACK events in the local archive.
+    /// with warmed-up events in the local archive.
     /// </summary>
     [HarmonyPatch(typeof(VoiceManager), "GetRandomOtherSpeechEventArchive")]
     public static class VoiceManagerHallucinationPatch

@@ -24,8 +24,14 @@ public static class MoreVoicesPatches
 
     public static void Apply(HarmonyLib.Harmony harmony)
     {
-        harmony.CreateClassProcessor(typeof(MoreVoicesPatches)).Patch();
-        ModLog.Info(Feature, "Patches applied.");
+        if (MaxEventsField == null || MaxDeathMatchEventsField == null || MaxOutDoorEventsField == null)
+            ModLog.Warn(Feature, "One or more SpeechEventArchive limit fields not found — voice cap patches may not apply");
+
+        var results = harmony.CreateClassProcessor(typeof(MoreVoicesPatches)).Patch();
+        if (results == null || results.Count == 0)
+            ModLog.Warn(Feature, "SpeechEventArchive.OnStartClient patch not applied");
+        else
+            ModLog.Info(Feature, "Patches applied.");
     }
 
     /// <summary>Updates voice limits on all live archives after config changes.</summary>
@@ -59,26 +65,31 @@ public static class MoreVoicesPatches
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
     public static class SpeechEventArchiveLimitsPatch
     {
-        [HarmonyPrefix]
-        public static void Prefix(SpeechEventArchive __instance)
-        {
-            if (!ModConfig.EnableMoreVoices.Value || __instance == null)
-                return;
-
-            ApplyLimitsToArchive(__instance, ModConfig.MaxVoiceEvents.Value);
-        }
-
         [HarmonyPostfix]
         public static void Postfix(SpeechEventArchive __instance)
         {
             if (!ModConfig.EnableMoreVoices.Value || __instance == null)
                 return;
 
-            ModLog.Debug(
-                Feature,
-                $"Voice archive started — maxCap={ModConfig.MaxVoiceEvents.Value}, " +
-                $"maxEvents={GetFieldValue(__instance, MaxEventsField)}, " +
-                $"{VoiceEventStats.DescribePlayerVerbose(__instance)}");
+            try
+            {
+                if (ApplyLimitsToArchive(__instance, ModConfig.MaxVoiceEvents.Value))
+                {
+                    ModLog.Info(
+                        Feature,
+                        $"Voice archive started — maxCap={ModConfig.MaxVoiceEvents.Value}, " +
+                        $"{VoiceEventStats.DescribePlayer(__instance)}");
+                }
+
+                ModLog.Debug(
+                    Feature,
+                    $"Voice archive detail — maxEvents={GetFieldValue(__instance, MaxEventsField)}, " +
+                    $"{VoiceEventStats.DescribePlayerVerbose(__instance)}");
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Voice archive postfix failed: {ex.Message}");
+            }
         }
     }
 

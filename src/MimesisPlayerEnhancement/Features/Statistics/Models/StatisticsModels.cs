@@ -15,7 +15,6 @@ public sealed class StatCounters
     public long Revives;
     public long Kills;
     public int CyclesCompleted;
-    public int StagesCompleted;
     public long TotalConnectedSeconds;
 
     public void Add(StatCounters other)
@@ -31,7 +30,6 @@ public sealed class StatCounters
         Revives += other.Revives;
         Kills += other.Kills;
         CyclesCompleted += other.CyclesCompleted;
-        StagesCompleted += other.StagesCompleted;
         TotalConnectedSeconds += other.TotalConnectedSeconds;
     }
 
@@ -47,7 +45,6 @@ public sealed class StatCounters
         Revives = Revives,
         Kills = Kills,
         CyclesCompleted = CyclesCompleted,
-        StagesCompleted = StagesCompleted,
         TotalConnectedSeconds = TotalConnectedSeconds,
     };
 }

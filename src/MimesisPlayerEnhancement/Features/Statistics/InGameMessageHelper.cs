@@ -58,11 +58,17 @@ public static class InGameMessageHelper
         if (screenTextType == null) return;
 
         var findMethod = typeof(UnityEngine.Object).GetMethod(
-            "FindObjectOfType",
+            "FindFirstObjectByType",
             BindingFlags.Public | BindingFlags.Static,
             null,
             new[] { typeof(System.Type) },
-            null);
+            null)
+            ?? typeof(UnityEngine.Object).GetMethod(
+                "FindObjectOfType",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                new[] { typeof(System.Type) },
+                null);
         if (findMethod == null) return;
 
         object? instance = findMethod.Invoke(null, new object[] { screenTextType });

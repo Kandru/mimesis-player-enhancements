@@ -175,7 +175,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 var counts = SpeechEventPoolManager.GetCounts();
                 ModLog.Debug(
                     Feature,
-                    $"Archive detail — slot={slotId} time={currentTime:F1} poolState={counts.pending}P/{counts.injected}I/{counts.fallback}F " +
+                    $"Archive detail — slot={slotId} time={currentTime:F1} poolState={counts.pending}P/{counts.injected}I/0F " +
                     $"disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount}");
             }
             catch (Exception ex)
@@ -184,39 +184,5 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
             }
         }
 
-        public static int InjectEventsIntoArchive(SpeechEventArchive archive, List<SpeechEvent> events)
-        {
-            if (archive == null || events == null || events.Count == 0)
-                return 0;
-
-            var eventsList = archive.events;
-            if (eventsList == null)
-                return 0;
-
-            float currentTime = SpeechEventPoolManager.GetCurrentSessionTime();
-            var seenIds = new HashSet<long>();
-            for (int i = 0; i < eventsList.Count; i++)
-                seenIds.Add(eventsList[i].Id);
-
-            int added = 0;
-            foreach (SpeechEvent ev in events)
-            {
-                if (ev == null || seenIds.Contains(ev.Id))
-                    continue;
-
-                SpeechEventPoolManager.FixEventTiming(ev, currentTime);
-                eventsList.Add(ev);
-                seenIds.Add(ev.Id);
-                added++;
-            }
-
-            return added;
-        }
-
-        public static void ResetInjectedSlot()
-        {
-            _poolLoadedForSlot = -999;
-            SpeechEventPoolManager.Reset();
-        }
     }
 }

@@ -12,7 +12,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     /// Manages a 3-state pool of SpeechEvents loaded from disk.
     /// PENDING  -> loaded, waiting for a matching SpeechEventArchive
     /// INJECTED -> matched and added to the correct player's archive
-    /// FALLBACK -> manually forced into host's local archive via debug tool
     ///
     /// Player mapping saved as SteamID -> old DissonanceID.
     /// On load, when a new archive's SteamID matches a saved SteamID,
@@ -20,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     /// </summary>
     public static class SpeechEventPoolManager
     {
-        public enum EventState { Pending, Injected, Fallback }
+        public enum EventState { Pending, Injected }
 
         private static readonly Dictionary<long, (SpeechEvent ev, EventState state, string originalPlayerName)> _pool
             = new Dictionary<long, (SpeechEvent, EventState, string)>();
@@ -36,7 +35,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static int _loadedSlotId = -1;
 
-        // Reference to the local (host) archive for fallback injection
+        // Reference to the local (host) archive
         private static SpeechEventArchive? _localArchive;
 
         // Deferred PlayerName updates: events injected before PlayerId was available
@@ -287,28 +286,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return 0;
         }
 
-        /// <summary>
-        /// Force all remaining PENDING events into FALLBACK state.
-        /// Returns the list of events to inject into the local archive.
-        /// </summary>
-        public static List<SpeechEvent> ForceFallbackToLocal()
-        {
-            var fallback = new List<SpeechEvent>();
-
-            foreach (var id in _pool.Keys.ToList())
-            {
-                var entry = _pool[id];
-                if (entry.state != EventState.Pending) continue;
-
-                _pool[id] = (entry.ev, EventState.Fallback, entry.originalPlayerName);
-                fallback.Add(entry.ev);
-            }
-
-            if (fallback.Count > 0)
-                ModLog.Debug("Persistence", $"Forced {fallback.Count} events to FALLBACK");
-
-            return fallback;
-        }
 
         /// <summary>
         /// Register an archive for deferred injection. Called when OnStartClient fires
@@ -327,7 +304,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         }
 
         /// <summary>
-        /// Process all deferred operations. Called from MimesisPersistenceMod.OnUpdate() every frame.
+        /// Process all deferred operations. Called from Mod.OnUpdate() every frame.
         /// 1. Deferred injections: archives waiting for PlayerId/PlayerUID to sync
         /// 2. Deferred name updates: events injected before PlayerId was set
         /// </summary>
@@ -462,7 +439,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         }
 
         /// <summary>
-        /// Get the local archive reference (for fallback injection).
+        /// Get the local archive reference.
         /// </summary>
         public static SpeechEventArchive? GetLocalArchive()
         {
@@ -482,17 +459,16 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         /// </summary>
         public static (int pending, int injected, int fallback) GetCounts()
         {
-            int pending = 0, injected = 0, fallback = 0;
+            int pending = 0, injected = 0;
             foreach (var entry in _pool.Values)
             {
                 switch (entry.state)
                 {
                     case EventState.Pending: pending++; break;
                     case EventState.Injected: injected++; break;
-                    case EventState.Fallback: fallback++; break;
                 }
             }
-            return (pending, injected, fallback);
+            return (pending, injected, 0);
         }
 
         /// <summary>
@@ -568,9 +544,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         /// (player disconnecting). Also caches the player's SteamID -> DissonanceID mapping.
         /// Called from SpeechEventArchiveDisconnectPatches.Prefix (before OnStopClient).
         /// </summary>
-        public static void CacheEventsFromArchive(SpeechEventArchive archive)
+        public static int CacheEventsFromArchive(SpeechEventArchive archive)
         {
-            if (archive == null) return;
+            if (archive == null) return 0;
 
             try
             {
@@ -587,18 +563,18 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 catch { /* Player may already be partially destroyed */ }
 
                 // Don't cache the host's own archive (host doesn't "disconnect")
-                if (isLocal) return;
+                if (isLocal) return 0;
 
                 // Extract events from the SyncList via reflection
                 var eventsField = typeof(SpeechEventArchive).GetField("events", BindingFlags.Public | BindingFlags.Instance);
-                if (eventsField == null) return;
+                if (eventsField == null) return 0;
 
                 var syncList = eventsField.GetValue(archive);
-                if (syncList == null) return;
+                if (syncList == null) return 0;
 
                 var countProp = syncList.GetType().GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
                 var indexer = syncList.GetType().GetProperty("Item", new[] { typeof(int) });
-                if (countProp == null || indexer == null) return;
+                if (countProp == null || indexer == null) return 0;
 
                 int count = (int)countProp.GetValue(syncList);
                 int cached = 0;
@@ -622,10 +598,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
 
                 ModLog.Debug("Persistence", $"Disconnect cache — {VoiceEventStats.DescribePlayerVerbose(archive)} — cached {cached} events (totalCache={_disconnectedCache.Count})");
+                return cached;
             }
             catch (Exception ex)
             {
                 ModLog.Warn("Persistence", $"CacheEventsFromArchive error: {ex.Message}");
+                return 0;
             }
         }
 
@@ -745,16 +723,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             try
             {
-                var archives = UnityEngine.Object.FindObjectsByType<SpeechEventArchive>(FindObjectsSortMode.None);
-                if (archives == null || archives.Length == 0)
-                {
-                    ModLog.Warn("Persistence", "SavePlayerMapping: no SpeechEventArchive found!");
-                    return;
-                }
+                var archives = UnityEngine.Object.FindObjectsByType<SpeechEventArchive>(FindObjectsSortMode.None) ?? Array.Empty<SpeechEventArchive>();
 
-                ModLog.Debug("Persistence", $"SavePlayerMapping: found {archives.Length} archives");
+                ModLog.Debug("Persistence", $"SavePlayerMapping: found {archives.Length} live archives");
 
-                // mapping: SteamID -> DissonanceID (current)
                 var mapping = new Dictionary<ulong, string>();
                 foreach (var archive in archives)
                 {

@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics;
 
 public static class StatisticsStore
 {
+    private const string Feature = "Statistics";
     private const string ModFolder = "MimesisPlayerEnhancement";
     private const string SlotPrefix = "Slot";
     private const string StatisticsFolder = "statistics";
@@ -63,7 +64,7 @@ public static class StatisticsStore
             try { File.Copy(filePath, bakPath, true); }
             catch (Exception ex)
             {
-                ModLog.Warn("Statistics", $"Backup failed for {Path.GetFileName(filePath)}: {ex.Message}");
+                ModLog.Warn(Feature, $"Backup failed for {Path.GetFileName(filePath)}: {ex.Message}");
             }
         }
         if (File.Exists(filePath))
@@ -82,7 +83,7 @@ public static class StatisticsStore
             }
             catch (Exception ex)
             {
-                ModLog.Warn("Statistics", $"Read failed ({Path.GetFileName(filePath)}): {ex.Message}");
+                ModLog.Warn(Feature, $"Read failed ({Path.GetFileName(filePath)}): {ex.Message}");
             }
         }
 
@@ -94,13 +95,13 @@ public static class StatisticsStore
                 string text = File.ReadAllText(bakPath);
                 if (!string.IsNullOrEmpty(text))
                 {
-                    ModLog.Warn("Statistics", $"Recovered from backup: {Path.GetFileName(bakPath)}");
+                    ModLog.Warn(Feature, $"Recovered from backup: {Path.GetFileName(bakPath)}");
                     return text;
                 }
             }
             catch (Exception ex)
             {
-                ModLog.Error("Statistics", $"Backup read failed: {ex.Message}");
+                ModLog.Error(Feature, $"Backup read failed: {ex.Message}");
             }
         }
 
@@ -119,7 +120,10 @@ public static class StatisticsStore
 
         var doc = StatisticsJson.DeserializePlayer(json);
         if (doc == null)
+        {
+            ModLog.Warn(Feature, $"Corrupt player statistics — replacing with fresh document: {Path.GetFileName(path)}");
             return NewPlayerDocument(steamId);
+        }
 
         doc.SteamId = steamId;
         doc.RecentSessions ??= new List<SessionStats>();
@@ -148,18 +152,6 @@ public static class StatisticsStore
         SafeWriteText(path, StatisticsJson.SerializeLeaderboard(leaderboard));
     }
 
-    public static LeaderboardDocument LoadLeaderboard(int slotId)
-    {
-        string? path = GetLeaderboardFilePath(slotId);
-        if (string.IsNullOrEmpty(path))
-            return new LeaderboardDocument { SaveSlotId = slotId };
-
-        string? json = SafeReadText(path);
-        if (string.IsNullOrEmpty(json))
-            return new LeaderboardDocument { SaveSlotId = slotId };
-
-        return StatisticsJson.DeserializeLeaderboard(json) ?? new LeaderboardDocument { SaveSlotId = slotId };
-    }
 
     public static void LoadAllPlayersForSlot(int slotId, Dictionary<ulong, PlayerStatisticsDocument> cache)
     {
@@ -184,11 +176,11 @@ public static class StatisticsStore
         try
         {
             Directory.Delete(root, true);
-            ModLog.Info("Statistics", $"Deleted statistics data for slot {slotId}.");
+            ModLog.Info(Feature, $"Deleted statistics data for slot {slotId}.");
         }
         catch (Exception ex)
         {
-            ModLog.Warn("Statistics", $"DeleteStatisticsData: {ex.Message}");
+            ModLog.Warn(Feature, $"DeleteStatisticsData: {ex.Message}");
         }
     }
 

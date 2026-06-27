@@ -6,9 +6,9 @@ using System.Reflection;
 using UnityEngine;
 using ReluProtocol;
 using ReluReplay.Data;
+using ReluReplay;
 using ReluReplay.Serializer;
 using Mimic.Voice.SpeechSystem;
-using ReluReplay;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {
@@ -21,8 +21,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         private const string MimesisDataFolder = "MimesisData";
         private const string SlotPrefix = "Slot";
         private const string SpeechEventsFile = "speech_events.bin";
-        private const string ReplayPlayFile = "replay_play.bin";
-        private const string ReplayVoiceFile = "replay_voice.bin";
         private const string MetadataFile = "metadata.json";
         private const int MetadataVersion = 2; // v2: includes CompressedAudioData
         private const string BackupSuffix = ".bak";
@@ -69,6 +67,23 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         private static void SafeWriteAllText(string filePath, string text)
         {
             SafeWriteAllBytes(filePath, System.Text.Encoding.UTF8.GetBytes(text));
+        }
+
+        private static void SafeDeleteFile(string filePath)
+        {
+            foreach (string path in new[] { filePath, filePath + BackupSuffix, filePath + TempSuffix })
+            {
+                if (!File.Exists(path)) continue;
+                try
+                {
+                    File.Delete(path);
+                    ModLog.Debug("Persistence", $"Deleted stale file: {Path.GetFileName(path)}");
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn("Persistence", $"Failed to delete {Path.GetFileName(path)}: {ex.Message}");
+                }
+            }
         }
 
         /// <summary>
@@ -288,22 +303,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return list;
         }
 
-        private static object? GetReplayData()
-        {
-            try
-            {
-                object? replayManager = GetHubMember("replayManager");
-                if (replayManager == null) return null;
-                var recorderField = typeof(ReplayManager).GetField("_recorder", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (recorderField == null) return null;
-                object recorder = recorderField.GetValue(replayManager);
-                if (recorder == null) return null;
-                var replayDataField = recorder.GetType().GetField("_replayData", BindingFlags.NonPublic | BindingFlags.Instance);
-                return replayDataField?.GetValue(recorder);
-            }
-            catch { return null; }
-        }
-
         public static int GetCurrentSaveSlotId()
         {
             try
@@ -332,27 +331,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return null;
         }
 
-        private static List<MsgWithTime>? GetPlayDataFromReplayData(object? replayData)
-        {
-            if (replayData == null) return null;
-            try
-            {
-                var field = replayData.GetType().GetField("_playData", BindingFlags.NonPublic | BindingFlags.Instance);
-                return field?.GetValue(replayData) as List<MsgWithTime>;
-            }
-            catch { return null; }
-        }
-
-        private static List<SndWithTime>? GetVoiceDataFromReplayData(object? replayData)
-        {
-            if (replayData == null) return null;
-            try
-            {
-                var field = replayData.GetType().GetField("_voiceData", BindingFlags.NonPublic | BindingFlags.Instance);
-                return field?.GetValue(replayData) as List<SndWithTime>;
-            }
-            catch { return null; }
-        }
 
         public static void SaveMimesisData(int slotId)
         {
@@ -372,14 +350,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 Directory.CreateDirectory(slotPath);
 
                 List<SpeechEvent> speechEvents = CollectAllSpeechEvents();
+                string speechPath = Path.Combine(slotPath, SpeechEventsFile);
+                int serializedCount = 0;
                 if (speechEvents != null && speechEvents.Count > 0)
                 {
-                    // Serialize events with audio data (v2 format)
-                    // Format: [validCount:int32] then for each: [metaLen:int32][metaData:bytes][audioLen:int32][audioData:bytes]
                     using (var ms = new MemoryStream())
                     using (var bw = new BinaryWriter(ms))
                     {
-                        // First pass: serialize and count valid events
                         var serializedEvents = new List<(byte[] meta, byte[] audio)>();
                         foreach (var ev in speechEvents)
                         {
@@ -390,11 +367,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                                 serializedEvents.Add((metaData, audioData));
                             }
                         }
-                        
-                        // Write count of valid events (fixes the count mismatch bug)
-                        bw.Write(serializedEvents.Count);
-                        
-                        // Write each event: metadata + audio
+
+                        serializedCount = serializedEvents.Count;
+                        bw.Write(serializedCount);
+
                         long totalAudioBytes = 0;
                         foreach (var (metaData, audioData) in serializedEvents)
                         {
@@ -404,37 +380,23 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                             bw.Write(audioData);
                             totalAudioBytes += audioData.Length;
                         }
-                        
-                        SafeWriteAllBytes(Path.Combine(slotPath, SpeechEventsFile), ms.ToArray());
-                        ModLog.Debug("Persistence", $"Serialized {serializedEvents.Count} SpeechEvents, audio={totalAudioBytes / 1024}KB");
+
+                        SafeWriteAllBytes(speechPath, ms.ToArray());
+                        ModLog.Debug("Persistence", $"Serialized {serializedCount} SpeechEvents, audio={totalAudioBytes / 1024}KB");
                     }
                 }
-
-                object? replayData = GetReplayData();
-                List<MsgWithTime>? playData = GetPlayDataFromReplayData(replayData);
-                if (playData != null && playData.Count > 0)
+                else
                 {
-                    string playPath = Path.Combine(slotPath, ReplayPlayFile);
-                    ReplaySerializer.SerializeMsgToFile(in playData, in playPath);
-                }
-
-                List<SndWithTime>? voiceData = GetVoiceDataFromReplayData(replayData);
-                if (voiceData != null && voiceData.Count > 0)
-                {
-                    string voicePath = Path.Combine(slotPath, ReplayVoiceFile);
-                    ReplaySerializer.SerializeSndToFile(in voiceData, in voicePath);
+                    SafeDeleteFile(speechPath);
                 }
 
                 // Save player mapping (SteamID -> DissonanceID) for cross-session matching
                 SpeechEventPoolManager.SavePlayerMapping(slotId);
 
-                int speechCount = speechEvents?.Count ?? 0;
-                int playCount = playData?.Count ?? 0;
-                int voiceCount = voiceData?.Count ?? 0;
                 SafeWriteAllText(Path.Combine(slotPath, MetadataFile),
-                    $"{{\"version\":{MetadataVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"speechCount\":{speechCount},\"playCount\":{playCount},\"voiceCount\":{voiceCount}}}");
+                    $"{{\"version\":{MetadataVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"speechCount\":{serializedCount}}}");
 
-                ModLog.Info("Persistence", $"Saved slot {slotId}. Speech={speechCount}, Play={playCount}, Voice={voiceCount}");
+                ModLog.Info("Persistence", $"Saved slot {slotId} — speechEvents={serializedCount}");
             }
             catch (Exception ex)
             {
@@ -573,46 +535,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return null;
         }
 
-        public static List<MsgWithTime>? LoadReplayPlayData(int slotId)
-        {
-            string? slotPath = GetMimesisSlotPath(slotId);
-            if (string.IsNullOrEmpty(slotPath)) return null;
-            string filePath = Path.Combine(slotPath, ReplayPlayFile);
-            if (!File.Exists(filePath)) return null;
-            try
-            {
-                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    var task = ReplaySerializer.DeserializeMsgFromFileAsync(fs);
-                    task.GetAwaiter().GetResult();
-                    return task.GetAwaiter().GetResult();
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn("Persistence", $"LoadReplayPlayData: {ex.Message}");
-                return null;
-            }
-        }
-
-        public static List<SndWithTime>? LoadReplayVoiceData(int slotId)
-        {
-            string? slotPath = GetMimesisSlotPath(slotId);
-            if (string.IsNullOrEmpty(slotPath)) return null;
-            string filePath = Path.Combine(slotPath, ReplayVoiceFile);
-            if (!File.Exists(filePath)) return null;
-            try
-            {
-                var task = ReplaySerializer.DeserializeSndFromFileAsync(filePath);
-                task.GetAwaiter().GetResult();
-                return task.GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn("Persistence", $"LoadReplayVoiceData: {ex.Message}");
-                return null;
-            }
-        }
 
         public static bool HasMimesisData(int slotId)
         {
@@ -620,9 +542,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             if (string.IsNullOrEmpty(slotPath)) return false;
             // Check both main files and their backups
             return File.Exists(Path.Combine(slotPath, SpeechEventsFile)) ||
-                   File.Exists(Path.Combine(slotPath, SpeechEventsFile + BackupSuffix)) ||
-                   File.Exists(Path.Combine(slotPath, ReplayPlayFile)) ||
-                   File.Exists(Path.Combine(slotPath, ReplayVoiceFile));
+                   File.Exists(Path.Combine(slotPath, SpeechEventsFile + BackupSuffix));
         }
 
         public static void DeleteMimesisData(int slotId)
