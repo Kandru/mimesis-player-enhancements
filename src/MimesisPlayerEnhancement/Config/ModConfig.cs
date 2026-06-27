@@ -34,6 +34,8 @@ public static class ModConfig
     public static MelonPreferences_Entry<int> SessionReconnectGraceMinutes { get; private set; } = null!;
     public static MelonPreferences_Entry<bool> ShowStatisticsToasts { get; private set; } = null!;
 
+    public static MelonPreferences_Entry<bool> EnableJoinAnytime { get; private set; } = null!;
+
     public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
     public static void Initialize(MelonLogger.Instance logger)
@@ -90,6 +92,12 @@ public static class ModConfig
             "Show Statistics Toasts",
             "Show join/leave/cycle messages in the bottom-left player info UI.");
 
+        EnableJoinAnytime = Category.CreateEntry(
+            "EnableJoinAnytime",
+            true,
+            "Enable Join Anytime",
+            "Allow players to join a session after it has already started.");
+
         EnableDebugLogging = Category.CreateEntry(
             "EnableDebugLogging",
             false,
@@ -144,6 +152,7 @@ public static class ModConfig
 
         EnableStatistics.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         ShowStatisticsToasts.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        EnableJoinAnytime.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
         IsInitialized = true;

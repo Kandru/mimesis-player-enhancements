@@ -20,6 +20,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile;build</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Collections.Immutable">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

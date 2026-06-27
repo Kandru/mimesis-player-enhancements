@@ -7,10 +7,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime;
 internal static class JoinAnytimeNetworkTools
 {
     internal static void SendOnPlayingStateToClient(VPlayer player) =>
-        SendOnPlayingState(player.UID, player.SendToMe);
+        SendOnPlayingState(player.UID, msg => player.SendToMe(msg));
 
     internal static void SendOnPlayingStateToClient(SessionContext context) =>
-        SendOnPlayingState(context.GetPlayerUID(), context.Send);
+        SendOnPlayingState(context.GetPlayerUID(), msg => context.Send(msg));
 
     private static void SendOnPlayingState(long uid, Action<IMsg> send)
     {

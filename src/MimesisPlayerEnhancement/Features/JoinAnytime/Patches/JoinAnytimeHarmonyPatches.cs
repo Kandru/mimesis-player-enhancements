@@ -4,6 +4,7 @@ using HarmonyLib;
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using ReluProtocol;
 using ReluProtocol.C2S;
+using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches;
 

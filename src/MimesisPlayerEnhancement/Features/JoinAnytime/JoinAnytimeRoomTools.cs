@@ -36,7 +36,10 @@ internal static class JoinAnytimeRoomTools
         if (dungeonInfo == null)
             return string.Empty;
 
-        MapMasterInfo? mapInfo = dataman.ExcelDataManager.GetMapInfo(dungeonInfo.MapID);
+        if (dungeonInfo.MapIDs.IsDefaultOrEmpty)
+            return string.Empty;
+
+        MapMasterInfo? mapInfo = dataman.ExcelDataManager.GetMapInfo(dungeonInfo.MapIDs[0]);
         return mapInfo?.SceneName ?? string.Empty;
     }
 

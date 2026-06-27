@@ -22,6 +22,7 @@ public sealed class Mod : MelonMod
         Features.Persistence.PersistencePatches.Apply(_harmony);
         Features.Statistics.StatisticsPatches.Apply(_harmony);
         Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
+        Features.JoinAnytime.JoinAnytimePatches.Apply(_harmony);
 
         SyncFromConfig();
         LogStartupSummary();
@@ -73,6 +74,7 @@ public sealed class Mod : MelonMod
             $"MoreVoices={ModConfig.EnableMoreVoices.Value} (max {ModConfig.MaxVoiceEvents.Value}), " +
             $"Persistence={ModConfig.EnablePersistence.Value}, " +
             $"Statistics={ModConfig.EnableStatistics.Value}, " +
+            $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 
@@ -87,6 +89,7 @@ public sealed class Mod : MelonMod
             (ModConfig.EnableMoreVoices.Value ? $" (max {ModConfig.MaxVoiceEvents.Value})" : "") +
             $", Persistence={ModConfig.EnablePersistence.Value}" +
             $", Statistics={ModConfig.EnableStatistics.Value}, " +
+            $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 }
