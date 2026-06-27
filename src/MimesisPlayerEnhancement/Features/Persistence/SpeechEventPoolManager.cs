@@ -621,8 +621,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ModLog.Debug("Persistence", $"Cached player mapping: SteamID {steamId} -> '{playerId}'");
                 }
 
-                ModLog.Debug("Persistence", $"Cached {cached} events from disconnected player " +
-                                $"'{playerId}' (UID={playerUID}). Total cached: {_disconnectedCache.Count}");
+                ModLog.Debug("Persistence", $"Disconnect cache — {VoiceEventStats.DescribePlayerVerbose(archive)} — cached {cached} events (totalCache={_disconnectedCache.Count})");
             }
             catch (Exception ex)
             {

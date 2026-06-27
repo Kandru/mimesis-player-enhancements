@@ -78,7 +78,7 @@ public static class MoreVoicesPatches
                 Feature,
                 $"Voice archive started — maxCap={ModConfig.MaxVoiceEvents.Value}, " +
                 $"maxEvents={GetFieldValue(__instance, MaxEventsField)}, " +
-                $"{VoiceEventStats.DescribePlayer(__instance)}");
+                $"{VoiceEventStats.DescribePlayerVerbose(__instance)}");
         }
     }
 
