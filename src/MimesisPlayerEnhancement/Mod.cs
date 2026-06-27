@@ -62,11 +62,10 @@ public sealed class Mod : MelonMod
         Features.MoreVoices.MoreVoicesPatches.RefreshFromConfig();
 
         int sessionCap = ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : 4;
-        int clientSlots = Math.Max(0, sessionCap - 1);
 
         ModLog.Debug(
             "Config",
-            $"Synced — MorePlayers={ModConfig.EnableMorePlayers.Value} (session {sessionCap}, {clientSlots} client slots), " +
+            $"Synced — MorePlayers={ModConfig.EnableMorePlayers.Value} (session cap {sessionCap}), " +
             $"MoreVoices={ModConfig.EnableMoreVoices.Value} (max {ModConfig.MaxVoiceEvents.Value}), " +
             $"Persistence={ModConfig.EnablePersistence.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
@@ -82,7 +81,7 @@ public sealed class Mod : MelonMod
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
 
         if (ModConfig.EnableMorePlayers.Value)
-            ModLog.Info("MorePlayers", $"Enabled — session player cap set to {ModConfig.MaxPlayers.Value} (including host).");
+            ModLog.Info("MorePlayers", $"Enabled — session player cap set to {ModConfig.MaxPlayers.Value}.");
 
         if (ModConfig.EnableMoreVoices.Value)
             ModLog.Info("MoreVoices", $"Enabled — per-player voice event cap set to {ModConfig.MaxVoiceEvents.Value}.");

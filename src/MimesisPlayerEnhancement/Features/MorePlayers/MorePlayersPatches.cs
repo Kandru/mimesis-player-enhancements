@@ -140,7 +140,7 @@ public static class MorePlayersPatches
                 GameNetworkApi.SetMaximumClients(socket, MaxClientConnections);
                 ModLog.Debug(
                     Feature,
-                    $"Server socket max clients refreshed to {MaxClientConnections} (session cap {MaxPlayers} including host).");
+                    $"Server socket max clients refreshed to {MaxClientConnections} (session cap {MaxPlayers}).");
             }
         }
         catch (Exception ex)
@@ -184,11 +184,10 @@ public static class MorePlayersPatches
 
     internal static int MaxPlayers => GetMaxPlayers();
 
-    /// <summary>Remote client slots; the host always occupies one player slot.</summary>
-    internal static int MaxClientConnections => Math.Max(0, MaxPlayers - 1);
+    internal static int MaxClientConnections => MaxPlayers;
 
-    private static int TotalPlayersInRoom(IDictionary? vPlayerDict) =>
-        1 + (vPlayerDict?.Count ?? 0);
+    private static int PlayersInRoom(IDictionary? vPlayerDict) =>
+        vPlayerDict?.Count ?? 0;
 
     private static CodeInstruction LoadMaxPlayers() =>
         new(OpCodes.Call, GetMaxPlayersMethod);
@@ -446,27 +445,26 @@ public static class MorePlayersPatches
                         }
                     }
 
-                    int connectedClients = vPlayerDict.Count;
-                    if (connectedClients >= MaxClientConnections)
+                    if (PlayersInRoom(vPlayerDict) >= MaxPlayers)
                     {
                         __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
                         ModLog.Info(
                             Feature,
-                            $"Join denied — session full ({TotalPlayersInRoom(vPlayerDict)}/{MaxPlayers} players) in {__instance.GetType().Name}, uid={playerUID}.");
+                            $"Join denied — session full ({PlayersInRoom(vPlayerDict)}/{MaxPlayers} players) in {__instance.GetType().Name}, uid={playerUID}.");
                         return false;
                     }
                 }
-                else if (MaxClientConnections == 0)
+                else if (MaxPlayers <= 0)
                 {
                     __result = Enum.Parse(msgErrorCodeType, "PlayerCountExceeded");
                     ModLog.Info(
                         Feature,
-                        $"Join denied — solo session (max {MaxPlayers} player) in {__instance.GetType().Name}, uid={playerUID}.");
+                        $"Join denied — session cap is {MaxPlayers} in {__instance.GetType().Name}, uid={playerUID}.");
                     return false;
                 }
 
                 __result = Enum.Parse(msgErrorCodeType, "Success");
-                int totalAfterJoin = TotalPlayersInRoom(vPlayerDict) + 1;
+                int totalAfterJoin = PlayersInRoom(vPlayerDict) + 1;
                 ModLog.Info(
                     Feature,
                     $"Join allowed — uid={playerUID} in {__instance.GetType().Name} ({totalAfterJoin}/{MaxPlayers} players).");
@@ -511,7 +509,7 @@ public static class MorePlayersPatches
                 UpdateRoomMaxPlayers(__instance);
                 ModLog.Info(
                     Feature,
-                    $"Enter room — {__originalMethod.Name} (session cap {MaxPlayers}, client slots {MaxClientConnections}).");
+                    $"Enter room — {__originalMethod.Name} (session cap {MaxPlayers}).");
             }
             catch (Exception ex)
             {
