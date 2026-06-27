@@ -20,6 +20,7 @@ public sealed class Mod : MelonMod
         // Apply compile-time patches first so Assembly-CSharp is loaded before MorePlayers resolves targets.
         Features.MoreVoices.MoreVoicesPatches.Apply(_harmony);
         Features.Persistence.PersistencePatches.Apply(_harmony);
+        Features.Statistics.StatisticsPatches.Apply(_harmony);
         Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
 
         SyncFromConfig();
@@ -42,6 +43,9 @@ public sealed class Mod : MelonMod
     {
         if (ModConfig.EnablePersistence.Value)
             Features.Persistence.SpeechEventPoolManager.ProcessDeferredUpdates();
+
+        if (ModConfig.EnableStatistics.Value)
+            Features.Statistics.StatisticsTracker.OnUpdate();
     }
 
     public override void OnDeinitializeMelon()
@@ -68,6 +72,7 @@ public sealed class Mod : MelonMod
             $"Synced — MorePlayers={ModConfig.EnableMorePlayers.Value} (session cap {sessionCap}), " +
             $"MoreVoices={ModConfig.EnableMoreVoices.Value} (max {ModConfig.MaxVoiceEvents.Value}), " +
             $"Persistence={ModConfig.EnablePersistence.Value}, " +
+            $"Statistics={ModConfig.EnableStatistics.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 
@@ -80,7 +85,8 @@ public sealed class Mod : MelonMod
             (ModConfig.EnableMorePlayers.Value ? $" (session cap {ModConfig.MaxPlayers.Value})" : "") +
             $", MoreVoices={ModConfig.EnableMoreVoices.Value}" +
             (ModConfig.EnableMoreVoices.Value ? $" (max {ModConfig.MaxVoiceEvents.Value})" : "") +
-            $", Persistence={ModConfig.EnablePersistence.Value}, " +
+            $", Persistence={ModConfig.EnablePersistence.Value}" +
+            $", Statistics={ModConfig.EnableStatistics.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 }

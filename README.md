@@ -7,6 +7,7 @@ A unified [MelonLoader](https://melonwiki.xyz/) mod for [MIMESIS](https://store.
 | [**More Players**](https://github.com/NeoMimicry/MorePlayers/tree/main) | Raises the 4-player multiplayer cap (default: 999) |
 | (**More Voices**)[https://github.com/DanEvenSegler/mimesis_more_voices_mod] | Raises per-player voice recording limits (default: 3000) |
 | (**Persistence**)[https://github.com/JoanRLopez/MimesisPersistence] | Saves mimic voice recordings across save/load |
+| **Statistics** | Per-player session and global stats per save slot with leaderboard |
 
 Tested against **MIMESIS 0.3.0** with **MelonLoader 0.7.3** and **MimicAPI 0.3.0**.
 
@@ -43,6 +44,9 @@ Edit the file while the game is **closed**, or use any MelonPreferences editor m
 | `EnableMoreVoices` | bool | `true` | Raise voice recording limits |
 | `MaxVoiceEvents` | int | `3000` | Max stored voice events per player |
 | `EnablePersistence` | bool | `true` | Persist mimic voices across saves |
+| `EnableStatistics` | bool | `true` | Track per-player session and global statistics |
+| `SessionReconnectGraceMinutes` | int | `5` | Reuse prior session if player reconnects within this window |
+| `ShowStatisticsToasts` | bool | `true` | Show join/leave/cycle messages in bottom-left player info UI |
 | `EnableDebugLogging` | bool | `false` | Verbose diagnostic lines in the MelonLoader console |
 
 Example:
@@ -54,6 +58,9 @@ MaxPlayers = 32
 EnableMoreVoices = true
 MaxVoiceEvents = 3000
 EnablePersistence = true
+EnableStatistics = true
+SessionReconnectGraceMinutes = 5
+ShowStatisticsToasts = true
 EnableDebugLogging = false
 ```
 
@@ -84,6 +91,16 @@ Example normal output:
 **More Voices** increases `SpeechEventArchive` capacity fields when each archive starts, so players can record far more mimic lines per session.
 
 **Persistence** writes voice data beside your save slots under `Save/{SteamID}/MimesisData/Slot{N}/`. On load, recordings are matched back to players via SteamID even if voice IDs change between sessions.
+
+**Statistics** (host-only) tracks native play-report metrics plus voice events, deaths, revives, kills, currency, and connected time. Data is stored per save slot under:
+
+```
+Save/{SteamID}/MimesisPlayerEnhancement/Slot{N}/statistics/
+  players/{steamId}.json
+  leaderboard.json
+```
+
+Each map cycle flushes stats to disk. Sessions span a player's connection window and are reused when they reconnect within `SessionReconnectGraceMinutes`. Join/leave and cycle-save messages use the same bottom-left UI as native player enter/leave notifications (`UIPrefab_PlayerEnterInfo`).
 
 ## Development setup
 
@@ -157,6 +174,7 @@ src/
       MorePlayers/                    # Player cap patches (0.3.0-compatible)
       MoreVoices/                     # Voice limit patches
       Persistence/                    # Save/load voice data
+      Statistics/                     # Player stats and leaderboard
 scripts/
   bootstrap-deps.sh                   # Download pinned MimicAPI
   build.sh                            # Local dev build

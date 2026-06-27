@@ -30,6 +30,10 @@ public static class ModConfig
 
     public static MelonPreferences_Entry<bool> EnablePersistence { get; private set; } = null!;
 
+    public static MelonPreferences_Entry<bool> EnableStatistics { get; private set; } = null!;
+    public static MelonPreferences_Entry<int> SessionReconnectGraceMinutes { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> ShowStatisticsToasts { get; private set; } = null!;
+
     public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
     public static void Initialize(MelonLogger.Instance logger)
@@ -67,6 +71,24 @@ public static class ModConfig
             true,
             "Enable Voice Persistence",
             "Save and restore mimic voice recordings across save/load.");
+
+        EnableStatistics = Category.CreateEntry(
+            "EnableStatistics",
+            true,
+            "Enable Player Statistics",
+            "Track per-session and global player statistics per save slot.");
+
+        SessionReconnectGraceMinutes = Category.CreateEntry(
+            "SessionReconnectGraceMinutes",
+            5,
+            "Session Reconnect Grace (minutes)",
+            "Reuse the previous session when a player reconnects within this many minutes.");
+
+        ShowStatisticsToasts = Category.CreateEntry(
+            "ShowStatisticsToasts",
+            true,
+            "Show Statistics Toasts",
+            "Show join/leave/cycle messages in the bottom-left player info UI.");
 
         EnableDebugLogging = Category.CreateEntry(
             "EnableDebugLogging",
@@ -107,6 +129,21 @@ public static class ModConfig
         EnableMorePlayers.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnableMoreVoices.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnablePersistence.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+
+        SessionReconnectGraceMinutes.OnEntryValueChanged.Subscribe((_, value) =>
+        {
+            if (value < 1)
+            {
+                logger.Warning("SessionReconnectGraceMinutes must be at least 1; resetting to 1.");
+                SessionReconnectGraceMinutes.Value = 1;
+                return;
+            }
+
+            NotifyChanged();
+        });
+
+        EnableStatistics.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        ShowStatisticsToasts.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
         IsInitialized = true;
