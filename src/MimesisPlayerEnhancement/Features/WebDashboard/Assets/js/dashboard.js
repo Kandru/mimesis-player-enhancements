@@ -64,9 +64,10 @@ document.addEventListener('alpine:init', () => {
     savingSettingKey: '',
     lastRoute: '',
     lastSteamId: null,
-    pollTimer: null,
+    eventSource: null,
     toastTimer: null,
     minimap: { markers: [], tiles: [], connections: [] },
+    minimapRaw: null,
     minimapShowAll: false,
     minimapFocusSteamId: '',
     minimapLastLayoutVersion: -1,
@@ -124,13 +125,18 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
       window.addEventListener('hashchange', () => this.onHashChange());
-      this.refreshStatus().then(() => {
-        this.parseRoute();
-        this.ensureDefaultRoute();
-        return this.loadPageData(true);
-      }).then(() => {
-        this.startPolling();
-      });
+      this.parseRoute();
+      this.eventSource = Sse.connect(
+        (payload) => {
+          this.applySnapshot(payload);
+          this.loadPageData(false);
+        },
+        () => {
+          this.apiError = true;
+          this.status.inSession = false;
+          this.setSessionMode();
+        }
+      );
     },
 
     parseRoute() {
@@ -176,20 +182,28 @@ document.addEventListener('alpine:init', () => {
       }, 3500);
     },
 
-    async refreshStatus() {
+    applySnapshot(payload) {
       const wasInSession = this.status.inSession;
-      try {
-        this.status = await Api.getStatus();
-        this.apiError = false;
-        this.setSessionMode();
-        this.ensureDefaultRoute();
-        return wasInSession !== this.status.inSession;
-      } catch (_) {
-        this.apiError = true;
-        this.status.inSession = false;
-        this.setSessionMode();
-        return wasInSession;
+      this.status = payload.status || this.status;
+      this.players = payload.players || [];
+      this.leaderboard = payload.leaderboard || null;
+      this.minimapRaw = payload.minimap || null;
+      this.apiError = false;
+      this.setSessionMode();
+
+      if (!this.status.inSession) {
+        this.players = [];
+        this.leaderboard = null;
+        this.playerStats = null;
+        this.settings = null;
+        this.minimapRaw = null;
+        this.minimap = { markers: [], tiles: [], connections: [] };
+      } else if (this.route === 'minimap' || this.route === 'player') {
+        this.applyMinimapFilter();
       }
+
+      this.ensureDefaultRoute();
+      return wasInSession !== this.status.inSession;
     },
 
     needsPageRefresh(force) {
@@ -197,12 +211,11 @@ document.addEventListener('alpine:init', () => {
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
       if (this.route === 'settings') {
-        return force || this.status.configVersion !== this.lastConfigVersion;
+        return this.status.configVersion !== this.lastConfigVersion;
       }
-      if (this.route === 'minimap' || this.route === 'player') {
-        if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
+      if (this.route === 'player' && this.status.isHost) {
+        return this.status.snapshotVersion !== this.lastSnapshotVersion;
       }
-      if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       return false;
     },
 
@@ -215,10 +228,6 @@ document.addEventListener('alpine:init', () => {
 
     async loadPageData(force) {
       if (!this.status.inSession) {
-        this.players = [];
-        this.leaderboard = null;
-        this.playerStats = null;
-        this.settings = null;
         this.pageError = '';
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;
@@ -234,19 +243,6 @@ document.addEventListener('alpine:init', () => {
 
       this.pageError = '';
       try {
-        if (this.route === 'players' || this.route === 'player' || this.route === 'minimap') {
-          const data = await Api.getPlayers();
-          this.players = data.players || [];
-        }
-
-        if (this.route === 'minimap' || this.route === 'player') {
-          await this.loadMinimapData();
-        }
-
-        if (this.status.isHost && (this.route === 'leaderboard' || this.route === 'player' || this.route === 'players')) {
-          this.leaderboard = await Api.getLeaderboard();
-        }
-
         if (this.route === 'player' && this.steamId && this.status.isHost) {
           const initialLoad = this.playerStats === null;
           if (initialLoad) this.loadingStats = true;
@@ -255,7 +251,7 @@ document.addEventListener('alpine:init', () => {
           } finally {
             if (initialLoad) this.loadingStats = false;
           }
-        } else {
+        } else if (this.route !== 'player') {
           this.playerStats = null;
         }
 
@@ -267,9 +263,13 @@ document.addEventListener('alpine:init', () => {
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
-        } else {
+        } else if (this.route !== 'settings') {
           this.settings = null;
           this.settingsQuery = '';
+        }
+
+        if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
+          this.applyMinimapFilter(force);
         }
       } catch (e) {
         this.pageError = e.message || 'Failed to load data';
@@ -280,14 +280,6 @@ document.addEventListener('alpine:init', () => {
       this.lastSnapshotVersion = this.status.snapshotVersion;
       this.lastConfigVersion = this.settings?.configVersion ?? this.status.configVersion;
       this.restoreScroll(scrollY);
-    },
-
-    startPolling() {
-      if (this.pollTimer) clearInterval(this.pollTimer);
-      this.pollTimer = setInterval(async () => {
-        const sessionChanged = await this.refreshStatus();
-        await this.loadPageData(sessionChanged);
-      }, 2000);
     },
 
     resolveDisplayName(steamId) {
@@ -367,7 +359,6 @@ document.addEventListener('alpine:init', () => {
       try {
         const res = await Api.postAction(steamId, action);
         this.showToast(res.message || 'Done');
-        await this.loadPageData(true);
       } catch (e) {
         this.showToast(e.message);
       }
@@ -459,7 +450,6 @@ document.addEventListener('alpine:init', () => {
       try {
         const res = await Api.updateSetting(sectionId, entry.key, String(rawValue));
         entry.value = res.value ?? String(rawValue);
-        await this.refreshStatus();
         if (this.settings) {
           this.settings.configVersion = this.status.configVersion;
         }
@@ -507,33 +497,43 @@ document.addEventListener('alpine:init', () => {
       return first ? String(first.steamId) : '';
     },
 
-    async onMinimapFocusChange(event) {
+    onMinimapFocusChange(event) {
       this.minimapFocusSteamId = event.target.value || '';
       localStorage.setItem('minimapFocusSteamId', this.minimapFocusSteamId);
-      await this.loadMinimapData(true);
+      this.applyMinimapFilter(true);
     },
 
-    async onMinimapShowAllChange(event) {
+    onMinimapShowAllChange(event) {
       this.minimapShowAll = !!event.target.checked;
-      await this.loadMinimapData(true);
+      this.applyMinimapFilter(true);
     },
 
-    async loadMinimapData(forceRender) {
-      const focusSteamId = this.resolveMinimapFocus();
-      try {
-        const data = await Api.getMinimap({
-          focusSteamId,
-          showAll: this.status.isHost && this.minimapShowAll,
-        });
-        const layoutChanged = data.layoutVersion !== this.minimapLastLayoutVersion;
-        this.minimap = data;
-        this.minimapLastLayoutVersion = data.layoutVersion;
-        this.$nextTick(() => this.renderMinimapMaps(forceRender || layoutChanged));
-      } catch (e) {
-        if (!this.minimap?.markers?.length && !this.minimap?.tiles?.length) {
-          this.pageError = e.message || 'Failed to load minimap';
-        }
+    applyMinimapFilter(forceRender) {
+      if (!this.minimapRaw) {
+        this.minimap = { markers: [], tiles: [], connections: [] };
+        return;
       }
+
+      const focusSteamId = this.resolveMinimapFocus();
+      const markers = MinimapRenderer.filterMarkers(
+        this.minimapRaw.markers || [],
+        focusSteamId,
+        this.status.isHost && this.minimapShowAll,
+        this.status.isHost
+      );
+      const layoutChanged = this.minimapRaw.layoutVersion !== this.minimapLastLayoutVersion;
+      this.minimap = {
+        layoutVersion: this.minimapRaw.layoutVersion,
+        layoutKind: this.minimapRaw.layoutKind,
+        sceneLabel: this.minimapRaw.sceneLabel,
+        bounds: this.minimapRaw.bounds,
+        tiles: this.minimapRaw.tiles || [],
+        connections: this.minimapRaw.connections || [],
+        train: this.minimapRaw.train,
+        markers,
+      };
+      this.minimapLastLayoutVersion = this.minimapRaw.layoutVersion;
+      this.$nextTick(() => this.renderMinimapMaps(forceRender || layoutChanged));
     },
 
     renderMinimapMaps() {

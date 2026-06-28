@@ -76,7 +76,45 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(result);
         }
 
+        public static string SerializeSnapshotEvent(WebDashboardSnapshot snapshot)
+        {
+            List<PlayerApiDto> players = [];
+            foreach (WebDashboardPlayerDto player in snapshot.Players)
+            {
+                players.Add(MapPlayer(player));
+            }
+
+            SnapshotEventDto dto = new()
+            {
+                Status = snapshot.Status,
+                Players = players,
+            };
+
+            if (snapshot.Status.IsHost && !string.IsNullOrEmpty(snapshot.LeaderboardJson))
+            {
+                dto.Leaderboard = ModJson.Deserialize<LeaderboardApiResponse>(snapshot.LeaderboardJson);
+            }
+
+            if (snapshot.Status.InSession)
+            {
+                dto.Minimap = BuildMinimapResponse(
+                    snapshot.MinimapLayout,
+                    snapshot.MinimapMarkers,
+                    snapshot.MinimapTrain);
+            }
+
+            return ModJson.Serialize(dto);
+        }
+
         public static string SerializeMinimap(
+            WebDashboardMinimapLayoutDto layout,
+            IReadOnlyList<WebDashboardMinimapMarkerDto> markers,
+            WebDashboardMinimapTrainDto? train)
+        {
+            return ModJson.Serialize(BuildMinimapResponse(layout, markers, train));
+        }
+
+        private static MinimapApiResponse BuildMinimapResponse(
             WebDashboardMinimapLayoutDto layout,
             IReadOnlyList<WebDashboardMinimapMarkerDto> markers,
             WebDashboardMinimapTrainDto? train)
@@ -98,7 +136,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 });
             }
 
-            return ModJson.Serialize(new MinimapApiResponse
+            return new MinimapApiResponse
             {
                 LayoutVersion = layout.LayoutVersion,
                 LayoutKind = layout.LayoutKind,
@@ -108,7 +146,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Connections = layout.Connections,
                 Train = train,
                 Markers = mappedMarkers,
-            });
+            };
         }
 
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
@@ -176,6 +214,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 CurrentSession = doc.CurrentSession,
                 RecentSessions = doc.RecentSessions,
             };
+        }
+
+        private sealed class SnapshotEventDto
+        {
+            public WebDashboardStatusDto Status = new();
+            public List<PlayerApiDto> Players = [];
+            public LeaderboardApiResponse? Leaderboard;
+            public MinimapApiResponse? Minimap;
         }
 
         private sealed class PlayersApiResponse

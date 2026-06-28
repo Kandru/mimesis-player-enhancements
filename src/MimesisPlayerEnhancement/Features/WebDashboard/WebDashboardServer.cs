@@ -93,6 +93,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             WebDashboardRouter.SetAssetsRoot(_assetsRoot);
+            WebDashboardSseHub.Start();
 
             try
             {
@@ -124,6 +125,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void Stop()
         {
             _running = false;
+            WebDashboardSseHub.Shutdown();
             HttpListener? listener = _listener;
             _listener = null;
             _listenUrl = "";

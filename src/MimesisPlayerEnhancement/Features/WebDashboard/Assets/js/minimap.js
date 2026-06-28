@@ -1,6 +1,24 @@
 const MinimapRenderer = {
   VIEW_SIZE: 1000,
 
+  filterMarkers(markers, focusSteamId, showAll, isHost) {
+    const list = markers || [];
+    if (showAll) {
+      if (!isHost) return [];
+      return list.filter((marker) => marker.isAlive);
+    }
+
+    const focus = focusSteamId ? String(focusSteamId) : '';
+    if (!focus) {
+      const local = list.find((marker) => marker.isLocal);
+      if (local) return [local];
+      return list.length > 0 ? [list[0]] : [];
+    }
+
+    const match = list.find((marker) => String(marker.steamId) === focus);
+    return match ? [match] : [];
+  },
+
   tileCenter(tile) {
     return {
       x: (tile.x + tile.w * 0.5) * this.VIEW_SIZE,

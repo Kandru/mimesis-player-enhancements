@@ -43,6 +43,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void HandleApi(HttpListenerContext context, string method, string path)
         {
+            if (path == "/api/events" && method == "GET")
+            {
+                WebDashboardSseHub.Subscribe(context);
+                return;
+            }
+
             WebDashboardSnapshot snapshot = WebDashboardSnapshotCache.Get();
 
             if (path == "/api/status" && method == "GET")

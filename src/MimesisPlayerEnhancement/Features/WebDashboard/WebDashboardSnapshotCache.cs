@@ -133,6 +133,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             _ = Interlocked.Exchange(ref _snapshot, next);
             _ = Interlocked.Increment(ref _version);
+            WebDashboardSseHub.NotifySnapshotChanged();
         }
     }
 }

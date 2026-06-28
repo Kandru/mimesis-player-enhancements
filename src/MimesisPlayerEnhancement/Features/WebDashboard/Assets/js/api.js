@@ -14,18 +14,6 @@ const Api = {
     return res.json();
   },
 
-  async getStatus() {
-    return Api.fetchJson('/api/status');
-  },
-
-  async getPlayers() {
-    return Api.fetchJson('/api/players');
-  },
-
-  async getLeaderboard() {
-    return Api.fetchJson('/api/leaderboard');
-  },
-
   async getSettings() {
     return Api.fetchJson('/api/settings');
   },
@@ -40,18 +28,6 @@ const Api = {
 
   async getPlayerStats(steamId) {
     return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/stats');
-  },
-
-  async getMinimap(options) {
-    const params = new URLSearchParams();
-    if (options && options.focusSteamId) {
-      params.set('focusSteamId', String(options.focusSteamId));
-    }
-    if (options && options.showAll) {
-      params.set('showAll', 'true');
-    }
-    const query = params.toString();
-    return Api.fetchJson('/api/minimap' + (query ? '?' + query : ''));
   },
 
   async postAction(steamId, action) {
