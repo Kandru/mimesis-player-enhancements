@@ -34,6 +34,7 @@ public static class StatisticsPatches
             ("OnUnregistPlayer/VWorld", AccessTools.Method(typeof(VWorld), nameof(VWorld.OnUnregistPlayer))),
             ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(Mimic.Voice.SpeechSystem.SpeechEventArchive), "OnStartClient")),
             ("AddPlayerInfo/UIPrefab_PlayerEnterInfo", AccessTools.Method(typeof(UIPrefab_PlayerEnterInfo), nameof(UIPrefab_PlayerEnterInfo.AddPlayerInfo))),
+            ("UpdatePlayerInfos/UIPrefab_PlayerEnterInfo", AccessTools.Method(typeof(UIPrefab_PlayerEnterInfo), "UpdatePlayerInfos")),
         });
     }
 }

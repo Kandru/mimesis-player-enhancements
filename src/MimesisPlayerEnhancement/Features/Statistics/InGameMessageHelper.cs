@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.Statistics;
 
@@ -19,6 +20,23 @@ public static class InGameMessageHelper
 
     private const BindingFlags InstanceMemberFlags =
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+    private static readonly FieldInfo EnterColor1Field =
+        typeof(UIPrefab_PlayerEnterInfo).GetField("EnterColor1", InstanceMemberFlags)!;
+
+    private static readonly FieldInfo EnterColor2Field =
+        typeof(UIPrefab_PlayerEnterInfo).GetField("EnterColor2", InstanceMemberFlags)!;
+
+    private static readonly FieldInfo ExitColor1Field =
+        typeof(UIPrefab_PlayerEnterInfo).GetField("ExitColor1", InstanceMemberFlags)!;
+
+    private static readonly FieldInfo ExitColor2Field =
+        typeof(UIPrefab_PlayerEnterInfo).GetField("ExitColor2", InstanceMemberFlags)!;
+
+    private static PropertyInfo? _tmpTextProperty;
+    private static PropertyInfo? _tmpColorGradientProperty;
+    private static ConstructorInfo? _vertexGradientConstructor;
+    private static PropertyInfo? _componentGameObjectProperty;
 
     /// <param name="localOnly">
     /// True when the toast is shown only to the local player (e.g. session intro).
@@ -54,6 +72,121 @@ public static class InGameMessageHelper
             text = $"<color={LocalOnlyRichTextColor}>{text}</color>";
 
         return text;
+    }
+
+    /// <summary>
+    /// Replaces the game's <c>UpdatePlayerInfos</c> coroutine so mod toasts can use a longer display time.
+    /// </summary>
+    internal static IEnumerator RunExtendedPlayerEnterInfoUpdates(UIPrefab_PlayerEnterInfo ui)
+    {
+        IList currentDisplayed = GetListField(ui, "currentDisplayed")!;
+        IList displayStartTimeMilliSec = GetListField(ui, "displayStartTimeMilliSec")!;
+        IList isEnteringFlags = GetListField(ui, "isEnteringFlags")!;
+        IList playerInfos = GetListField(ui, "PlayerInfos")!;
+        long fadeOutMs = ui.fadeOutDisplayTimeMilliSec;
+
+        Color enterColor1 = (Color)EnterColor1Field.GetValue(ui)!;
+        Color enterColor2 = (Color)EnterColor2Field.GetValue(ui)!;
+        Color exitColor1 = (Color)ExitColor1Field.GetValue(ui)!;
+        Color exitColor2 = (Color)ExitColor2Field.GetValue(ui)!;
+
+        while (true)
+        {
+            yield return new WaitUntil(() => currentDisplayed.Count > 0);
+
+            long currentTickMilliSec = GetCurrentTickMilliSec();
+
+            while (displayStartTimeMilliSec.Count > 0)
+            {
+                long displayMs = GetDisplayDurationMilliSec(ui, 0);
+                long startMs = Convert.ToInt64(displayStartTimeMilliSec[0]!);
+                if (currentTickMilliSec - startMs <= displayMs + fadeOutMs)
+                    break;
+
+                currentDisplayed.RemoveAt(0);
+                displayStartTimeMilliSec.RemoveAt(0);
+                isEnteringFlags.RemoveAt(0);
+            }
+
+            for (int i = 0; i < playerInfos.Count; i++)
+            {
+                object label = playerInfos[i]!;
+                if (i < currentDisplayed.Count)
+                {
+                    long displayMs = GetDisplayDurationMilliSec(ui, i);
+                    long startMs = Convert.ToInt64(displayStartTimeMilliSec[i]!);
+                    float fade = Mathf.Clamp01((currentTickMilliSec - startMs - displayMs) / (float)fadeOutMs);
+                    bool entering = (bool)isEnteringFlags[i]!;
+
+                    Color c1 = entering ? enterColor1 : exitColor1;
+                    c1.a = 1f - fade;
+                    Color c2 = entering ? enterColor2 : exitColor2;
+                    c2.a = 1f - fade;
+
+                    SetLabelText(label, (string)currentDisplayed[i]!);
+                    SetLabelGradient(label, c1, c2);
+                    SetLabelActive(label, true);
+                }
+                else
+                {
+                    SetLabelActive(label, false);
+                    SetLabelText(label, string.Empty);
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+    internal static long GetDisplayDurationMilliSec(UIPrefab_PlayerEnterInfo ui, int index)
+    {
+        IList? currentDisplayed = GetListField(ui, "currentDisplayed");
+        if (currentDisplayed != null
+            && index < currentDisplayed.Count
+            && currentDisplayed[index] is string text
+            && text.Contains(MessagePrefix))
+        {
+            return (long)(Mathf.Max(1f, ModConfig.ModToastDurationSeconds.Value) * 1000f);
+        }
+
+        return ui.displayTimeSecMilliSec;
+    }
+
+    private static void EnsureTmpReflection(object label)
+    {
+        if (_tmpTextProperty != null)
+            return;
+
+        Type labelType = label.GetType();
+        _tmpTextProperty = labelType.GetProperty("text", InstanceMemberFlags);
+        _tmpColorGradientProperty = labelType.GetProperty("colorGradient", InstanceMemberFlags);
+        _componentGameObjectProperty = typeof(Component).GetProperty("gameObject", InstanceMemberFlags);
+
+        Type? vertexGradientType = labelType.Assembly.GetType("TMPro.VertexGradient");
+        _vertexGradientConstructor = vertexGradientType?.GetConstructor(new[] { typeof(Color), typeof(Color), typeof(Color), typeof(Color) });
+    }
+
+    private static void SetLabelText(object label, string text)
+    {
+        EnsureTmpReflection(label);
+        _tmpTextProperty?.SetValue(label, text);
+    }
+
+    private static void SetLabelGradient(object label, Color c1, Color c2)
+    {
+        EnsureTmpReflection(label);
+        if (_vertexGradientConstructor == null || _tmpColorGradientProperty == null)
+            return;
+
+        object gradient = _vertexGradientConstructor.Invoke(new object[] { c1, c1, c2, c2 });
+        _tmpColorGradientProperty.SetValue(label, gradient);
+    }
+
+    private static void SetLabelActive(object label, bool active)
+    {
+        EnsureTmpReflection(label);
+        if (_componentGameObjectProperty?.GetValue(label) is GameObject gameObject)
+            gameObject.SetActive(active);
     }
 
     private static bool TryEnqueueRawPlayerInfo(string message, bool isEntering)
