@@ -186,11 +186,18 @@ document.addEventListener('alpine:init', () => {
 
     needsPageRefresh(force) {
       if (force) return true;
-      if (this.route === 'settings') return true;
-      if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
+      if (this.route === 'settings') return false;
+      if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       return false;
+    },
+
+    restoreScroll(scrollY) {
+      if (scrollY <= 0) return;
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
     },
 
     async loadPageData(force) {
@@ -208,6 +215,9 @@ document.addEventListener('alpine:init', () => {
 
       if (!this.needsPageRefresh(force)) return;
 
+      const preserveScroll = !force;
+      const scrollY = preserveScroll ? window.scrollY : 0;
+
       this.pageError = '';
       try {
         if (this.route === 'players' || this.route === 'player') {
@@ -220,22 +230,24 @@ document.addEventListener('alpine:init', () => {
         }
 
         if (this.route === 'player' && this.steamId) {
-          this.loadingStats = true;
+          const initialLoad = this.playerStats === null;
+          if (initialLoad) this.loadingStats = true;
           try {
             this.playerStats = await Api.getPlayerStats(this.steamId);
           } finally {
-            this.loadingStats = false;
+            if (initialLoad) this.loadingStats = false;
           }
         } else {
           this.playerStats = null;
         }
 
         if (this.route === 'settings' && this.status.isHost) {
-          this.loadingSettings = true;
+          const initialLoad = this.settings === null;
+          if (initialLoad) this.loadingSettings = true;
           try {
             this.settings = await Api.getSettings();
           } finally {
-            this.loadingSettings = false;
+            if (initialLoad) this.loadingSettings = false;
           }
         } else {
           this.settings = null;
@@ -248,6 +260,7 @@ document.addEventListener('alpine:init', () => {
       this.lastRoute = this.route;
       this.lastSteamId = this.steamId;
       this.lastSnapshotVersion = this.status.snapshotVersion;
+      this.restoreScroll(scrollY);
     },
 
     startPolling() {
