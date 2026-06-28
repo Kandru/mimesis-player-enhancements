@@ -29,7 +29,7 @@ Remove older separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAn
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
-| **Web Dashboard** | Browser UI for players, stats, and host moderation | No — host only |
+| **Web Dashboard** | Browser UI with live config, stats, minimap, and host moderation | No — host only |
 | **Player Announcements** | Toasts for dungeon settings, boss spawns, death stats | No — host only |
 | **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
 | **Loot Multiplicator** | Scale loot quantity by source and item type | No — host only |
@@ -40,6 +40,19 @@ Remove older separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAn
 | **Spectator Transition** | Shorten downed/dead-camera time before spectator | Host + clients for camera timing |
 
 Based on community mods by [NeoMimicry/MorePlayers](https://github.com/NeoMimicry/MorePlayers), [Risikus/More_Voices](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [JoanRLopez/MimesisPersistence](https://github.com/JoanRLopez/MimesisPersistence), and [Shlygly/MimesisJoinAnytime](https://github.com/Shlygly/MimesisJoinAnytime). Please support the original authors as well.
+
+## Web dashboard
+
+While you host a session, the mod can serve a **browser dashboard** — a companion web UI so you do not have to dig through config files for every tweak. Set `EnableWebDashboard = true` in config, start a session, then open `http://127.0.0.1:8001/` (default address and port).
+
+The dashboard is not only for admin actions. From the same interface you can:
+
+- **Change settings on the fly** — edit mod config values in real time; changes are saved to the host config file and apply as the game picks them up (some settings, such as player caps, take effect immediately).
+- **View statistics** — session leaderboard and per-player stats when Statistics is enabled.
+- **Use the minimap** — live dungeon layout and player positions during a run.
+- **Moderate the lobby** — kick, ban, and unban players (host only).
+
+By default the dashboard listens on loopback only (`127.0.0.1`). See the [GitHub README](https://github.com/Kandru/mimesis-player-enhancements#web-dashboard--mimesisplayerenhancement_webdashboard) for LAN binding and security notes.
 
 ## Config
 

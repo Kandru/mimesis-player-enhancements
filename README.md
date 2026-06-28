@@ -32,7 +32,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
-| **Web Dashboard** | Browser UI for connected players, per-player stats, and host kick/ban moderation | No — host only |
+| **Web Dashboard** | Browser UI for players, stats, and host moderation | No — host only |
 | **Player Announcements** | In-game toasts for dungeon settings, boss spawns, and per-map death stats | No — host only |
 | **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
