@@ -22,7 +22,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 
 | Feature | What it does | Everyone needs the mod? |
 |---------|--------------|-------------------------|
-| **More Players** | Raise the 4-player cap (default: 999) | No — host only |
+| **More Players** | Raise the 4-player cap (default: 32) | No — host only |
 | **More Voices** | Record more mimic voice lines per context (default: 3000 each for indoor, deathmatch, outdoor) | No — host only |
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
@@ -86,7 +86,7 @@ Host-only. Raise the vanilla 4-player session cap.
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableMorePlayers` | bool | `true` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
-| `MaxPlayers` | int | `999` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
+| `MaxPlayers` | int | `32` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
 
 ### More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 

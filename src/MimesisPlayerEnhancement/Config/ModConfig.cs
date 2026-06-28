@@ -186,7 +186,7 @@ namespace MimesisPlayerEnhancement
 
             MaxPlayers = _morePlayersCategory.CreateEntry(
                 "MaxPlayers",
-                999,
+                32,
                 "Max Players",
                 "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.).");
 
