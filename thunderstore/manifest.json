@@ -1,6 +1,6 @@
 {
   "name": "MimesisPlayerEnhancement",
-  "version_number": "26.6.1",
+  "version_number": "26.6.2",
   "website_url": "https://github.com/Kandru/mimesis-player-enhancements",
   "description": "One MIMESIS mod: more players, voices, persistence, join anytime, stats, spawn/loot/money scaling, web dashboard, and more.",
   "dependencies": [
