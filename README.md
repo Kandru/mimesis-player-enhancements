@@ -52,43 +52,84 @@ After the first launch, the mod creates a config file here:
 
 You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
 
+All settings live in one `[MimesisPlayerEnhancement]` section. Each feature below has its own master toggle plus feature-specific options.
+
 **Upgrade note:** `MaxVoiceEvents` was replaced by `MaxIndoorVoiceEvents`, `MaxDeathMatchVoiceEvents`, and `MaxOutdoorVoiceEvents`. Set all three keys manually; there is no automatic migration from the old setting.
 
-### Options
+**Player-count scaling:** Several features offer an **Auto Scale … By Player Count** toggle. When enabled and the session has more than 4 players, the effective value is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your base multiplier).
+
+### More Players
+
+Host-only. Raise the vanilla 4-player session cap.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableMorePlayers` | bool | `true` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `999` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
+
+### More Voices
+
+Host-only. Raise per-player mimic voice recording limits.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
 | `EnableMoreVoices` | bool | `true` | Turn higher voice recording limits on or off. |
 | `MaxIndoorVoiceEvents` | int | `3000` | How many mimic voice lines each player can store in indoor dungeon runs. Minimum is `1`. |
 | `MaxDeathMatchVoiceEvents` | int | `3000` | How many mimic voice lines each player can store in deathmatch. Minimum is `1`. |
 | `MaxOutdoorVoiceEvents` | int | `3000` | How many mimic voice lines each player can store outdoors. Minimum is `1`. |
+
+### Persistence
+
+Host-only. Keep mimic voice recordings across save and load.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
 | `EnablePersistence` | bool | `true` | Save mimic voices when you save the game and bring them back when you load. |
-| `EnableStatistics` | bool | `true` | Track player stats (deaths, kills, voice events, play time, etc.) per save slot. Host only. |
+
+### Statistics
+
+Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, voice events, play time, and more).
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableStatistics` | bool | `true` | Track player stats per save slot. |
 | `SessionReconnectGraceMinutes` | int | `5` | If someone disconnects and rejoins within this many minutes, their stats session continues instead of starting fresh. Minimum is `1`. |
-| `ShowStatisticsToasts` | bool | `true` | Show small join/leave/cycle messages in the bottom-left corner when statistics are enabled. |
-| `EnableJoinAnytime` | bool | `true` | Let players join after a round has already started. Every player in the lobby needs the mod for this. |
-| `EnableSpawnScaling` | bool | `true` | Scale dungeon monster spawn budgets by type. Host only. |
-| `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | When on, multiply mimic spawns by player count ÷ 4 above 4 players (stacks with `MimicSpawnMultiplier`). |
-| `MimicSpawnMultiplier` | float | `1.0` | Mimic spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed mimics also use unused markers first, then respawn at the same marker. Minimum is `0`. |
-| `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | When on, multiply boss spawns by player count ÷ 4 above 4 players (stacks with `BossSpawnMultiplier`). |
-| `BossSpawnMultiplier` | float | `1.0` | Boss spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed bosses also use unused markers first, then respawn at the same marker. Minimum is `0`. |
-| `AutoScaleJakoSpawnsByPlayerCount` | bool | `true` | When on, multiply jako spawns by player count ÷ 4 above 4 players (stacks with `JakoSpawnMultiplier`). |
-| `JakoSpawnMultiplier` | float | `1.0` | Jako (normal monster) spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed jakos also use unused markers first, then respawn at the same marker. Minimum is `0`. |
-| `AutoScaleSpecialSpawnsByPlayerCount` | bool | `true` | When on, multiply special spawns by player count ÷ 4 above 4 players (stacks with `SpecialSpawnMultiplier`). |
-| `SpecialSpawnMultiplier` | float | `1.0` | Special monster spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed specials also use unused markers first, then respawn at the same marker. Minimum is `0`. |
-| `AutoScaleTrapSpawnsByPlayerCount` | bool | `true` | When on, multiply trap spawns by player count ÷ 4 above 4 players (stacks with `TrapSpawnMultiplier`). |
-| `TrapSpawnMultiplier` | float | `1.0` | Trap/hazard spawn multiplier for map-placed spawns (`1` = vanilla, `2` = double). Uses unused map markers first, then respawns at the same marker when gone. Minimum is `0`. |
-| `FixedSpawnRespawnDelayMinSeconds` | float | `5.0` | Minimum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. |
-| `FixedSpawnRespawnDelayMaxSeconds` | float | `30.0` | Maximum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. |
-| `AutoScaleOtherSpawnsByPlayerCount` | bool | `true` | When on, multiply other spawns by player count ÷ 4 above 4 players (stacks with `OtherSpawnMultiplier`). |
+| `ShowStatisticsToasts` | bool | `true` | Show small join/leave/cycle messages in the bottom-left corner when statistics are enabled. Does not replace the game's own connect messages. |
+
+### Join Anytime
+
+**Every player in the lobby needs the mod** for this feature. Lets players join a session after a round has already started.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableJoinAnytime` | bool | `true` | Let players join after a round has already started. |
+
+### Spawn Scaling
+
+Host-only. Scale dungeon monster and trap spawn budgets by type. Map-placed mimics, bosses, jakos, specials, and traps use unused markers first, then respawn at the same marker when all markers are in use.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableSpawnScaling` | bool | `true` | Master toggle for all spawn scaling below. |
+| `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
+| `MimicSpawnMultiplier` | float | `1.0` | Mimic spawn budget multiplier (`1` = vanilla, `2` = double). Minimum is `0`. |
+| `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | Player-count scaling for boss spawns (stacks with `BossSpawnMultiplier`). |
+| `BossSpawnMultiplier` | float | `1.0` | Boss spawn budget multiplier (`1` = vanilla, `2` = double). Minimum is `0`. |
+| `AutoScaleJakoSpawnsByPlayerCount` | bool | `true` | Player-count scaling for jako spawns (stacks with `JakoSpawnMultiplier`). |
+| `JakoSpawnMultiplier` | float | `1.0` | Jako (normal monster) spawn budget multiplier (`1` = vanilla, `2` = double). Minimum is `0`. |
+| `AutoScaleSpecialSpawnsByPlayerCount` | bool | `true` | Player-count scaling for special spawns (stacks with `SpecialSpawnMultiplier`). |
+| `SpecialSpawnMultiplier` | float | `1.0` | Special monster spawn budget multiplier (`1` = vanilla, `2` = double). Minimum is `0`. |
+| `AutoScaleTrapSpawnsByPlayerCount` | bool | `true` | Player-count scaling for trap spawns (stacks with `TrapSpawnMultiplier`). |
+| `TrapSpawnMultiplier` | float | `1.0` | Trap/hazard spawn multiplier for map-placed spawns (`1` = vanilla, `2` = double). Minimum is `0`. |
+| `FixedSpawnRespawnDelayMinSeconds` | float | `5.0` | Minimum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. Minimum is `0`. |
+| `FixedSpawnRespawnDelayMaxSeconds` | float | `30.0` | Maximum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. Must be ≥ `FixedSpawnRespawnDelayMinSeconds`. |
+| `FixedSpawnRespawnMinPlayerDistanceMeters` | float | `10.0` | After the respawn delay, wait until no players are within this distance (meters) before spawning at the marker. Set to `0` to respawn immediately. Minimum is `0`. |
+| `AutoScaleOtherSpawnsByPlayerCount` | bool | `true` | Player-count scaling for other spawns (stacks with `OtherSpawnMultiplier`). |
 | `OtherSpawnMultiplier` | float | `1.0` | Spawn multiplier for other entities (not mimic/boss/jako/special/trap). Minimum is `0`. |
-| `EnableDebugLogging` | bool | `false` | Write extra detail to the MelonLoader console. Useful for troubleshooting; leave off for normal play. |
 
 ### Loot Multiplicator
 
-Host-only. Each setting is a **source × item type** pair. The multiplier (`1` = vanilla, `2` = double) stacks with the matching **Auto Scale … By Player Count** toggle: above 4 players, effective loot is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your multiplier).
+Host-only. Each setting is a **source × item type** pair. The multiplier (`1` = vanilla, `2` = double) stacks with the matching **Auto Scale … By Player Count** toggle when player-count scaling is enabled.
 
 **Loot sources** — where the item comes from:
 
@@ -106,7 +147,7 @@ Host-only. Each setting is a **source × item type** pair. The multiplier (`1` =
 | **Equipment** | Tools, weapons, and gear you equip |
 | **Miscellany** | Other pickups — keys, misc objects, etc. Unknown items fall back to Miscellany. |
 
-Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Miscellany). Example keys:
+Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Miscellany):
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
@@ -134,7 +175,7 @@ Does **not** scale: items you release from inventory, shop purchases, admin/chea
 
 ### Money Multiplier
 
-Host-only. Scales six separate money values. Each has an **Auto Scale … By Player Count** toggle (shown above its multiplier in config) and a multiplier (`1` = vanilla, `2` = double). When auto-scale is on and there are more than 4 players, the effective value is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your multiplier). Minimum multiplier is `0`.
+Host-only. Scales six separate money values. Each has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Minimum multiplier is `0`.
 
 | Money type | What it affects |
 |------------|-----------------|
@@ -178,15 +219,6 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
-Example (Dungeon Time section only):
-
-```toml
-[MimesisPlayerEnhancement]
-EnableDungeonTime = true
-DungeonTimeBaselinePlayerCount = 4
-ExtraShiftSecondsPerPlayerAboveBaseline = 10
-```
-
 ### Spectator Transition
 
 Shortens how long players stay downed before spectator mode and how long the local dead-camera transition runs. Multipliers use the same scale as spawn/loot settings: `1` = vanilla, `0.5` = half, `0` = instant.
@@ -199,38 +231,17 @@ Shortens how long players stay downed before spectator mode and how long the loc
 | `DyingWaitTimeMultiplier` | float | `1.0` | Scales server down/dying time before spectator (`0` = instant). Host only. Also shortens the teammate revive window. Minimum is `0`. |
 | `DeadCameraDurationMultiplier` | float | `1.0` | Scales local dead-camera blend and duration before spectator (`0` = instant). Minimum is `0`. |
 
-Example (Spectator Transition section only):
+### Debug Logging
 
-```toml
-[MimesisPlayerEnhancement]
-EnableSpectatorTransition = true
-DyingWaitTimeMultiplier = 0.5
-DeadCameraDurationMultiplier = 0.5
-```
+Writes extra diagnostic detail to the MelonLoader console. Leave off for normal play.
 
-Example (money section only):
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableDebugLogging` | bool | `false` | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
 
-```toml
-[MimesisPlayerEnhancement]
-EnableMoneyMultiplier = true
-AutoScaleRoundGoalMoneyByPlayerCount = true
-RoundGoalMoneyMultiplier = 1.5
-AutoScaleScrapSellValueByPlayerCount = true
-ScrapSellValueMultiplier = 1.5
-```
+### Example config
 
-Example (loot section only):
-
-```toml
-[MimesisPlayerEnhancement]
-EnableLootMultiplicator = true
-AutoScaleMapConsumableLootByPlayerCount = true
-MapConsumableLootMultiplier = 1.5
-AutoScaleDropEquipmentLootByPlayerCount = true
-DropEquipmentLootMultiplier = 2.0
-```
-
-Example (full config):
+Full default config with all features enabled:
 
 ```toml
 [MimesisPlayerEnhancement]
@@ -258,6 +269,7 @@ AutoScaleTrapSpawnsByPlayerCount = true
 TrapSpawnMultiplier = 1.0
 FixedSpawnRespawnDelayMinSeconds = 5.0
 FixedSpawnRespawnDelayMaxSeconds = 30.0
+FixedSpawnRespawnMinPlayerDistanceMeters = 10.0
 AutoScaleOtherSpawnsByPlayerCount = true
 OtherSpawnMultiplier = 1.0
 EnableLootMultiplicator = true
@@ -279,6 +291,9 @@ ShopDiscountMaxPercent = 100
 ShopDiscountChancePercent = 0
 AutoScaleReinforcePriceByPlayerCount = true
 ReinforcePriceMultiplier = 1.0
+EnableDungeonTime = true
+DungeonTimeBaselinePlayerCount = 4
+ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
 EnableSpectatorTransition = true
 DyingWaitTimeMultiplier = 1.0
 DeadCameraDurationMultiplier = 1.0
