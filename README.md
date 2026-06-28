@@ -11,6 +11,8 @@
 
 # Mimesis Player Enhancement
 
+![Mimesis Player Enhancement Logo](logo.png)
+
 > **Warning — use at your own risk.** I am not responsible for any damage, data loss, bans, or other problems that come from using this mod. Mods change how the game runs, and things can break.
 >
 > Only download software from official sources — for example the real [MelonLoader](https://melonwiki.xyz/) installer, not random repacks. Fake downloads can contain viruses or malware.
