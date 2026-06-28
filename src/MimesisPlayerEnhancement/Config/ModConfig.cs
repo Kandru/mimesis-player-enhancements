@@ -73,6 +73,18 @@ public static class ModConfig
     public static MelonPreferences_Entry<bool> AutoScaleTriggerMiscellanyLootByPlayerCount { get; private set; } = null!;
     public static MelonPreferences_Entry<float> TriggerMiscellanyLootMultiplier { get; private set; } = null!;
 
+    public static MelonPreferences_Entry<bool> EnableMoneyMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleRoundGoalMoneyByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> RoundGoalMoneyMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> ShopBuyPriceMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleReinforcePriceByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> ReinforcePriceMultiplier { get; private set; } = null!;
+
     public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
     public static void Initialize(MelonLogger.Instance logger)
@@ -345,6 +357,72 @@ public static class ModConfig
             "Trigger Miscellany Loot Multiplier",
             "Multiplier for miscellany from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
+        EnableMoneyMultiplier = Category.CreateEntry(
+            "EnableMoneyMultiplier",
+            true,
+            "Enable Money Multiplier",
+            "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only.");
+
+        AutoScaleStartupMoneyByPlayerCount = Category.CreateEntry(
+            "AutoScaleStartupMoneyByPlayerCount",
+            true,
+            "Auto Scale Startup Money By Player Count",
+            "When enabled, multiply startup money by player count / 4 for sessions with more than 4 players (stacks with StartupMoneyMultiplier).");
+
+        StartupMoneyMultiplier = Category.CreateEntry(
+            "StartupMoneyMultiplier",
+            1f,
+            "Startup Money Multiplier",
+            "Starting maintenance-room currency on a new game or session reset (1 = vanilla, 2 = double).");
+
+        AutoScaleRoundGoalMoneyByPlayerCount = Category.CreateEntry(
+            "AutoScaleRoundGoalMoneyByPlayerCount",
+            true,
+            "Auto Scale Round Goal Money By Player Count",
+            "When enabled, multiply the stage target currency (quota) by player count / 4 for sessions with more than 4 players (stacks with RoundGoalMoneyMultiplier).");
+
+        RoundGoalMoneyMultiplier = Category.CreateEntry(
+            "RoundGoalMoneyMultiplier",
+            1f,
+            "Round Goal Money Multiplier",
+            "Target currency required to finish a stage (1 = vanilla, 2 = double).");
+
+        AutoScaleScrapSellValueByPlayerCount = Category.CreateEntry(
+            "AutoScaleScrapSellValueByPlayerCount",
+            true,
+            "Auto Scale Scrap Sell Value By Player Count",
+            "When enabled, multiply item scrap/sell values by player count / 4 for sessions with more than 4 players (stacks with ScrapSellValueMultiplier).");
+
+        ScrapSellValueMultiplier = Category.CreateEntry(
+            "ScrapSellValueMultiplier",
+            1f,
+            "Scrap Sell Value Multiplier",
+            "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double).");
+
+        AutoScaleShopBuyPriceByPlayerCount = Category.CreateEntry(
+            "AutoScaleShopBuyPriceByPlayerCount",
+            true,
+            "Auto Scale Shop Buy Price By Player Count",
+            "When enabled, multiply maintenance shop buy prices by player count / 4 for sessions with more than 4 players (stacks with ShopBuyPriceMultiplier).");
+
+        ShopBuyPriceMultiplier = Category.CreateEntry(
+            "ShopBuyPriceMultiplier",
+            1f,
+            "Shop Buy Price Multiplier",
+            "Maintenance shop purchase cost multiplier (1 = vanilla, 2 = double).");
+
+        AutoScaleReinforcePriceByPlayerCount = Category.CreateEntry(
+            "AutoScaleReinforcePriceByPlayerCount",
+            true,
+            "Auto Scale Reinforce Price By Player Count",
+            "When enabled, multiply item reinforcement costs by player count / 4 for sessions with more than 4 players (stacks with ReinforcePriceMultiplier).");
+
+        ReinforcePriceMultiplier = Category.CreateEntry(
+            "ReinforcePriceMultiplier",
+            1f,
+            "Reinforce Price Multiplier",
+            "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
+
         EnableDebugLogging = Category.CreateEntry(
             "EnableDebugLogging",
             false,
@@ -438,6 +516,19 @@ public static class ModConfig
         TriggerConsumableLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerConsumableLootMultiplier));
         TriggerEquipmentLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerEquipmentLootMultiplier));
         TriggerMiscellanyLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerMiscellanyLootMultiplier));
+
+        EnableMoneyMultiplier.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleRoundGoalMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+
+        StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, StartupMoneyMultiplier));
+        RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, RoundGoalMoneyMultiplier));
+        ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ScrapSellValueMultiplier));
+        ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ShopBuyPriceMultiplier));
+        ReinforcePriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ReinforcePriceMultiplier));
 
         EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 

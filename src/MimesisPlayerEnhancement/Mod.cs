@@ -26,6 +26,7 @@ public sealed class Mod : MelonMod
         Features.JoinAnytime.JoinAnytimePatches.Apply(_harmony);
         Features.SpawnScaling.SpawnScalingPatches.Apply(_harmony);
         Features.LootMultiplicator.LootMultiplicatorPatches.Apply(_harmony);
+        Features.MoneyMultiplier.MoneyMultiplierPatches.Apply(_harmony);
 
         _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
         SyncFromConfig();
@@ -96,6 +97,7 @@ public sealed class Mod : MelonMod
             $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
             $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
+            $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 
@@ -113,6 +115,7 @@ public sealed class Mod : MelonMod
             $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
             $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
+            $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 }
