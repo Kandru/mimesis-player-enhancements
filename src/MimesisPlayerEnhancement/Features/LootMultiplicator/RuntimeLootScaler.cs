@@ -1,5 +1,5 @@
 using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator;
@@ -19,7 +19,7 @@ internal static class RuntimeLootScaler
         if (LootSpawnScalingContext.IsDuplicating)
             return;
 
-        if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
+        if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
             return;
 
         if (!LootSourceResolver.ShouldScaleSpawn(reasonOfSpawn, isRestored)
@@ -37,7 +37,7 @@ internal static class RuntimeLootScaler
         float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
             source,
             itemType,
-            LootPlayerCountHelper.ResolvePlayerCount(room));
+            SessionPlayerCountHelper.ResolveFromRoom(room));
 
         LootMultiplicatorLog.InfoRuntimeScaled(
             source,

@@ -1,5 +1,5 @@
 using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator;
@@ -32,14 +32,14 @@ internal static class LootItemCountScaler
         if (source.Equals(LootSource.Map))
             return false;
 
-        if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
+        if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
             return false;
 
         ItemType itemType = ItemTypeLookup.GetItemType(masterId);
         if (!itemType.Equals(ItemType.Consumable))
             return false;
 
-        int playerCount = LootPlayerCountHelper.ResolvePlayerCount(room);
+        int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
         float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(source, itemType, playerCount);
         if (multiplier <= 1f)
             return false;

@@ -1,5 +1,6 @@
 using System;
 using MelonLoader;
+using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(MimesisPlayerEnhancement.Mod), "MimesisPlayerEnhancement", MimesisPlayerEnhancement.VersionInfo.ModuleVersion, "kalle")]
@@ -20,19 +21,8 @@ public sealed class Mod : MelonMod
         ModConfig.Changed += SyncFromConfig;
 
         _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
-        // Apply compile-time patches first so Assembly-CSharp is loaded before MorePlayers resolves targets.
-        Features.MoreVoices.MoreVoicesPatches.Apply(_harmony);
-        Features.Persistence.PersistencePatches.Apply(_harmony);
-        Features.Statistics.StatisticsPatches.Apply(_harmony);
-        Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
-        Features.JoinAnytime.JoinAnytimePatches.Apply(_harmony);
-        Features.SpawnScaling.SpawnScalingPatches.Apply(_harmony);
-        Features.LootMultiplicator.LootMultiplicatorPatches.Apply(_harmony);
-        Features.MoneyMultiplier.MoneyMultiplierPatches.Apply(_harmony);
-        Features.DungeonTime.DungeonTimePatches.Apply(_harmony);
-        Features.SpectatorTransition.SpectatorTransitionPatches.Apply(_harmony);
-        Features.DungeonRandomizer.DungeonRandomizerPatches.Apply(_harmony);
-        Features.DungeonSizeScaling.DungeonSizeScalingPatches.Apply(_harmony);
+        foreach (IFeatureModule module in FeatureModules.All)
+            module.ApplyPatches(_harmony);
 
         _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
         SyncFromConfig();
@@ -60,22 +50,24 @@ public sealed class Mod : MelonMod
 
     public override void OnUpdate()
     {
-        if (ModConfig.EnablePersistence.Value)
-            Features.Persistence.SpeechEventPoolManager.ProcessDeferredUpdates();
+        foreach (IFeatureModule module in FeatureModules.All)
+        {
+            if (module is FeatureModule { ThrottledUpdate: true })
+                continue;
 
-        if (ModConfig.EnableStatistics.Value)
-            Features.Statistics.StatisticsTracker.OnUpdate();
+            module.OnUpdate();
+        }
 
         if ((ModConfig.EnableSpawnScaling.Value || ModConfig.EnableLootMultiplicator.Value)
             && Time.time >= _nextFixedRespawnProcessTime)
         {
-            _nextFixedRespawnProcessTime = Time.time + Features.SpawnScaling.FixedSpawnRespawnTiming.RetryIntervalSeconds;
+            _nextFixedRespawnProcessTime = Time.time + FixedRespawnTiming.RetryIntervalSeconds;
 
-            if (ModConfig.EnableSpawnScaling.Value)
-                Features.SpawnScaling.FixedSpawnCoordinator.ProcessPendingRespawns();
-
-            if (ModConfig.EnableLootMultiplicator.Value)
-                Features.LootMultiplicator.FixedLootSpawnCoordinator.ProcessPendingRespawns();
+            foreach (IFeatureModule module in FeatureModules.All)
+            {
+                if (module is FeatureModule { ThrottledUpdate: true })
+                    module.OnUpdate();
+            }
         }
     }
 
@@ -97,8 +89,8 @@ public sealed class Mod : MelonMod
         if (!ModConfig.IsInitialized)
             return;
 
-        Features.MorePlayers.MorePlayersPatches.RefreshFromConfig();
-        Features.MoreVoices.MoreVoicesPatches.RefreshFromConfig();
+        foreach (IFeatureModule module in FeatureModules.All)
+            module.SyncFromConfig();
 
         int sessionCap = ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : 4;
 

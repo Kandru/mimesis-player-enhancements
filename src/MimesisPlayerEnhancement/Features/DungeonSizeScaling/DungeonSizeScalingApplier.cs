@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DunGen;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.DungeonSizeScaling;
 
@@ -16,7 +17,7 @@ internal static class DungeonSizeScalingApplier
         if (ScaledGenerators.Contains(generator))
             return;
 
-        int playerCount = DungeonSizeScalingPlayerCountHelper.ResolveSessionPlayerCount();
+        int playerCount = SessionPlayerCountHelper.ResolveFromSession();
         float scale = DungeonSizeScalingResolver.GetLengthMultiplier(playerCount);
         if (Math.Abs(scale - 1f) < 0.0001f)
         {

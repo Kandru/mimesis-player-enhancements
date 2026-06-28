@@ -1,9 +1,9 @@
+using MimesisPlayerEnhancement.Util;
+
 namespace MimesisPlayerEnhancement.Features.MoneyMultiplier;
 
 internal static class MoneyMultiplierResolver
 {
-    private const int VanillaPlayerBaseline = 4;
-
     internal static bool IsAutoScaleEnabled(MoneyType type) =>
         type switch
         {
@@ -28,25 +28,12 @@ internal static class MoneyMultiplierResolver
             _ => 1f,
         };
 
-    internal static float GetPlayerScale(MoneyType type, int playerCount)
-    {
-        if (!IsAutoScaleEnabled(type) || playerCount <= VanillaPlayerBaseline)
-            return 1f;
-
-        return playerCount / (float)VanillaPlayerBaseline;
-    }
+    internal static float GetPlayerScale(MoneyType type, int playerCount) =>
+        ScalingMath.GetPlayerScale(playerCount, IsAutoScaleEnabled(type));
 
     internal static float GetEffectiveMultiplier(MoneyType type, int playerCount) =>
         GetPerTypeMultiplier(type) * GetPlayerScale(type, playerCount);
 
-    internal static int ScaleAmount(int vanilla, float multiplier)
-    {
-        if (vanilla == 0)
-            return 0;
-
-        if (multiplier <= 0f)
-            return 0;
-
-        return System.Math.Max(1, (int)System.Math.Round(vanilla * multiplier));
-    }
+    internal static int ScaleAmount(int vanilla, float multiplier) =>
+        ScalingMath.ScaleCount(vanilla, multiplier);
 }

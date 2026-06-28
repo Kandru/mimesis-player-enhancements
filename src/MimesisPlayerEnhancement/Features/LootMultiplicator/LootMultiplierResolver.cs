@@ -1,11 +1,10 @@
 using Bifrost.ConstEnum;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator;
 
 internal static class LootMultiplierResolver
 {
-    private const int VanillaPlayerBaseline = 4;
-
     internal static bool IsAutoScaleEnabled(LootSource source, ItemType itemType) =>
         (source, ItemTypeLookup.NormalizeItemType(itemType)) switch
         {
@@ -26,13 +25,8 @@ internal static class LootMultiplierResolver
             _ => ModConfig.AutoScaleTriggerMiscellanyLootByPlayerCount.Value,
         };
 
-    internal static float GetPlayerScale(LootSource source, ItemType itemType, int playerCount)
-    {
-        if (!IsAutoScaleEnabled(source, itemType) || playerCount <= VanillaPlayerBaseline)
-            return 1f;
-
-        return playerCount / (float)VanillaPlayerBaseline;
-    }
+    internal static float GetPlayerScale(LootSource source, ItemType itemType, int playerCount) =>
+        ScalingMath.GetPlayerScale(playerCount, IsAutoScaleEnabled(source, itemType));
 
     internal static float GetBaseMultiplier(LootSource source, ItemType itemType) =>
         (source, ItemTypeLookup.NormalizeItemType(itemType)) switch
@@ -60,20 +54,9 @@ internal static class LootMultiplierResolver
     internal static float GetEffectiveMultiplier(LootSource source, int masterId, int playerCount) =>
         GetEffectiveMultiplier(source, ItemTypeLookup.GetItemType(masterId), playerCount);
 
-    internal static int ScaleCount(int vanilla, float multiplier)
-    {
-        if (vanilla == 0)
-            return 0;
+    internal static int ScaleCount(int vanilla, float multiplier) =>
+        ScalingMath.ScaleCount(vanilla, multiplier);
 
-        if (multiplier <= 0f)
-            return 0;
-
-        return System.Math.Max(1, (int)System.Math.Round(vanilla * multiplier));
-    }
-
-    internal static int ScaleCountWithImplicitBase(int vanilla, float multiplier, int implicitWhenZero)
-    {
-        int baseCount = vanilla > 0 ? vanilla : implicitWhenZero;
-        return ScaleCount(baseCount, multiplier);
-    }
+    internal static int ScaleCountWithImplicitBase(int vanilla, float multiplier, int implicitWhenZero) =>
+        ScalingMath.ScaleCountWithImplicitBase(vanilla, multiplier, implicitWhenZero);
 }

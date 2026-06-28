@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.SpectatorTransition;
@@ -49,7 +48,7 @@ public static class SpectatorTransitionPatches
         {
             try
             {
-                if (!SpectatorTransitionApplier.IsEnabled || !SpawnScalingHost.ShouldApplyScaling())
+                if (!SpectatorTransitionApplier.IsEnabled || !HostApplyGate.ShouldApplyHostOnlyFeature())
                     return;
 
                 __result = SpectatorTransitionApplier.ScaleDyingWaitTime(__result);

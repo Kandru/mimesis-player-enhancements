@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.MoneyMultiplier;
@@ -18,7 +19,7 @@ internal static class ShopBuyPriceApplier
     private static readonly ConditionalWeakTable<MaintenanceRoom, Dictionary<int, int>> VanillaPricesByRoom = new();
 
     internal static bool ShouldApplyShopPrices() =>
-        ModConfig.EnableMoneyMultiplier.Value && !MoneyMultiplierHost.IsParticipantClient();
+        ModConfig.EnableMoneyMultiplier.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
 
     internal static void ClearVanillaPrices(MaintenanceRoom room)
     {

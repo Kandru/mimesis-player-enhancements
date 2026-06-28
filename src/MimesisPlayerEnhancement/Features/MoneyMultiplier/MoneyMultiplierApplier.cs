@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.Cooked;
 using HarmonyLib;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.MoneyMultiplier;
@@ -36,7 +37,7 @@ internal static class MoneyMultiplierApplier
         ?? throw new System.InvalidOperationException("MaintenanceRoom._priceForItems not found");
 
     internal static bool IsEnabled() =>
-        ModConfig.EnableMoneyMultiplier.Value && MoneyMultiplierHost.ShouldApply();
+        ModConfig.EnableMoneyMultiplier.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
 
     internal static int ScaleShopPrice(MaintenanceRoom room, int vanilla) =>
         ShopBuyPriceApplier.ScalePrice(room, vanilla);

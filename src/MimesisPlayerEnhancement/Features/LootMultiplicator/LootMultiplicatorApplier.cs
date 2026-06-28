@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator;
@@ -28,14 +27,14 @@ internal static class LootMultiplicatorApplier
         if (AppliedRooms.Contains(room))
             return;
 
-        if (SpawnScalingHost.IsParticipantClient())
+        if (HostApplyGate.IsParticipantClient())
         {
             if (SkippedClientRooms.Add(room))
                 ModLog.Debug(Feature, "Loot scaling skipped — participant client");
             return;
         }
 
-        if (!SpawnScalingHost.ShouldApplyScaling())
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature())
         {
             ModLog.Debug(Feature, "Loot scaling deferred — waiting for host session");
             return;
@@ -54,7 +53,7 @@ internal static class LootMultiplicatorApplier
             return;
         }
 
-        if (!SpawnScalingHost.ShouldApplyScaling())
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature())
         {
             ModLog.Debug(Feature, "Loot scaling skipped — not host");
             return;

@@ -55,7 +55,6 @@ public static class LootMultiplicatorPatches
         HarmonyPatchHelper.LogPatchAudit(Feature, harmony, new (string, MethodBase?)[]
         {
             ("InitSpawn/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "InitSpawn")),
-            ("GetDropItemList/ItemDropInfo", AccessTools.Method(typeof(ItemDropInfo), "GetDropItemList")),
             ("ExecuteLootingObjectSpawn/IVroom", ResolveExecuteLootingObjectSpawnMethod()),
             ("SpawnLootingObject/IVroom", ResolveSpawnLootingObjectMethod()),
             ("OnActorDead/SpawnedActorData", AccessTools.Method(typeof(SpawnedActorData), "OnActorDead")),
@@ -76,23 +75,6 @@ public static class LootMultiplicatorPatches
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"InitSpawn postfix failed — {ex.Message}");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(ItemDropInfo), "GetDropItemList")]
-    public static class ItemDropInfoGetDropItemListPatch
-    {
-        [HarmonyPostfix]
-        public static void Postfix(ref System.Collections.Generic.List<int> __result)
-        {
-            try
-            {
-                DropLootScaler.ScaleDropList(__result);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"GetDropItemList postfix failed — {ex.Message}");
             }
         }
     }
@@ -260,7 +242,7 @@ public static class LootMultiplicatorPatches
             ItemType itemType = ItemElementStackHelper.GetItemType(element);
             int masterId = element.ItemMasterID;
             string itemName = ItemTypeLookup.GetDisplayName(masterId);
-            int playerCount = LootPlayerCountHelper.ResolvePlayerCount(__instance);
+            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(__instance);
             float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(source, itemType, playerCount);
             bool scalingApplied = dungeonRoom != null && LootMultiplicatorApplier.IsApplied(dungeonRoom);
             int stackCount = ItemElementStackHelper.GetStackCount(element);

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using MimesisPlayerEnhancement.Util;
+
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer;
 
 internal static class DungeonPickResolver
@@ -11,7 +13,7 @@ internal static class DungeonPickResolver
 
     internal static bool ShouldIgnoreDungeonExcludeList()
     {
-        if (!DungeonRandomizerHost.ShouldApply() || !ModConfig.RandomizeDungeonPick.Value)
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonRandomizer.Value) || !ModConfig.RandomizeDungeonPick.Value)
             return false;
 
         return DungeonIdListParser.ParsePoolMode(ModConfig.DungeonPickPoolMode.Value) == DungeonPickPoolMode.WidenVanilla

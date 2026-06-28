@@ -56,7 +56,7 @@ internal static class FixedSpawnCoordinator
         if (!ModConfig.EnableSpawnScaling.Value || AppliedRooms.Contains(room))
             return;
 
-        if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
+        if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
             return;
 
         AppliedRooms.Add(room);
@@ -132,7 +132,7 @@ internal static class FixedSpawnCoordinator
         if (!ModConfig.EnableSpawnScaling.Value || spawnData == null)
             return;
 
-        if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
+        if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
             return;
 
         if (!IsFixedCreatureSpawn(spawnData))
@@ -401,7 +401,7 @@ internal static class FixedSpawnCoordinator
     }
 
     private static void DeferNextAttempt(int index, PendingRespawn pending, float now) =>
-        PendingRespawns[index] = pending.WithNextAttemptAt(now + FixedSpawnRespawnTiming.RetryIntervalSeconds);
+        PendingRespawns[index] = pending.WithNextAttemptAt(now + FixedRespawnTiming.RetryIntervalSeconds);
 
     private static bool TryFindRoomState(SpawnedActorData spawnData, out RoomState state, out DungeonRoom room)
     {

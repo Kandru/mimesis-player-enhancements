@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.ConstEnum;
 using HarmonyLib;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using ReluProtocol.Enum;
 using UnityEngine;
@@ -63,7 +63,7 @@ internal static class MapLootMarkerSpreader
             return;
 
         ItemType itemType = ItemElementStackHelper.GetItemType(template);
-        int playerCount = LootPlayerCountHelper.ResolvePlayerCount(vroom);
+        int playerCount = SessionPlayerCountHelper.ResolveFromRoom(vroom);
         float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount);
         int targetPiles = LootMultiplierResolver.ScaleCount(1, multiplier);
         int extraPiles = targetPiles - 1;

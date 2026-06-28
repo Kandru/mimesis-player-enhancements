@@ -1,5 +1,5 @@
 using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using ReluProtocol.Enum;
 
@@ -27,7 +27,7 @@ internal static class LootPileDuplicator
             return;
         }
 
-        if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
+        if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
             return;
 
         if (!LootSourceResolver.ShouldScaleSpawn(reasonOfSpawn, isRestored)
@@ -58,7 +58,7 @@ internal static class LootPileDuplicator
         if (itemType.Equals(ItemType.Consumable))
             return;
 
-        int playerCount = LootPlayerCountHelper.ResolvePlayerCount(vroom);
+        int playerCount = SessionPlayerCountHelper.ResolveFromRoom(vroom);
         float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(source, itemType, playerCount);
         int targetPiles = LootMultiplierResolver.ScaleCount(1, multiplier);
         int extraPiles = targetPiles - 1;

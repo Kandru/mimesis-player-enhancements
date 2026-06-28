@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.DungeonTime;
 
@@ -27,14 +28,14 @@ internal static class DungeonTimeApplier
             return;
         }
 
-        if (!DungeonTimeHost.ShouldApply())
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature())
         {
             AppliedRooms.Add(room);
             DungeonTimeLog.DebugSkipped("not host");
             return;
         }
 
-        int playerCount = DungeonTimePlayerCountHelper.ResolvePlayerCount(room);
+        int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
         long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount);
         if (bonusMs <= 0)
         {

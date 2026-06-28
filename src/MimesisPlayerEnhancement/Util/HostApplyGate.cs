@@ -1,16 +1,20 @@
+using System;
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using MimesisPlayerEnhancement.Features.Persistence;
 using ReluNetwork.ConstEnum;
 
-namespace MimesisPlayerEnhancement.Features.SpawnScaling;
+namespace MimesisPlayerEnhancement.Util;
 
-internal static class SpawnScalingHost
+internal static class HostApplyGate
 {
     internal static bool IsParticipantClient() =>
         JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Participant;
 
-    internal static bool ShouldApplyScaling()
+    internal static bool ShouldApplyHostOnlyFeature(Func<bool>? isFeatureEnabled = null)
     {
+        if (isFeatureEnabled != null && !isFeatureEnabled())
+            return false;
+
         if (IsParticipantClient())
             return false;
 

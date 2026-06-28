@@ -70,14 +70,14 @@ internal static class SpawnScalingApplier
         if (AppliedRooms.Contains(room))
             return;
 
-        if (SpawnScalingHost.IsParticipantClient())
+        if (HostApplyGate.IsParticipantClient())
         {
             if (SkippedClientRooms.Add(room))
                 ModLog.Debug(Feature, "Spawn scaling skipped — participant client");
             return;
         }
 
-        if (!SpawnScalingHost.ShouldApplyScaling())
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature())
         {
             ModLog.Debug(Feature, "Spawn scaling deferred — waiting for host session");
             return;
@@ -95,7 +95,7 @@ internal static class SpawnScalingApplier
             return;
         }
 
-        if (!SpawnScalingHost.ShouldApplyScaling())
+        if (!HostApplyGate.ShouldApplyHostOnlyFeature())
         {
             ModLog.Debug(Feature, "Spawn scaling skipped — not host");
             return;

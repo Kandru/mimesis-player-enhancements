@@ -1,9 +1,11 @@
 using System.Reflection;
 
-namespace MimesisPlayerEnhancement.Features.LootMultiplicator;
+namespace MimesisPlayerEnhancement.Util;
 
-internal static class LootPlayerCountHelper
+internal static class SessionPlayerCountHelper
 {
+    internal const int VanillaPlayerBaseline = 4;
+
     private const BindingFlags InstanceFlags =
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -13,7 +15,7 @@ internal static class LootPlayerCountHelper
     private static readonly PropertyInfo? VWorldRoomManagerProperty =
         typeof(VWorld).GetProperty("VRoomManager", InstanceFlags);
 
-    internal static int ResolvePlayerCount(IVroom? room)
+    internal static int ResolveFromRoom(IVroom? room)
     {
         if (room != null)
         {
@@ -27,6 +29,11 @@ internal static class LootPlayerCountHelper
             }
         }
 
+        return ResolveFromSession();
+    }
+
+    internal static int ResolveFromSession()
+    {
         if (Hub.s == null)
             return VanillaPlayerBaseline;
 
@@ -47,5 +54,11 @@ internal static class LootPlayerCountHelper
         }
     }
 
-    private const int VanillaPlayerBaseline = 4;
+    internal static int ResolveFromSession(GameSessionInfo? info)
+    {
+        if (info?.TotalPlayerSteamIDs != null && info.TotalPlayerSteamIDs.Count > 0)
+            return info.TotalPlayerSteamIDs.Count;
+
+        return ResolveFromSession();
+    }
 }

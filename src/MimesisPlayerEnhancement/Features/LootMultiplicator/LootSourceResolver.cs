@@ -31,8 +31,7 @@ internal static class LootSourceResolver
             return true;
         }
 
-        if (reasonOfSpawn.Equals(ReasonOfSpawn.ActorDying)
-            || reasonOfSpawn.Equals(ReasonOfSpawn.Skill))
+        if (reasonOfSpawn.Equals(ReasonOfSpawn.ActorDying))
         {
             source = LootSource.Drop;
             return true;
@@ -41,8 +40,7 @@ internal static class LootSourceResolver
         if (reasonOfSpawn.Equals(ReasonOfSpawn.EventAction)
             || reasonOfSpawn.Equals(ReasonOfSpawn.Reinforce)
             || reasonOfSpawn.Equals(ReasonOfSpawn.Gamble)
-            || reasonOfSpawn.Equals(ReasonOfSpawn.Linked)
-            || reasonOfSpawn.Equals(ReasonOfSpawn.Buying))
+            || reasonOfSpawn.Equals(ReasonOfSpawn.Linked))
         {
             source = LootSource.Trigger;
             return true;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Bifrost.ConstEnum;
+using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.SpawnScaling;
@@ -75,7 +76,7 @@ internal static class FixedSpawnProximity
 
         bool blocked = IsPlayerBlockingRespawn(room, spawnData.PosVector);
         if (throttle)
-            cache[spawnData] = new CachedBlockResult(blocked, now + FixedSpawnRespawnTiming.RetryIntervalSeconds);
+            cache[spawnData] = new CachedBlockResult(blocked, now + FixedRespawnTiming.RetryIntervalSeconds);
 
         return blocked;
     }

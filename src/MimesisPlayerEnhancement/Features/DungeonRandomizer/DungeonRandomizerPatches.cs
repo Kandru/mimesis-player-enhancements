@@ -78,7 +78,7 @@ public static class DungeonRandomizerPatches
                 if (DungeonPickRollContext.InRollDiceDungeon)
                     DungeonPickRollContext.AdvancePick();
 
-                if (!DungeonRandomizerHost.ShouldApply() || !ModConfig.RandomizeDungeonPick.Value)
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonRandomizer.Value) || !ModConfig.RandomizeDungeonPick.Value)
                     return;
 
                 __result = DungeonPickResolver.ResolvePick(__result, _excludeIdsForResolve);
@@ -102,7 +102,7 @@ public static class DungeonRandomizerPatches
         {
             try
             {
-                if (!DungeonRandomizerHost.ShouldApply())
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonRandomizer.Value))
                     return;
 
                 string? replacement = DungeonVariantResolver.ResolveLayoutFlow(__instance, __result);
@@ -124,7 +124,7 @@ public static class DungeonRandomizerPatches
         {
             try
             {
-                if (!DungeonRandomizerHost.ShouldApply())
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonRandomizer.Value))
                     return;
 
                 int? replacement = DungeonVariantResolver.ResolveMapId(__instance, __result);
@@ -146,7 +146,7 @@ public static class DungeonRandomizerPatches
         {
             try
             {
-                if (!DungeonRandomizerHost.ShouldApply())
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonRandomizer.Value))
                     return;
 
                 randomDungeonSeed = DungeonSeedResolver.RollSeed(randomDungeonSeed);
