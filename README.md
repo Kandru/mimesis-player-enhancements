@@ -55,6 +55,8 @@ After the first launch, the mod creates a config file here:
 
 You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
 
+**Float values:** Most multipliers, timers, and similar settings are floats — not just whole numbers. Values like `0.1`, `1.5`, or `2.5` are valid (`0.1` = 10% of vanilla where `1` = vanilla). On load the mod normalizes saved floats to one or two decimal places (e.g. `1` → `1.0`, `1.22222` → `1.22`).
+
 Settings are grouped into TOML sections in the config file:
 
 - **`[MimesisPlayerEnhancement]`** — global options not tied to a single feature
