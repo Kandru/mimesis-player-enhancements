@@ -19,6 +19,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
+| **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
 
 Based on community mods by [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Please support the original authors instead of me :)
 
@@ -30,7 +31,7 @@ Based on community mods by [MorePlayers from NeoMimicry](https://github.com/NeoM
    `<Mimesis Steam folder>/Mods/MimesisPlayerEnhancement.dll`
 4. Start the game once.
 
-If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime), remove them so they do not fight with this one.
+If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime, **MoreMimics**), remove them so they do not fight with this one. Spawn scaling in this mod replaces MoreMimics.
 
 ## Config
 
@@ -55,6 +56,21 @@ You can edit it anytime. The game reloads the file while running, but **most cha
 | `SessionReconnectGraceMinutes` | int | `5` | If someone disconnects and rejoins within this many minutes, their stats session continues instead of starting fresh. Minimum is `1`. |
 | `ShowStatisticsToasts` | bool | `true` | Show small join/leave/cycle messages in the bottom-left corner when statistics are enabled. |
 | `EnableJoinAnytime` | bool | `true` | Let players join after a round has already started. Every player in the lobby needs the mod for this. |
+| `EnableSpawnScaling` | bool | `true` | Scale dungeon monster spawn budgets by type. Host only. |
+| `MimicSpawnMultiplier` | float | `1.0` | Mimic spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed mimics also use unused markers first, then respawn at the same marker. Minimum is `0`. |
+| `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | When on, multiply mimic spawns by player count ÷ 4 above 4 players (stacks with `MimicSpawnMultiplier`). |
+| `BossSpawnMultiplier` | float | `1.0` | Boss spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed bosses also use unused markers first, then respawn at the same marker. Minimum is `0`. |
+| `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | When on, multiply boss spawns by player count ÷ 4 above 4 players (stacks with `BossSpawnMultiplier`). |
+| `JakoSpawnMultiplier` | float | `1.0` | Jako (normal monster) spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed jakos also use unused markers first, then respawn at the same marker. Minimum is `0`. |
+| `AutoScaleJakoSpawnsByPlayerCount` | bool | `true` | When on, multiply jako spawns by player count ÷ 4 above 4 players (stacks with `JakoSpawnMultiplier`). |
+| `SpecialSpawnMultiplier` | float | `1.0` | Special monster spawn budget multiplier (`1` = vanilla, `2` = double). Map-placed specials also use unused markers first, then respawn at the same marker. Minimum is `0`. |
+| `AutoScaleSpecialSpawnsByPlayerCount` | bool | `true` | When on, multiply special spawns by player count ÷ 4 above 4 players (stacks with `SpecialSpawnMultiplier`). |
+| `TrapSpawnMultiplier` | float | `1.0` | Trap/hazard spawn multiplier for map-placed spawns (`1` = vanilla, `2` = double). Uses unused map markers first, then respawns at the same marker when gone. Minimum is `0`. |
+| `AutoScaleTrapSpawnsByPlayerCount` | bool | `true` | When on, multiply trap spawns by player count ÷ 4 above 4 players (stacks with `TrapSpawnMultiplier`). |
+| `FixedSpawnRespawnDelayMinSeconds` | float | `5.0` | Minimum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. |
+| `FixedSpawnRespawnDelayMaxSeconds` | float | `30.0` | Maximum random delay (seconds) before a map-placed monster or trap respawns at the same marker when all markers are in use. |
+| `OtherSpawnMultiplier` | float | `1.0` | Spawn multiplier for other entities (not mimic/boss/jako/special/trap). Minimum is `0`. |
+| `AutoScaleOtherSpawnsByPlayerCount` | bool | `true` | When on, multiply other spawns by player count ÷ 4 above 4 players (stacks with `OtherSpawnMultiplier`). |
 | `EnableDebugLogging` | bool | `false` | Write extra detail to the MelonLoader console. Useful for troubleshooting; leave off for normal play. |
 
 Example:
@@ -70,6 +86,21 @@ EnableStatistics = true
 SessionReconnectGraceMinutes = 5
 ShowStatisticsToasts = true
 EnableJoinAnytime = true
+EnableSpawnScaling = true
+MimicSpawnMultiplier = 1.0
+AutoScaleMimicSpawnsByPlayerCount = true
+BossSpawnMultiplier = 1.0
+AutoScaleBossSpawnsByPlayerCount = true
+JakoSpawnMultiplier = 1.0
+AutoScaleJakoSpawnsByPlayerCount = true
+SpecialSpawnMultiplier = 1.0
+AutoScaleSpecialSpawnsByPlayerCount = true
+TrapSpawnMultiplier = 1.0
+AutoScaleTrapSpawnsByPlayerCount = true
+FixedSpawnRespawnDelayMinSeconds = 5.0
+FixedSpawnRespawnDelayMaxSeconds = 30.0
+OtherSpawnMultiplier = 1.0
+AutoScaleOtherSpawnsByPlayerCount = true
 EnableDebugLogging = false
 ```
 
