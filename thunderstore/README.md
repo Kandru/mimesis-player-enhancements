@@ -2,6 +2,8 @@
 
 > **Warning — use at your own risk.** Mods change how the game runs; things can break. Only download MelonLoader from [melonwiki.xyz](https://melonwiki.xyz/). If you do not trust a pre-built DLL, [build from source on GitHub](https://github.com/Kandru/mimesis-player-enhancements).
 
+> **Alpha — under heavy development.** This plugin is not finished and things may not work as expected. Please report bugs and share feedback via [GitHub issues](https://github.com/Kandru/mimesis-player-enhancements/issues).
+
 One plugin for MIMESIS multiplayer: more players, more mimic voices, voice persistence, join-anytime (letting friends join an active lobby - they wait in the tram until the current run ends), statistics, spawn/loot/money scaling, dungeon tweaks, a web dashboard, and more — with a single config file instead of juggling separate mods.
 
 Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.

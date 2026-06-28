@@ -7,7 +7,7 @@
 > Please support my work by giving me a small donation. It takes a lot of dedicated time to work on such a plug-in.
 
 > [!CAUTION]  
-> This is still under development. It is not finished and things may do not work as expected...
+> **Alpha — under heavy development.** This plugin is not finished and things may not work as expected. Please report bugs and share feedback via [GitHub issues](https://github.com/Kandru/mimesis-player-enhancements/issues).
 
 # Mimesis Player Enhancement
 
