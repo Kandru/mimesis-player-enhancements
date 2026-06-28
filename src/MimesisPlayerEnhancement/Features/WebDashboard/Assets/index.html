@@ -65,7 +65,7 @@
                 <article class="surface-card">
                   <div class="player-row">
                     <img class="avatar"
-                         :src="avatarUrl(p.steamId, status.snapshotVersion)"
+                         :src="avatarUrl(p.steamId)"
                          alt=""
                          loading="lazy"
                          decoding="async"
@@ -241,7 +241,7 @@
                   <a class="back-link" href="#/leaderboard">&larr; Back to leaderboard</a>
                   <div class="player-detail-header">
                     <img class="avatar"
-                         :src="avatarUrl(steamId, status.snapshotVersion)"
+                         :src="avatarUrl(steamId)"
                          alt=""
                          @error="onAvatarError($event)">
                     <div>

@@ -25,14 +25,11 @@ function csStatsUrl(steamId) {
     : '#';
 }
 
-function avatarUrl(steamId, cacheVersion) {
+function avatarUrl(steamId) {
   if (!isValidSteamId(steamId)) {
     return '/img/default-avatar.svg';
   }
   let url = '/api/players/' + encodeURIComponent(String(steamId)) + '/avatar';
-  if (cacheVersion != null && cacheVersion !== '') {
-    url += '?v=' + encodeURIComponent(cacheVersion);
-  }
   return url;
 }
 
@@ -372,8 +369,8 @@ document.addEventListener('alpine:init', () => {
       return formatDuration(seconds);
     },
 
-    avatarUrl(steamId, cacheVersion) {
-      return avatarUrl(steamId, cacheVersion);
+    avatarUrl(steamId) {
+      return avatarUrl(steamId);
     },
 
     steamProfileUrl(steamId) {
