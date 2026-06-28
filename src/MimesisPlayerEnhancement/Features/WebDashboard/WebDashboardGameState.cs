@@ -5,9 +5,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool IsInSession()
         {
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            return pdata == null
-                ? false
-                : pdata.SessionJoined && pdata.main is InTramWaitingScene
+            return pdata != null && pdata.SessionJoined && pdata.main is InTramWaitingScene
                 or GamePlayScene
                 or MaintenanceScene
                 or DeathMatchScene;

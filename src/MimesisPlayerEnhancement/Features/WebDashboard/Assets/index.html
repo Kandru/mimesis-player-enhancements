@@ -223,7 +223,7 @@
             <template x-if="status.isHost">
               <div class="settings-page">
                 <h2 class="page-heading">Settings</h2>
-                <p class="settings-intro">Read-only view of mod configuration. Edit values in-game or in the config file on the host machine.</p>
+                <p class="settings-intro">Edit mod configuration in real time. Changes are saved to the host config file and apply the next time the relevant game logic runs (or immediately for live settings such as player caps and the web dashboard bind).</p>
 
                 <template x-if="settings">
                   <div class="settings-toolbar surface-card">
@@ -272,9 +272,48 @@
                               <code class="settings-key" x-text="entry.key"></code>
                             </div>
                             <div class="settings-entry-value-wrap">
-                              <span class="settings-value"
-                                    :class="settingValueClass(entry)"
-                                    x-text="formatSettingValue(entry)"></span>
+                              <template x-if="entry.type === 'Boolean'">
+                                <select class="settings-input settings-select"
+                                        :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                        :id="settingInputId(section.id, entry)"
+                                        :value="settingDraftValue(entry)"
+                                        :disabled="isSavingSetting(section.id, entry)"
+                                        @change="onBooleanSettingChange(section.id, entry, $event)">
+                                  <option value="true">On</option>
+                                  <option value="false">Off</option>
+                                </select>
+                              </template>
+                              <template x-if="entry.type === 'Int32'">
+                                <input type="number"
+                                       class="settings-input"
+                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                       :id="settingInputId(section.id, entry)"
+                                       step="1"
+                                       inputmode="numeric"
+                                       :value="settingDraftValue(entry)"
+                                       :disabled="isSavingSetting(section.id, entry)"
+                                       @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
+                              <template x-if="entry.type === 'Single'">
+                                <input type="number"
+                                       class="settings-input"
+                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                       :id="settingInputId(section.id, entry)"
+                                       step="any"
+                                       inputmode="decimal"
+                                       :value="settingDraftValue(entry)"
+                                       :disabled="isSavingSetting(section.id, entry)"
+                                       @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
+                              <template x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                                <input type="text"
+                                       class="settings-input"
+                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                       :id="settingInputId(section.id, entry)"
+                                       :value="settingDraftValue(entry)"
+                                       :disabled="isSavingSetting(section.id, entry)"
+                                       @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
                               <small class="settings-default-hint"
                                      x-show="settingDiffersFromDefault(entry)"
                                      x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>

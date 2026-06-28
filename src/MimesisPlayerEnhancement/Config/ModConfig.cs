@@ -19,6 +19,9 @@ namespace MimesisPlayerEnhancement
         /// <summary>Fired when any preference value changes (UI save, file reload, or programmatic update).</summary>
         public static event Action? Changed;
 
+        /// <summary>Increments whenever configuration values change at runtime.</summary>
+        public static int Version => ModConfigRegistry.Version;
+
         public static bool IsInitialized { get; private set; }
 
         public static string FilePath { get; private set; } = "";
@@ -899,8 +902,27 @@ namespace MimesisPlayerEnhancement
             RegisterFloatEntries();
             ModConfigFloatHelper.SanitizeAll(FloatEntries);
             NormalizeSavedFloats();
+            ModConfigRegistry.Rebuild();
 
             IsInitialized = true;
+        }
+
+        /// <summary>Persist current preference values to <see cref="FilePath"/>.</summary>
+        public static void SaveToFile()
+        {
+            ModConfigRegistry.SaveToFile();
+        }
+
+        /// <summary>Update a single preference by section and key. Validation runs through existing entry change handlers.</summary>
+        public static bool TrySetEntryValue(string sectionId, string key, string value, out string? error)
+        {
+            return ModConfigRegistry.TrySetEntryValue(sectionId, key, value, out error);
+        }
+
+        /// <summary>Called after MelonLoader reloads the config file from disk.</summary>
+        internal static void NotifyFileReloaded()
+        {
+            NotifyChanged();
         }
 
         public static void NormalizeSavedFloats()
@@ -1063,6 +1085,7 @@ namespace MimesisPlayerEnhancement
 
         private static void NotifyChanged()
         {
+            ModConfigRegistry.NotifyRuntimeChange();
             Changed?.Invoke();
         }
     }

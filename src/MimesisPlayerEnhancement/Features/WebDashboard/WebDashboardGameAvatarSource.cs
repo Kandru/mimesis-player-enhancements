@@ -49,7 +49,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             Texture2D? texture = TryGetTexture(steamId);
-            return texture == null ? false : TryStoreTexture(steamId, texture, out png);
+            return texture != null && TryStoreTexture(steamId, texture, out png);
         }
 
         internal static bool OnAvatarLoaded(ulong steamId, Texture2D texture)

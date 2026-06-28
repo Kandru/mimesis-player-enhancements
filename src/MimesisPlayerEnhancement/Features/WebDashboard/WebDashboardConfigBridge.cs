@@ -34,6 +34,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardSettingsDto
                 {
                     ConfigPath = ModConfig.FilePath,
+                    ConfigVersion = ModConfig.Version,
                 };
             }
 
@@ -93,7 +94,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     SortEntries(section);
                     ordered.Add(section);
-                    added.Add(sectionId);
+                    _ = added.Add(sectionId);
                 }
             }
 
@@ -112,8 +113,48 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return new WebDashboardSettingsDto
             {
                 ConfigPath = ModConfig.FilePath,
+                ConfigVersion = ModConfig.Version,
                 Sections = ordered,
             };
+        }
+
+        internal static WebDashboardConfigUpdateResult ApplyUpdate(string sectionId, string key, string value)
+        {
+            if (!ModConfig.IsInitialized)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = "Configuration is not initialized.",
+                };
+            }
+
+            if (!ModConfig.TrySetEntryValue(sectionId, key, value, out string? error))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = error ?? "Invalid value.",
+                };
+            }
+
+            ModConfig.SaveToFile();
+
+            return !ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null
+                ? new WebDashboardConfigUpdateResult
+                {
+                    Success = true,
+                    Message = "Saved.",
+                }
+                : new WebDashboardConfigUpdateResult
+                {
+                    Success = true,
+                    Message = "Saved.",
+                    SectionId = sectionId,
+                    Key = key,
+                    Value = SafeGetString(entry.GetValueAsString),
+                    Type = entry.GetReflectedType()?.Name ?? "Unknown",
+                };
         }
 
         private static void SortEntries(WebDashboardConfigSectionDto section)

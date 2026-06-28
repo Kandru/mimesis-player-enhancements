@@ -18,7 +18,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Apply(HarmonyLib.Harmony harmony)
         {
+            ModConfig.Changed += OnConfigChanged;
             WebDashboardPatches.Apply(harmony);
+        }
+
+        private static void OnConfigChanged()
+        {
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         internal static void SyncFromConfig()
@@ -66,11 +72,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             WebDashboardActionQueue.Process();
+            WebDashboardConfigUpdateQueue.Process();
             WebDashboardSnapshotCache.Tick(_listenUrl);
         }
 
         internal static void StopOnDeinit()
         {
+            ModConfig.Changed -= OnConfigChanged;
             Stop();
         }
 

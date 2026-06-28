@@ -44,6 +44,7 @@ document.addEventListener('alpine:init', () => {
       saveSlotId: -1,
       modVersion: '',
       snapshotVersion: 0,
+      configVersion: 0,
     },
     players: [],
     leaderboard: null,
@@ -59,6 +60,8 @@ document.addEventListener('alpine:init', () => {
     pageError: '',
     apiError: false,
     lastSnapshotVersion: -1,
+    lastConfigVersion: -1,
+    savingSettingKey: '',
     lastRoute: '',
     lastSteamId: null,
     pollTimer: null,
@@ -188,7 +191,9 @@ document.addEventListener('alpine:init', () => {
       if (force) return true;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
-      if (this.route === 'settings') return false;
+      if (this.route === 'settings') {
+        return force || this.status.configVersion !== this.lastConfigVersion;
+      }
       if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       return false;
     },
@@ -210,6 +215,7 @@ document.addEventListener('alpine:init', () => {
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;
         this.lastSnapshotVersion = this.status.snapshotVersion;
+        this.lastConfigVersion = this.settings?.configVersion ?? this.status.configVersion;
         return;
       }
 
@@ -260,6 +266,7 @@ document.addEventListener('alpine:init', () => {
       this.lastRoute = this.route;
       this.lastSteamId = this.steamId;
       this.lastSnapshotVersion = this.status.snapshotVersion;
+      this.lastConfigVersion = this.settings?.configVersion ?? this.status.configVersion;
       this.restoreScroll(scrollY);
     },
 
@@ -413,6 +420,60 @@ document.addEventListener('alpine:init', () => {
 
     settingDiffersFromDefault(entry) {
       return String(entry.value ?? '') !== String(entry.defaultValue ?? '');
+    },
+
+    settingInputId(sectionId, entry) {
+      return sectionId + '--' + entry.key;
+    },
+
+    isSavingSetting(sectionId, entry) {
+      return this.savingSettingKey === sectionId + '/' + entry.key;
+    },
+
+    settingDraftValue(entry) {
+      const value = entry.value;
+      if (entry.type === 'Boolean') {
+        return value === 'True' || value === 'true' ? 'true' : 'false';
+      }
+      return value == null ? '' : String(value);
+    },
+
+    async saveSetting(sectionId, entry, rawValue) {
+      const saveKey = sectionId + '/' + entry.key;
+      if (this.savingSettingKey === saveKey) return;
+
+      const previousValue = entry.value;
+      this.savingSettingKey = saveKey;
+      try {
+        const res = await Api.updateSetting(sectionId, entry.key, String(rawValue));
+        entry.value = res.value ?? String(rawValue);
+        await this.refreshStatus();
+        if (this.settings) {
+          this.settings.configVersion = this.status.configVersion;
+        }
+        this.lastConfigVersion = this.status.configVersion;
+        this.showToast(res.message || 'Saved');
+      } catch (e) {
+        entry.value = previousValue;
+        this.showToast(e.message || 'Failed to save setting');
+        await this.loadPageData(true);
+      } finally {
+        if (this.savingSettingKey === saveKey) {
+          this.savingSettingKey = '';
+        }
+      }
+    },
+
+    onBooleanSettingChange(sectionId, entry, event) {
+      this.saveSetting(sectionId, entry, event.target.value);
+    },
+
+    onTextSettingCommit(sectionId, entry, event) {
+      const nextValue = event.target.value;
+      if (String(nextValue) === this.settingDraftValue(entry)) {
+        return;
+      }
+      this.saveSetting(sectionId, entry, nextValue);
     },
   }));
 });

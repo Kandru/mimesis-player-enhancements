@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -81,6 +82,33 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildSettings()));
+                return;
+            }
+
+            if (path == "/api/settings" && method == "POST")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                string body = ReadRequestBody(context.Request);
+                WebDashboardConfigUpdateRequest? request = ModJson.Deserialize<WebDashboardConfigUpdateRequest>(body);
+                if (request == null
+                    || string.IsNullOrWhiteSpace(request.SectionId)
+                    || string.IsNullOrWhiteSpace(request.Key))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
+                    return;
+                }
+
+                WebDashboardConfigUpdateResult result = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    request.SectionId,
+                    request.Key,
+                    request.Value ?? "");
+
+                WriteJson(context, result.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(result));
                 return;
             }
 
@@ -265,6 +293,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             return path.EndsWith('/') && path.Length > 1 ? path[..^1] : path;
+        }
+
+        private static string ReadRequestBody(HttpListenerRequest request)
+        {
+            if (!request.HasEntityBody)
+            {
+                return "";
+            }
+
+            using StreamReader reader = new(request.InputStream, request.ContentEncoding ?? Encoding.UTF8);
+            return reader.ReadToEnd();
         }
 
         private static void WriteJson(HttpListenerContext context, int statusCode, string json)

@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string ModVersion = "";
         public string ListenUrl = "";
         public int SnapshotVersion;
+        public int ConfigVersion;
     }
 
     internal sealed class WebDashboardSessionStatsDto
@@ -72,6 +73,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     internal sealed class WebDashboardSettingsDto
     {
         public string ConfigPath = "";
+        public int ConfigVersion;
         public List<WebDashboardConfigSectionDto> Sections = [];
     }
 
@@ -91,5 +93,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Value = "";
         public string DefaultValue = "";
         public bool IsHidden;
+    }
+
+    internal sealed class WebDashboardConfigUpdateRequest
+    {
+        public string SectionId = "";
+        public string Key = "";
+        public string Value = "";
+    }
+
+    internal sealed class WebDashboardConfigUpdateResult
+    {
+        public bool Success;
+        public string Message = "";
+        public string SectionId = "";
+        public string Key = "";
+        public string Value = "";
+        public string Type = "";
     }
 }

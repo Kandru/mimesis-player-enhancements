@@ -40,7 +40,6 @@ namespace MimesisPlayerEnhancement
             }
 
             ModConfig.NormalizeSavedFloats();
-            SyncFromConfig();
         }
 
         public override void OnPreferencesLoaded(string filepath)
@@ -52,7 +51,7 @@ namespace MimesisPlayerEnhancement
 
             ModConfig.SanitizeFloatEntries();
             ModConfig.NormalizeSavedFloats();
-            SyncFromConfig();
+            ModConfig.NotifyFileReloaded();
         }
 
         public override void OnUpdate()

@@ -908,6 +908,34 @@ tr.connected:hover {
   color: var(--md-text-disabled);
 }
 
+.settings-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--md-text-primary);
+  background: var(--md-surface-overlay);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), opacity var(--transition);
+}
+
+.settings-input:focus {
+  border-color: rgba(130, 177, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(130, 177, 255, 0.15);
+}
+
+.settings-input:disabled,
+.settings-input.is-saving {
+  opacity: 0.72;
+}
+
+.settings-select {
+  cursor: pointer;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

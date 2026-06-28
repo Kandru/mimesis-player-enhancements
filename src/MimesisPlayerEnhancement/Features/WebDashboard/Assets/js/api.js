@@ -30,6 +30,14 @@ const Api = {
     return Api.fetchJson('/api/settings');
   },
 
+  async updateSetting(sectionId, key, value) {
+    return Api.fetchJson('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sectionId, key, value }),
+    });
+  },
+
   async getPlayerStats(steamId) {
     return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/stats');
   },

@@ -64,6 +64,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ModVersion = VersionInfo.ModuleVersion,
                     ListenUrl = listenUrl,
                     SnapshotVersion = Version,
+                    ConfigVersion = ModConfig.Version,
                 },
                 Players = inSession ? WebDashboardPlayerService.CollectPlayers() : [],
             };
