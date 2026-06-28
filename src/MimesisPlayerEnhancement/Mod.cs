@@ -31,6 +31,8 @@ public sealed class Mod : MelonMod
         Features.MoneyMultiplier.MoneyMultiplierPatches.Apply(_harmony);
         Features.DungeonTime.DungeonTimePatches.Apply(_harmony);
         Features.SpectatorTransition.SpectatorTransitionPatches.Apply(_harmony);
+        Features.DungeonRandomizer.DungeonRandomizerPatches.Apply(_harmony);
+        Features.DungeonSizeScaling.DungeonSizeScalingPatches.Apply(_harmony);
 
         _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
         SyncFromConfig();
@@ -120,6 +122,8 @@ public sealed class Mod : MelonMod
             $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
             $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
             $"SpectatorTransition={ModConfig.EnableSpectatorTransition.Value}, " +
+            $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
+            $"DungeonSizeScaling={ModConfig.EnableDungeonSizeScaling.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 
@@ -142,6 +146,8 @@ public sealed class Mod : MelonMod
             $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
             $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
             $"SpectatorTransition={ModConfig.EnableSpectatorTransition.Value}, " +
+            $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
+            $"DungeonSizeScaling={ModConfig.EnableDungeonSizeScaling.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 }

@@ -97,9 +97,24 @@ public static class ModConfig
     public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; private set; } = null!;
     public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; private set; } = null!;
 
+    public static MelonPreferences_Entry<bool> EnableDungeonSizeScaling { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> DungeonSizeMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleDungeonSizeByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<int> DungeonSizeBaselinePlayerCount { get; private set; } = null!;
+
     public static MelonPreferences_Entry<bool> EnableSpectatorTransition { get; private set; } = null!;
     public static MelonPreferences_Entry<float> DyingWaitTimeMultiplier { get; private set; } = null!;
     public static MelonPreferences_Entry<float> DeadCameraDurationMultiplier { get; private set; } = null!;
+
+    public static MelonPreferences_Entry<bool> EnableDungeonRandomizer { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> RandomizeDungeonPick { get; private set; } = null!;
+    public static MelonPreferences_Entry<string> DungeonPickPoolMode { get; private set; } = null!;
+    public static MelonPreferences_Entry<string> DungeonAllowlist { get; private set; } = null!;
+    public static MelonPreferences_Entry<string> DungeonBlocklist { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> IgnoreDungeonExcludeList { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> RandomizeLayoutFlow { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> RandomizeMapVariant { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> RandomizeDungeonSeed { get; private set; } = null!;
 
     public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
@@ -501,6 +516,30 @@ public static class ModConfig
             "Extra Shift Seconds Per Player Above Baseline",
             "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
 
+        EnableDungeonSizeScaling = Category.CreateEntry(
+            "EnableDungeonSizeScaling",
+            true,
+            "Enable Dungeon Size Scaling",
+            "Scale procedural dungeon length. Applied on each machine during DunGen generation so layouts stay in sync.");
+
+        DungeonSizeMultiplier = Category.CreateEntry(
+            "DungeonSizeMultiplier",
+            1f,
+            "Dungeon Size Multiplier",
+            "Base dungeon length multiplier (1 = vanilla, 2 = double). Stacks with Auto Scale Dungeon Size By Player Count.");
+
+        AutoScaleDungeonSizeByPlayerCount = Category.CreateEntry(
+            "AutoScaleDungeonSizeByPlayerCount",
+            true,
+            "Auto Scale Dungeon Size By Player Count",
+            "When enabled, multiply dungeon size by player count / baseline above the baseline (e.g. 8 players with baseline 4 = ×2; stacks with DungeonSizeMultiplier).");
+
+        DungeonSizeBaselinePlayerCount = Category.CreateEntry(
+            "DungeonSizeBaselinePlayerCount",
+            4,
+            "Dungeon Size Baseline Player Count",
+            "No player-count size bonus at or below this count (vanilla is 4). Minimum is 1.");
+
         EnableSpectatorTransition = Category.CreateEntry(
             "EnableSpectatorTransition",
             true,
@@ -519,6 +558,60 @@ public static class ModConfig
             "Dead Camera Duration Multiplier",
             "Scales local dead-camera transition time before spectator (1 = vanilla, 0 = instant). Applies on each machine with the mod loaded.");
 
+        EnableDungeonRandomizer = Category.CreateEntry(
+            "EnableDungeonRandomizer",
+            false,
+            "Enable Dungeon Randomizer",
+            "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
+
+        RandomizeDungeonPick = Category.CreateEntry(
+            "RandomizeDungeonPick",
+            true,
+            "Randomize Dungeon Pick",
+            "Override which dungeon master ID is rolled on the tram.");
+
+        DungeonPickPoolMode = Category.CreateEntry(
+            "DungeonPickPoolMode",
+            "WidenVanilla",
+            "Dungeon Pick Pool Mode",
+            "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table).");
+
+        DungeonAllowlist = Category.CreateEntry(
+            "DungeonAllowlist",
+            "",
+            "Dungeon Allowlist",
+            "Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible.");
+
+        DungeonBlocklist = Category.CreateEntry(
+            "DungeonBlocklist",
+            "",
+            "Dungeon Blocklist",
+            "Comma-separated dungeon master IDs to exclude from the pool.");
+
+        IgnoreDungeonExcludeList = Category.CreateEntry(
+            "IgnoreDungeonExcludeList",
+            true,
+            "Ignore Dungeon Exclude List",
+            "When using WidenVanilla, do not exclude recently played dungeons from the tram roll.");
+
+        RandomizeLayoutFlow = Category.CreateEntry(
+            "RandomizeLayoutFlow",
+            true,
+            "Randomize Layout Flow",
+            "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls.");
+
+        RandomizeMapVariant = Category.CreateEntry(
+            "RandomizeMapVariant",
+            true,
+            "Randomize Map Variant",
+            "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection.");
+
+        RandomizeDungeonSeed = Category.CreateEntry(
+            "RandomizeDungeonSeed",
+            true,
+            "Randomize Dungeon Seed",
+            "Replace the procedural dungeon seed with a new random value when a dungeon is chosen.");
+
         EnableDebugLogging = Category.CreateEntry(
             "EnableDebugLogging",
             false,
@@ -532,6 +625,7 @@ public static class ModConfig
         }
 
         SanitizeShopDiscountPercents(logger);
+        OnDungeonPickPoolModeChanged(logger, DungeonPickPoolMode.Value);
 
         MaxPlayers.OnEntryValueChanged.Subscribe((_, value) =>
         {
@@ -672,11 +766,37 @@ public static class ModConfig
         ExtraShiftSecondsPerPlayerAboveBaseline.OnEntryValueChanged.Subscribe((_, value) =>
             OnExtraShiftSecondsPerPlayerChanged(logger, value));
 
+        EnableDungeonSizeScaling.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        DungeonSizeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+            OnSpawnMultiplierChanged(logger, value, DungeonSizeMultiplier));
+        AutoScaleDungeonSizeByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        DungeonSizeBaselinePlayerCount.OnEntryValueChanged.Subscribe((_, value) =>
+        {
+            if (value < 1)
+            {
+                logger.Warning("DungeonSizeBaselinePlayerCount must be at least 1; resetting to 1.");
+                DungeonSizeBaselinePlayerCount.Value = 1;
+                return;
+            }
+
+            NotifyChanged();
+        });
+
         EnableSpectatorTransition.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         DyingWaitTimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
             OnSpawnMultiplierChanged(logger, value, DyingWaitTimeMultiplier));
         DeadCameraDurationMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
             OnSpawnMultiplierChanged(logger, value, DeadCameraDurationMultiplier));
+
+        EnableDungeonRandomizer.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        RandomizeDungeonPick.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        DungeonPickPoolMode.OnEntryValueChanged.Subscribe((_, value) => OnDungeonPickPoolModeChanged(logger, value));
+        DungeonAllowlist.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        DungeonBlocklist.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        IgnoreDungeonExcludeList.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        RandomizeLayoutFlow.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        RandomizeMapVariant.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        RandomizeDungeonSeed.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
         EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
@@ -722,6 +842,7 @@ public static class ModConfig
             ShopItemsMultiplier,
             ReinforcePriceMultiplier,
             ExtraShiftSecondsPerPlayerAboveBaseline,
+            DungeonSizeMultiplier,
             DyingWaitTimeMultiplier,
             DeadCameraDurationMultiplier,
         });
@@ -814,6 +935,19 @@ public static class ModConfig
         {
             logger.Warning("ShopDiscountMaxPercent must be >= ShopDiscountMinPercent; syncing max to min.");
             ShopDiscountMaxPercent.Value = ShopDiscountMinPercent.Value;
+        }
+
+        NotifyChanged();
+    }
+
+    private static void OnDungeonPickPoolModeChanged(MelonLogger.Instance logger, string value)
+    {
+        if (!string.Equals(value, "WidenVanilla", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(value, "AllActiveUniform", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.Warning("DungeonPickPoolMode must be WidenVanilla or AllActiveUniform; resetting to WidenVanilla.");
+            DungeonPickPoolMode.Value = "WidenVanilla";
+            return;
         }
 
         NotifyChanged();

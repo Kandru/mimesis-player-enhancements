@@ -28,6 +28,8 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, scrap/sell values, shop buy prices, shop item count, and reinforce costs | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by real seconds per player above a baseline (default: +10s per player above 4) | No — host only |
+| **Dungeon Size Scaling** | Scale procedural dungeon length by base multiplier and player count (default: ×1 at 4 players, ×2 at 8) | No — applies on each machine during generation |
+| **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 | **Spectator Transition** | Shorten downed time and dead-camera duration before spectator mode | No — host for down time; dead camera on each machine with the mod |
 
 Based on community mods by [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Please support the original authors as well :)
@@ -219,6 +221,53 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
+### Dungeon Size Scaling
+
+Scales procedural dungeon length (DunGen `LengthMultiplier`). Applied on **each machine** when the dungeon is generated so layouts stay in sync across host and clients. Everyone in the lobby should use the same config values.
+
+**Combined formula:** `DungeonSizeMultiplier` × player scale. Player scale is `1` at or below the baseline; above the baseline it is `player count ÷ baseline` when auto-scaling is on (e.g. 4 players = ×1, 8 players = ×2). Example with defaults: 4 players and multiplier `1` = 100%; 8 players = 200%; multiplier `1.5` with 8 players = ×3 total.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableDungeonSizeScaling` | bool | `true` | Master toggle for dungeon size scaling. |
+| `DungeonSizeMultiplier` | float | `1.0` | Base length multiplier (`1` = vanilla, `2` = double). Applies even at or below the player baseline. Minimum is `0`. |
+| `AutoScaleDungeonSizeByPlayerCount` | bool | `true` | When on, multiply by player count ÷ baseline above the baseline (stacks with `DungeonSizeMultiplier`). |
+| `DungeonSizeBaselinePlayerCount` | int | `4` | Player-count scaling starts above this count. Minimum is `1`. |
+
+### Dungeon Randomizer
+
+Host-only. Randomizes dungeon selection at four independent layers when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on. Each layer has its own toggle so you can randomize only what you want.
+
+**Layers:**
+
+| Layer | What it affects |
+|-------|-----------------|
+| **Dungeon pick** | Which dungeon master ID appears on the tram roll |
+| **Layout flow** | DunGen procedural layout variant within a dungeon |
+| **Map variant** | Which map ID is chosen from the dungeon's `MapIDs` |
+| **Seed** | Procedural `RandomDungeonSeed` used for room generation |
+
+**Pool modes** (`DungeonPickPoolMode`):
+
+| Value | Behavior |
+|-------|----------|
+| `WidenVanilla` | Keep vanilla cycle weights; optionally allow repeats sooner via `IgnoreDungeonExcludeList` |
+| `AllActiveUniform` | Pick uniformly from all active dungeons (ignores the cycle table) |
+
+`DungeonAllowlist` and `DungeonBlocklist` filter the pool regardless of mode. Allowlist wins when non-empty: only listed IDs are eligible.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableDungeonRandomizer` | bool | `false` | Master toggle for all dungeon randomization below. |
+| `RandomizeDungeonPick` | bool | `true` | Override tram dungeon master ID selection. |
+| `DungeonPickPoolMode` | string | `WidenVanilla` | `WidenVanilla` or `AllActiveUniform` (see table above). |
+| `DungeonAllowlist` | string | `""` | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |
+| `DungeonBlocklist` | string | `""` | Comma-separated dungeon master IDs to exclude. |
+| `IgnoreDungeonExcludeList` | bool | `true` | With `WidenVanilla`, do not exclude recently played dungeons from the tram roll. |
+| `RandomizeLayoutFlow` | bool | `true` | Pick DunGen layout flows uniformly instead of weighted vanilla rolls. |
+| `RandomizeMapVariant` | bool | `true` | Pick map variants uniformly from each dungeon's `MapIDs`. |
+| `RandomizeDungeonSeed` | bool | `true` | Replace the procedural dungeon seed when a dungeon is chosen. |
+
 ### Spectator Transition
 
 Shortens how long players stay downed before spectator mode and how long the local dead-camera transition runs. Multipliers use the same scale as spawn/loot settings: `1` = vanilla, `0.5` = half, `0` = instant.
@@ -294,6 +343,19 @@ ReinforcePriceMultiplier = 1.0
 EnableDungeonTime = true
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
+EnableDungeonSizeScaling = true
+DungeonSizeMultiplier = 1.0
+AutoScaleDungeonSizeByPlayerCount = true
+DungeonSizeBaselinePlayerCount = 4
+EnableDungeonRandomizer = false
+RandomizeDungeonPick = true
+DungeonPickPoolMode = "WidenVanilla"
+DungeonAllowlist = ""
+DungeonBlocklist = ""
+IgnoreDungeonExcludeList = true
+RandomizeLayoutFlow = true
+RandomizeMapVariant = true
+RandomizeDungeonSeed = true
 EnableSpectatorTransition = true
 DyingWaitTimeMultiplier = 1.0
 DeadCameraDurationMultiplier = 1.0
