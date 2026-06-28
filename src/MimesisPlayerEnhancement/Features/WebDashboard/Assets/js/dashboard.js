@@ -48,11 +48,14 @@ document.addEventListener('alpine:init', () => {
     players: [],
     leaderboard: null,
     playerStats: null,
+    settings: null,
+    settingsQuery: '',
     route: 'waiting',
     steamId: null,
     toastMessage: '',
     toastVisible: false,
     loadingStats: false,
+    loadingSettings: false,
     pageError: '',
     apiError: false,
     lastSnapshotVersion: -1,
@@ -73,7 +76,7 @@ document.addEventListener('alpine:init', () => {
       const parts = [];
       if (this.status.modVersion) parts.push('v' + this.status.modVersion);
       parts.push(this.status.isHost ? 'Host' : 'Guest');
-      if (this.status.saveSlotId >= 0) parts.push('Slot ' + this.status.saveSlotId);
+      if (this.status.saveSlotId >= 0) parts.push('Savegame ' + this.status.saveSlotId);
       return parts.join(' · ');
     },
 
@@ -183,6 +186,7 @@ document.addEventListener('alpine:init', () => {
 
     needsPageRefresh(force) {
       if (force) return true;
+      if (this.route === 'settings') return true;
       if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
@@ -194,6 +198,7 @@ document.addEventListener('alpine:init', () => {
         this.players = [];
         this.leaderboard = null;
         this.playerStats = null;
+        this.settings = null;
         this.pageError = '';
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;
@@ -223,6 +228,18 @@ document.addEventListener('alpine:init', () => {
           }
         } else {
           this.playerStats = null;
+        }
+
+        if (this.route === 'settings' && this.status.isHost) {
+          this.loadingSettings = true;
+          try {
+            this.settings = await Api.getSettings();
+          } finally {
+            this.loadingSettings = false;
+          }
+        } else {
+          this.settings = null;
+          this.settingsQuery = '';
         }
       } catch (e) {
         this.pageError = e.message || 'Failed to load data';
@@ -346,6 +363,43 @@ document.addEventListener('alpine:init', () => {
 
     isValidSteamId(steamId) {
       return isValidSteamId(steamId);
+    },
+
+    filteredSections() {
+      if (!this.settings || !this.settings.sections) return [];
+      const q = this.settingsQuery.trim().toLowerCase();
+      const sections = [];
+      for (const section of this.settings.sections) {
+        const entries = (section.entries || []).filter((entry) => {
+          if (!q) return true;
+          return [entry.key, entry.title, entry.description, entry.value, entry.type, entry.defaultValue]
+            .some((v) => String(v || '').toLowerCase().includes(q));
+        });
+        if (entries.length > 0) {
+          sections.push({ id: section.id, title: section.title, entries });
+        }
+      }
+      return sections;
+    },
+
+    formatSettingValue(entry) {
+      const value = entry.value;
+      if (entry.type === 'Boolean') {
+        if (value === 'True' || value === 'true') return 'On';
+        if (value === 'False' || value === 'false') return 'Off';
+      }
+      if (value == null || value === '') return '—';
+      return String(value);
+    },
+
+    settingValueClass(entry) {
+      if (entry.type !== 'Boolean') return '';
+      const value = String(entry.value || '').toLowerCase();
+      return value === 'true' ? 'settings-bool-on' : 'settings-bool-off';
+    },
+
+    settingDiffersFromDefault(entry) {
+      return String(entry.value ?? '') !== String(entry.defaultValue ?? '');
     },
   }));
 });

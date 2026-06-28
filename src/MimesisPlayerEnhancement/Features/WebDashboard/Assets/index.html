@@ -29,6 +29,9 @@
         <li x-show="status.isHost">
           <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }">Leaderboard</a>
         </li>
+        <li x-show="status.isHost">
+          <a href="#/settings" :class="{ active: route === 'settings' }">Settings</a>
+        </li>
       </ul>
     </nav>
 
@@ -204,6 +207,82 @@
                         </template>
                       </div>
                     </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+            </div>
+          </template>
+
+          <!-- Settings -->
+          <template x-if="status.inSession && route === 'settings'">
+            <div>
+            <template x-if="!status.isHost">
+              <div class="empty-state"><p>Settings are only available to the host.</p></div>
+            </template>
+            <template x-if="status.isHost">
+              <div class="settings-page">
+                <h2 class="page-heading">Settings</h2>
+                <p class="settings-intro">Read-only view of mod configuration. Edit values in-game or in the config file on the host machine.</p>
+
+                <template x-if="settings">
+                  <div class="settings-toolbar surface-card">
+                    <div class="settings-path">
+                      <span class="settings-path-label">Config file</span>
+                      <code class="settings-path-value" x-text="settings.configPath || '—'"></code>
+                    </div>
+                    <label class="settings-search-wrap">
+                      <span class="visually-hidden">Filter settings</span>
+                      <input type="search"
+                             class="settings-search"
+                             placeholder="Search keys, titles, values…"
+                             x-model="settingsQuery"
+                             autocomplete="off"
+                             spellcheck="false">
+                    </label>
+                  </div>
+                </template>
+
+                <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
+                <div class="loading-panel" x-show="loadingSettings && !pageError">
+                  <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
+                </div>
+
+                <div class="empty-state" x-show="!loadingSettings && !pageError && settings && filteredSections().length === 0">
+                  <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
+                </div>
+
+                <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections().length > 0">
+                  <template x-for="section in filteredSections()" :key="section.id">
+                    <section class="settings-section surface-card">
+                      <header class="settings-section-header">
+                        <h3 class="settings-section-title" x-text="section.title"></h3>
+                        <span class="settings-section-count" x-text="section.entries.length + ' keys'"></span>
+                      </header>
+                      <div class="settings-entries">
+                        <template x-for="entry in section.entries" :key="entry.key">
+                          <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden }">
+                            <div class="settings-entry-main">
+                              <div class="settings-entry-head">
+                                <strong class="settings-entry-title" x-text="entry.title"></strong>
+                                <span class="settings-type-pill" x-text="entry.type"></span>
+                                <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
+                              </div>
+                              <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
+                              <code class="settings-key" x-text="entry.key"></code>
+                            </div>
+                            <div class="settings-entry-value-wrap">
+                              <span class="settings-value"
+                                    :class="settingValueClass(entry)"
+                                    x-text="formatSettingValue(entry)"></span>
+                              <small class="settings-default-hint"
+                                     x-show="settingDiffersFromDefault(entry)"
+                                     x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
+                            </div>
+                          </article>
+                        </template>
+                      </div>
+                    </section>
                   </template>
                 </div>
               </div>

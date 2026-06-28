@@ -66,6 +66,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             });
         }
 
+        public static string SerializeSettings(WebDashboardSettingsDto settings)
+        {
+            return ModJson.Serialize(settings);
+        }
+
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
         {
             return new PlayerApiDto

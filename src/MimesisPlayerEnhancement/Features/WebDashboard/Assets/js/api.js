@@ -26,6 +26,10 @@ const Api = {
     return Api.fetchJson('/api/leaderboard');
   },
 
+  async getSettings() {
+    return Api.fetchJson('/api/settings');
+  },
+
   async getPlayerStats(steamId) {
     return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/stats');
   },

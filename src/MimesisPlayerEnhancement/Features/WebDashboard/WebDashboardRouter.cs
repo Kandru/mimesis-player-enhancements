@@ -72,6 +72,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/settings" && method == "GET")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildSettings()));
+                return;
+            }
+
             if (path.StartsWith("/api/players/", StringComparison.Ordinal))
             {
                 HandlePlayerApi(context, method, path, snapshot);

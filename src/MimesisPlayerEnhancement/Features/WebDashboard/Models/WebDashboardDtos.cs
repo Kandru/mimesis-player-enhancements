@@ -68,4 +68,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool Success;
         public string Message = "";
     }
+
+    internal sealed class WebDashboardSettingsDto
+    {
+        public string ConfigPath = "";
+        public List<WebDashboardConfigSectionDto> Sections = [];
+    }
+
+    internal sealed class WebDashboardConfigSectionDto
+    {
+        public string Id = "";
+        public string Title = "";
+        public List<WebDashboardConfigEntryDto> Entries = [];
+    }
+
+    internal sealed class WebDashboardConfigEntryDto
+    {
+        public string Key = "";
+        public string Title = "";
+        public string Description = "";
+        public string Type = "";
+        public string Value = "";
+        public string DefaultValue = "";
+        public bool IsHidden;
+    }
 }
