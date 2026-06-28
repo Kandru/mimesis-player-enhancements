@@ -36,6 +36,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.InitWaitingRoom))]
+    internal static class VRoomManagerInitWaitingRoomPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(VRoomManager __instance)
+        {
+            JoinAnytimeRoomTools.RefreshWaitingRoomDisplaysForOccupants(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
     internal static class VRoomManagerEnterWaitingRoomPatch
     {

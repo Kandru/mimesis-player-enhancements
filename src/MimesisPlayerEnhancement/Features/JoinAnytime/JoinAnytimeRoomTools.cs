@@ -143,6 +143,45 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return waitingRoom != null;
         }
 
+        /// <summary>
+        /// After the host re-inits an existing waiting room (dungeon return), players who never
+        /// left the tram miss EnterWaitingRoomRes. Push RollDungeonSig so map consoles stay in sync.
+        /// </summary>
+        internal static void RefreshWaitingRoomDisplaysForOccupants(VRoomManager? vroomManager = null)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            if (vroomManager == null && !TryGetVRoomManager(out vroomManager))
+            {
+                return;
+            }
+
+            if (TryGetWaitingRoom(vroomManager!) is not VWaitingRoom waitingRoom)
+            {
+                return;
+            }
+
+            bool hasLoadedOccupant = false;
+            waitingRoom.IterateAllPlayer(player =>
+            {
+                if (player.LevelLoadCompleted)
+                {
+                    hasLoadedOccupant = true;
+                }
+            });
+
+            if (!hasLoadedOccupant)
+            {
+                return;
+            }
+
+            waitingRoom.SendRollDungeonSig();
+            ModLog.Info(Feature, "Broadcast RollDungeonSig to refresh tram displays for players already in waiting room");
+        }
+
         internal static bool ShouldBlockWaitingRoomStartGame()
         {
             if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
