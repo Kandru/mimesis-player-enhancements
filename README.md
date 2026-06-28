@@ -27,6 +27,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
+| **Web Dashboard** | Browser UI for connected players, per-player stats, and host kick/ban moderation | No — host only |
 | **Player Announcements** | In-game toasts for dungeon settings, boss spawns, and per-map death stats | No — host only |
 | **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
@@ -306,6 +307,29 @@ Shortens how long players stay downed before spectator mode and how long the loc
 | `DyingWaitTimeMultiplier` | float | `1.0` | Scales server down/dying time before spectator (`0` = instant). Host only. Also shortens the teammate revive window. Minimum is `0`. |
 | `DeadCameraDurationMultiplier` | float | `1.0` | Scales local dead-camera blend and duration before spectator (`0` = instant). Minimum is `0`. |
 
+### Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
+
+Host-only. Serves a local HTTP dashboard from the game process while a session is active. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). Off by default — set `EnableWebDashboard = true` to turn it on.
+
+**What you get:**
+
+| View | Who can see it | What it shows |
+|------|----------------|---------------|
+| **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
+| **Leaderboard** | Host only | Per-save-slot stats leaderboard (requires **Statistics** enabled) |
+| **Player stats** | Host only | Per-player statistics for the active save slot (requires **Statistics** enabled) |
+| **Moderation** | Host only | Kick, ban, and unban actions queued on the game thread |
+
+**Security:** Default bind is `127.0.0.1` (loopback) so only your machine can connect. Binding to another address (e.g. `0.0.0.0` or your LAN IP) exposes the dashboard to anyone on that network — there is no login. Only use a non-loopback address on a network you trust.
+
+Listen address and port changes take effect when the config reloads (the HTTP server restarts). Port must be between `1` and `65535`.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableWebDashboard` | bool | `false` | Turn the local web dashboard on or off. |
+| `WebDashboardListenAddress` | string | `127.0.0.1` | HTTP bind address. Use `127.0.0.1` for local-only access. |
+| `WebDashboardListenPort` | int | `8001` | TCP port for the web dashboard. Must be `1`–`65535`. |
+
 ### Example config
 
 Abbreviated example showing section layout (not every loot/money key is listed):
@@ -374,6 +398,11 @@ DungeonPickPoolMode = "WidenVanilla"
 EnableSpectatorTransition = true
 DyingWaitTimeMultiplier = 1.0
 DeadCameraDurationMultiplier = 1.0
+
+[MimesisPlayerEnhancement_WebDashboard]
+EnableWebDashboard = false
+WebDashboardListenAddress = "127.0.0.1"
+WebDashboardListenPort = 8001
 ```
 
 ## Build from source

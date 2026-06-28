@@ -376,7 +376,7 @@ namespace MimesisPlayerEnhancement
                 }
 
                 MethodInfo getMap = main.GetType().GetMethod("GetProtoActorMap", InstanceMemberFlags);
-                if (getMap?.Invoke(main, null) is not System.Collections.Generic.Dictionary<int, ProtoActor> map)
+                if (getMap?.Invoke(main, null) is not Dictionary<int, ProtoActor> map)
                 {
                     return null;
                 }

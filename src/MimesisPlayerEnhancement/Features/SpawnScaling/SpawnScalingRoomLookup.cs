@@ -85,7 +85,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             string trimmed = name.Trim();
-            return trimmed.Equals("GameObject", System.StringComparison.OrdinalIgnoreCase) ? null : trimmed;
+            return trimmed.Equals("GameObject", StringComparison.OrdinalIgnoreCase) ? null : trimmed;
         }
     }
 }

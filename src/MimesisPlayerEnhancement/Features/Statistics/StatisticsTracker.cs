@@ -4,6 +4,7 @@ using System.Reflection;
 using Mimic.Actors;
 using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
@@ -173,6 +174,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             bool isNewSession = !resumeSession;
             int reconnectCount = doc.CurrentSession?.ReconnectCount ?? 0;
             StatisticsMessages.OnPlayerJoinedSession(steamId, doc.DisplayName, doc, isNewSession, reconnectCount);
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         public static void OnPlayerUnregistered(ulong steamId)
@@ -205,6 +207,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatisticsWriteQueue.SavePlayerImmediate(_loadedSlotId, doc);
             PersistLeaderboardImmediate(_loadedSlotId);
             StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         public static void ProcessDeferred()
@@ -360,6 +363,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             ModLog.Info(Feature, $"Cycle {cycleNumber} statistics saved for slot {slotId} ({affected.Count} players).");
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         public static void OnGameSaved(int slotId)
@@ -388,6 +392,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             PersistLeaderboardImmediate(slotId);
             ModLog.Debug(Feature, $"Statistics persisted on game save for slot {slotId}.");
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         public static void OnPlayerDeath(ProtoActor actor)
@@ -509,6 +514,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId)
         {
             return _players.TryGetValue(steamId, out PlayerStatisticsDocument? doc) ? doc : null;
+        }
+
+        internal static IReadOnlyList<PlayerStatisticsDocument> GetCachedPlayerDocuments()
+        {
+            return new List<PlayerStatisticsDocument>(_players.Values);
         }
 
         internal static IReadOnlyCollection<ulong> GetConnectedSteamIds()

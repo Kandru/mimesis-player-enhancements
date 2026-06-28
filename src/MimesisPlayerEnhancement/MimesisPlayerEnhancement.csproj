@@ -26,6 +26,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile;build</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Collections.Immutable">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile;build</IncludeAssets>
@@ -51,6 +55,14 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GameAssemblyPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net" Condition="Exists('$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll')">
+      <HintPath>$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

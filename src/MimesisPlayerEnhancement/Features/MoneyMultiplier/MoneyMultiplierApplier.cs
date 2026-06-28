@@ -29,11 +29,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         private static readonly FieldInfo TargetCurrencyField =
             AccessTools.Field(typeof(GameSessionInfo), "_targetCurrency")
-            ?? throw new System.InvalidOperationException("GameSessionInfo._targetCurrency not found");
+            ?? throw new InvalidOperationException("GameSessionInfo._targetCurrency not found");
 
         private static readonly FieldInfo PriceForItemsField =
             AccessTools.Field(typeof(MaintenanceRoom), "_priceForItems")
-            ?? throw new System.InvalidOperationException("MaintenanceRoom._priceForItems not found");
+            ?? throw new InvalidOperationException("MaintenanceRoom._priceForItems not found");
 
         internal static bool IsEnabled()
         {

@@ -408,7 +408,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 using (BinaryReader br = new(ms))
                 {
                     count = br.ReadInt32();
-                    if (count <= 0 || count > 100000)
+                    if (count is <= 0 or > 100000)
                     {
                         return LoadSpeechEventsOldFormat(data);
                     }

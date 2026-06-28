@@ -16,27 +16,15 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     {
         internal static SpawnCategory GetCategory(MonsterInfo info)
         {
-            if (info.IsMimic())
-            {
-                return SpawnCategory.Mimic;
-            }
-
-            if (IsTrap(info))
-            {
-                return SpawnCategory.Trap;
-            }
-
-            if (info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Boss))
-            {
-                return SpawnCategory.Boss;
-            }
-
-            if (info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Jako))
-            {
-                return SpawnCategory.Jako;
-            }
-
-            return info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Special)
+            return info.IsMimic()
+                ? SpawnCategory.Mimic
+                : IsTrap(info)
+                ? SpawnCategory.Trap
+                : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Boss)
+                ? SpawnCategory.Boss
+                : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Jako)
+                ? SpawnCategory.Jako
+                : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Special)
                 ? SpawnCategory.Special
                 : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Mimic) ? SpawnCategory.Mimic : SpawnCategory.Other;
         }

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <title>Mimesis Player Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="waiting">
+  <div class="bg-layer" aria-hidden="true"></div>
+  <div class="bg-scrim" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header-inner">
+        <div class="app-brand">
+          <h1>Mimesis Player Dashboard</h1>
+          <p id="subtitle" class="app-subtitle">Loading…</p>
+        </div>
+      </div>
+    </header>
+
+    <nav id="main-nav" class="app-nav" aria-label="Main navigation">
+      <ul>
+        <li><a href="#/players" data-route="players">Players</a></li>
+        <li class="host-only"><a href="#/leaderboard" data-route="leaderboard">Leaderboard</a></li>
+      </ul>
+    </nav>
+
+    <main class="app-main">
+      <div class="app-content">
+        <section id="view" aria-live="polite"></section>
+      </div>
+    </main>
+  </div>
+
+  <aside id="toast" role="status" aria-live="polite"></aside>
+
+  <script src="/js/ping-bars.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

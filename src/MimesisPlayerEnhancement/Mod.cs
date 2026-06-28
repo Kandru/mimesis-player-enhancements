@@ -84,7 +84,7 @@ namespace MimesisPlayerEnhancement
 
         public override void OnDeinitializeMelon()
         {
-            Features.Statistics.StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushAllSync();
             WebDashboardServer.StopOnDeinit();
             HostStatusCache.Invalidate();
             ModConfig.Changed -= SyncFromConfig;
@@ -116,7 +116,7 @@ namespace MimesisPlayerEnhancement
 
             if (_statisticsWasEnabled && !ModConfig.EnableStatistics.Value)
             {
-                Features.Statistics.StatisticsTracker.ClearRuntimeState();
+                StatisticsTracker.ClearRuntimeState();
             }
 
             _statisticsWasEnabled = ModConfig.EnableStatistics.Value;

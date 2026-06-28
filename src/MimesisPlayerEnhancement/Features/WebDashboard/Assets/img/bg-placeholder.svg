@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e14"/>
+      <stop offset="50%" stop-color="#121820"/>
+      <stop offset="100%" stop-color="#0d1520"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="25%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1a3a5c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="75%" cy="70%" r="40%">
+      <stop offset="0%" stop-color="#2d1f4e" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#2d1f4e" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g1)"/>
+  <rect width="1920" height="1080" fill="url(#glow1)"/>
+  <rect width="1920" height="1080" fill="url(#glow2)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+</svg>

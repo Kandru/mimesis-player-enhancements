@@ -1,3 +1,4 @@
+using System.Reflection;
 using MimesisInspectionTool;
 
 return CommandLine.Run(args);
@@ -70,6 +71,8 @@ internal static class CommandLine
                 return RunConstants(context, commandArgs);
             case "member":
                 return RunMember(context, commandArgs);
+            case "scan":
+                return RunScan(context, commandArgs);
             default:
                 Console.Error.WriteLine($"Unknown command: {command}");
                 PrintHelp();
@@ -146,6 +149,64 @@ internal static class CommandLine
         }
 
         InspectionPrinter.PrintMember(context.RequireType(args[1]), args[2]);
+        return 0;
+    }
+
+    private static int RunScan(MimesisMetadataContext context, List<string> args)
+    {
+        if (args.Count < 2)
+        {
+            throw new InvalidOperationException("Usage: scan <memberNameFilter>");
+        }
+
+        string filter = args[1];
+        const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+        Type[] types;
+        try
+        {
+            types = context.AssemblyCSharp.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            types = ex.Types.Where(t => t != null).Cast<Type>().ToArray();
+        }
+
+        foreach (Type type in types.OrderBy(t => t.FullName, StringComparer.Ordinal))
+        {
+            MethodInfo[] methods;
+            FieldInfo[] fields;
+            try
+            {
+                methods = type.GetMethods(flags);
+                fields = type.GetFields(flags);
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (MethodInfo method in methods)
+            {
+                if (method.IsSpecialName || !method.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                Console.WriteLine($"{type.FullName}.{method.Name}({string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name))}) -> {method.ReturnType.Name}");
+            }
+
+            foreach (FieldInfo field in fields)
+            {
+                if (!field.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                Console.WriteLine($"{type.FullName}.{field.Name} : {field.FieldType.Name}");
+            }
+        }
+
         return 0;
     }
 

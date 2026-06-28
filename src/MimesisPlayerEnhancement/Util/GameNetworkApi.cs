@@ -15,7 +15,7 @@ namespace MimesisPlayerEnhancement.Util
     /// <list type="bullet">
     ///   <item><see cref="GameNetworkApi"/> — <c>MimicAPI/GameAPI/ServerNetworkAPI.cs</c></item>
     ///   <item><see cref="ReflectionHelper"/> — <c>MimicAPI/GameAPI/ReflectionHelper.cs</c></item>
-    ///   <item><see cref="GameNetworkApi.GetHub"/> / <see cref="GameNetworkApi.GetVWorld"/> — <c>MimicAPI/GameAPI/CoreAPI.cs</c></item>
+    ///   <item><see cref="GetHub"/> / <see cref="GetVWorld"/> — <c>MimicAPI/GameAPI/CoreAPI.cs</c></item>
     /// </list>
     /// Upstream tree: https://github.com/NeoMimicry/MimicAPI/tree/main/MimicAPI/GameAPI
     /// </remarks>

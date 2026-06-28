@@ -20,7 +20,9 @@ MANAGED="$GAME_PATH/MIMESIS_Data/Managed"
 MELON="$GAME_PATH/MelonLoader/net35"
 
 for f in "$MANAGED/Assembly-CSharp.dll" "$MANAGED/FishNet.Runtime.dll" "$MANAGED/UniTask.dll" \
-         "$MANAGED/UnityEngine.dll" "$MANAGED/UnityEngine.CoreModule.dll" "$MELON/MelonLoader.dll"; do
+         "$MANAGED/UnityEngine.dll" "$MANAGED/UnityEngine.CoreModule.dll" \
+         "$MANAGED/UnityEngine.ImageConversionModule.dll" "$MANAGED/com.rlabrecque.steamworks.net.dll" \
+         "$MELON/MelonLoader.dll"; do
   if [[ ! -f "$f" ]]; then
     echo "Missing required file: $f" >&2
     exit 1
@@ -34,6 +36,8 @@ cp "$MANAGED/Assembly-CSharp.dll" \
    "$MANAGED/UniTask.dll" \
    "$MANAGED/UnityEngine.dll" \
    "$MANAGED/UnityEngine.CoreModule.dll" \
+   "$MANAGED/UnityEngine.ImageConversionModule.dll" \
+   "$MANAGED/com.rlabrecque.steamworks.net.dll" \
    "$REF_DIR/Managed/"
 
 cp "$MELON/MelonLoader.dll" "$REF_DIR/MelonLoader/net35/"

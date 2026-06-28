@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
@@ -116,6 +117,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             FlushDirty(async: true);
             _nextFlushTime = UnityEngine.Time.time + DebounceSeconds;
+            WebDashboardSnapshotCache.MarkDirty();
         }
 
         internal static void FlushAllSync()

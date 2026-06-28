@@ -83,7 +83,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         private static int GetBasePrice(int price, float discountRate)
         {
-            return price <= 0 ? 0 : discountRate <= 0f || discountRate >= 1f ? price : Math.Max(1, (int)Math.Round(price / (1f - discountRate)));
+            return price <= 0 ? 0 : discountRate is <= 0f or >= 1f ? price : Math.Max(1, (int)Math.Round(price / (1f - discountRate)));
         }
 
         private static bool RollDiscount(int chancePercent)

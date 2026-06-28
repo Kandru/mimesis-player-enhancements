@@ -884,7 +884,7 @@ namespace MimesisPlayerEnhancement
             WebDashboardListenAddress.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             WebDashboardListenPort.OnEntryValueChanged.Subscribe((_, value) =>
             {
-                if (value < 1 || value > 65535)
+                if (value is < 1 or > 65535)
                 {
                     logger.Warning("WebDashboardListenPort must be between 1 and 65535; resetting to 8001.");
                     WebDashboardListenPort.Value = 8001;

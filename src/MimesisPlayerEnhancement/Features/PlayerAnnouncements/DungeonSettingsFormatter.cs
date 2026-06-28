@@ -147,7 +147,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static bool IsDefaultMultiplier(float multiplier)
         {
-            return multiplier >= 0.995f && multiplier <= 1.005f;
+            return multiplier is >= 0.995f and <= 1.005f;
         }
 
         private static string FormatMultiplier(float multiplier)

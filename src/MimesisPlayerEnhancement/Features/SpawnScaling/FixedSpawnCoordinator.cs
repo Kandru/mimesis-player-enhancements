@@ -359,12 +359,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         private static bool HasRespawnBudget(SpawnedActorData spawnData)
         {
-            if (spawnData.SpawnType.Equals(SpawnType.OnStartMap))
-            {
-                return false;
-            }
-
-            return spawnData.MaxRespawnCount == 0 || spawnData.CurrentSpawnCount <= spawnData.MaxRespawnCount || spawnData.EnableReset;
+            return !spawnData.SpawnType.Equals(SpawnType.OnStartMap) && (spawnData.MaxRespawnCount == 0 || spawnData.CurrentSpawnCount <= spawnData.MaxRespawnCount || spawnData.EnableReset);
         }
 
         private static bool TryRespawnCreature(DungeonRoom room, SpawnedActorData spawnData)
