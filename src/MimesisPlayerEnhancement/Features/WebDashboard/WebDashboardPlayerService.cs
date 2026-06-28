@@ -396,10 +396,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void ApplyConnectionInfo(WebDashboardPlayerDto dto, SessionContext? context)
         {
             SpeechEventArchive? archive = FindArchive(dto.PlayerUid, dto.SteamId);
-            if (archive != null && VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo fromArchive))
+            PlayerConnectionInfo? merged = null;
+
+            if (archive != null
+                && VoiceEventStats.TryGetConnectionInfo(archive, context, dto.SteamId, out PlayerConnectionInfo fromArchive))
             {
-                ApplyConnectionFields(dto, fromArchive);
-                return;
+                merged = fromArchive;
             }
 
             if (context != null
@@ -408,15 +410,46 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     dto.PlayerUid,
                     dto.SteamId,
                     dto.IsLocal,
-                    out PlayerConnectionInfo fromSession))
+                    out PlayerConnectionInfo fromContext))
             {
-                ApplyConnectionFields(dto, fromSession);
+                if (merged == null)
+                {
+                    merged = fromContext;
+                }
+                else
+                {
+                    if (IsUnavailableConnectionAddress(merged.ConnectionAddress)
+                        && !IsUnavailableConnectionAddress(fromContext.ConnectionAddress))
+                    {
+                        merged.ConnectionAddress = fromContext.ConnectionAddress;
+                    }
+
+                    if (merged.PlayerUid == 0 && fromContext.PlayerUid != 0)
+                    {
+                        merged.PlayerUid = fromContext.PlayerUid;
+                    }
+
+                    if (merged.SteamId == 0 && fromContext.SteamId != 0)
+                    {
+                        merged.SteamId = fromContext.SteamId;
+                    }
+                }
+            }
+
+            if (merged != null)
+            {
+                ApplyConnectionFields(dto, merged);
                 return;
             }
 
             dto.ConnectionRole = dto.IsLocal ? "host" : "client";
             dto.ConnectionAddress = dto.IsLocal ? "local" : "(unavailable)";
-            dto.VoiceEventCount = 0;
+            dto.VoiceEventCount = archive != null ? VoiceEventStats.GetEventCount(archive) : 0;
+        }
+
+        private static bool IsUnavailableConnectionAddress(string address)
+        {
+            return string.IsNullOrEmpty(address) || address == "(unavailable)";
         }
 
         private static void ApplyConnectionFields(WebDashboardPlayerDto dto, PlayerConnectionInfo info)

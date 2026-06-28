@@ -122,6 +122,15 @@ namespace MimesisPlayerEnhancement
 
         public static bool TryGetConnectionInfo(SpeechEventArchive? archive, out PlayerConnectionInfo info)
         {
+            return TryGetConnectionInfo(archive, null, 0, out info);
+        }
+
+        public static bool TryGetConnectionInfo(
+            SpeechEventArchive? archive,
+            SessionContext? knownContext,
+            ulong steamIdHint,
+            out PlayerConnectionInfo info)
+        {
             info = new PlayerConnectionInfo();
             if (archive == null)
             {
@@ -141,9 +150,35 @@ namespace MimesisPlayerEnhancement
                 /* Player component may not be ready yet */
             }
 
-            SessionContext? session = FindSessionContext(playerUid, 0);
-            ulong steamIdValue = ResolveSteamId(playerUid, isLocal, session);
-            if (session == null && steamIdValue != 0)
+            SessionContext? session = knownContext;
+            ulong steamIdValue = steamIdHint;
+
+            if (session != null)
+            {
+                try
+                {
+                    if (steamIdValue == 0)
+                    {
+                        steamIdValue = session.SteamID;
+                    }
+
+                    if (playerUid == 0)
+                    {
+                        playerUid = session.GetPlayerUID();
+                    }
+                }
+                catch
+                {
+                    /* Context may be mid-setup */
+                }
+            }
+
+            if (steamIdValue == 0)
+            {
+                steamIdValue = ResolveSteamId(playerUid, isLocal, session);
+            }
+
+            if (session == null)
             {
                 session = FindSessionContext(playerUid, steamIdValue);
             }
