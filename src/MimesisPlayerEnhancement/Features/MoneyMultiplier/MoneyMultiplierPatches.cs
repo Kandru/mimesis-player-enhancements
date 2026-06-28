@@ -35,6 +35,7 @@ public static class MoneyMultiplierPatches
             ("GetPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetPrice))),
             ("GetMeanPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetMeanPrice))),
             ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
+            ("InitShopItems/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))),
             ("ReinforceItem/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ReinforceItem))),
         });
     }
@@ -160,6 +161,24 @@ public static class MoneyMultiplierPatches
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"TryGetShopItemPrice postfix failed — {ex.Message}");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))]
+    public static class MaintenanceRoomInitShopItemsPatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix(MaintenanceRoom __instance)
+        {
+            try
+            {
+                MoneyMultiplierApplier.ApplyShopItems(__instance);
+                ShopDiscountApplier.Apply(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"InitShopItems postfix failed — {ex.Message}");
             }
         }
     }

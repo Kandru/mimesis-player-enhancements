@@ -6,5 +6,6 @@ internal enum MoneyType
     RoundGoal,
     ScrapSellValue,
     ShopBuyPrice,
+    ShopItems,
     ReinforcePrice,
 }
