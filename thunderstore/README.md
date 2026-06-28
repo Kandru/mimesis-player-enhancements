@@ -1,7 +1,5 @@
 # Mimesis Player Enhancement
 
-![Mimesis Player Enhancement Logo](icon.png)
-
 > **Warning — use at your own risk.** Mods change how the game runs; things can break. Only download MelonLoader from [melonwiki.xyz](https://melonwiki.xyz/). If you do not trust a pre-built DLL, [build from source on GitHub](https://github.com/Kandru/mimesis-player-enhancements).
 
 One plugin for MIMESIS multiplayer: more players, more mimic voices, voice persistence, join-anytime, statistics, spawn/loot/money scaling, dungeon tweaks, a web dashboard, and more — with a single config file instead of juggling separate mods.
@@ -54,6 +52,16 @@ After the first launch:
 Edit anytime; most changes apply fully after a restart. Each feature has its own TOML section and master toggle.
 
 Full config reference, build instructions, and contribution guide: [GitHub README](https://github.com/Kandru/mimesis-player-enhancements#config).
+
+## Support
+
+This mod is not a quick patch — it merges several community mods into one maintained package and adds a lot of original work on top: Harmony patches across the game, a web dashboard, session statistics, spawn/loot/money scaling, dungeon tweaks, and ongoing compatibility testing with new MIMESIS releases. That takes a lot of dedicated time to build, debug, and keep working.
+
+If you enjoy playing with it and want to say thanks, a small donation is genuinely appreciated (but never required):
+
+[![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=C2AVYKGVP9TRG)
+
+The mod stays free and open source either way. Please also support the original mod authors linked above.
 
 ## Links
 
