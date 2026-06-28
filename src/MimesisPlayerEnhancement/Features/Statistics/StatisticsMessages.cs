@@ -149,7 +149,7 @@ internal static class StatisticsMessages
     {
         var lines = new List<string>
         {
-            $"{PluginDisplayName} v{VersionInfo.ModuleVersion}, developed by {AuthorName}, downloadable via {DownloadUrl}",
+            $"v{VersionInfo.ModuleVersion}, developed by {AuthorName}, downloadable via {DownloadUrl}",
         };
 
         if (isNewSession == true)
