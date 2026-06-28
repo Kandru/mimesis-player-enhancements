@@ -38,6 +38,9 @@ internal static class MoneyMultiplierApplier
     internal static bool IsEnabled() =>
         ModConfig.EnableMoneyMultiplier.Value && MoneyMultiplierHost.ShouldApply();
 
+    internal static int ScaleShopPrice(MaintenanceRoom room, int vanilla) =>
+        ShopBuyPriceApplier.ScalePrice(room, vanilla);
+
     internal static bool TryGetVanillaInitialMoney(out int value)
     {
         value = 0;

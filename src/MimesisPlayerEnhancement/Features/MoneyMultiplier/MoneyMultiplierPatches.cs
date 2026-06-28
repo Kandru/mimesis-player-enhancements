@@ -15,6 +15,8 @@ public static class MoneyMultiplierPatches
     {
         _ = GameNetworkApi.GetGameAssembly();
 
+        ModConfig.Changed += ShopBuyPriceState.NotifyConfigChanged;
+
         var result = HarmonyPatchHelper.ApplyPatchTypes(
             harmony,
             Feature,
@@ -34,7 +36,10 @@ public static class MoneyMultiplierPatches
             ("ApplyLoadedGameData/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))),
             ("GetPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetPrice))),
             ("GetMeanPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetMeanPrice))),
+            ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
             ("InitShopItems/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))),
+            ("ApplyLoadedGameData/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ApplyLoadedGameData))),
+            ("OnEnterChannel/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnEnterChannel))),
             ("ReinforceItem/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ReinforceItem))),
         });
     }
@@ -144,9 +149,40 @@ public static class MoneyMultiplierPatches
         }
     }
 
+    [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))]
+    public static class MaintenanceRoomTryGetShopItemPricePatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(MaintenanceRoom __instance)
+        {
+            try
+            {
+                ShopBuyPriceState.EnsureApplied(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"TryGetShopItemPrice prefix failed — {ex.Message}");
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))]
     public static class MaintenanceRoomInitShopItemsPatch
     {
+        [HarmonyPrefix]
+        public static void Prefix(MaintenanceRoom __instance)
+        {
+            try
+            {
+                ShopBuyPriceState.MarkDirty(__instance);
+                ShopBuyPriceApplier.ClearVanillaPrices(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"InitShopItems prefix failed — {ex.Message}");
+            }
+        }
+
         [HarmonyPostfix]
         public static void Postfix(MaintenanceRoom __instance)
         {
@@ -154,11 +190,50 @@ public static class MoneyMultiplierPatches
             {
                 MoneyMultiplierApplier.ApplyShopItems(__instance);
                 ShopDiscountApplier.Apply(__instance);
-                ShopBuyPriceApplier.Apply(__instance);
+                ShopBuyPriceApplier.ApplyInPlace(__instance);
+                ShopBuyPriceState.MarkApplied(__instance);
             }
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"InitShopItems postfix failed — {ex.Message}");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ApplyLoadedGameData))]
+    public static class MaintenanceRoomApplyLoadedGameDataPatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix(MaintenanceRoom __instance)
+        {
+            try
+            {
+                ShopBuyPriceState.MarkDirty(__instance);
+                ShopBuyPriceApplier.ClearVanillaPrices(__instance);
+                ShopDiscountApplier.Apply(__instance);
+                ShopBuyPriceApplier.ApplyInPlace(__instance);
+                ShopBuyPriceState.MarkApplied(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"ApplyLoadedGameData postfix failed — {ex.Message}");
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnEnterChannel))]
+    public static class MaintenanceRoomOnEnterChannelPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(MaintenanceRoom __instance)
+        {
+            try
+            {
+                ShopBuyPriceState.EnsureApplied(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"OnEnterChannel prefix failed — {ex.Message}");
             }
         }
     }
