@@ -35,8 +35,30 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             context.CreatePlayerSnapshot(true);
         }
 
-        internal static string GetSceneNameFromDungeon(int dungeonMasterId)
+        internal static string GetSceneNameFromMapId(int mapMasterId)
         {
+            if (mapMasterId == 0)
+            {
+                return string.Empty;
+            }
+
+            if (Hub.s == null || HubDatamanProperty?.GetValue(Hub.s) is not DataManager dataman)
+            {
+                ModLog.Warn(Feature, "GetSceneNameFromMapId failed — dataman unavailable");
+                return string.Empty;
+            }
+
+            MapMasterInfo? mapInfo = dataman.ExcelDataManager.GetMapInfo(mapMasterId);
+            return mapInfo?.SceneName ?? string.Empty;
+        }
+
+        internal static string GetSceneNameFromDungeon(int dungeonMasterId, int pickedMapId = 0)
+        {
+            if (pickedMapId != 0)
+            {
+                return GetSceneNameFromMapId(pickedMapId);
+            }
+
             if (Hub.s == null || HubDatamanProperty?.GetValue(Hub.s) is not DataManager dataman)
             {
                 ModLog.Warn(Feature, "GetSceneNameFromDungeon failed — dataman unavailable");
@@ -54,8 +76,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return string.Empty;
             }
 
-            MapMasterInfo? mapInfo = dataman.ExcelDataManager.GetMapInfo(dungeonInfo.MapIDs[0]);
-            return mapInfo?.SceneName ?? string.Empty;
+            return GetSceneNameFromMapId(dungeonInfo.MapIDs[0]);
+        }
+
+        internal static int GetPickedMapId(IVroom? room)
+        {
+            return room is DungeonRoom dungeonRoom ? dungeonRoom.PickedMapID : 0;
         }
 
         internal static IVroom? GetActiveDungeonRoom()

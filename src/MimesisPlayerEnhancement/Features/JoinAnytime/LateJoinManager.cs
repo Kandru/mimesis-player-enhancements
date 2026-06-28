@@ -44,6 +44,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             ModLog.Debug(
                 Feature,
                 $"Login while in-game — uid={context.GetPlayerUID()} dungeon={gps.DungeonMasterID} seed={gps.RandDungeonSeed}");
+
+            JoinAnytimeNetworkTools.SendOnPlayingStateToClient(context);
         }
 
         internal static void OnServerPlayerCreated(VPlayer player)
@@ -122,7 +124,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
                     pdata.dungeonMasterID = moveToDungeonSig.selectedDungeonMasterID;
                     pdata.randDungeonSeed = moveToDungeonSig.randDungeonSeed;
-                    ModLog.Debug(Feature, $"MoveToDungeonSig: dungeon={pdata.dungeonMasterID} seed={pdata.randDungeonSeed}");
+                    pdata.PickedMapID = moveToDungeonSig.pickedMapID;
+                    ModLog.Debug(
+                        Feature,
+                        $"MoveToDungeonSig: dungeon={pdata.dungeonMasterID} map={pdata.PickedMapID} seed={pdata.randDungeonSeed}");
+                    break;
+
+                case MoveToMaintenanceRoomSig:
+                case ReturnMembertoMaintenenceRoomSig:
+                case DungeonResultSig:
+                    ResetJoinState();
                     break;
 
                 case MakeRoomCompleteSig completeSig:
@@ -138,8 +149,31 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                         pdata.dungeonMasterID = completeSig.nextRoomInfo.roomMasterID;
                     }
 
-                    string sceneName = JoinAnytimeRoomTools.GetSceneNameFromDungeon(pdata.dungeonMasterID);
-                    ModLog.Debug(Feature, $"MakeRoomCompleteSig — roomUID={completeSig.nextRoomInfo.roomUID}, scene={sceneName}, main={pdata.main?.GetType().Name ?? "null"}");
+                    if (completeSig.nextRoomInfo.roomType != VRoomType.Game)
+                    {
+                        ModLog.Debug(
+                            Feature,
+                            $"MakeRoomCompleteSig roomType={completeSig.nextRoomInfo.roomType} — skipping dungeon redirect");
+                        if (completeSig.nextRoomInfo.roomType == VRoomType.Maintenance)
+                        {
+                            ResetJoinState();
+                        }
+
+                        break;
+                    }
+
+                    if (pdata.main is GamePlayScene)
+                    {
+                        ModLog.Debug(Feature, "MakeRoomCompleteSig for Game room while already in GamePlayScene — no redirect");
+                        break;
+                    }
+
+                    string sceneName = JoinAnytimeRoomTools.GetSceneNameFromDungeon(
+                        pdata.dungeonMasterID,
+                        pdata.PickedMapID);
+                    ModLog.Debug(
+                        Feature,
+                        $"MakeRoomCompleteSig — roomUID={completeSig.nextRoomInfo.roomUID}, map={pdata.PickedMapID}, scene={sceneName}, main={pdata.main?.GetType().Name ?? "null"}");
 
                     PendingSceneName = sceneName;
 
@@ -151,7 +185,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                             RedirectState = LateJoinRedirectState.EnteringDungeon;
                             Hub.LoadScene(sceneName);
                         }
-                        else
+                        else if (pdata.main is not GamePlayScene)
                         {
                             RedirectState = LateJoinRedirectState.PendingDungeonRedirect;
                         }
@@ -202,8 +236,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (hasArriveCutscene)
             {
-                RedirectState = LateJoinRedirectState.None;
-                PendingSceneName = string.Empty;
+                ResetJoinState();
                 return false;
             }
 
@@ -363,6 +396,22 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 && pdata?.main is GamePlayScene)
             {
                 ModLog.Debug(Feature, $"Moving player snapshot Maintenance -> Dungeon, roomUID={roomUid}");
+                JoinAnytimeRoomTools.MoveCurrentPlayerToSnapshot(context);
+            }
+        }
+
+        internal static void OnServerEnterMaintenance(SessionContext context)
+        {
+            if (!IsEnabled || context == null || !context.ExistPlayer())
+            {
+                return;
+            }
+
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            if (context.GetVRoomType() == VRoomType.Game
+                && pdata?.main is MaintenanceScene)
+            {
+                ModLog.Debug(Feature, "Moving player snapshot Dungeon -> Maintenance");
                 JoinAnytimeRoomTools.MoveCurrentPlayerToSnapshot(context);
             }
         }

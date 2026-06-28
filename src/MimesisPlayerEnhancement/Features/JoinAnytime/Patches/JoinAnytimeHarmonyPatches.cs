@@ -85,6 +85,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))]
+    internal static class VRoomManagerEnterMaintenenceRoomPatch
+    {
+        [HarmonyPrefix]
+        private static void Prefix(SessionContext context, int hashCode)
+        {
+            LateJoinManager.OnServerEnterMaintenance(context);
+        }
+    }
+
     [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))]
     internal static class VoiceManagerSetVoiceModePatch
     {

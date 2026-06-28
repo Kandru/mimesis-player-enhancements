@@ -36,14 +36,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            int pickedMapId = JoinAnytimeRoomTools.GetPickedMapId(dungeonRoom);
+
             ModLog.Info(
                 "JoinAnytime",
-                $"Sending in-game state to uid={uid} — dungeon={gps.DungeonMasterID}, seed={gps.RandDungeonSeed}, roomUID={dungeonRoom.RoomID}");
+                $"Sending in-game state to uid={uid} — dungeon={gps.DungeonMasterID}, map={pickedMapId}, seed={gps.RandDungeonSeed}, roomUID={dungeonRoom.RoomID}");
 
             send(new MoveToDungeonSig
             {
                 selectedDungeonMasterID = gps.DungeonMasterID,
                 randDungeonSeed = gps.RandDungeonSeed,
+                pickedMapID = pickedMapId,
             });
 
             send(new MakeRoomCompleteSig

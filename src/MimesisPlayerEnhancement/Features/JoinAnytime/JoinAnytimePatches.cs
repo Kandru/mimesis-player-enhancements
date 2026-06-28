@@ -32,6 +32,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("Start/MaintenanceScene", AccessTools.Method(typeof(MaintenanceScene), "Start")),
                 ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
                 ("EnterDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterDungeon))),
+                ("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))),
                 ("SetVoiceMode/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))),
                 ("SetLobbyPublic/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetLobbyPublic))),
                 ("CreateLobby/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.CreateLobby))),
