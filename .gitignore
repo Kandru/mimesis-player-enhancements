@@ -9,6 +9,7 @@ deps/MimicAPI/
 deps/nuget/
 deps/reference/Managed/
 deps/reference/MelonLoader/
+deps/decompiled/
 deps/mimesis-reference-libs*.zip
 
 # IDE / OS
