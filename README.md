@@ -20,6 +20,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
 | **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
+| **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 
 Based on community mods by [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Please support the original authors instead of me :)
 
@@ -73,7 +74,64 @@ You can edit it anytime. The game reloads the file while running, but **most cha
 | `OtherSpawnMultiplier` | float | `1.0` | Spawn multiplier for other entities (not mimic/boss/jako/special/trap). Minimum is `0`. |
 | `EnableDebugLogging` | bool | `false` | Write extra detail to the MelonLoader console. Useful for troubleshooting; leave off for normal play. |
 
-Example:
+### Loot Multiplicator
+
+Host-only. Each setting is a **source × item type** pair. The multiplier (`1` = vanilla, `2` = double) stacks with the matching **Auto Scale … By Player Count** toggle: above 4 players, effective loot is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your multiplier).
+
+**Loot sources** — where the item comes from:
+
+| Prefix | Source | What it affects |
+|--------|--------|-----------------|
+| **Map** | Map spawn points | Loot placed when a dungeon room loads. **All** map loot slots: scales `StackCount` and `MaxRespawnCount`. **Fixed** loot (a specific item tied to a marker): may also activate unused loot markers of the same item and respawn at the same marker when picked up (uses `FixedSpawnRespawnDelay*` from Spawn Scaling). **Random** loot pools (weighted mix of items): only stack/respawn scaling; extra markers are not added. Random pools use the **dominant** item type in the pool to pick which multiplier applies. |
+| **Drop** | Enemy death drops | Items from enemy death tables when killed. Duplicates extra item IDs in the drop list (more separate drops). Also tries to scale stack count when the item spawns (`ActorDying`); stack scaling is reliable for **consumables**, less so for equipment/miscellany. |
+| **Trigger** | Map events / trigger volumes | Items spawned by map events (`EventAction` only). Tries to scale stack count when the item appears; stack scaling is reliable for **consumables**, less so for equipment/miscellany. |
+
+**Item types** — from the game's item data (`Consumable`, `Equipment`, `Miscellany`):
+
+| Type | Examples |
+|------|----------|
+| **Consumable** | Ammo, healing, and other used-up items |
+| **Equipment** | Tools, weapons, and gear you equip |
+| **Miscellany** | Other pickups — keys, misc objects, etc. Unknown items fall back to Miscellany. |
+
+Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Miscellany). Example keys:
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableLootMultiplicator` | bool | `true` | Master toggle for all loot scaling below. |
+| `AutoScaleMapConsumableLootByPlayerCount` | bool | `true` | Player-count scaling for map consumables (see tables above). |
+| `MapConsumableLootMultiplier` | float | `1.0` | Base multiplier for map consumables. Minimum is `0`. |
+| `AutoScaleMapEquipmentLootByPlayerCount` | bool | `true` | Player-count scaling for map equipment. |
+| `MapEquipmentLootMultiplier` | float | `1.0` | Base multiplier for map equipment. Minimum is `0`. |
+| `AutoScaleMapMiscellanyLootByPlayerCount` | bool | `true` | Player-count scaling for map miscellany. |
+| `MapMiscellanyLootMultiplier` | float | `1.0` | Base multiplier for map miscellany. Minimum is `0`. |
+| `AutoScaleDropConsumableLootByPlayerCount` | bool | `true` | Player-count scaling for consumables from enemy deaths. |
+| `DropConsumableLootMultiplier` | float | `1.0` | Base multiplier for consumable death drops. Minimum is `0`. |
+| `AutoScaleDropEquipmentLootByPlayerCount` | bool | `true` | Player-count scaling for equipment from enemy deaths. |
+| `DropEquipmentLootMultiplier` | float | `1.0` | Base multiplier for equipment death drops. Minimum is `0`. |
+| `AutoScaleDropMiscellanyLootByPlayerCount` | bool | `true` | Player-count scaling for miscellany from enemy deaths. |
+| `DropMiscellanyLootMultiplier` | float | `1.0` | Base multiplier for miscellany death drops. Minimum is `0`. |
+| `AutoScaleTriggerConsumableLootByPlayerCount` | bool | `true` | Player-count scaling for consumables from map events/triggers. |
+| `TriggerConsumableLootMultiplier` | float | `1.0` | Base multiplier for event/trigger consumables. Minimum is `0`. |
+| `AutoScaleTriggerEquipmentLootByPlayerCount` | bool | `true` | Player-count scaling for equipment from map events/triggers. |
+| `TriggerEquipmentLootMultiplier` | float | `1.0` | Base multiplier for event/trigger equipment. Minimum is `0`. |
+| `AutoScaleTriggerMiscellanyLootByPlayerCount` | bool | `true` | Player-count scaling for miscellany from map events/triggers. |
+| `TriggerMiscellanyLootMultiplier` | float | `1.0` | Base multiplier for event/trigger miscellany. Minimum is `0`. |
+
+Does **not** scale: items you release from inventory, shop purchases, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot is scaled once at room load — not again when it spawns in the world.
+
+Example (loot section only):
+
+```toml
+[MimesisPlayerEnhancement]
+EnableLootMultiplicator = true
+AutoScaleMapConsumableLootByPlayerCount = true
+MapConsumableLootMultiplier = 1.5
+AutoScaleDropEquipmentLootByPlayerCount = true
+DropEquipmentLootMultiplier = 2.0
+```
+
+Example (full config):
 
 ```toml
 [MimesisPlayerEnhancement]
@@ -101,6 +159,9 @@ FixedSpawnRespawnDelayMinSeconds = 5.0
 FixedSpawnRespawnDelayMaxSeconds = 30.0
 AutoScaleOtherSpawnsByPlayerCount = true
 OtherSpawnMultiplier = 1.0
+EnableLootMultiplicator = true
+AutoScaleMapConsumableLootByPlayerCount = true
+MapConsumableLootMultiplier = 1.0
 EnableDebugLogging = false
 ```
 

@@ -92,10 +92,13 @@ public static class SpawnScalingPatches
         public static MethodBase? TargetMethod() => ResolveSpawnMonsterMethod();
 
         [HarmonyPrefix]
-        public static void Prefix(IVroom __instance)
+        public static bool Prefix(
+            IVroom __instance,
+            SpawnedActorData spawnData,
+            ref bool __result)
         {
             if (!ModConfig.EnableSpawnScaling.Value || __instance is not DungeonRoom dungeonRoom)
-                return;
+                return true;
 
             try
             {
@@ -105,6 +108,14 @@ public static class SpawnScalingPatches
             {
                 ModLog.Warn(Feature, $"SpawnMonster prefix scaling failed — {ex.Message}");
             }
+
+            if (FixedSpawnProximity.ShouldBlockFixedCreatureRespawn(dungeonRoom, spawnData))
+            {
+                __result = false;
+                return false;
+            }
+
+            return true;
         }
 
         [HarmonyPostfix]

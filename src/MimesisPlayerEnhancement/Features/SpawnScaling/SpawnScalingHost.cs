@@ -14,6 +14,10 @@ internal static class SpawnScalingHost
         if (IsParticipantClient())
             return false;
 
+        // Solo/local play often has no network host flags yet; pdata may also be null early on.
+        if (JoinAnytimeHub.GetPdata() == null)
+            return true;
+
         if (JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Host)
             return true;
 

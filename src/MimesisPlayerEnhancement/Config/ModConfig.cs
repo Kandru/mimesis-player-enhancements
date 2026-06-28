@@ -49,8 +49,29 @@ public static class ModConfig
     public static MelonPreferences_Entry<float> TrapSpawnMultiplier { get; private set; } = null!;
     public static MelonPreferences_Entry<float> FixedSpawnRespawnDelayMinSeconds { get; private set; } = null!;
     public static MelonPreferences_Entry<float> FixedSpawnRespawnDelayMaxSeconds { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> FixedSpawnRespawnMinPlayerDistanceMeters { get; private set; } = null!;
     public static MelonPreferences_Entry<bool> AutoScaleOtherSpawnsByPlayerCount { get; private set; } = null!;
     public static MelonPreferences_Entry<float> OtherSpawnMultiplier { get; private set; } = null!;
+
+    public static MelonPreferences_Entry<bool> EnableLootMultiplicator { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleMapConsumableLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> MapConsumableLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleMapEquipmentLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> MapEquipmentLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleMapMiscellanyLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> MapMiscellanyLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleDropConsumableLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> DropConsumableLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleDropEquipmentLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> DropEquipmentLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleDropMiscellanyLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> DropMiscellanyLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleTriggerConsumableLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> TriggerConsumableLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleTriggerEquipmentLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> TriggerEquipmentLootMultiplier { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> AutoScaleTriggerMiscellanyLootByPlayerCount { get; private set; } = null!;
+    public static MelonPreferences_Entry<float> TriggerMiscellanyLootMultiplier { get; private set; } = null!;
 
     public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
@@ -192,6 +213,12 @@ public static class ModConfig
             "Fixed Spawn Respawn Delay Max Seconds",
             "Maximum random delay before a map-placed monster or trap respawns at the same marker when no unused markers remain.");
 
+        FixedSpawnRespawnMinPlayerDistanceMeters = Category.CreateEntry(
+            "FixedSpawnRespawnMinPlayerDistanceMeters",
+            10f,
+            "Fixed Spawn Respawn Min Player Distance Meters",
+            "After the respawn delay, wait until no players are within this distance (meters) before spawning at the marker. Set to 0 to respawn immediately.");
+
         AutoScaleOtherSpawnsByPlayerCount = Category.CreateEntry(
             "AutoScaleOtherSpawnsByPlayerCount",
             true,
@@ -203,6 +230,120 @@ public static class ModConfig
             1f,
             "Other Spawn Multiplier",
             "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps.");
+
+        EnableLootMultiplicator = Category.CreateEntry(
+            "EnableLootMultiplicator",
+            true,
+            "Enable Loot Multiplicator",
+            "Scale how much loot appears in a run. Host only. See each Map/Drop/Trigger entry below for what it affects.");
+
+        AutoScaleMapConsumableLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleMapConsumableLootByPlayerCount",
+            true,
+            "Auto Scale Map Consumable Loot By Player Count",
+            "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with MapConsumableLootMultiplier).");
+
+        MapConsumableLootMultiplier = Category.CreateEntry(
+            "MapConsumableLootMultiplier",
+            1f,
+            "Map Consumable Loot Multiplier",
+            "Multiplier for consumables on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
+
+        AutoScaleMapEquipmentLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleMapEquipmentLootByPlayerCount",
+            true,
+            "Auto Scale Map Equipment Loot By Player Count",
+            "Map loot = items placed on the dungeon map. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with MapEquipmentLootMultiplier).");
+
+        MapEquipmentLootMultiplier = Category.CreateEntry(
+            "MapEquipmentLootMultiplier",
+            1f,
+            "Map Equipment Loot Multiplier",
+            "Multiplier for equipment on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
+
+        AutoScaleMapMiscellanyLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleMapMiscellanyLootByPlayerCount",
+            true,
+            "Auto Scale Map Miscellany Loot By Player Count",
+            "Map loot = items placed on the dungeon map. Miscellany = other pickup items (keys, misc objects). When enabled, multiply by player count / 4 above 4 players (stacks with MapMiscellanyLootMultiplier).");
+
+        MapMiscellanyLootMultiplier = Category.CreateEntry(
+            "MapMiscellanyLootMultiplier",
+            1f,
+            "Map Miscellany Loot Multiplier",
+            "Multiplier for miscellany on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling. Random pools use the dominant item type in the pool to pick a multiplier.");
+
+        AutoScaleDropConsumableLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleDropConsumableLootByPlayerCount",
+            true,
+            "Auto Scale Drop Consumable Loot By Player Count",
+            "Drop loot = items from enemy death tables when killed. Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with DropConsumableLootMultiplier).");
+
+        DropConsumableLootMultiplier = Category.CreateEntry(
+            "DropConsumableLootMultiplier",
+            1f,
+            "Drop Consumable Loot Multiplier",
+            "Multiplier for consumables in enemy death drops: duplicates extra item IDs in the drop list and scales consumable stack count on spawn. 1 = vanilla, 2 = double.");
+
+        AutoScaleDropEquipmentLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleDropEquipmentLootByPlayerCount",
+            true,
+            "Auto Scale Drop Equipment Loot By Player Count",
+            "Drop loot = items from enemy death tables when killed. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with DropEquipmentLootMultiplier).");
+
+        DropEquipmentLootMultiplier = Category.CreateEntry(
+            "DropEquipmentLootMultiplier",
+            1f,
+            "Drop Equipment Loot Multiplier",
+            "Multiplier for equipment in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+
+        AutoScaleDropMiscellanyLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleDropMiscellanyLootByPlayerCount",
+            true,
+            "Auto Scale Drop Miscellany Loot By Player Count",
+            "Drop loot = items from enemy death tables when killed. Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with DropMiscellanyLootMultiplier).");
+
+        DropMiscellanyLootMultiplier = Category.CreateEntry(
+            "DropMiscellanyLootMultiplier",
+            1f,
+            "Drop Miscellany Loot Multiplier",
+            "Multiplier for miscellany in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+
+        AutoScaleTriggerConsumableLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleTriggerConsumableLootByPlayerCount",
+            true,
+            "Auto Scale Trigger Consumable Loot By Player Count",
+            "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerConsumableLootMultiplier).");
+
+        TriggerConsumableLootMultiplier = Category.CreateEntry(
+            "TriggerConsumableLootMultiplier",
+            1f,
+            "Trigger Consumable Loot Multiplier",
+            "Multiplier for consumables from map events/triggers: scales consumable stack count when the item spawns. 1 = vanilla, 2 = double.");
+
+        AutoScaleTriggerEquipmentLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleTriggerEquipmentLootByPlayerCount",
+            true,
+            "Auto Scale Trigger Equipment Loot By Player Count",
+            "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerEquipmentLootMultiplier).");
+
+        TriggerEquipmentLootMultiplier = Category.CreateEntry(
+            "TriggerEquipmentLootMultiplier",
+            1f,
+            "Trigger Equipment Loot Multiplier",
+            "Multiplier for equipment from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+
+        AutoScaleTriggerMiscellanyLootByPlayerCount = Category.CreateEntry(
+            "AutoScaleTriggerMiscellanyLootByPlayerCount",
+            true,
+            "Auto Scale Trigger Miscellany Loot By Player Count",
+            "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerMiscellanyLootMultiplier).");
+
+        TriggerMiscellanyLootMultiplier = Category.CreateEntry(
+            "TriggerMiscellanyLootMultiplier",
+            1f,
+            "Trigger Miscellany Loot Multiplier",
+            "Multiplier for miscellany from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
         EnableDebugLogging = Category.CreateEntry(
             "EnableDebugLogging",
@@ -267,7 +408,19 @@ public static class ModConfig
         AutoScaleTrapSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         FixedSpawnRespawnDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnFixedSpawnRespawnDelayChanged(logger, value, FixedSpawnRespawnDelayMinSeconds));
         FixedSpawnRespawnDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnFixedSpawnRespawnDelayChanged(logger, value, FixedSpawnRespawnDelayMaxSeconds));
+        FixedSpawnRespawnMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnFixedSpawnRespawnMinPlayerDistanceChanged(logger, value));
         AutoScaleOtherSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+
+        EnableLootMultiplicator.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleMapConsumableLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleMapEquipmentLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleMapMiscellanyLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleDropConsumableLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleDropEquipmentLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleDropMiscellanyLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleTriggerConsumableLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleTriggerEquipmentLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        AutoScaleTriggerMiscellanyLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
         MimicSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, MimicSpawnMultiplier));
         BossSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, BossSpawnMultiplier));
@@ -275,6 +428,16 @@ public static class ModConfig
         SpecialSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, SpecialSpawnMultiplier));
         TrapSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TrapSpawnMultiplier));
         OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, OtherSpawnMultiplier));
+
+        MapConsumableLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, MapConsumableLootMultiplier));
+        MapEquipmentLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, MapEquipmentLootMultiplier));
+        MapMiscellanyLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, MapMiscellanyLootMultiplier));
+        DropConsumableLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, DropConsumableLootMultiplier));
+        DropEquipmentLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, DropEquipmentLootMultiplier));
+        DropMiscellanyLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, DropMiscellanyLootMultiplier));
+        TriggerConsumableLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerConsumableLootMultiplier));
+        TriggerEquipmentLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerEquipmentLootMultiplier));
+        TriggerMiscellanyLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerMiscellanyLootMultiplier));
 
         EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
@@ -296,6 +459,18 @@ public static class ModConfig
         {
             logger.Warning("FixedSpawnRespawnDelayMaxSeconds must be >= FixedSpawnRespawnDelayMinSeconds; syncing max to min.");
             FixedSpawnRespawnDelayMaxSeconds.Value = min;
+        }
+
+        NotifyChanged();
+    }
+
+    private static void OnFixedSpawnRespawnMinPlayerDistanceChanged(MelonLogger.Instance logger, float value)
+    {
+        if (value < 0f)
+        {
+            logger.Warning("FixedSpawnRespawnMinPlayerDistanceMeters must be >= 0; resetting to 0.");
+            FixedSpawnRespawnMinPlayerDistanceMeters.Value = 0f;
+            return;
         }
 
         NotifyChanged();

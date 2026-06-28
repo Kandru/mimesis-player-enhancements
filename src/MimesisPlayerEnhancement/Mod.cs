@@ -25,6 +25,7 @@ public sealed class Mod : MelonMod
         Features.MorePlayers.MorePlayersPatches.Apply(_harmony);
         Features.JoinAnytime.JoinAnytimePatches.Apply(_harmony);
         Features.SpawnScaling.SpawnScalingPatches.Apply(_harmony);
+        Features.LootMultiplicator.LootMultiplicatorPatches.Apply(_harmony);
 
         _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
         SyncFromConfig();
@@ -53,6 +54,9 @@ public sealed class Mod : MelonMod
 
         if (ModConfig.EnableSpawnScaling.Value)
             Features.SpawnScaling.FixedSpawnCoordinator.ProcessPendingRespawns();
+
+        if (ModConfig.EnableLootMultiplicator.Value)
+            Features.LootMultiplicator.FixedLootSpawnCoordinator.ProcessPendingRespawns();
     }
 
     public override void OnDeinitializeMelon()
@@ -91,6 +95,7 @@ public sealed class Mod : MelonMod
             $"Statistics={ModConfig.EnableStatistics.Value}, " +
             $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
+            $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 
@@ -107,6 +112,7 @@ public sealed class Mod : MelonMod
             $", Statistics={ModConfig.EnableStatistics.Value}, " +
             $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
             $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
+            $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
             $"DebugLogging={ModConfig.EnableDebugLogging.Value}");
     }
 }
