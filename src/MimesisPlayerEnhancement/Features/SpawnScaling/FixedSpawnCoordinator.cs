@@ -264,9 +264,11 @@ internal static class FixedSpawnCoordinator
 
         if (ModConfig.EnableDebugLogging.Value)
         {
+            Vector3 pos = spawnData.PosVector;
             ModLog.Debug(
                 Feature,
-                $"Fixed spawn respawn scheduled — master={masterId}, marker={spawnData.Index}, delay={delay:0.0}s");
+                $"Fixed spawn respawn scheduled — master={masterId}, marker={spawnData.Index}, " +
+                $"pos={SpawnScalingLog.FormatLocation(room, pos)}, delay={delay:0.0}s");
         }
     }
 

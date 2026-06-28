@@ -10,6 +10,19 @@ internal static class SpawnScalingLog
     internal static string FormatPosition(Vector3 pos) =>
         $"({pos.x:0.0}, {pos.y:0.0}, {pos.z:0.0})";
 
+    internal static string FormatLocation(DungeonRoom? room, Vector3 pos)
+    {
+        string location = FormatPosition(pos);
+        if (room == null)
+            return location;
+
+        string roomName = SpawnScalingRoomLookup.TryGetRoomName(room, pos);
+        if (string.IsNullOrWhiteSpace(roomName))
+            return location;
+
+        return $"{location} room={roomName}";
+    }
+
     internal static void InfoScalingApplied(int playerCount)
     {
         float sharedPlayerScale = playerCount > 4 ? playerCount / 4f : 1f;
@@ -36,6 +49,7 @@ internal static class SpawnScalingLog
     }
 
     internal static void DebugEntitySpawned(
+        DungeonRoom room,
         int masterId,
         string entityName,
         SpawnCategory category,
@@ -49,7 +63,7 @@ internal static class SpawnScalingLog
         ModLog.Debug(
             Feature,
             $"Entity spawned — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
-            $"multiplier={effectiveMultiplier:0.##}×, budgetsScaled={scalingApplied}, pos={FormatPosition(position)}, " +
+            $"multiplier={effectiveMultiplier:0.##}×, budgetsScaled={scalingApplied}, pos={FormatLocation(room, position)}, " +
             $"indoor={isIndoor}, reason={reason}, source={spawnSource}");
     }
 

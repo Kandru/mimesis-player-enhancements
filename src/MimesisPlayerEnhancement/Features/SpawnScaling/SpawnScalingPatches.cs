@@ -133,6 +133,7 @@ public static class SpawnScalingPatches
             if (__result)
             {
                 SpawnScalingLog.DebugEntitySpawned(
+                    dungeonRoom,
                     masterID,
                     entityName,
                     category,
