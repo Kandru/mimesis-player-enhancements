@@ -26,6 +26,9 @@
         <li>
           <a href="#/players" :class="{ active: route === 'players' }">Players</a>
         </li>
+        <li>
+          <a href="#/minimap" :class="{ active: route === 'minimap' }">Minimap</a>
+        </li>
         <li x-show="status.isHost">
           <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }">Leaderboard</a>
         </li>
@@ -108,6 +111,56 @@
             </div>
           </div>
 
+          <!-- Minimap -->
+          <div x-show="status.inSession && route === 'minimap'" x-cloak>
+            <h2 class="page-heading">Minimap</h2>
+            <div class="minimap-toolbar surface-card">
+              <div class="minimap-toolbar-group">
+                <label class="minimap-label" for="minimap-focus">Focus player</label>
+                <select id="minimap-focus"
+                        class="settings-input settings-select minimap-select"
+                        :value="resolveMinimapFocus()"
+                        @change="onMinimapFocusChange($event)">
+                  <template x-for="p in minimapFocusOptions()" :key="p.steamId">
+                    <option :value="String(p.steamId)" x-text="p.displayName + (p.isLocal ? ' (you)' : '')"></option>
+                  </template>
+                </select>
+              </div>
+              <label class="minimap-toggle" x-show="status.isHost">
+                <input type="checkbox"
+                       :checked="minimapShowAll"
+                       @change="onMinimapShowAllChange($event)">
+                <span>Show all alive players</span>
+              </label>
+            </div>
+            <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
+            <div class="minimap-panel surface-card" x-show="!pageError">
+              <div class="minimap-meta" x-show="minimap">
+                <span class="minimap-scene" x-text="minimap?.sceneLabel || 'Session'"></span>
+                <span class="minimap-kind" x-text="minimap?.layoutKind || ''"></span>
+              </div>
+              <div class="minimap-canvas-wrap">
+                <svg class="minimap-canvas"
+                     data-minimap-svg
+                     viewBox="0 0 1000 1000"
+                     preserveAspectRatio="xMidYMid meet"
+                     role="img"
+                     aria-label="Session minimap"></svg>
+              </div>
+              <template x-if="minimap?.markers?.length">
+                <div class="minimap-legend">
+                  <template x-for="m in minimap.markers" :key="m.steamId">
+                    <span class="minimap-legend-item" :class="{ dead: !m.isAlive, local: m.isLocal, host: m.isHost }"
+                          x-text="minimapMarkerSummary(m)"></span>
+                  </template>
+                </div>
+              </template>
+              <p class="minimap-hint" x-show="minimap?.layoutKind === 'dungeon' && !(minimap?.tiles?.length)">
+                Dungeon layout is still generating or unavailable. Player markers will appear once positions are known.
+              </p>
+            </div>
+          </div>
+
           <!-- Leaderboard -->
           <div x-show="status.inSession && route === 'leaderboard'" x-cloak>
             <template x-if="!status.isHost">
@@ -159,6 +212,20 @@
           <!-- Player detail -->
           <template x-if="status.inSession && route === 'player' && steamId">
             <div>
+            <div class="player-minimap-embed surface-card" x-show="minimap?.markers?.length || minimap?.tiles?.length">
+              <div class="minimap-embed-header">
+                <h3 class="section-title">Minimap</h3>
+                <a class="btn-text btn" href="#/minimap">Open full minimap</a>
+              </div>
+              <div class="minimap-canvas-wrap compact">
+                <svg class="minimap-canvas"
+                     data-minimap-svg
+                     viewBox="0 0 1000 1000"
+                     preserveAspectRatio="xMidYMid meet"
+                     role="img"
+                     aria-label="Player minimap"></svg>
+              </div>
+            </div>
             <template x-if="!status.isHost">
               <div class="empty-state"><p>Player statistics are only available to the host.</p></div>
             </template>
@@ -337,6 +404,7 @@
   <aside id="toast" role="status" aria-live="polite" :class="{ show: toastVisible }" x-text="toastMessage" x-cloak></aside>
 
   <script defer src="/js/api.js"></script>
+  <script defer src="/js/minimap.js"></script>
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/alpine.min.js"></script>
 </body>

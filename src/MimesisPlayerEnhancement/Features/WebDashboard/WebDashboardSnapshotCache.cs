@@ -124,6 +124,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 WebDashboardAvatarService.PrewarmForPlayers([.. avatarSteamIds]);
+
+                WebDashboardMinimapLayoutBuilder.EnsureLayout();
+                next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
+                next.MinimapMarkers = WebDashboardMinimapService.CollectMarkers(next.Players, out WebDashboardMinimapTrainDto? train);
+                next.MinimapTrain = train;
             }
 
             _ = Interlocked.Exchange(ref _snapshot, next);

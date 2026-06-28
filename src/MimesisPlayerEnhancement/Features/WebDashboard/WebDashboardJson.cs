@@ -76,6 +76,41 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(result);
         }
 
+        public static string SerializeMinimap(
+            WebDashboardMinimapLayoutDto layout,
+            IReadOnlyList<WebDashboardMinimapMarkerDto> markers,
+            WebDashboardMinimapTrainDto? train)
+        {
+            List<MinimapMarkerApiDto> mappedMarkers = [];
+            foreach (WebDashboardMinimapMarkerDto marker in markers)
+            {
+                mappedMarkers.Add(new MinimapMarkerApiDto
+                {
+                    SteamId = marker.SteamId.ToString(),
+                    DisplayName = marker.DisplayName,
+                    X = marker.X,
+                    Z = marker.Z,
+                    Yaw = marker.Yaw,
+                    RoomName = marker.RoomName,
+                    IsAlive = marker.IsAlive,
+                    IsHost = marker.IsHost,
+                    IsLocal = marker.IsLocal,
+                });
+            }
+
+            return ModJson.Serialize(new MinimapApiResponse
+            {
+                LayoutVersion = layout.LayoutVersion,
+                LayoutKind = layout.LayoutKind,
+                SceneLabel = layout.SceneLabel,
+                Bounds = layout.Bounds,
+                Tiles = layout.Tiles,
+                Connections = layout.Connections,
+                Train = train,
+                Markers = mappedMarkers,
+            });
+        }
+
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
         {
             return new PlayerApiDto
@@ -215,6 +250,31 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             public int Error;
             public string Message = "";
+        }
+
+        private sealed class MinimapApiResponse
+        {
+            public int LayoutVersion;
+            public string LayoutKind = "";
+            public string SceneLabel = "";
+            public WebDashboardMinimapBoundsDto Bounds = new();
+            public List<WebDashboardMinimapTileDto> Tiles = [];
+            public List<WebDashboardMinimapConnectionDto> Connections = [];
+            public WebDashboardMinimapTrainDto? Train;
+            public List<MinimapMarkerApiDto> Markers = [];
+        }
+
+        private sealed class MinimapMarkerApiDto
+        {
+            public string SteamId = "";
+            public string DisplayName = "";
+            public float X;
+            public float Z;
+            public float Yaw;
+            public string RoomName = "";
+            public bool IsAlive = true;
+            public bool IsHost;
+            public bool IsLocal;
         }
     }
 }

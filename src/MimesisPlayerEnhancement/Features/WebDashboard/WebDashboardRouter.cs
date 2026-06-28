@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -52,6 +54,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (path == "/api/players" && method == "GET")
             {
                 WriteJson(context, 200, WebDashboardJson.SerializePlayers(snapshot.Players));
+                return;
+            }
+
+            if (path == "/api/minimap" && method == "GET")
+            {
+                HandleMinimapApi(context, snapshot);
                 return;
             }
 
@@ -119,6 +127,42 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Not found."));
+        }
+
+        private static void HandleMinimapApi(HttpListenerContext context, WebDashboardSnapshot snapshot)
+        {
+            if (!snapshot.Status.InSession)
+            {
+                WriteJson(context, 404, WebDashboardJson.SerializeError(404, "No active session."));
+                return;
+            }
+
+            NameValueCollection query = context.Request.QueryString;
+            bool showAll = string.Equals(query["showAll"], "true", StringComparison.OrdinalIgnoreCase);
+            if (showAll && !snapshot.Status.IsHost)
+            {
+                WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                return;
+            }
+
+            ulong focusSteamId = 0;
+            string? focusParam = query["focusSteamId"];
+            if (!string.IsNullOrWhiteSpace(focusParam) && !ulong.TryParse(focusParam, out focusSteamId))
+            {
+                WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid focusSteamId."));
+                return;
+            }
+
+            List<WebDashboardMinimapMarkerDto> markers = WebDashboardMinimapService.FilterMarkers(
+                snapshot.MinimapMarkers,
+                focusSteamId,
+                showAll,
+                snapshot.Status.IsHost);
+
+            WriteJson(
+                context,
+                200,
+                WebDashboardJson.SerializeMinimap(snapshot.MinimapLayout, markers, snapshot.MinimapTrain));
         }
 
         private static void HandlePlayerApi(HttpListenerContext context, string method, string path, WebDashboardSnapshot snapshot)

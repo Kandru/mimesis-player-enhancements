@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Mimic.Actors;
 using Mimic.Voice.SpeechSystem;
-using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
@@ -428,7 +427,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                long archiveUid = 0;
+                long archiveUid;
                 try
                 {
                     archiveUid = archive.PlayerUID;

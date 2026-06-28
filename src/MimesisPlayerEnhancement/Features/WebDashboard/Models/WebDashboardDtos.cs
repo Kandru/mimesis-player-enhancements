@@ -41,6 +41,62 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public WebDashboardSessionStatsDto? CurrentSession;
     }
 
+    internal sealed class WebDashboardMinimapBoundsDto
+    {
+        public float MinX;
+        public float MinZ;
+        public float MaxX;
+        public float MaxZ;
+    }
+
+    internal sealed class WebDashboardMinimapTileDto
+    {
+        public string Id = "";
+        public string Label = "";
+        public float X;
+        public float Z;
+        public float W;
+        public float H;
+        public bool IsMainPath;
+    }
+
+    internal sealed class WebDashboardMinimapConnectionDto
+    {
+        public string From = "";
+        public string To = "";
+    }
+
+    internal sealed class WebDashboardMinimapMarkerDto
+    {
+        public ulong SteamId;
+        public string DisplayName = "";
+        public float X;
+        public float Z;
+        public float Yaw;
+        public string RoomName = "";
+        public bool IsAlive = true;
+        public bool IsHost;
+        public bool IsLocal;
+    }
+
+    internal sealed class WebDashboardMinimapTrainDto
+    {
+        public float X;
+        public float Z;
+        public float Yaw;
+    }
+
+    internal sealed class WebDashboardMinimapLayoutDto
+    {
+        public int LayoutVersion;
+        public string LayoutKind = "none";
+        public string SceneLabel = "";
+        public WebDashboardMinimapBoundsDto Bounds = new();
+        public List<WebDashboardMinimapTileDto> Tiles = [];
+        public List<WebDashboardMinimapConnectionDto> Connections = [];
+        public WebDashboardMinimapTrainDto? Train;
+    }
+
     internal sealed class WebDashboardSnapshot
     {
         public WebDashboardStatusDto Status = new();
@@ -48,6 +104,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string? LeaderboardJson;
         public List<ulong> ConnectedSteamIds = [];
         public Dictionary<ulong, string> PlayerStatsJson = [];
+        public WebDashboardMinimapLayoutDto MinimapLayout = new();
+        public List<WebDashboardMinimapMarkerDto> MinimapMarkers = [];
+        public WebDashboardMinimapTrainDto? MinimapTrain;
     }
 
     internal enum WebDashboardActionType

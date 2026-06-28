@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 using HarmonyLib;
 using MimesisPlayerEnhancement.Util;
 using Steamworks;
@@ -23,6 +25,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         [HarmonyPatch]
         internal static class NetworkGradeSigPatch
         {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(typeof(GameMainBase), "OnPacket", [typeof(NetworkGradeSig)])
+                    ?? throw new InvalidOperationException("OnPacket(NetworkGradeSig) not found");
+            }
+
+            private static void Postfix(NetworkGradeSig sig)
+            {
+                if (sig?.grades == null)
+                {
+                    return;
+                }
+
+                foreach (System.Collections.Generic.KeyValuePair<long, ReluProtocol.Enum.NetworkGrade> pair in sig.grades)
+                {
+                    GradeByPlayerUid[pair.Key] = (int)pair.Value;
+                }
+
+                WebDashboardSnapshotCache.MarkDirty();
+            }
         }
 
         [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.GetSteamAvatar))]

@@ -66,6 +66,10 @@ document.addEventListener('alpine:init', () => {
     lastSteamId: null,
     pollTimer: null,
     toastTimer: null,
+    minimap: { markers: [], tiles: [], connections: [] },
+    minimapShowAll: false,
+    minimapFocusSteamId: '',
+    minimapLastLayoutVersion: -1,
 
     get subtitle() {
       if (this.apiError) {
@@ -118,6 +122,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     init() {
+      this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
       window.addEventListener('hashchange', () => this.onHashChange());
       this.refreshStatus().then(() => {
         this.parseRoute();
@@ -194,6 +199,9 @@ document.addEventListener('alpine:init', () => {
       if (this.route === 'settings') {
         return force || this.status.configVersion !== this.lastConfigVersion;
       }
+      if (this.route === 'minimap' || this.route === 'player') {
+        if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
+      }
       if (this.status.snapshotVersion !== this.lastSnapshotVersion) return true;
       return false;
     },
@@ -226,16 +234,20 @@ document.addEventListener('alpine:init', () => {
 
       this.pageError = '';
       try {
-        if (this.route === 'players' || this.route === 'player') {
+        if (this.route === 'players' || this.route === 'player' || this.route === 'minimap') {
           const data = await Api.getPlayers();
           this.players = data.players || [];
+        }
+
+        if (this.route === 'minimap' || this.route === 'player') {
+          await this.loadMinimapData();
         }
 
         if (this.status.isHost && (this.route === 'leaderboard' || this.route === 'player' || this.route === 'players')) {
           this.leaderboard = await Api.getLeaderboard();
         }
 
-        if (this.route === 'player' && this.steamId) {
+        if (this.route === 'player' && this.steamId && this.status.isHost) {
           const initialLoad = this.playerStats === null;
           if (initialLoad) this.loadingStats = true;
           try {
@@ -474,6 +486,69 @@ document.addEventListener('alpine:init', () => {
         return;
       }
       this.saveSetting(sectionId, entry, nextValue);
+    },
+
+    minimapFocusOptions() {
+      return (this.players || []).filter((p) => isValidSteamId(p.steamId));
+    },
+
+    resolveMinimapFocus() {
+      if (this.route === 'player' && this.steamId) {
+        return String(this.steamId);
+      }
+      if (this.minimapFocusSteamId) {
+        return String(this.minimapFocusSteamId);
+      }
+      const local = (this.players || []).find((p) => p.isLocal);
+      if (local && isValidSteamId(local.steamId)) {
+        return String(local.steamId);
+      }
+      const first = (this.players || []).find((p) => isValidSteamId(p.steamId));
+      return first ? String(first.steamId) : '';
+    },
+
+    async onMinimapFocusChange(event) {
+      this.minimapFocusSteamId = event.target.value || '';
+      localStorage.setItem('minimapFocusSteamId', this.minimapFocusSteamId);
+      await this.loadMinimapData(true);
+    },
+
+    async onMinimapShowAllChange(event) {
+      this.minimapShowAll = !!event.target.checked;
+      await this.loadMinimapData(true);
+    },
+
+    async loadMinimapData(forceRender) {
+      const focusSteamId = this.resolveMinimapFocus();
+      try {
+        const data = await Api.getMinimap({
+          focusSteamId,
+          showAll: this.status.isHost && this.minimapShowAll,
+        });
+        const layoutChanged = data.layoutVersion !== this.minimapLastLayoutVersion;
+        this.minimap = data;
+        this.minimapLastLayoutVersion = data.layoutVersion;
+        this.$nextTick(() => this.renderMinimapMaps(forceRender || layoutChanged));
+      } catch (e) {
+        if (!this.minimap?.markers?.length && !this.minimap?.tiles?.length) {
+          this.pageError = e.message || 'Failed to load minimap';
+        }
+      }
+    },
+
+    renderMinimapMaps() {
+      const maps = document.querySelectorAll('[data-minimap-svg]');
+      maps.forEach((svg) => {
+        MinimapRenderer.render(svg, this.minimap);
+      });
+    },
+
+    minimapMarkerSummary(marker) {
+      if (!marker) return '';
+      const parts = [marker.displayName || marker.steamId];
+      if (marker.roomName) parts.push(marker.roomName);
+      if (!marker.isAlive) parts.push('dead');
+      return parts.join(' · ');
     },
   }));
 });
