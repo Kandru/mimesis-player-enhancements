@@ -12,10 +12,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     public static class LootMultiplicatorPatches
     {
         private const string Feature = "LootMultiplicator";
-
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly Type[] SpawnLootingObjectParameterTypes =
         [
             typeof(ItemElement),

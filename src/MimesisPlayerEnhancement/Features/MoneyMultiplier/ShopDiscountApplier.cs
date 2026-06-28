@@ -9,10 +9,6 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
     internal static class ShopDiscountApplier
     {
         private const string Feature = "MoneyMultiplier";
-
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly FieldInfo PriceForItemsField =
             AccessTools.Field(typeof(MaintenanceRoom), "_priceForItems")
             ?? throw new InvalidOperationException("MaintenanceRoom._priceForItems not found");

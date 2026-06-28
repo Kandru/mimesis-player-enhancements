@@ -65,11 +65,6 @@ namespace MimesisPlayerEnhancement.Features.SpectatorTransition
         [HarmonyPatch]
         public static class PlayerActorDeadCameraTotalDurationPatch
         {
-            static MethodBase TargetMethod()
-            {
-                return AccessTools.PropertyGetter(PlayerActorType, "deadCameraTotalDuration");
-            }
-
             [HarmonyPostfix]
             public static void Postfix(ref float __result)
             {

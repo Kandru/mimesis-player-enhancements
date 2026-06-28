@@ -7,9 +7,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class ItemElementStackHelper
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly MethodInfo? SetConsumableRemainCountMethod =
             AccessTools.PropertySetter(typeof(ConsumableItemElement), "RemainCount");
 
