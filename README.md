@@ -24,6 +24,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Persistence** | Keep mimic voices after save/load | No — host only |
 | **Join Anytime** | Join a session that already started | **Yes — every player** |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
+| **Player Announcements** | In-game toasts for dungeon settings, boss spawns, and per-map death stats | No — host only |
 | **Spawn Scaling** | Scale mimic/monster spawn budgets by type and player count | No — host only |
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, scrap/sell values, shop buy prices, shop item count, and reinforce costs | No — host only |
@@ -54,13 +55,25 @@ After the first launch, the mod creates a config file here:
 
 You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
 
-All settings live in one `[MimesisPlayerEnhancement]` section. Each feature below has its own master toggle plus feature-specific options.
+Settings are grouped into TOML sections in the config file:
 
-**Upgrade note:** `MaxVoiceEvents` was replaced by `MaxIndoorVoiceEvents`, `MaxDeathMatchVoiceEvents`, and `MaxOutdoorVoiceEvents`. Set all three keys manually; there is no automatic migration from the old setting.
+- **`[MimesisPlayerEnhancement]`** — global options not tied to a single feature
+- **`[MimesisPlayerEnhancement_FeatureName]`** — one section per feature (e.g. `[MimesisPlayerEnhancement_MorePlayers]`)
+
+Each feature section has its own master toggle plus feature-specific options.
 
 **Player-count scaling:** Several features offer an **Auto Scale … By Player Count** toggle. When enabled and the session has more than 4 players, the effective value is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your base multiplier).
 
-### More Players
+### Global — `[MimesisPlayerEnhancement]`
+
+Mod-wide settings that are not owned by a single feature.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `ModToastDurationSeconds` | float | `5.0` | How long `[PlayerEnhancements]` toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally. Minimum is `1`. |
+| `EnableDebugLogging` | bool | `false` | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
+
+### More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
 Host-only. Raise the vanilla 4-player session cap.
 
@@ -69,7 +82,7 @@ Host-only. Raise the vanilla 4-player session cap.
 | `EnableMorePlayers` | bool | `true` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `999` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
 
-### More Voices
+### More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
 Host-only. Raise per-player mimic voice recording limits.
 
@@ -80,7 +93,7 @@ Host-only. Raise per-player mimic voice recording limits.
 | `MaxDeathMatchVoiceEvents` | int | `3000` | How many mimic voice lines each player can store in deathmatch. Minimum is `1`. |
 | `MaxOutdoorVoiceEvents` | int | `3000` | How many mimic voice lines each player can store outdoors. Minimum is `1`. |
 
-### Persistence
+### Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
 Host-only. Keep mimic voice recordings across save and load.
 
@@ -88,7 +101,7 @@ Host-only. Keep mimic voice recordings across save and load.
 |-----|------|---------|--------------|
 | `EnablePersistence` | bool | `true` | Save mimic voices when you save the game and bring them back when you load. |
 
-### Statistics
+### Statistics — `[MimesisPlayerEnhancement_Statistics]`
 
 Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, voice events, play time, and more).
 
@@ -98,7 +111,15 @@ Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, v
 | `SessionReconnectGraceMinutes` | int | `5` | If someone disconnects and rejoins within this many minutes, their stats session continues instead of starting fresh. Minimum is `1`. |
 | `ShowStatisticsToasts` | bool | `true` | Show small join/leave/cycle messages in the bottom-left corner when statistics are enabled. Does not replace the game's own connect messages. |
 
-### Join Anytime
+### Player Announcements — `[MimesisPlayerEnhancement_PlayerAnnouncements]`
+
+Host-only. In-game toasts for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `ShowPlayerAnnouncements` | bool | `true` | Show dungeon settings, boss spawn, and death-stat toasts. Does not replace the game's own messages. |
+
+### Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
 **Every player in the lobby needs the mod** for this feature. Lets players join a session after a round has already started.
 
@@ -106,7 +127,7 @@ Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, v
 |-----|------|---------|--------------|
 | `EnableJoinAnytime` | bool | `true` | Let players join after a round has already started. |
 
-### Spawn Scaling
+### Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
 Host-only. Scale dungeon monster and trap spawn budgets by type. Map-placed mimics, bosses, jakos, specials, and traps use unused markers first, then respawn at the same marker when all markers are in use.
 
@@ -129,7 +150,7 @@ Host-only. Scale dungeon monster and trap spawn budgets by type. Map-placed mimi
 | `AutoScaleOtherSpawnsByPlayerCount` | bool | `true` | Player-count scaling for other spawns (stacks with `OtherSpawnMultiplier`). |
 | `OtherSpawnMultiplier` | float | `1.0` | Spawn multiplier for other entities (not mimic/boss/jako/special/trap). Minimum is `0`. |
 
-### Loot Multiplicator
+### Loot Multiplicator — `[MimesisPlayerEnhancement_LootMultiplicator]`
 
 Host-only. Each setting is a **source × item type** pair. The multiplier (`1` = vanilla, `2` = double) stacks with the matching **Auto Scale … By Player Count** toggle when player-count scaling is enabled.
 
@@ -175,7 +196,7 @@ Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Misc
 
 Does **not** scale: items you release from inventory, shop purchases, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot is scaled once at room load — not again when it spawns in the world.
 
-### Money Multiplier
+### Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`
 
 Host-only. Scales six separate money values. Each has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Minimum multiplier is `0`.
 
@@ -211,7 +232,7 @@ Does **not** change saved player balances on load or mid-round currency pickups.
 | `AutoScaleReinforcePriceByPlayerCount` | bool | `true` | Player-count scaling for reinforce costs. |
 | `ReinforcePriceMultiplier` | float | `1.0` | Reinforce price multiplier. Minimum is `0`. |
 
-### Dungeon Time
+### Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 
 Host-only. When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
 
@@ -221,7 +242,7 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
-### Dungeon Size Scaling
+### Dungeon Size Scaling — `[MimesisPlayerEnhancement_DungeonSizeScaling]`
 
 Scales procedural dungeon length (DunGen `LengthMultiplier`). Applied on **each machine** when the dungeon is generated so layouts stay in sync across host and clients. Everyone in the lobby should use the same config values.
 
@@ -234,7 +255,7 @@ Scales procedural dungeon length (DunGen `LengthMultiplier`). Applied on **each 
 | `AutoScaleDungeonSizeByPlayerCount` | bool | `true` | When on, multiply by player count ÷ baseline above the baseline (stacks with `DungeonSizeMultiplier`). |
 | `DungeonSizeBaselinePlayerCount` | int | `4` | Player-count scaling starts above this count. Minimum is `1`. |
 
-### Dungeon Randomizer
+### Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
 
 Host-only. Randomizes dungeon selection at four independent layers when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on. Each layer has its own toggle so you can randomize only what you want.
 
@@ -268,7 +289,7 @@ Host-only. Randomizes dungeon selection at four independent layers when enabled.
 | `RandomizeMapVariant` | bool | `true` | Pick map variants uniformly from each dungeon's `MapIDs`. |
 | `RandomizeDungeonSeed` | bool | `true` | Replace the procedural dungeon seed when a dungeon is chosen. |
 
-### Spectator Transition
+### Spectator Transition — `[MimesisPlayerEnhancement_SpectatorTransition]`
 
 Shortens how long players stay downed before spectator mode and how long the local dead-camera transition runs. Multipliers use the same scale as spawn/loot settings: `1` = vanilla, `0.5` = half, `0` = instant.
 
@@ -280,86 +301,74 @@ Shortens how long players stay downed before spectator mode and how long the loc
 | `DyingWaitTimeMultiplier` | float | `1.0` | Scales server down/dying time before spectator (`0` = instant). Host only. Also shortens the teammate revive window. Minimum is `0`. |
 | `DeadCameraDurationMultiplier` | float | `1.0` | Scales local dead-camera blend and duration before spectator (`0` = instant). Minimum is `0`. |
 
-### Debug Logging
-
-Writes extra diagnostic detail to the MelonLoader console. Leave off for normal play.
-
-| Key | Type | Default | What it does |
-|-----|------|---------|--------------|
-| `EnableDebugLogging` | bool | `false` | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
-
 ### Example config
 
-Full default config with all features enabled:
+Abbreviated example showing section layout (not every loot/money key is listed):
 
 ```toml
 [MimesisPlayerEnhancement]
+ModToastDurationSeconds = 5.0
+EnableDebugLogging = false
+
+[MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = true
 MaxPlayers = 32
+
+[MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true
 MaxIndoorVoiceEvents = 3000
 MaxDeathMatchVoiceEvents = 3000
 MaxOutdoorVoiceEvents = 3000
+
+[MimesisPlayerEnhancement_Persistence]
 EnablePersistence = true
+
+[MimesisPlayerEnhancement_Statistics]
 EnableStatistics = true
 SessionReconnectGraceMinutes = 5
 ShowStatisticsToasts = true
+
+[MimesisPlayerEnhancement_PlayerAnnouncements]
+ShowPlayerAnnouncements = true
+
+[MimesisPlayerEnhancement_JoinAnytime]
 EnableJoinAnytime = true
+
+[MimesisPlayerEnhancement_SpawnScaling]
 EnableSpawnScaling = true
-AutoScaleMimicSpawnsByPlayerCount = true
 MimicSpawnMultiplier = 1.0
-AutoScaleBossSpawnsByPlayerCount = true
-BossSpawnMultiplier = 1.0
-AutoScaleJakoSpawnsByPlayerCount = true
-JakoSpawnMultiplier = 1.0
-AutoScaleSpecialSpawnsByPlayerCount = true
-SpecialSpawnMultiplier = 1.0
-AutoScaleTrapSpawnsByPlayerCount = true
-TrapSpawnMultiplier = 1.0
-FixedSpawnRespawnDelayMinSeconds = 5.0
-FixedSpawnRespawnDelayMaxSeconds = 30.0
-FixedSpawnRespawnMinPlayerDistanceMeters = 10.0
-AutoScaleOtherSpawnsByPlayerCount = true
-OtherSpawnMultiplier = 1.0
+# … other spawn keys …
+
+[MimesisPlayerEnhancement_LootMultiplicator]
 EnableLootMultiplicator = true
-AutoScaleMapConsumableLootByPlayerCount = true
 MapConsumableLootMultiplier = 1.0
+# … other loot keys …
+
+[MimesisPlayerEnhancement_MoneyMultiplier]
 EnableMoneyMultiplier = true
-AutoScaleStartupMoneyByPlayerCount = true
 StartupMoneyMultiplier = 1.0
-AutoScaleRoundGoalMoneyByPlayerCount = true
-RoundGoalMoneyMultiplier = 1.0
-AutoScaleScrapSellValueByPlayerCount = true
-ScrapSellValueMultiplier = 1.0
-AutoScaleShopBuyPriceByPlayerCount = true
-ShopBuyPriceMultiplier = 1.0
-AutoScaleShopItemsByPlayerCount = true
-ShopItemsMultiplier = 1.0
-ShopDiscountMinPercent = 0
-ShopDiscountMaxPercent = 100
-ShopDiscountChancePercent = 0
-AutoScaleReinforcePriceByPlayerCount = true
-ReinforcePriceMultiplier = 1.0
+# … other money keys …
+
+[MimesisPlayerEnhancement_DungeonTime]
 EnableDungeonTime = true
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
+
+[MimesisPlayerEnhancement_DungeonSizeScaling]
 EnableDungeonSizeScaling = true
 DungeonSizeMultiplier = 1.0
 AutoScaleDungeonSizeByPlayerCount = true
 DungeonSizeBaselinePlayerCount = 4
+
+[MimesisPlayerEnhancement_DungeonRandomizer]
 EnableDungeonRandomizer = false
 RandomizeDungeonPick = true
 DungeonPickPoolMode = "WidenVanilla"
-DungeonAllowlist = ""
-DungeonBlocklist = ""
-IgnoreDungeonExcludeList = true
-RandomizeLayoutFlow = true
-RandomizeMapVariant = true
-RandomizeDungeonSeed = true
+
+[MimesisPlayerEnhancement_SpectatorTransition]
 EnableSpectatorTransition = true
 DyingWaitTimeMultiplier = 1.0
 DeadCameraDurationMultiplier = 1.0
-EnableDebugLogging = false
 ```
 
 ## Build from source
