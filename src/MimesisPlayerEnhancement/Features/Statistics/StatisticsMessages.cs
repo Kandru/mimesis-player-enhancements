@@ -5,6 +5,7 @@ using System.Reflection;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.Statistics;
@@ -50,7 +51,7 @@ internal static class StatisticsMessages
 
         ScheduleGlobalStatsOnJoin(steamId, displayName, doc);
 
-        if (IsLocalSteamId(steamId))
+        if (LocalPlayerHelper.IsLocalSteamId(steamId))
             ScheduleLocalIntro(isNewSession, reconnectCount);
     }
 
@@ -242,23 +243,6 @@ internal static class StatisticsMessages
             return minutes > 0 ? $"{hours}h {minutes}m played" : $"{hours}h played";
 
         return $"{minutes}m played";
-    }
-
-    private static bool IsLocalSteamId(ulong steamId)
-    {
-        try
-        {
-            var platformMgr = MonoSingleton<PlatformMgr>.Instance;
-            var pathField = typeof(PlatformMgr).GetField("_uniqueUserPath", InstanceMemberFlags);
-            string? userPath = pathField?.GetValue(platformMgr) as string;
-            return !string.IsNullOrEmpty(userPath)
-                   && ulong.TryParse(userPath, out ulong localSteam)
-                   && localSteam == steamId;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     private static ulong ResolveSteamIdFromDisplayName(string displayName)

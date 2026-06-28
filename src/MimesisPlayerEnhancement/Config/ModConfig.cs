@@ -36,6 +36,7 @@ public static class ModConfig
     public static MelonPreferences_Entry<bool> EnableStatistics { get; private set; } = null!;
     public static MelonPreferences_Entry<int> SessionReconnectGraceMinutes { get; private set; } = null!;
     public static MelonPreferences_Entry<bool> ShowStatisticsToasts { get; private set; } = null!;
+    public static MelonPreferences_Entry<bool> ShowPlayerAnnouncements { get; private set; } = null!;
 
     public static MelonPreferences_Entry<bool> EnableJoinAnytime { get; private set; } = null!;
 
@@ -185,6 +186,12 @@ public static class ModConfig
             true,
             "Show Statistics Toasts",
             "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
+
+        ShowPlayerAnnouncements = Category.CreateEntry(
+            "ShowPlayerAnnouncements",
+            true,
+            "Show Player Announcements",
+            "Show in-game toasts for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
 
         EnableJoinAnytime = Category.CreateEntry(
             "EnableJoinAnytime",
@@ -693,6 +700,7 @@ public static class ModConfig
 
         EnableStatistics.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         ShowStatisticsToasts.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+        ShowPlayerAnnouncements.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnableJoinAnytime.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         EnableSpawnScaling.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
         AutoScaleMimicSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());

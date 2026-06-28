@@ -9,6 +9,7 @@ using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.Persistence;
+using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.SpectatorTransition;
 using MimesisPlayerEnhancement.Features.Statistics;
@@ -77,6 +78,7 @@ internal static class FeatureModules
             if (ModConfig.EnableStatistics.Value)
                 StatisticsTracker.OnUpdate();
         }),
+        new FeatureModule("PlayerAnnouncements", PlayerAnnouncementPatches.Apply),
         new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
         new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply),
         new FeatureModule("SpawnScaling", SpawnScalingPatches.Apply, onUpdate: () =>

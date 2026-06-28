@@ -363,6 +363,38 @@ public static class StatisticsTracker
     internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId) =>
         _players.TryGetValue(steamId, out var doc) ? doc : null;
 
+    internal static IReadOnlyCollection<ulong> GetConnectedSteamIds() => _connectedSince.Keys;
+
+    internal static ulong TryResolveSteamId(ProtoActor actor) => ResolveSteamIdFromActor(actor);
+
+    internal static bool TryGetCurrentPlayReport(ulong steamId, out PlayReportData report)
+    {
+        PlayReportData? found = TryGetPlayReport(steamId);
+        if (found != null)
+        {
+            report = found;
+            return true;
+        }
+
+        report = null!;
+        return false;
+    }
+
+    internal static bool TryGetSessionCounters(ulong steamId, out StatCounters counters)
+    {
+        counters = new StatCounters();
+        if (steamId == 0)
+            return false;
+
+        if (_players.TryGetValue(steamId, out var doc) && doc.CurrentSession?.Counters != null)
+        {
+            counters = doc.CurrentSession.Counters.Clone();
+            return true;
+        }
+
+        return false;
+    }
+
     private static SessionStats NewSession(DateTime now) => new()
     {
         SessionId = Guid.NewGuid().ToString("N"),

@@ -26,7 +26,7 @@ public static class InGameMessageHelper
     /// </param>
     public static void ShowModMessage(string message, bool isEntering = true, bool localOnly = false)
     {
-        if (!ModConfig.ShowStatisticsToasts.Value)
+        if (!ModConfig.ShowStatisticsToasts.Value && !ModConfig.ShowPlayerAnnouncements.Value)
             return;
 
         if (string.IsNullOrWhiteSpace(message))
