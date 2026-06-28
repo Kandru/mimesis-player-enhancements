@@ -4,6 +4,8 @@ Small developer utility for exploring **MIMESIS** game assemblies without loadin
 
 Use this when you need to check method signatures, constants (for example save-slot IDs), or type members while working on mod patches.
 
+For **MelonLoader** APIs, use [MimesisReflectionTool](../MimesisReflectionTool/README.md) instead. See [AGENTS.md](../../AGENTS.md) for guidance — do not create `.tmp-*` scratch projects at the repo root.
+
 ## Prerequisites
 
 - [.NET SDK 10+](https://dotnet.microsoft.com/download) (or adjust `TargetFramework` in the `.csproj` if needed)
