@@ -120,7 +120,10 @@ public static class StatisticsTracker
         EnsureVoiceBaseline(steamId);
         StatisticsStore.SavePlayer(slotId, doc);
         PersistLeaderboard(slotId);
-        InGameMessageHelper.ShowJoin(doc.DisplayName);
+
+        bool isNewSession = !resumeSession;
+        int reconnectCount = doc.CurrentSession?.ReconnectCount ?? 0;
+        StatisticsMessages.OnPlayerJoinedSession(steamId, doc.DisplayName, doc, isNewSession, reconnectCount);
     }
 
     public static void OnPlayerUnregistered(ulong steamId)
@@ -142,7 +145,7 @@ public static class StatisticsTracker
         ModLog.Info(Feature, $"Player disconnected — steamId={steamId} displayName={doc.DisplayName}");
         StatisticsStore.SavePlayer(_loadedSlotId, doc);
         PersistLeaderboard(_loadedSlotId);
-        InGameMessageHelper.ShowLeave(doc.DisplayName);
+        StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
     }
 
     public static void ProcessDeferred()
@@ -252,7 +255,7 @@ public static class StatisticsTracker
         PersistLeaderboard(slotId);
 
         if (ModConfig.ShowStatisticsToasts.Value)
-            InGameMessageHelper.ShowCycleSaved(cycleNumber);
+            StatisticsMessages.OnCycleCompleted(cycleNumber);
 
         ModLog.Info(Feature, $"Cycle {cycleNumber} statistics saved for slot {slotId} ({affected.Count} players).");
     }
@@ -356,6 +359,9 @@ public static class StatisticsTracker
         }
         return doc;
     }
+
+    internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId) =>
+        _players.TryGetValue(steamId, out var doc) ? doc : null;
 
     private static SessionStats NewSession(DateTime now) => new()
     {

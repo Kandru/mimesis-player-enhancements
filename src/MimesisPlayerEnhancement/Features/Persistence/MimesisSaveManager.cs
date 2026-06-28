@@ -14,7 +14,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 {
     /// <summary>
     /// Manages persistence of Mimesis data per save slot. Only the host saves.
-    /// Data stored under Save/{SteamID}/MimesisData/Slot{N}/.
+    /// Data stored under Save/{SteamID}/MimesisData/Slot{N}/ where N matches SaveSlotID
+    /// (0 = autosave, 1..3 = manual save slots).
     /// </summary>
     public static class MimesisSaveManager
     {

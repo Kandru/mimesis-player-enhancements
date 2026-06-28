@@ -118,7 +118,12 @@ internal static class StatisticsJson
             AppendString(sb, "lastDisconnectedAtUtc", session.LastDisconnectedAtUtc.Value.ToString("O"));
         AppendInt(sb, "reconnectCount", session.ReconnectCount);
         AppendBool(sb, "isOpen", session.IsOpen);
-        AppendObject(sb, "counters", () => SerializeCounters(sb, session.Counters, true));
+        AppendObject(sb, "counters", () =>
+        {
+            sb.Append('{');
+            SerializeCounters(sb, session.Counters, true);
+            sb.Append('}');
+        });
         sb.Append('}');
     }
 
@@ -210,14 +215,16 @@ internal static class StatisticsJson
         SessionsCompleted = obj.GetInt("sessionsCompleted"),
     };
 
-    private static void AppendObject(StringBuilder sb, string key, Action writeBody)
+    private static void AppendObject(StringBuilder sb, string key, Action writeBody, bool first = false)
     {
+        if (!first) sb.Append(',');
         sb.Append('"').Append(key).Append("\":");
         writeBody();
     }
 
-    private static void AppendArray(StringBuilder sb, string key, List<SessionStats> items, Action<StringBuilder, SessionStats> writeItem)
+    private static void AppendArray(StringBuilder sb, string key, List<SessionStats> items, Action<StringBuilder, SessionStats> writeItem, bool first = false)
     {
+        if (!first) sb.Append(',');
         sb.Append('"').Append(key).Append("\":[");
         for (int i = 0; i < items.Count; i++)
         {

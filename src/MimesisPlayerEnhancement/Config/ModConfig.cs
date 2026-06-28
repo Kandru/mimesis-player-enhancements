@@ -90,7 +90,7 @@ public static class ModConfig
             "ShowStatisticsToasts",
             true,
             "Show Statistics Toasts",
-            "Show join/leave/cycle messages in the bottom-left player info UI.");
+            "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
 
         EnableJoinAnytime = Category.CreateEntry(
             "EnableJoinAnytime",

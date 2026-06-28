@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using MelonLoader.Logging;
 
 namespace MimesisPlayerEnhancement.Util;
 
@@ -56,30 +57,51 @@ public static class HarmonyPatchHelper
         return new PatchApplyResult { Applied = applied, Failed = failed };
     }
 
-    public static void LogPatchSummary(string feature, PatchApplyResult result) =>
-        ModLog.Info(feature, $"Patches applied — {result.Applied} patch(es), {result.Failed} failure(s).");
+    public static void LogPatchSummary(string feature, PatchApplyResult result)
+    {
+        string patchCount = $"{result.Applied} patch(es)";
+        string failures = $"{result.Failed} failure(s).";
+        string stripped = $"{patchCount}, {failures}";
+
+        ModLog.PassLogSegmented(
+            ModLog.FeatureSection(feature, "Patches Applied"),
+            stripped,
+            (result.Applied > 0 ? ModLog.SuccessGreen : null, patchCount),
+            (null, ", "),
+            (result.Failed > 0 ? ModLog.FailureRed : null, failures));
+    }
 
     public static void LogPatchAudit(string feature, HarmonyLib.Harmony harmony, IEnumerable<(string label, MethodBase? method)> checks)
     {
+        if (!ModConfig.EnableDebugLogging.Value)
+            return;
+
         var patched = harmony.GetPatchedMethods().ToList();
-        var applied = new List<string>();
-        var missing = new List<string>();
+        var entries = new List<(string text, bool ok)>();
 
         foreach (var (label, method) in checks)
         {
-            if (method == null)
-                missing.Add($"{label} (type/method not found)");
-            else if (IsPatched(patched, method))
-                applied.Add(label);
-            else
-                missing.Add(label);
+            string text = method == null ? $"{label} (type/method not found)" : label;
+            bool ok = method != null && IsPatched(patched, method);
+            entries.Add((text, ok));
         }
 
-        if (applied.Count > 0)
-            ModLog.Debug(feature, $"Patch audit — applied: {string.Join(", ", applied)}");
+        if (entries.Count == 0)
+            return;
 
-        foreach (string label in missing)
-            ModLog.Warn(feature, $"Patch audit — not applied: {label}");
+        string stripped = string.Join(", ", entries.Select(e => e.text));
+
+        var segments = new (ColorARGB? color, string text)[entries.Count * 2 - 1];
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (i > 0)
+                segments[i * 2 - 1] = (null, ", ");
+
+            var (text, ok) = entries[i];
+            segments[i * 2] = (ok ? ModLog.SuccessGreen : ModLog.FailureRed, text);
+        }
+
+        ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patch Audit"), stripped, segments);
     }
 
     public static bool IsPatched(IReadOnlyCollection<MethodBase> patched, MethodBase? expected)
