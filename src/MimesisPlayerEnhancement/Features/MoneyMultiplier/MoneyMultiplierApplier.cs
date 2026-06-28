@@ -71,7 +71,7 @@ internal static class MoneyMultiplierApplier
 
     internal static void ApplyStartupMoney(MaintenanceRoom room, ref int currency)
     {
-        if (!IsEnabled())
+        if (!IsEnabled() || StartupMoneyLoadGuard.IsActive)
             return;
 
         if (!TryGetVanillaInitialMoney(out int vanillaInitial) || currency != vanillaInitial)
@@ -92,19 +92,6 @@ internal static class MoneyMultiplierApplier
 
         int playerCount = MoneyPlayerCountHelper.ResolveFromSession(info);
         int scaled = ScaleForType(MoneyType.RoundGoal, vanilla, playerCount);
-        TargetCurrencyField.SetValue(info, scaled);
-    }
-
-    internal static void ApplyRoundGoalFromSave(GameSessionInfo info, MMSaveGameData saveGameData)
-    {
-        if (!IsEnabled())
-            return;
-
-        if (saveGameData.TargetCurrency <= 0)
-            return;
-
-        int playerCount = MoneyPlayerCountHelper.ResolveFromSession(info);
-        int scaled = ScaleForType(MoneyType.RoundGoal, saveGameData.TargetCurrency, playerCount);
         TargetCurrencyField.SetValue(info, scaled);
     }
 

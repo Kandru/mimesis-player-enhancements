@@ -33,7 +33,7 @@ public static class MoneyMultiplierPatches
             ("set_Currency/IVroom", AccessTools.PropertySetter(typeof(IVroom), nameof(IVroom.Currency))),
             ("RefreshTargetCurrency/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))),
             ("ClampTargetCurrencyToMin/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), "ClampTargetCurrencyToMin")),
-            ("ApplyLoadedGameData/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))),
+            ("InitMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.InitMaintenenceRoom))),
             ("GetPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetPrice))),
             ("GetMeanPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetMeanPrice))),
             ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
@@ -98,20 +98,20 @@ public static class MoneyMultiplierPatches
         }
     }
 
-    [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))]
-    public static class GameSessionInfoApplyLoadedGameDataPatch
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.InitMaintenenceRoom))]
+    public static class VRoomManagerInitMaintenenceRoomStartupMoneyPatch
     {
-        [HarmonyPostfix]
-        public static void Postfix(GameSessionInfo __instance, MMSaveGameData saveGameData)
+        [HarmonyPrefix]
+        public static void Prefix(int saveSlotID, ref bool __state)
         {
-            try
-            {
-                MoneyMultiplierApplier.ApplyRoundGoalFromSave(__instance, saveGameData);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"ApplyLoadedGameData postfix failed — {ex.Message}");
-            }
+            __state = StartupMoneyLoadGuard.TryEnterForSaveSlot(saveSlotID);
+        }
+
+        [HarmonyFinalizer]
+        public static void Finalizer(bool __state)
+        {
+            if (__state)
+                StartupMoneyLoadGuard.Exit();
         }
     }
 
