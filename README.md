@@ -1,6 +1,9 @@
 > [!NOTE]  
 > Please support my work by giving me a small donation. It takes a lot of dedicated time to work on such a plug-in.
 
+> [!CAUTION]  
+> This is still under development. It is not finished and things may do not work as expected...
+
 [![GitHub release](https://img.shields.io/github/release/Kandru/mimesis-player-enhancements?include_prereleases=&sort=semver&color=blue)](https://github.com/Kandru/mimesis-player-enhancements/releases/)
 [![License](https://img.shields.io/badge/License-GPLv3-blue)](#license)
 [![issues - mimesis-player-enhancements](https://img.shields.io/github/issues/Kandru/mimesis-player-enhancements?color=darkgreen)](https://github.com/Kandru/mimesis-player-enhancements/issues)
