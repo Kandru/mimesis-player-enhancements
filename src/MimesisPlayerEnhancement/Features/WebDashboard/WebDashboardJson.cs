@@ -130,6 +130,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Z = marker.Z,
                     Yaw = marker.Yaw,
                     RoomName = marker.RoomName,
+                    AreaId = marker.AreaId,
+                    TileId = marker.TileId,
                     IsAlive = marker.IsAlive,
                     IsHost = marker.IsHost,
                     IsLocal = marker.IsLocal,
@@ -140,8 +142,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 LayoutVersion = layout.LayoutVersion,
                 LayoutKind = layout.LayoutKind,
+                DisplayMode = layout.DisplayMode,
                 SceneLabel = layout.SceneLabel,
+                DefaultAreaId = layout.DefaultAreaId,
                 Bounds = layout.Bounds,
+                Areas = layout.Areas,
                 Tiles = layout.Tiles,
                 Connections = layout.Connections,
                 Train = train,
@@ -302,8 +307,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             public int LayoutVersion;
             public string LayoutKind = "";
+            public string DisplayMode = "hidden";
             public string SceneLabel = "";
+            public string DefaultAreaId = "";
             public WebDashboardMinimapBoundsDto Bounds = new();
+            public List<WebDashboardMinimapAreaDto> Areas = [];
             public List<WebDashboardMinimapTileDto> Tiles = [];
             public List<WebDashboardMinimapConnectionDto> Connections = [];
             public WebDashboardMinimapTrainDto? Train;
@@ -318,6 +326,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public float Z;
             public float Yaw;
             public string RoomName = "";
+            public string AreaId = "";
+            public string TileId = "";
             public bool IsAlive = true;
             public bool IsHost;
             public bool IsLocal;

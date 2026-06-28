@@ -63,11 +63,13 @@ document.addEventListener('alpine:init', () => {
     lastSteamId: null,
     eventSource: null,
     toastTimer: null,
-    minimap: { markers: [], tiles: [], connections: [] },
+    minimap: { markers: [], tiles: [], connectionPoints: [] },
     minimapRaw: null,
     minimapShowAll: false,
     minimapFocusSteamId: '',
+    minimapAreaId: '',
     minimapLastLayoutVersion: -1,
+    minimapLastActiveAreaId: '',
 
     get subtitle() {
       if (this.apiError) {
@@ -121,12 +123,16 @@ document.addEventListener('alpine:init', () => {
 
     init() {
       this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
+      this.minimapAreaId = localStorage.getItem('minimapAreaId') || '';
       window.addEventListener('hashchange', () => this.onHashChange());
       this.parseRoute();
       this.eventSource = Sse.connect(
         (payload) => {
           this.applySnapshot(payload);
           this.loadPageData(false);
+        },
+        (minimap) => {
+          this.applyMinimapLive(minimap);
         },
         () => {
           this.apiError = true;
@@ -179,6 +185,17 @@ document.addEventListener('alpine:init', () => {
       }, 3500);
     },
 
+    applyMinimapLive(minimap) {
+      if (!this.status.inSession || !minimap) {
+        return;
+      }
+
+      this.minimapRaw = minimap;
+      if (this.route === 'minimap' || this.route === 'player') {
+        this.applyMinimapFilter(false);
+      }
+    },
+
     applySnapshot(payload) {
       const wasInSession = this.status.inSession;
       this.status = payload.status || this.status;
@@ -194,7 +211,7 @@ document.addEventListener('alpine:init', () => {
         this.playerStats = null;
         this.settings = null;
         this.minimapRaw = null;
-        this.minimap = { markers: [], tiles: [], connections: [] };
+        this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
       } else if (this.route === 'minimap' || this.route === 'player') {
         this.applyMinimapFilter();
       }
@@ -500,42 +517,150 @@ document.addEventListener('alpine:init', () => {
       this.applyMinimapFilter(true);
     },
 
+    onMinimapAreaChange(event) {
+      this.minimapAreaId = event.target.value || '';
+      localStorage.setItem('minimapAreaId', this.minimapAreaId);
+      this.applyMinimapFilter(true);
+    },
+
+    minimapAreaOptions() {
+      const areas = (this.minimapRaw && this.minimapRaw.areas) || [];
+      return areas.filter((area) => area.id);
+    },
+
+    isMinimapUserCentric() {
+      if (this.route === 'player' && this.steamId) {
+        return true;
+      }
+      if (this.status.isHost && this.minimapShowAll) {
+        return false;
+      }
+      return !!this.resolveMinimapFocus();
+    },
+
+    resolveMinimapAreaId(filteredMarkers) {
+      const areas = (this.minimapRaw && this.minimapRaw.areas) || [];
+      if (!areas.length) {
+        return '';
+      }
+
+      if (this.isMinimapUserCentric()) {
+        const focusSteamId = this.resolveMinimapFocus();
+        if (focusSteamId && filteredMarkers && filteredMarkers.length > 0) {
+          const focused = filteredMarkers.find((marker) => String(marker.steamId) === focusSteamId);
+          if (focused && focused.areaId) {
+            return focused.areaId;
+          }
+        }
+      }
+
+      if (this.minimapAreaId && areas.some((area) => area.id === this.minimapAreaId)) {
+        return this.minimapAreaId;
+      }
+
+      if (this.minimapRaw.defaultAreaId) {
+        return this.minimapRaw.defaultAreaId;
+      }
+
+      return areas[0].id;
+    },
+
+    resolveMinimapArea(areaId) {
+      const areas = (this.minimapRaw && this.minimapRaw.areas) || [];
+      return areas.find((area) => area.id === areaId) || null;
+    },
+
+    minimapShowsMap() {
+      if (!this.minimap || this.minimap.displayMode === 'hidden') {
+        return false;
+      }
+      if (this.isMinimapUserCentric()) {
+        const focusSteamId = this.resolveMinimapFocus();
+        const focused = (this.minimap.markers || []).find(
+          (marker) => String(marker.steamId) === focusSteamId
+        );
+        if (focused && !focused.areaId && this.minimap.layoutKind === 'dungeon') {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    minimapHasTileLayout() {
+      return !!(this.minimap && this.minimap.tiles && this.minimap.tiles.length);
+    },
+
     onMinimapShowAllChange(event) {
       this.minimapShowAll = !!event.target.checked;
       this.applyMinimapFilter(true);
     },
 
+    resolveTrainForArea(rawTrain, activeAreaId) {
+      if (!rawTrain || !activeAreaId) {
+        return null;
+      }
+      if (rawTrain.areaId && rawTrain.areaId !== activeAreaId) {
+        return null;
+      }
+      return rawTrain;
+    },
+
     applyMinimapFilter(forceRender) {
       if (!this.minimapRaw) {
-        this.minimap = { markers: [], tiles: [], connections: [] };
+        this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
         return;
       }
 
       const focusSteamId = this.resolveMinimapFocus();
-      const markers = MinimapRenderer.filterMarkers(
+      const allFiltered = MinimapRenderer.filterMarkers(
         this.minimapRaw.markers || [],
         focusSteamId,
         this.status.isHost && this.minimapShowAll,
         this.status.isHost
       );
+
+      const activeAreaId = this.resolveMinimapAreaId(allFiltered);
+      const activeArea = this.resolveMinimapArea(activeAreaId);
+      const areaMarkers = allFiltered.filter((marker) => {
+        if (!activeAreaId) return true;
+        if (!marker.areaId) {
+          return this.minimapRaw.displayMode === 'markers-only';
+        }
+        return marker.areaId === activeAreaId;
+      });
+
       const layoutChanged = this.minimapRaw.layoutVersion !== this.minimapLastLayoutVersion;
+      const activeAreaChanged = activeAreaId !== this.minimapLastActiveAreaId;
       this.minimap = {
         layoutVersion: this.minimapRaw.layoutVersion,
         layoutKind: this.minimapRaw.layoutKind,
+        displayMode: this.minimapRaw.displayMode,
         sceneLabel: this.minimapRaw.sceneLabel,
-        bounds: this.minimapRaw.bounds,
-        tiles: this.minimapRaw.tiles || [],
-        connections: this.minimapRaw.connections || [],
-        train: this.minimapRaw.train,
-        markers,
+        activeAreaId,
+        activeAreaLabel: activeArea ? activeArea.label : '',
+        bounds: activeArea ? activeArea.bounds : this.minimapRaw.bounds,
+        tiles: activeArea ? activeArea.tiles || [] : this.minimapRaw.tiles || [],
+        connectionPoints: activeArea
+          ? activeArea.connectionPoints || []
+          : [],
+        train: this.resolveTrainForArea(this.minimapRaw.train, activeAreaId),
+        markers: areaMarkers,
       };
       this.minimapLastLayoutVersion = this.minimapRaw.layoutVersion;
-      this.$nextTick(() => this.renderMinimapMaps(forceRender || layoutChanged));
+      this.minimapLastActiveAreaId = activeAreaId;
+      this.$nextTick(() => this.renderMinimapMaps(forceRender || layoutChanged || activeAreaChanged));
     },
 
-    renderMinimapMaps() {
+    renderMinimapMaps(forceFullRender) {
       const maps = document.querySelectorAll('[data-minimap-svg]');
       maps.forEach((svg) => {
+        const sameLayout =
+          svg._minimapLayoutVersion === this.minimap.layoutVersion
+          && svg._minimapActiveAreaId === (this.minimap.activeAreaId || '');
+        if (!forceFullRender && sameLayout && svg.querySelector('.minimap-map-root')) {
+          MinimapRenderer.updateMarkers(svg, this.minimap);
+          return;
+        }
         MinimapRenderer.render(svg, this.minimap);
       });
     },
@@ -544,6 +669,9 @@ document.addEventListener('alpine:init', () => {
       if (!marker) return '';
       const parts = [marker.displayName || marker.steamId];
       if (marker.roomName) parts.push(marker.roomName);
+      if (marker.areaId && marker.areaId !== this.minimap.activeAreaId) {
+        parts.push(marker.areaId);
+      }
       if (!marker.isAlive) parts.push('dead');
       return parts.join(' · ');
     },

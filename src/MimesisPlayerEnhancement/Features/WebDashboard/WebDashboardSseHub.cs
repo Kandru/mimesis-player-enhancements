@@ -4,13 +4,16 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardSseHub
     {
         private const string Feature = "WebDashboard";
-        private const int ThrottleMs = 1000;
+        private const int SnapshotThrottleMs = 1000;
+        private const int MinimapThrottleMs = 100;
+        private const int LoopWaitMs = 50;
         private const int KeepaliveMs = 15000;
 
         private static readonly object Gate = new();
@@ -18,9 +21,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly AutoResetEvent BroadcastSignal = new(false);
         private static Thread? _broadcastThread;
         private static volatile bool _shuttingDown;
-        private static volatile bool _pendingBroadcast;
+        private static volatile bool _pendingSnapshotBroadcast;
+        private static volatile bool _pendingMinimapBroadcast;
         private static int _clientCount;
-        private static long _lastPublishMs;
+        private static long _lastSnapshotPublishMs;
+        private static long _lastMinimapPublishMs;
         private static int _lastPublishedVersion;
 
         internal static void Start()
@@ -110,14 +115,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            _pendingBroadcast = true;
+            _pendingSnapshotBroadcast = true;
+            _ = BroadcastSignal.Set();
+        }
+
+        internal static void NotifyMinimapChanged()
+        {
+            if (_shuttingDown || Volatile.Read(ref _clientCount) == 0)
+            {
+                return;
+            }
+
+            _pendingMinimapBroadcast = true;
             _ = BroadcastSignal.Set();
         }
 
         internal static void Shutdown()
         {
             _shuttingDown = true;
-            _pendingBroadcast = false;
+            _pendingSnapshotBroadcast = false;
+            _pendingMinimapBroadcast = false;
             _ = BroadcastSignal.Set();
 
             List<SseClient> toClose;
@@ -154,85 +171,134 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             while (!_shuttingDown)
             {
-                _ = BroadcastSignal.WaitOne(ThrottleMs);
+                _ = BroadcastSignal.WaitOne(LoopWaitMs);
                 if (_shuttingDown)
                 {
                     break;
                 }
 
-                if (!_pendingBroadcast)
-                {
-                    continue;
-                }
-
-                WaitForThrottleWindow();
-
-                if (_shuttingDown || !_pendingBroadcast)
-                {
-                    continue;
-                }
-
-                SseClient[] clients;
-                lock (Gate)
-                {
-                    if (_shuttingDown || Clients.Count == 0)
-                    {
-                        _pendingBroadcast = false;
-                        continue;
-                    }
-
-                    clients = [.. Clients];
-                    _lastPublishMs = UtcNowMs();
-                    _pendingBroadcast = false;
-                }
-
-                int snapshotVersion = WebDashboardSnapshotCache.Version;
-                string payload;
-                try
-                {
-                    payload = WebDashboardJson.SerializeSnapshotEvent(WebDashboardSnapshotCache.Get());
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"SSE snapshot serialization failed: {ex.Message}");
-                    continue;
-                }
-
-                _lastPublishedVersion = snapshotVersion;
-
-                foreach (SseClient client in clients)
-                {
-                    if (!client.TryWriteEvent("snapshot", payload))
-                    {
-                        RemoveClient(client);
-                        TryClose(client);
-                        continue;
-                    }
-
-                    _ = client.Signal.Set();
-                }
-
-                if (WebDashboardSnapshotCache.Version != _lastPublishedVersion)
-                {
-                    _pendingBroadcast = true;
-                    _ = BroadcastSignal.Set();
-                }
+                TryBroadcastMinimap();
+                TryBroadcastSnapshot();
             }
         }
 
-        private static void WaitForThrottleWindow()
+        private static void TryBroadcastMinimap()
         {
-            while (!_shuttingDown)
+            if (!_pendingMinimapBroadcast || !IsThrottleReady(_lastMinimapPublishMs, MinimapThrottleMs))
             {
-                long elapsed = UtcNowMs() - _lastPublishMs;
-                if (_lastPublishMs == 0 || elapsed >= ThrottleMs)
+                return;
+            }
+
+            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: true);
+            if (clients == null)
+            {
+                return;
+            }
+
+            WebDashboardSnapshot snapshot = WebDashboardSnapshotCache.Get();
+            string payload;
+            try
+            {
+                payload = WebDashboardJson.SerializeMinimap(
+                    snapshot.MinimapLayout,
+                    snapshot.MinimapMarkers,
+                    snapshot.MinimapTrain);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"SSE minimap serialization failed: {ex.Message}");
+                return;
+            }
+
+            _lastMinimapPublishMs = UtcNowMs();
+            BroadcastEvent(clients, "minimap", payload);
+        }
+
+        private static void TryBroadcastSnapshot()
+        {
+            if (!_pendingSnapshotBroadcast || !IsThrottleReady(_lastSnapshotPublishMs, SnapshotThrottleMs))
+            {
+                return;
+            }
+
+            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: false);
+            if (clients == null)
+            {
+                return;
+            }
+
+            int snapshotVersion = WebDashboardSnapshotCache.Version;
+            string payload;
+            try
+            {
+                payload = WebDashboardJson.SerializeSnapshotEvent(WebDashboardSnapshotCache.Get());
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"SSE snapshot serialization failed: {ex.Message}");
+                return;
+            }
+
+            _lastSnapshotPublishMs = UtcNowMs();
+            _lastPublishedVersion = snapshotVersion;
+            BroadcastEvent(clients, "snapshot", payload);
+
+            if (WebDashboardSnapshotCache.Version != _lastPublishedVersion)
+            {
+                _pendingSnapshotBroadcast = true;
+                _ = BroadcastSignal.Set();
+            }
+        }
+
+        private static SseClient[]? CopyClientsAndClearPending(bool isMinimap)
+        {
+            lock (Gate)
+            {
+                if (_shuttingDown || Clients.Count == 0)
                 {
-                    return;
+                    if (isMinimap)
+                    {
+                        _pendingMinimapBroadcast = false;
+                    }
+                    else
+                    {
+                        _pendingSnapshotBroadcast = false;
+                    }
+
+                    return null;
                 }
 
-                int waitMs = (int)Math.Min(ThrottleMs - elapsed, ThrottleMs);
-                _ = BroadcastSignal.WaitOne(waitMs);
+                if (isMinimap)
+                {
+                    _pendingMinimapBroadcast = false;
+                }
+                else
+                {
+                    _pendingSnapshotBroadcast = false;
+                }
+
+                return [.. Clients];
             }
+        }
+
+        private static void BroadcastEvent(SseClient[] clients, string eventName, string payload)
+        {
+            foreach (SseClient client in clients)
+            {
+                if (!client.TryWriteEvent(eventName, payload))
+                {
+                    RemoveClient(client);
+                    TryClose(client);
+                    continue;
+                }
+
+                _ = client.Signal.Set();
+            }
+        }
+
+        private static bool IsThrottleReady(long lastPublishMs, int throttleMs)
+        {
+            return lastPublishMs == 0 || UtcNowMs() - lastPublishMs >= throttleMs;
         }
 
         private static void RemoveClient(SseClient client)

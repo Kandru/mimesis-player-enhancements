@@ -59,6 +59,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return false;
         }
 
+        internal static bool TryBuildFromTileGroup(VSpaceTileGroup tileGroup, out WebDashboardMinimapDungeonGraph graph)
+        {
+            graph = new WebDashboardMinimapDungeonGraph();
+            if (VSpaceTilesField?.GetValue(tileGroup) is not IDictionary tilesDictionary)
+            {
+                return false;
+            }
+
+            graph.Tiles.Clear();
+            graph.TileIds.Clear();
+            graph.Connections.Clear();
+            graph.MainPath.Clear();
+
+            foreach (DictionaryEntry entry in tilesDictionary)
+            {
+                if (entry.Value is not Tile tile)
+                {
+                    continue;
+                }
+
+                int tileId = Convert.ToInt32(entry.Key);
+                graph.Tiles.Add(tile);
+                graph.TileIds[tile] = tileId;
+                if (tile.Placement?.IsOnMainPath ?? false)
+                {
+                    _ = graph.MainPath.Add(tile);
+                }
+            }
+
+            if (VSpaceAdjacencyField?.GetValue(tileGroup) is IDictionary adjacencyDictionary)
+            {
+                AddVSpaceAdjacency(graph, adjacencyDictionary);
+            }
+
+            return graph.Tiles.Count > 0;
+        }
+
         internal static bool HasTiles(GamePlayScene gps)
         {
             return TryBuildGraph(gps, out WebDashboardMinimapDungeonGraph graph) && graph.Tiles.Count > 0;

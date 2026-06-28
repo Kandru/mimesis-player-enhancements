@@ -66,6 +66,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string To = "";
     }
 
+    internal sealed class WebDashboardMinimapConnectionPointDto
+    {
+        public float X;
+        public float Z;
+        public float DirX;
+        public float DirZ;
+        public string FromTileId = "";
+        public string ToTileId = "";
+        public string TargetAreaId = "";
+        public bool CrossArea;
+    }
+
+    internal sealed class WebDashboardMinimapAreaDto
+    {
+        public string Id = "";
+        public string Label = "";
+        public string Kind = "";
+        public WebDashboardMinimapBoundsDto Bounds = new();
+        public List<WebDashboardMinimapTileDto> Tiles = [];
+        public List<WebDashboardMinimapConnectionPointDto> ConnectionPoints = [];
+    }
+
     internal sealed class WebDashboardMinimapMarkerDto
     {
         public ulong SteamId;
@@ -74,6 +96,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float Z;
         public float Yaw;
         public string RoomName = "";
+        public string AreaId = "";
+        public string TileId = "";
         public bool IsAlive = true;
         public bool IsHost;
         public bool IsLocal;
@@ -84,14 +108,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float X;
         public float Z;
         public float Yaw;
+        public string AreaId = "";
     }
 
     internal sealed class WebDashboardMinimapLayoutDto
     {
         public int LayoutVersion;
         public string LayoutKind = "none";
+        public string DisplayMode = "hidden";
         public string SceneLabel = "";
+        public string DefaultAreaId = "";
         public WebDashboardMinimapBoundsDto Bounds = new();
+        public List<WebDashboardMinimapAreaDto> Areas = [];
         public List<WebDashboardMinimapTileDto> Tiles = [];
         public List<WebDashboardMinimapConnectionDto> Connections = [];
     }

@@ -20,6 +20,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly FieldInfo? TramConsoleField =
             typeof(GameMainBase).GetField("tramConsole", InstanceFlags);
+
         internal static List<WebDashboardMinimapMarkerDto> CollectRawMarkers()
         {
             List<WebDashboardMinimapMarkerDto> markers = [];
@@ -39,6 +40,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return markers;
                 }
 
+                DungeonRoom? dungeonRoom = JoinAnytimeRoomTools.GetActiveDungeonRoom() as DungeonRoom;
+
                 foreach (ProtoActor? actor in map.Values)
                 {
                     if (actor == null || actor.ActorType != ActorType.Player)
@@ -56,10 +59,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Vector3 position = transform.position;
                     float x = position.x;
                     float z = position.z;
-                    float yaw = transform.eulerAngles.y;
-                    if (WebDashboardMinimapTramSpace.IsWaitingRoom(main))
+                    float yaw = ResolveHorizontalYaw(transform);
+
+                    string areaId = WebDashboardMinimapAreaResolver.HubAreaId;
+                    string tileId = string.Empty;
+                    string roomName = string.Empty;
+
+                    if (main is GamePlayScene gps && dungeonRoom != null)
                     {
-                        WebDashboardMinimapTramSpace.WorldToLocal(main, position, yaw, out x, out z, out yaw);
+                        areaId = WebDashboardMinimapAreaResolver.ResolvePlayerAreaId(gps, dungeonRoom, position) ?? string.Empty;
+                        roomName = SpawnScalingRoomLookup.TryGetRoomName(dungeonRoom, position);
+                        tileId = TryResolveTileId(dungeonRoom, position, areaId);
+                    }
+                    else if (WebDashboardMinimapTramSpace.IsWaitingRoom(main))
+                    {
+                        WebDashboardMinimapTramSpace.WorldToLocal(main, transform, out x, out z, out yaw);
+                        areaId = string.Empty;
                     }
 
                     markers.Add(new WebDashboardMinimapMarkerDto
@@ -69,9 +84,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         X = x,
                         Z = z,
                         Yaw = yaw,
-                        RoomName = JoinAnytimeRoomTools.GetActiveDungeonRoom() is DungeonRoom dungeonRoom
-                            ? SpawnScalingRoomLookup.TryGetRoomName(dungeonRoom, position)
-                            : string.Empty,
+                        RoomName = roomName,
+                        AreaId = areaId,
+                        TileId = tileId,
                         IsAlive = !actor.dead,
                         IsHost = MimesisSaveManager.IsHost() && LocalPlayerHelper.IsLocalSteamId(steamId),
                         IsLocal = LocalPlayerHelper.IsLocalSteamId(steamId),
@@ -93,18 +108,48 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             List<WebDashboardMinimapMarkerDto> raw = CollectRawMarkers();
             WebDashboardMinimapLayoutDto layout = WebDashboardMinimapLayoutBuilder.Current;
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            WebDashboardMinimapTrainDto? rawTrain = TryCollectTrain(pdata?.main);
-            WebDashboardMinimapBoundsDto bounds = ResolveEffectiveBounds(layout, rawTrain);
+            WebDashboardMinimapTrainDto? rawTrain = TryCollectTrain(pdata?.main, layout);
             List<WebDashboardMinimapMarkerDto> normalized = [];
 
             foreach (WebDashboardMinimapMarkerDto marker in raw)
             {
                 EnrichFromPlayers(marker, players);
+                WebDashboardMinimapBoundsDto bounds = ResolveMarkerBounds(layout, marker);
                 normalized.Add(NormalizeMarker(marker, bounds));
             }
 
-            train = NormalizeTrain(rawTrain, bounds);
+            WebDashboardMinimapAreaDto? outdoorArea =
+                TryGetArea(layout, WebDashboardMinimapAreaResolver.OutdoorAreaId);
+            train = NormalizeTrainForLayout(rawTrain, layout, outdoorArea);
             return normalized;
+        }
+
+        private static WebDashboardMinimapTrainDto? NormalizeTrainForLayout(
+            WebDashboardMinimapTrainDto? rawTrain,
+            WebDashboardMinimapLayoutDto layout,
+            WebDashboardMinimapAreaDto? outdoorArea)
+        {
+            if (rawTrain == null)
+            {
+                return null;
+            }
+
+            if (outdoorArea != null)
+            {
+                return NormalizeTrain(
+                    rawTrain,
+                    outdoorArea.Bounds,
+                    WebDashboardMinimapAreaResolver.OutdoorAreaId);
+            }
+
+            WebDashboardMinimapAreaDto? hubArea =
+                TryGetArea(layout, WebDashboardMinimapAreaResolver.HubAreaId);
+            if (hubArea != null)
+            {
+                return NormalizeTrain(rawTrain, hubArea.Bounds, WebDashboardMinimapAreaResolver.HubAreaId);
+            }
+
+            return null;
         }
 
         internal static List<WebDashboardMinimapMarkerDto> FilterMarkers(
@@ -156,18 +201,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return [];
         }
 
+        internal static WebDashboardMinimapAreaDto? TryGetArea(
+            WebDashboardMinimapLayoutDto layout,
+            string areaId)
+        {
+            if (string.IsNullOrWhiteSpace(areaId))
+            {
+                return null;
+            }
+
+            foreach (WebDashboardMinimapAreaDto area in layout.Areas)
+            {
+                if (area.Id == areaId)
+                {
+                    return area;
+                }
+            }
+
+            return null;
+        }
+
         internal static WebDashboardMinimapTrainDto? NormalizeTrain(
             WebDashboardMinimapTrainDto? train,
-            WebDashboardMinimapBoundsDto bounds)
+            WebDashboardMinimapBoundsDto bounds,
+            string areaId)
         {
-            return train == null
-                ? null
-                : new WebDashboardMinimapTrainDto
-                {
-                    X = NormalizeCoord(train.X, bounds.MinX, bounds.MaxX),
-                    Z = NormalizeCoord(train.Z, bounds.MinZ, bounds.MaxZ),
-                    Yaw = train.Yaw,
-                };
+            if (train == null || string.IsNullOrWhiteSpace(areaId) || IsPlaceholderBounds(bounds))
+            {
+                return null;
+            }
+
+            return new WebDashboardMinimapTrainDto
+            {
+                X = NormalizeCoord(train.X, bounds.MinX, bounds.MaxX),
+                Z = NormalizeCoord(train.Z, bounds.MinZ, bounds.MaxZ),
+                Yaw = train.Yaw,
+                AreaId = areaId,
+            };
         }
 
         internal static WebDashboardMinimapBoundsDto ResolveEffectiveBounds(
@@ -182,19 +252,94 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return BuildFallbackBounds(rawTrain);
         }
 
-        internal static WebDashboardMinimapTrainDto? TryCollectTrain(GameMainBase? main)
+        internal static WebDashboardMinimapTrainDto? TryCollectTrain(
+            GameMainBase? main,
+            WebDashboardMinimapLayoutDto layout)
         {
-            if (main is InTramWaitingScene)
+            if (main is InTramWaitingScene or DeathMatchScene or MaintenanceScene)
             {
-                return WebDashboardMinimapTramSpace.CreateWaitingRoomTrainMarker();
+                return null;
             }
 
-            if (main is GamePlayScene or MaintenanceScene)
+            if (main is GamePlayScene)
             {
-                return TryFindSceneTrainMarker(main);
+                WebDashboardMinimapAreaDto? outdoorArea =
+                    TryGetArea(layout, WebDashboardMinimapAreaResolver.OutdoorAreaId);
+                return outdoorArea != null ? TryFindSceneTrainMarker(main) : null;
             }
 
             return null;
+        }
+
+        private static WebDashboardMinimapBoundsDto ResolveMarkerBounds(
+            WebDashboardMinimapLayoutDto layout,
+            WebDashboardMinimapMarkerDto marker)
+        {
+            WebDashboardMinimapAreaDto? area = TryGetArea(layout, marker.AreaId);
+            if (area != null && !IsPlaceholderBounds(area.Bounds))
+            {
+                return area.Bounds;
+            }
+
+            if (!string.IsNullOrWhiteSpace(marker.AreaId))
+            {
+                return PlaceholderBounds();
+            }
+
+            return ResolveEffectiveBounds(layout, null);
+        }
+
+        private static WebDashboardMinimapBoundsDto PlaceholderBounds()
+        {
+            return new WebDashboardMinimapBoundsDto
+            {
+                MinX = 0f,
+                MinZ = 0f,
+                MaxX = 1f,
+                MaxZ = 1f,
+            };
+        }
+
+        private static string TryResolveTileId(DungeonRoom room, Vector3 position, string areaId)
+        {
+            if (string.IsNullOrWhiteSpace(areaId)
+                || areaId == WebDashboardMinimapAreaResolver.OutdoorAreaId
+                || !WebDashboardMinimapAreaResolver.IsIndoorAreaId(areaId))
+            {
+                return string.Empty;
+            }
+
+            if (WebDashboardMinimapAreaResolver.TryGetIndoorTileGroup(room) is not ISpaceGroup spaceGroup)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                IVSpace? space = spaceGroup.GetSpace(position);
+                if (space?.Coordinate is TileCoordinate tileCoordinate)
+                {
+                    return $"tile-{tileCoordinate.TileID}";
+                }
+
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static float ResolveHorizontalYaw(Transform transform)
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude <= 0.0001f)
+            {
+                return transform.eulerAngles.y;
+            }
+
+            return Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
         }
 
         private static WebDashboardMinimapTrainDto? TryFindSceneTrainMarker(GameMainBase main)
@@ -221,7 +366,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     X = position.x,
                     Z = position.z,
-                    Yaw = root.eulerAngles.y,
+                    Yaw = ResolveHorizontalYaw(root),
                 };
             }
             catch
@@ -287,6 +432,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Z = NormalizeCoord(marker.Z, bounds.MinZ, bounds.MaxZ),
                 Yaw = marker.Yaw,
                 RoomName = marker.RoomName,
+                AreaId = marker.AreaId,
+                TileId = marker.TileId,
                 IsAlive = marker.IsAlive,
                 IsHost = marker.IsHost,
                 IsLocal = marker.IsLocal,

@@ -1147,8 +1147,24 @@ tr.connected:hover {
   font-weight: 600;
 }
 
-.minimap-kind {
-  text-transform: capitalize;
+.minimap-area {
+  color: var(--md-accent);
+  font-weight: 600;
+}
+
+.minimap-mode {
+  font-size: 0.8125rem;
+  color: var(--md-text-secondary);
+}
+
+.minimap-unavailable {
+  margin: 0;
+  padding: 2rem 1rem;
+}
+
+.minimap-embed-area {
+  color: var(--md-text-secondary);
+  font-weight: 500;
 }
 
 .minimap-canvas-wrap {
@@ -1196,9 +1212,20 @@ tr.connected:hover {
   pointer-events: none;
 }
 
-.minimap-connections line {
-  stroke: rgba(255, 255, 255, 0.22);
-  stroke-width: 3;
+.minimap-connection,
+.minimap-connection-cross {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  pointer-events: stroke;
+}
+
+.minimap-connection {
+  stroke: #448aff;
+}
+
+.minimap-connection-cross {
+  stroke: #ff5252;
 }
 
 .minimap-marker circle {

@@ -126,6 +126,18 @@
                   </template>
                 </select>
               </div>
+              <div class="minimap-toolbar-group"
+                   x-show="!isMinimapUserCentric() && minimapAreaOptions().length > 1">
+                <label class="minimap-label" for="minimap-area">Area</label>
+                <select id="minimap-area"
+                        class="settings-input settings-select minimap-select"
+                        :value="minimap.activeAreaId || minimapAreaId"
+                        @change="onMinimapAreaChange($event)">
+                  <template x-for="area in minimapAreaOptions()" :key="area.id">
+                    <option :value="area.id" x-text="area.label"></option>
+                  </template>
+                </select>
+              </div>
               <label class="minimap-toggle" x-show="status.isHost">
                 <input type="checkbox"
                        :checked="minimapShowAll"
@@ -137,9 +149,15 @@
             <div class="minimap-panel surface-card" x-show="!pageError">
               <div class="minimap-meta" x-show="minimap">
                 <span class="minimap-scene" x-text="minimap?.sceneLabel || 'Session'"></span>
-                <span class="minimap-kind" x-text="minimap?.layoutKind || ''"></span>
+                <span class="minimap-area" x-show="minimap?.activeAreaLabel" x-text="minimap?.activeAreaLabel"></span>
+                <span class="minimap-mode" x-show="isMinimapUserCentric()">Following player</span>
               </div>
-              <div class="minimap-canvas-wrap">
+              <div class="empty-state minimap-unavailable" x-show="!minimapShowsMap()">
+                <p x-text="isMinimapUserCentric() && minimap?.layoutKind === 'dungeon'
+                  ? 'Focused player is in the tram — no map available.'
+                  : 'No map available for this scene.'"></p>
+              </div>
+              <div class="minimap-canvas-wrap" x-show="minimapShowsMap()">
                 <svg class="minimap-canvas"
                      data-minimap-svg
                      viewBox="0 0 1000 1000"
@@ -147,7 +165,7 @@
                      role="img"
                      aria-label="Session minimap"></svg>
               </div>
-              <template x-if="minimap?.markers?.length">
+              <template x-if="minimap?.markers?.length && minimapShowsMap()">
                 <div class="minimap-legend">
                   <template x-for="m in minimap.markers" :key="m.steamId">
                     <span class="minimap-legend-item" :class="{ dead: !m.isAlive, local: m.isLocal, host: m.isHost }"
@@ -155,7 +173,7 @@
                   </template>
                 </div>
               </template>
-              <p class="minimap-hint" x-show="minimap?.layoutKind === 'dungeon' && !(minimap?.tiles?.length)">
+              <p class="minimap-hint" x-show="minimapShowsMap() && minimap?.layoutKind === 'dungeon' && !minimapHasTileLayout()">
                 Dungeon layout is still generating or unavailable. Player markers will appear once positions are known.
               </p>
             </div>
@@ -212,12 +230,12 @@
           <!-- Player detail -->
           <template x-if="status.inSession && route === 'player' && steamId">
             <div>
-            <div class="player-minimap-embed surface-card" x-show="minimap?.markers?.length || minimap?.tiles?.length">
+            <div class="player-minimap-embed surface-card" x-show="minimapShowsMap() && (minimap?.markers?.length || minimapHasTileLayout())">
               <div class="minimap-embed-header">
-                <h3 class="section-title">Minimap</h3>
+                <h3 class="section-title">Minimap<span class="minimap-embed-area" x-show="minimap?.activeAreaLabel"> · <span x-text="minimap?.activeAreaLabel"></span></span></h3>
                 <a class="btn-text btn" href="#/minimap">Open full minimap</a>
               </div>
-              <div class="minimap-canvas-wrap compact">
+              <div class="minimap-canvas-wrap compact" x-show="minimapShowsMap()">
                 <svg class="minimap-canvas"
                      data-minimap-svg
                      viewBox="0 0 1000 1000"
