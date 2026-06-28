@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Mimic.Actors;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
@@ -10,6 +12,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardMinimapService
     {
+        private const BindingFlags InstanceFlags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private static readonly FieldInfo? BgRootField =
+            typeof(GameMainBase).GetField("BGRoot", InstanceFlags);
+
+        private static readonly FieldInfo? TramConsoleField =
+            typeof(GameMainBase).GetField("tramConsole", InstanceFlags);
         internal static List<WebDashboardMinimapMarkerDto> CollectRawMarkers()
         {
             List<WebDashboardMinimapMarkerDto> markers = [];
@@ -44,13 +54,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                     Transform transform = actor.transform;
                     Vector3 position = transform.position;
+                    float x = position.x;
+                    float z = position.z;
+                    float yaw = transform.eulerAngles.y;
+                    if (WebDashboardMinimapTramSpace.IsWaitingRoom(main))
+                    {
+                        WebDashboardMinimapTramSpace.WorldToLocal(main, position, yaw, out x, out z, out yaw);
+                    }
+
                     markers.Add(new WebDashboardMinimapMarkerDto
                     {
                         SteamId = steamId,
                         DisplayName = string.IsNullOrWhiteSpace(actor.nickName) ? steamId.ToString() : actor.nickName,
-                        X = position.x,
-                        Z = position.z,
-                        Yaw = transform.eulerAngles.y,
+                        X = x,
+                        Z = z,
+                        Yaw = yaw,
                         RoomName = JoinAnytimeRoomTools.GetActiveDungeonRoom() is DungeonRoom dungeonRoom
                             ? SpawnScalingRoomLookup.TryGetRoomName(dungeonRoom, position)
                             : string.Empty,
@@ -74,7 +92,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             List<WebDashboardMinimapMarkerDto> raw = CollectRawMarkers();
             WebDashboardMinimapLayoutDto layout = WebDashboardMinimapLayoutBuilder.Current;
-            WebDashboardMinimapBoundsDto bounds = ResolveEffectiveBounds(layout, raw);
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            WebDashboardMinimapTrainDto? rawTrain = TryCollectTrain(pdata?.main);
+            WebDashboardMinimapBoundsDto bounds = ResolveEffectiveBounds(layout, rawTrain);
             List<WebDashboardMinimapMarkerDto> normalized = [];
 
             foreach (WebDashboardMinimapMarkerDto marker in raw)
@@ -83,7 +103,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 normalized.Add(NormalizeMarker(marker, bounds));
             }
 
-            train = NormalizeTrain(layout.Train, bounds);
+            train = NormalizeTrain(rawTrain, bounds);
             return normalized;
         }
 
@@ -152,52 +172,82 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardMinimapBoundsDto ResolveEffectiveBounds(
             WebDashboardMinimapLayoutDto layout,
-            IReadOnlyList<WebDashboardMinimapMarkerDto> rawMarkers)
+            WebDashboardMinimapTrainDto? rawTrain)
         {
-            if (layout.LayoutKind is not "hub" and not "none")
+            if (!IsPlaceholderBounds(layout.Bounds))
             {
                 return layout.Bounds;
             }
 
-            float minX = float.PositiveInfinity;
-            float maxX = float.NegativeInfinity;
-            float minZ = float.PositiveInfinity;
-            float maxZ = float.NegativeInfinity;
+            return BuildFallbackBounds(rawTrain);
+        }
 
-            if (layout.Train != null)
+        internal static WebDashboardMinimapTrainDto? TryCollectTrain(GameMainBase? main)
+        {
+            if (main is InTramWaitingScene)
             {
-                minX = layout.Train.X;
-                maxX = layout.Train.X;
-                minZ = layout.Train.Z;
-                maxZ = layout.Train.Z;
+                return WebDashboardMinimapTramSpace.CreateWaitingRoomTrainMarker();
             }
 
-            foreach (WebDashboardMinimapMarkerDto marker in rawMarkers)
+            if (main is not MaintenanceScene)
             {
-                minX = Mathf.Min(minX, marker.X);
-                maxX = Mathf.Max(maxX, marker.X);
-                minZ = Mathf.Min(minZ, marker.Z);
-                maxZ = Mathf.Max(maxZ, marker.Z);
+                return null;
             }
 
-            if (float.IsPositiveInfinity(minX))
+            try
             {
-                return layout.Bounds;
-            }
+                Transform? root = BgRootField?.GetValue(main) as Transform;
+                if (root == null && TramConsoleField?.GetValue(main) is Component console)
+                {
+                    root = console.transform;
+                    while (root.parent != null && root.parent != root.root)
+                    {
+                        root = root.parent;
+                    }
+                }
 
-            float spanX = Mathf.Max(maxX - minX, 10f);
-            float spanZ = Mathf.Max(maxZ - minZ, 10f);
+                if (root == null)
+                {
+                    return null;
+                }
+
+                Vector3 position = root.position;
+                return new WebDashboardMinimapTrainDto
+                {
+                    X = position.x,
+                    Z = position.z,
+                    Yaw = root.eulerAngles.y,
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static WebDashboardMinimapBoundsDto BuildFallbackBounds(WebDashboardMinimapTrainDto? rawTrain)
+        {
+            const float halfSpan = 75f;
             const float padding = 0.05f;
-            float padX = spanX * padding;
-            float padZ = spanZ * padding;
+            float centerX = rawTrain?.X ?? 0f;
+            float centerZ = rawTrain?.Z ?? 0f;
+            float pad = halfSpan * padding;
 
             return new WebDashboardMinimapBoundsDto
             {
-                MinX = minX - padX,
-                MinZ = minZ - padZ,
-                MaxX = maxX + padX,
-                MaxZ = maxZ + padZ,
+                MinX = centerX - halfSpan - pad,
+                MinZ = centerZ - halfSpan - pad,
+                MaxX = centerX + halfSpan + pad,
+                MaxZ = centerZ + halfSpan + pad,
             };
+        }
+
+        private static bool IsPlaceholderBounds(WebDashboardMinimapBoundsDto bounds)
+        {
+            return bounds.MinX == 0f
+                && bounds.MinZ == 0f
+                && bounds.MaxX == 1f
+                && bounds.MaxZ == 1f;
         }
 
         private static void EnrichFromPlayers(WebDashboardMinimapMarkerDto marker, IReadOnlyList<WebDashboardPlayerDto> players)

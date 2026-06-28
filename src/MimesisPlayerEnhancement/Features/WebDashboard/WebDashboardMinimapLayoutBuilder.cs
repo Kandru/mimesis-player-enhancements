@@ -5,7 +5,6 @@ using Bifrost.Cooked;
 using DunGen;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -13,12 +12,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
         private const float BoundsPadding = 0.05f;
+        private const float HubMinSpan = 40f;
+        private const float HubMaxSpan = 120f;
+        private const float HubFallbackHalfSpan = 75f;
 
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private static readonly FieldInfo? DungeonGeneratorField =
             typeof(GamePlayScene).GetField("dungeonGenerator", InstanceFlags);
+        private static readonly FieldInfo? BgRootField =
+            typeof(GameMainBase).GetField("BGRoot", InstanceFlags);
+        private static readonly FieldInfo? MaintenanceRoomRootField =
+            typeof(MaintenanceScene).GetField("maintenanceRoomRoot", InstanceFlags);
         private static string _cachedRunKey = "";
         private static bool _rebuildRequested;
 
@@ -46,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                if (Current.LayoutKind is "hub" or "none" && runKey.StartsWith("hub:", StringComparison.Ordinal))
+                if (Current.LayoutKind is "hub" or "hub-waiting" or "none" && runKey.StartsWith("hub:", StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -70,9 +76,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Current = main switch
             {
                 GamePlayScene gps => TryBuildDungeonLayout(gps, runKey),
-                InTramWaitingScene => BuildHubLayout("Tram waiting room", "hub"),
-                MaintenanceScene => BuildHubLayout("Maintenance bay", "hub"),
-                _ => BuildHubLayout(ResolveSceneLabel(main), "none"),
+                InTramWaitingScene => BuildWaitingRoomLayout(main),
+                MaintenanceScene => BuildHubLayout(main, "Maintenance bay", "hub"),
+                _ => BuildHubLayout(main, ResolveSceneLabel(main), "none"),
             };
 
             Current.LayoutVersion = ++LayoutVersion;
@@ -96,7 +102,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Dungeon? dungeon = TryGetCurrentDungeon(gps);
             if (dungeon?.AllTiles == null || dungeon.AllTiles.Count == 0)
             {
-                return BuildHubLayout(ResolveDungeonLabel(gps), "dungeon");
+                return BuildHubLayout(gps, ResolveDungeonLabel(gps), "dungeon");
             }
 
             try
@@ -106,7 +112,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"Minimap layout extraction failed for {runKey}: {ex.Message}");
-                return BuildHubLayout(ResolveDungeonLabel(gps), "dungeon");
+                return BuildHubLayout(gps, ResolveDungeonLabel(gps), "dungeon");
             }
         }
 
@@ -170,7 +176,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 tileIds[tile] = tileId;
                 index++;
 
-                Bounds bounds = tile.Bounds;
+                Bounds bounds = tile.Placement?.Bounds ?? tile.Bounds;
                 Vector3 center = bounds.center;
                 float halfW = Mathf.Max(bounds.extents.x, 0.5f);
                 float halfH = Mathf.Max(bounds.extents.z, 0.5f);
@@ -184,7 +190,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (rawTiles.Count == 0)
             {
-                return BuildHubLayout(sceneLabel, "dungeon");
+                return BuildHubLayout(null, sceneLabel, "dungeon");
             }
 
             float spanX = Mathf.Max(maxX - minX, 1f);
@@ -265,53 +271,150 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return layout;
         }
 
-        private static WebDashboardMinimapLayoutDto BuildHubLayout(string sceneLabel, string layoutKind)
+        private static WebDashboardMinimapLayoutDto BuildWaitingRoomLayout(GameMainBase? main)
+        {
+            return new WebDashboardMinimapLayoutDto
+            {
+                LayoutKind = "hub-waiting",
+                SceneLabel = "Tram waiting room",
+                Bounds = WebDashboardMinimapTramSpace.BuildWaitingRoomBounds(main),
+            };
+        }
+
+        private static WebDashboardMinimapLayoutDto BuildHubLayout(GameMainBase? main, string sceneLabel, string layoutKind)
         {
             return new WebDashboardMinimapLayoutDto
             {
                 LayoutKind = layoutKind,
                 SceneLabel = sceneLabel,
-                Bounds = new WebDashboardMinimapBoundsDto
-                {
-                    MinX = 0f,
-                    MinZ = 0f,
-                    MaxX = 1f,
-                    MaxZ = 1f,
-                },
-                Train = TryFindTrainMarker(),
+                Bounds = TryBuildHubBounds(main),
             };
         }
 
-        private static WebDashboardMinimapTrainDto? TryFindTrainMarker()
+        private static WebDashboardMinimapBoundsDto TryBuildHubBounds(GameMainBase? main)
         {
-            try
+            Transform? bgRoot = main != null ? BgRootField?.GetValue(main) as Transform : null;
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+
+            if (main != null)
             {
-                Type? tramType = typeof(GamePlayScene).Assembly.GetType("TramConsole")
-                    ?? typeof(GamePlayScene).Assembly.GetType("TramStarter");
-                if (tramType == null)
+                ExpandBoundsFromTransform(bgRoot, ref minX, ref maxX, ref minZ, ref maxZ);
+                if (main is MaintenanceScene maintenanceScene)
                 {
-                    return null;
+                    ExpandBoundsFromTransform(
+                        MaintenanceRoomRootField?.GetValue(maintenanceScene) as Transform,
+                        ref minX,
+                        ref maxX,
+                        ref minZ,
+                        ref maxZ);
+                }
+            }
+
+            if (float.IsPositiveInfinity(minX))
+            {
+                return bgRoot != null
+                    ? CenteredBounds(bgRoot.position.x, bgRoot.position.z, HubFallbackHalfSpan)
+                    : PlaceholderBounds();
+            }
+
+            return FinalizeHubBounds(minX, maxX, minZ, maxZ, bgRoot);
+        }
+
+        private static WebDashboardMinimapBoundsDto FinalizeHubBounds(
+            float minX,
+            float maxX,
+            float minZ,
+            float maxZ,
+            Transform? anchor)
+        {
+            float centerX = anchor != null ? anchor.position.x : (minX + maxX) * 0.5f;
+            float centerZ = anchor != null ? anchor.position.z : (minZ + maxZ) * 0.5f;
+            float spanX = Mathf.Clamp(maxX - minX, HubMinSpan, HubMaxSpan);
+            float spanZ = Mathf.Clamp(maxZ - minZ, HubMinSpan, HubMaxSpan);
+
+            if (maxX - minX > HubMaxSpan || maxZ - minZ > HubMaxSpan)
+            {
+                minX = centerX - (spanX * 0.5f);
+                maxX = centerX + (spanX * 0.5f);
+                minZ = centerZ - (spanZ * 0.5f);
+                maxZ = centerZ + (spanZ * 0.5f);
+            }
+
+            float padX = spanX * BoundsPadding;
+            float padZ = spanZ * BoundsPadding;
+
+            return new WebDashboardMinimapBoundsDto
+            {
+                MinX = minX - padX,
+                MinZ = minZ - padZ,
+                MaxX = maxX + padX,
+                MaxZ = maxZ + padZ,
+            };
+        }
+
+        private static WebDashboardMinimapBoundsDto CenteredBounds(float centerX, float centerZ, float halfSpan)
+        {
+            float pad = halfSpan * BoundsPadding;
+            return new WebDashboardMinimapBoundsDto
+            {
+                MinX = centerX - halfSpan - pad,
+                MinZ = centerZ - halfSpan - pad,
+                MaxX = centerX + halfSpan + pad,
+                MaxZ = centerZ + halfSpan + pad,
+            };
+        }
+
+        private static void ExpandBoundsFromTransform(
+            Transform? root,
+            ref float minX,
+            ref float maxX,
+            ref float minZ,
+            ref float maxZ)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            bool expanded = false;
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null)
+                {
+                    continue;
                 }
 
-                Object[] found = Object.FindObjectsByType(tramType, FindObjectsSortMode.None);
-                if (found.Length == 0 || found[0] is not Component component)
-                {
-                    return null;
-                }
+                Bounds bounds = renderer.bounds;
+                minX = Mathf.Min(minX, bounds.min.x);
+                maxX = Mathf.Max(maxX, bounds.max.x);
+                minZ = Mathf.Min(minZ, bounds.min.z);
+                maxZ = Mathf.Max(maxZ, bounds.max.z);
+                expanded = true;
+            }
 
-                Transform transform = component.transform;
-                Vector3 position = transform.position;
-                return new WebDashboardMinimapTrainDto
-                {
-                    X = position.x,
-                    Z = position.z,
-                    Yaw = transform.eulerAngles.y,
-                };
-            }
-            catch
+            if (!expanded)
             {
-                return null;
+                Vector3 position = root.position;
+                minX = Mathf.Min(minX, position.x - HubFallbackHalfSpan);
+                maxX = Mathf.Max(maxX, position.x + HubFallbackHalfSpan);
+                minZ = Mathf.Min(minZ, position.z - HubFallbackHalfSpan);
+                maxZ = Mathf.Max(maxZ, position.z + HubFallbackHalfSpan);
             }
+        }
+
+        private static WebDashboardMinimapBoundsDto PlaceholderBounds()
+        {
+            return new WebDashboardMinimapBoundsDto
+            {
+                MinX = 0f,
+                MinZ = 0f,
+                MaxX = 1f,
+                MaxZ = 1f,
+            };
         }
 
         private static string ResolveDungeonLabel(GamePlayScene gps)

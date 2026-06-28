@@ -1211,6 +1211,31 @@ tr.connected:hover {
   fill: rgba(255, 255, 255, 0.9);
 }
 
+.minimap-marker-label {
+  fill: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: rgba(13, 17, 23, 0.85);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.minimap-marker.dead .minimap-marker-label {
+  fill: rgba(255, 255, 255, 0.55);
+}
+
+.minimap-marker.local .minimap-marker-label {
+  fill: #9ef7ee;
+}
+
+.minimap-marker.host .minimap-marker-label {
+  fill: #ffd699;
+}
+
 .minimap-marker.local circle {
   fill: #03dac6;
 }

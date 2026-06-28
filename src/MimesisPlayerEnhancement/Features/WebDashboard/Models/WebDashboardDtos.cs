@@ -94,7 +94,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public WebDashboardMinimapBoundsDto Bounds = new();
         public List<WebDashboardMinimapTileDto> Tiles = [];
         public List<WebDashboardMinimapConnectionDto> Connections = [];
-        public WebDashboardMinimapTrainDto? Train;
     }
 
     internal sealed class WebDashboardSnapshot

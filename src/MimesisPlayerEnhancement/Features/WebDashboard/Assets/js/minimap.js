@@ -102,16 +102,27 @@ const MinimapRenderer = {
     (data.markers || []).forEach((marker) => {
       const group = document.createElementNS(ns, 'g');
       group.setAttribute('class', this.markerClass(marker));
-      group.setAttribute('transform', this.markerTransform(marker));
+      group.setAttribute('transform', this.markerPositionTransform(marker));
+
+      const body = document.createElementNS(ns, 'g');
+      body.setAttribute('transform', 'rotate(' + (marker.yaw || 0) + ')');
 
       const dot = document.createElementNS(ns, 'circle');
       dot.setAttribute('r', '10');
-      group.appendChild(dot);
+      body.appendChild(dot);
 
       const heading = document.createElementNS(ns, 'polygon');
       heading.setAttribute('points', '0,-16 6,-6 -6,-6');
       heading.setAttribute('class', 'minimap-heading');
-      group.appendChild(heading);
+      body.appendChild(heading);
+      group.appendChild(body);
+
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('x', '0');
+      label.setAttribute('y', '24');
+      label.setAttribute('class', 'minimap-marker-label');
+      label.textContent = this.shortPlayerName(marker.displayName || marker.steamId);
+      group.appendChild(label);
 
       const title = document.createElementNS(ns, 'title');
       const room = marker.roomName ? ' · ' + marker.roomName : '';
@@ -125,9 +136,13 @@ const MinimapRenderer = {
   },
 
   markerTransform(marker) {
+    return this.markerPositionTransform(marker) + ' rotate(' + (marker.yaw || 0) + ')';
+  },
+
+  markerPositionTransform(marker) {
     const x = marker.x * this.VIEW_SIZE;
     const y = marker.z * this.VIEW_SIZE;
-    return 'translate(' + x + ' ' + y + ') rotate(' + (marker.yaw || 0) + ')';
+    return 'translate(' + x + ' ' + y + ')';
   },
 
   markerClass(marker) {
@@ -141,5 +156,11 @@ const MinimapRenderer = {
   shortLabel(label) {
     if (!label) return '';
     return label.length > 14 ? label.slice(0, 12) + '…' : label;
+  },
+
+  shortPlayerName(name) {
+    const text = name == null ? '' : String(name).trim();
+    if (!text) return '?';
+    return text.length > 10 ? text.slice(0, 9) + '…' : text;
   },
 };
