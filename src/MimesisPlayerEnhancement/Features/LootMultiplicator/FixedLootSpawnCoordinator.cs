@@ -48,12 +48,23 @@ internal static class FixedLootSpawnCoordinator
         })
         ?? throw new InvalidOperationException("IVroom.GetNewItemElement not found");
 
+    private static readonly MethodInfo ExecuteLootingObjectSpawnMethod =
+        AccessTools.Method(typeof(IVroom), "ExecuteLootingObjectSpawn", new[] { typeof(SpawnedActorData) })
+        ?? throw new InvalidOperationException("IVroom.ExecuteLootingObjectSpawn not found");
+
+    private static readonly MethodInfo MemberwiseCloneMethod =
+        AccessTools.Method(typeof(object), "MemberwiseClone")
+        ?? throw new InvalidOperationException("object.MemberwiseClone not found");
+
     private static readonly MethodInfo SpawnLootingObjectMethod =
         AccessTools.Method(typeof(IVroom), "SpawnLootingObject", SpawnLootingObjectParameterTypes)
         ?? throw new InvalidOperationException("IVroom.SpawnLootingObject not found");
 
     private static readonly FieldInfo CurrentSpawnCountBackingField =
         AccessToolsField(typeof(SpawnedActorData), "<CurrentSpawnCount>k__BackingField");
+
+    private static readonly FieldInfo SpawnDataIndexField =
+        AccessToolsField(typeof(SpawnedActorData), "Index");
 
     private static readonly HashSet<DungeonRoom> AppliedRooms = new();
     private static readonly Dictionary<DungeonRoom, RoomState> RoomStates = new();
@@ -101,13 +112,30 @@ internal static class FixedLootSpawnCoordinator
             if (need <= 0)
                 continue;
 
-            // Initial pile count is handled in SpawnLootingObject; keep quota for respawns after pickup.
-            state.SetRemainingQuota(masterId, need);
+            var usedMarkerIds = new HashSet<int>();
+            FixedSpawnedActorData? template = null;
+
+            foreach (SpawnSlot slot in group.Value)
+            {
+                usedMarkerIds.Add(slot.Data.Index);
+                template ??= slot.Data;
+            }
+
+            if (template == null)
+                continue;
+
+            List<MapMarker_LootingObjectSpawnPoint> unusedMarkers =
+                MapLootMarkerSpreader.CollectUnusedMarkers(masterId, usedMarkerIds);
+            MapLootMarkerSpreader.ShuffleMarkers(unusedMarkers);
+
+            int activated = ActivateUnusedMarkers(room, state, spawnDatas, template, unusedMarkers, need);
+            int remainingQuota = need - activated;
+            state.SetRemainingQuota(masterId, remainingQuota);
 
             ModLog.Info(
                 Feature,
                 $"Fixed loot scaling — type={itemType}, master={masterId}, " +
-                $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, respawnQuota={need})");
+                $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={activated}, respawnQuota={remainingQuota})");
         }
 
         if (state.HasQuotas || state.SlotCount > 0)
@@ -209,6 +237,81 @@ internal static class FixedLootSpawnCoordinator
                 DeferNextAttempt(i, pending, now);
             }
         }
+    }
+
+    private static int ActivateUnusedMarkers(
+        DungeonRoom room,
+        RoomState state,
+        IDictionary spawnDatas,
+        FixedSpawnedActorData template,
+        List<MapMarker_LootingObjectSpawnPoint> unusedMarkers,
+        int need)
+    {
+        int activated = 0;
+
+        for (int i = 0; i < unusedMarkers.Count && activated < need; i++)
+        {
+            MapMarker_LootingObjectSpawnPoint marker = unusedMarkers[i];
+            string key = marker.Name;
+
+            if (string.IsNullOrWhiteSpace(key) || spawnDatas.Contains(key))
+                key = $"{marker.masterID}_{marker.ID}";
+
+            if (spawnDatas.Contains(key))
+                continue;
+
+            var spawnData = CreateSpawnDataFromMarker(template, marker);
+            spawnDatas.Add(key, spawnData);
+            state.RegisterSlot(key, spawnData);
+
+            try
+            {
+                ExecuteLootingObjectSpawn(room, spawnData);
+                activated++;
+            }
+            catch (Exception ex)
+            {
+                spawnDatas.Remove(key);
+                ModLog.Warn(
+                    Feature,
+                    $"Fixed loot marker activation failed — master={marker.masterID}, marker={marker.ID}: {ex.Message}");
+            }
+        }
+
+        return activated;
+    }
+
+    private static FixedSpawnedActorData CreateSpawnDataFromMarker(
+        FixedSpawnedActorData template,
+        MapMarker_LootingObjectSpawnPoint marker)
+    {
+        var data = (FixedSpawnedActorData)MemberwiseCloneMethod.Invoke(template, null)!;
+        data.SetActorID(0);
+        SetField(data, CurrentSpawnCountBackingField, 0);
+        SetField(data, SpawnDataIndexField, marker.ID);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "IsIndoor"), marker.IsIndoor);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "MasterID"), marker.masterID);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "MaxRespawnCount"), marker.MaxRespawnCount);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "Name"), marker.Name);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "Pos"), marker.pos);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "PosVector"), marker.pos.pos);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "SpawnWaitTime"), marker.spawnWaitTime);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "StackCount"), marker.stackCount > 0 ? marker.stackCount : 1);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "Durability"), marker.durability);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "DefaultGauge"), marker.defaultGauge);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "IgnoreNav"), marker.ignoreNav);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "EnableReset"), marker.enableReset);
+        SetField(data, AccessToolsField(typeof(SpawnedActorData), "SpawnType"), marker.spawnType);
+
+        return data;
+    }
+
+    private static void ExecuteLootingObjectSpawn(DungeonRoom room, SpawnedActorData spawnData)
+    {
+        if (room is not IVroom vroom)
+            throw new InvalidOperationException("DungeonRoom is not IVroom");
+
+        ExecuteLootingObjectSpawnMethod.Invoke(vroom, new object[] { spawnData });
     }
 
     private static bool TrySpawnFixedLoot(DungeonRoom room, SpawnedActorData spawnData, bool isRespawn)

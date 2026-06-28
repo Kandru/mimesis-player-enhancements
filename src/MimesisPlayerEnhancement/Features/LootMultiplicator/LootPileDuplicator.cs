@@ -36,6 +36,24 @@ internal static class LootPileDuplicator
             return;
         }
 
+        if (source.Equals(LootSource.Map))
+        {
+            // Fixed loot extras are activated on unused markers at room init; random pools spread here.
+            if (!MapLootSpawnContext.IsActive)
+            {
+                MapLootMarkerSpreader.TrySpreadToUnusedMarkers(
+                    vroom,
+                    template,
+                    reasonOfSpawn,
+                    prevProjectileActorId,
+                    projectileDropTime,
+                    ignoreNav,
+                    isRestored);
+            }
+
+            return;
+        }
+
         ItemType itemType = ItemElementStackHelper.GetItemType(template);
         if (itemType.Equals(ItemType.Consumable))
             return;

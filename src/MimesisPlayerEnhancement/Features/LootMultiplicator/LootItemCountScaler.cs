@@ -28,6 +28,10 @@ internal static class LootItemCountScaler
         if (!ModConfig.EnableLootMultiplicator.Value || masterId <= 0)
             return false;
 
+        // Map loot is spread across unused markers; never stack at the spawn point.
+        if (source.Equals(LootSource.Map))
+            return false;
+
         if (SpawnScalingHost.IsParticipantClient() || !SpawnScalingHost.ShouldApplyScaling())
             return false;
 
