@@ -1,18 +1,27 @@
+using System.Collections.Generic;
+
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 {
     internal static class PlayerAnnouncements
     {
         private const string Feature = "Announcements";
 
+        private static readonly HashSet<DungeonRoom> EntryAnnouncedRooms = [];
+
         internal static void OnAllMembersEnteredDungeon(DungeonRoom room)
         {
-            if (!ModConfig.ShowPlayerAnnouncements.Value)
+            if (!EntryAnnouncedRooms.Add(room))
             {
                 return;
             }
 
             MapRunStatsTracker.ResetForDungeonEntry();
             BossSpawnAnnouncer.BeginDungeonRun();
+
+            if (!ModConfig.ShowPlayerAnnouncements.Value)
+            {
+                return;
+            }
 
             string? settings = DungeonSettingsFormatter.FormatForDungeonEntry(room);
             if (!string.IsNullOrWhiteSpace(settings))
