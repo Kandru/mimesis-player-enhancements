@@ -42,9 +42,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         /// True when the toast is shown only to the local player (e.g. session intro).
         /// Wrapped in a TMP color tag so it stands out from join/leave stats everyone sees.
         /// </param>
-        public static void ShowModMessage(string message, bool isEntering = true, bool localOnly = false)
+        /// <param name="ignoreFeatureToggles">
+        /// When true, show even if statistics and player-announcement toasts are disabled.
+        /// </param>
+        public static void ShowModMessage(
+            string message,
+            bool isEntering = true,
+            bool localOnly = false,
+            bool ignoreFeatureToggles = false)
         {
-            if (!ModConfig.ShowStatisticsToasts.Value && !ModConfig.ShowPlayerAnnouncements.Value)
+            if (!ignoreFeatureToggles
+                && !ModConfig.ShowStatisticsToasts.Value
+                && !ModConfig.ShowPlayerAnnouncements.Value)
             {
                 return;
             }

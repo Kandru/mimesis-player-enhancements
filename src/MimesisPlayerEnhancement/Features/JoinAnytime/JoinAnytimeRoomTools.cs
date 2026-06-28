@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.Cooked;
 using MimesisPlayerEnhancement.Util;
+using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
@@ -103,6 +104,73 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return pdata?.PickedMapID ?? 0;
         }
 
+        internal static bool TryEnsureWaitingRoom(out IVroom? waitingRoom)
+        {
+            waitingRoom = null;
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
+            {
+                ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — VRoomManager unavailable");
+                return false;
+            }
+
+            waitingRoom = TryGetWaitingRoom(vroomManager);
+            if (waitingRoom != null)
+            {
+                return true;
+            }
+
+            if (Hub.s == null)
+            {
+                ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — Hub.s unavailable");
+                return false;
+            }
+
+            PropertyInfo? vworldProperty = typeof(Hub).GetProperty("vworld", InstanceFlags);
+            if (vworldProperty?.GetValue(Hub.s) is not VWorld vworld)
+            {
+                ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — VWorld unavailable");
+                return false;
+            }
+
+            ModLog.Info(Feature, "Creating waiting room for late joiner");
+            vworld.InitWaitingRoom();
+            waitingRoom = TryGetWaitingRoom(vroomManager);
+            if (waitingRoom == null)
+            {
+                ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — room still missing after InitWaitingRoom");
+            }
+
+            return waitingRoom != null;
+        }
+
+        internal static bool ShouldBlockWaitingRoomStartGame()
+        {
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
+            {
+                return false;
+            }
+
+            GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
+            if (sessionInfo.GameSessionState == VGameSessionState.OnPlaying)
+            {
+                return true;
+            }
+
+            if (CountDungeonPlayers(vroomManager) > 0)
+            {
+                return true;
+            }
+
+            int sessionPlayers = vroomManager.GetPlayerCountInSession();
+            if (sessionPlayers <= 0)
+            {
+                return false;
+            }
+
+            int waitingPlayers = vroomManager.GetRoomMemberCount(VRoomType.Waiting);
+            return waitingPlayers < sessionPlayers;
+        }
+
         internal static IVroom? GetActiveDungeonRoom()
         {
             if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
@@ -150,6 +218,43 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             return bestOccupied ?? newest;
+        }
+
+        private static IVroom? TryGetWaitingRoom(VRoomManager vroomManager)
+        {
+            if (ReflectionHelper.GetFieldValue(vroomManager, "_vrooms") is not Dictionary<long, IVroom> rooms)
+            {
+                return null;
+            }
+
+            foreach (IVroom room in rooms.Values)
+            {
+                if (room is VWaitingRoom)
+                {
+                    return room;
+                }
+            }
+
+            return null;
+        }
+
+        private static int CountDungeonPlayers(VRoomManager vroomManager)
+        {
+            if (ReflectionHelper.GetFieldValue(vroomManager, "_vrooms") is not Dictionary<long, IVroom> rooms)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            foreach (IVroom room in rooms.Values)
+            {
+                if (room is DungeonRoom)
+                {
+                    count += room.GetMemberCount();
+                }
+            }
+
+            return count;
         }
 
         private static bool TryGetDataman(out DataManager dataman)

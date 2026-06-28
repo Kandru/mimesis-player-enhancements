@@ -6,67 +6,46 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeNetworkTools
     {
-        internal static void SendOnPlayingStateToClient(VPlayer player)
+        internal static void SendPreGameTramStateToClient(VPlayer player)
         {
-            SendOnPlayingState(player.UID, msg => player.SendToMe(msg));
+            SendPreGameTramState(player.UID, msg => player.SendToMe(msg));
         }
 
-        internal static void SendOnPlayingStateToClient(SessionContext context)
+        internal static void SendPreGameTramStateToClient(SessionContext context)
         {
-            SendOnPlayingState(context.GetPlayerUID(), msg => context.Send(msg));
+            SendPreGameTramState(context.GetPlayerUID(), msg => context.Send(msg));
         }
 
-        private static void SendOnPlayingState(long uid, Action<IMsg> send)
+        private static void SendPreGameTramState(long uid, Action<IMsg> send)
         {
-            if (LateJoinManager.HasPlayingStateBeenSent(uid))
+            if (LateJoinManager.HasPreGameStateBeenSent(uid))
             {
+                ModLog.Debug("JoinAnytime", $"Skipping duplicate pre-game tram state send for uid={uid}");
                 return;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            if (pdata?.main is not GamePlayScene gps)
+            if (!JoinAnytimeRoomTools.TryEnsureWaitingRoom(out IVroom? waitingRoom))
             {
-                return;
-            }
-
-            IVroom? dungeonRoom = JoinAnytimeRoomTools.GetActiveDungeonRoom();
-            if (dungeonRoom == null)
-            {
-                ModLog.Warn("JoinAnytime", $"SendOnPlayingState failed — no active DungeonRoom for uid={uid}");
-                return;
-            }
-
-            int pickedMapId = JoinAnytimeRoomTools.ResolvePickedMapId(dungeonRoom);
-            if (pickedMapId == 0)
-            {
-                ModLog.Warn(
-                    "JoinAnytime",
-                    $"SendOnPlayingState failed — could not resolve picked map for uid={uid}, roomUID={dungeonRoom.RoomID}");
+                ModLog.Warn("JoinAnytime", $"SendPreGameTramState failed — waiting room unavailable for uid={uid}");
                 return;
             }
 
             ModLog.Info(
                 "JoinAnytime",
-                $"Sending in-game state to uid={uid} — dungeon={gps.DungeonMasterID}, map={pickedMapId}, seed={gps.RandDungeonSeed}, roomUID={dungeonRoom.RoomID}");
-
-            send(new MoveToDungeonSig
-            {
-                selectedDungeonMasterID = gps.DungeonMasterID,
-                randDungeonSeed = gps.RandDungeonSeed,
-                pickedMapID = pickedMapId,
-            });
+                $"Sending pre-game tram state to uid={uid} — waitingRoomUID={waitingRoom!.RoomID}");
 
             send(new MakeRoomCompleteSig
             {
                 nextRoomInfo = new RoomInfo
                 {
-                    roomType = VRoomType.Game,
-                    roomMasterID = gps.DungeonMasterID,
-                    roomUID = dungeonRoom.RoomID,
+                    roomType = VRoomType.Waiting,
+                    roomUID = waitingRoom.RoomID,
                 },
             });
 
-            LateJoinManager.MarkPlayingStateSent(uid);
+            send(new MoveToWaitingRoomSig());
+
+            LateJoinManager.MarkPreGameStateSent(uid);
         }
     }
 }

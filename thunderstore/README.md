@@ -2,7 +2,7 @@
 
 > **Warning — use at your own risk.** Mods change how the game runs; things can break. Only download MelonLoader from [melonwiki.xyz](https://melonwiki.xyz/). If you do not trust a pre-built DLL, [build from source on GitHub](https://github.com/Kandru/mimesis-player-enhancements).
 
-One plugin for MIMESIS multiplayer: more players, more mimic voices, voice persistence, join-anytime, statistics, spawn/loot/money scaling, dungeon tweaks, a web dashboard, and more — with a single config file instead of juggling separate mods.
+One plugin for MIMESIS multiplayer: more players, more mimic voices, voice persistence, join-anytime (letting friends join an active lobby - they wait in the tram until the current run ends), statistics, spawn/loot/money scaling, dungeon tweaks, a web dashboard, and more — with a single config file instead of juggling separate mods.
 
 Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 
@@ -27,7 +27,7 @@ Remove older separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAn
 | **More Players** | Raise the 4-player cap (default: 32) | No — host only |
 | **More Voices** | Record more mimic voice lines per context | No — host only |
 | **Persistence** | Keep mimic voices after save/load | No — host only |
-| **Join Anytime** | Join a session that already started | **Yes — every player** |
+| **Join Anytime** | Let friends join an active lobby; they wait in the tram until the current dungeon ends | No — host only |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
 | **Web Dashboard** | Browser UI with live config, stats, minimap, and host moderation | No — host only |
 | **Player Announcements** | Toasts for dungeon settings, boss spawns, death stats | No — host only |

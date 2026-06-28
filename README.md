@@ -19,7 +19,7 @@
 >
 > If you do not trust a pre-built `.dll`, you can [build this mod yourself](#build-from-source) from the source code here on GitHub. That takes some basic dev setup, but you know exactly what you are running.
 
-You want more from MIMESIS multiplayer — more players, more voice lines, voices that stick around after saving, joining friends mid-round, and stats that actually track who did what. This mod bundles those tweaks into **one plugin** with a single config file, instead of juggling several separate mods.
+You want more from MIMESIS multiplayer — more players, more voice lines, voices that stick around after saving, letting friends join an active lobby (they wait in the tram until the current run ends), and stats that actually track who did what. This mod bundles those tweaks into **one plugin** with a single config file, instead of juggling several separate mods.
 
 Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 
@@ -30,7 +30,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **More Players** | Raise the 4-player cap (default: 32) | No — host only |
 | **More Voices** | Record more mimic voice lines per context (default: 3000 each for indoor, deathmatch, outdoor) | No — host only |
 | **Persistence** | Keep mimic voices after save/load | No — host only |
-| **Join Anytime** | Join a session that already started | **Yes — every player** |
+| **Join Anytime** | Let friends join an active lobby; they wait in the tram until the current dungeon ends | No — host only |
 | **Statistics** | Session stats and leaderboard per save slot | No — host only |
 | **Web Dashboard** | Browser UI for players, stats, and host moderation | No — host only |
 | **Player Announcements** | In-game toasts for dungeon settings, boss spawns, and per-map death stats | No — host only |
@@ -131,11 +131,26 @@ Host-only. In-game toasts for dungeon run settings at shift start, boss spawn al
 
 ### Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
-**Every player in the lobby needs the mod** for this feature. Lets players join a session after a round has already started.
+Host-only. Lets players join a lobby after a session has already started. **Joiners do not need this mod** — only the host does.
+
+Late joiners cannot be dropped straight into an active dungeon (the game has no stock path for that). Instead, the host server sends vanilla packets so they follow the normal **maintenance → tram waiting room** flow. They wait on the tram map until the party finishes the current dungeon; when everyone returns to the tram, the next lever pull starts the next run together.
+
+**What the host mod does:**
+
+1. Allows login while a session is already running (`CanEnterSession`).
+2. When a joiner appears in `MaintenanceRoom`, ensures a `VWaitingRoom` exists on the server (creates one with `InitWaitingRoom` if the original was wiped when the dungeon started).
+3. Sends unicast `MakeRoomCompleteSig` (`roomType = Waiting`) and `MoveToWaitingRoomSig` so the stock client loads `InTramWaitingScene` and completes `EnterWaitingRoomReq`.
+4. Blocks the tram start lever on the server (`VWaitingRoom.OnRequestStartGame`) while players are split — e.g. some still in the dungeon, or not everyone is in the waiting room yet (`CantStartGame`).
+
+**Limitations:**
+
+- Joiners **do not** land mid-dungeon; they sit out the current run in the tram.
+- If the host is still in maintenance or already in the tram (pre-lever), joiners are routed to the same waiting room via the same packets.
+- Public lobby visibility helpers still run on the host when this feature is enabled.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableJoinAnytime` | bool | `true` | Let players join after a round has already started. |
+| `EnableJoinAnytime` | bool | `true` | Let players join after a session has already started. |
 
 ### Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using Bifrost.ConstEnum;
 using HarmonyLib;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
@@ -34,37 +36,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    [HarmonyPatch(typeof(NetworkManagerV2), nameof(NetworkManagerV2.OnRecvPacket), typeof(IMsg))]
-    internal static class NetworkManagerV2OnRecvPacketPatch
-    {
-        [HarmonyPrefix]
-        private static bool Prefix(IMsg msg)
-        {
-            return LateJoinManager.OnClientPacket(msg);
-        }
-    }
-
-    [HarmonyPatch(typeof(Hub), nameof(Hub.LoadScene), typeof(string))]
-    internal static class HubLoadScenePatch
-    {
-        [HarmonyPrefix]
-        private static void Prefix(string sceneName)
-        {
-            HostStatusCache.Invalidate();
-            LateJoinManager.OnLoadScene(sceneName);
-        }
-    }
-
-    [HarmonyPatch(typeof(MaintenanceScene), "Start")]
-    internal static class MaintenanceSceneStartPatch
-    {
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            LateJoinManager.OnMaintenanceSceneStart();
-        }
-    }
-
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
     internal static class VRoomManagerEnterWaitingRoomPatch
     {
@@ -72,16 +43,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Prefix(SessionContext context)
         {
             LateJoinManager.OnServerEnterWaitingRoom(context);
-        }
-    }
-
-    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterDungeon))]
-    internal static class VRoomManagerEnterDungeonPatch
-    {
-        [HarmonyPrefix]
-        private static void Prefix(SessionContext context, int hashCode, long roomUID)
-        {
-            LateJoinManager.OnServerEnterDungeon(context, roomUID);
         }
     }
 
@@ -95,13 +56,62 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))]
-    internal static class VoiceManagerSetVoiceModePatch
+    [HarmonyPatch(typeof(IVroom), "RunEventActionInternal")]
+    internal static class IVroomRunEventActionInternalPatch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix(
+            IVroom __instance,
+            IGameAction action,
+            List<IGameActionParam> paramList,
+            ref bool __result)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return true;
+            }
+
+            if (action is not GameAction gameAction
+                || gameAction.ActionType != DefAction.MOVE_TO_NEXT_ROOM)
+            {
+                return true;
+            }
+
+            if (__instance is not VWaitingRoom waitingRoom || waitingRoom.BackToMaintenance)
+            {
+                return true;
+            }
+
+            if (!JoinAnytimeRoomTools.ShouldBlockWaitingRoomStartGame())
+            {
+                return true;
+            }
+
+            int actorId = GameActionParamHelper.FindParam<GameActionParamActor>(paramList)?.ActorID ?? 0;
+            ModLog.Info("JoinAnytime", "Blocked tram lever — players still split between dungeon and waiting room");
+            JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorId);
+            __result = false;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(NewTramLeverLevelObject), nameof(NewTramLeverLevelObject.OnChangeLevelObjectStateSig))]
+    internal static class NewTramLeverLevelObjectOnChangeLevelObjectStateSigPatch
     {
         [HarmonyPostfix]
-        private static void Postfix(VoiceManager __instance, VoiceMode voiceMode)
+        private static void Postfix(int actorId, int prevState, int currentState)
         {
-            LateJoinManager.EnsureVoiceConnected(__instance, voiceMode);
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            if (currentState != (int)NewTramLeverState.Open)
+            {
+                return;
+            }
+
+            JoinAnytimeUserMessages.OnLocalTramLeverOpened(actorId);
         }
     }
 
@@ -126,7 +136,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     }
 
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresenceInLobby))]
-    internal static class SteamInviteDispatcherSetPresenceInLobbyPatch
+    internal static class SteamInviteDispatcherSetLobbyPublicPresencePatch
     {
         [HarmonyPrefix]
         private static bool Prefix(SteamInviteDispatcher __instance)
