@@ -6,6 +6,7 @@ using MelonLoader;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using ReluNetwork.ConstEnum;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
@@ -20,6 +21,22 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly Regex DisplaySuffixPattern = new(
             @"\s*(\[(open|wait \d+ min)\])?\s*\(\d+/\d+\)$",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private static readonly MethodInfo? GetL10NTextMethod =
+            typeof(Hub).GetMethod(
+                "GetL10NText",
+                BindingFlags.Static | BindingFlags.Public,
+                null,
+                [typeof(string)],
+                null);
+
+        private static readonly MethodInfo? GetComponentInChildrenMethod =
+            typeof(Component).GetMethod(
+                "GetComponentInChildren",
+                InstanceFlags,
+                null,
+                [typeof(Type)],
+                null);
 
         private static readonly FieldInfo? DispatcherLobbyNameField =
             typeof(SteamInviteDispatcher).GetField("lobbyName", InstanceFlags);
@@ -121,7 +138,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             RefreshLobbyState(force: true);
         }
 
-        internal static void OnPublicRoomNameChanged(string rawLobbyName)
+        internal static void OnPublicRoomNameChanged(UIPrefab_InGameMenu menu, string rawLobbyName)
         {
             if (!ModConfig.EnableJoinAnytime.Value)
             {
@@ -130,6 +147,50 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             SetBaseLobbyName(rawLobbyName);
             RefreshLobbyState(force: true);
+            SyncInGameMenuRoomNameField(menu, _lastPublishedName);
+        }
+
+        private static void SyncInGameMenuRoomNameField(UIPrefab_InGameMenu menu, string displayName)
+        {
+            if (menu == null || string.IsNullOrEmpty(displayName) || !IsHost())
+            {
+                return;
+            }
+
+            try
+            {
+                PropertyInfo? inputFieldProp = typeof(UIPrefab_InGameMenu).GetProperty(
+                    "UE_InputFieldRoomName",
+                    InstanceFlags);
+                object? inputField = inputFieldProp?.GetValue(menu);
+                if (inputField != null)
+                {
+                    PropertyInfo? textProp = inputField.GetType().GetProperty("text");
+                    textProp?.SetValue(inputField, displayName);
+                }
+
+                ((Selectable)menu.UE_ChangeRoomNameButton).interactable = false;
+
+                Type? tmpTextType = Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
+                if (tmpTextType != null && GetComponentInChildrenMethod != null)
+                {
+                    object? label = GetComponentInChildrenMethod.Invoke(
+                        menu.UE_ChangeRoomNameButton,
+                        [tmpTextType]);
+                    PropertyInfo? labelTextProp = tmpTextType.GetProperty("text");
+                    labelTextProp?.SetValue(label, GetAppliedButtonLabel());
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"In-game menu lobby name sync failed — {ex.Message}");
+            }
+        }
+
+        private static string GetAppliedButtonLabel()
+        {
+            return GetL10NTextMethod?.Invoke(null, ["STRING_PUBLIC_TRAM_BUTTON_APPLIED"]) as string
+                ?? "Applied";
         }
 
         internal static void SetBaseLobbyName(string rawName)

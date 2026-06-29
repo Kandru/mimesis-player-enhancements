@@ -314,7 +314,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            JoinAnytimeLobbyController.OnPublicRoomNameChanged(__instance.lobbyName);
+            JoinAnytimeLobbyController.OnPublicRoomNameChanged(__instance, __instance.lobbyName);
         }
     }
 
