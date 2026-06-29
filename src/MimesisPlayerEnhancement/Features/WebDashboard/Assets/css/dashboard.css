@@ -227,7 +227,7 @@ body.waiting #view {
   min-height: 0;
 }
 
-body.in-session .app-content {
+body.connected .app-content {
   padding-top: 1.5rem;
   padding-bottom: 2.5rem;
 }

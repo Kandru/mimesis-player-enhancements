@@ -95,7 +95,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 dto.Leaderboard = ModJson.Deserialize<LeaderboardApiResponse>(snapshot.LeaderboardJson);
             }
 
-            if (snapshot.Status.InSession)
+            if (snapshot.Status.IsConnected)
             {
                 dto.Minimap = BuildMinimapResponse(
                     snapshot.MinimapLayout,

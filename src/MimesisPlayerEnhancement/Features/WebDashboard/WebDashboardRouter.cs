@@ -137,9 +137,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void HandleMinimapApi(HttpListenerContext context, WebDashboardSnapshot snapshot)
         {
-            if (!snapshot.Status.InSession)
+            if (!snapshot.Status.IsConnected)
             {
-                WriteJson(context, 404, WebDashboardJson.SerializeError(404, "No active session."));
+                WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Not connected to a game."));
                 return;
             }
 

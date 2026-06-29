@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static WebDashboardSnapshot _snapshot = new();
         private static int _version;
         private static volatile bool _dirty = true;
-        private static bool _lastInSession;
+        private static bool _lastConnected;
         private static long _lastFullRefreshMs;
         private static long _lastMinimapRefreshMs;
         private static string _minimapFingerprint = "";
@@ -36,15 +36,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Tick(string listenUrl)
         {
-            bool inSession = WebDashboardGameState.IsInSession();
-            if (inSession != _lastInSession)
+            bool connected = WebDashboardGameState.IsConnected();
+            if (connected != _lastConnected)
             {
                 _dirty = true;
-                _lastInSession = inSession;
+                _lastConnected = connected;
                 _minimapFingerprint = "";
             }
 
-            if (inSession)
+            if (connected)
             {
                 long nowMs = UtcNowMs();
                 if (nowMs - _lastMinimapRefreshMs >= MinimapRefreshIntervalMs)
@@ -76,7 +76,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void RefreshMinimapLive()
         {
-            if (!WebDashboardGameState.IsInSession())
+            if (!WebDashboardGameState.IsConnected())
             {
                 return;
             }
@@ -118,16 +118,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Refresh(string listenUrl)
         {
-            bool inSession = WebDashboardGameState.IsInSession();
+            bool connected = WebDashboardGameState.IsConnected();
             bool isHost = WebDashboardGameState.IsHost();
             int saveSlotId = WebDashboardGameState.GetSaveSlotId();
-            _lastInSession = inSession;
+            _lastConnected = connected;
 
             WebDashboardSnapshot next = new()
             {
                 Status = new WebDashboardStatusDto
                 {
-                    InSession = inSession,
+                    IsConnected = connected,
                     IsHost = isHost,
                     SaveSlotId = saveSlotId,
                     ModVersion = VersionInfo.ModuleVersion,
@@ -137,7 +137,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 },
             };
 
-            if (!inSession)
+            if (!connected)
             {
                 _lastPlayers = [];
                 _lastLeaderboardJson = null;

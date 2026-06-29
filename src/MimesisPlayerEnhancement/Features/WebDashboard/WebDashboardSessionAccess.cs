@@ -98,23 +98,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return HostSessionContextField?.GetValue(sessionManager) as SessionContext;
         }
 
-        internal static bool IsHostSessionContext(SessionManager sessionManager, SessionContext context)
-        {
-            if (context == null)
-            {
-                return false;
-            }
-
-            if (HostSessionContextField?.GetValue(sessionManager) is SessionContext hostContext
-                && ReferenceEquals(hostContext, context))
-            {
-                return true;
-            }
-
-            VPlayer? player = GetVPlayer(context);
-            return player != null && player.IsHost;
-        }
-
         internal static bool TryGetNetworkGrade(SessionManager sessionManager, long playerUid, out int grade)
         {
             grade = -1;

@@ -36,7 +36,7 @@ function avatarUrl(steamId) {
 document.addEventListener('alpine:init', () => {
   Alpine.data('dashboard', () => ({
     status: {
-      inSession: false,
+      isConnected: false,
       isHost: false,
       saveSlotId: -1,
       modVersion: '',
@@ -75,14 +75,14 @@ document.addEventListener('alpine:init', () => {
       if (this.apiError) {
         return 'Cannot reach dashboard API';
       }
-      if (!this.status.inSession) {
+      if (!this.status.isConnected) {
         return this.status.modVersion
-          ? 'v' + this.status.modVersion + ' · Waiting for session'
-          : 'Waiting for session';
+          ? 'v' + this.status.modVersion + ' · Waiting for game'
+          : 'Waiting for game';
       }
       const parts = [];
       if (this.status.modVersion) parts.push('v' + this.status.modVersion);
-      parts.push(this.status.isHost ? 'Host' : 'Guest');
+      parts.push(this.status.isHost ? 'Host' : 'Client');
       if (this.status.saveSlotId >= 0) parts.push('Savegame ' + this.status.saveSlotId);
       return parts.join(' · ');
     },
@@ -136,8 +136,8 @@ document.addEventListener('alpine:init', () => {
         },
         () => {
           this.apiError = true;
-          this.status.inSession = false;
-          this.setSessionMode();
+          this.status.isConnected = false;
+          this.setConnectedMode();
         }
       );
     },
@@ -150,11 +150,11 @@ document.addEventListener('alpine:init', () => {
     },
 
     ensureDefaultRoute() {
-      if (!this.status.inSession && this.route !== 'waiting') {
+      if (!this.status.isConnected && this.route !== 'waiting') {
         location.hash = '#/waiting';
         this.parseRoute();
       } else if (
-        this.status.inSession &&
+        this.status.isConnected &&
         (this.route === 'waiting' || !location.hash || location.hash === '#')
       ) {
         location.hash = '#/players';
@@ -162,9 +162,9 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    setSessionMode() {
-      document.body.classList.toggle('waiting', !this.status.inSession);
-      document.body.classList.toggle('in-session', this.status.inSession);
+    setConnectedMode() {
+      document.body.classList.toggle('waiting', !this.status.isConnected);
+      document.body.classList.toggle('connected', this.status.isConnected);
     },
 
     onHashChange() {
@@ -186,7 +186,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     applyMinimapLive(minimap) {
-      if (!this.status.inSession || !minimap) {
+      if (!this.status.isConnected || !minimap) {
         return;
       }
 
@@ -197,15 +197,15 @@ document.addEventListener('alpine:init', () => {
     },
 
     applySnapshot(payload) {
-      const wasInSession = this.status.inSession;
+      const wasConnected = this.status.isConnected;
       this.status = payload.status || this.status;
       this.players = payload.players || [];
       this.leaderboard = payload.leaderboard || null;
       this.minimapRaw = payload.minimap || null;
       this.apiError = false;
-      this.setSessionMode();
+      this.setConnectedMode();
 
-      if (!this.status.inSession) {
+      if (!this.status.isConnected) {
         this.players = [];
         this.leaderboard = null;
         this.playerStats = null;
@@ -217,7 +217,7 @@ document.addEventListener('alpine:init', () => {
       }
 
       this.ensureDefaultRoute();
-      return wasInSession !== this.status.inSession;
+      return wasConnected !== this.status.isConnected;
     },
 
     needsPageRefresh(force) {
@@ -241,7 +241,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadPageData(force) {
-      if (!this.status.inSession) {
+      if (!this.status.isConnected) {
         this.pageError = '';
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;

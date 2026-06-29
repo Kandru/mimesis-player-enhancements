@@ -4,7 +4,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
 {
     internal sealed class WebDashboardStatusDto
     {
-        public bool InSession;
+        public bool IsConnected;
         public bool IsHost;
         public int SaveSlotId = -1;
         public string ModVersion = "";

@@ -21,7 +21,7 @@
       </div>
     </header>
 
-    <nav class="app-nav" aria-label="Main navigation" x-show="status.inSession" x-cloak>
+    <nav class="app-nav" aria-label="Main navigation" x-show="status.isConnected" x-cloak>
       <ul>
         <li>
           <a href="#/players" :class="{ active: route === 'players' }">Players</a>
@@ -43,16 +43,16 @@
         <section id="view" aria-live="polite">
 
           <!-- Waiting -->
-          <div x-show="!status.inSession" class="waiting-panel">
+          <div x-show="!status.isConnected" class="waiting-panel">
             <div class="waiting-card">
-              <div class="spinner" role="progressbar" aria-label="Waiting for game session"></div>
-              <h2>No active session</h2>
-              <p>Host or join a game in Mimesis first. This dashboard will connect automatically once a session is running.</p>
+              <div class="spinner" role="progressbar" aria-label="Waiting for game"></div>
+              <h2>Not connected</h2>
+              <p>Host or join a game in Mimesis first. This dashboard will connect automatically once you are in a game.</p>
             </div>
           </div>
 
           <!-- Players -->
-          <div x-show="status.inSession && route === 'players'" x-cloak>
+          <div x-show="status.isConnected && route === 'players'" x-cloak>
             <h2 class="page-heading">Players</h2>
             <div class="empty-state" x-show="players.length === 0 && !pageError">
               <p>No players connected.</p>
@@ -115,7 +115,7 @@
           </div>
 
           <!-- Minimap -->
-          <div x-show="status.inSession && route === 'minimap'" x-cloak>
+          <div x-show="status.isConnected && route === 'minimap'" x-cloak>
             <h2 class="page-heading">Minimap</h2>
             <div class="minimap-toolbar surface-card">
               <div class="minimap-toolbar-group">
@@ -183,7 +183,7 @@
           </div>
 
           <!-- Leaderboard -->
-          <div x-show="status.inSession && route === 'leaderboard'" x-cloak>
+          <div x-show="status.isConnected && route === 'leaderboard'" x-cloak>
             <template x-if="!status.isHost">
               <div class="empty-state"><p>Leaderboard is only available to the host.</p></div>
             </template>
@@ -231,7 +231,7 @@
           </div>
 
           <!-- Player detail -->
-          <template x-if="status.inSession && route === 'player' && steamId">
+          <template x-if="status.isConnected && route === 'player' && steamId">
             <div>
             <div class="player-minimap-embed surface-card" x-show="minimapShowsMap() && (minimap?.markers?.length || minimapHasTileLayout())">
               <div class="minimap-embed-header">
@@ -303,7 +303,7 @@
           </template>
 
           <!-- Settings -->
-          <template x-if="status.inSession && route === 'settings'">
+          <template x-if="status.isConnected && route === 'settings'">
             <div>
             <template x-if="!status.isHost">
               <div class="empty-state"><p>Settings are only available to the host.</p></div>

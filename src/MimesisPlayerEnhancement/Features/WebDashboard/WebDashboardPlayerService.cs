@@ -17,13 +17,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
             Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
-            bool dashboardIsHost = WebDashboardGameState.IsHost();
 
             if (sessionManager != null)
             {
                 foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
                 {
-                    WebDashboardPlayerDto? dto = TryBuildPlayerDto(context, sessionManager, localSteamId, nameCache, dashboardIsHost);
+                    WebDashboardPlayerDto? dto = TryBuildPlayerDto(context, sessionManager, localSteamId, nameCache);
                     if (dto != null)
                     {
                         playersBySteam[dto.SteamId] = dto;
@@ -44,8 +43,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         steamId,
                         sessionManager,
                         localSteamId,
-                        nameCache,
-                        dashboardIsHost);
+                        nameCache);
                     if (fallback != null)
                     {
                         playersBySteam[steamId] = fallback;
@@ -53,14 +51,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (dashboardIsHost && localSteamId != 0 && !playersBySteam.ContainsKey(localSteamId))
+            if (WebDashboardGameState.IsHost() && localSteamId != 0 && !playersBySteam.ContainsKey(localSteamId))
             {
                 WebDashboardPlayerDto? hostFallback = BuildFallbackPlayerDto(
                     localSteamId,
                     sessionManager,
                     localSteamId,
                     nameCache,
-                    dashboardIsHost,
                     forceHost: true);
                 if (hostFallback != null)
                 {
@@ -68,7 +65,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (dashboardIsHost && sessionManager != null)
+            if (WebDashboardGameState.IsHost() && sessionManager != null)
             {
                 foreach (ulong bannedSteamId in WebDashboardSessionAccess.EnumerateBannedSteamIds(sessionManager))
                 {
@@ -81,8 +78,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         bannedSteamId,
                         sessionManager,
                         localSteamId,
-                        nameCache,
-                        dashboardIsHost);
+                        nameCache);
                     if (bannedOffline != null)
                     {
                         bannedOffline.IsBanned = true;
@@ -181,7 +177,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionManager? sessionManager,
             ulong localSteamId,
             Dictionary<ulong, string>? nameCache,
-            bool dashboardIsHost,
             bool forceHost = false)
         {
             long playerUid = 0;
@@ -210,7 +205,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             bool isLocal = localSteamId != 0 && steamId == localSteamId;
-            bool isHost = forceHost || (dashboardIsHost && isLocal);
+            bool isHost = forceHost || (WebDashboardGameState.IsHost() && isLocal);
 
             WebDashboardPlayerDto dto = new()
             {
@@ -230,7 +225,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 dto.NetworkGrade = grade;
             }
 
-            EnrichPlayerDto(dto, sessionManager, matchedContext, dashboardIsHost);
+            EnrichPlayerDto(dto, sessionManager, matchedContext);
             return dto;
         }
 
@@ -238,13 +233,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionContext context,
             SessionManager sessionManager,
             ulong localSteamId,
-            Dictionary<ulong, string>? nameCache,
-            bool dashboardIsHost)
+            Dictionary<ulong, string>? nameCache)
         {
             try
             {
                 ulong steamId = context.SteamID;
-                if (steamId == 0 && dashboardIsHost && LocalPlayerHelper.IsLocalSteamId(localSteamId))
+                if (steamId == 0 && WebDashboardGameState.IsHost() && LocalPlayerHelper.IsLocalSteamId(localSteamId))
                 {
                     steamId = localSteamId;
                 }
@@ -265,17 +259,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(context);
+                bool isLocal = localSteamId != 0 && steamId == localSteamId;
                 bool isHost = vPlayer?.IsHost ?? false;
-                if (!isHost)
+                if (!isHost && isLocal)
                 {
-                    if (WebDashboardSessionAccess.IsHostSessionContext(sessionManager, context))
-                    {
-                        isHost = true;
-                    }
-                    else if (dashboardIsHost && localSteamId != 0 && steamId == localSteamId)
-                    {
-                        isHost = true;
-                    }
+                    isHost = WebDashboardGameState.IsHost();
                 }
 
                 WebDashboardPlayerDto dto = new()
@@ -284,7 +272,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     PlayerUid = playerUid,
                     DisplayName = ResolveDisplayName(context, steamId, playerUid, nameCache),
                     IsHost = isHost,
-                    IsLocal = localSteamId != 0 && steamId == localSteamId,
+                    IsLocal = isLocal,
                     IsBanned = WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
                 };
 
@@ -295,7 +283,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     dto.NetworkGrade = grade;
                 }
 
-                EnrichPlayerDto(dto, sessionManager, context, dashboardIsHost);
+                EnrichPlayerDto(dto, sessionManager, context);
                 return dto;
             }
             catch
@@ -444,14 +432,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void EnrichPlayerDto(
             WebDashboardPlayerDto dto,
             SessionManager? sessionManager,
-            SessionContext? context,
-            bool dashboardIsHost)
+            SessionContext? context)
         {
             ApplyConnectionInfo(dto, context);
 
             ApplyAliveStatus(dto, context);
 
-            if (dashboardIsHost && ModConfig.EnableStatistics.Value)
+            if (WebDashboardGameState.IsHost() && ModConfig.EnableStatistics.Value)
             {
                 dto.CurrentSession = BuildSessionStats(dto.SteamId);
             }
@@ -506,7 +493,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            dto.ConnectionRole = dto.IsLocal ? "host" : "client";
+            dto.ConnectionRole = dto.IsLocal && WebDashboardGameState.IsHost() ? "host" : "client";
             dto.ConnectionAddress = dto.IsLocal ? "local" : "(unavailable)";
             dto.VoiceEventCount = archive != null ? VoiceEventStats.GetEventCount(archive) : 0;
         }
