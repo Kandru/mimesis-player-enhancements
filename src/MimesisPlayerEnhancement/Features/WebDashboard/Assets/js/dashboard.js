@@ -41,6 +41,31 @@ function avatarUrl(steamId) {
   return url;
 }
 
+function parseBool(value) {
+  if (value === true) return true;
+  if (value === false) return false;
+  const text = String(value ?? '').trim().toLowerCase();
+  return text === 'true' || text === '1' || text === 'yes' || text === 'on';
+}
+
+function settingsHaystack(entry, sectionTitle) {
+  return [
+    entry.key,
+    entry.title,
+    entry.description,
+    entry.value,
+    entry.type,
+    entry.defaultValue,
+    entry.globalValue,
+    sectionTitle,
+  ].map((value) => String(value ?? '').toLowerCase());
+}
+
+function matchesSettingsQuery(entry, sectionTitle, query) {
+  if (!query) return true;
+  return settingsHaystack(entry, sectionTitle).some((value) => value.includes(query));
+}
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('dashboard', () => ({
     status: {
@@ -71,6 +96,7 @@ document.addEventListener('alpine:init', () => {
     lastSnapshotVersion: -1,
     lastConfigVersion: -1,
     savingSettingKey: '',
+    featureToggleStates: {},
     lastRoute: '',
     lastSteamId: null,
     eventSource: null,
@@ -344,6 +370,7 @@ document.addEventListener('alpine:init', () => {
           if (initialLoad) this.loadingSettings = true;
           try {
             this.settingsGlobal = await Api.getGlobalSettings();
+            this.refreshFeatureToggles();
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
@@ -356,6 +383,7 @@ document.addEventListener('alpine:init', () => {
           if (initialLoad) this.loadingSettings = true;
           try {
             this.settingsSave = await Api.getSaveSettings();
+            this.refreshFeatureToggles();
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
@@ -514,96 +542,125 @@ document.addEventListener('alpine:init', () => {
       }, 150);
     },
 
-    settingsSearchSuggestions() {
-      const q = this.settingsQuery.trim().toLowerCase();
-      if (!q) return [];
+    findSettingsSection(sectionId) {
+      return this.activeSettings?.sections?.find((section) => section.id === sectionId) ?? null;
+    },
 
-      const settings = this.activeSettings;
-      if (!settings || !settings.sections) return [];
+    refreshFeatureToggles() {
+      this.featureToggleStates = Object.fromEntries(
+        (this.activeSettings?.sections ?? [])
+          .filter((section) => section.featureToggle)
+          .map((section) => [section.id, parseBool(section.featureToggle.value)])
+      );
+    },
+
+    updateFeatureToggle(sectionId, value) {
+      this.featureToggleStates = {
+        ...this.featureToggleStates,
+        [sectionId]: parseBool(value),
+      };
+    },
+
+    featureEnabled(sectionId) {
+      if (!(sectionId in this.featureToggleStates)) return true;
+      return this.featureToggleStates[sectionId] === true;
+    },
+
+    sectionEntries(sectionId) {
+      const section = this.findSettingsSection(sectionId);
+      if (!section?.entries?.length || !this.featureEnabled(sectionId)) return [];
+      const query = this.settingsQuery.trim().toLowerCase();
+      return section.entries.filter((entry) => matchesSettingsQuery(entry, section.title, query));
+    },
+
+    sectionEntryCount(sectionId) {
+      return this.sectionEntries(sectionId).length;
+    },
+
+    buildSettingsSuggestion(section, entry, isFeatureToggle = false) {
+      const title = String(entry.title || entry.key || '');
+      const key = String(entry.key || '');
+      const query = this.settingsQuery.trim().toLowerCase();
+      const startsWith = title.toLowerCase().startsWith(query) || key.toLowerCase().startsWith(query);
+      return {
+        id: section.id + '/' + key,
+        sectionId: section.id,
+        sectionTitle: section.title,
+        key,
+        title,
+        priority: startsWith ? 0 : 1,
+        isFeatureToggle,
+      };
+    },
+
+    get settingsSearchSuggestions() {
+      const query = this.settingsQuery.trim().toLowerCase();
+      if (!query) return [];
 
       const results = [];
-      for (const section of settings.sections) {
-        for (const entry of section.entries || []) {
-          const fields = [
-            entry.key,
-            entry.title,
-            entry.description,
-            entry.value,
-            entry.globalValue,
-            section.title,
-          ];
-          const haystack = fields.map((v) => String(v || '').toLowerCase());
-          if (!haystack.some((v) => v.includes(q))) continue;
-
-          const title = String(entry.title || entry.key || '');
-          const key = String(entry.key || '');
-          const startsWith = title.toLowerCase().startsWith(q) || key.toLowerCase().startsWith(q);
-          results.push({
-            id: section.id + '/' + key,
-            sectionId: section.id,
-            sectionTitle: section.title,
-            key,
-            title,
-            priority: startsWith ? 0 : 1,
-          });
+      for (const section of this.activeSettings?.sections ?? []) {
+        if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query)) {
+          results.push(this.buildSettingsSuggestion(section, section.featureToggle, true));
+        }
+        if (!this.featureEnabled(section.id)) continue;
+        for (const entry of section.entries ?? []) {
+          if (matchesSettingsQuery(entry, section.title, query)) {
+            results.push(this.buildSettingsSuggestion(section, entry));
+          }
         }
       }
 
-      results.sort((a, b) => {
-        if (a.priority !== b.priority) return a.priority - b.priority;
-        return a.title.localeCompare(b.title);
-      });
+      return results
+        .sort((a, b) => (a.priority - b.priority) || a.title.localeCompare(b.title))
+        .slice(0, 8);
+    },
 
-      return results.slice(0, 8);
+    get filteredSections() {
+      const query = this.settingsQuery.trim().toLowerCase();
+      return (this.activeSettings?.sections ?? []).filter((section) => {
+        if (this.sectionEntryCount(section.id) > 0) return true;
+        if (!section.featureToggle) return false;
+        if (!query) return true;
+        return matchesSettingsQuery(section.featureToggle, section.title, query);
+      });
     },
 
     selectSettingsSuggestion(item) {
       this.settingsQuery = item.key;
       this.settingsSearchOpen = false;
       this.$nextTick(() => {
-        const el = document.getElementById(this.settingEntryDomId(item.sectionId, { key: item.key }));
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('settings-entry-highlight');
-          setTimeout(() => el.classList.remove('settings-entry-highlight'), 1600);
-        }
+        const domId = this.settingsDomId(
+          item.sectionId,
+          item.isFeatureToggle ? null : item.key
+        );
+        const el = document.getElementById(domId);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('settings-entry-highlight');
+        setTimeout(() => el.classList.remove('settings-entry-highlight'), 1600);
       });
     },
 
-    settingEntryDomId(sectionId, entry) {
-      return 'setting-entry-' + this.activeSettingsScope + '-' + sectionId + '--' + entry.key;
+    settingsDomId(sectionId, entryKey = null) {
+      const prefix = this.activeSettingsScope + '-' + sectionId;
+      return entryKey
+        ? 'setting-entry-' + prefix + '--' + entryKey
+        : 'feature-toggle-' + prefix;
     },
 
-    filteredSections() {
-      const settings = this.activeSettings;
-      if (!settings || !settings.sections) return [];
-      const q = this.settingsQuery.trim().toLowerCase();
-      const sections = [];
-      for (const section of settings.sections) {
-        const entries = (section.entries || []).filter((entry) => {
-          if (!q) return true;
-          return [
-            entry.key,
-            entry.title,
-            entry.description,
-            entry.value,
-            entry.type,
-            entry.defaultValue,
-            entry.globalValue,
-          ].some((v) => String(v || '').toLowerCase().includes(q));
-        });
-        if (entries.length > 0) {
-          sections.push({ id: section.id, title: section.title, entries });
-        }
-      }
-      return sections;
+    async toggleFeature(sectionId) {
+      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
+      if (!toggle || this.isSavingSetting(sectionId, toggle)) return;
+
+      const enabled = !this.featureEnabled(sectionId);
+      this.updateFeatureToggle(sectionId, enabled);
+      await this.saveSetting(sectionId, toggle, enabled ? 'true' : 'false');
     },
 
     formatSettingValue(entry) {
       const value = entry.value;
       if (entry.type === 'Boolean') {
-        if (value === 'True' || value === 'true') return 'On';
-        if (value === 'False' || value === 'false') return 'Off';
+        return parseBool(value) ? 'On' : 'Off';
       }
       if (value == null || value === '') return '—';
       return String(value);
@@ -635,11 +692,10 @@ document.addEventListener('alpine:init', () => {
     },
 
     settingDraftValue(entry) {
-      const value = entry.value;
       if (entry.type === 'Boolean') {
-        return value === 'True' || value === 'true' ? 'true' : 'false';
+        return parseBool(entry.value) ? 'true' : 'false';
       }
-      return value == null ? '' : String(value);
+      return entry.value == null ? '' : String(entry.value);
     },
 
     async saveSetting(sectionId, entry, rawValue) {
@@ -650,12 +706,17 @@ document.addEventListener('alpine:init', () => {
       const settings = this.activeSettings;
       const previousValue = entry.value;
       const wasOverridden = entry.isOverridden;
+      const featureToggle = this.findSettingsSection(sectionId)?.featureToggle;
+      const isFeatureToggle = featureToggle?.key === entry.key;
       this.savingSettingKey = saveKey;
       try {
         const res = scope === 'global'
           ? await Api.updateGlobalSetting(sectionId, entry.key, String(rawValue))
           : await Api.updateSaveSetting(sectionId, entry.key, String(rawValue));
         entry.value = res.value ?? String(rawValue);
+        if (isFeatureToggle) {
+          this.updateFeatureToggle(sectionId, entry.value);
+        }
         if (scope === 'global') {
           this.settingsSave = null;
         } else {
@@ -669,6 +730,9 @@ document.addEventListener('alpine:init', () => {
       } catch (e) {
         entry.value = previousValue;
         entry.isOverridden = wasOverridden;
+        if (isFeatureToggle) {
+          this.updateFeatureToggle(sectionId, previousValue);
+        }
         this.showToast(e.message || 'Failed to save setting');
         await this.loadPageData(true);
       } finally {

@@ -378,10 +378,10 @@
                          @keydown.escape.prevent="settingsSearchOpen = false">
                   <ul id="global-settings-suggestions"
                       class="settings-suggestions"
-                      x-show="settingsSearchOpen && settingsSearchSuggestions().length > 0"
+                      x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0"
                       x-cloak
                       @mousedown.prevent>
-                    <template x-for="item in settingsSearchSuggestions()" :key="item.id">
+                    <template x-for="item in settingsSearchSuggestions" :key="item.id">
                       <li>
                         <button type="button"
                                 class="settings-suggestion"
@@ -412,21 +412,48 @@
                 <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
               </div>
 
-              <div class="empty-state" x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections().length === 0">
+              <div class="empty-state" x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections.length === 0">
                 <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
               </div>
 
-              <div class="settings-sections" x-show="!loadingSettings && !pageError && route === 'global-settings' && filteredSections().length > 0">
-                <template x-for="section in filteredSections()" :key="section.id">
-                  <section class="settings-section surface-card">
-                    <header class="settings-section-header">
-                      <h3 class="settings-section-title" x-text="section.title"></h3>
-                      <span class="settings-section-count" x-text="section.entries.length + ' keys'"></span>
+              <div class="settings-sections" x-show="!loadingSettings && !pageError && route === 'global-settings' && filteredSections.length > 0">
+                <template x-for="section in filteredSections" :key="section.id">
+                  <section class="settings-section surface-card"
+                           :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
+                    <header class="settings-section-header"
+                            :id="section.featureToggle ? settingsDomId(section.id) : null">
+                      <div class="settings-section-header-main">
+                        <h3 class="settings-section-title" x-text="section.title"></h3>
+                        <p class="settings-section-desc"
+                           x-show="section.featureToggle?.description"
+                           x-text="section.featureToggle.description"></p>
+                      </div>
+                      <div class="settings-section-header-actions">
+                        <button type="button"
+                                class="feature-toggle"
+                                role="switch"
+                                x-show="section.featureToggle"
+                                x-cloak
+                                :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingSetting(section.id, section.featureToggle) }"
+                                :title="section.featureToggle.title"
+                                :aria-label="section.featureToggle.title"
+                                :aria-checked="featureEnabled(section.id)"
+                                :disabled="isSavingSetting(section.id, section.featureToggle)"
+                                @click.stop="toggleFeature(section.id)">
+                          <span class="feature-toggle-track" aria-hidden="true">
+                            <span class="feature-toggle-thumb"></span>
+                          </span>
+                          <span class="feature-toggle-label" x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                        </button>
+                        <span class="settings-section-count"
+                              x-show="sectionEntryCount(section.id) > 0"
+                              x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                      </div>
                     </header>
-                    <div class="settings-entries">
-                      <template x-for="entry in section.entries" :key="entry.key">
+                    <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
+                      <template x-for="entry in sectionEntries(section.id)" :key="entry.key">
                         <article class="settings-entry"
-                                 :id="settingEntryDomId(section.id, entry)"
+                                 :id="settingsDomId(section.id, entry.key)"
                                  :class="{ 'is-hidden-entry': entry.isHidden }">
                           <div class="settings-entry-main">
                             <div class="settings-entry-head">
@@ -521,10 +548,10 @@
                            @keydown.escape.prevent="settingsSearchOpen = false">
                     <ul id="save-settings-suggestions"
                         class="settings-suggestions"
-                        x-show="settingsSearchOpen && settingsSearchSuggestions().length > 0"
+                        x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0"
                         x-cloak
                         @mousedown.prevent>
-                      <template x-for="item in settingsSearchSuggestions()" :key="item.id">
+                      <template x-for="item in settingsSearchSuggestions" :key="item.id">
                         <li>
                           <button type="button"
                                   class="settings-suggestion"
@@ -555,21 +582,48 @@
                   <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
                 </div>
 
-                <div class="empty-state" x-show="!loadingSettings && !pageError && settingsSave && filteredSections().length === 0">
+                <div class="empty-state" x-show="!loadingSettings && !pageError && settingsSave && filteredSections.length === 0">
                   <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
                 </div>
 
-                <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections().length > 0">
-                  <template x-for="section in filteredSections()" :key="section.id">
-                    <section class="settings-section surface-card">
-                      <header class="settings-section-header">
-                        <h3 class="settings-section-title" x-text="section.title"></h3>
-                        <span class="settings-section-count" x-text="section.entries.length + ' keys'"></span>
+                <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
+                  <template x-for="section in filteredSections" :key="section.id">
+                    <section class="settings-section surface-card"
+                             :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
+                      <header class="settings-section-header"
+                              :id="section.featureToggle ? settingsDomId(section.id) : null">
+                        <div class="settings-section-header-main">
+                          <h3 class="settings-section-title" x-text="section.title"></h3>
+                          <p class="settings-section-desc"
+                             x-show="section.featureToggle?.description"
+                             x-text="section.featureToggle.description"></p>
+                        </div>
+                        <div class="settings-section-header-actions">
+                          <button type="button"
+                                  class="feature-toggle"
+                                  role="switch"
+                                  x-show="section.featureToggle"
+                                  x-cloak
+                                  :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingSetting(section.id, section.featureToggle) }"
+                                  :title="section.featureToggle.title"
+                                  :aria-label="section.featureToggle.title"
+                                  :aria-checked="featureEnabled(section.id)"
+                                  :disabled="isSavingSetting(section.id, section.featureToggle)"
+                                  @click.stop="toggleFeature(section.id)">
+                            <span class="feature-toggle-track" aria-hidden="true">
+                              <span class="feature-toggle-thumb"></span>
+                            </span>
+                            <span class="feature-toggle-label" x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                          </button>
+                          <span class="settings-section-count"
+                                x-show="sectionEntryCount(section.id) > 0"
+                                x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                        </div>
                       </header>
-                      <div class="settings-entries">
-                        <template x-for="entry in section.entries" :key="entry.key">
+                      <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
+                        <template x-for="entry in sectionEntries(section.id)" :key="entry.key">
                           <article class="settings-entry"
-                                   :id="settingEntryDomId(section.id, entry)"
+                                   :id="settingsDomId(section.id, entry.key)"
                                    :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
                             <div class="settings-entry-main">
                               <div class="settings-entry-head">

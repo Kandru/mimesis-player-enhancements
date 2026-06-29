@@ -202,6 +202,38 @@ namespace MimesisPlayerEnhancement
             Version++;
         }
 
+        internal static bool TryGetFeatureToggleKey(string sectionId, out string key)
+        {
+            key = "";
+
+            if (string.Equals(sectionId, "MimesisPlayerEnhancement", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            foreach (string entryKey in GetEntryOrder(sectionId))
+            {
+                if (!TryGetEntry(sectionId, entryKey, out MelonPreferences_Entry? entry) || entry == null)
+                {
+                    continue;
+                }
+
+                if (entry.GetReflectedType() != typeof(bool))
+                {
+                    continue;
+                }
+
+                if (entryKey.StartsWith("Enable", StringComparison.Ordinal)
+                    || string.Equals(entryKey, "ShowPlayerAnnouncements", StringComparison.Ordinal))
+                {
+                    key = entryKey;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)
         {
             if (string.IsNullOrWhiteSpace(sectionId) || string.IsNullOrWhiteSpace(key))

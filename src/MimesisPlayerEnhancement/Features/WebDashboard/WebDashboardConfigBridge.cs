@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.Persistence;
@@ -206,6 +207,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Title = title,
                 };
 
+                ModConfigRegistry.TryGetFeatureToggleKey(sectionId, out string featureToggleKey);
+
                 foreach (string key in ModConfigRegistry.GetEntryOrder(sectionId))
                 {
                     if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
@@ -231,7 +234,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     bool isOverridden = saveScope
                         && SaveSlotConfigStore.IsOverridden(saveSlotId, sectionId, key);
 
-                    section.Entries.Add(new WebDashboardConfigEntryDto
+                    WebDashboardConfigEntryDto entryDto = new()
                     {
                         Key = entry.Identifier,
                         Title = entry.DisplayName ?? entry.Identifier,
@@ -244,10 +247,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         GlobalValue = globalValue,
                         IsOverridden = isOverridden,
                         IsHidden = entry.IsHidden,
-                    });
+                    };
+
+                    if (!string.IsNullOrEmpty(featureToggleKey)
+                        && string.Equals(key, featureToggleKey, StringComparison.Ordinal))
+                    {
+                        section.FeatureToggle = entryDto;
+                        continue;
+                    }
+
+                    section.Entries.Add(entryDto);
                 }
 
-                if (section.Entries.Count > 0)
+                if (section.FeatureToggle != null || section.Entries.Count > 0)
                 {
                     sections.Add(section);
                 }
