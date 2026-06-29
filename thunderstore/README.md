@@ -40,7 +40,7 @@ Remove older separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAn
 | **Dungeon Randomizer** | Randomize tram pick, layout, map variant, and seed | No — host only |
 | **Spectator Transition** | Shorten downed/dead-camera time before spectator | Host + clients for camera timing |
 
-Based on community mods by [NeoMimicry/MorePlayers](https://github.com/NeoMimicry/MorePlayers), [Risikus/More_Voices](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [JoanRLopez/MimesisPersistence](https://github.com/JoanRLopez/MimesisPersistence), and [Shlygly/MimesisJoinAnytime](https://github.com/Shlygly/MimesisJoinAnytime). Please support the original authors as well.
+Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
 
 ## Web dashboard
 
@@ -75,7 +75,7 @@ If you enjoy playing with it and want to say thanks, a small donation is genuine
 
 [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=C2AVYKGVP9TRG)
 
-The mod stays free and open source either way. Please also support the original mod authors linked above.
+The mod stays free and open source either way.
 
 ## Links
 
