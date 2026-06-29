@@ -478,13 +478,13 @@ namespace MimesisPlayerEnhancement
                 "LootAllowlist",
                 "",
                 "Loot Allowlist",
-                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly.");
+                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
 
             LootBlocklist = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "LootBlocklist",
                 "",
                 "Loot Blocklist",
-                "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly.");
+                "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
 
             ConvertFakeActorDyingDropChancePercent = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "ConvertFakeActorDyingDropChancePercent",

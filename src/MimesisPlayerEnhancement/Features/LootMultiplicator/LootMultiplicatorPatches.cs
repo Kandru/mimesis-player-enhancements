@@ -301,7 +301,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             [HarmonyPrefix]
             public static bool Prefix(
                 IVroom __instance,
-                ref ItemElement element,
+                ref ItemElement? element,
                 ReasonOfSpawn reasonOfSpawn,
                 int spawnPointIndex,
                 bool isRestored,

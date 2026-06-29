@@ -219,8 +219,8 @@ Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Misc
 | `AutoScaleTriggerMiscellanyLootByPlayerCount` | bool | `true` | Player-count scaling for miscellany from map events/triggers. |
 | `TriggerMiscellanyLootMultiplier` | float | `1.0` | Base multiplier for event/trigger miscellany. Minimum is `0`. |
 | `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, or `BlocklistOnly` — restrict which item master IDs are scaled. |
-| `LootAllowlist` | string | `""` | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. |
-| `LootBlocklist` | string | `""` | Comma-separated item master IDs to exclude. Used when `LootItemFilterMode` is `BlocklistOnly`. |
+| `LootAllowlist` | string | `""` | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. See [docs/LOOT_ITEM_IDS.md](docs/LOOT_ITEM_IDS.md) for all IDs. |
+| `LootBlocklist` | string | `""` | Comma-separated item master IDs to exclude. Used when `LootItemFilterMode` is `BlocklistOnly`. See [docs/LOOT_ITEM_IDS.md](docs/LOOT_ITEM_IDS.md) for all IDs. |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | Chance (0–100) that fake items dropped on enemy death (`ActorDying`, e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. |
 
 Does **not** scale: items you release from inventory, shop purchases, admin/cheat spawns, creature/monster spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot budgets and spawn data are scaled once at room load; drop/trigger extras use table re-rolls at spawn time.
