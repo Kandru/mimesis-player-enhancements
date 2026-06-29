@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -8,24 +6,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardConfigBridge
     {
-        private static readonly string[] CategoryOrder =
-        [
-            "MimesisPlayerEnhancement",
-            "MimesisPlayerEnhancement_MorePlayers",
-            "MimesisPlayerEnhancement_MoreVoices",
-            "MimesisPlayerEnhancement_Persistence",
-            "MimesisPlayerEnhancement_Statistics",
-            "MimesisPlayerEnhancement_PlayerAnnouncements",
-            "MimesisPlayerEnhancement_JoinAnytime",
-            "MimesisPlayerEnhancement_SpawnScaling",
-            "MimesisPlayerEnhancement_LootMultiplicator",
-            "MimesisPlayerEnhancement_MoneyMultiplier",
-            "MimesisPlayerEnhancement_DungeonTime",
-            "MimesisPlayerEnhancement_SpectatorTransition",
-            "MimesisPlayerEnhancement_DungeonRandomizer",
-            "MimesisPlayerEnhancement_WebDashboard",
-        ];
-
         internal static WebDashboardSettingsDto BuildSettings()
         {
             if (!ModConfig.IsInitialized)
@@ -37,83 +17,51 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
-            Dictionary<string, WebDashboardConfigSectionDto> sections = [];
-            List<string> discoveredOrder = [];
+            List<WebDashboardConfigSectionDto> sections = [];
 
-            foreach (PropertyInfo property in typeof(ModConfig).GetProperties(BindingFlags.Public | BindingFlags.Static))
+            foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
             {
-                Type propertyType = property.PropertyType;
-                if (!propertyType.IsGenericType
-                    || propertyType.GetGenericTypeDefinition() != typeof(MelonPreferences_Entry<>))
+                if (!ModConfigRegistry.TryGetSectionTitle(sectionId, out string title))
                 {
-                    continue;
+                    title = sectionId;
                 }
 
-                object? raw = property.GetValue(null);
-                if (raw is not MelonPreferences_Entry entry)
+                WebDashboardConfigSectionDto section = new()
                 {
-                    continue;
-                }
+                    Id = sectionId,
+                    Title = title,
+                };
 
-                MelonPreferences_Category category = entry.Category;
-                string sectionId = category.Identifier;
-                if (!sections.TryGetValue(sectionId, out WebDashboardConfigSectionDto? section))
+                foreach (string key in ModConfigRegistry.GetEntryOrder(sectionId))
                 {
-                    section = new WebDashboardConfigSectionDto
+                    if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
                     {
-                        Id = sectionId,
-                        Title = category.DisplayName ?? sectionId,
-                    };
-                    sections[sectionId] = section;
-                    discoveredOrder.Add(sectionId);
+                        continue;
+                    }
+
+                    section.Entries.Add(new WebDashboardConfigEntryDto
+                    {
+                        Key = entry.Identifier,
+                        Title = entry.DisplayName ?? entry.Identifier,
+                        Description = entry.Description ?? "",
+                        Type = entry.GetReflectedType()?.Name ?? "Unknown",
+                        Value = ModConfigRegistry.FormatEntryValue(entry),
+                        DefaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry),
+                        IsHidden = entry.IsHidden,
+                    });
                 }
 
-                string typeName = entry.GetReflectedType()?.Name ?? "Unknown";
-                string value = SafeGetString(entry.GetValueAsString);
-                string defaultValue = SafeGetString(entry.GetDefaultValueAsString);
-
-                section.Entries.Add(new WebDashboardConfigEntryDto
+                if (section.Entries.Count > 0)
                 {
-                    Key = entry.Identifier,
-                    Title = entry.DisplayName ?? entry.Identifier,
-                    Description = entry.Description ?? "",
-                    Type = typeName,
-                    Value = value,
-                    DefaultValue = defaultValue,
-                    IsHidden = entry.IsHidden,
-                });
-            }
-
-            List<WebDashboardConfigSectionDto> ordered = [];
-            HashSet<string> added = [];
-
-            foreach (string sectionId in CategoryOrder)
-            {
-                if (sections.TryGetValue(sectionId, out WebDashboardConfigSectionDto? section))
-                {
-                    SortEntries(section);
-                    ordered.Add(section);
-                    _ = added.Add(sectionId);
+                    sections.Add(section);
                 }
-            }
-
-            foreach (string sectionId in discoveredOrder)
-            {
-                if (added.Contains(sectionId))
-                {
-                    continue;
-                }
-
-                WebDashboardConfigSectionDto section = sections[sectionId];
-                SortEntries(section);
-                ordered.Add(section);
             }
 
             return new WebDashboardSettingsDto
             {
                 ConfigPath = ModConfig.FilePath,
                 ConfigVersion = ModConfig.Version,
-                Sections = ordered,
+                Sections = sections,
             };
         }
 
@@ -137,6 +85,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
+            ModConfig.SanitizeFloatEntries();
             ModConfig.SaveToFile();
 
             return !ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null
@@ -151,26 +100,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Message = "Saved.",
                     SectionId = sectionId,
                     Key = key,
-                    Value = SafeGetString(entry.GetValueAsString),
+                    Value = ModConfigRegistry.FormatEntryValue(entry),
                     Type = entry.GetReflectedType()?.Name ?? "Unknown",
                 };
-        }
-
-        private static void SortEntries(WebDashboardConfigSectionDto section)
-        {
-            section.Entries.Sort((a, b) => string.Compare(a.Key, b.Key, StringComparison.Ordinal));
-        }
-
-        private static string SafeGetString(Func<string> getter)
-        {
-            try
-            {
-                return getter() ?? "";
-            }
-            catch
-            {
-                return "";
-            }
         }
     }
 }

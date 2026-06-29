@@ -145,6 +145,7 @@ namespace MimesisPlayerEnhancement
 
         public static void Initialize(MelonLogger.Instance logger)
         {
+            ModConfigRegistry.ClearRegistrationOrder();
             FilePath = Path.Combine(MelonEnvironment.UserDataDirectory, "MimesisPlayerEnhancement.cfg");
 
             _mainCategory = CreateCategory(MainCategoryId, "Mimesis Player Enhancement");
@@ -163,505 +164,505 @@ namespace MimesisPlayerEnhancement
             _dungeonRandomizerCategory = CreateCategory("MimesisPlayerEnhancement_DungeonRandomizer", "Dungeon Randomizer");
             _webDashboardCategory = CreateCategory("MimesisPlayerEnhancement_WebDashboard", "Web Dashboard");
 
-            ModToastDurationSeconds = _mainCategory.CreateEntry(
+            ModToastDurationSeconds = CreateTrackedEntry(_mainCategory, 
                 "ModToastDurationSeconds",
                 5f,
                 "Mod Toast Duration (seconds)",
                 "How long [PlayerEnhancements] toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally.");
 
-            EnableDebugLogging = _mainCategory.CreateEntry(
+            EnableDebugLogging = CreateTrackedEntry(_mainCategory, 
                 "EnableDebugLogging",
                 false,
                 "Enable Debug Logging",
                 "Emit verbose diagnostic lines to the MelonLoader console.");
 
-            EnableMorePlayers = _morePlayersCategory.CreateEntry(
+            EnableMorePlayers = CreateTrackedEntry(_morePlayersCategory, 
                 "EnableMorePlayers",
                 true,
                 "Enable More Players",
                 "Raise the multiplayer player cap above 4.");
 
-            MaxPlayers = _morePlayersCategory.CreateEntry(
+            MaxPlayers = CreateTrackedEntry(_morePlayersCategory, 
                 "MaxPlayers",
                 32,
                 "Max Players",
                 "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.).");
 
-            EnableMoreVoices = _moreVoicesCategory.CreateEntry(
+            EnableMoreVoices = CreateTrackedEntry(_moreVoicesCategory, 
                 "EnableMoreVoices",
                 true,
                 "Enable More Voices",
                 "Raise per-player voice recording limits.");
 
-            MaxIndoorVoiceEvents = _moreVoicesCategory.CreateEntry(
+            MaxIndoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
                 "MaxIndoorVoiceEvents",
                 3000,
                 "Max Indoor Voice Events",
                 "Maximum stored voice events per player in indoor dungeon runs (default game limit is much lower).");
 
-            MaxDeathMatchVoiceEvents = _moreVoicesCategory.CreateEntry(
+            MaxDeathMatchVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
                 "MaxDeathMatchVoiceEvents",
                 3000,
                 "Max Deathmatch Voice Events",
                 "Maximum stored voice events per player in deathmatch (default game limit is much lower).");
 
-            MaxOutdoorVoiceEvents = _moreVoicesCategory.CreateEntry(
+            MaxOutdoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
                 "MaxOutdoorVoiceEvents",
                 3000,
                 "Max Outdoor Voice Events",
                 "Maximum stored voice events per player outdoors (default game limit is much lower).");
 
-            EnablePersistence = _persistenceCategory.CreateEntry(
+            EnablePersistence = CreateTrackedEntry(_persistenceCategory, 
                 "EnablePersistence",
                 true,
                 "Enable Voice Persistence",
                 "Save and restore mimic voice recordings across save/load.");
 
-            EnableStatistics = _statisticsCategory.CreateEntry(
+            EnableStatistics = CreateTrackedEntry(_statisticsCategory, 
                 "EnableStatistics",
                 true,
                 "Enable Player Statistics",
                 "Track per-session and global player statistics per save slot.");
 
-            SessionReconnectGraceMinutes = _statisticsCategory.CreateEntry(
+            SessionReconnectGraceMinutes = CreateTrackedEntry(_statisticsCategory, 
                 "SessionReconnectGraceMinutes",
                 5,
                 "Session Reconnect Grace (minutes)",
                 "Reuse the previous session when a player reconnects within this many minutes.");
 
-            ShowStatisticsToasts = _statisticsCategory.CreateEntry(
+            ShowStatisticsToasts = CreateTrackedEntry(_statisticsCategory, 
                 "ShowStatisticsToasts",
                 true,
                 "Show Statistics Toasts",
                 "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
 
-            ShowPlayerAnnouncements = _playerAnnouncementsCategory.CreateEntry(
+            ShowPlayerAnnouncements = CreateTrackedEntry(_playerAnnouncementsCategory, 
                 "ShowPlayerAnnouncements",
                 true,
                 "Show Player Announcements",
                 "Show in-game toasts for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
 
-            EnableJoinAnytime = _joinAnytimeCategory.CreateEntry(
+            EnableJoinAnytime = CreateTrackedEntry(_joinAnytimeCategory, 
                 "EnableJoinAnytime",
                 true,
                 "Enable Join Anytime",
                 "Allow players to join a session after it has already started.");
 
-            JoinConnectionGraceSeconds = _joinAnytimeCategory.CreateEntry(
+            JoinConnectionGraceSeconds = CreateTrackedEntry(_joinAnytimeCategory, 
                 "JoinConnectionGraceSeconds",
                 30,
                 "Join Connection Grace Seconds",
                 "When a player connects, block tram departure for this many seconds. Players who fail to finish loading are kicked (host is never kicked).");
 
-            EnableSpawnScaling = _spawnScalingCategory.CreateEntry(
+            EnableSpawnScaling = CreateTrackedEntry(_spawnScalingCategory, 
                 "EnableSpawnScaling",
                 true,
                 "Enable Spawn Scaling",
                 "Scale dungeon monster spawn budgets by type. Host only.");
 
-            AutoScaleMimicSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleMimicSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleMimicSpawnsByPlayerCount",
                 true,
                 "Auto Scale Mimic Spawns By Player Count",
                 "When enabled, multiply mimic spawn budgets by player count / 4 for sessions with more than 4 players (stacks with MimicSpawnMultiplier).");
 
-            MimicSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            MimicSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "MimicSpawnMultiplier",
                 1f,
                 "Mimic Spawn Multiplier",
                 "Mimic spawn budget multiplier (1 = vanilla, 2 = double).");
 
-            AutoScaleBossSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleBossSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleBossSpawnsByPlayerCount",
                 true,
                 "Auto Scale Boss Spawns By Player Count",
                 "When enabled, multiply boss spawn budgets by player count / 4 for sessions with more than 4 players (stacks with BossSpawnMultiplier).");
 
-            BossSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            BossSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "BossSpawnMultiplier",
                 1f,
                 "Boss Spawn Multiplier",
                 "Boss spawn budget multiplier (1 = vanilla, 2 = double).");
 
-            AutoScaleJakoSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleJakoSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleJakoSpawnsByPlayerCount",
                 true,
                 "Auto Scale Jako Spawns By Player Count",
                 "When enabled, multiply jako spawn budgets by player count / 4 for sessions with more than 4 players (stacks with JakoSpawnMultiplier).");
 
-            JakoSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            JakoSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "JakoSpawnMultiplier",
                 1f,
                 "Jako Spawn Multiplier",
                 "Jako (normal monster) spawn budget multiplier (1 = vanilla, 2 = double).");
 
-            AutoScaleSpecialSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleSpecialSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleSpecialSpawnsByPlayerCount",
                 true,
                 "Auto Scale Special Spawns By Player Count",
                 "When enabled, multiply special spawn budgets by player count / 4 for sessions with more than 4 players (stacks with SpecialSpawnMultiplier).");
 
-            SpecialSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            SpecialSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "SpecialSpawnMultiplier",
                 1f,
                 "Special Spawn Multiplier",
                 "Special monster spawn budget multiplier (1 = vanilla, 2 = double).");
 
-            AutoScaleTrapSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleTrapSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleTrapSpawnsByPlayerCount",
                 true,
                 "Auto Scale Trap Spawns By Player Count",
                 "When enabled, multiply trap spawn counts by player count / 4 for sessions with more than 4 players (stacks with TrapSpawnMultiplier).");
 
-            TrapSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            TrapSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "TrapSpawnMultiplier",
                 1f,
                 "Trap Spawn Multiplier",
                 "Trap spawn multiplier (1 = vanilla, 2 = double). Map-placed traps use unused markers first, then respawn at the same marker when gone.");
 
-            FixedSpawnRespawnDelayMinSeconds = _spawnScalingCategory.CreateEntry(
+            FixedSpawnRespawnDelayMinSeconds = CreateTrackedEntry(_spawnScalingCategory, 
                 "FixedSpawnRespawnDelayMinSeconds",
                 5f,
                 "Fixed Spawn Respawn Delay Min Seconds",
                 "Minimum random delay before a map-placed monster or trap respawns at the same marker when no unused markers remain.");
 
-            FixedSpawnRespawnDelayMaxSeconds = _spawnScalingCategory.CreateEntry(
+            FixedSpawnRespawnDelayMaxSeconds = CreateTrackedEntry(_spawnScalingCategory, 
                 "FixedSpawnRespawnDelayMaxSeconds",
                 30f,
                 "Fixed Spawn Respawn Delay Max Seconds",
                 "Maximum random delay before a map-placed monster or trap respawns at the same marker when no unused markers remain.");
 
-            FixedSpawnRespawnMinPlayerDistanceMeters = _spawnScalingCategory.CreateEntry(
+            FixedSpawnRespawnMinPlayerDistanceMeters = CreateTrackedEntry(_spawnScalingCategory, 
                 "FixedSpawnRespawnMinPlayerDistanceMeters",
                 10f,
                 "Fixed Spawn Respawn Min Player Distance Meters",
                 "After the respawn delay, wait until no players are within this distance (meters) before spawning at the marker. Set to 0 to respawn immediately.");
 
-            AutoScaleOtherSpawnsByPlayerCount = _spawnScalingCategory.CreateEntry(
+            AutoScaleOtherSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
                 "AutoScaleOtherSpawnsByPlayerCount",
                 true,
                 "Auto Scale Other Spawns By Player Count",
                 "When enabled, multiply other spawn counts by player count / 4 for sessions with more than 4 players (stacks with OtherSpawnMultiplier).");
 
-            OtherSpawnMultiplier = _spawnScalingCategory.CreateEntry(
+            OtherSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
                 "OtherSpawnMultiplier",
                 1f,
                 "Other Spawn Multiplier",
                 "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps.");
 
-            EnableLootMultiplicator = _lootMultiplicatorCategory.CreateEntry(
+            EnableLootMultiplicator = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "EnableLootMultiplicator",
                 true,
                 "Enable Loot Multiplicator",
                 "Scale how much loot appears in a run. Host only. See each Map/Drop/Trigger entry below for what it affects.");
 
-            AutoScaleMapConsumableLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleMapConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleMapConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Map Consumable Loot By Player Count",
                 "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with MapConsumableLootMultiplier).");
 
-            MapConsumableLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            MapConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "MapConsumableLootMultiplier",
                 1f,
                 "Map Consumable Loot Multiplier",
                 "Multiplier for consumables on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
 
-            AutoScaleMapEquipmentLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleMapEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleMapEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Map Equipment Loot By Player Count",
                 "Map loot = items placed on the dungeon map. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with MapEquipmentLootMultiplier).");
 
-            MapEquipmentLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            MapEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "MapEquipmentLootMultiplier",
                 1f,
                 "Map Equipment Loot Multiplier",
                 "Multiplier for equipment on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
 
-            AutoScaleMapMiscellanyLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleMapMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleMapMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Map Miscellany Loot By Player Count",
                 "Map loot = items placed on the dungeon map. Miscellany = other pickup items (keys, misc objects). When enabled, multiply by player count / 4 above 4 players (stacks with MapMiscellanyLootMultiplier).");
 
-            MapMiscellanyLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            MapMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "MapMiscellanyLootMultiplier",
                 1f,
                 "Map Miscellany Loot Multiplier",
                 "Multiplier for miscellany on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling. Random pools use the dominant item type in the pool to pick a multiplier.");
 
-            AutoScaleDropConsumableLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleDropConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Drop Consumable Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with DropConsumableLootMultiplier).");
 
-            DropConsumableLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            DropConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "DropConsumableLootMultiplier",
                 1f,
                 "Drop Consumable Loot Multiplier",
                 "Multiplier for consumables in enemy death drops: duplicates extra item IDs in the drop list and scales consumable stack count on spawn. 1 = vanilla, 2 = double.");
 
-            AutoScaleDropEquipmentLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleDropEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Drop Equipment Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with DropEquipmentLootMultiplier).");
 
-            DropEquipmentLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            DropEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "DropEquipmentLootMultiplier",
                 1f,
                 "Drop Equipment Loot Multiplier",
                 "Multiplier for equipment in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
-            AutoScaleDropMiscellanyLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleDropMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Drop Miscellany Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with DropMiscellanyLootMultiplier).");
 
-            DropMiscellanyLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            DropMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "DropMiscellanyLootMultiplier",
                 1f,
                 "Drop Miscellany Loot Multiplier",
                 "Multiplier for miscellany in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerConsumableLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleTriggerConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Consumable Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerConsumableLootMultiplier).");
 
-            TriggerConsumableLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            TriggerConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "TriggerConsumableLootMultiplier",
                 1f,
                 "Trigger Consumable Loot Multiplier",
                 "Multiplier for consumables from map events/triggers: scales consumable stack count when the item spawns. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerEquipmentLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleTriggerEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Equipment Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerEquipmentLootMultiplier).");
 
-            TriggerEquipmentLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            TriggerEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "TriggerEquipmentLootMultiplier",
                 1f,
                 "Trigger Equipment Loot Multiplier",
                 "Multiplier for equipment from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerMiscellanyLootByPlayerCount = _lootMultiplicatorCategory.CreateEntry(
+            AutoScaleTriggerMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Miscellany Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerMiscellanyLootMultiplier).");
 
-            TriggerMiscellanyLootMultiplier = _lootMultiplicatorCategory.CreateEntry(
+            TriggerMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "TriggerMiscellanyLootMultiplier",
                 1f,
                 "Trigger Miscellany Loot Multiplier",
                 "Multiplier for miscellany from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
 
-            EnableMoneyMultiplier = _moneyMultiplierCategory.CreateEntry(
+            EnableMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "EnableMoneyMultiplier",
                 true,
                 "Enable Money Multiplier",
                 "Scale startup money, round goal quota, scrap/sell values, shop buy prices, shop item count, and reinforce costs. Host only.");
 
-            AutoScaleStartupMoneyByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleStartupMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleStartupMoneyByPlayerCount",
                 true,
                 "Auto Scale Startup Money By Player Count",
                 "When enabled, multiply startup money by player count / 4 for sessions with more than 4 players (stacks with StartupMoneyMultiplier).");
 
-            StartupMoneyMultiplier = _moneyMultiplierCategory.CreateEntry(
+            StartupMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "StartupMoneyMultiplier",
                 1f,
                 "Startup Money Multiplier",
                 "Starting maintenance-room currency on a new game or session reset (1 = vanilla, 2 = double).");
 
-            AutoScaleRoundGoalMoneyByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleRoundGoalMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleRoundGoalMoneyByPlayerCount",
                 true,
                 "Auto Scale Round Goal Money By Player Count",
                 "When enabled, multiply the stage target currency (quota) by player count / 4 for sessions with more than 4 players (stacks with RoundGoalMoneyMultiplier).");
 
-            RoundGoalMoneyMultiplier = _moneyMultiplierCategory.CreateEntry(
+            RoundGoalMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "RoundGoalMoneyMultiplier",
                 1f,
                 "Round Goal Money Multiplier",
                 "Target currency required to finish a stage (1 = vanilla, 2 = double).");
 
-            AutoScaleScrapSellValueByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleScrapSellValueByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleScrapSellValueByPlayerCount",
                 true,
                 "Auto Scale Scrap Sell Value By Player Count",
                 "When enabled, multiply item scrap/sell values by player count / 4 for sessions with more than 4 players (stacks with ScrapSellValueMultiplier).");
 
-            ScrapSellValueMultiplier = _moneyMultiplierCategory.CreateEntry(
+            ScrapSellValueMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ScrapSellValueMultiplier",
                 1f,
                 "Scrap Sell Value Multiplier",
                 "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double).");
 
-            AutoScaleShopBuyPriceByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleShopBuyPriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleShopBuyPriceByPlayerCount",
                 true,
                 "Auto Scale Shop Buy Price By Player Count",
                 "When enabled, multiply maintenance shop buy prices by player count / 4 for sessions with more than 4 players (stacks with ShopBuyPriceMultiplier).");
 
-            ShopBuyPriceMultiplier = _moneyMultiplierCategory.CreateEntry(
+            ShopBuyPriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ShopBuyPriceMultiplier",
                 1f,
                 "Shop Buy Price Multiplier",
                 "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round.");
 
-            AutoScaleShopItemsByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleShopItemsByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleShopItemsByPlayerCount",
                 true,
                 "Auto Scale Shop Items By Player Count",
                 "When enabled, multiply maintenance shop item count by player count / 4 for sessions with more than 4 players (stacks with ShopItemsMultiplier).");
 
-            ShopItemsMultiplier = _moneyMultiplierCategory.CreateEntry(
+            ShopItemsMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ShopItemsMultiplier",
                 1f,
                 "Shop Items Multiplier",
                 "Number of unique items offered in the maintenance shop (1 = vanilla, 2 = double). Extra items are rolled from vending-machine shop groups on the map.");
 
-            ShopDiscountMinPercent = _moneyMultiplierCategory.CreateEntry(
+            ShopDiscountMinPercent = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ShopDiscountMinPercent",
                 0,
                 "Shop Discount Min Percent",
                 "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0.");
 
-            ShopDiscountMaxPercent = _moneyMultiplierCategory.CreateEntry(
+            ShopDiscountMaxPercent = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ShopDiscountMaxPercent",
                 100,
                 "Shop Discount Max Percent",
                 "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent.");
 
-            ShopDiscountChancePercent = _moneyMultiplierCategory.CreateEntry(
+            ShopDiscountChancePercent = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ShopDiscountChancePercent",
                 0,
                 "Shop Discount Chance Percent",
                 "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted).");
 
-            AutoScaleReinforcePriceByPlayerCount = _moneyMultiplierCategory.CreateEntry(
+            AutoScaleReinforcePriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "AutoScaleReinforcePriceByPlayerCount",
                 true,
                 "Auto Scale Reinforce Price By Player Count",
                 "When enabled, multiply item reinforcement costs by player count / 4 for sessions with more than 4 players (stacks with ReinforcePriceMultiplier).");
 
-            ReinforcePriceMultiplier = _moneyMultiplierCategory.CreateEntry(
+            ReinforcePriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "ReinforcePriceMultiplier",
                 1f,
                 "Reinforce Price Multiplier",
                 "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
 
-            EnableDungeonTime = _dungeonTimeCategory.CreateEntry(
+            EnableDungeonTime = CreateTrackedEntry(_dungeonTimeCategory, 
                 "EnableDungeonTime",
                 true,
                 "Enable Dungeon Time",
                 "Extend dungeon shift length on the host when player count exceeds the baseline.");
 
-            DungeonTimeBaselinePlayerCount = _dungeonTimeCategory.CreateEntry(
+            DungeonTimeBaselinePlayerCount = CreateTrackedEntry(_dungeonTimeCategory, 
                 "DungeonTimeBaselinePlayerCount",
                 4,
                 "Dungeon Time Baseline Player Count",
                 "No extra shift time at or below this player count (vanilla is 4). Minimum is 1.");
 
-            ExtraShiftSecondsPerPlayerAboveBaseline = _dungeonTimeCategory.CreateEntry(
+            ExtraShiftSecondsPerPlayerAboveBaseline = CreateTrackedEntry(_dungeonTimeCategory, 
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
                 10f,
                 "Extra Shift Seconds Per Player Above Baseline",
                 "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
 
-            EnableSpectatorTransition = _spectatorTransitionCategory.CreateEntry(
+            EnableSpectatorTransition = CreateTrackedEntry(_spectatorTransitionCategory, 
                 "EnableSpectatorTransition",
                 true,
                 "Enable Spectator Transition",
                 "Shorten downed time and dead-camera duration before entering spectator mode.");
 
-            DyingWaitTimeMultiplier = _spectatorTransitionCategory.CreateEntry(
+            DyingWaitTimeMultiplier = CreateTrackedEntry(_spectatorTransitionCategory, 
                 "DyingWaitTimeMultiplier",
                 1f,
                 "Dying Wait Time Multiplier",
                 "Scales server down/dying time before spectator (1 = vanilla, 0 = instant). Also shortens the teammate revive window. Host only.");
 
-            DeadCameraDurationMultiplier = _spectatorTransitionCategory.CreateEntry(
+            DeadCameraDurationMultiplier = CreateTrackedEntry(_spectatorTransitionCategory, 
                 "DeadCameraDurationMultiplier",
                 1f,
                 "Dead Camera Duration Multiplier",
                 "Scales local dead-camera transition time before spectator (1 = vanilla, 0 = instant). Applies on each machine with the mod loaded.");
 
-            EnableDungeonRandomizer = _dungeonRandomizerCategory.CreateEntry(
+            EnableDungeonRandomizer = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "EnableDungeonRandomizer",
                 false,
                 "Enable Dungeon Randomizer",
                 "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
 
-            RandomizeDungeonPick = _dungeonRandomizerCategory.CreateEntry(
+            RandomizeDungeonPick = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "RandomizeDungeonPick",
                 true,
                 "Randomize Dungeon Pick",
                 "Override which dungeon master ID is rolled on the tram.");
 
-            DungeonPickPoolMode = _dungeonRandomizerCategory.CreateEntry(
+            DungeonPickPoolMode = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "DungeonPickPoolMode",
                 "WidenVanilla",
                 "Dungeon Pick Pool Mode",
                 "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table).");
 
-            DungeonAllowlist = _dungeonRandomizerCategory.CreateEntry(
+            DungeonAllowlist = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "DungeonAllowlist",
                 "",
                 "Dungeon Allowlist",
                 "Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible.");
 
-            DungeonBlocklist = _dungeonRandomizerCategory.CreateEntry(
+            DungeonBlocklist = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "DungeonBlocklist",
                 "",
                 "Dungeon Blocklist",
                 "Comma-separated dungeon master IDs to exclude from the pool.");
 
-            IgnoreDungeonExcludeList = _dungeonRandomizerCategory.CreateEntry(
+            IgnoreDungeonExcludeList = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "IgnoreDungeonExcludeList",
                 true,
                 "Ignore Dungeon Exclude List",
                 "When using WidenVanilla, do not exclude recently played dungeons from the tram roll.");
 
-            RandomizeLayoutFlow = _dungeonRandomizerCategory.CreateEntry(
+            RandomizeLayoutFlow = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "RandomizeLayoutFlow",
                 true,
                 "Randomize Layout Flow",
                 "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls.");
 
-            RandomizeMapVariant = _dungeonRandomizerCategory.CreateEntry(
+            RandomizeMapVariant = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "RandomizeMapVariant",
                 true,
                 "Randomize Map Variant",
                 "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection.");
 
-            RandomizeDungeonSeed = _dungeonRandomizerCategory.CreateEntry(
+            RandomizeDungeonSeed = CreateTrackedEntry(_dungeonRandomizerCategory, 
                 "RandomizeDungeonSeed",
                 true,
                 "Randomize Dungeon Seed",
                 "Replace the procedural dungeon seed with a new random value when a dungeon is chosen.");
 
-            EnableWebDashboard = _webDashboardCategory.CreateEntry(
+            EnableWebDashboard = CreateTrackedEntry(_webDashboardCategory, 
                 "EnableWebDashboard",
                 false,
                 "Enable Web Dashboard",
                 "Serve a local web UI for connected players and host moderation. Default bind is loopback only.");
 
-            WebDashboardListenAddress = _webDashboardCategory.CreateEntry(
+            WebDashboardListenAddress = CreateTrackedEntry(_webDashboardCategory, 
                 "WebDashboardListenAddress",
                 "127.0.0.1",
                 "Listen Address",
                 "HTTP bind address. Use 127.0.0.1 for local-only access.");
 
-            WebDashboardListenPort = _webDashboardCategory.CreateEntry(
+            WebDashboardListenPort = CreateTrackedEntry(_webDashboardCategory, 
                 "WebDashboardListenPort",
                 8001,
                 "Listen Port",
@@ -1057,7 +1058,21 @@ namespace MimesisPlayerEnhancement
         {
             MelonPreferences_Category category = MelonPreferences.CreateCategory(id, displayName);
             category.SetFilePath(FilePath);
+            ModConfigRegistry.TrackCategory(category);
             return category;
+        }
+
+        private static MelonPreferences_Entry<T> CreateTrackedEntry<T>(
+            MelonPreferences_Category category,
+            string identifier,
+            T defaultValue,
+            string displayName,
+            string description)
+        {
+            MelonPreferences_Entry<T> entry = category.CreateEntry(
+                identifier, defaultValue, displayName, description);
+            ModConfigRegistry.TrackEntry(entry);
+            return entry;
         }
 
         private static void NotifyChanged()

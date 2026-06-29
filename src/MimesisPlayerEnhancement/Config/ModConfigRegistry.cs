@@ -14,7 +14,106 @@ namespace MimesisPlayerEnhancement
         private static readonly Dictionary<string, Dictionary<string, MelonPreferences_Entry>> EntriesBySection =
             new(StringComparer.OrdinalIgnoreCase);
 
+        private static readonly List<string> SectionOrder = [];
+        private static readonly Dictionary<string, List<string>> EntryOrderBySection =
+            new(StringComparer.Ordinal);
+        private static readonly Dictionary<string, string> SectionTitles =
+            new(StringComparer.Ordinal);
+
         internal static int Version { get; private set; }
+
+        internal static IReadOnlyList<string> GetSectionOrder() => SectionOrder;
+
+        internal static IReadOnlyList<string> GetEntryOrder(string sectionId)
+        {
+            return EntryOrderBySection.TryGetValue(sectionId, out List<string>? keys)
+                ? keys
+                : [];
+        }
+
+        internal static bool TryGetSectionTitle(string sectionId, out string title)
+        {
+            return SectionTitles.TryGetValue(sectionId, out title!);
+        }
+
+        internal static void ClearRegistrationOrder()
+        {
+            SectionOrder.Clear();
+            EntryOrderBySection.Clear();
+            SectionTitles.Clear();
+        }
+
+        internal static void TrackCategory(MelonPreferences_Category category)
+        {
+            string sectionId = category.Identifier;
+            if (EntryOrderBySection.ContainsKey(sectionId))
+            {
+                return;
+            }
+
+            SectionOrder.Add(sectionId);
+            EntryOrderBySection[sectionId] = [];
+            SectionTitles[sectionId] = category.DisplayName ?? sectionId;
+        }
+
+        internal static void TrackEntry(MelonPreferences_Entry entry)
+        {
+            string sectionId = entry.Category.Identifier;
+            if (!EntryOrderBySection.TryGetValue(sectionId, out List<string>? keys))
+            {
+                TrackCategory(entry.Category);
+                keys = EntryOrderBySection[sectionId];
+            }
+
+            keys.Add(entry.Identifier);
+        }
+
+        internal static string FormatEntryValue(MelonPreferences_Entry entry)
+        {
+            Type? type = entry.GetReflectedType();
+            if (type == typeof(float) && entry.BoxedValue is float floatValue)
+            {
+                return ModConfigFloatHelper.Format(floatValue);
+            }
+
+            if (type == typeof(bool) && entry.BoxedValue is bool boolValue)
+            {
+                return boolValue ? "true" : "false";
+            }
+
+            return SafeGetString(entry.GetValueAsString);
+        }
+
+        internal static string FormatEntryDefaultValue(MelonPreferences_Entry entry)
+        {
+            Type? type = entry.GetReflectedType();
+            string raw = SafeGetString(entry.GetDefaultValueAsString);
+            if (type == typeof(float)
+                && float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatValue))
+            {
+                return ModConfigFloatHelper.Format(floatValue);
+            }
+
+            if (type == typeof(bool)
+                && bool.TryParse(raw, out bool boolValue))
+            {
+                return boolValue ? "true" : "false";
+            }
+
+            return raw;
+        }
+
+        private static string SafeGetString(Func<string> getter)
+        {
+            try
+            {
+                return getter() ?? "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
 
         internal static void Rebuild()
         {
