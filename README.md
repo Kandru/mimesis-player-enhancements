@@ -38,6 +38,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, scrap/sell values, shop buy prices, shop item count, and reinforce costs | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by real seconds per player above a baseline (default: +10s per player above 4) | No — host only |
+| **Room Entry Delay** | Multiply hold/teleport timing when entering rooms via E at teleporters and dungeon doors | No — host only |
 | **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 
@@ -273,6 +274,15 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
+### Room Entry Delay — `[MimesisPlayerEnhancement_RoomEntryDelay]`
+
+Host-only. Multiplies vanilla timing when players press **E** to enter a room through fixed teleporters (`TeleporterLevelObject`) or procedural dungeon doors (`RandomTeleporterLevelObject`). Server-side action delay applies to all players; the hold ring on the crosshair follows the host config on the host client only (participants keep vanilla hold UI).
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableRoomEntryDelay` | bool | `true` | Master toggle for room entry timing multiplier. |
+| `RoomEntryDelayMultiplier` | float | `1.0` | Timing multiplier (`1` = vanilla, `0.5` = half as long, `2` = double). Valid range is `0.1`–`10.0`. |
+
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
 Host-only. Scales player movement and stamina on the server. Joining clients do not need the mod — stats sync from the host automatically. Multipliers use `1.0` for vanilla; valid range is `0.1`–`5.0`. Changes apply at runtime when config is saved (host reloads player stats).
@@ -396,6 +406,10 @@ StartupMoneyMultiplier = 1.0
 EnableDungeonTime = true
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
+
+[MimesisPlayerEnhancement_RoomEntryDelay]
+EnableRoomEntryDelay = true
+RoomEntryDelayMultiplier = 1.0
 
 [MimesisPlayerEnhancement_PlayerTuning]
 EnablePlayerTuning = false

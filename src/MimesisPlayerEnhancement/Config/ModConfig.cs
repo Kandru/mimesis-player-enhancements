@@ -109,6 +109,9 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; private set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; private set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnableRoomEntryDelay { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> RoomEntryDelayMultiplier { get; private set; } = null!;
+
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; private set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; private set; } = null!;
         public static MelonPreferences_Entry<float> MaxStaminaMultiplier { get; private set; } = null!;
@@ -148,6 +151,7 @@ namespace MimesisPlayerEnhancement
         private static MelonPreferences_Category _lootMultiplicatorCategory = null!;
         private static MelonPreferences_Category _moneyMultiplierCategory = null!;
         private static MelonPreferences_Category _dungeonTimeCategory = null!;
+        private static MelonPreferences_Category _roomEntryDelayCategory = null!;
         private static MelonPreferences_Category _playerTuningCategory = null!;
         private static MelonPreferences_Category _dungeonRandomizerCategory = null!;
         private static MelonPreferences_Category _webDashboardCategory = null!;
@@ -172,6 +176,7 @@ namespace MimesisPlayerEnhancement
             _lootMultiplicatorCategory = CreateCategory("MimesisPlayerEnhancement_LootMultiplicator", "Loot Multiplicator");
             _moneyMultiplierCategory = CreateCategory("MimesisPlayerEnhancement_MoneyMultiplier", "Money Multiplier");
             _dungeonTimeCategory = CreateCategory("MimesisPlayerEnhancement_DungeonTime", "Dungeon Time");
+            _roomEntryDelayCategory = CreateCategory("MimesisPlayerEnhancement_RoomEntryDelay", "Room Entry Delay");
             _playerTuningCategory = CreateCategory("MimesisPlayerEnhancement_PlayerTuning", "Player Tuning");
             _dungeonRandomizerCategory = CreateCategory("MimesisPlayerEnhancement_DungeonRandomizer", "Dungeon Randomizer");
             _webDashboardCategory = CreateCategory("MimesisPlayerEnhancement_WebDashboard", "Web Dashboard");
@@ -627,6 +632,18 @@ namespace MimesisPlayerEnhancement
                 "Extra Shift Seconds Per Player Above Baseline",
                 "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
 
+            EnableRoomEntryDelay = CreateTrackedEntry(_roomEntryDelayCategory,
+                "EnableRoomEntryDelay",
+                true,
+                "Enable Room Entry Delay",
+                "Multiply hold/teleport timing for E-interaction room entry teleporters on the host.");
+
+            RoomEntryDelayMultiplier = CreateTrackedEntry(_roomEntryDelayCategory,
+                "RoomEntryDelayMultiplier",
+                1f,
+                "Room Entry Delay Multiplier",
+                "Multiplier for room entry timing at teleporters and dungeon doors (1 = vanilla, 2 = double). Host only.");
+
             EnablePlayerTuning = CreateTrackedEntry(_playerTuningCategory,
                 "EnablePlayerTuning",
                 false,
@@ -929,6 +946,10 @@ namespace MimesisPlayerEnhancement
             ExtraShiftSecondsPerPlayerAboveBaseline.OnEntryValueChanged.Subscribe((_, value) =>
                 OnExtraShiftSecondsPerPlayerChanged(logger, value));
 
+            EnableRoomEntryDelay.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+            RoomEntryDelayMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRoomEntryDelayMultiplierChanged(logger, value));
+
             EnablePlayerTuning.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             MoveSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnPlayerTuningMultiplierChanged(logger, value, MoveSpeedMultiplier));
@@ -1060,6 +1081,7 @@ namespace MimesisPlayerEnhancement
                 ShopItemsMultiplier,
                 ReinforcePriceMultiplier,
                 ExtraShiftSecondsPerPlayerAboveBaseline,
+                RoomEntryDelayMultiplier,
                 MoveSpeedMultiplier,
                 MaxStaminaMultiplier,
                 StaminaDrainMultiplier,
@@ -1079,6 +1101,28 @@ namespace MimesisPlayerEnhancement
             }
 
             ModConfigFloatHelper.SanitizeEntry(ExtraShiftSecondsPerPlayerAboveBaseline);
+            NotifyChanged();
+        }
+
+        private static void OnRoomEntryDelayMultiplierChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < Features.RoomEntryDelay.RoomEntryDelayResolver.MinMultiplier)
+            {
+                logger.Warning(
+                    $"RoomEntryDelayMultiplier must be at least {Features.RoomEntryDelay.RoomEntryDelayResolver.MinMultiplier}; resetting.");
+                RoomEntryDelayMultiplier.Value = Features.RoomEntryDelay.RoomEntryDelayResolver.MinMultiplier;
+                return;
+            }
+
+            if (value > Features.RoomEntryDelay.RoomEntryDelayResolver.MaxMultiplier)
+            {
+                logger.Warning(
+                    $"RoomEntryDelayMultiplier must be at most {Features.RoomEntryDelay.RoomEntryDelayResolver.MaxMultiplier}; resetting.");
+                RoomEntryDelayMultiplier.Value = Features.RoomEntryDelay.RoomEntryDelayResolver.MaxMultiplier;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(RoomEntryDelayMultiplier);
             NotifyChanged();
         }
 
