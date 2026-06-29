@@ -22,28 +22,22 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return true;
             }
 
-            VGameSessionState state = __instance.GameSessionState;
-            if (state == VGameSessionState.Ready || state == VGameSessionState.WaitStartSession)
+            switch (__instance.GameSessionState)
             {
-                __result = true;
-                return false;
+                case VGameSessionState.Ready:
+                case VGameSessionState.WaitStartSession:
+                case VGameSessionState.EndGame:
+                    __result = true;
+                    return false;
+                case VGameSessionState.OnPlaying:
+                case VGameSessionState.DeathMatch:
+                case VGameSessionState.AfterGame:
+                    __result = false;
+                    return false;
+                default:
+                    __result = JoinAnytimeRoomTools.AreJoinsOpen();
+                    return false;
             }
-
-            if (state == VGameSessionState.EndGame)
-            {
-                __result = true;
-                return false;
-            }
-
-            if (state is VGameSessionState.OnPlaying or VGameSessionState.DeathMatch)
-            {
-                __result = false;
-                return false;
-            }
-
-            JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
-            __result = phase is JoinAnytimeSessionPhase.Maintenance or JoinAnytimeSessionPhase.Tram;
-            return false;
         }
     }
 
@@ -420,16 +414,4 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    [HarmonyPatch]
-    internal static class GamePlaySceneStartPatch
-    {
-        private static MethodBase? TargetMethod() =>
-            AccessTools.Method(typeof(GamePlayScene), "Start");
-
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            JoinAnytimeLobbyController.OnHostSceneReady();
-        }
-    }
 }

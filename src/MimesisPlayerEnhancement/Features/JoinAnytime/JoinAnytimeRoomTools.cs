@@ -53,69 +53,47 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return vroomManager.GetPlayerCountInSession();
         }
 
-        internal static int GetDungeonRemainingMinutes()
-        {
-            if (GetActiveDungeonRoom() is not DungeonRoom room)
-            {
-                return 0;
-            }
-
-            return GetDungeonRemainingMinutes(room);
-        }
-
         internal static bool AreJoinsOpen()
         {
-            JoinAnytimeSessionPhase phase = ResolveHostPhase();
-            if (phase is not JoinAnytimeSessionPhase.Maintenance and not JoinAnytimeSessionPhase.Tram)
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            if (pdata?.ClientMode != NetworkClientMode.Host)
             {
                 return false;
             }
 
-            return !IsSessionJoinsClosed();
+            if (pdata.main is not MaintenanceScene and not InTramWaitingScene)
+            {
+                return false;
+            }
+
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager))
+            {
+                return true;
+            }
+
+            VGameSessionState state = vroomManager!.GetGameSessionInfo().GameSessionState;
+            return state is not (VGameSessionState.OnPlaying or VGameSessionState.DeathMatch or VGameSessionState.AfterGame);
         }
 
-        internal static bool IsDungeonReadyForLobbyDisplay()
+        internal static bool TryGetActiveDungeonWaitMinutes(out int minutes)
         {
-            if (ResolveHostPhase() != JoinAnytimeSessionPhase.Dungeon)
+            minutes = 0;
+            if (DungeonSessionEndTimeField == null
+                || DungeonCurrentTimeField == null
+                || GetActiveDungeonRoom() is not DungeonRoom room)
             {
                 return false;
             }
 
-            if (GetActiveDungeonRoom() is not DungeonRoom room)
-            {
-                return false;
-            }
-
-            return GetDungeonRemainingMinutes(room) > 0;
-        }
-
-        private static int GetDungeonRemainingMinutes(DungeonRoom room)
-        {
-            if (DungeonSessionEndTimeField == null || DungeonCurrentTimeField == null)
-            {
-                return 0;
-            }
-
-            long endTime = (long)DungeonSessionEndTimeField.GetValue(room);
-            long currentTime = (long)DungeonCurrentTimeField.GetValue(room);
-            long remainingMs = endTime - currentTime;
+            long remainingMs = (long)DungeonSessionEndTimeField.GetValue(room)
+                - (long)DungeonCurrentTimeField.GetValue(room);
             if (remainingMs <= 0)
             {
-                return 0;
-            }
-
-            return (int)System.Math.Ceiling(remainingMs / 60000.0);
-        }
-
-        private static bool IsSessionJoinsClosed()
-        {
-            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
-            {
                 return false;
             }
 
-            VGameSessionState state = vroomManager.GetGameSessionInfo().GameSessionState;
-            return state is VGameSessionState.OnPlaying or VGameSessionState.DeathMatch;
+            minutes = (int)System.Math.Ceiling(remainingMs / 60000.0);
+            return minutes > 0;
         }
 
         internal static WaitingRoomBlockReason GetWaitingRoomBlockReason()
@@ -131,7 +109,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
-            if (sessionInfo.GameSessionState == VGameSessionState.OnPlaying)
+            if (sessionInfo.GameSessionState is VGameSessionState.OnPlaying or VGameSessionState.AfterGame)
             {
                 return WaitingRoomBlockReason.ActiveDungeon;
             }
@@ -265,8 +243,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            PropertyInfo? vworldProperty = typeof(Hub).GetProperty("vworld", InstanceFlags);
-            if (vworldProperty?.GetValue(Hub.s) is not VWorld vworld)
+            if (HubVworldProperty?.GetValue(Hub.s) is not VWorld vworld)
             {
                 ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — VWorld unavailable");
                 return false;

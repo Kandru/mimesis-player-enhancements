@@ -38,16 +38,19 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
-            if (phase != JoinAnytimeSessionPhase.None && phase != _lastPhase)
+            bool phaseChanged = phase != JoinAnytimeSessionPhase.None && phase != _lastPhase;
+            bool timerDue = Time.time >= _nextRefreshTime;
+            if (!phaseChanged && !timerDue)
             {
-                RefreshLobbyState(force: true);
+                return;
             }
 
-            if (Time.time >= _nextRefreshTime)
+            if (timerDue)
             {
                 _nextRefreshTime = Time.time + RefreshIntervalSeconds;
-                RefreshLobbyState(force: false);
             }
+
+            RefreshLobbyState(force: phaseChanged);
         }
 
         internal static void OnLobbyCreated(SteamInviteDispatcher dispatcher, bool isOpenForRandomMatch)
@@ -199,22 +202,28 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            string displayName = BuildDisplayLobbyName(phase);
+            int waitMinutes = 0;
+            if (phase == JoinAnytimeSessionPhase.Dungeon)
+            {
+                JoinAnytimeRoomTools.TryGetActiveDungeonWaitMinutes(out waitMinutes);
+            }
+
+            string displayName = BuildDisplayLobbyName(phase, waitMinutes);
             if (!force && string.Equals(displayName, _lastPublishedName, StringComparison.Ordinal))
             {
                 return;
             }
 
             _lastPhase = phase;
-            PublishLobbyState(dispatcher, phase, displayName);
+            PublishLobbyState(dispatcher, phase, displayName, JoinAnytimeRoomTools.AreJoinsOpen());
         }
 
         private static void PublishLobbyState(
             SteamInviteDispatcher dispatcher,
             JoinAnytimeSessionPhase phase,
-            string displayName)
+            string displayName,
+            bool joinsOpen)
         {
-            bool joinsOpen = JoinAnytimeRoomTools.AreJoinsOpen();
             string phaseKey = phase switch
             {
                 JoinAnytimeSessionPhase.Maintenance => JoinAnytimeLobbyMetadata.PhaseMaintenance,
@@ -268,22 +277,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static string BuildDisplayLobbyName(JoinAnytimeSessionPhase phase)
+        private static string BuildDisplayLobbyName(JoinAnytimeSessionPhase phase, int waitMinutes)
         {
             string baseName = string.IsNullOrEmpty(_baseLobbyName) ? "Train" : _baseLobbyName;
-            string tag = phase switch
-            {
-                JoinAnytimeSessionPhase.Dungeon when JoinAnytimeRoomTools.IsDungeonReadyForLobbyDisplay() =>
-                    $" [wait {JoinAnytimeRoomTools.GetDungeonRemainingMinutes()} min]",
-                JoinAnytimeSessionPhase.Maintenance
+            string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
+                ? $" [wait {waitMinutes} min]"
+                : phase is JoinAnytimeSessionPhase.Maintenance
                     or JoinAnytimeSessionPhase.Tram
-                    or JoinAnytimeSessionPhase.Dungeon => " [open]",
-                _ => string.Empty,
-            };
+                    or JoinAnytimeSessionPhase.Dungeon
+                    ? " [open]"
+                    : string.Empty;
 
-            int current = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            int max = MorePlayersPatches.GetMaxPlayers();
-            return $"{baseName}{tag} ({current}/{max})";
+            return $"{baseName}{tag} ({JoinAnytimeRoomTools.GetSessionPlayerCount()}/{MorePlayersPatches.GetMaxPlayers()})";
         }
 
         internal static void OnHostSceneReady()

@@ -46,7 +46,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("SetRoomData/UiPrefab_RoomCard", AccessTools.Method(typeof(UiPrefab_RoomCard), "SetRoomData")),
                 ("TryInitHostMaintenenceRoom/MaintenanceScene", AccessTools.Method(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")),
                 ("Start/InTramWaitingScene", AccessTools.Method(typeof(InTramWaitingScene), "Start")),
-                ("Start/GamePlayScene", AccessTools.Method(typeof(GamePlayScene), "Start")),
                 ("CorRefreshSteamLobbyData/GameMainBase", AccessTools.Method(typeof(GameMainBase), "CorRefreshSteamLobbyData", corRefreshParams)),
                 (".ctor/VPlayer", AccessTools.Constructor(
                     typeof(VPlayer),
