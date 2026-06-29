@@ -45,6 +45,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; private set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableJoinAnytime { get; private set; } = null!;
+        public static MelonPreferences_Entry<int> JoinConnectionGraceSeconds { get; private set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableSpawnScaling { get; private set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleMimicSpawnsByPlayerCount { get; private set; } = null!;
@@ -245,6 +246,12 @@ namespace MimesisPlayerEnhancement
                 true,
                 "Enable Join Anytime",
                 "Allow players to join a session after it has already started.");
+
+            JoinConnectionGraceSeconds = _joinAnytimeCategory.CreateEntry(
+                "JoinConnectionGraceSeconds",
+                30,
+                "Join Connection Grace Seconds",
+                "When a player connects, block tram departure for this many seconds. Players who fail to finish loading are kicked (host is never kicked).");
 
             EnableSpawnScaling = _spawnScalingCategory.CreateEntry(
                 "EnableSpawnScaling",
@@ -666,6 +673,12 @@ namespace MimesisPlayerEnhancement
                 MaxPlayers.Value = 1;
             }
 
+            if (JoinConnectionGraceSeconds.Value < 1)
+            {
+                logger.Warning("JoinConnectionGraceSeconds must be at least 1; resetting to 1.");
+                JoinConnectionGraceSeconds.Value = 1;
+            }
+
             SanitizeShopDiscountPercents(logger);
             OnDungeonPickPoolModeChanged(logger, DungeonPickPoolMode.Value);
 
@@ -748,6 +761,18 @@ namespace MimesisPlayerEnhancement
                 NotifyChanged();
             });
             EnableJoinAnytime.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+
+            JoinConnectionGraceSeconds.OnEntryValueChanged.Subscribe((_, value) =>
+            {
+                if (value < 1)
+                {
+                    logger.Warning("JoinConnectionGraceSeconds must be at least 1; resetting to 1.");
+                    JoinConnectionGraceSeconds.Value = 1;
+                    return;
+                }
+
+                NotifyChanged();
+            });
             EnableSpawnScaling.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             AutoScaleMimicSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             AutoScaleBossSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());

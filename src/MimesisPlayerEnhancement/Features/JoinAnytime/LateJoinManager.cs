@@ -110,7 +110,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void RefreshLobbyVisibilityAfterSteamUpdate()
         {
-            LobbyVisibilityHelper.RefreshAfterLobbyDataUpdate();
+            JoinAnytimeLobbyController.RefreshAfterSteamLobbyDataUpdate();
         }
     }
 }

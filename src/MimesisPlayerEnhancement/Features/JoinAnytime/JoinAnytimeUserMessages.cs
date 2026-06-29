@@ -3,7 +3,6 @@ using System.Collections;
 using System.Reflection;
 using MelonLoader;
 using Mimic.Actors;
-using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol.C2S;
 using UnityEngine;
@@ -13,7 +12,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     internal static class JoinAnytimeUserMessages
     {
         private const string Feature = "JoinAnytime";
-        private const string LeverBlockedMessage = "Can't depart yet — other players are still in the dungeon.";
+        private const string DungeonBlockedMessage =
+            "Can't depart yet — other players are still in the dungeon.";
+        private const string SplitBlockedMessage =
+            "Can't depart yet — other players are still outside the tram.";
+        private const string ConnectingBlockedMessage =
+            "Can't depart yet — a player is still connecting.";
         private const float LeverFeedbackDelaySeconds = 0.5f;
         private const float LeverFeedbackDedupSeconds = 5f;
 
@@ -21,6 +25,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             typeof(InTramWaitingScene).GetField("startGameSig", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private static DateTime _lastLeverBlockedShownUtc;
+        private static WaitingRoomBlockReason _lastShownReason = WaitingRoomBlockReason.None;
 
         internal static void OnWaitingRoomStartBlocked(IVroom room, int actorId)
         {
@@ -37,7 +42,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (LocalPlayerHelper.IsLocalSteamId(player.SteamID))
             {
-                ShowLeverBlockedLocal(immediate: true);
+                ShowLeverBlockedLocal(
+                    JoinAnytimeRoomTools.GetWaitingRoomBlockReason(),
+                    immediate: true);
             }
         }
 
@@ -75,7 +82,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static IEnumerator ShowLeverBlockedAfterPullIfNeeded()
         {
-            // Default tram lever opening duration is 3s (openingDurationToMap).
             yield return new WaitForSeconds(3f + LeverFeedbackDelaySeconds);
 
             if (!LateJoinManager.IsEnabled)
@@ -94,21 +100,30 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 yield break;
             }
 
-            ShowLeverBlockedLocal(immediate: false);
+            ShowLeverBlockedLocal(
+                JoinAnytimeRoomTools.GetWaitingRoomBlockReason(),
+                immediate: false);
         }
 
-        private static void ShowLeverBlockedLocal(bool immediate)
+        private static void ShowLeverBlockedLocal(WaitingRoomBlockReason reason, bool immediate)
         {
+            if (reason == WaitingRoomBlockReason.None)
+            {
+                reason = WaitingRoomBlockReason.PlayersSplit;
+            }
+
             DateTime now = DateTime.UtcNow;
-            if ((now - _lastLeverBlockedShownUtc).TotalSeconds < LeverFeedbackDedupSeconds)
+            if ((now - _lastLeverBlockedShownUtc).TotalSeconds < LeverFeedbackDedupSeconds
+                && reason == _lastShownReason)
             {
                 return;
             }
 
             _lastLeverBlockedShownUtc = now;
+            _lastShownReason = reason;
 
             InGameMessageHelper.ShowModMessage(
-                LeverBlockedMessage,
+                GetMessageForReason(reason),
                 isEntering: false,
                 localOnly: true,
                 ignoreFeatureToggles: true);
@@ -116,9 +131,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             ModLog.Debug(
                 Feature,
                 immediate
-                    ? "Showed tram lever blocked toast (server)"
-                    : "Showed tram lever blocked toast (client feedback)");
+                    ? $"Showed tram lever blocked toast ({reason}, server)"
+                    : $"Showed tram lever blocked toast ({reason}, client feedback)");
         }
+
+        private static string GetMessageForReason(WaitingRoomBlockReason reason) =>
+            reason switch
+            {
+                WaitingRoomBlockReason.PlayersConnecting => ConnectingBlockedMessage,
+                WaitingRoomBlockReason.ActiveDungeon => DungeonBlockedMessage,
+                _ => SplitBlockedMessage,
+            };
 
         private static bool HasPendingDungeonStart(InTramWaitingScene scene)
         {

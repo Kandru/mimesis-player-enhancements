@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Bifrost.ConstEnum;
 using HarmonyLib;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using ReluProtocol.Enum;
+using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
@@ -13,14 +15,34 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     internal static class GameSessionInfoCanEnterSessionPatch
     {
         [HarmonyPrefix]
-        private static bool Prefix(ref bool __result)
+        private static bool Prefix(GameSessionInfo __instance, ref bool __result)
         {
             if (!ModConfig.EnableJoinAnytime.Value)
             {
                 return true;
             }
 
-            __result = true;
+            VGameSessionState state = __instance.GameSessionState;
+            if (state == VGameSessionState.Ready || state == VGameSessionState.WaitStartSession)
+            {
+                __result = true;
+                return false;
+            }
+
+            if (state == VGameSessionState.EndGame)
+            {
+                __result = true;
+                return false;
+            }
+
+            if (state is VGameSessionState.OnPlaying or VGameSessionState.DeathMatch)
+            {
+                __result = false;
+                return false;
+            }
+
+            JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
+            __result = phase is JoinAnytimeSessionPhase.Maintenance or JoinAnytimeSessionPhase.Tram;
             return false;
         }
     }
@@ -32,7 +54,28 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix(SessionContext __instance)
         {
             HostStatusCache.Invalidate();
+            JoinAnytimeConnectingTracker.OnServerLogin(__instance);
             LateJoinManager.OnServerLogin(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
+    internal static class VRoomManagerPendMoveToDungeonPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.RefreshLobbyState(force: true);
+        }
+    }
+
+    [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
+    internal static class DungeonRoomOnAllMemberEnteredLobbyPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
     }
 
@@ -43,6 +86,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix(VRoomManager __instance)
         {
             JoinAnytimeRoomTools.RefreshWaitingRoomDisplaysForOccupants(__instance);
+            JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
     }
 
@@ -92,13 +136,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return true;
             }
 
-            if (!JoinAnytimeRoomTools.ShouldBlockWaitingRoomStartGame())
+            WaitingRoomBlockReason reason = JoinAnytimeRoomTools.GetWaitingRoomBlockReason();
+            if (reason == WaitingRoomBlockReason.None)
             {
                 return true;
             }
 
             int actorId = GameActionParamHelper.FindParam<GameActionParamActor>(paramList)?.ActorID ?? 0;
-            ModLog.Info("JoinAnytime", "Blocked tram lever — players still split between dungeon and waiting room");
+            ModLog.Info("JoinAnytime", $"Blocked tram lever — reason={reason}");
             JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorId);
             __result = false;
             return false;
@@ -131,7 +176,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(SteamInviteDispatcher __instance, bool isOpenForRandomMatch)
         {
-            LobbyVisibilityHelper.OnLobbyCreated(__instance, isOpenForRandomMatch);
+            JoinAnytimeLobbyController.OnLobbyCreated(__instance, isOpenForRandomMatch);
         }
     }
 
@@ -141,7 +186,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(SteamInviteDispatcher __instance, bool isPublic)
         {
-            LobbyVisibilityHelper.OnSetLobbyPublicCompleted(__instance, isPublic);
+            JoinAnytimeLobbyController.OnSetLobbyPublicCompleted(__instance, isPublic);
         }
     }
 
@@ -158,7 +203,52 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 
             if (JoinAnytimeHub.IsHostLobbyPublic(__instance))
             {
-                __instance.SetPresenceInLobbyPublic();
+                JoinAnytimeLobbyController.ApplyLobbyPresence(__instance, wantsPublic: true);
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresencePlaying))]
+    internal static class SteamInviteDispatcherSetPresencePlayingPatch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix(SteamInviteDispatcher __instance)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return true;
+            }
+
+            if (JoinAnytimeHub.IsHostLobbyPublic(__instance))
+            {
+                JoinAnytimeLobbyController.ApplyLobbyPresence(__instance, wantsPublic: true);
+                JoinAnytimeLobbyController.RefreshLobbyState(force: true);
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdateLobbyData))]
+    internal static class SteamInviteDispatcherUpdateLobbyDataPatch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix(SteamInviteDispatcher __instance, string key, string value)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return true;
+            }
+
+            if (string.Equals(key, SteamInviteDispatcher.IS_PUBLIC_KEY, StringComparison.Ordinal)
+                && string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
+                && JoinAnytimeLobbyController.ShouldBlockPublicRoomClose())
+            {
+                ModLog.Debug("JoinAnytime", "Blocked PublicRoom=false lobby data update for join-anytime host.");
                 return false;
             }
 
@@ -175,7 +265,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
-            LateJoinManager.RefreshLobbyVisibilityAfterSteamUpdate();
+            JoinAnytimeLobbyController.RefreshAfterSteamLobbyDataUpdate();
         }
     }
 
@@ -202,6 +292,144 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix(VPlayer __instance)
         {
             LateJoinManager.OnServerPlayerCreated(__instance);
+            JoinAnytimeConnectingTracker.OnServerPlayerCreated(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.HandleLevelLoadComplete))]
+    internal static class VPlayerHandleLevelLoadCompletePatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(VPlayer __instance)
+        {
+            JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class UIPrefabInGameMenuSetPublicRoomNamePatch
+    {
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(UIPrefab_InGameMenu), "SetPublicRoomName");
+
+        [HarmonyPostfix]
+        private static void Postfix(UIPrefab_InGameMenu __instance)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            JoinAnytimeLobbyController.OnPublicRoomNameChanged(__instance.lobbyName);
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class UIPrefabPublicRoomListSetRoomListPatch
+    {
+        private const BindingFlags InstanceFlags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(UIPrefab_PublicRoomList), "SetRoomList");
+
+        [HarmonyPostfix]
+        private static void Postfix(UIPrefab_PublicRoomList __instance, List<CSteamID> lobbyIDs)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || lobbyIDs == null || lobbyIDs.Count == 0)
+            {
+                return;
+            }
+
+            FieldInfo? roomListDataField = typeof(UIPrefab_PublicRoomList).GetField(
+                "roomListData",
+                InstanceFlags);
+            if (roomListDataField?.GetValue(__instance) is not List<PublicRoomListData> roomListData)
+            {
+                return;
+            }
+
+            HashSet<CSteamID> existing = roomListData
+                .Select(entry => entry.lobbyID)
+                .ToHashSet();
+
+            bool added = false;
+            foreach (CSteamID lobbyId in lobbyIDs)
+            {
+                int playerCount = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
+                if (playerCount < 4 || existing.Contains(lobbyId))
+                {
+                    continue;
+                }
+
+                if (!JoinAnytimeLobbyDisplay.ShouldIncludeInPublicList(playerCount, lobbyId))
+                {
+                    continue;
+                }
+
+                roomListData.Add(JoinAnytimeLobbyDisplay.CreatePublicRoomListData(lobbyId, playerCount));
+                _ = existing.Add(lobbyId);
+                added = true;
+            }
+
+            if (!added)
+            {
+                return;
+            }
+
+            MethodInfo? setRoomListUi = typeof(UIPrefab_PublicRoomList).GetMethod(
+                "SetRoomListUI",
+                InstanceFlags);
+            setRoomListUi?.Invoke(__instance, null);
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class UiPrefabRoomCardSetRoomDataPatch
+    {
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(UiPrefab_RoomCard), "SetRoomData");
+
+        [HarmonyPostfix]
+        private static void Postfix(PublicRoomListData data, UiPrefab_RoomCard __instance)
+        {
+            JoinAnytimeLobbyDisplay.ApplyBrowsePlayerCountToRoomCard(data, __instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")]
+    internal static class MaintenanceSceneTryInitHostMaintenenceRoomPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.OnHostSceneReady();
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class InTramWaitingSceneStartPatch
+    {
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(InTramWaitingScene), "Start");
+
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.OnHostSceneReady();
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class GamePlaySceneStartPatch
+    {
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(GamePlayScene), "Start");
+
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.OnHostSceneReady();
         }
     }
 }

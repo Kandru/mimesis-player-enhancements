@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.Cooked;
 using MimesisPlayerEnhancement.Util;
+using ReluNetwork.ConstEnum;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -18,6 +19,145 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static readonly PropertyInfo? HubVworldProperty =
             typeof(Hub).GetProperty("vworld", InstanceFlags);
+
+        private static readonly FieldInfo? DungeonSessionEndTimeField =
+            typeof(DungeonRoom).GetField("_sessionEndTime", InstanceFlags);
+
+        private static readonly FieldInfo? DungeonCurrentTimeField =
+            typeof(DungeonRoom).GetField("_currentTime", InstanceFlags);
+
+        internal static JoinAnytimeSessionPhase ResolveHostPhase()
+        {
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            if (pdata?.ClientMode != NetworkClientMode.Host)
+            {
+                return JoinAnytimeSessionPhase.None;
+            }
+
+            return pdata.main switch
+            {
+                MaintenanceScene => JoinAnytimeSessionPhase.Maintenance,
+                InTramWaitingScene => JoinAnytimeSessionPhase.Tram,
+                GamePlayScene => JoinAnytimeSessionPhase.Dungeon,
+                _ => JoinAnytimeSessionPhase.None,
+            };
+        }
+
+        internal static int GetSessionPlayerCount()
+        {
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
+            {
+                return 0;
+            }
+
+            return vroomManager.GetPlayerCountInSession();
+        }
+
+        internal static int GetDungeonRemainingMinutes()
+        {
+            if (GetActiveDungeonRoom() is not DungeonRoom room)
+            {
+                return 0;
+            }
+
+            return GetDungeonRemainingMinutes(room);
+        }
+
+        internal static bool AreJoinsOpen()
+        {
+            JoinAnytimeSessionPhase phase = ResolveHostPhase();
+            if (phase is not JoinAnytimeSessionPhase.Maintenance and not JoinAnytimeSessionPhase.Tram)
+            {
+                return false;
+            }
+
+            return !IsSessionJoinsClosed();
+        }
+
+        internal static bool IsDungeonReadyForLobbyDisplay()
+        {
+            if (ResolveHostPhase() != JoinAnytimeSessionPhase.Dungeon)
+            {
+                return false;
+            }
+
+            if (GetActiveDungeonRoom() is not DungeonRoom room)
+            {
+                return false;
+            }
+
+            return GetDungeonRemainingMinutes(room) > 0;
+        }
+
+        private static int GetDungeonRemainingMinutes(DungeonRoom room)
+        {
+            if (DungeonSessionEndTimeField == null || DungeonCurrentTimeField == null)
+            {
+                return 0;
+            }
+
+            long endTime = (long)DungeonSessionEndTimeField.GetValue(room);
+            long currentTime = (long)DungeonCurrentTimeField.GetValue(room);
+            long remainingMs = endTime - currentTime;
+            if (remainingMs <= 0)
+            {
+                return 0;
+            }
+
+            return (int)System.Math.Ceiling(remainingMs / 60000.0);
+        }
+
+        private static bool IsSessionJoinsClosed()
+        {
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
+            {
+                return false;
+            }
+
+            VGameSessionState state = vroomManager.GetGameSessionInfo().GameSessionState;
+            return state is VGameSessionState.OnPlaying or VGameSessionState.DeathMatch;
+        }
+
+        internal static WaitingRoomBlockReason GetWaitingRoomBlockReason()
+        {
+            if (JoinAnytimeConnectingTracker.HasPending())
+            {
+                return WaitingRoomBlockReason.PlayersConnecting;
+            }
+
+            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
+            {
+                return WaitingRoomBlockReason.None;
+            }
+
+            GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
+            if (sessionInfo.GameSessionState == VGameSessionState.OnPlaying)
+            {
+                return WaitingRoomBlockReason.ActiveDungeon;
+            }
+
+            if (CountDungeonPlayers(vroomManager) > 0)
+            {
+                return WaitingRoomBlockReason.ActiveDungeon;
+            }
+
+            int sessionPlayers = vroomManager.GetPlayerCountInSession();
+            if (sessionPlayers <= 0)
+            {
+                return WaitingRoomBlockReason.None;
+            }
+
+            int waitingPlayers = vroomManager.GetRoomMemberCount(VRoomType.Waiting);
+            if (waitingPlayers < sessionPlayers)
+            {
+                return WaitingRoomBlockReason.PlayersSplit;
+            }
+
+            return WaitingRoomBlockReason.None;
+        }
+
+        internal static bool ShouldBlockWaitingRoomStartGame() =>
+            GetWaitingRoomBlockReason() != WaitingRoomBlockReason.None;
 
         internal static void MoveCurrentPlayerToSnapshot(SessionContext context)
         {
@@ -180,34 +320,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             waitingRoom.SendRollDungeonSig();
             ModLog.Info(Feature, "Broadcast RollDungeonSig to refresh tram displays for players already in waiting room");
-        }
-
-        internal static bool ShouldBlockWaitingRoomStartGame()
-        {
-            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
-            {
-                return false;
-            }
-
-            GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
-            if (sessionInfo.GameSessionState == VGameSessionState.OnPlaying)
-            {
-                return true;
-            }
-
-            if (CountDungeonPlayers(vroomManager) > 0)
-            {
-                return true;
-            }
-
-            int sessionPlayers = vroomManager.GetPlayerCountInSession();
-            if (sessionPlayers <= 0)
-            {
-                return false;
-            }
-
-            int waitingPlayers = vroomManager.GetRoomMemberCount(VRoomType.Waiting);
-            return waitingPlayers < sessionPlayers;
         }
 
         internal static IVroom? GetActiveDungeonRoom()

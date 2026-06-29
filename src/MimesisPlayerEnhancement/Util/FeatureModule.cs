@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MimesisPlayerEnhancement.Features.JoinAnytime;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
@@ -84,7 +85,7 @@ namespace MimesisPlayerEnhancement.Util
                 if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } }),
             new FeatureModule("PlayerAnnouncements", PlayerAnnouncementPatches.Apply),
             new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
-            new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply),
+            new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply, onUpdate: JoinAnytimeRuntime.OnUpdate),
             new FeatureModule("SpawnScaling", SpawnScalingPatches.Apply, onUpdate: () =>
             {
                 if (ModConfig.EnableSpawnScaling.Value) { FixedSpawnCoordinator.ProcessPendingRespawns(); } }, throttledUpdate: true),
