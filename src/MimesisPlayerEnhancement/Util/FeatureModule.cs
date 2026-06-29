@@ -11,6 +11,7 @@ using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.SpectatorTransition;
 using MimesisPlayerEnhancement.Features.WebDashboard;
+using MimesisPlayerEnhancement.ModVersionDisplay;
 
 namespace MimesisPlayerEnhancement.Util
 {
@@ -99,6 +100,7 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("WebDashboard", WebDashboardServer.Apply,
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
                 onUpdate: WebDashboardServer.OnUpdate),
+            new FeatureModule("ModVersionDisplay", ModVersionDisplayPatches.Apply),
         ];
     }
 }
