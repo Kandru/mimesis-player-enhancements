@@ -1,5 +1,6 @@
 using System;
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
 using UnityEngine;
@@ -84,6 +85,7 @@ namespace MimesisPlayerEnhancement
         public override void OnDeinitializeMelon()
         {
             StatisticsWriteQueue.FlushAllSync();
+            PlayerTuningApplier.RestoreOnShutdown();
             WebDashboardServer.StopOnDeinit();
             HostStatusCache.Invalidate();
             ModConfig.Changed -= SyncFromConfig;
@@ -134,6 +136,7 @@ namespace MimesisPlayerEnhancement
                 $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
                 $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
                 $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
+                $"PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
                 $"ExtendedSaveSlots={ModConfig.EnableExtendedSaveSlots.Value}" +
                 (ModConfig.EnableExtendedSaveSlots.Value
@@ -164,6 +167,7 @@ namespace MimesisPlayerEnhancement
                 $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
                 $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
                 $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
+                $"PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
                 $"ExtendedSaveSlots={ModConfig.EnableExtendedSaveSlots.Value}" +
                 (ModConfig.EnableExtendedSaveSlots.Value

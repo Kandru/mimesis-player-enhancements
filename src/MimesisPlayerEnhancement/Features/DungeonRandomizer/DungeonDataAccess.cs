@@ -1,30 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonDataAccess
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly PropertyInfo? HubDatamanProperty =
-            typeof(Hub).GetProperty("dataman", InstanceFlags);
-
-        internal static ExcelDataManager? Excel
-        {
-            get
-            {
-                if (Hub.s == null || HubDatamanProperty?.GetValue(Hub.s) is not DataManager dataman)
-                {
-                    return null;
-                }
-
-                return dataman.ExcelDataManager;
-            }
-        }
+        internal static ExcelDataManager? Excel => HubGameDataAccess.Excel;
 
         internal static List<int> GetFilteredActiveDungeonIds(HashSet<int> allowlist, HashSet<int> blocklist)
         {

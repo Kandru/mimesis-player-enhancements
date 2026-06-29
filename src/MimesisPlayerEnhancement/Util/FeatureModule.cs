@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
@@ -95,6 +96,8 @@ namespace MimesisPlayerEnhancement.Util
                 if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); } }, throttledUpdate: true),
             new FeatureModule("MoneyMultiplier", MoneyMultiplierPatches.Apply),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
+            new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
+                syncFromConfig: PlayerTuningApplier.RefreshFromConfig),
             new FeatureModule("DungeonRandomizer", DungeonRandomizerPatches.Apply),
             new FeatureModule("WebDashboard", WebDashboardServer.Apply,
                 syncFromConfig: WebDashboardServer.SyncFromConfig,

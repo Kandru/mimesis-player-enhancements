@@ -37,6 +37,7 @@ Remove older separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAn
 | **Loot Multiplicator** | Scale loot quantity by source and item type | No — host only |
 | **Money Multiplier** | Scale startup money, goals, scrap, shop prices, and more | No — host only |
 | **Dungeon Time** | Extend shift length for larger lobbies | No — host only |
+| **Player Tuning** | Scale move speed, stamina, and carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram pick, layout, map variant, and seed | No — host only |
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)

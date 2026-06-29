@@ -109,6 +109,14 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; private set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; private set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> MaxStaminaMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> StaminaDrainMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> StaminaRegenMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> StaminaRegenDelayMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<float> MaxCarryWeightMultiplier { get; private set; } = null!;
+
         public static MelonPreferences_Entry<bool> EnableDungeonRandomizer { get; private set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeDungeonPick { get; private set; } = null!;
         public static MelonPreferences_Entry<string> DungeonPickPoolMode { get; private set; } = null!;
@@ -140,6 +148,7 @@ namespace MimesisPlayerEnhancement
         private static MelonPreferences_Category _lootMultiplicatorCategory = null!;
         private static MelonPreferences_Category _moneyMultiplierCategory = null!;
         private static MelonPreferences_Category _dungeonTimeCategory = null!;
+        private static MelonPreferences_Category _playerTuningCategory = null!;
         private static MelonPreferences_Category _dungeonRandomizerCategory = null!;
         private static MelonPreferences_Category _webDashboardCategory = null!;
         private static MelonPreferences_Category _extendedSaveSlotsCategory = null!;
@@ -163,6 +172,7 @@ namespace MimesisPlayerEnhancement
             _lootMultiplicatorCategory = CreateCategory("MimesisPlayerEnhancement_LootMultiplicator", "Loot Multiplicator");
             _moneyMultiplierCategory = CreateCategory("MimesisPlayerEnhancement_MoneyMultiplier", "Money Multiplier");
             _dungeonTimeCategory = CreateCategory("MimesisPlayerEnhancement_DungeonTime", "Dungeon Time");
+            _playerTuningCategory = CreateCategory("MimesisPlayerEnhancement_PlayerTuning", "Player Tuning");
             _dungeonRandomizerCategory = CreateCategory("MimesisPlayerEnhancement_DungeonRandomizer", "Dungeon Randomizer");
             _webDashboardCategory = CreateCategory("MimesisPlayerEnhancement_WebDashboard", "Web Dashboard");
             _extendedSaveSlotsCategory = CreateCategory("MimesisPlayerEnhancement_ExtendedSaveSlots", "Extended Save Slots");
@@ -611,13 +621,55 @@ namespace MimesisPlayerEnhancement
                 "Dungeon Time Baseline Player Count",
                 "No extra shift time at or below this player count (vanilla is 4). Minimum is 1.");
 
-            ExtraShiftSecondsPerPlayerAboveBaseline = CreateTrackedEntry(_dungeonTimeCategory, 
+            ExtraShiftSecondsPerPlayerAboveBaseline = CreateTrackedEntry(_dungeonTimeCategory,
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
                 10f,
                 "Extra Shift Seconds Per Player Above Baseline",
                 "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
 
-            EnableDungeonRandomizer = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            EnablePlayerTuning = CreateTrackedEntry(_playerTuningCategory,
+                "EnablePlayerTuning",
+                false,
+                "Enable Player Tuning",
+                "Scale player move speed, stamina, and carry weight on the host. Joining clients do not need the mod.");
+
+            MoveSpeedMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "MoveSpeedMultiplier",
+                1f,
+                "Move Speed Multiplier",
+                "Scales walk and run base speed (1 = vanilla, 2 = double). Host only.");
+
+            MaxStaminaMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "MaxStaminaMultiplier",
+                1f,
+                "Max Stamina Multiplier",
+                "Scales maximum stamina (1 = vanilla, 2 = double). Host only.");
+
+            StaminaDrainMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "StaminaDrainMultiplier",
+                1f,
+                "Stamina Drain Multiplier",
+                "Scales sprint stamina cost per tick (1 = vanilla, 0.5 = half drain). Host only.");
+
+            StaminaRegenMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "StaminaRegenMultiplier",
+                1f,
+                "Stamina Regen Multiplier",
+                "Scales stamina recovered per regen tick (1 = vanilla, 2 = double). Host only.");
+
+            StaminaRegenDelayMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "StaminaRegenDelayMultiplier",
+                1f,
+                "Stamina Regen Delay Multiplier",
+                "Scales wait time before stamina regen starts after sprinting (1 = vanilla, 0.5 = regen starts sooner). Host only.");
+
+            MaxCarryWeightMultiplier = CreateTrackedEntry(_playerTuningCategory,
+                "MaxCarryWeightMultiplier",
+                1f,
+                "Max Carry Weight Multiplier",
+                "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity). Host only.");
+
+            EnableDungeonRandomizer = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "EnableDungeonRandomizer",
                 false,
                 "Enable Dungeon Randomizer",
@@ -877,6 +929,20 @@ namespace MimesisPlayerEnhancement
             ExtraShiftSecondsPerPlayerAboveBaseline.OnEntryValueChanged.Subscribe((_, value) =>
                 OnExtraShiftSecondsPerPlayerChanged(logger, value));
 
+            EnablePlayerTuning.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+            MoveSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, MoveSpeedMultiplier));
+            MaxStaminaMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, MaxStaminaMultiplier));
+            StaminaDrainMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, StaminaDrainMultiplier));
+            StaminaRegenMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, StaminaRegenMultiplier));
+            StaminaRegenDelayMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, StaminaRegenDelayMultiplier));
+            MaxCarryWeightMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, MaxCarryWeightMultiplier));
+
             EnableDungeonRandomizer.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             RandomizeDungeonPick.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             DungeonPickPoolMode.OnEntryValueChanged.Subscribe((_, value) => OnDungeonPickPoolModeChanged(logger, value));
@@ -994,6 +1060,12 @@ namespace MimesisPlayerEnhancement
                 ShopItemsMultiplier,
                 ReinforcePriceMultiplier,
                 ExtraShiftSecondsPerPlayerAboveBaseline,
+                MoveSpeedMultiplier,
+                MaxStaminaMultiplier,
+                StaminaDrainMultiplier,
+                StaminaRegenMultiplier,
+                StaminaRegenDelayMultiplier,
+                MaxCarryWeightMultiplier,
             ]);
         }
 
@@ -1068,6 +1140,31 @@ namespace MimesisPlayerEnhancement
             }
 
             ModConfigFloatHelper.SanitizeEntry(MapPlacedEncounterMinPlayerDistanceMeters);
+            NotifyChanged();
+        }
+
+        private static void OnPlayerTuningMultiplierChanged(
+            MelonLogger.Instance logger,
+            float value,
+            MelonPreferences_Entry<float> entry)
+        {
+            if (value < Features.PlayerTuning.PlayerTuningResolver.MinMultiplier)
+            {
+                logger.Warning(
+                    $"{entry.Identifier} must be at least {Features.PlayerTuning.PlayerTuningResolver.MinMultiplier}; resetting.");
+                entry.Value = Features.PlayerTuning.PlayerTuningResolver.MinMultiplier;
+                return;
+            }
+
+            if (value > Features.PlayerTuning.PlayerTuningResolver.MaxMultiplier)
+            {
+                logger.Warning(
+                    $"{entry.Identifier} must be at most {Features.PlayerTuning.PlayerTuningResolver.MaxMultiplier}; resetting.");
+                entry.Value = Features.PlayerTuning.PlayerTuningResolver.MaxMultiplier;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(entry);
             NotifyChanged();
         }
 

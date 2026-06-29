@@ -38,6 +38,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, scrap/sell values, shop buy prices, shop item count, and reinforce costs | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by real seconds per player above a baseline (default: +10s per player above 4) | No — host only |
+| **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
@@ -272,6 +273,20 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
+### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
+
+Host-only. Scales player movement and stamina on the server. Joining clients do not need the mod — stats sync from the host automatically. Multipliers use `1.0` for vanilla; valid range is `0.1`–`5.0`. Changes apply at runtime when config is saved (host reloads player stats).
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnablePlayerTuning` | bool | `false` | Master toggle for all player tuning below. |
+| `MoveSpeedMultiplier` | float | `1.0` | Scales walk and run base speed. |
+| `MaxStaminaMultiplier` | float | `1.0` | Scales maximum stamina. |
+| `StaminaDrainMultiplier` | float | `1.0` | Scales sprint stamina cost per tick (`0.5` = half drain). |
+| `StaminaRegenMultiplier` | float | `1.0` | Scales stamina recovered per regen tick. |
+| `StaminaRegenDelayMultiplier` | float | `1.0` | Scales wait before regen starts after sprinting (`0.5` = regen starts sooner). |
+| `MaxCarryWeightMultiplier` | float | `1.0` | Scales carry capacity before encumbrance slows movement. |
+
 ### Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
 
 Host-only. Randomizes dungeon selection at four independent layers when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on. Each layer has its own toggle so you can randomize only what you want.
@@ -381,6 +396,15 @@ StartupMoneyMultiplier = 1.0
 EnableDungeonTime = true
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
+
+[MimesisPlayerEnhancement_PlayerTuning]
+EnablePlayerTuning = false
+MoveSpeedMultiplier = 1.0
+MaxStaminaMultiplier = 1.0
+StaminaDrainMultiplier = 1.0
+StaminaRegenMultiplier = 1.0
+StaminaRegenDelayMultiplier = 1.0
+MaxCarryWeightMultiplier = 1.0
 
 [MimesisPlayerEnhancement_DungeonRandomizer]
 EnableDungeonRandomizer = false

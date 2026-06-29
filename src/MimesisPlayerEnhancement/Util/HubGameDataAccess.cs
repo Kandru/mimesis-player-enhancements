@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Util
 {
     internal static class HubGameDataAccess
     {
