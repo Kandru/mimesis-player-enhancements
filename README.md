@@ -92,7 +92,7 @@ Host-only. Raise the vanilla 4-player session cap.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableMorePlayers` | bool | `true` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
+| `EnableMorePlayers` | bool | `false` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
 
 ### More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
@@ -163,7 +163,7 @@ Upgrading from older configs: legacy `FixedSpawnRespawn*` keys are copied once a
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableSpawnScaling` | bool | `true` | Master toggle for all spawn scaling below. |
+| `EnableSpawnScaling` | bool | `false` | Master toggle for all spawn scaling below. |
 | `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
 | `MimicSpawnMultiplier` | float | `1.0` | Total mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). Minimum is `0`. |
 | `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | Player-count scaling for boss spawns (stacks with `BossSpawnMultiplier`). |
@@ -249,7 +249,7 @@ Does **not** change saved player balances on load or mid-round currency pickups.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableMoneyMultiplier` | bool | `true` | Master toggle for all money scaling below. |
+| `EnableMoneyMultiplier` | bool | `false` | Master toggle for all money scaling below. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | Startup money multiplier. Minimum is `0`. |
 | `AutoScaleRoundGoalMoneyByPlayerCount` | bool | `true` | Player-count scaling for stage target currency. |
@@ -282,7 +282,7 @@ Host-only. Multiplies vanilla timing when players press **E** to enter a room th
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableRoomEntryDelay` | bool | `true` | Master toggle for room entry timing multiplier. |
+| `EnableRoomEntryDelay` | bool | `false` | Master toggle for room entry timing multiplier. |
 | `RoomEntryDelayMultiplier` | float | `1.0` | Timing multiplier (`1` = vanilla, `0.5` = half as long, `2` = double). Valid range is `0.1`–`10.0`. |
 
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
@@ -335,7 +335,7 @@ Host-only. Randomizes dungeon selection at four independent layers when enabled.
 
 ### Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
-Host-only. Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). Off by default — set `EnableWebDashboard = true` to turn it on. The dashboard is available whenever the game is running with the web dashboard enabled (not only during an active session).
+Host-only. Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). On by default — set `EnableWebDashboard = false` to turn it off. The dashboard is available whenever the game is running with the web dashboard enabled (not only during an active session).
 
 **What you get:**
 
@@ -354,7 +354,7 @@ Listen address and port changes take effect when the config reloads (the HTTP se
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableWebDashboard` | bool | `false` | Turn the local web dashboard on or off. |
+| `EnableWebDashboard` | bool | `true` | Turn the local web dashboard on or off. |
 | `WebDashboardListenAddress` | string | `127.0.0.1` | HTTP bind address. Use `127.0.0.1` for local-only access. |
 | `WebDashboardListenPort` | int | `8001` | TCP port for the web dashboard. Must be `1`–`65535`. |
 
@@ -368,7 +368,7 @@ ModToastDurationSeconds = 5.0
 EnableDebugLogging = false
 
 [MimesisPlayerEnhancement_MorePlayers]
-EnableMorePlayers = true
+EnableMorePlayers = false
 MaxPlayers = 32
 
 [MimesisPlayerEnhancement_MoreVoices]
@@ -392,7 +392,7 @@ ShowPlayerAnnouncements = true
 EnableJoinAnytime = true
 
 [MimesisPlayerEnhancement_SpawnScaling]
-EnableSpawnScaling = true
+EnableSpawnScaling = false
 MimicSpawnMultiplier = 1.0
 # … other spawn keys …
 
@@ -402,7 +402,7 @@ MapConsumableLootMultiplier = 1.0
 # … other loot keys …
 
 [MimesisPlayerEnhancement_MoneyMultiplier]
-EnableMoneyMultiplier = true
+EnableMoneyMultiplier = false
 StartupMoneyMultiplier = 1.0
 # … other money keys …
 
@@ -412,7 +412,7 @@ DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
 
 [MimesisPlayerEnhancement_RoomEntryDelay]
-EnableRoomEntryDelay = true
+EnableRoomEntryDelay = false
 RoomEntryDelayMultiplier = 1.0
 
 [MimesisPlayerEnhancement_PlayerTuning]
@@ -430,7 +430,7 @@ RandomizeDungeonPick = true
 DungeonPickPoolMode = "WidenVanilla"
 
 [MimesisPlayerEnhancement_WebDashboard]
-EnableWebDashboard = false
+EnableWebDashboard = true
 WebDashboardListenAddress = "127.0.0.1"
 WebDashboardListenPort = 8001
 ```

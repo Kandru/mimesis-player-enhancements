@@ -196,7 +196,7 @@ namespace MimesisPlayerEnhancement
 
             EnableMorePlayers = CreateTrackedEntry(_morePlayersCategory, 
                 "EnableMorePlayers",
-                true,
+                false,
                 "Enable More Players",
                 "Raise the multiplayer player cap above 4.");
 
@@ -286,7 +286,7 @@ namespace MimesisPlayerEnhancement
 
             EnableSpawnScaling = CreateTrackedEntry(_spawnScalingCategory, 
                 "EnableSpawnScaling",
-                true,
+                false,
                 "Enable Spawn Scaling",
                 "Scale dungeon monster spawn budgets by type. Host only.");
 
@@ -520,7 +520,7 @@ namespace MimesisPlayerEnhancement
 
             EnableMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "EnableMoneyMultiplier",
-                true,
+                false,
                 "Enable Money Multiplier",
                 "Scale startup money, round goal quota, scrap/sell values, shop buy prices, shop item count, and reinforce costs. Host only.");
 
@@ -634,7 +634,7 @@ namespace MimesisPlayerEnhancement
 
             EnableRoomEntryDelay = CreateTrackedEntry(_roomEntryDelayCategory,
                 "EnableRoomEntryDelay",
-                true,
+                false,
                 "Enable Room Entry Delay",
                 "Multiply hold/teleport timing for E-interaction room entry teleporters on the host.");
 
@@ -742,7 +742,7 @@ namespace MimesisPlayerEnhancement
 
             EnableWebDashboard = CreateTrackedEntry(_webDashboardCategory, 
                 "EnableWebDashboard",
-                false,
+                true,
                 "Enable Web Dashboard",
                 "Serve a local web UI for connected players and host moderation. Default bind is loopback only.");
 

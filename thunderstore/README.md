@@ -44,7 +44,7 @@ Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com
 
 ## Web dashboard
 
-While the game is running with the web dashboard enabled, the mod serves a **browser dashboard** — a companion web UI so you do not have to dig through config files for every tweak. Set `EnableWebDashboard = true` in config, then open `http://127.0.0.1:8001/` (default address and port).
+While the game is running, the mod serves a **browser dashboard** by default — a companion web UI so you do not have to dig through config files for every tweak. Open `http://127.0.0.1:8001/` (default address and port). Set `EnableWebDashboard = false` in config to disable it.
 
 The dashboard is not only for admin actions. From the same interface you can:
 
