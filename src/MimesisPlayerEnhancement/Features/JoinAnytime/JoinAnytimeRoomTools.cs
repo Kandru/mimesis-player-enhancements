@@ -20,12 +20,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly PropertyInfo? HubVworldProperty =
             typeof(Hub).GetProperty("vworld", InstanceFlags);
 
-        private static readonly FieldInfo? DungeonSessionEndTimeField =
-            typeof(DungeonRoom).GetField("_sessionEndTime", InstanceFlags);
-
-        private static readonly FieldInfo? DungeonCurrentTimeField =
-            typeof(DungeonRoom).GetField("_currentTime", InstanceFlags);
-
         internal static JoinAnytimeSessionPhase ResolveHostPhase()
         {
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
@@ -78,16 +72,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static bool TryGetActiveDungeonWaitMinutes(out int minutes)
         {
             minutes = 0;
-            if (DungeonSessionEndTimeField == null
-                || DungeonCurrentTimeField == null
-                || GetActiveDungeonRoom() is not DungeonRoom room)
-            {
-                return false;
-            }
-
-            long remainingMs = (long)DungeonSessionEndTimeField.GetValue(room)
-                - (long)DungeonCurrentTimeField.GetValue(room);
-            if (remainingMs <= 0)
+            if (GetActiveDungeonRoom() is not DungeonRoom room
+                || !DungeonRoomSessionTime.TryGetRemainingMilliseconds(room, out long remainingMs))
             {
                 return false;
             }

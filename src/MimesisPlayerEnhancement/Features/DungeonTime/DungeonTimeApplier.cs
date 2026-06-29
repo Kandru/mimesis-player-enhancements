@@ -1,18 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal static class DungeonTimeApplier
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo SessionEndTimeField =
-            AccessToolsField(typeof(DungeonRoom), "_sessionEndTime");
-
         private static readonly HashSet<DungeonRoom> AppliedRooms = [];
 
         internal static void EnsureApplied(DungeonRoom room)
@@ -22,21 +14,22 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            if (!ModConfig.EnableDungeonTime.Value)
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonTime.Value))
             {
                 _ = AppliedRooms.Add(room);
-                DungeonTimeLog.DebugSkipped("EnableDungeonTime is off");
+                if (!ModConfig.EnableDungeonTime.Value)
+                {
+                    DungeonTimeLog.DebugSkipped("EnableDungeonTime is off");
+                }
+                else
+                {
+                    DungeonTimeLog.DebugSkipped("not host");
+                }
+
                 return;
             }
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
-            {
-                _ = AppliedRooms.Add(room);
-                DungeonTimeLog.DebugSkipped("not host");
-                return;
-            }
-
-            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
+            int playerCount = room.GetMemberCount();
             long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount);
             if (bonusMs <= 0)
             {
@@ -45,17 +38,15 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            long endTime = (long)SessionEndTimeField.GetValue(room);
-            long newEndTime = endTime + bonusMs;
-            SessionEndTimeField.SetValue(room, newEndTime);
+            if (!DungeonRoomSessionTime.TryExtendEndTime(room, bonusMs, out long newEndTime))
+            {
+                _ = AppliedRooms.Add(room);
+                DungeonTimeLog.DebugSkipped("failed to extend session end time");
+                return;
+            }
+
             _ = AppliedRooms.Add(room);
             DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime);
-        }
-
-        private static FieldInfo AccessToolsField(Type type, string name)
-        {
-            FieldInfo field = type.GetField(name, InstanceFlags);
-            return field ?? throw new InvalidOperationException($"{type.Name}.{name} not found");
         }
     }
 }
