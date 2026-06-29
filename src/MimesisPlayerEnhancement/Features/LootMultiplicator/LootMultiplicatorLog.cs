@@ -42,11 +42,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 $"{multiplier:0.##}× (count {before} -> {after})");
         }
 
-        internal static void InfoDropTableScaled(int entriesChanged, int entriesAdded, int playerCount)
+        internal static void InfoDropTableScaled(int vanillaCount, int entriesAdded, int playerCount)
         {
             ModLog.Info(
                 Feature,
-                $"Drop table scaled — entriesChanged={entriesChanged}, entriesAdded={entriesAdded}, players={playerCount}");
+                $"Drop table scaled — vanillaEntries={vanillaCount}, entriesAdded={entriesAdded}, players={playerCount}");
         }
 
         internal static void DebugFieldScaled(string label, int before, int after, float multiplier)

@@ -83,6 +83,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> TriggerEquipmentLootMultiplier { get; private set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleTriggerMiscellanyLootByPlayerCount { get; private set; } = null!;
         public static MelonPreferences_Entry<float> TriggerMiscellanyLootMultiplier { get; private set; } = null!;
+        public static MelonPreferences_Entry<string> LootItemFilterMode { get; private set; } = null!;
+        public static MelonPreferences_Entry<string> LootAllowlist { get; private set; } = null!;
+        public static MelonPreferences_Entry<string> LootBlocklist { get; private set; } = null!;
+        public static MelonPreferences_Entry<bool> ConvertFakeActorDyingDropsToReal { get; private set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoneyMultiplier { get; private set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; private set; } = null!;
@@ -366,7 +370,7 @@ namespace MimesisPlayerEnhancement
                 "MapConsumableLootMultiplier",
                 1f,
                 "Map Consumable Loot Multiplier",
-                "Multiplier for consumables on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
+                "Multiplier for consumables on map spawn points: stack size on fixed markers and respawn count at room load. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
             AutoScaleMapEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleMapEquipmentLootByPlayerCount",
@@ -378,7 +382,7 @@ namespace MimesisPlayerEnhancement
                 "MapEquipmentLootMultiplier",
                 1f,
                 "Map Equipment Loot Multiplier",
-                "Multiplier for equipment on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling.");
+                "Multiplier for equipment on map spawn points: respawn count at room load and fixed-loot marker activation. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
             AutoScaleMapMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleMapMiscellanyLootByPlayerCount",
@@ -390,7 +394,7 @@ namespace MimesisPlayerEnhancement
                 "MapMiscellanyLootMultiplier",
                 1f,
                 "Map Miscellany Loot Multiplier",
-                "Multiplier for miscellany on map spawn points: stack size and respawn count at room load. 1 = vanilla, 2 = double. Fixed map loot (specific item at a marker) may also use unused loot markers and respawn at the same spot. Random loot pools only get stack/respawn scaling. Random pools use the dominant item type in the pool to pick a multiplier.");
+                "Multiplier for miscellany on map spawn points: respawn count at room load and fixed-loot marker activation. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
             AutoScaleDropConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropConsumableLootByPlayerCount",
@@ -402,7 +406,7 @@ namespace MimesisPlayerEnhancement
                 "DropConsumableLootMultiplier",
                 1f,
                 "Drop Consumable Loot Multiplier",
-                "Multiplier for consumables in enemy death drops: duplicates extra item IDs in the drop list and scales consumable stack count on spawn. 1 = vanilla, 2 = double.");
+                "Multiplier for consumables in enemy death drops: extra weighted re-rolls from the drop table and consumable stack count on spawn. 1 = vanilla, 2 = double.");
 
             AutoScaleDropEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropEquipmentLootByPlayerCount",
@@ -414,7 +418,7 @@ namespace MimesisPlayerEnhancement
                 "DropEquipmentLootMultiplier",
                 1f,
                 "Drop Equipment Loot Multiplier",
-                "Multiplier for equipment in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+                "Multiplier for equipment in enemy death drops: extra weighted re-rolls from the drop table. 1 = vanilla, 2 = double.");
 
             AutoScaleDropMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleDropMiscellanyLootByPlayerCount",
@@ -426,7 +430,7 @@ namespace MimesisPlayerEnhancement
                 "DropMiscellanyLootMultiplier",
                 1f,
                 "Drop Miscellany Loot Multiplier",
-                "Multiplier for miscellany in enemy death drops: duplicates extra item IDs in the drop list. Stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+                "Multiplier for miscellany in enemy death drops: extra weighted re-rolls from the drop table. 1 = vanilla, 2 = double.");
 
             AutoScaleTriggerConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerConsumableLootByPlayerCount",
@@ -438,7 +442,7 @@ namespace MimesisPlayerEnhancement
                 "TriggerConsumableLootMultiplier",
                 1f,
                 "Trigger Consumable Loot Multiplier",
-                "Multiplier for consumables from map events/triggers: scales consumable stack count when the item spawns. 1 = vanilla, 2 = double.");
+                "Multiplier for consumables from map events/triggers: extra weighted picks and consumable stack count on spawn. 1 = vanilla, 2 = double.");
 
             AutoScaleTriggerEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerEquipmentLootByPlayerCount",
@@ -450,7 +454,7 @@ namespace MimesisPlayerEnhancement
                 "TriggerEquipmentLootMultiplier",
                 1f,
                 "Trigger Equipment Loot Multiplier",
-                "Multiplier for equipment from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+                "Multiplier for equipment from map events/triggers: extra weighted picks from the event item table. 1 = vanilla, 2 = double.");
 
             AutoScaleTriggerMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
                 "AutoScaleTriggerMiscellanyLootByPlayerCount",
@@ -462,7 +466,31 @@ namespace MimesisPlayerEnhancement
                 "TriggerMiscellanyLootMultiplier",
                 1f,
                 "Trigger Miscellany Loot Multiplier",
-                "Multiplier for miscellany from map events/triggers: stack scaling on spawn is best-effort for non-consumables. 1 = vanilla, 2 = double.");
+                "Multiplier for miscellany from map events/triggers: extra weighted picks from the event item table. 1 = vanilla, 2 = double.");
+
+            LootItemFilterMode = CreateTrackedEntry(_lootMultiplicatorCategory,
+                "LootItemFilterMode",
+                "All",
+                "Loot Item Filter Mode",
+                "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist.");
+
+            LootAllowlist = CreateTrackedEntry(_lootMultiplicatorCategory,
+                "LootAllowlist",
+                "",
+                "Loot Allowlist",
+                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly.");
+
+            LootBlocklist = CreateTrackedEntry(_lootMultiplicatorCategory,
+                "LootBlocklist",
+                "",
+                "Loot Blocklist",
+                "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly.");
+
+            ConvertFakeActorDyingDropsToReal = CreateTrackedEntry(_lootMultiplicatorCategory,
+                "ConvertFakeActorDyingDropsToReal",
+                false,
+                "Convert Fake Death Drops To Real",
+                "Mimics and other AI often drop fake decoy items from their inventory on death (ActorDying). Vanilla destroys these on pickup. When enabled, those ground drops become real loot. Monster drop-table loot is already real; many monsters have no drop table at all.");
 
             EnableMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
                 "EnableMoneyMultiplier",
@@ -812,6 +840,10 @@ namespace MimesisPlayerEnhancement
             TriggerConsumableLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerConsumableLootMultiplier));
             TriggerEquipmentLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerEquipmentLootMultiplier));
             TriggerMiscellanyLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, TriggerMiscellanyLootMultiplier));
+            LootItemFilterMode.OnEntryValueChanged.Subscribe((_, value) => OnLootItemFilterModeChanged(logger, value));
+            LootAllowlist.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+            LootBlocklist.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
+            ConvertFakeActorDyingDropsToReal.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
 
             EnableMoneyMultiplier.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
             AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged());
@@ -1047,6 +1079,20 @@ namespace MimesisPlayerEnhancement
             {
                 logger.Warning("DungeonPickPoolMode must be WidenVanilla or AllActiveUniform; resetting to WidenVanilla.");
                 DungeonPickPoolMode.Value = "WidenVanilla";
+                return;
+            }
+
+            NotifyChanged();
+        }
+
+        private static void OnLootItemFilterModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!string.Equals(value, "All", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "AllowlistOnly", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "BlocklistOnly", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.Warning("LootItemFilterMode must be All, AllowlistOnly, or BlocklistOnly; resetting to All.");
+                LootItemFilterMode.Value = "All";
                 return;
             }
 

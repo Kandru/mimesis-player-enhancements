@@ -45,7 +45,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
                 source,
                 itemType,
-                SessionPlayerCountHelper.ResolveFromRoom(room));
+                SessionPlayerCountHelper.ResolveFromRoom(room),
+                element.ItemMasterID);
 
             LootMultiplicatorLog.InfoRuntimeScaled(
                 source,

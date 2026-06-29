@@ -116,7 +116,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
 
                 ItemType itemType = ItemTypeLookup.GetItemType(masterId);
-                float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount);
+                float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                    LootSource.Map,
+                    itemType,
+                    playerCount,
+                    masterId);
                 int vanillaCount = group.Value.Count;
                 int targetTotal = LootMultiplierResolver.ScaleCount(vanillaCount, multiplier);
                 int need = targetTotal - vanillaCount;
@@ -141,8 +145,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
 
                 List<MapMarker_LootingObjectSpawnPoint> unusedMarkers =
-                    MapLootMarkerSpreader.CollectUnusedMarkers(masterId, usedMarkerIds);
-                MapLootMarkerSpreader.ShuffleMarkers(unusedMarkers);
+                    MapLootMarkerIndex.CollectUnusedMarkers(masterId, usedMarkerIds);
+                MapLootMarkerIndex.ShuffleMarkers(unusedMarkers);
 
                 int activated = ActivateUnusedMarkers(room, state, spawnDatas, template, unusedMarkers, need);
                 int remainingQuota = need - activated;

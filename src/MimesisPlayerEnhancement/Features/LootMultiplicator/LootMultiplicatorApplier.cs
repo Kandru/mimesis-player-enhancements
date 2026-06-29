@@ -128,15 +128,19 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         private static bool ScaleFixedLootSpawnData(FixedSpawnedActorData spawnData, int playerCount)
         {
             ItemType itemType = ItemTypeLookup.GetItemType(spawnData.MasterID);
-            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount);
-            // Stack count is scaled at spawn time via RuntimeLootScaler (ReasonOfSpawn.Spawn).
+            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                LootSource.Map,
+                itemType,
+                playerCount,
+                spawnData.MasterID);
+            bool scaleStackCount = itemType.Equals(ItemType.Consumable);
             return ScaleCommonSpawnFields(
                 spawnData,
                 spawnData.MasterID,
                 itemType,
                 multiplier,
                 "fixedLoot",
-                scaleStackCount: false);
+                scaleStackCount: scaleStackCount);
         }
 
         private static bool ScaleCommonSpawnFields(

@@ -183,9 +183,9 @@ Host-only. Each setting is a **source × item type** pair. The multiplier (`1` =
 
 | Prefix | Source | What it affects |
 |--------|--------|-----------------|
-| **Map** | Map spawn points | Loot placed when a dungeon room loads. **All** map loot slots: scales `StackCount` and `MaxRespawnCount`. **Fixed** loot (a specific item tied to a marker): may also activate unused loot markers of the same item and respawn at the same marker when picked up (uses `FixedSpawnRespawnDelay*` from Spawn Scaling). **Random** loot pools (weighted mix of items): only stack/respawn scaling; extra markers are not added. Random pools use the **dominant** item type in the pool to pick which multiplier applies. |
-| **Drop** | Enemy death drops | Items from enemy death tables when killed. Duplicates extra item IDs in the drop list (more separate drops). Also tries to scale stack count when the item spawns (`ActorDying`); stack scaling is reliable for **consumables**, less so for equipment/miscellany. |
-| **Trigger** | Map events / trigger volumes | Items spawned by map events (`EventAction` only). Tries to scale stack count when the item appears; stack scaling is reliable for **consumables**, less so for equipment/miscellany. |
+| **Map** | Map spawn points | Loot placed when a dungeon room loads. **Fixed** loot (specific item at a marker): activates unused loot markers of the same item, scales consumable stack size and `MaxRespawnCount`, and may respawn at the same marker when picked up (uses `FixedSpawnRespawnDelay*` from Spawn Scaling). **Random** loot pools (weighted mix from the dungeon table): scales the dungeon misc budget so more markers fill with **random picks from the pool** — not clones of the same item. |
+| **Drop** | Enemy death drops | Items from enemy death tables when a monster is killed, plus inventory items dropped on death. Adds extra **weighted re-rolls** from the same drop table (more separate drops, not same-item clones). Consumable stack count is also scaled when the item spawns (`ActorDying`). Mimics often drop **fake** decoy items from inventory — see `ConvertFakeActorDyingDropsToReal`. Monster drop-table loot is already real; many monsters have `drop_id = 0` (no table drops). |
+| **Trigger** | Map events / trigger volumes | Items spawned by map events (`EventAction`). Adds extra **weighted picks** from the event item table. Consumable stack count is scaled when the item appears. |
 
 **Item types** — from the game's item data (`Consumable`, `Equipment`, `Miscellany`):
 
@@ -218,8 +218,12 @@ Each source has three multiplier + auto-scale pairs (Consumable, Equipment, Misc
 | `TriggerEquipmentLootMultiplier` | float | `1.0` | Base multiplier for event/trigger equipment. Minimum is `0`. |
 | `AutoScaleTriggerMiscellanyLootByPlayerCount` | bool | `true` | Player-count scaling for miscellany from map events/triggers. |
 | `TriggerMiscellanyLootMultiplier` | float | `1.0` | Base multiplier for event/trigger miscellany. Minimum is `0`. |
+| `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, or `BlocklistOnly` — restrict which item master IDs are scaled. |
+| `LootAllowlist` | string | `""` | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. |
+| `LootBlocklist` | string | `""` | Comma-separated item master IDs to exclude. Used when `LootItemFilterMode` is `BlocklistOnly`. |
+| `ConvertFakeActorDyingDropsToReal` | bool | `false` | When enabled, fake items dropped on enemy death (`ActorDying`, e.g. mimic inventory decoys) become real pickup loot instead of vanishing on grab. |
 
-Does **not** scale: items you release from inventory, shop purchases, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot is scaled once at room load — not again when it spawns in the world.
+Does **not** scale: items you release from inventory, shop purchases, admin/cheat spawns, creature/monster spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot budgets and spawn data are scaled once at room load; drop/trigger extras use table re-rolls at spawn time.
 
 ### Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`
 

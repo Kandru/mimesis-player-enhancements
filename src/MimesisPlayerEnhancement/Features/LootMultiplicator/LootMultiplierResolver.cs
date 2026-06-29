@@ -56,12 +56,26 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static float GetEffectiveMultiplier(LootSource source, ItemType itemType, int playerCount)
         {
+            return GetEffectiveMultiplier(source, itemType, playerCount, masterId: 0);
+        }
+
+        internal static float GetEffectiveMultiplier(
+            LootSource source,
+            ItemType itemType,
+            int playerCount,
+            int masterId)
+        {
+            if (masterId > 0 && !LootItemFilter.IsEligible(masterId))
+            {
+                return 0f;
+            }
+
             return GetBaseMultiplier(source, itemType) * GetPlayerScale(source, itemType, playerCount);
         }
 
         internal static float GetEffectiveMultiplier(LootSource source, int masterId, int playerCount)
         {
-            return GetEffectiveMultiplier(source, ItemTypeLookup.GetItemType(masterId), playerCount);
+            return GetEffectiveMultiplier(source, ItemTypeLookup.GetItemType(masterId), playerCount, masterId);
         }
 
         internal static int ScaleCount(int vanilla, float multiplier)

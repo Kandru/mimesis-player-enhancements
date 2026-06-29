@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using Bifrost.ConstEnum;
+using Bifrost.Cooked;
 using HarmonyLib;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Util;
@@ -48,11 +51,19 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             return AccessTools.Method(typeof(IVroom), "ExecuteLootingObjectSpawn", [typeof(SpawnedActorData)]);
         }
 
+        private static MethodBase? ResolveRunEventActionInternalMethod()
+        {
+            return AccessTools.Method(typeof(IVroom), "RunEventActionInternal", [typeof(IGameAction), typeof(List<IGameActionParam>)]);
+        }
+
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("InitSpawn/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "InitSpawn")),
+                ("ManageSpawnData/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "ManageSpawnData")),
+                ("GetDropItemList/ItemDropInfo", AccessTools.Method(typeof(ItemDropInfo), "GetDropItemList")),
+                ("RunEventActionInternal/IVroom", ResolveRunEventActionInternalMethod()),
                 ("ExecuteLootingObjectSpawn/IVroom", ResolveExecuteLootingObjectSpawnMethod()),
                 ("SpawnLootingObject/IVroom", ResolveSpawnLootingObjectMethod()),
                 ("OnActorDead/SpawnedActorData", AccessTools.Method(typeof(SpawnedActorData), "OnActorDead")),
@@ -73,6 +84,114 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 catch (Exception ex)
                 {
                     ModLog.Warn(Feature, $"InitSpawn postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(DungeonRoom), "ManageSpawnData")]
+        public static class DungeonRoomManageSpawnDataTranspiler
+        {
+            private static readonly MethodInfo RollScaledBudgetMethod =
+                AccessTools.Method(typeof(RandomMapLootBudgetScaler), nameof(RandomMapLootBudgetScaler.RollScaledBudget))
+                ?? throw new InvalidOperationException("RandomMapLootBudgetScaler.RollScaledBudget not found");
+
+            private static readonly MethodInfo SimpleRandNextMethod =
+                AccessTools.Method(typeof(SimpleRandUtil), "Next", [typeof(int), typeof(int)])
+                ?? throw new InvalidOperationException("SimpleRandUtil.Next not found");
+
+            [HarmonyTranspiler]
+            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                List<CodeInstruction> codes = [.. instructions];
+
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    if (codes[i].opcode != OpCodes.Call
+                        || !ReferenceEquals(codes[i].operand, SimpleRandNextMethod))
+                    {
+                        continue;
+                    }
+
+                    if (!IsMiscBudgetRoll(codes, i))
+                    {
+                        continue;
+                    }
+
+                    codes.Insert(i, new CodeInstruction(OpCodes.Ldarg_0));
+                    codes[i + 1] = new CodeInstruction(OpCodes.Call, RollScaledBudgetMethod);
+                    break;
+                }
+
+                return codes;
+            }
+
+            private static bool IsMiscBudgetRoll(List<CodeInstruction> codes, int callIndex)
+            {
+                for (int j = Math.Max(0, callIndex - 8); j < callIndex; j++)
+                {
+                    if (codes[j].opcode == OpCodes.Ldfld
+                        && codes[j].operand is FieldInfo field
+                        && field.Name == "MiscMaxVal")
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(ItemDropInfo), "GetDropItemList")]
+        public static class ItemDropInfoGetDropItemListPatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ItemDropInfo __instance, List<int> __result)
+            {
+                try
+                {
+                    DropLootTableScaler.ScaleDropList(__instance, __result);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"GetDropItemList postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch]
+        public static class IVroomRunEventActionInternalPatch
+        {
+            public static MethodBase? TargetMethod()
+            {
+                return ResolveRunEventActionInternalMethod();
+            }
+
+            [HarmonyPostfix]
+            public static void Postfix(
+                IVroom __instance,
+                IGameAction action,
+                List<IGameActionParam> paramList,
+                bool __result)
+            {
+                if (!__result || action is not GameActionSpawnItem spawnAction)
+                {
+                    return;
+                }
+
+                try
+                {
+                    GameActionParamPosition? positionParam =
+                        GameActionParamHelper.FindParam<GameActionParamPosition>(paramList);
+                    if (positionParam == null)
+                    {
+                        return;
+                    }
+
+                    TriggerLootTableScaler.TrySpawnExtraItems(__instance, spawnAction, positionParam);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"RunEventActionInternal trigger loot scaling failed — {ex.Message}");
                 }
             }
         }
@@ -134,7 +253,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 try
                 {
                     int playerCount = dungeonRoom.GetMemberCount();
-                    float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount);
+                    float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                        LootSource.Map,
+                        itemType,
+                        playerCount,
+                        masterId);
                     bool scalingApplied = LootMultiplicatorApplier.IsApplied(dungeonRoom);
                     string itemName = masterId > 0 ? ItemTypeLookup.GetDisplayName(masterId) : spawnedActorData.Name;
                     int stackCount = ExtractStackCount(spawnedActorData);
@@ -178,7 +301,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             [HarmonyPrefix]
             public static bool Prefix(
                 IVroom __instance,
-                ItemElement element,
+                ref ItemElement element,
                 ReasonOfSpawn reasonOfSpawn,
                 int spawnPointIndex,
                 bool isRestored,
@@ -191,6 +314,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
                 try
                 {
+                    FakeLootDropConverter.TryConvertActorDyingDrop(__instance, ref element, reasonOfSpawn);
+                    if (element == null)
+                    {
+                        __result = 0;
+                        return false;
+                    }
+
                     if (!LootSpawnScalingContext.IsDuplicating
                         && __instance is DungeonRoom dungeonRoom
                         && spawnPointIndex != 0
@@ -230,28 +360,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 bool isRestored,
                 int __result)
             {
-                if (__result > 0)
-                {
-                    try
-                    {
-                        LootPileDuplicator.TrySpawnExtraPiles(
-                            __instance,
-                            element,
-                            pos,
-                            isIndoor,
-                            reasonOfSpawn,
-                            spawnPointIndex,
-                            prevProjectileActorID,
-                            projectileDropTime,
-                            ignoreNav,
-                            isRestored);
-                    }
-                    catch (Exception ex)
-                    {
-                        ModLog.Warn(Feature, $"SpawnLootingObject pile duplication failed — {ex.Message}");
-                    }
-                }
-
                 if (!ModConfig.EnableDebugLogging.Value || !ModConfig.EnableLootMultiplicator.Value)
                 {
                     return;
@@ -267,7 +375,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 int masterId = element.ItemMasterID;
                 string itemName = ItemTypeLookup.GetDisplayName(masterId);
                 int playerCount = SessionPlayerCountHelper.ResolveFromRoom(__instance);
-                float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(source, itemType, playerCount);
+                float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                    source,
+                    itemType,
+                    playerCount,
+                    masterId);
                 bool scalingApplied = dungeonRoom != null && LootMultiplicatorApplier.IsApplied(dungeonRoom);
                 int stackCount = ItemElementStackHelper.GetStackCount(element);
 

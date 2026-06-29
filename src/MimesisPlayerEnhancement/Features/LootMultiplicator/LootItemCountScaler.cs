@@ -53,7 +53,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(source, itemType, playerCount);
+            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                source,
+                itemType,
+                playerCount,
+                masterId);
             if (multiplier <= 1f)
             {
                 return false;
