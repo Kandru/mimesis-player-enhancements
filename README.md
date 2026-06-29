@@ -64,6 +64,8 @@ After the first launch, the mod creates a config file here:
 
 You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
 
+**Per-save overrides:** When you host a campaign, the web dashboard **Settings** tab (in-game nav) can store differences from global defaults in `Save/{SteamID}/MimesisData/Slot{N}/MimesisPlayerEnhancement.overrides.cfg`. Only keys that differ from global are written; setting a value back to the global default removes it from that file.
+
 **Float values:** Most multipliers, timers, and similar settings are floats — not just whole numbers. Values like `0.1`, `1.5`, or `2.5` are valid (`0.1` = 10% of vanilla where `1` = vanilla). On load the mod normalizes saved floats to one or two decimal places (e.g. `1` → `1.0`, `1.22222` → `1.22`).
 
 Settings are grouped into TOML sections in the config file:
@@ -333,12 +335,14 @@ Host-only. Randomizes dungeon selection at four independent layers when enabled.
 
 ### Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
-Host-only. Serves a local HTTP dashboard from the game process while a session is active. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). Off by default — set `EnableWebDashboard = true` to turn it on.
+Host-only. Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). Off by default — set `EnableWebDashboard = true` to turn it on. The dashboard is available whenever the game is running with the web dashboard enabled (not only during an active session).
 
 **What you get:**
 
 | View | Who can see it | What it shows |
 |------|----------------|---------------|
+| **Global Settings** | Host (or idle before session) | Edit `UserData/MimesisPlayerEnhancement.cfg` defaults from the header menu |
+| **Settings** | Host in an active save | Per-save-slot overrides (`MimesisData/Slot{N}/MimesisPlayerEnhancement.overrides.cfg`); keys matching global are omitted automatically |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
 | **Leaderboard** | Host only | Per-save-slot stats leaderboard (requires **Statistics** enabled) |
 | **Player stats** | Host only | Per-player statistics for the active save slot (requires **Statistics** enabled) |

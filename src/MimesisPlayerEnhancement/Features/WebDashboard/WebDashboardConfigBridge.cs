@@ -1,12 +1,19 @@
 using System.Collections.Generic;
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
+    internal enum WebDashboardConfigScope
+    {
+        Global,
+        Save,
+    }
+
     internal static class WebDashboardConfigBridge
     {
-        internal static WebDashboardSettingsDto BuildSettings()
+        internal static WebDashboardSettingsDto BuildGlobalSettings()
         {
             if (!ModConfig.IsInitialized)
             {
@@ -14,9 +21,176 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     ConfigPath = ModConfig.FilePath,
                     ConfigVersion = ModConfig.Version,
+                    Scope = "global",
                 };
             }
 
+            return new WebDashboardSettingsDto
+            {
+                ConfigPath = ModConfig.FilePath,
+                ConfigVersion = ModConfig.Version,
+                Scope = "global",
+                Sections = BuildSections(includeGlobalOnly: true, saveSlotId: -1, saveScope: false),
+            };
+        }
+
+        internal static WebDashboardSettingsDto BuildSaveSettings(int slotId)
+        {
+            string? overridePath = SaveSlotConfigStore.GetOverrideFilePath(slotId);
+            if (!ModConfig.IsInitialized)
+            {
+                return new WebDashboardSettingsDto
+                {
+                    ConfigPath = overridePath ?? "",
+                    ConfigVersion = ModConfig.Version,
+                    SaveSlotId = slotId,
+                    Scope = "save",
+                };
+            }
+
+            return new WebDashboardSettingsDto
+            {
+                ConfigPath = overridePath ?? "",
+                ConfigVersion = ModConfig.Version,
+                SaveSlotId = slotId,
+                Scope = "save",
+                Sections = BuildSections(includeGlobalOnly: false, saveSlotId: slotId, saveScope: true),
+            };
+        }
+
+        internal static WebDashboardConfigUpdateResult ApplyGlobalUpdate(string sectionId, string key, string value)
+        {
+            if (!ModConfig.IsInitialized)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = "Configuration is not initialized.",
+                };
+            }
+
+            ModConfig.ReloadGlobalFromFile();
+
+            if (!ModConfig.TrySetEntryValue(sectionId, key, value, out string? error))
+            {
+                if (SaveSlotConfigStore.ActiveSlotId >= 0)
+                {
+                    SaveSlotConfigStore.ApplyOverridesToRuntime(SaveSlotConfigStore.ActiveSlotId);
+                }
+
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = error ?? "Invalid value.",
+                };
+            }
+
+            ModConfig.SanitizeFloatEntries();
+            ModConfig.SaveToFile();
+
+            if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string savedGlobalValue))
+            {
+                savedGlobalValue = value;
+            }
+
+            int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
+            if (activeSlotId < 0 && MimesisSaveManager.TryGetActiveSaveSlotId(out int resolvedSlotId))
+            {
+                activeSlotId = resolvedSlotId;
+            }
+
+            if (activeSlotId >= 0)
+            {
+                SaveSlotConfigStore.ClearOverrideKey(activeSlotId, sectionId, key);
+                SaveSlotConfigStore.PruneMatchingGlobal(activeSlotId);
+                SaveSlotConfigStore.ApplyOverridesToRuntime(activeSlotId);
+            }
+            else
+            {
+                ModConfig.NotifyRuntimeChanged();
+            }
+
+            return BuildUpdateResult(sectionId, key, savedGlobalValue, "Saved to global config.");
+        }
+
+        internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
+        {
+            if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, value, out string? error))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = error ?? "Invalid value.",
+                };
+            }
+
+            if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = true,
+                    Message = "Saved to save slot overrides.",
+                };
+            }
+
+            string effectiveValue = ModConfigRegistry.FormatEntryValue(entry);
+            bool isOverridden = SaveSlotConfigStore.IsOverridden(slotId, sectionId, key);
+            return BuildSaveUpdateResult(sectionId, key, effectiveValue, isOverridden, entry);
+        }
+
+        private static WebDashboardConfigUpdateResult BuildUpdateResult(
+            string sectionId,
+            string key,
+            string savedValue,
+            string message)
+        {
+            if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = true,
+                    Message = message,
+                    SectionId = sectionId,
+                    Key = key,
+                    Value = savedValue,
+                };
+            }
+
+            return new WebDashboardConfigUpdateResult
+            {
+                Success = true,
+                Message = message,
+                SectionId = sectionId,
+                Key = key,
+                Value = savedValue,
+                Type = entry.GetReflectedType()?.Name ?? "Unknown",
+            };
+        }
+
+        private static WebDashboardConfigUpdateResult BuildSaveUpdateResult(
+            string sectionId,
+            string key,
+            string effectiveValue,
+            bool isOverridden,
+            MelonPreferences_Entry entry)
+        {
+            return new WebDashboardConfigUpdateResult
+            {
+                Success = true,
+                Message = "Saved to save slot overrides.",
+                SectionId = sectionId,
+                Key = key,
+                Value = effectiveValue,
+                Type = entry.GetReflectedType()?.Name ?? "Unknown",
+                IsOverridden = isOverridden,
+            };
+        }
+
+        private static List<WebDashboardConfigSectionDto> BuildSections(
+            bool includeGlobalOnly,
+            int saveSlotId,
+            bool saveScope)
+        {
             List<WebDashboardConfigSectionDto> sections = [];
 
             foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
@@ -39,14 +213,36 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         continue;
                     }
 
+                    bool allowSaveOverride = ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key);
+                    if (saveScope && !allowSaveOverride)
+                    {
+                        continue;
+                    }
+
+                    if (!includeGlobalOnly && !allowSaveOverride)
+                    {
+                        continue;
+                    }
+
+                    string globalValue = ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string globalRaw)
+                        ? globalRaw
+                        : ModConfigRegistry.FormatEntryDefaultValue(entry);
+
+                    bool isOverridden = saveScope
+                        && SaveSlotConfigStore.IsOverridden(saveSlotId, sectionId, key);
+
                     section.Entries.Add(new WebDashboardConfigEntryDto
                     {
                         Key = entry.Identifier,
                         Title = entry.DisplayName ?? entry.Identifier,
                         Description = entry.Description ?? "",
                         Type = entry.GetReflectedType()?.Name ?? "Unknown",
-                        Value = ModConfigRegistry.FormatEntryValue(entry),
+                        Value = saveScope
+                            ? ModConfigRegistry.FormatEntryValue(entry)
+                            : globalValue,
                         DefaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry),
+                        GlobalValue = globalValue,
+                        IsOverridden = isOverridden,
                         IsHidden = entry.IsHidden,
                     });
                 }
@@ -57,52 +253,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            return new WebDashboardSettingsDto
-            {
-                ConfigPath = ModConfig.FilePath,
-                ConfigVersion = ModConfig.Version,
-                Sections = sections,
-            };
-        }
-
-        internal static WebDashboardConfigUpdateResult ApplyUpdate(string sectionId, string key, string value)
-        {
-            if (!ModConfig.IsInitialized)
-            {
-                return new WebDashboardConfigUpdateResult
-                {
-                    Success = false,
-                    Message = "Configuration is not initialized.",
-                };
-            }
-
-            if (!ModConfig.TrySetEntryValue(sectionId, key, value, out string? error))
-            {
-                return new WebDashboardConfigUpdateResult
-                {
-                    Success = false,
-                    Message = error ?? "Invalid value.",
-                };
-            }
-
-            ModConfig.SanitizeFloatEntries();
-            ModConfig.SaveToFile();
-
-            return !ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null
-                ? new WebDashboardConfigUpdateResult
-                {
-                    Success = true,
-                    Message = "Saved.",
-                }
-                : new WebDashboardConfigUpdateResult
-                {
-                    Success = true,
-                    Message = "Saved.",
-                    SectionId = sectionId,
-                    Key = key,
-                    Value = ModConfigRegistry.FormatEntryValue(entry),
-                    Type = entry.GetReflectedType()?.Name ?? "Unknown",
-                };
+            return sections;
         }
     }
 }

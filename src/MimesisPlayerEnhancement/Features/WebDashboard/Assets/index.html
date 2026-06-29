@@ -20,8 +20,18 @@
           </h1>
           <p class="app-subtitle" x-text="subtitle"></p>
         </div>
-        <a class="app-header-link" href="#/donation" x-show="route !== 'donation'">Donation</a>
-        <a class="app-header-link app-header-link-back" :href="donationBackHref" x-show="route === 'donation'">&larr; Back</a>
+        <nav class="app-header-actions" aria-label="Dashboard navigation">
+          <a class="app-header-link"
+             href="#/players"
+             x-show="status.isConnected"
+             :class="{ active: isGameRoute }">Game</a>
+          <a class="app-header-link"
+             href="#/global-settings"
+             :class="{ active: route === 'global-settings' }">Global Settings</a>
+          <a class="app-header-link"
+             href="#/donation"
+             :class="{ active: route === 'donation' }">Donation</a>
+        </nav>
       </div>
     </header>
 
@@ -86,7 +96,7 @@
           </div>
 
           <!-- Waiting -->
-          <div x-show="!status.isConnected && route !== 'donation'" class="waiting-panel">
+          <div x-show="!status.isConnected && route !== 'donation' && route !== 'global-settings'" class="waiting-panel">
             <div class="waiting-card">
               <div class="spinner" role="progressbar" aria-label="Waiting for game"></div>
               <h2>Not connected</h2>
@@ -345,7 +355,115 @@
             </div>
           </template>
 
-          <!-- Settings -->
+          <!-- Global settings -->
+          <div x-show="route === 'global-settings'" x-cloak>
+            <div class="settings-page">
+              <h2 class="page-heading">Global Settings</h2>
+              <p class="settings-intro" x-text="settingsIntro()"></p>
+
+              <template x-if="settingsGlobal">
+                <div class="settings-toolbar surface-card">
+                  <div class="settings-path">
+                    <span class="settings-path-label">Config file</span>
+                    <code class="settings-path-value" x-text="settingsGlobal.configPath || '—'"></code>
+                  </div>
+                  <label class="settings-search-wrap">
+                    <span class="visually-hidden">Filter settings</span>
+                    <input type="search"
+                           class="settings-search"
+                           placeholder="Search keys, titles, values…"
+                           x-model="settingsQuery"
+                           autocomplete="off"
+                           spellcheck="false">
+                  </label>
+                </div>
+              </template>
+
+              <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
+              <div class="loading-panel" x-show="loadingSettings && !pageError && route === 'global-settings'">
+                <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
+              </div>
+
+              <div class="empty-state" x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections().length === 0">
+                <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
+              </div>
+
+              <div class="settings-sections" x-show="!loadingSettings && !pageError && route === 'global-settings' && filteredSections().length > 0">
+                <template x-for="section in filteredSections()" :key="section.id">
+                  <section class="settings-section surface-card">
+                    <header class="settings-section-header">
+                      <h3 class="settings-section-title" x-text="section.title"></h3>
+                      <span class="settings-section-count" x-text="section.entries.length + ' keys'"></span>
+                    </header>
+                    <div class="settings-entries">
+                      <template x-for="entry in section.entries" :key="entry.key">
+                        <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden }">
+                          <div class="settings-entry-main">
+                            <div class="settings-entry-head">
+                              <strong class="settings-entry-title" x-text="entry.title"></strong>
+                              <span class="settings-type-pill" x-text="entry.type"></span>
+                              <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
+                            </div>
+                            <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
+                            <code class="settings-key" x-text="entry.key"></code>
+                          </div>
+                          <div class="settings-entry-value-wrap">
+                            <template x-if="entry.type === 'Boolean'">
+                              <select class="settings-input settings-select"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)"
+                                      :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry)"
+                                      @change="onBooleanSettingChange(section.id, entry, $event)">
+                                <option value="true">On</option>
+                                <option value="false">Off</option>
+                              </select>
+                            </template>
+                            <template x-if="entry.type === 'Int32'">
+                              <input type="number"
+                                     class="settings-input"
+                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                     :id="settingInputId(section.id, entry)"
+                                     step="1"
+                                     inputmode="numeric"
+                                     :value="settingDraftValue(entry)"
+                                     :disabled="isSavingSetting(section.id, entry)"
+                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                            </template>
+                            <template x-if="entry.type === 'Single'">
+                              <input type="number"
+                                     class="settings-input"
+                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                     :id="settingInputId(section.id, entry)"
+                                     step="any"
+                                     inputmode="decimal"
+                                     :value="settingDraftValue(entry)"
+                                     :disabled="isSavingSetting(section.id, entry)"
+                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                            </template>
+                            <template x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                              <input type="text"
+                                     class="settings-input"
+                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                     :id="settingInputId(section.id, entry)"
+                                     :value="settingDraftValue(entry)"
+                                     :disabled="isSavingSetting(section.id, entry)"
+                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                            </template>
+                            <small class="settings-default-hint"
+                                   x-show="settingDiffersFromDefault(entry)"
+                                   x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
+                          </div>
+                        </article>
+                      </template>
+                    </div>
+                  </section>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save slot settings -->
           <template x-if="status.isConnected && route === 'settings'">
             <div>
             <template x-if="!status.isHost">
@@ -354,13 +472,13 @@
             <template x-if="status.isHost">
               <div class="settings-page">
                 <h2 class="page-heading">Settings</h2>
-                <p class="settings-intro">Edit mod configuration in real time. Changes are saved to the host config file and apply the next time the relevant game logic runs (or immediately for live settings such as player caps and the web dashboard bind).</p>
+                <p class="settings-intro" x-text="settingsIntro()"></p>
 
-                <template x-if="settings">
+                <template x-if="settingsSave">
                   <div class="settings-toolbar surface-card">
                     <div class="settings-path">
-                      <span class="settings-path-label">Config file</span>
-                      <code class="settings-path-value" x-text="settings.configPath || '—'"></code>
+                      <span class="settings-path-label">Override file</span>
+                      <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
                     </div>
                     <label class="settings-search-wrap">
                       <span class="visually-hidden">Filter settings</span>
@@ -379,7 +497,7 @@
                   <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
                 </div>
 
-                <div class="empty-state" x-show="!loadingSettings && !pageError && settings && filteredSections().length === 0">
+                <div class="empty-state" x-show="!loadingSettings && !pageError && settingsSave && filteredSections().length === 0">
                   <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
                 </div>
 
@@ -392,11 +510,12 @@
                       </header>
                       <div class="settings-entries">
                         <template x-for="entry in section.entries" :key="entry.key">
-                          <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden }">
+                          <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
                             <div class="settings-entry-main">
                               <div class="settings-entry-head">
                                 <strong class="settings-entry-title" x-text="entry.title"></strong>
                                 <span class="settings-type-pill" x-text="entry.type"></span>
+                                <span class="badge settings-override-badge" x-show="entry.isOverridden">Overridden</span>
                                 <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
                               </div>
                               <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
@@ -446,8 +565,8 @@
                                        @change="onTextSettingCommit(section.id, entry, $event)">
                               </template>
                               <small class="settings-default-hint"
-                                     x-show="settingDiffersFromDefault(entry)"
-                                     x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
+                                     x-show="settingDiffersFromGlobal(entry)"
+                                     x-text="'Global: ' + formatSettingValue({ type: entry.type, value: entry.globalValue })"></small>
                             </div>
                           </article>
                         </template>

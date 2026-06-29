@@ -44,11 +44,12 @@ Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com
 
 ## Web dashboard
 
-While you host a session, the mod can serve a **browser dashboard** — a companion web UI so you do not have to dig through config files for every tweak. Set `EnableWebDashboard = true` in config, start a session, then open `http://127.0.0.1:8001/` (default address and port).
+While the game is running with the web dashboard enabled, the mod serves a **browser dashboard** — a companion web UI so you do not have to dig through config files for every tweak. Set `EnableWebDashboard = true` in config, then open `http://127.0.0.1:8001/` (default address and port).
 
 The dashboard is not only for admin actions. From the same interface you can:
 
-- **Change settings on the fly** — edit mod config values in real time; changes are saved to the host config file and apply as the game picks them up (some settings, such as player caps, take effect immediately).
+- **Global Settings** (header) — edit default mod config anytime, even before joining a session; saved to `UserData/MimesisPlayerEnhancement.cfg`.
+- **Settings** (in-game nav, host only) — per-save-slot overrides stored sparsely under `MimesisData/Slot{N}/MimesisPlayerEnhancement.overrides.cfg`; values that match global are removed automatically.
 - **View statistics** — session leaderboard and per-player stats when Statistics is enabled.
 - **Use the minimap** — live dungeon layout and player positions during a run.
 - **Moderate the lobby** — kick, ban, and unban players (host only).

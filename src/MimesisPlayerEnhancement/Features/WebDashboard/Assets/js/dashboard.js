@@ -55,11 +55,10 @@ document.addEventListener('alpine:init', () => {
     players: [],
     leaderboard: null,
     playerStats: null,
-    settings: null,
+    settingsGlobal: null,
+    settingsSave: null,
     settingsQuery: '',
     route: 'waiting',
-    routeBeforeDonation: 'waiting',
-    routeBeforeDonationSteamId: null,
     steamId: null,
     toastMessage: '',
     toastVisible: false,
@@ -82,18 +81,16 @@ document.addEventListener('alpine:init', () => {
     minimapLastLayoutVersion: -1,
     minimapLastActiveAreaId: '',
 
-    get donationBackHref() {
-      if (!this.status.isConnected) {
-        return '#/waiting';
-      }
-      const route = this.routeBeforeDonation;
-      if (route === 'player' && this.routeBeforeDonationSteamId) {
-        return '#/player/' + this.routeBeforeDonationSteamId;
-      }
-      if (!route || route === 'donation' || route === 'waiting') {
-        return '#/players';
-      }
-      return '#/' + route;
+    get isGameRoute() {
+      return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
+    },
+
+    get activeSettings() {
+      return this.route === 'global-settings' ? this.settingsGlobal : this.settingsSave;
+    },
+
+    get activeSettingsScope() {
+      return this.route === 'global-settings' ? 'global' : 'save';
     },
 
     get pageTitle() {
@@ -168,6 +165,9 @@ document.addEventListener('alpine:init', () => {
       this.parseRoute();
       this.setConnectedMode();
       this.syncDocumentTitle();
+      if (this.route === 'global-settings') {
+        this.loadPageData(true);
+      }
       this.eventSource = Sse.connect(
         (payload) => {
           this.applySnapshot(payload);
@@ -192,7 +192,12 @@ document.addEventListener('alpine:init', () => {
     },
 
     ensureDefaultRoute() {
-      if (!this.status.isConnected && this.route !== 'waiting' && this.route !== 'donation') {
+      if (
+        !this.status.isConnected
+        && this.route !== 'waiting'
+        && this.route !== 'donation'
+        && this.route !== 'global-settings'
+      ) {
         location.hash = '#/waiting';
         this.parseRoute();
       } else if (
@@ -205,7 +210,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     setConnectedMode() {
-      const waitingLayout = !this.status.isConnected && this.route !== 'donation';
+      const waitingLayout = !this.status.isConnected
+        && this.route !== 'donation'
+        && this.route !== 'global-settings';
       document.body.classList.toggle('waiting', waitingLayout);
       document.body.classList.toggle('connected', this.status.isConnected);
     },
@@ -221,10 +228,6 @@ document.addEventListener('alpine:init', () => {
       const prevRoute = this.lastRoute;
       const prevSteam = this.lastSteamId;
       this.parseRoute();
-      if (this.route === 'donation' && prevRoute !== 'donation') {
-        this.routeBeforeDonation = prevRoute || (this.status.isConnected ? 'players' : 'waiting');
-        this.routeBeforeDonationSteamId = prevRoute === 'player' ? prevSteam : null;
-      }
       this.setConnectedMode();
       if (this.route !== prevRoute || this.steamId !== prevSteam) {
         this.loadPageData(true);
@@ -264,7 +267,7 @@ document.addEventListener('alpine:init', () => {
         this.players = [];
         this.leaderboard = null;
         this.playerStats = null;
-        this.settings = null;
+        this.settingsSave = null;
         this.minimapRaw = null;
         this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
       } else if (this.route === 'minimap' || this.route === 'player') {
@@ -280,7 +283,7 @@ document.addEventListener('alpine:init', () => {
       if (force) return true;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
-      if (this.route === 'settings') {
+      if (this.route === 'settings' || this.route === 'global-settings') {
         return this.status.configVersion !== this.lastConfigVersion;
       }
       if (this.route === 'player' && this.status.isHost) {
@@ -297,12 +300,15 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadPageData(force) {
-      if (!this.status.isConnected) {
+      const onGlobalSettings = this.route === 'global-settings';
+      const onSaveSettings = this.route === 'settings' && this.status.isHost;
+
+      if (!this.status.isConnected && !onGlobalSettings) {
         this.pageError = '';
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;
         this.lastSnapshotVersion = this.status.snapshotVersion;
-        this.lastConfigVersion = this.settings?.configVersion ?? this.status.configVersion;
+        this.lastConfigVersion = this.activeSettings?.configVersion ?? this.status.configVersion;
         return;
       }
 
@@ -313,7 +319,7 @@ document.addEventListener('alpine:init', () => {
 
       this.pageError = '';
       try {
-        if (this.route === 'player' && this.steamId && this.status.isHost) {
+        if (this.status.isConnected && this.route === 'player' && this.steamId && this.status.isHost) {
           const initialLoad = this.playerStats === null;
           if (initialLoad) this.loadingStats = true;
           try {
@@ -325,17 +331,31 @@ document.addEventListener('alpine:init', () => {
           this.playerStats = null;
         }
 
-        if (this.route === 'settings' && this.status.isHost) {
-          const initialLoad = this.settings === null;
+        if (onGlobalSettings) {
+          const initialLoad = this.settingsGlobal === null;
           if (initialLoad) this.loadingSettings = true;
           try {
-            this.settings = await Api.getSettings();
+            this.settingsGlobal = await Api.getGlobalSettings();
+          } finally {
+            if (initialLoad) this.loadingSettings = false;
+          }
+        } else if (this.route !== 'global-settings') {
+          this.settingsGlobal = null;
+        }
+
+        if (onSaveSettings) {
+          const initialLoad = this.settingsSave === null;
+          if (initialLoad) this.loadingSettings = true;
+          try {
+            this.settingsSave = await Api.getSaveSettings();
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
         } else if (this.route !== 'settings') {
-          this.settings = null;
-          this.settingsQuery = '';
+          this.settingsSave = null;
+          if (this.route !== 'global-settings') {
+            this.settingsQuery = '';
+          }
         }
 
         if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
@@ -348,8 +368,16 @@ document.addEventListener('alpine:init', () => {
       this.lastRoute = this.route;
       this.lastSteamId = this.steamId;
       this.lastSnapshotVersion = this.status.snapshotVersion;
-      this.lastConfigVersion = this.settings?.configVersion ?? this.status.configVersion;
+      this.lastConfigVersion = this.activeSettings?.configVersion ?? this.status.configVersion;
       this.restoreScroll(scrollY);
+    },
+
+    settingsIntro() {
+      if (this.route === 'global-settings') {
+        return 'Edit global mod defaults. These apply everywhere unless overridden for the active save slot.';
+      }
+      const slot = this.status.saveSlotId >= 0 ? this.status.saveSlotId : (this.settingsSave?.saveSlotId ?? '—');
+      return 'Edit settings for save slot ' + slot + '. Values matching global defaults are not stored in the save override file.';
     },
 
     resolveDisplayName(steamId) {
@@ -471,14 +499,22 @@ document.addEventListener('alpine:init', () => {
     },
 
     filteredSections() {
-      if (!this.settings || !this.settings.sections) return [];
+      const settings = this.activeSettings;
+      if (!settings || !settings.sections) return [];
       const q = this.settingsQuery.trim().toLowerCase();
       const sections = [];
-      for (const section of this.settings.sections) {
+      for (const section of settings.sections) {
         const entries = (section.entries || []).filter((entry) => {
           if (!q) return true;
-          return [entry.key, entry.title, entry.description, entry.value, entry.type, entry.defaultValue]
-            .some((v) => String(v || '').toLowerCase().includes(q));
+          return [
+            entry.key,
+            entry.title,
+            entry.description,
+            entry.value,
+            entry.type,
+            entry.defaultValue,
+            entry.globalValue,
+          ].some((v) => String(v || '').toLowerCase().includes(q));
         });
         if (entries.length > 0) {
           sections.push({ id: section.id, title: section.title, entries });
@@ -504,15 +540,22 @@ document.addEventListener('alpine:init', () => {
     },
 
     settingDiffersFromDefault(entry) {
+      if (this.activeSettingsScope === 'save') {
+        return this.settingDiffersFromGlobal(entry);
+      }
       return String(entry.value ?? '') !== String(entry.defaultValue ?? '');
     },
 
+    settingDiffersFromGlobal(entry) {
+      return String(entry.value ?? '') !== String(entry.globalValue ?? '');
+    },
+
     settingInputId(sectionId, entry) {
-      return sectionId + '--' + entry.key;
+      return this.activeSettingsScope + '--' + sectionId + '--' + entry.key;
     },
 
     isSavingSetting(sectionId, entry) {
-      return this.savingSettingKey === sectionId + '/' + entry.key;
+      return this.savingSettingKey === this.activeSettingsScope + '/' + sectionId + '/' + entry.key;
     },
 
     settingDraftValue(entry) {
@@ -524,21 +567,32 @@ document.addEventListener('alpine:init', () => {
     },
 
     async saveSetting(sectionId, entry, rawValue) {
-      const saveKey = sectionId + '/' + entry.key;
+      const scope = this.activeSettingsScope;
+      const saveKey = scope + '/' + sectionId + '/' + entry.key;
       if (this.savingSettingKey === saveKey) return;
 
+      const settings = this.activeSettings;
       const previousValue = entry.value;
+      const wasOverridden = entry.isOverridden;
       this.savingSettingKey = saveKey;
       try {
-        const res = await Api.updateSetting(sectionId, entry.key, String(rawValue));
+        const res = scope === 'global'
+          ? await Api.updateGlobalSetting(sectionId, entry.key, String(rawValue))
+          : await Api.updateSaveSetting(sectionId, entry.key, String(rawValue));
         entry.value = res.value ?? String(rawValue);
-        if (this.settings) {
-          this.settings.configVersion = this.status.configVersion;
+        if (scope === 'global') {
+          this.settingsSave = null;
+        } else {
+          entry.isOverridden = res.isOverridden ?? this.settingDiffersFromGlobal(entry);
+        }
+        if (settings) {
+          settings.configVersion = this.status.configVersion;
         }
         this.lastConfigVersion = this.status.configVersion;
         this.showToast(res.message || 'Saved');
       } catch (e) {
         entry.value = previousValue;
+        entry.isOverridden = wasOverridden;
         this.showToast(e.message || 'Failed to save setting');
         await this.loadPageData(true);
       } finally {

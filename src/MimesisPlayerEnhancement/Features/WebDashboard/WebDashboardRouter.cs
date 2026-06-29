@@ -87,21 +87,102 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            if (path == "/api/settings" && method == "GET")
+            if (path == "/api/settings/global" && method == "GET")
             {
-                if (!snapshot.Status.IsHost)
+                if (!WebDashboardGameState.CanEditGlobalSettings())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
                     return;
                 }
 
-                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildSettings()));
+                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildGlobalSettings()));
+                return;
+            }
+
+            if (path == "/api/settings/global" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditGlobalSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                WebDashboardConfigUpdateRequest? globalRequest = ModJson.Deserialize<WebDashboardConfigUpdateRequest>(ReadRequestBody(context.Request));
+                if (globalRequest == null
+                    || string.IsNullOrWhiteSpace(globalRequest.SectionId)
+                    || string.IsNullOrWhiteSpace(globalRequest.Key))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
+                    return;
+                }
+
+                WebDashboardConfigUpdateResult globalResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    WebDashboardConfigScope.Global,
+                    saveSlotId: -1,
+                    globalRequest.SectionId,
+                    globalRequest.Key,
+                    globalRequest.Value ?? "");
+
+                WriteJson(context, globalResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(globalResult));
+                return;
+            }
+
+            if (path == "/api/settings/save" && method == "GET")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                int saveSlotId = snapshot.Status.SaveSlotId;
+                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildSaveSettings(saveSlotId)));
+                return;
+            }
+
+            if (path == "/api/settings/save" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                WebDashboardConfigUpdateRequest? saveRequest = ModJson.Deserialize<WebDashboardConfigUpdateRequest>(ReadRequestBody(context.Request));
+                if (saveRequest == null
+                    || string.IsNullOrWhiteSpace(saveRequest.SectionId)
+                    || string.IsNullOrWhiteSpace(saveRequest.Key))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
+                    return;
+                }
+
+                WebDashboardConfigUpdateResult saveResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    WebDashboardConfigScope.Save,
+                    snapshot.Status.SaveSlotId,
+                    saveRequest.SectionId,
+                    saveRequest.Key,
+                    saveRequest.Value ?? "");
+
+                WriteJson(context, saveResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(saveResult));
+                return;
+            }
+
+            if (path == "/api/settings" && method == "GET")
+            {
+                if (!WebDashboardGameState.CanEditGlobalSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildGlobalSettings()));
                 return;
             }
 
             if (path == "/api/settings" && method == "POST")
             {
-                if (!snapshot.Status.IsHost)
+                if (!WebDashboardGameState.CanEditGlobalSettings())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
                     return;
@@ -118,6 +199,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 WebDashboardConfigUpdateResult result = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    WebDashboardConfigScope.Global,
+                    saveSlotId: -1,
                     request.SectionId,
                     request.Key,
                     request.Value ?? "");

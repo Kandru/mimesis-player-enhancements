@@ -80,6 +80,8 @@ namespace MimesisPlayerEnhancement
                     }
                 }
             }
+
+            SaveSlotConfigLifecycle.Tick();
         }
 
         public override void OnDeinitializeMelon()

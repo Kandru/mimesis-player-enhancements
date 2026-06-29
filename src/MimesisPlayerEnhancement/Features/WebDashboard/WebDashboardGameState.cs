@@ -1,4 +1,5 @@
 using MimesisPlayerEnhancement.Features.JoinAnytime;
+using MimesisPlayerEnhancement.Features.Persistence;
 using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -14,6 +15,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool IsHost()
         {
             return JoinAnytimeHub.GetPdata()?.ClientMode == ReluNetwork.ConstEnum.NetworkClientMode.Host;
+        }
+
+        internal static bool CanEditGlobalSettings()
+        {
+            return !IsConnected() || IsHost();
+        }
+
+        internal static bool CanEditSaveSettings()
+        {
+            return IsConnected() && IsHost() && GetSaveSlotId() >= 0;
         }
 
         internal static int GetSaveSlotId()

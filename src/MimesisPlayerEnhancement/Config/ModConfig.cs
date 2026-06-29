@@ -1005,6 +1005,24 @@ namespace MimesisPlayerEnhancement
             ModConfigRegistry.SaveToFile();
         }
 
+        /// <summary>Reload in-memory entries from the global config file on disk.</summary>
+        internal static void ReloadGlobalFromFile()
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            MainCategory.LoadFromFile(false);
+            SanitizeFloatEntries();
+        }
+
+        /// <summary>Notify listeners that runtime config changed without persisting global file.</summary>
+        internal static void NotifyRuntimeChanged()
+        {
+            NotifyChanged();
+        }
+
         /// <summary>Update a single preference by section and key. Validation runs through existing entry change handlers.</summary>
         public static bool TrySetEntryValue(string sectionId, string key, string value, out string? error)
         {

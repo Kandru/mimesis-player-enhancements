@@ -168,6 +168,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public string ConfigPath = "";
         public int ConfigVersion;
+        public int SaveSlotId = -1;
+        public string Scope = "";
         public List<WebDashboardConfigSectionDto> Sections = [];
     }
 
@@ -186,6 +188,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Type = "";
         public string Value = "";
         public string DefaultValue = "";
+        public string GlobalValue = "";
+        public bool IsOverridden;
         public bool IsHidden;
     }
 
@@ -204,5 +208,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Key = "";
         public string Value = "";
         public string Type = "";
+        public bool IsOverridden;
     }
 }

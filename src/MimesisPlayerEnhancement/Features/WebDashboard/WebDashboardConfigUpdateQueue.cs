@@ -10,10 +10,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly ConcurrentQueue<PendingUpdate> Pending = new();
 
-        internal static WebDashboardConfigUpdateResult EnqueueAndWait(string sectionId, string key, string value)
+        internal static WebDashboardConfigUpdateResult EnqueueAndWait(
+            WebDashboardConfigScope scope,
+            int saveSlotId,
+            string sectionId,
+            string key,
+            string value)
         {
             PendingUpdate pending = new()
             {
+                Scope = scope,
+                SaveSlotId = saveSlotId,
                 SectionId = sectionId,
                 Key = key,
                 Value = value,
@@ -41,10 +48,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 try
                 {
-                    pending.Result = WebDashboardConfigBridge.ApplyUpdate(
-                        pending.SectionId,
-                        pending.Key,
-                        pending.Value);
+                    pending.Result = pending.Scope switch
+                    {
+                        WebDashboardConfigScope.Global => WebDashboardConfigBridge.ApplyGlobalUpdate(
+                            pending.SectionId,
+                            pending.Key,
+                            pending.Value),
+                        WebDashboardConfigScope.Save => WebDashboardConfigBridge.ApplySaveUpdate(
+                            pending.SaveSlotId,
+                            pending.SectionId,
+                            pending.Key,
+                            pending.Value),
+                        _ => new WebDashboardConfigUpdateResult
+                        {
+                            Success = false,
+                            Message = "Unknown settings scope.",
+                        },
+                    };
                 }
                 catch (System.Exception ex)
                 {
@@ -63,6 +83,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private sealed class PendingUpdate
         {
+            internal WebDashboardConfigScope Scope;
+            internal int SaveSlotId;
             internal string SectionId = "";
             internal string Key = "";
             internal string Value = "";

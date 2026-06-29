@@ -14,12 +14,24 @@ const Api = {
     return res.json();
   },
 
-  async getSettings() {
-    return Api.fetchJson('/api/settings');
+  async getGlobalSettings() {
+    return Api.fetchJson('/api/settings/global');
   },
 
-  async updateSetting(sectionId, key, value) {
-    return Api.fetchJson('/api/settings', {
+  async updateGlobalSetting(sectionId, key, value) {
+    return Api.fetchJson('/api/settings/global', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sectionId, key, value }),
+    });
+  },
+
+  async getSaveSettings() {
+    return Api.fetchJson('/api/settings/save');
+  },
+
+  async updateSaveSetting(sectionId, key, value) {
+    return Api.fetchJson('/api/settings/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sectionId, key, value }),

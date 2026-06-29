@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using MelonLoader;
 
@@ -188,7 +189,7 @@ namespace MimesisPlayerEnhancement
 
         internal static void SaveToFile()
         {
-            if (!ModConfig.IsInitialized)
+            if (!ModConfig.IsInitialized || SaveSlotConfigStore.IsApplyingOverrides)
             {
                 return;
             }
@@ -199,6 +200,121 @@ namespace MimesisPlayerEnhancement
         internal static void NotifyRuntimeChange()
         {
             Version++;
+        }
+
+        internal static bool IsSaveOverrideAllowed(string sectionId, string key)
+        {
+            if (string.IsNullOrWhiteSpace(sectionId) || string.IsNullOrWhiteSpace(key))
+            {
+                return false;
+            }
+
+            if (string.Equals(sectionId, "MimesisPlayerEnhancement_WebDashboard", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (string.Equals(sectionId, "MimesisPlayerEnhancement_ExtendedSaveSlots", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return TryGetEntry(sectionId, key, out _);
+        }
+
+        internal static bool TryNormalizeRawValue(
+            string sectionId,
+            string key,
+            string rawValue,
+            out string normalized,
+            out string? error)
+        {
+            normalized = "";
+            error = null;
+
+            if (!TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                error = "Unknown setting.";
+                return false;
+            }
+
+            Type valueType = entry.GetReflectedType()
+                ?? throw new InvalidOperationException($"Setting {sectionId}/{key} has no value type.");
+
+            if (!TryParseValue(valueType, rawValue, out object? parsed, out error))
+            {
+                return false;
+            }
+
+            normalized = FormatParsedValue(entry, parsed);
+            return true;
+        }
+
+        internal static bool RawValuesEqual(string sectionId, string key, string rawA, string rawB)
+        {
+            if (string.Equals(rawA, rawB, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            if (!TryNormalizeRawValue(sectionId, key, rawA, out string normalizedA, out _)
+                || !TryNormalizeRawValue(sectionId, key, rawB, out string normalizedB, out _))
+            {
+                return string.Equals(rawA?.Trim(), rawB?.Trim(), StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(normalizedA, normalizedB, StringComparison.Ordinal);
+        }
+
+        internal static bool TryGetGlobalRawValue(string sectionId, string key, out string globalRaw)
+        {
+            globalRaw = "";
+
+            if (!TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(ModConfig.FilePath) || !File.Exists(ModConfig.FilePath))
+            {
+                globalRaw = FormatEntryDefaultValue(entry);
+                return true;
+            }
+
+            SparseTomlConfig.Document doc = SparseTomlConfig.Load(
+                File.ReadAllText(ModConfig.FilePath));
+
+            if (doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
+                && keys.TryGetValue(key, out string? fromFile))
+            {
+                if (TryNormalizeRawValue(sectionId, key, fromFile, out string normalized, out _))
+                {
+                    globalRaw = normalized;
+                    return true;
+                }
+
+                globalRaw = fromFile;
+                return true;
+            }
+
+            globalRaw = FormatEntryDefaultValue(entry);
+            return true;
+        }
+
+        private static string FormatParsedValue(MelonPreferences_Entry entry, object? parsed)
+        {
+            Type? type = entry.GetReflectedType();
+            if (type == typeof(float) && parsed is float floatValue)
+            {
+                return ModConfigFloatHelper.Format(floatValue);
+            }
+
+            if (type == typeof(bool) && parsed is bool boolValue)
+            {
+                return boolValue ? "true" : "false";
+            }
+
+            return Convert.ToString(parsed, CultureInfo.InvariantCulture) ?? "";
         }
 
         private static bool TrySetBoxedValue(MelonPreferences_Entry entry, object? parsed)
