@@ -359,6 +359,43 @@
           <div x-show="route === 'global-settings'" x-cloak>
             <div class="settings-page">
               <h2 class="page-heading">Global Settings</h2>
+
+              <div class="settings-search-panel surface-card" x-show="route === 'global-settings'" x-cloak>
+                <label class="settings-search-wrap">
+                  <span class="settings-search-label">Search settings</span>
+                  <input type="search"
+                         class="settings-search"
+                         placeholder="Search by name, key, or value…"
+                         x-model="settingsQuery"
+                         autocomplete="off"
+                         spellcheck="false"
+                         role="combobox"
+                         :aria-expanded="settingsSearchOpen"
+                         aria-controls="global-settings-suggestions"
+                         @input="settingsSearchOpen = true"
+                         @focus="settingsSearchOpen = true"
+                         @blur="onSettingsSearchBlur()"
+                         @keydown.escape.prevent="settingsSearchOpen = false">
+                  <ul id="global-settings-suggestions"
+                      class="settings-suggestions"
+                      x-show="settingsSearchOpen && settingsSearchSuggestions().length > 0"
+                      x-cloak
+                      @mousedown.prevent>
+                    <template x-for="item in settingsSearchSuggestions()" :key="item.id">
+                      <li>
+                        <button type="button"
+                                class="settings-suggestion"
+                                @click="selectSettingsSuggestion(item)">
+                          <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
+                          <span x-text="item.title"></span>
+                          <span class="settings-suggestion-key" x-text="item.key"></span>
+                        </button>
+                      </li>
+                    </template>
+                  </ul>
+                </label>
+              </div>
+
               <p class="settings-intro" x-text="settingsIntro()"></p>
 
               <template x-if="settingsGlobal">
@@ -367,15 +404,6 @@
                     <span class="settings-path-label">Config file</span>
                     <code class="settings-path-value" x-text="settingsGlobal.configPath || '—'"></code>
                   </div>
-                  <label class="settings-search-wrap">
-                    <span class="visually-hidden">Filter settings</span>
-                    <input type="search"
-                           class="settings-search"
-                           placeholder="Search keys, titles, values…"
-                           x-model="settingsQuery"
-                           autocomplete="off"
-                           spellcheck="false">
-                  </label>
                 </div>
               </template>
 
@@ -397,7 +425,9 @@
                     </header>
                     <div class="settings-entries">
                       <template x-for="entry in section.entries" :key="entry.key">
-                        <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden }">
+                        <article class="settings-entry"
+                                 :id="settingEntryDomId(section.id, entry)"
+                                 :class="{ 'is-hidden-entry': entry.isHidden }">
                           <div class="settings-entry-main">
                             <div class="settings-entry-head">
                               <strong class="settings-entry-title" x-text="entry.title"></strong>
@@ -472,6 +502,43 @@
             <template x-if="status.isHost">
               <div class="settings-page">
                 <h2 class="page-heading">Settings</h2>
+
+                <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
+                  <label class="settings-search-wrap">
+                    <span class="settings-search-label">Search settings</span>
+                    <input type="search"
+                           class="settings-search"
+                           placeholder="Search by name, key, or value…"
+                           x-model="settingsQuery"
+                           autocomplete="off"
+                           spellcheck="false"
+                           role="combobox"
+                           :aria-expanded="settingsSearchOpen"
+                           aria-controls="save-settings-suggestions"
+                           @input="settingsSearchOpen = true"
+                           @focus="settingsSearchOpen = true"
+                           @blur="onSettingsSearchBlur()"
+                           @keydown.escape.prevent="settingsSearchOpen = false">
+                    <ul id="save-settings-suggestions"
+                        class="settings-suggestions"
+                        x-show="settingsSearchOpen && settingsSearchSuggestions().length > 0"
+                        x-cloak
+                        @mousedown.prevent>
+                      <template x-for="item in settingsSearchSuggestions()" :key="item.id">
+                        <li>
+                          <button type="button"
+                                  class="settings-suggestion"
+                                  @click="selectSettingsSuggestion(item)">
+                            <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
+                            <span x-text="item.title"></span>
+                            <span class="settings-suggestion-key" x-text="item.key"></span>
+                          </button>
+                        </li>
+                      </template>
+                    </ul>
+                  </label>
+                </div>
+
                 <p class="settings-intro" x-text="settingsIntro()"></p>
 
                 <template x-if="settingsSave">
@@ -480,15 +547,6 @@
                       <span class="settings-path-label">Override file</span>
                       <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
                     </div>
-                    <label class="settings-search-wrap">
-                      <span class="visually-hidden">Filter settings</span>
-                      <input type="search"
-                             class="settings-search"
-                             placeholder="Search keys, titles, values…"
-                             x-model="settingsQuery"
-                             autocomplete="off"
-                             spellcheck="false">
-                    </label>
                   </div>
                 </template>
 
@@ -510,7 +568,9 @@
                       </header>
                       <div class="settings-entries">
                         <template x-for="entry in section.entries" :key="entry.key">
-                          <article class="settings-entry" :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
+                          <article class="settings-entry"
+                                   :id="settingEntryDomId(section.id, entry)"
+                                   :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
                             <div class="settings-entry-main">
                               <div class="settings-entry-head">
                                 <strong class="settings-entry-title" x-text="entry.title"></strong>

@@ -45,6 +45,7 @@
 html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
 }
 
 [x-cloak] {
@@ -854,8 +855,25 @@ tr.connected:hover {
   padding: 0.5rem 0.75rem;
 }
 
+.settings-search-panel {
+  position: relative;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.settings-search-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-text-secondary);
+}
+
 .settings-search-wrap {
   display: block;
+  position: relative;
 }
 
 .settings-search {
@@ -878,6 +896,58 @@ tr.connected:hover {
 .settings-search:focus {
   border-color: rgba(130, 177, 255, 0.45);
   box-shadow: 0 0 0 2px rgba(130, 177, 255, 0.15);
+}
+
+.settings-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.35rem 0;
+  list-style: none;
+  background: var(--md-surface-raised);
+  border: 1px solid var(--md-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--md-elevation-4);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.settings-suggestion {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.875rem;
+  border: 0;
+  background: transparent;
+  color: var(--md-text-primary);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.settings-suggestion:hover,
+.settings-suggestion:focus {
+  background: rgba(130, 177, 255, 0.1);
+  outline: none;
+}
+
+.settings-suggestion-key {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  font-size: 0.6875rem;
+  color: var(--md-text-disabled);
+}
+
+.settings-suggestion-section {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--md-text-secondary);
+  margin-bottom: 0.1rem;
 }
 
 .settings-sections {
@@ -928,6 +998,19 @@ tr.connected:hover {
 
 .settings-entry:last-child {
   border-bottom: none;
+}
+
+.settings-entry-highlight {
+  animation: settings-entry-flash 1.6s ease-out;
+}
+
+@keyframes settings-entry-flash {
+  0%, 15% {
+    background: rgba(130, 177, 255, 0.14);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .settings-entry.is-hidden-entry {
@@ -1094,6 +1177,19 @@ tr.connected:hover {
 
 .settings-select {
   cursor: pointer;
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--md-surface-overlay);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ffffff99' d='M1.41 0 6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+.settings-select option {
+  background-color: var(--md-surface-raised);
+  color: var(--md-text-primary);
 }
 
 .visually-hidden {
@@ -1117,10 +1213,6 @@ tr.connected:hover {
 
   .settings-path {
     flex: 1;
-  }
-
-  .settings-search-wrap {
-    flex: 0 1 18rem;
   }
 
   .settings-entry {

@@ -58,6 +58,8 @@ document.addEventListener('alpine:init', () => {
     settingsGlobal: null,
     settingsSave: null,
     settingsQuery: '',
+    settingsSearchOpen: false,
+    settingsSearchBlurTimer: null,
     route: 'waiting',
     steamId: null,
     toastMessage: '',
@@ -229,6 +231,12 @@ document.addEventListener('alpine:init', () => {
       const prevSteam = this.lastSteamId;
       this.parseRoute();
       this.setConnectedMode();
+      const wasOnSettings = prevRoute === 'global-settings' || prevRoute === 'settings';
+      const isOnSettings = this.route === 'global-settings' || this.route === 'settings';
+      if (wasOnSettings && (!isOnSettings || prevRoute !== this.route)) {
+        this.settingsQuery = '';
+        this.settingsSearchOpen = false;
+      }
       if (this.route !== prevRoute || this.steamId !== prevSteam) {
         this.loadPageData(true);
       }
@@ -355,6 +363,7 @@ document.addEventListener('alpine:init', () => {
           this.settingsSave = null;
           if (this.route !== 'global-settings') {
             this.settingsQuery = '';
+            this.settingsSearchOpen = false;
           }
         }
 
@@ -496,6 +505,73 @@ document.addEventListener('alpine:init', () => {
 
     isValidSteamId(steamId) {
       return isValidSteamId(steamId);
+    },
+
+    onSettingsSearchBlur() {
+      if (this.settingsSearchBlurTimer) clearTimeout(this.settingsSearchBlurTimer);
+      this.settingsSearchBlurTimer = setTimeout(() => {
+        this.settingsSearchOpen = false;
+      }, 150);
+    },
+
+    settingsSearchSuggestions() {
+      const q = this.settingsQuery.trim().toLowerCase();
+      if (!q) return [];
+
+      const settings = this.activeSettings;
+      if (!settings || !settings.sections) return [];
+
+      const results = [];
+      for (const section of settings.sections) {
+        for (const entry of section.entries || []) {
+          const fields = [
+            entry.key,
+            entry.title,
+            entry.description,
+            entry.value,
+            entry.globalValue,
+            section.title,
+          ];
+          const haystack = fields.map((v) => String(v || '').toLowerCase());
+          if (!haystack.some((v) => v.includes(q))) continue;
+
+          const title = String(entry.title || entry.key || '');
+          const key = String(entry.key || '');
+          const startsWith = title.toLowerCase().startsWith(q) || key.toLowerCase().startsWith(q);
+          results.push({
+            id: section.id + '/' + key,
+            sectionId: section.id,
+            sectionTitle: section.title,
+            key,
+            title,
+            priority: startsWith ? 0 : 1,
+          });
+        }
+      }
+
+      results.sort((a, b) => {
+        if (a.priority !== b.priority) return a.priority - b.priority;
+        return a.title.localeCompare(b.title);
+      });
+
+      return results.slice(0, 8);
+    },
+
+    selectSettingsSuggestion(item) {
+      this.settingsQuery = item.key;
+      this.settingsSearchOpen = false;
+      this.$nextTick(() => {
+        const el = document.getElementById(this.settingEntryDomId(item.sectionId, { key: item.key }));
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('settings-entry-highlight');
+          setTimeout(() => el.classList.remove('settings-entry-highlight'), 1600);
+        }
+      });
+    },
+
+    settingEntryDomId(sectionId, entry) {
+      return 'setting-entry-' + this.activeSettingsScope + '-' + sectionId + '--' + entry.key;
     },
 
     filteredSections() {
