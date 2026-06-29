@@ -75,5 +75,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
         }
+
+        [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.OnPlayerDeath))]
+        internal static class PlayerDeathSnapshotPatch
+        {
+            private static void Postfix()
+            {
+                WebDashboardSnapshotCache.MarkDirty();
+            }
+        }
+
+        [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.OnPlayerRevive))]
+        internal static class PlayerReviveSnapshotPatch
+        {
+            private static void Postfix()
+            {
+                WebDashboardSnapshotCache.MarkDirty();
+            }
+        }
     }
 }

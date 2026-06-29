@@ -75,6 +75,8 @@
                         <span x-text="p.displayName"></span>
                         <span class="badge host" x-show="p.isHost">Host</span>
                         <span class="badge local" x-show="p.isLocal">You</span>
+                        <span class="badge alive" x-show="p.isAlive">Alive</span>
+                        <span class="badge dead" x-show="!p.isAlive">Dead</span>
                         <span class="badge banned" x-show="p.isBanned">Banned</span>
                       </strong>
                       <small class="player-connection">
@@ -100,7 +102,8 @@
                       <span class="ping-bars" x-show="pingActive(p) === 0" title="Unknown">—</span>
                       <a class="btn-text btn" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
                     </div>
-                    <div class="player-actions" x-show="canModerate(p)">
+                    <div class="player-actions" x-show="status.isHost && (canModerate(p) || canRespawn(p))">
+                      <button class="btn btn-outlined" x-show="canRespawn(p)" @click="moderate(p.steamId, 'respawn')">Respawn</button>
                       <button class="btn btn-outlined" x-show="p.playerUid" @click="moderate(p.steamId, 'kick')">Kick</button>
                       <button class="btn btn-danger" x-show="p.playerUid" @click="moderate(p.steamId, 'ban')">Ban</button>
                       <button class="btn btn-text" x-show="p.isBanned" @click="moderate(p.steamId, 'unban')">Unban</button>

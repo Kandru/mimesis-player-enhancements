@@ -34,6 +34,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool IsHost;
         public bool IsLocal;
         public bool IsBanned;
+        public bool IsAlive = true;
         public int NetworkGrade = -1;
         public string ConnectionRole = "";
         public string ConnectionAddress = "";
@@ -141,6 +142,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         Kick,
         Ban,
         Unban,
+        Respawn,
     }
 
     internal sealed class WebDashboardPendingAction

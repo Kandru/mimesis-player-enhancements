@@ -368,6 +368,10 @@ document.addEventListener('alpine:init', () => {
       return this.status.isHost && !p.isLocal;
     },
 
+    canRespawn(p) {
+      return this.status.isHost && !p.isAlive && p.playerUid;
+    },
+
     async moderate(steamId, action) {
       if (!confirm('Confirm ' + action + ' for player ' + steamId + '?')) return;
       try {

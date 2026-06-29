@@ -164,6 +164,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 IsHost = player.IsHost,
                 IsLocal = player.IsLocal,
                 IsBanned = player.IsBanned,
+                IsAlive = player.IsAlive,
                 NetworkGrade = player.NetworkGrade,
                 ConnectionRole = player.ConnectionRole,
                 ConnectionAddress = player.ConnectionAddress,
@@ -242,6 +243,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public bool IsHost;
             public bool IsLocal;
             public bool IsBanned;
+            public bool IsAlive = true;
             public int NetworkGrade = -1;
             public string ConnectionRole = "";
             public string ConnectionAddress = "";

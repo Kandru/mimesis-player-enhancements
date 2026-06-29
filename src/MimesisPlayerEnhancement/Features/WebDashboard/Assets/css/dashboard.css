@@ -494,6 +494,16 @@ body.in-session .app-content {
   color: var(--md-error);
 }
 
+.badge.alive {
+  background: rgba(102, 187, 106, 0.2);
+  color: #a5d6a7;
+}
+
+.badge.dead {
+  background: rgba(239, 83, 80, 0.2);
+  color: #ef9a9a;
+}
+
 /* ── Buttons ── */
 
 .btn {

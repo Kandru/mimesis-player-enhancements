@@ -5,6 +5,7 @@ using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
+using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -303,6 +304,67 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        private static void ApplyAliveStatus(WebDashboardPlayerDto dto, SessionContext? context)
+        {
+            VPlayer? vPlayer = context != null ? WebDashboardSessionAccess.GetVPlayer(context) : null;
+            if (vPlayer != null)
+            {
+                dto.IsAlive = vPlayer.IsAliveStatus();
+                return;
+            }
+
+            if (TryGetAliveFromProtoActor(dto.PlayerUid, dto.SteamId, out bool isAlive))
+            {
+                dto.IsAlive = isAlive;
+            }
+        }
+
+        private static bool TryGetAliveFromProtoActor(long playerUid, ulong steamId, out bool isAlive)
+        {
+            isAlive = true;
+            try
+            {
+                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+                GameMainBase? main = pdata?.main;
+                if (main == null)
+                {
+                    return false;
+                }
+
+                Dictionary<int, ProtoActor>? map = main.GetProtoActorMap();
+                if (map == null)
+                {
+                    return false;
+                }
+
+                foreach (ProtoActor? actor in map.Values)
+                {
+                    if (actor == null || actor.ActorType != ActorType.Player)
+                    {
+                        continue;
+                    }
+
+                    if (playerUid != 0 && actor.UID == playerUid)
+                    {
+                        isAlive = !actor.dead;
+                        return true;
+                    }
+
+                    if (steamId != 0 && StatisticsTracker.TryResolveSteamId(actor) == steamId)
+                    {
+                        isAlive = !actor.dead;
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                /* scene may be transitioning */
+            }
+
+            return false;
+        }
+
         private static string ResolveDisplayName(
             SessionContext? context,
             ulong steamId,
@@ -386,6 +448,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             bool dashboardIsHost)
         {
             ApplyConnectionInfo(dto, context);
+
+            ApplyAliveStatus(dto, context);
 
             if (dashboardIsHost && ModConfig.EnableStatistics.Value)
             {

@@ -1,3 +1,4 @@
+using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol.Enum;
@@ -8,6 +9,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
+        private const BindingFlags InstanceFlags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private static readonly PropertyInfo? HubDynamicDataManProperty =
+            typeof(Hub).GetProperty("dynamicDataMan", InstanceFlags);
+
+        private static readonly MethodInfo? GetPlayerRevivePointMethod =
+            typeof(Hub).Assembly.GetType("DynamicDataManager")?.GetMethod(
+                "GetPlayerRevivePoint",
+                InstanceFlags,
+                binder: null,
+                types: [typeof(int)],
+                modifiers: null);
+
+        private static readonly MethodInfo? GetPlayerStartPointMethod =
+            typeof(Hub).Assembly.GetType("DynamicDataManager")?.GetMethod(
+                "GetPlayerStartPoint",
+                InstanceFlags,
+                binder: null,
+                types: [typeof(int)],
+                modifiers: null);
+
         internal static WebDashboardActionResult Execute(WebDashboardPendingAction action)
         {
             if (!WebDashboardGameState.IsHost())
@@ -15,7 +38,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return Fail("Host only.");
             }
 
-            if (action.SteamId != 0 && LocalPlayerHelper.IsLocalSteamId(action.SteamId))
+            if (action.SteamId != 0 && LocalPlayerHelper.IsLocalSteamId(action.SteamId)
+                && action.Type != WebDashboardActionType.Respawn)
             {
                 return Fail("Cannot moderate the local host player.");
             }
@@ -28,6 +52,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardActionType.Kick => Kick(sessionManager, action),
                     WebDashboardActionType.Ban => Ban(sessionManager, action),
                     WebDashboardActionType.Unban => Unban(sessionManager, action),
+                    WebDashboardActionType.Respawn => Respawn(action),
                     _ => Fail("Unknown action."),
                 };
         }
@@ -139,6 +164,69 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return Ok(successMessage);
         }
 
+        private static WebDashboardActionResult Respawn(WebDashboardPendingAction action)
+        {
+            if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
+            {
+                return Fail("Player not found.");
+            }
+
+            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
+            if (vPlayer == null)
+            {
+                return Fail("Player not in game.");
+            }
+
+            if (vPlayer.LifeCycle != VCreatureLifeCycle.Dead)
+            {
+                return Fail("Player is not dead.");
+            }
+
+            if (vPlayer.VRoom == null || !vPlayer.VRoom.CanReviveCheat())
+            {
+                return Fail("Revive not allowed in the current room state.");
+            }
+
+            if (!TryGetReviveSpawnPoint(out MapMarker_CreatureSpawnPoint? spawnPoint))
+            {
+                return Fail("No revive point available.");
+            }
+
+            try
+            {
+                vPlayer.SetIsIndoor(spawnPoint!.IsIndoor);
+                if (!vPlayer.Revive(spawnPoint.pos))
+                {
+                    return Fail("Revive failed.");
+                }
+
+                if (vPlayer.StatControlUnit != null)
+                {
+                    vPlayer.StatControlUnit.AdjustHP(0L, full: true);
+                    vPlayer.StatControlUnit.RecoverStamina(
+                        vPlayer.StatControlUnit.GetSpecificStatValue(StatType.Stamina));
+                    vPlayer.StatControlUnit.AdjustConta(0);
+                }
+
+                vPlayer.VRoom.IterateAllMonster(monster =>
+                {
+                    if (monster.IsAliveStatus())
+                    {
+                        monster.AIControlUnit?.OnSightIn(vPlayer);
+                    }
+                });
+
+                ModLog.Info(Feature, $"Respawned player uid={vPlayer.UID}.");
+                WebDashboardSnapshotCache.MarkDirty();
+                return Ok("Player respawned.");
+            }
+            catch (System.Exception ex)
+            {
+                ModLog.Warn(Feature, $"Respawn failed: {ex.Message}");
+                return Fail("Respawn failed.");
+            }
+        }
+
         private static WebDashboardActionResult Unban(SessionManager sessionManager, WebDashboardPendingAction action)
         {
             if (action.SteamId == 0)
@@ -214,6 +302,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             hostPlayer = WebDashboardSessionAccess.GetVPlayer(hostContext);
             hashCode = WebDashboardSessionAccess.GetEnterPktHashCode(hostContext);
             return hostPlayer != null;
+        }
+
+        private static bool TryGetReviveSpawnPoint(out MapMarker_CreatureSpawnPoint? spawnPoint)
+        {
+            spawnPoint = null;
+            if (Hub.s == null
+                || HubDynamicDataManProperty?.GetValue(Hub.s) is not object dynamicDataMan
+                || GetPlayerRevivePointMethod == null
+                || GetPlayerStartPointMethod == null)
+            {
+                return false;
+            }
+
+            spawnPoint = GetPlayerRevivePointMethod.Invoke(dynamicDataMan, [0]) as MapMarker_CreatureSpawnPoint
+                ?? GetPlayerStartPointMethod.Invoke(dynamicDataMan, [0]) as MapMarker_CreatureSpawnPoint;
+            return spawnPoint != null;
         }
 
         private static WebDashboardActionResult Ok(string message)
