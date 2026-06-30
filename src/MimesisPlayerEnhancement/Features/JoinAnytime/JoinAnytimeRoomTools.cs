@@ -5,6 +5,7 @@ using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
 using ReluNetwork.ConstEnum;
 using ReluProtocol.Enum;
+using ReluServerBase.Threading;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
@@ -248,7 +249,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             waitingRoom = TryGetWaitingRoom(vroomManager);
             if (waitingRoom != null)
             {
-                EnsureWaitingRoomPlayable(waitingRoom);
+                PrepareWaitingRoomForEnter(vroomManager);
                 return true;
             }
 
@@ -273,27 +274,85 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else
             {
-                EnsureWaitingRoomPlayable(waitingRoom);
+                PrepareWaitingRoomForEnter(vroomManager);
             }
 
             return waitingRoom != null;
         }
 
         /// <summary>
-        /// A waiting room stopped by a prior lever pull (OnDecideRoom → Stop) rejects EnterRoom and
-        /// skips ProcessEnterWaitQueue while _stopped is set, which leaves EnterWaitingRoomReq
-        /// unanswered until the client hits its 60s timeout.
+        /// Join-anytime keeps the waiting room alive while the party is in a dungeon. On return,
+        /// vanilla InitWaitingRoom queues ResetEnvironment asynchronously but broadcasts
+        /// MakeRoomCompleteSig immediately. EnterWaitingRoomReq can arrive before spawn points
+        /// exist; ProcessEnterWaitQueue then drops the request without a response (60s client timeout).
         /// </summary>
-        internal static void EnsureWaitingRoomPlayable(IVroom waitingRoom)
+        internal static void PrepareWaitingRoomForEnter(VRoomManager? vroomManager = null)
         {
-            if (waitingRoom is not VWaitingRoom vWaitingRoom)
+            if (!ModConfig.EnableJoinAnytime.Value)
             {
                 return;
             }
 
+            if (vroomManager == null && !TryGetVRoomManager(out vroomManager))
+            {
+                return;
+            }
+
+            FlushVRoomManagerCommands(vroomManager!);
+
+            if (TryGetWaitingRoom(vroomManager!) is not VWaitingRoom waitingRoom)
+            {
+                return;
+            }
+
+            EnsureWaitingRoomPlayable(waitingRoom);
+            FlushRoomCommands(waitingRoom);
+            EnsurePlayerStartPoints(waitingRoom);
+        }
+
+        internal static void EnsureWaitingRoomForDungeonReturn()
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || Hub.s == null)
+            {
+                return;
+            }
+
+            if (HubVworldProperty?.GetValue(Hub.s) is VWorld vworld)
+            {
+                vworld.InitWaitingRoom();
+            }
+        }
+
+        private static void EnsureWaitingRoomPlayable(VWaitingRoom waitingRoom)
+        {
             MethodInfo? resumeRoom = typeof(IVroom).GetMethod("ResumeRoom", InstanceFlags);
-            resumeRoom?.Invoke(vWaitingRoom, null);
-            vWaitingRoom.SetState(WaitingRoomState.Ready);
+            resumeRoom?.Invoke(waitingRoom, null);
+            waitingRoom.SetState(WaitingRoomState.Ready);
+        }
+
+        private static void FlushVRoomManagerCommands(VRoomManager vroomManager)
+        {
+            if (ReflectionHelper.GetFieldValue(vroomManager, "_commandExecutor") is CommandExecutor executor)
+            {
+                executor.Execute();
+            }
+        }
+
+        private static void FlushRoomCommands(VWaitingRoom waitingRoom)
+        {
+            waitingRoom.GetCommandExecutor()?.Execute();
+        }
+
+        private static void EnsurePlayerStartPoints(VWaitingRoom waitingRoom)
+        {
+            if (ReflectionHelper.GetFieldValue(waitingRoom, "_playerStartSpawnPoints") is Dictionary<int, SpawnPointData> points
+                && points.Count > 0)
+            {
+                return;
+            }
+
+            waitingRoom.InitLevel();
+            waitingRoom.InitSpawn();
         }
 
         /// <summary>
@@ -312,12 +371,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            PrepareWaitingRoomForEnter(vroomManager);
+
             if (TryGetWaitingRoom(vroomManager!) is not VWaitingRoom waitingRoom)
             {
                 return;
             }
-
-            EnsureWaitingRoomPlayable(waitingRoom);
 
             bool hasLoadedOccupant = false;
             waitingRoom.IterateAllPlayer(player =>

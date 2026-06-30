@@ -79,8 +79,24 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(VRoomManager __instance)
         {
+            JoinAnytimeRoomTools.PrepareWaitingRoomForEnter(__instance);
             JoinAnytimeRoomTools.RefreshWaitingRoomDisplaysForOccupants(__instance);
             JoinAnytimeLobbyController.RefreshLobbyState(force: true);
+        }
+    }
+
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))]
+    internal static class VRoomManagerOnDungeonFinishedPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(bool prevDungeonSuccess)
+        {
+            if (!prevDungeonSuccess)
+            {
+                return;
+            }
+
+            JoinAnytimeRoomTools.EnsureWaitingRoomForDungeonReturn();
         }
     }
 
@@ -90,6 +106,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPrefix]
         private static void Prefix(SessionContext context)
         {
+            JoinAnytimeRoomTools.PrepareWaitingRoomForEnter();
             LateJoinManager.OnServerEnterWaitingRoom(context);
         }
     }
