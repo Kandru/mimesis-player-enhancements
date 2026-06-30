@@ -10,6 +10,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly ConcurrentQueue<PendingUpdate> Pending = new();
 
+        internal static bool IsProcessing { get; private set; }
+
         internal static WebDashboardConfigUpdateResult EnqueueAndWait(
             WebDashboardConfigScope scope,
             int saveSlotId,
@@ -44,8 +46,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Process()
         {
+            if (IsProcessing)
+            {
+                return;
+            }
+
             while (Pending.TryDequeue(out PendingUpdate? pending))
             {
+                IsProcessing = true;
                 try
                 {
                     pending.Result = pending.Scope switch
@@ -76,6 +84,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
                 finally
                 {
+                    IsProcessing = false;
                     pending.Done.Set();
                 }
             }

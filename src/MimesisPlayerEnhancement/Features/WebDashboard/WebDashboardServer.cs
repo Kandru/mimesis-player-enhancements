@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static HttpListener? _listener;
         private static Thread? _listenerThread;
         private static volatile bool _running;
+        private static bool _syncDeferred;
         private static string _listenUrl = "";
         private static string _assetsRoot = "";
 
@@ -35,6 +36,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (WebDashboardConfigUpdateQueue.IsProcessing)
+            {
+                _syncDeferred = true;
+                return;
+            }
+
+            ApplySyncFromConfig();
+        }
+
+        private static void ApplySyncFromConfig()
+        {
             if (!ModConfig.EnableWebDashboard.Value)
             {
                 Stop();
@@ -67,6 +79,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void OnUpdate()
         {
+            if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
+            {
+                _syncDeferred = false;
+                ApplySyncFromConfig();
+            }
+
             if (!_running)
             {
                 return;
@@ -74,6 +92,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             WebDashboardActionQueue.Process();
             WebDashboardConfigUpdateQueue.Process();
+
+            if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
+            {
+                _syncDeferred = false;
+                ApplySyncFromConfig();
+            }
+
+            if (!_running)
+            {
+                return;
+            }
+
             WebDashboardSnapshotCache.Tick(_listenUrl);
         }
 

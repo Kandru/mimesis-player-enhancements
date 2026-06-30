@@ -12,6 +12,8 @@ namespace MimesisPlayerEnhancement
     /// </summary>
     internal static class ModConfigRegistry
     {
+        internal const string WebDashboardSectionId = "MimesisPlayerEnhancement_WebDashboard";
+
         private static readonly Dictionary<string, Dictionary<string, MelonPreferences_Entry>> EntriesBySection =
             new(StringComparer.OrdinalIgnoreCase);
 
@@ -234,6 +236,11 @@ namespace MimesisPlayerEnhancement
             return false;
         }
 
+        internal static bool IsWebDashboardSection(string sectionId)
+        {
+            return string.Equals(sectionId, WebDashboardSectionId, StringComparison.OrdinalIgnoreCase);
+        }
+
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)
         {
             if (string.IsNullOrWhiteSpace(sectionId) || string.IsNullOrWhiteSpace(key))
@@ -241,7 +248,7 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
-            if (string.Equals(sectionId, "MimesisPlayerEnhancement_WebDashboard", StringComparison.OrdinalIgnoreCase))
+            if (IsWebDashboardSection(sectionId))
             {
                 return false;
             }

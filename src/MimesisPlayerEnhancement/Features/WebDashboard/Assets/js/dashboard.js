@@ -323,6 +323,7 @@ document.addEventListener('alpine:init', () => {
 
     needsPageRefresh(force) {
       if (force) return true;
+      if (this.savingSettingKey) return false;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
       if (this.route === 'settings' || this.route === 'global-settings') {
@@ -690,7 +691,13 @@ document.addEventListener('alpine:init', () => {
     },
 
     isSavingSetting(sectionId, entry) {
+      if (!entry?.key) return false;
       return this.savingSettingKey === this.activeSettingsScope + '/' + sectionId + '/' + entry.key;
+    },
+
+    isSavingFeatureToggle(sectionId) {
+      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
+      return toggle ? this.isSavingSetting(sectionId, toggle) : false;
     },
 
     settingDraftValue(entry) {

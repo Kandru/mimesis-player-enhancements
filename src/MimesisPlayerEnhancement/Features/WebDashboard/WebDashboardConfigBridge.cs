@@ -70,6 +70,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
+            if (ModConfigRegistry.IsWebDashboardSection(sectionId))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = "Web dashboard settings cannot be changed from the web UI. Edit the config file instead.",
+                };
+            }
+
             if (!ModConfigRegistry.TryNormalizeRawValue(sectionId, key, value, out string normalized, out string? error))
             {
                 return new WebDashboardConfigUpdateResult
@@ -118,6 +127,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
         {
+            if (ModConfigRegistry.IsWebDashboardSection(sectionId))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = "Web dashboard settings cannot be overridden per save slot.",
+                };
+            }
+
             if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, value, out string? error, waitForCompletion: true))
             {
                 return new WebDashboardConfigUpdateResult
@@ -198,6 +216,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
             {
+                if (ModConfigRegistry.IsWebDashboardSection(sectionId))
+                {
+                    continue;
+                }
+
                 if (!ModConfigRegistry.TryGetSectionTitle(sectionId, out string title))
                 {
                     title = sectionId;
