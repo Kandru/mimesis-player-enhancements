@@ -1,5 +1,6 @@
 using System;
 using HarmonyLib;
+using Mimic.Actors;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using ReluProtocol.Enum;
@@ -34,6 +35,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("PendMoveToDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))),
                 ("OnAllMemberEntered/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "OnAllMemberEntered")),
                 ("RunEventActionInternal/IVroom", AccessTools.Method(typeof(IVroom), "RunEventActionInternal")),
+                ("HandleLevelObject/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.HandleLevelObject))),
+                ("IsTriggerable/NewTramLeverLevelObject", AccessTools.Method(typeof(NewTramLeverLevelObject), "IsTriggerable", [typeof(ProtoActor), typeof(int)])),
                 ("OnChangeLevelObjectStateSig/NewTramLeverLevelObject", AccessTools.Method(typeof(NewTramLeverLevelObject), nameof(NewTramLeverLevelObject.OnChangeLevelObjectStateSig))),
                 ("CreateLobby/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.CreateLobby))),
                 ("SetLobbyPublic/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetLobbyPublic))),

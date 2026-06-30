@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             JoinAnytimeConnectingTracker.OnUpdate();
+            LateJoinManager.OnUpdate();
             JoinAnytimeLobbyController.OnUpdate();
         }
     }

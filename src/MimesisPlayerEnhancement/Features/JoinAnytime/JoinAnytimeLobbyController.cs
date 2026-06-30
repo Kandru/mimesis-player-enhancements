@@ -360,6 +360,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _lastPhase = JoinAnytimeSessionPhase.None;
             _lastPublishedName = string.Empty;
             RefreshLobbyState(force: true);
+            LateJoinManager.OnHostSceneReady();
             ScheduleImmediateRefresh();
         }
 

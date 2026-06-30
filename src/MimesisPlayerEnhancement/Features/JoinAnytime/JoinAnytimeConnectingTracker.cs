@@ -89,6 +89,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             float now = Time.time;
+            List<long> toRemove = [];
             List<long> timedOut = [];
 
             foreach (KeyValuePair<long, PendingConnection> entry in PendingByUid)
@@ -96,25 +97,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 PendingConnection pending = entry.Value;
                 if (ShouldIgnoreUid(pending.Uid))
                 {
-                    _ = PendingByUid.Remove(entry.Key);
+                    toRemove.Add(entry.Key);
                     continue;
                 }
 
                 if (!TryResolvePlayer(pending.Uid, out VPlayer? player))
                 {
-                    _ = PendingByUid.Remove(entry.Key);
+                    toRemove.Add(entry.Key);
                     continue;
                 }
 
                 if (player!.IsHost)
                 {
-                    _ = PendingByUid.Remove(entry.Key);
+                    toRemove.Add(entry.Key);
                     continue;
                 }
 
                 if (IsPlayerFullyReady(player))
                 {
-                    _ = PendingByUid.Remove(entry.Key);
+                    toRemove.Add(entry.Key);
                     ModLog.Debug(Feature, $"Connecting tracker — uid={entry.Key} ready");
                     continue;
                 }
@@ -123,6 +124,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 {
                     timedOut.Add(entry.Key);
                 }
+            }
+
+            foreach (long uid in toRemove)
+            {
+                _ = PendingByUid.Remove(uid);
             }
 
             foreach (long uid in timedOut)

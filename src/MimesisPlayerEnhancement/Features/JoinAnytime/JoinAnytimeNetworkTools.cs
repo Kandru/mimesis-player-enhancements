@@ -6,28 +6,42 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeNetworkTools
     {
-        internal static void SendPreGameTramStateToClient(VPlayer player)
+        internal static bool SendPreGameTramStateToClient(VPlayer player, bool allowResend = false)
         {
-            SendPreGameTramState(player.UID, msg => player.SendToMe(msg));
+            if (player.VRoom is VWaitingRoom)
+            {
+                LateJoinManager.MarkPreGameStateSent(player.UID);
+                return true;
+            }
+
+            if (!SendPreGameTramState(player, msg => player.SendToMe(msg), allowResend))
+            {
+                return false;
+            }
+
+            JoinAnytimeRoomTools.ReleaseLateJoinerFromMaintenance(player);
+            return true;
         }
 
-        internal static void SendPreGameTramStateToClient(SessionContext context)
+        private static bool SendPreGameTramState(VPlayer player, Action<IMsg> send, bool allowResend)
         {
-            SendPreGameTramState(context.GetPlayerUID(), msg => context.Send(msg));
-        }
+            long uid = player.UID;
 
-        private static void SendPreGameTramState(long uid, Action<IMsg> send)
-        {
             if (LateJoinManager.HasPreGameStateBeenSent(uid))
             {
-                ModLog.Debug("JoinAnytime", $"Skipping duplicate pre-game tram state send for uid={uid}");
-                return;
+                if (!allowResend)
+                {
+                    ModLog.Debug("JoinAnytime", $"Skipping duplicate pre-game tram state send for uid={uid}");
+                    return player.VRoom is not MaintenanceRoom;
+                }
+
+                ModLog.Debug("JoinAnytime", $"Resending pre-game tram state for uid={uid} — still in maintenance");
             }
 
             if (!JoinAnytimeRoomTools.TryEnsureWaitingRoom(out IVroom? waitingRoom))
             {
                 ModLog.Warn("JoinAnytime", $"SendPreGameTramState failed — waiting room unavailable for uid={uid}");
-                return;
+                return false;
             }
 
             ModLog.Info(
@@ -46,6 +60,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             send(new MoveToWaitingRoomSig());
 
             LateJoinManager.MarkPreGameStateSent(uid);
+            return true;
         }
     }
 }

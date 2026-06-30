@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Reflection;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluNetwork.ConstEnum;
 using ReluProtocol;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
@@ -11,56 +14,55 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     internal static class LateJoinManager
     {
         private const string Feature = "JoinAnytime";
+        private const float TramRouteRetryIntervalSeconds = 0.5f;
+
+        private const BindingFlags InstanceFlags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private static readonly HashSet<long> SentPreGameStateUids = [];
+        private static readonly HashSet<long> PendingTramRouteUids = [];
+
+        private static readonly FieldInfo? SessionVPlayerField =
+            typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
+
+        private static float _nextTramRouteRetryTime;
 
         internal static bool IsEnabled => ModConfig.EnableJoinAnytime.Value;
 
-        internal static void OnServerLogin(SessionContext context)
+        internal static void OnLevelLoadCompleted(VPlayer player)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            if (pdata?.ClientMode != NetworkClientMode.Host)
-            {
-                return;
-            }
-
-            if (pdata.main is not GamePlayScene && pdata.main is not InTramWaitingScene)
-            {
-                return;
-            }
-
-            ModLog.Debug(Feature, $"Login while session active — uid={context.GetPlayerUID()} main={pdata.main.GetType().Name}");
-            JoinAnytimeNetworkTools.SendPreGameTramStateToClient(context);
+            TryRouteLateJoinerToTram(player, allowResend: false);
         }
 
-        internal static void OnServerPlayerCreated(VPlayer player)
+        internal static void OnHostSceneReady()
         {
-            if (!IsEnabled)
+            if (!IsEnabled || !ShouldRouteToTram())
             {
                 return;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            if (pdata?.ClientMode != NetworkClientMode.Host || player.IsHost)
+            RouteAllMaintenanceLateJoiners(allowResend: true);
+        }
+
+        internal static void OnUpdate()
+        {
+            if (!IsEnabled || PendingTramRouteUids.Count == 0)
             {
                 return;
             }
 
-            if (player.VRoom is not MaintenanceRoom)
+            if (!ShouldRouteToTram())
             {
                 return;
             }
 
-            ModLog.Info(
-                Feature,
-                $"Late joiner in maintenance — uid={player.UID} hostScene={pdata.main?.GetType().Name ?? "null"}");
+            if (Time.time < _nextTramRouteRetryTime)
+            {
+                return;
+            }
 
-            JoinAnytimeNetworkTools.SendPreGameTramStateToClient(player);
+            _nextTramRouteRetryTime = Time.time + TramRouteRetryIntervalSeconds;
+            RetryPendingTramRoutes();
         }
 
         internal static void OnServerEnterWaitingRoom(SessionContext context)
@@ -106,11 +108,144 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static void MarkPreGameStateSent(long uid)
         {
             _ = SentPreGameStateUids.Add(uid);
+            _ = PendingTramRouteUids.Remove(uid);
         }
 
         internal static void RefreshLobbyVisibilityAfterSteamUpdate()
         {
             JoinAnytimeLobbyController.RefreshAfterSteamLobbyDataUpdate();
+        }
+
+        private static void TryRouteLateJoinerToTram(VPlayer player, bool allowResend)
+        {
+            if (!IsEnabled || player == null || player.IsHost)
+            {
+                return;
+            }
+
+            if (!player.LevelLoadCompleted)
+            {
+                return;
+            }
+
+            if (player.VRoom is VWaitingRoom)
+            {
+                MarkPreGameStateSent(player.UID);
+                return;
+            }
+
+            if (player.VRoom is not MaintenanceRoom)
+            {
+                return;
+            }
+
+            if (!ShouldRouteToTram())
+            {
+                return;
+            }
+
+            ModLog.Info(
+                Feature,
+                $"Late joiner in maintenance — uid={player.UID} hostScene={JoinAnytimeHub.GetPdata()?.main?.GetType().Name ?? "null"}");
+
+            bool resend = allowResend
+                || (HasPreGameStateBeenSent(player.UID) && player.VRoom is MaintenanceRoom);
+
+            if (JoinAnytimeNetworkTools.SendPreGameTramStateToClient(player, resend))
+            {
+                return;
+            }
+
+            _ = PendingTramRouteUids.Add(player.UID);
+        }
+
+        private static void RouteAllMaintenanceLateJoiners(bool allowResend)
+        {
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return;
+            }
+
+            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            {
+                if (SessionVPlayerField?.GetValue(context) is not VPlayer player
+                    || player.IsHost
+                    || !player.LevelLoadCompleted)
+                {
+                    continue;
+                }
+
+                TryRouteLateJoinerToTram(player, allowResend);
+            }
+        }
+
+        private static void RetryPendingTramRoutes()
+        {
+            if (PendingTramRouteUids.Count == 0)
+            {
+                return;
+            }
+
+            List<long> pending = [.. PendingTramRouteUids];
+            foreach (long uid in pending)
+            {
+                if (!TryResolvePlayer(uid, out VPlayer? player))
+                {
+                    _ = PendingTramRouteUids.Remove(uid);
+                    continue;
+                }
+
+                if (player!.VRoom is VWaitingRoom)
+                {
+                    MarkPreGameStateSent(uid);
+                    continue;
+                }
+
+                if (player.VRoom is not MaintenanceRoom)
+                {
+                    _ = PendingTramRouteUids.Remove(uid);
+                    continue;
+                }
+
+                if (JoinAnytimeNetworkTools.SendPreGameTramStateToClient(player, allowResend: true))
+                {
+                    ModLog.Info(Feature, $"Late joiner tram route retry succeeded — uid={uid}");
+                }
+            }
+        }
+
+        private static bool ShouldRouteToTram()
+        {
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            return pdata?.ClientMode == NetworkClientMode.Host
+                && pdata.main is InTramWaitingScene or GamePlayScene;
+        }
+
+        private static bool TryResolvePlayer(long uid, out VPlayer? player)
+        {
+            player = null;
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return false;
+            }
+
+            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            {
+                if (context.GetPlayerUID() != uid)
+                {
+                    continue;
+                }
+
+                if (SessionVPlayerField?.GetValue(context) is VPlayer resolved)
+                {
+                    player = resolved;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

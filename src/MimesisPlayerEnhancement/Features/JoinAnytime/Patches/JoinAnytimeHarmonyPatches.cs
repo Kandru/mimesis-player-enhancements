@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Bifrost.ConstEnum;
 using HarmonyLib;
+using Mimic.Actors;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using ReluProtocol.Enum;
@@ -49,7 +50,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         {
             HostStatusCache.Invalidate();
             JoinAnytimeConnectingTracker.OnServerLogin(__instance);
-            LateJoinManager.OnServerLogin(__instance);
         }
     }
 
@@ -138,9 +138,84 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 
             int actorId = GameActionParamHelper.FindParam<GameActionParamActor>(paramList)?.ActorID ?? 0;
             ModLog.Info("JoinAnytime", $"Blocked tram lever — reason={reason}");
+            JoinAnytimeTramLeverTools.TryResetTramDepartureLever(waitingRoom, actorId);
             JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorId);
             __result = false;
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(IVroom), nameof(IVroom.HandleLevelObject))]
+    internal static class IVroomHandleLevelObjectTramLeverPatch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix(
+            IVroom __instance,
+            int actorID,
+            int levelObjectID,
+            int state,
+            bool occupy,
+            out int prevState,
+            ref MsgErrorCode __result)
+        {
+            prevState = -1;
+
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return true;
+            }
+
+            if (!JoinAnytimeTramLeverTools.TryGetLevelObject(__instance, levelObjectID, out ILevelObjectInfo? levelObject)
+                || levelObject == null)
+            {
+                return true;
+            }
+
+            if (!JoinAnytimeTramLeverTools.ShouldBlockDepartureLeverUse(__instance, levelObject, state))
+            {
+                return true;
+            }
+
+            if (levelObject is StateLevelObjectInfo stateInfo)
+            {
+                prevState = stateInfo.CurrentState;
+            }
+
+            ModLog.Info(
+                "JoinAnytime",
+                $"Blocked tram lever state change to {state} — reason={JoinAnytimeRoomTools.GetWaitingRoomBlockReason()}");
+
+            JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorID);
+            __result = MsgErrorCode.CantAction;
+            return false;
+        }
+    }
+
+    [HarmonyPatch]
+    internal static class NewTramLeverLevelObjectIsTriggerablePatch
+    {
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(NewTramLeverLevelObject), "IsTriggerable", [typeof(ProtoActor), typeof(int)]);
+
+        [HarmonyPostfix]
+        private static void Postfix(ref bool __result)
+        {
+            if (!__result || !ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            if (JoinAnytimeHub.GetPdata()?.main is not InTramWaitingScene)
+            {
+                return;
+            }
+
+            if (!JoinAnytimeRoomTools.ShouldBlockWaitingRoomStartGame())
+            {
+                return;
+            }
+
+            __result = false;
         }
     }
 
@@ -285,7 +360,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(VPlayer __instance)
         {
-            LateJoinManager.OnServerPlayerCreated(__instance);
             JoinAnytimeConnectingTracker.OnServerPlayerCreated(__instance);
         }
     }
@@ -297,6 +371,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix(VPlayer __instance)
         {
             JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
+            LateJoinManager.OnLevelLoadCompleted(__instance);
         }
     }
 

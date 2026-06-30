@@ -143,6 +143,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             context.CreatePlayerSnapshot(true);
         }
 
+        /// <summary>
+        /// Vanilla maintenance→tram sends MoveToWaitingRoomSig then removes players from the
+        /// maintenance room, which emits LeaveRoomSig. Clients wait for serverRoomState=Nowhere
+        /// before loading InTramWaitingScene.
+        /// </summary>
+        internal static void ReleaseLateJoinerFromMaintenance(VPlayer player)
+        {
+            if (player.VRoom is not MaintenanceRoom maintenanceRoom)
+            {
+                return;
+            }
+
+            ModLog.Info(
+                Feature,
+                $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
+
+            maintenanceRoom.PendRemovePlayer(player.ObjectID, backup: false, kill: false);
+        }
+
         internal static string GetSceneNameFromMapId(int mapMasterId)
         {
             if (mapMasterId == 0)
@@ -220,6 +239,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             waitingRoom = TryGetWaitingRoom(vroomManager);
             if (waitingRoom != null)
             {
+                PrepareWaitingRoomForLateJoin(waitingRoom);
                 return true;
             }
 
@@ -242,8 +262,24 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — room still missing after InitWaitingRoom");
             }
+            else
+            {
+                PrepareWaitingRoomForLateJoin(waitingRoom);
+            }
 
             return waitingRoom != null;
+        }
+
+        private static void PrepareWaitingRoomForLateJoin(IVroom waitingRoom)
+        {
+            if (waitingRoom is not VWaitingRoom vWaitingRoom)
+            {
+                return;
+            }
+
+            MethodInfo? resumeRoom = typeof(IVroom).GetMethod("ResumeRoom", InstanceFlags);
+            resumeRoom?.Invoke(vWaitingRoom, null);
+            vWaitingRoom.SetState(WaitingRoomState.Ready);
         }
 
         /// <summary>
