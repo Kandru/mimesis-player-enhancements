@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,65 +8,59 @@
   <title>Mimesis Player Enhancement</title>
   <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body class="waiting" x-data="dashboard()" x-init="init()">
   <div class="bg-layer" aria-hidden="true"></div>
   <div class="bg-scrim" aria-hidden="true"></div>
 
   <div class="app">
-    <header class="app-header">
-      <div class="app-header-inner">
-        <div class="app-brand">
-          <h1>
-            <a class="app-brand-title" :href="status.isConnected ? '#/players' : '#/waiting'" x-text="pageTitle"></a>
-          </h1>
-          <p class="app-subtitle" x-text="subtitle"></p>
-        </div>
-        <nav class="app-header-actions" aria-label="Dashboard navigation">
-          <a class="app-header-link"
-             href="#/players"
-             x-show="status.isConnected"
-             :class="{ active: isGameRoute }">Game</a>
-          <a class="app-header-link"
-             href="#/global-settings"
-             :class="{ active: route === 'global-settings' }">Global Settings</a>
-          <a class="app-header-link"
-             href="#/donation"
-             :class="{ active: route === 'donation' }">Donation</a>
-          <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
-            <span class="app-header-blind-label">Blind mode</span>
-            <button type="button"
-                    class="feature-toggle"
-                    role="switch"
-                    :class="{ 'is-on': playerBlindMode }"
-                    title="Hide alive/dead status and respawn actions to avoid spoilers."
-                    aria-label="Blind mode"
-                    @click="togglePlayerBlindMode">
-              <span class="feature-toggle-track" aria-hidden="true">
-                <span class="feature-toggle-thumb"></span>
-              </span>
-              <span class="feature-toggle-label" x-text="playerBlindMode ? 'On' : 'Off'"></span>
-            </button>
+    <div class="app-top">
+      <header class="app-header">
+        <div class="app-header-inner">
+          <div class="app-brand">
+            <h1>
+              <a class="app-brand-title" :href="status.isConnected ? '#/players' : '#/waiting'" x-text="pageTitle"></a>
+            </h1>
+            <p class="app-subtitle" x-text="subtitle"></p>
           </div>
-        </nav>
-      </div>
-    </header>
+          <nav class="app-header-actions" aria-label="Dashboard navigation">
+            <a class="app-header-link" href="#/players" x-show="status.isConnected"
+              :class="{ active: isGameRoute }">Game</a>
+            <a class="app-header-link" href="#/global-settings" :class="{ active: route === 'global-settings' }">Global
+              Settings</a>
+            <a class="app-header-link" href="#/donation" :class="{ active: route === 'donation' }">Donation</a>
+            <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
+              <span class="app-header-blind-label">Blind mode</span>
+              <button type="button" class="feature-toggle" role="switch" :class="{ 'is-on': playerBlindMode }"
+                title="Hide alive/dead status and respawn actions to avoid spoilers." aria-label="Blind mode"
+                @click="togglePlayerBlindMode">
+                <span class="feature-toggle-track" aria-hidden="true">
+                  <span class="feature-toggle-thumb"></span>
+                </span>
+                <span class="feature-toggle-label" x-text="playerBlindMode ? 'On' : 'Off'"></span>
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
 
-    <nav class="app-nav" aria-label="Main navigation" x-show="status.isConnected" x-cloak>
-      <ul>
-        <li>
-          <a href="#/players" :class="{ active: route === 'players' }">Players</a>
-        </li>
-        <li>
-          <a href="#/minimap" :class="{ active: route === 'minimap' }">Minimap</a>
-        </li>
-        <li x-show="status.isHost">
-          <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }">Leaderboard</a>
-        </li>
-        <li x-show="status.isHost">
-          <a href="#/settings" :class="{ active: route === 'settings' }">Settings</a>
-        </li>
-      </ul>
-    </nav>
+      <nav class="app-nav" aria-label="Main navigation" x-show="status.isConnected" x-cloak>
+        <ul>
+          <li>
+            <a href="#/players" :class="{ active: route === 'players' }">Players</a>
+          </li>
+          <li>
+            <a href="#/minimap" :class="{ active: route === 'minimap' }">Minimap</a>
+          </li>
+          <li x-show="status.isHost">
+            <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }">Leaderboard</a>
+          </li>
+          <li x-show="status.isHost">
+            <a href="#/settings" :class="{ active: route === 'settings' }">Settings</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
 
     <main class="app-main">
       <div class="app-content">
@@ -76,10 +71,12 @@
             <h2 class="page-heading">Donation</h2>
             <div class="donation-panel surface-card">
               <p class="donation-lead">
-                Please support my work with a small donation if you can. Maintaining this mod takes a lot of dedicated time.
+                Please support my work with a small donation if you can. Maintaining this mod takes a lot of dedicated
+                time.
               </p>
               <p>
-                Mimesis Player Enhancement is not a quick patch — it merges several community mods into one maintained package
+                Mimesis Player Enhancement is not a quick patch — it merges several community mods into one maintained
+                package
                 and adds original work on top: Harmony patches across the game, this web dashboard, session statistics,
                 spawn/loot/money scaling, dungeon tweaks, and ongoing compatibility testing with new MIMESIS releases.
               </p>
@@ -88,34 +85,30 @@
                 <strong>but never required</strong>.
               </p>
               <p class="donation-action">
-                <a class="donation-button"
-                   href="https://www.paypal.com/donate/?hosted_button_id=C2AVYKGVP9TRG"
-                   target="_blank"
-                   rel="noopener noreferrer">
-                  <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
-                       alt="Donate with PayPal"
-                       width="147"
-                       height="47"
-                       loading="lazy"
-                       decoding="async">
+                <a class="donation-button" href="https://www.paypal.com/donate/?hosted_button_id=C2AVYKGVP9TRG"
+                  target="_blank" rel="noopener noreferrer">
+                  <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" alt="Donate with PayPal"
+                    width="147" height="47" loading="lazy" decoding="async">
                 </a>
               </p>
               <p class="donation-footnote">
-                The mod stays free and open source either way. Please also support the original mod authors listed in the
-                <a class="external-link"
-                   href="https://github.com/Kandru/mimesis-player-enhancements"
-                   target="_blank"
-                   rel="noopener noreferrer">GitHub README</a>.
+                The mod stays free and open source either way. Please also support the original mod authors listed in
+                the
+                <a class="external-link" href="https://github.com/Kandru/mimesis-player-enhancements" target="_blank"
+                  rel="noopener noreferrer">GitHub README</a>.
               </p>
             </div>
           </div>
 
-          <!-- Waiting -->
-          <div x-show="!status.isConnected && route !== 'waiting' && !isOfflineRoute()" class="waiting-panel">
+          <!-- Waiting (main menu, session ended, or game closed) -->
+          <div x-show="!status.isConnected && !isOfflineRoute()" class="waiting-panel">
             <div class="waiting-card">
-              <div class="spinner" role="progressbar" aria-label="Waiting for game"></div>
-              <h2>Not connected</h2>
-              <p>Host or join a game in Mimesis first. This dashboard will connect automatically once you are in a game.</p>
+              <div class="spinner" role="progressbar" aria-label="Waiting for game" x-show="!apiError"></div>
+              <h2 x-text="apiError ? 'Dashboard unavailable' : 'Not connected'"></h2>
+              <p x-text="apiError
+                ? 'Cannot reach the dashboard API. Make sure the game is running with the mod loaded.'
+                : 'Host or join a game in Mimesis first. This dashboard will connect automatically once you are in a game.'">
+              </p>
             </div>
           </div>
 
@@ -132,12 +125,8 @@
               <template x-for="p in players" :key="p.steamId">
                 <article class="surface-card">
                   <div class="player-row">
-                    <img class="avatar"
-                         :src="avatarUrl(p.steamId)"
-                         alt=""
-                         loading="lazy"
-                         decoding="async"
-                         @error="onAvatarError($event)">
+                    <img class="avatar" :src="avatarUrl(p.steamId)" alt="" loading="lazy" decoding="async"
+                      @error="onAvatarError($event)">
                     <div class="player-meta">
                       <strong>
                         <span x-text="p.displayName"></span>
@@ -152,13 +141,16 @@
                         <template x-if="isValidSteamId(p.steamId)">
                           <span class="player-links">
                             <span x-show="connectionMeta(p)"> · </span>
-                            <a class="external-link" :href="steamProfileUrl(p.steamId)" target="_blank" rel="noopener noreferrer">Steam</a>
+                            <a class="external-link" :href="steamProfileUrl(p.steamId)" target="_blank"
+                              rel="noopener noreferrer">Steam</a>
                             <span> · </span>
-                            <a class="external-link" :href="csStatsUrl(p.steamId)" target="_blank" rel="noopener noreferrer">CSStats</a>
+                            <a class="external-link" :href="csStatsUrl(p.steamId)" target="_blank"
+                              rel="noopener noreferrer">CSStats</a>
                           </span>
                         </template>
                       </small>
-                      <small class="player-session-stats" x-show="showPlayerSessionStats(p)" x-text="sessionLine(p)"></small>
+                      <small class="player-session-stats" x-show="showPlayerSessionStats(p)"
+                        x-text="sessionLine(p)"></small>
                     </div>
                     <div class="player-status">
                       <span class="ping-label" x-text="pingLabel(p)"></span>
@@ -171,10 +163,14 @@
                       <a class="btn-text btn" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
                     </div>
                     <div class="player-actions" x-show="status.isHost && (canModerate(p) || canRespawn(p))">
-                      <button class="btn btn-outlined" x-show="canRespawn(p)" @click="moderate(p.steamId, 'respawn')">Respawn</button>
-                      <button class="btn btn-outlined" x-show="p.playerUid" @click="moderate(p.steamId, 'kick')">Kick</button>
-                      <button class="btn btn-danger" x-show="p.playerUid" @click="moderate(p.steamId, 'ban')">Ban</button>
-                      <button class="btn btn-text" x-show="p.isBanned" @click="moderate(p.steamId, 'unban')">Unban</button>
+                      <button class="btn btn-outlined" x-show="canRespawn(p)"
+                        @click="moderate(p.steamId, 'respawn')">Respawn</button>
+                      <button class="btn btn-outlined" x-show="p.playerUid"
+                        @click="moderate(p.steamId, 'kick')">Kick</button>
+                      <button class="btn btn-danger" x-show="p.playerUid"
+                        @click="moderate(p.steamId, 'ban')">Ban</button>
+                      <button class="btn btn-text" x-show="p.isBanned"
+                        @click="moderate(p.steamId, 'unban')">Unban</button>
                     </div>
                   </div>
                 </article>
@@ -188,35 +184,30 @@
             <div class="minimap-toolbar surface-card">
               <div class="minimap-toolbar-group">
                 <label class="minimap-label" for="minimap-focus">Focus player</label>
-                <select id="minimap-focus"
-                        class="settings-input settings-select minimap-select"
-                        :value="resolveMinimapFocus()"
-                        @change="onMinimapFocusChange($event)">
+                <select id="minimap-focus" class="settings-input settings-select minimap-select"
+                  :value="resolveMinimapFocus()" @change="onMinimapFocusChange($event)">
                   <template x-for="p in minimapFocusOptions()" :key="p.steamId">
                     <option :value="String(p.steamId)" x-text="p.displayName + (p.isLocal ? ' (you)' : '')"></option>
                   </template>
                 </select>
               </div>
-              <div class="minimap-toolbar-group"
-                   x-show="!isMinimapUserCentric() && minimapAreaOptions().length > 1">
+              <div class="minimap-toolbar-group" x-show="!isMinimapUserCentric() && minimapAreaOptions().length > 1">
                 <label class="minimap-label" for="minimap-area">Area</label>
-                <select id="minimap-area"
-                        class="settings-input settings-select minimap-select"
-                        :value="minimap.activeAreaId || minimapAreaId"
-                        @change="onMinimapAreaChange($event)">
+                <select id="minimap-area" class="settings-input settings-select minimap-select"
+                  :value="minimap.activeAreaId || minimapAreaId" @change="onMinimapAreaChange($event)">
                   <template x-for="area in minimapAreaOptions()" :key="area.id">
                     <option :value="area.id" x-text="area.label"></option>
                   </template>
                 </select>
               </div>
               <label class="minimap-toggle" x-show="status.isHost">
-                <input type="checkbox"
-                       :checked="minimapShowAll"
-                       @change="onMinimapShowAllChange($event)">
+                <input type="checkbox" :checked="minimapShowAll" @change="onMinimapShowAllChange($event)">
                 <span>Show all alive players</span>
               </label>
             </div>
-            <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
+            <div class="empty-state" x-show="pageError">
+              <p x-text="pageError"></p>
+            </div>
             <div class="minimap-panel surface-card" x-show="!pageError">
               <div class="minimap-meta" x-show="minimap">
                 <span class="minimap-scene" x-text="minimap?.sceneLabel || 'Session'"></span>
@@ -229,22 +220,20 @@
                   : 'No map available for this scene.'"></p>
               </div>
               <div class="minimap-canvas-wrap" x-show="minimapShowsMap()">
-                <svg class="minimap-canvas"
-                     data-minimap-svg
-                     viewBox="0 0 1000 1000"
-                     preserveAspectRatio="xMidYMid meet"
-                     role="img"
-                     aria-label="Session minimap"></svg>
+                <svg class="minimap-canvas" data-minimap-svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"
+                  role="img" aria-label="Session minimap"></svg>
               </div>
               <template x-if="minimap?.markers?.length && minimapShowsMap()">
                 <div class="minimap-legend">
                   <template x-for="m in minimap.markers" :key="m.steamId">
-                    <span class="minimap-legend-item" :class="{ dead: !playerBlindMode && !m.isAlive, local: m.isLocal, host: m.isHost }"
-                          x-text="minimapMarkerSummary(m)"></span>
+                    <span class="minimap-legend-item"
+                      :class="{ dead: !playerBlindMode && !m.isAlive, local: m.isLocal, host: m.isHost }"
+                      x-text="minimapMarkerSummary(m)"></span>
                   </template>
                 </div>
               </template>
-              <p class="minimap-hint" x-show="minimapShowsMap() && minimap?.layoutKind === 'dungeon' && !minimapHasTileLayout()">
+              <p class="minimap-hint"
+                x-show="minimapShowsMap() && minimap?.layoutKind === 'dungeon' && !minimapHasTileLayout()">
                 Dungeon layout is still generating or unavailable. Player markers will appear once positions are known.
               </p>
             </div>
@@ -253,13 +242,18 @@
           <!-- Leaderboard -->
           <div x-show="status.isConnected && route === 'leaderboard'" x-cloak>
             <template x-if="!status.isHost">
-              <div class="empty-state"><p>Leaderboard is only available to the host.</p></div>
+              <div class="empty-state">
+                <p>Leaderboard is only available to the host.</p>
+              </div>
             </template>
             <template x-if="status.isHost">
               <div>
                 <h2 class="page-heading">Leaderboard</h2>
-                <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
-                <div class="empty-state" x-show="!pageError && (!leaderboard || !leaderboard.entries || leaderboard.entries.length === 0)">
+                <div class="empty-state" x-show="pageError">
+                  <p x-text="pageError"></p>
+                </div>
+                <div class="empty-state"
+                  x-show="!pageError && (!leaderboard || !leaderboard.entries || leaderboard.entries.length === 0)">
                   <p>No leaderboard data for this save slot yet.</p>
                 </div>
                 <template x-if="leaderboard && leaderboard.entries && leaderboard.entries.length > 0">
@@ -301,72 +295,71 @@
           <!-- Player detail -->
           <template x-if="status.isConnected && route === 'player' && steamId">
             <div>
-            <div class="player-minimap-embed surface-card" x-show="minimapShowsMap() && (minimap?.markers?.length || minimapHasTileLayout())">
-              <div class="minimap-embed-header">
-                <h3 class="section-title">Minimap<span class="minimap-embed-area" x-show="minimap?.activeAreaLabel"> · <span x-text="minimap?.activeAreaLabel"></span></span></h3>
-                <a class="btn-text btn" href="#/minimap">Open full minimap</a>
-              </div>
-              <div class="minimap-canvas-wrap compact" x-show="minimapShowsMap()">
-                <svg class="minimap-canvas"
-                     data-minimap-svg
-                     viewBox="0 0 1000 1000"
-                     preserveAspectRatio="xMidYMid meet"
-                     role="img"
-                     aria-label="Player minimap"></svg>
-              </div>
-            </div>
-            <template x-if="!status.isHost">
-              <div class="empty-state"><p>Player statistics are only available to the host.</p></div>
-            </template>
-            <template x-if="status.isHost">
-              <div>
-                <div class="loading-panel" x-show="loadingStats">
-                  <div class="spinner" role="progressbar" aria-label="Loading statistics"></div>
+              <div class="player-minimap-embed surface-card"
+                x-show="minimapShowsMap() && (minimap?.markers?.length || minimapHasTileLayout())">
+                <div class="minimap-embed-header">
+                  <h3 class="section-title">Minimap<span class="minimap-embed-area" x-show="minimap?.activeAreaLabel"> ·
+                      <span x-text="minimap?.activeAreaLabel"></span></span></h3>
+                  <a class="btn-text btn" href="#/minimap">Open full minimap</a>
                 </div>
-                <div x-show="!loadingStats && pageError" class="empty-state">
-                  <p x-text="pageError"></p>
+                <div class="minimap-canvas-wrap compact" x-show="minimapShowsMap()">
+                  <svg class="minimap-canvas" data-minimap-svg viewBox="0 0 1000 1000"
+                    preserveAspectRatio="xMidYMid meet" role="img" aria-label="Player minimap"></svg>
                 </div>
-                <div x-show="!loadingStats && !pageError && playerStats">
-                  <a class="back-link" href="#/leaderboard">&larr; Back to leaderboard</a>
-                  <div class="player-detail-header">
-                    <img class="avatar"
-                         :src="avatarUrl(steamId)"
-                         alt=""
-                         @error="onAvatarError($event)">
-                    <div>
-                      <h2 class="page-heading player-detail-name" x-text="resolveDisplayName(steamId)"></h2>
-                      <div class="player-external-links" x-show="isValidSteamId(steamId)">
-                        <a class="external-link" :href="steamProfileUrl(steamId)" target="_blank" rel="noopener noreferrer">Steam profile</a>
-                        <span> · </span>
-                        <a class="external-link" :href="csStatsUrl(steamId)" target="_blank" rel="noopener noreferrer">CSStats</a>
+              </div>
+              <template x-if="!status.isHost">
+                <div class="empty-state">
+                  <p>Player statistics are only available to the host.</p>
+                </div>
+              </template>
+              <template x-if="status.isHost">
+                <div>
+                  <div class="loading-panel" x-show="loadingStats">
+                    <div class="spinner" role="progressbar" aria-label="Loading statistics"></div>
+                  </div>
+                  <div x-show="!loadingStats && pageError" class="empty-state">
+                    <p x-text="pageError"></p>
+                  </div>
+                  <div x-show="!loadingStats && !pageError && playerStats">
+                    <a class="back-link" href="#/leaderboard">&larr; Back to leaderboard</a>
+                    <div class="player-detail-header">
+                      <img class="avatar" :src="avatarUrl(steamId)" alt="" @error="onAvatarError($event)">
+                      <div>
+                        <h2 class="page-heading player-detail-name" x-text="resolveDisplayName(steamId)"></h2>
+                        <div class="player-external-links" x-show="isValidSteamId(steamId)">
+                          <a class="external-link" :href="steamProfileUrl(steamId)" target="_blank"
+                            rel="noopener noreferrer">Steam profile</a>
+                          <span> · </span>
+                          <a class="external-link" :href="csStatsUrl(steamId)" target="_blank"
+                            rel="noopener noreferrer">CSStats</a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <h3 class="section-title">Global</h3>
-                  <div class="stat-grid">
-                    <template x-for="card in globalStatCards" :key="card[0]">
-                      <article class="stat-card">
-                        <small x-text="card[0]"></small>
-                        <strong x-text="card[1]"></strong>
-                      </article>
+                    <h3 class="section-title">Global</h3>
+                    <div class="stat-grid">
+                      <template x-for="card in globalStatCards" :key="card[0]">
+                        <article class="stat-card">
+                          <small x-text="card[0]"></small>
+                          <strong x-text="card[1]"></strong>
+                        </article>
+                      </template>
+                    </div>
+                    <template x-if="sessionStatCards.length > 0">
+                      <div>
+                        <h3 class="section-title">Current session</h3>
+                        <div class="stat-grid">
+                          <template x-for="card in sessionStatCards" :key="card[0]">
+                            <article class="stat-card">
+                              <small x-text="card[0]"></small>
+                              <strong x-text="card[1]"></strong>
+                            </article>
+                          </template>
+                        </div>
+                      </div>
                     </template>
                   </div>
-                  <template x-if="sessionStatCards.length > 0">
-                    <div>
-                      <h3 class="section-title">Current session</h3>
-                      <div class="stat-grid">
-                        <template x-for="card in sessionStatCards" :key="card[0]">
-                          <article class="stat-card">
-                            <small x-text="card[0]"></small>
-                            <strong x-text="card[1]"></strong>
-                          </article>
-                        </template>
-                      </div>
-                    </div>
-                  </template>
                 </div>
-              </div>
-            </template>
+              </template>
             </div>
           </template>
 
@@ -378,29 +371,16 @@
               <div class="settings-search-panel surface-card">
                 <label class="settings-search-wrap">
                   <span class="settings-search-label">Search settings</span>
-                  <input type="search"
-                         class="settings-search"
-                         placeholder="Search by name, key, or value…"
-                         x-model="settingsQuery"
-                         autocomplete="off"
-                         spellcheck="false"
-                         role="combobox"
-                         :aria-expanded="settingsSearchOpen"
-                         aria-controls="global-settings-suggestions"
-                         @input="settingsSearchOpen = true"
-                         @focus="settingsSearchOpen = true"
-                         @blur="onSettingsSearchBlur()"
-                         @keydown.escape.prevent="settingsSearchOpen = false">
-                  <ul id="global-settings-suggestions"
-                      class="settings-suggestions"
-                      x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0"
-                      x-cloak
-                      @mousedown.prevent>
+                  <input type="search" class="settings-search" placeholder="Search by name, key, or value…"
+                    x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
+                    :aria-expanded="settingsSearchOpen" aria-controls="global-settings-suggestions"
+                    @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
+                    @keydown.escape.prevent="settingsSearchOpen = false">
+                  <ul id="global-settings-suggestions" class="settings-suggestions"
+                    x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
                     <template x-for="item in settingsSearchSuggestions" :key="item.id">
                       <li>
-                        <button type="button"
-                                class="settings-suggestion"
-                                @click="selectSettingsSuggestion(item)">
+                        <button type="button" class="settings-suggestion" @click="selectSettingsSuggestion(item)">
                           <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
                           <span x-text="item.title"></span>
                           <span class="settings-suggestion-key" x-text="item.key"></span>
@@ -422,21 +402,24 @@
                 </div>
               </template>
 
-              <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
+              <div class="empty-state" x-show="pageError">
+                <p x-text="pageError"></p>
+              </div>
               <div class="loading-panel" x-show="loadingSettings && !pageError">
                 <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
               </div>
 
-              <div class="empty-state" x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections.length === 0">
+              <div class="empty-state"
+                x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections.length === 0">
                 <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
               </div>
 
               <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
                 <template x-for="section in filteredSections" :key="section.id">
                   <section class="settings-section surface-card"
-                           :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
+                    :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
                     <header class="settings-section-header"
-                            :id="section.featureToggle ? settingsDomId(section.id) : null">
+                      :id="section.featureToggle ? settingsDomId(section.id) : null">
                       <div class="settings-section-header-main">
                         <h3 class="settings-section-title" x-text="section.title"></h3>
                         <template x-if="section.featureToggle?.description">
@@ -445,32 +428,27 @@
                       </div>
                       <div class="settings-section-header-actions">
                         <template x-if="section.featureToggle">
-                          <button type="button"
-                                  class="feature-toggle"
-                                  role="switch"
-                                  x-cloak
-                                  :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingFeatureToggle(section.id) }"
-                                  :title="section.featureToggle.title"
-                                  :aria-label="section.featureToggle.title"
-                                  :aria-checked="featureEnabled(section.id)"
-                                  :disabled="isSavingFeatureToggle(section.id)"
-                                  @click.stop="toggleFeature(section.id)">
+                          <button type="button" class="feature-toggle" role="switch" x-cloak
+                            :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingFeatureToggle(section.id) }"
+                            :title="section.featureToggle.title" :aria-label="section.featureToggle.title"
+                            :aria-checked="featureEnabled(section.id)" :disabled="isSavingFeatureToggle(section.id)"
+                            @click.stop="toggleFeature(section.id)">
                             <span class="feature-toggle-track" aria-hidden="true">
                               <span class="feature-toggle-thumb"></span>
                             </span>
-                            <span class="feature-toggle-label" x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                            <span class="feature-toggle-label"
+                              x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
                           </button>
                         </template>
-                        <span class="settings-section-count"
-                              x-show="sectionEntryCount(section.id) > 0"
-                              x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                        <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
+                          x-text="sectionEntryCount(section.id) + ' keys'"></span>
                       </div>
                     </header>
                     <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                      <template x-for="entry in sectionEntries(section.id)" :key="entry.key + ':' + settingDraftValue(entry)">
-                        <article class="settings-entry"
-                                 :id="settingsDomId(section.id, entry.key)"
-                                 :class="{ 'is-hidden-entry': entry.isHidden }">
+                      <template x-for="entry in sectionEntries(section.id)"
+                        :key="entry.key + ':' + settingDraftValue(entry)">
+                        <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
+                          :class="{ 'is-hidden-entry': entry.isHidden }">
                           <div class="settings-entry-main">
                             <div class="settings-entry-head">
                               <strong class="settings-entry-title" x-text="entry.title"></strong>
@@ -483,49 +461,38 @@
                           <div class="settings-entry-value-wrap">
                             <template x-if="entry.type === 'Boolean'">
                               <select class="settings-input settings-select"
-                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)"
-                                      :value="settingDraftValue(entry)"
-                                      :disabled="isSavingSetting(section.id, entry)"
-                                      @change="onBooleanSettingChange(section.id, entry, $event)">
+                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                :disabled="isSavingSetting(section.id, entry)"
+                                @change="onBooleanSettingChange(section.id, entry, $event)">
                                 <option value="true">On</option>
                                 <option value="false">Off</option>
                               </select>
                             </template>
                             <template x-if="entry.type === 'Int32'">
-                              <input type="number"
-                                     class="settings-input"
-                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                     :id="settingInputId(section.id, entry)"
-                                     step="1"
-                                     inputmode="numeric"
-                                     :value="settingDraftValue(entry)"
-                                     :disabled="isSavingSetting(section.id, entry)"
-                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                              <input type="number" class="settings-input"
+                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
+                                @change="onTextSettingCommit(section.id, entry, $event)">
                             </template>
                             <template x-if="entry.type === 'Single'">
-                              <input type="number"
-                                     class="settings-input"
-                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                     :id="settingInputId(section.id, entry)"
-                                     step="any"
-                                     inputmode="decimal"
-                                     :value="settingDraftValue(entry)"
-                                     :disabled="isSavingSetting(section.id, entry)"
-                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                              <input type="number" class="settings-input"
+                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
+                                @change="onTextSettingCommit(section.id, entry, $event)">
                             </template>
-                            <template x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                              <input type="text"
-                                     class="settings-input"
-                                     :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                     :id="settingInputId(section.id, entry)"
-                                     :value="settingDraftValue(entry)"
-                                     :disabled="isSavingSetting(section.id, entry)"
-                                     @change="onTextSettingCommit(section.id, entry, $event)">
+                            <template
+                              x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                              <input type="text" class="settings-input"
+                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                :disabled="isSavingSetting(section.id, entry)"
+                                @change="onTextSettingCommit(section.id, entry, $event)">
                             </template>
-                            <small class="settings-default-hint"
-                                   x-show="settingDiffersFromDefault(entry)"
-                                   x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
+                            <small class="settings-default-hint" x-show="settingDiffersFromDefault(entry)"
+                              x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
                           </div>
                         </article>
                       </template>
@@ -539,174 +506,153 @@
           <!-- Save slot settings -->
           <template x-if="status.isConnected && route === 'settings'">
             <div>
-            <template x-if="!status.isHost">
-              <div class="empty-state"><p>Settings are only available to the host.</p></div>
-            </template>
-            <template x-if="status.isHost">
-              <div class="settings-page">
-                <h2 class="page-heading">Settings</h2>
-
-                <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
-                  <label class="settings-search-wrap">
-                    <span class="settings-search-label">Search settings</span>
-                    <input type="search"
-                           class="settings-search"
-                           placeholder="Search by name, key, or value…"
-                           x-model="settingsQuery"
-                           autocomplete="off"
-                           spellcheck="false"
-                           role="combobox"
-                           :aria-expanded="settingsSearchOpen"
-                           aria-controls="save-settings-suggestions"
-                           @input="settingsSearchOpen = true"
-                           @focus="settingsSearchOpen = true"
-                           @blur="onSettingsSearchBlur()"
-                           @keydown.escape.prevent="settingsSearchOpen = false">
-                    <ul id="save-settings-suggestions"
-                        class="settings-suggestions"
-                        x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0"
-                        x-cloak
-                        @mousedown.prevent>
-                      <template x-for="item in settingsSearchSuggestions" :key="item.id">
-                        <li>
-                          <button type="button"
-                                  class="settings-suggestion"
-                                  @click="selectSettingsSuggestion(item)">
-                            <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
-                            <span x-text="item.title"></span>
-                            <span class="settings-suggestion-key" x-text="item.key"></span>
-                          </button>
-                        </li>
-                      </template>
-                    </ul>
-                  </label>
+              <template x-if="!status.isHost">
+                <div class="empty-state">
+                  <p>Settings are only available to the host.</p>
                 </div>
+              </template>
+              <template x-if="status.isHost">
+                <div class="settings-page">
+                  <h2 class="page-heading">Settings</h2>
 
-                <p class="settings-intro" x-text="settingsIntro()"></p>
-
-                <template x-if="settingsSave">
-                  <div class="settings-toolbar surface-card">
-                    <div class="settings-path">
-                      <span class="settings-path-label">Override file</span>
-                      <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
-                    </div>
-                  </div>
-                </template>
-
-                <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
-                <div class="loading-panel" x-show="loadingSettings && !pageError">
-                  <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
-                </div>
-
-                <div class="empty-state" x-show="!loadingSettings && !pageError && settingsSave && filteredSections.length === 0">
-                  <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
-                </div>
-
-                <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
-                  <template x-for="section in filteredSections" :key="section.id">
-                    <section class="settings-section surface-card"
-                             :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
-                      <header class="settings-section-header"
-                              :id="section.featureToggle ? settingsDomId(section.id) : null">
-                        <div class="settings-section-header-main">
-                          <h3 class="settings-section-title" x-text="section.title"></h3>
-                          <template x-if="section.featureToggle?.description">
-                            <p class="settings-section-desc" x-text="section.featureToggle.description"></p>
-                          </template>
-                        </div>
-                        <div class="settings-section-header-actions">
-                          <template x-if="section.featureToggle">
-                            <button type="button"
-                                    class="feature-toggle"
-                                    role="switch"
-                                    x-cloak
-                                    :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingFeatureToggle(section.id) }"
-                                    :title="section.featureToggle.title"
-                                    :aria-label="section.featureToggle.title"
-                                    :aria-checked="featureEnabled(section.id)"
-                                    :disabled="isSavingFeatureToggle(section.id)"
-                                    @click.stop="toggleFeature(section.id)">
-                              <span class="feature-toggle-track" aria-hidden="true">
-                                <span class="feature-toggle-thumb"></span>
-                              </span>
-                              <span class="feature-toggle-label" x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                  <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
+                    <label class="settings-search-wrap">
+                      <span class="settings-search-label">Search settings</span>
+                      <input type="search" class="settings-search" placeholder="Search by name, key, or value…"
+                        x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
+                        :aria-expanded="settingsSearchOpen" aria-controls="save-settings-suggestions"
+                        @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true"
+                        @blur="onSettingsSearchBlur()" @keydown.escape.prevent="settingsSearchOpen = false">
+                      <ul id="save-settings-suggestions" class="settings-suggestions"
+                        x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
+                        <template x-for="item in settingsSearchSuggestions" :key="item.id">
+                          <li>
+                            <button type="button" class="settings-suggestion" @click="selectSettingsSuggestion(item)">
+                              <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
+                              <span x-text="item.title"></span>
+                              <span class="settings-suggestion-key" x-text="item.key"></span>
                             </button>
-                          </template>
-                          <span class="settings-section-count"
-                                x-show="sectionEntryCount(section.id) > 0"
-                                x-text="sectionEntryCount(section.id) + ' keys'"></span>
-                        </div>
-                      </header>
-                      <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                        <template x-for="entry in sectionEntries(section.id)" :key="entry.key + ':' + settingDraftValue(entry)">
-                          <article class="settings-entry"
-                                   :id="settingsDomId(section.id, entry.key)"
-                                   :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
-                            <div class="settings-entry-main">
-                              <div class="settings-entry-head">
-                                <strong class="settings-entry-title" x-text="entry.title"></strong>
-                                <span class="settings-type-pill" x-text="entry.type"></span>
-                                <span class="badge settings-override-badge" x-show="entry.isOverridden">Overridden</span>
-                                <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
-                              </div>
-                              <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
-                              <code class="settings-key" x-text="entry.key"></code>
-                            </div>
-                            <div class="settings-entry-value-wrap">
-                              <template x-if="entry.type === 'Boolean'">
-                                <select class="settings-input settings-select"
-                                        :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                        :id="settingInputId(section.id, entry)"
-                                        :value="settingDraftValue(entry)"
-                                        :disabled="isSavingSetting(section.id, entry)"
-                                        @change="onBooleanSettingChange(section.id, entry, $event)">
-                                  <option value="true">On</option>
-                                  <option value="false">Off</option>
-                                </select>
-                              </template>
-                              <template x-if="entry.type === 'Int32'">
-                                <input type="number"
-                                       class="settings-input"
-                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                       :id="settingInputId(section.id, entry)"
-                                       step="1"
-                                       inputmode="numeric"
-                                       :value="settingDraftValue(entry)"
-                                       :disabled="isSavingSetting(section.id, entry)"
-                                       @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <template x-if="entry.type === 'Single'">
-                                <input type="number"
-                                       class="settings-input"
-                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                       :id="settingInputId(section.id, entry)"
-                                       step="any"
-                                       inputmode="decimal"
-                                       :value="settingDraftValue(entry)"
-                                       :disabled="isSavingSetting(section.id, entry)"
-                                       @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <template x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                                <input type="text"
-                                       class="settings-input"
-                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                       :id="settingInputId(section.id, entry)"
-                                       :value="settingDraftValue(entry)"
-                                       :disabled="isSavingSetting(section.id, entry)"
-                                       @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <small class="settings-default-hint"
-                                     x-show="settingDiffersFromGlobal(entry)"
-                                     x-text="'Global: ' + formatSettingValue({ type: entry.type, value: entry.globalValue })"></small>
-                            </div>
-                          </article>
+                          </li>
                         </template>
+                      </ul>
+                    </label>
+                  </div>
+
+                  <p class="settings-intro" x-text="settingsIntro()"></p>
+
+                  <template x-if="settingsSave">
+                    <div class="settings-toolbar surface-card">
+                      <div class="settings-path">
+                        <span class="settings-path-label">Override file</span>
+                        <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
                       </div>
-                    </section>
+                    </div>
                   </template>
+
+                  <div class="empty-state" x-show="pageError">
+                    <p x-text="pageError"></p>
+                  </div>
+                  <div class="loading-panel" x-show="loadingSettings && !pageError">
+                    <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
+                  </div>
+
+                  <div class="empty-state"
+                    x-show="!loadingSettings && !pageError && settingsSave && filteredSections.length === 0">
+                    <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'">
+                    </p>
+                  </div>
+
+                  <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
+                    <template x-for="section in filteredSections" :key="section.id">
+                      <section class="settings-section surface-card"
+                        :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
+                        <header class="settings-section-header"
+                          :id="section.featureToggle ? settingsDomId(section.id) : null">
+                          <div class="settings-section-header-main">
+                            <h3 class="settings-section-title" x-text="section.title"></h3>
+                            <template x-if="section.featureToggle?.description">
+                              <p class="settings-section-desc" x-text="section.featureToggle.description"></p>
+                            </template>
+                          </div>
+                          <div class="settings-section-header-actions">
+                            <template x-if="section.featureToggle">
+                              <button type="button" class="feature-toggle" role="switch" x-cloak
+                                :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingFeatureToggle(section.id) }"
+                                :title="section.featureToggle.title" :aria-label="section.featureToggle.title"
+                                :aria-checked="featureEnabled(section.id)" :disabled="isSavingFeatureToggle(section.id)"
+                                @click.stop="toggleFeature(section.id)">
+                                <span class="feature-toggle-track" aria-hidden="true">
+                                  <span class="feature-toggle-thumb"></span>
+                                </span>
+                                <span class="feature-toggle-label"
+                                  x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                              </button>
+                            </template>
+                            <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
+                              x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                          </div>
+                        </header>
+                        <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
+                          <template x-for="entry in sectionEntries(section.id)"
+                            :key="entry.key + ':' + settingDraftValue(entry)">
+                            <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
+                              :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
+                              <div class="settings-entry-main">
+                                <div class="settings-entry-head">
+                                  <strong class="settings-entry-title" x-text="entry.title"></strong>
+                                  <span class="settings-type-pill" x-text="entry.type"></span>
+                                  <span class="badge settings-override-badge"
+                                    x-show="entry.isOverridden">Overridden</span>
+                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
+                                </div>
+                                <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description">
+                                </p>
+                                <code class="settings-key" x-text="entry.key"></code>
+                              </div>
+                              <div class="settings-entry-value-wrap">
+                                <template x-if="entry.type === 'Boolean'">
+                                  <select class="settings-input settings-select"
+                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                    :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                    :disabled="isSavingSetting(section.id, entry)"
+                                    @change="onBooleanSettingChange(section.id, entry, $event)">
+                                    <option value="true">On</option>
+                                    <option value="false">Off</option>
+                                  </select>
+                                </template>
+                                <template x-if="entry.type === 'Int32'">
+                                  <input type="number" class="settings-input"
+                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                    :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                    :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
+                                    @change="onTextSettingCommit(section.id, entry, $event)">
+                                </template>
+                                <template x-if="entry.type === 'Single'">
+                                  <input type="number" class="settings-input"
+                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                    :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                    :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
+                                    @change="onTextSettingCommit(section.id, entry, $event)">
+                                </template>
+                                <template
+                                  x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                                  <input type="text" class="settings-input"
+                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                    :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                    :disabled="isSavingSetting(section.id, entry)"
+                                    @change="onTextSettingCommit(section.id, entry, $event)">
+                                </template>
+                                <small class="settings-default-hint" x-show="settingDiffersFromGlobal(entry)"
+                                  x-text="'Global: ' + formatSettingValue({ type: entry.type, value: entry.globalValue })"></small>
+                              </div>
+                            </article>
+                          </template>
+                        </div>
+                      </section>
+                    </template>
+                  </div>
                 </div>
-              </div>
-            </template>
+              </template>
             </div>
           </template>
 
@@ -715,7 +661,8 @@
     </main>
   </div>
 
-  <aside id="toast" role="status" aria-live="polite" :class="{ show: toastVisible }" x-text="toastMessage" x-cloak></aside>
+  <aside id="toast" role="status" aria-live="polite" :class="{ show: toastVisible }" x-text="toastMessage" x-cloak>
+  </aside>
 
   <script defer src="/js/api.js"></script>
   <script defer src="/js/sse.js"></script>
@@ -723,4 +670,5 @@
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/alpine.min.js"></script>
 </body>
+
 </html>

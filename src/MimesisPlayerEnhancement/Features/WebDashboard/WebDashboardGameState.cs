@@ -8,31 +8,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardGameState
     {
-        private static bool _sessionActive;
-
         internal static bool IsConnected()
         {
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            if (pdata == null)
-            {
-                _sessionActive = false;
-                return false;
-            }
-
-            if (pdata.SessionJoined)
-            {
-                _sessionActive = true;
-                return true;
-            }
-
-            // Scene transition grace: SessionJoined may drop while main is still in-game.
-            if (_sessionActive && IsInGameScene(pdata.main))
-            {
-                return true;
-            }
-
-            _sessionActive = false;
-            return false;
+            return pdata != null && pdata.SessionJoined;
         }
 
         internal static bool IsHost()
@@ -89,11 +68,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return string.IsNullOrWhiteSpace(dispatcher.lobbyName)
                 ? string.Empty
                 : dispatcher.lobbyName.Trim();
-        }
-
-        private static bool IsInGameScene(GameMainBase? main)
-        {
-            return main is InTramWaitingScene or MaintenanceScene or GamePlayScene or DeathMatchScene;
         }
     }
 }

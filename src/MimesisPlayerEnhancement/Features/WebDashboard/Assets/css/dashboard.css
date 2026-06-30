@@ -109,15 +109,26 @@ body.waiting .app {
 
 /* ── Header ── */
 
-.app-header {
+.app-top {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(22, 27, 34, 0.85);
+  background: rgba(22, 27, 34, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--md-border);
   box-shadow: var(--md-elevation-1);
+}
+
+.app-header {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--md-border);
+  box-shadow: none;
+}
+
+body.connected .app-header {
+  border-bottom-color: var(--md-divider);
 }
 
 .app-header-inner {
@@ -224,10 +235,14 @@ body.waiting .app {
 /* ── Navigation tabs ── */
 
 .app-nav {
-  background: rgba(22, 27, 34, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-bottom: 1px solid var(--md-border);
+}
+
+body:not(.connected) .app-nav {
+  display: none !important;
 }
 
 .app-nav ul {
@@ -267,10 +282,6 @@ body.waiting .app {
 .app-nav a.active {
   color: var(--md-primary);
   border-bottom-color: var(--md-primary);
-}
-
-body.waiting .app-nav {
-  display: none;
 }
 
 /* ── Donation ── */
