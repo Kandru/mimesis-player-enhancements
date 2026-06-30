@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using DunGen;
 using HarmonyLib;
 using UnityEngine;
@@ -20,6 +21,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static readonly FieldInfo TilesField =
             AccessTools.Field(typeof(VSpaceTileGroup), "m_tiles")
             ?? throw new InvalidOperationException("VSpaceTileGroup.m_tiles not found");
+
+        private static readonly ConditionalWeakTable<DungeonRoom, VSpaceTileGroup> TileGroupCache = new();
 
         internal static string TryGetRoomName(DungeonRoom room, Vector3 position)
         {
@@ -51,17 +54,25 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         private static bool TryGetTileGroup(DungeonRoom room, out VSpaceTileGroup? tileGroup)
         {
+            if (TileGroupCache.TryGetValue(room, out tileGroup))
+            {
+                return tileGroup != null;
+            }
+
             tileGroup = null;
 
             if (DungeonSpaceGroupField.GetValue(room) is VSpaceTileGroup dungeonTileGroup)
             {
                 tileGroup = dungeonTileGroup;
-                return true;
             }
-
-            if (SpaceGroupField.GetValue(room) is VSpaceTileGroup spaceTileGroup)
+            else if (SpaceGroupField.GetValue(room) is VSpaceTileGroup spaceTileGroup)
             {
                 tileGroup = spaceTileGroup;
+            }
+
+            if (tileGroup != null)
+            {
+                TileGroupCache.Add(room, tileGroup);
                 return true;
             }
 

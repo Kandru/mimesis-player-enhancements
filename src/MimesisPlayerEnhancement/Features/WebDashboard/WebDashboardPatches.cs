@@ -38,12 +38,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
+                bool changed = false;
                 foreach (System.Collections.Generic.KeyValuePair<long, ReluProtocol.Enum.NetworkGrade> pair in sig.grades)
                 {
-                    GradeByPlayerUid[pair.Key] = (int)pair.Value;
+                    int grade = (int)pair.Value;
+                    if (!GradeByPlayerUid.TryGetValue(pair.Key, out int existing) || existing != grade)
+                    {
+                        GradeByPlayerUid[pair.Key] = grade;
+                        changed = true;
+                    }
                 }
 
-                WebDashboardSnapshotCache.MarkDirty();
+                if (changed)
+                {
+                    WebDashboardSnapshotCache.MarkDirty();
+                }
             }
         }
 

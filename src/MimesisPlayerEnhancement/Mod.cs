@@ -117,8 +117,6 @@ namespace MimesisPlayerEnhancement
                 module.SyncFromConfig();
             }
 
-            int sessionCap = ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : 4;
-
             if (_statisticsWasEnabled && !ModConfig.EnableStatistics.Value)
             {
                 StatisticsTracker.ClearRuntimeState();
@@ -126,9 +124,19 @@ namespace MimesisPlayerEnhancement
 
             _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
 
-            ModLog.Debug(
-                "Config",
-                $"Synced — MorePlayers={ModConfig.EnableMorePlayers.Value} (session cap {sessionCap}), " +
+            ModLog.Debug("Config", $"Synced — {BuildConfigSummary()}");
+        }
+
+        private void LogStartupSummary()
+        {
+            ModLog.Info("Startup", $"v{VersionInfo.ModuleVersion} loaded — {BuildConfigSummary()}");
+        }
+
+        private static string BuildConfigSummary()
+        {
+            int sessionCap = ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : 4;
+            return
+                $"MorePlayers={ModConfig.EnableMorePlayers.Value} (session cap {sessionCap}), " +
                 $"MoreVoices={ModConfig.EnableMoreVoices.Value}" +
                 (ModConfig.EnableMoreVoices.Value
                     ? $" (indoor {ModConfig.MaxIndoorVoiceEvents.Value}, deathmatch {ModConfig.MaxDeathMatchVoiceEvents.Value}, outdoor {ModConfig.MaxOutdoorVoiceEvents.Value})"
@@ -154,42 +162,7 @@ namespace MimesisPlayerEnhancement
                 (ModConfig.EnableWebDashboard.Value
                     ? $" ({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})"
                     : "") +
-                $", DebugLogging={ModConfig.EnableDebugLogging.Value}");
-        }
-
-        private void LogStartupSummary()
-        {
-            ModLog.Info(
-                "Startup",
-                $"v{VersionInfo.ModuleVersion} loaded — " +
-                $"MorePlayers={ModConfig.EnableMorePlayers.Value}" +
-                (ModConfig.EnableMorePlayers.Value ? $" (session cap {ModConfig.MaxPlayers.Value})" : "") +
-                $", MoreVoices={ModConfig.EnableMoreVoices.Value}" +
-                (ModConfig.EnableMoreVoices.Value
-                    ? $" (indoor {ModConfig.MaxIndoorVoiceEvents.Value}, deathmatch {ModConfig.MaxDeathMatchVoiceEvents.Value}, outdoor {ModConfig.MaxOutdoorVoiceEvents.Value})"
-                    : "") +
-                $", Persistence={ModConfig.EnablePersistence.Value}" +
-                $", Statistics={ModConfig.EnableStatistics.Value}, " +
-                $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
-                $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
-                $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
-                $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
-                $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
-                $"MimicTuning={ModConfig.EnableMimicTuning.Value}" +
-                (ModConfig.EnableMimicTuning.Value
-                    ? $" (randomize={ModConfig.RandomizeMimicPossessionDuration.Value}, cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value})"
-                    : "") +
-                $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
-                $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
-                $"ExtendedSaveSlots={ModConfig.EnableExtendedSaveSlots.Value}" +
-                (ModConfig.EnableExtendedSaveSlots.Value
-                    ? $" (max manual {ModConfig.MaxManualSaveSlots.Value})"
-                    : "") +
-                $", WebDashboard={ModConfig.EnableWebDashboard.Value}" +
-                (ModConfig.EnableWebDashboard.Value
-                    ? $" ({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})"
-                    : "") +
-                $", DebugLogging={ModConfig.EnableDebugLogging.Value}");
+                $", DebugLogging={ModConfig.EnableDebugLogging.Value}";
         }
     }
 }

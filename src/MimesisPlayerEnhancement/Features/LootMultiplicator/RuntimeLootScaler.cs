@@ -23,7 +23,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -48,14 +48,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 SessionPlayerCountHelper.ResolveFromRoom(room),
                 element.ItemMasterID);
 
-            LootMultiplicatorLog.InfoRuntimeScaled(
-                source,
-                itemType,
-                element.ItemMasterID,
-                before,
-                after,
-                multiplier,
-                $"SpawnLootingObject/{reasonOfSpawn}");
             LootMultiplicatorLog.DebugLootScaled(
                 source,
                 itemType,

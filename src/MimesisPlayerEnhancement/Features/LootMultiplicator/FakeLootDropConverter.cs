@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }

@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             GameActionSpawnItem spawnAction,
             GameActionParamPosition positionParam)
         {
-            if (!ShouldScale() || vroom == null || spawnAction == null || positionParam == null)
+            if (!LootScalingGate.ShouldScale() || vroom == null || spawnAction == null || positionParam == null)
             {
                 return;
             }
@@ -95,13 +95,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             {
                 yield return new KeyValuePair<int, int>(itemMasterId, rate);
             }
-        }
-
-        private static bool ShouldScale()
-        {
-            return ModConfig.EnableLootMultiplicator.Value
-                && !HostApplyGate.IsParticipantClient()
-                && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
     }
 }

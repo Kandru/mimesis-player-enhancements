@@ -6,12 +6,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardStatisticsBridge
     {
-        internal static string? BuildLeaderboardJson(int saveSlotId, IReadOnlyCollection<ulong> connectedSteamIds)
-        {
-            LeaderboardDocument? leaderboard = GetLeaderboardDocument(saveSlotId);
-            return leaderboard == null ? null : WebDashboardJson.SerializeLeaderboardResponse(leaderboard, connectedSteamIds);
-        }
-
         internal static LeaderboardDocument? GetLeaderboardDocument(int saveSlotId)
         {
             if (!WebDashboardGameState.IsHost() || saveSlotId < 0)

@@ -29,9 +29,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             ]);
         }
 
-        private static bool ShouldApply =>
-            HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonTime.Value);
-
         [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
         public static class DungeonRoomOnAllMemberEnteredPatch
         {

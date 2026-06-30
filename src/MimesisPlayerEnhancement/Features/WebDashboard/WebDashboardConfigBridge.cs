@@ -88,22 +88,24 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
-            if (!GlobalConfigStore.TryWriteValue(sectionId, key, normalized, out error, waitForCompletion: true))
+            if (!ModConfigRegistry.TrySetEntryValue(sectionId, key, normalized, out error))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = error ?? "Failed to apply setting.",
+                };
+            }
+
+            ModConfig.SanitizeFloatEntries();
+
+            if (!GlobalConfigStore.TryWriteValue(sectionId, key, normalized, out error, waitForCompletion: false))
             {
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
                     Message = error ?? "Failed to save global config.",
                 };
-            }
-
-            SparseTomlConfig.RepairTomletCompatibility(ModConfig.FilePath);
-            ModConfig.ReloadGlobalFromFile();
-            ModConfig.SanitizeFloatEntries();
-
-            if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string savedGlobalValue))
-            {
-                savedGlobalValue = normalized;
             }
 
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
@@ -114,15 +116,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (activeSlotId >= 0)
             {
-                SaveSlotConfigStore.PruneMatchingGlobal(activeSlotId, waitForCompletion: true);
-                SaveSlotConfigStore.ApplyOverridesToRuntime(activeSlotId);
-            }
-            else
-            {
-                ModConfig.NotifyRuntimeChanged();
+                ReconcileActiveSaveOverride(activeSlotId, sectionId, key, normalized, out error);
             }
 
-            return BuildUpdateResult(sectionId, key, savedGlobalValue, "Saved to global config.");
+            ModConfig.NotifyRuntimeChanged();
+
+            return BuildUpdateResult(sectionId, key, normalized, "Saved to global config.");
         }
 
         internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
@@ -136,7 +135,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
-            if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, value, out string? error, waitForCompletion: true))
+            if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, value, out string? error, waitForCompletion: false))
             {
                 return new WebDashboardConfigUpdateResult
                 {
@@ -151,12 +150,49 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Success = true,
                     Message = "Saved to save slot overrides.",
+                    ConfigVersion = ModConfig.Version,
+                    SectionId = sectionId,
+                    Key = key,
+                    Value = value,
                 };
             }
 
             string effectiveValue = ModConfigRegistry.FormatEntryValue(entry);
             bool isOverridden = SaveSlotConfigStore.IsOverridden(slotId, sectionId, key);
             return BuildSaveUpdateResult(sectionId, key, effectiveValue, isOverridden, entry);
+        }
+
+        private static void ReconcileActiveSaveOverride(
+            int slotId,
+            string sectionId,
+            string key,
+            string normalizedGlobal,
+            out string? error)
+        {
+            error = null;
+
+            if (!SaveSlotConfigStore.IsOverridden(slotId, sectionId, key))
+            {
+                return;
+            }
+
+            SparseTomlConfig.Document doc = SaveSlotConfigStore.LoadOverrides(slotId);
+            if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
+                || !keys.TryGetValue(key, out string overrideRaw))
+            {
+                return;
+            }
+
+            if (ModConfigRegistry.RawValuesEqual(sectionId, key, overrideRaw, normalizedGlobal))
+            {
+                SaveSlotConfigStore.ClearOverrideKey(slotId, sectionId, key);
+                return;
+            }
+
+            if (!ModConfigRegistry.TrySetEntryValue(sectionId, key, overrideRaw, out error))
+            {
+                ModLog.Warn("WebDashboard", $"Save override {sectionId}/{key} for slot {slotId} could not be re-applied: {error}");
+            }
         }
 
         private static WebDashboardConfigUpdateResult BuildUpdateResult(
@@ -171,6 +207,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Success = true,
                     Message = message,
+                    ConfigVersion = ModConfig.Version,
                     SectionId = sectionId,
                     Key = key,
                     Value = savedValue,
@@ -181,6 +218,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 Success = true,
                 Message = message,
+                ConfigVersion = ModConfig.Version,
                 SectionId = sectionId,
                 Key = key,
                 Value = savedValue,
@@ -199,6 +237,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 Success = true,
                 Message = "Saved to save slot overrides.",
+                ConfigVersion = ModConfig.Version,
                 SectionId = sectionId,
                 Key = key,
                 Value = effectiveValue,
@@ -267,7 +306,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         Type = entry.GetReflectedType()?.Name ?? "Unknown",
                         Value = saveScope
                             ? ModConfigRegistry.FormatEntryValue(entry)
-                            : globalValue,
+                            : ModConfigRegistry.FormatEntryValue(entry),
                         DefaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry),
                         GlobalValue = globalValue,
                         IsOverridden = isOverridden,

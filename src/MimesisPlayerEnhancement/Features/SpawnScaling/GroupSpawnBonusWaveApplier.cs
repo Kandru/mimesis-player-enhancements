@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }

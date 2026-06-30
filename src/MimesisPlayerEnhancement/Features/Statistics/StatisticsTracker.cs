@@ -178,7 +178,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             ModLog.Info(Feature, $"Player disconnected — steamId={steamId} displayName={doc.DisplayName}");
-            StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushPendingWrites();
             StatisticsWriteQueue.SavePlayerImmediate(_loadedSlotId, doc);
             PersistLeaderboardImmediate(_loadedSlotId);
             StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
@@ -274,7 +274,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             Dictionary<ulong, int> voiceCounts = BuildVoiceCountCache();
-            StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushPendingWrites();
 
             foreach (ulong steamId in affected)
             {
@@ -424,7 +424,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 }
             }
 
-            StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushPendingWrites();
             PersistLeaderboardImmediate(_loadedSlotId);
             WebDashboardSnapshotCache.MarkDirty();
         }
@@ -447,7 +447,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             IncrementCounter(steamId, counters => counters.DeathmatchWins++);
-            StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushPendingWrites();
             PersistLeaderboardImmediate(_loadedSlotId);
             WebDashboardSnapshotCache.MarkDirty();
         }
@@ -480,7 +480,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             LoadForSlot(slotId);
-            StatisticsWriteQueue.FlushAllSync();
+            StatisticsWriteQueue.FlushPendingWrites();
             foreach (PlayerStatisticsDocument doc in _players.Values)
             {
                 StatisticsWriteQueue.SavePlayerImmediate(slotId, doc);
@@ -514,7 +514,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             increment(doc.CurrentSession.Counters);
             increment(doc.Global.Counters);
             StatisticsWriteQueue.MarkDirty(steamId);
-            WebDashboardSnapshotCache.MarkDirty();
         }
 
         private static void IncrementDictionaryCounter(
@@ -537,7 +536,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             IncrementDictionaryValue(selector(doc.CurrentSession.Counters), key);
             IncrementDictionaryValue(selector(doc.Global.Counters), key);
             StatisticsWriteQueue.MarkDirty(steamId);
-            WebDashboardSnapshotCache.MarkDirty();
         }
 
         private static void IncrementDictionaryValue(Dictionary<string, long> dictionary, string key)

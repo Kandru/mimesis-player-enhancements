@@ -205,6 +205,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public bool Success;
         public string Message = "";
+        public int ConfigVersion;
         public string SectionId = "";
         public string Key = "";
         public string Value = "";

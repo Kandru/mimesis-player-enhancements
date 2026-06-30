@@ -77,7 +77,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -173,7 +173,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (HostApplyGate.IsParticipantClient() || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -260,12 +260,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     if (pending.Data.ActorID != 0)
                     {
                         PendingRespawns.RemoveAt(i);
-                        continue;
-                    }
-
-                    if (MapPlacedEncounterProximity.ShouldBlockBonusLootRespawn(pending.Room, pending.Data, throttle: false))
-                    {
-                        DeferNextAttempt(i, pending, now);
                         continue;
                     }
 

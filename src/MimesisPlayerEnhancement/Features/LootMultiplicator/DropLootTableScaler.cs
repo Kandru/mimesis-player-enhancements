@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     {
         internal static void ScaleDropList(ItemDropInfo dropInfo, List<int> dropList)
         {
-            if (!ShouldScale() || dropInfo == null || dropList == null)
+            if (!LootScalingGate.ShouldScale() || dropInfo == null || dropList == null)
             {
                 return;
             }
@@ -54,13 +54,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             {
                 LootMultiplicatorLog.InfoDropTableScaled(vanillaCount, added, playerCount);
             }
-        }
-
-        private static bool ShouldScale()
-        {
-            return ModConfig.EnableLootMultiplicator.Value
-                && !HostApplyGate.IsParticipantClient()
-                && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
     }
 }

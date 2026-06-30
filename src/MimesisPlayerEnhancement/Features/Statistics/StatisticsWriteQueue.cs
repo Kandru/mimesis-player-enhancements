@@ -135,6 +135,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             BackgroundFileWriteQueue.FlushAllSync();
         }
 
+        internal static void FlushPendingWrites()
+        {
+            FlushDirty(async: true);
+            _nextFlushTime = UnityEngine.Time.time + DebounceSeconds;
+        }
+
         private static void FlushDirty(bool async)
         {
             ulong[] players;

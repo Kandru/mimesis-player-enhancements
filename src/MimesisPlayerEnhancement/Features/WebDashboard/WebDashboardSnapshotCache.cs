@@ -9,7 +9,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal static class WebDashboardSnapshotCache
     {
         private const int FullRefreshIntervalMs = 1000;
-        private const int MinimapRefreshIntervalMs = 100;
+        private const int MinDirtyRefreshMs = 500;
+        private const int MinimapRefreshIntervalMs = 250;
 
         private static WebDashboardSnapshot _snapshot = new();
         private static int _version;
@@ -53,9 +54,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     _lastMinimapRefreshMs = nowMs;
                 }
 
-                if (_dirty || nowMs - _lastFullRefreshMs >= FullRefreshIntervalMs)
+                if (ShouldRunFullRefresh(nowMs))
                 {
-                    Refresh(listenUrl);
+                    Refresh(listenUrl, nowMs);
                     _dirty = false;
                     _lastFullRefreshMs = nowMs;
                 }
@@ -77,15 +78,30 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (!_dirty)
+            if (!ShouldRunFullRefresh(idleNowMs))
             {
                 return;
             }
 
-            Refresh(listenUrl);
+            Refresh(listenUrl, idleNowMs);
             _dirty = false;
             _lastFullRefreshMs = idleNowMs;
             _minimapFingerprint = "";
+        }
+
+        private static bool ShouldRunFullRefresh(long nowMs)
+        {
+            if (!_dirty && nowMs - _lastFullRefreshMs < FullRefreshIntervalMs)
+            {
+                return false;
+            }
+
+            if (nowMs - _lastFullRefreshMs >= FullRefreshIntervalMs)
+            {
+                return true;
+            }
+
+            return _dirty && nowMs - _lastFullRefreshMs >= MinDirtyRefreshMs;
         }
 
         internal static void RefreshMinimapLive()
@@ -130,8 +146,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSseHub.NotifyMinimapChanged();
         }
 
-        internal static void Refresh(string listenUrl)
+        internal static void Refresh(string listenUrl, long nowMs = 0)
         {
+            if (nowMs <= 0)
+            {
+                nowMs = UtcNowMs();
+            }
+
             bool connected = WebDashboardGameState.IsConnected();
             bool isHost = WebDashboardGameState.IsHost();
             int saveSlotId = WebDashboardGameState.GetSaveSlotId();
@@ -223,20 +244,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     {
                         foreach (LeaderboardEntry entry in leaderboard.Entries)
                         {
-                            if (entry.SteamId == 0)
+                            if (entry.SteamId != 0)
                             {
-                                continue;
-                            }
-
-                            _ = avatarSteamIds.Add(entry.SteamId);
-
-                            string? statsJson = WebDashboardStatisticsBridge.BuildPlayerStatsJson(
-                                saveSlotId,
-                                entry.SteamId,
-                                leaderboard);
-                            if (!string.IsNullOrEmpty(statsJson))
-                            {
-                                next.PlayerStatsJson[entry.SteamId] = statsJson;
+                                _ = avatarSteamIds.Add(entry.SteamId);
                             }
                         }
                     }
@@ -244,11 +254,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 WebDashboardAvatarService.PrewarmForPlayers([.. avatarSteamIds]);
 
-                WebDashboardMinimapLayoutBuilder.EnsureLayout();
-                next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
-                next.MinimapMarkers = WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train);
-                next.MinimapTrain = train;
-                _minimapFingerprint = BuildMinimapFingerprint(next.MinimapMarkers, train);
+                if (nowMs - _lastMinimapRefreshMs < MinimapRefreshIntervalMs
+                    && _snapshot.MinimapMarkers.Count > 0)
+                {
+                    next.MinimapLayout = _snapshot.MinimapLayout;
+                    next.MinimapMarkers = _snapshot.MinimapMarkers;
+                    next.MinimapTrain = _snapshot.MinimapTrain;
+                }
+                else
+                {
+                    WebDashboardMinimapLayoutBuilder.EnsureLayout();
+                    next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
+                    next.MinimapMarkers = WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train);
+                    next.MinimapTrain = train;
+                    _minimapFingerprint = BuildMinimapFingerprint(next.MinimapMarkers, train);
+                    _lastMinimapRefreshMs = nowMs;
+                }
             }
 
             _ = Interlocked.Exchange(ref _snapshot, next);

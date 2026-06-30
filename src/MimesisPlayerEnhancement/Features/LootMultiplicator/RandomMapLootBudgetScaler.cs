@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static int RollScaledBudget(DungeonRoom room, int minVal, int maxVal)
         {
             int vanillaBudget = SimpleRandUtil.Next(minVal, maxVal);
-            if (!ShouldScale(room))
+            if (!LootScalingGate.ShouldScale(room))
             {
                 return vanillaBudget;
             }
@@ -50,14 +50,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             return scaled;
-        }
-
-        private static bool ShouldScale(DungeonRoom room)
-        {
-            return ModConfig.EnableLootMultiplicator.Value
-                && !HostApplyGate.IsParticipantClient()
-                && HostApplyGate.ShouldApplyHostOnlyFeature()
-                && room != null;
         }
     }
 }

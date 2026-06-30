@@ -85,12 +85,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ApplySyncFromConfig();
             }
 
-            if (!_running)
-            {
-                return;
-            }
-
-            WebDashboardActionQueue.Process();
             WebDashboardConfigUpdateQueue.Process();
 
             if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
@@ -104,6 +98,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            WebDashboardActionQueue.Process();
             WebDashboardSnapshotCache.Tick(_listenUrl);
         }
 

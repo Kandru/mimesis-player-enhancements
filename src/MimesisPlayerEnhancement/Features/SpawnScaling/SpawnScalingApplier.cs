@@ -52,12 +52,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
-            {
-                ModLog.Debug(Feature, "Spawn scaling skipped — not host");
-                return;
-            }
-
             int playerCount = room.GetMemberCount();
             SpawnScalingLog.InfoScalingApplied(playerCount);
 

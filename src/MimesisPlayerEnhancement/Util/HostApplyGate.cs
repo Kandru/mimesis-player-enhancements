@@ -17,13 +17,14 @@ namespace MimesisPlayerEnhancement.Util
                 return false;
             }
 
-            if (IsParticipantClient())
+            var pdata = JoinAnytimeHub.GetPdata();
+            if (pdata?.ClientMode == NetworkClientMode.Participant)
             {
                 return false;
             }
 
             // Solo/local play often has no network host flags yet; pdata may also be null early on.
-            return JoinAnytimeHub.GetPdata() == null || JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Host || MimesisSaveManager.IsHost();
+            return pdata == null || pdata.ClientMode == NetworkClientMode.Host || MimesisSaveManager.IsHost();
         }
     }
 }

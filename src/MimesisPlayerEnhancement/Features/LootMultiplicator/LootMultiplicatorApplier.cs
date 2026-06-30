@@ -61,12 +61,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
-            {
-                ModLog.Debug(Feature, "Loot scaling skipped — not host");
-                return;
-            }
-
             int playerCount = room.GetMemberCount();
             LootMultiplicatorLog.InfoScalingApplied(playerCount);
 
