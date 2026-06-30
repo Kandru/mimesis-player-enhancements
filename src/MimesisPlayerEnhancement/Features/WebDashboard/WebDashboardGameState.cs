@@ -1,20 +1,54 @@
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using MimesisPlayerEnhancement.Features.Persistence;
+using MimesisPlayerEnhancement.Util;
+using ReluNetwork.ConstEnum;
 using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardGameState
     {
+        private static bool _sessionActive;
+
         internal static bool IsConnected()
         {
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            return pdata != null && pdata.SessionJoined;
+            if (pdata == null)
+            {
+                _sessionActive = false;
+                return false;
+            }
+
+            if (pdata.SessionJoined)
+            {
+                _sessionActive = true;
+                return true;
+            }
+
+            // Scene transition grace: SessionJoined may drop while main is still in-game.
+            if (_sessionActive && IsInGameScene(pdata.main))
+            {
+                return true;
+            }
+
+            _sessionActive = false;
+            return false;
         }
 
         internal static bool IsHost()
         {
-            return JoinAnytimeHub.GetPdata()?.ClientMode == ReluNetwork.ConstEnum.NetworkClientMode.Host;
+            if (!IsConnected())
+            {
+                return false;
+            }
+
+            if (HostApplyGate.IsParticipantClient())
+            {
+                return false;
+            }
+
+            return JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Host
+                || MimesisSaveManager.IsHost();
         }
 
         internal static bool CanEditGlobalSettings()
@@ -29,11 +63,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static int GetSaveSlotId()
         {
-            if (!IsHost())
-            {
-                return -1;
-            }
-
             return MimesisSaveManager.TryGetActiveSaveSlotId(out int slotId) ? slotId : -1;
         }
 
@@ -60,6 +89,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return string.IsNullOrWhiteSpace(dispatcher.lobbyName)
                 ? string.Empty
                 : dispatcher.lobbyName.Trim();
+        }
+
+        private static bool IsInGameScene(GameMainBase? main)
+        {
+            return main is InTramWaitingScene or MaintenanceScene or GamePlayScene or DeathMatchScene;
         }
     }
 }

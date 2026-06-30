@@ -66,6 +66,12 @@ function matchesSettingsQuery(entry, sectionTitle, query) {
   return settingsHaystack(entry, sectionTitle).some((value) => value.includes(query));
 }
 
+const OFFLINE_ROUTES = ['donation', 'global-settings'];
+
+function isOfflineRoute(route) {
+  return OFFLINE_ROUTES.includes(route);
+}
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('dashboard', () => ({
     status: {
@@ -110,6 +116,10 @@ document.addEventListener('alpine:init', () => {
 
     get isGameRoute() {
       return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
+    },
+
+    isOfflineRoute() {
+      return isOfflineRoute(this.route);
     },
 
     get activeSettings() {
@@ -222,8 +232,7 @@ document.addEventListener('alpine:init', () => {
       if (
         !this.status.isConnected
         && this.route !== 'waiting'
-        && this.route !== 'donation'
-        && this.route !== 'global-settings'
+        && !isOfflineRoute(this.route)
       ) {
         location.hash = '#/waiting';
         this.parseRoute();
@@ -237,9 +246,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     setConnectedMode() {
-      const waitingLayout = !this.status.isConnected
-        && this.route !== 'donation'
-        && this.route !== 'global-settings';
+      const waitingLayout = !this.status.isConnected && !isOfflineRoute(this.route);
       document.body.classList.toggle('waiting', waitingLayout);
       document.body.classList.toggle('connected', this.status.isConnected);
     },
@@ -296,14 +303,14 @@ document.addEventListener('alpine:init', () => {
       this.apiError = false;
       this.setConnectedMode();
 
-      if (!this.status.isConnected) {
+      if (!this.status.isConnected && wasConnected && this.isGameRoute) {
         this.players = [];
         this.leaderboard = null;
         this.playerStats = null;
         this.settingsSave = null;
         this.minimapRaw = null;
         this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
-      } else if (this.route === 'minimap' || this.route === 'player') {
+      } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
         this.applyMinimapFilter();
       }
 
@@ -336,7 +343,7 @@ document.addEventListener('alpine:init', () => {
       const onGlobalSettings = this.route === 'global-settings';
       const onSaveSettings = this.route === 'settings' && this.status.isHost;
 
-      if (!this.status.isConnected && !onGlobalSettings) {
+      if (!this.status.isConnected && !isOfflineRoute(this.route)) {
         this.pageError = '';
         this.lastRoute = this.route;
         this.lastSteamId = this.steamId;

@@ -96,7 +96,7 @@
           </div>
 
           <!-- Waiting -->
-          <div x-show="!status.isConnected && route !== 'donation' && route !== 'global-settings'" class="waiting-panel">
+          <div x-show="!status.isConnected && route !== 'waiting' && !isOfflineRoute()" class="waiting-panel">
             <div class="waiting-card">
               <div class="spinner" role="progressbar" aria-label="Waiting for game"></div>
               <h2>Not connected</h2>
@@ -360,7 +360,7 @@
             <div class="settings-page">
               <h2 class="page-heading">Global Settings</h2>
 
-              <div class="settings-search-panel surface-card" x-show="route === 'global-settings'" x-cloak>
+              <div class="settings-search-panel surface-card">
                 <label class="settings-search-wrap">
                   <span class="settings-search-label">Search settings</span>
                   <input type="search"
@@ -408,7 +408,7 @@
               </template>
 
               <div class="empty-state" x-show="pageError"><p x-text="pageError"></p></div>
-              <div class="loading-panel" x-show="loadingSettings && !pageError && route === 'global-settings'">
+              <div class="loading-panel" x-show="loadingSettings && !pageError">
                 <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
               </div>
 
@@ -416,7 +416,7 @@
                 <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
               </div>
 
-              <div class="settings-sections" x-show="!loadingSettings && !pageError && route === 'global-settings' && filteredSections.length > 0">
+              <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
                 <template x-for="section in filteredSections" :key="section.id">
                   <section class="settings-section surface-card"
                            :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
