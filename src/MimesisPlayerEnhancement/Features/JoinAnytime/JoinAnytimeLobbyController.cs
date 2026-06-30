@@ -305,15 +305,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (JoinAnytimeHub.IsHostLobbyPublic(dispatcher))
             {
-                try
-                {
-                    dispatcher.SetLobbyPublic(true);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Debug(Feature, $"SetLobbyPublic during refresh failed — {ex.Message}");
-                }
-
                 ApplyLobbyPresence(dispatcher, wantsPublic: true);
             }
 
