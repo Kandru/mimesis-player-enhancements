@@ -451,7 +451,7 @@
                       </div>
                     </header>
                     <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                      <template x-for="entry in sectionEntries(section.id)" :key="entry.key">
+                      <template x-for="entry in sectionEntries(section.id)" :key="entry.key + ':' + settingDraftValue(entry)">
                         <article class="settings-entry"
                                  :id="settingsDomId(section.id, entry.key)"
                                  :class="{ 'is-hidden-entry': entry.isHidden }">
@@ -621,7 +621,7 @@
                         </div>
                       </header>
                       <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                        <template x-for="entry in sectionEntries(section.id)" :key="entry.key">
+                        <template x-for="entry in sectionEntries(section.id)" :key="entry.key + ':' + settingDraftValue(entry)">
                           <article class="settings-entry"
                                    :id="settingsDomId(section.id, entry.key)"
                                    :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">

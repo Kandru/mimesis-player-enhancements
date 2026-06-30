@@ -70,15 +70,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
-            ModConfig.ReloadGlobalFromFile();
-
-            if (!ModConfig.TrySetEntryValue(sectionId, key, value, out string? error))
+            if (!ModConfigRegistry.TryNormalizeRawValue(sectionId, key, value, out string normalized, out string? error))
             {
-                if (SaveSlotConfigStore.ActiveSlotId >= 0)
-                {
-                    SaveSlotConfigStore.ApplyOverridesToRuntime(SaveSlotConfigStore.ActiveSlotId);
-                }
-
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
@@ -86,12 +79,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
+            if (!GlobalConfigStore.TryWriteValue(sectionId, key, normalized, out error))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = error ?? "Failed to save global config.",
+                };
+            }
+
+            ModConfig.ReloadGlobalFromFile();
             ModConfig.SanitizeFloatEntries();
-            ModConfig.SaveToFile();
 
             if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string savedGlobalValue))
             {
-                savedGlobalValue = value;
+                savedGlobalValue = normalized;
             }
 
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;

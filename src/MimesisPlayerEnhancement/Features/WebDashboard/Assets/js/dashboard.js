@@ -96,7 +96,6 @@ document.addEventListener('alpine:init', () => {
     lastSnapshotVersion: -1,
     lastConfigVersion: -1,
     savingSettingKey: '',
-    featureToggleStates: {},
     lastRoute: '',
     lastSteamId: null,
     eventSource: null,
@@ -370,7 +369,6 @@ document.addEventListener('alpine:init', () => {
           if (initialLoad) this.loadingSettings = true;
           try {
             this.settingsGlobal = await Api.getGlobalSettings();
-            this.refreshFeatureToggles();
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
@@ -383,7 +381,6 @@ document.addEventListener('alpine:init', () => {
           if (initialLoad) this.loadingSettings = true;
           try {
             this.settingsSave = await Api.getSaveSettings();
-            this.refreshFeatureToggles();
           } finally {
             if (initialLoad) this.loadingSettings = false;
           }
@@ -546,24 +543,10 @@ document.addEventListener('alpine:init', () => {
       return this.activeSettings?.sections?.find((section) => section.id === sectionId) ?? null;
     },
 
-    refreshFeatureToggles() {
-      this.featureToggleStates = Object.fromEntries(
-        (this.activeSettings?.sections ?? [])
-          .filter((section) => section.featureToggle)
-          .map((section) => [section.id, parseBool(section.featureToggle.value)])
-      );
-    },
-
-    updateFeatureToggle(sectionId, value) {
-      this.featureToggleStates = {
-        ...this.featureToggleStates,
-        [sectionId]: parseBool(value),
-      };
-    },
-
     featureEnabled(sectionId) {
-      if (!(sectionId in this.featureToggleStates)) return true;
-      return this.featureToggleStates[sectionId] === true;
+      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
+      if (!toggle) return true;
+      return parseBool(toggle.value);
     },
 
     sectionEntries(sectionId) {
@@ -651,10 +634,7 @@ document.addEventListener('alpine:init', () => {
     async toggleFeature(sectionId) {
       const toggle = this.findSettingsSection(sectionId)?.featureToggle;
       if (!toggle || this.isSavingSetting(sectionId, toggle)) return;
-
-      const enabled = !this.featureEnabled(sectionId);
-      this.updateFeatureToggle(sectionId, enabled);
-      await this.saveSetting(sectionId, toggle, enabled ? 'true' : 'false');
+      await this.saveSetting(sectionId, toggle, parseBool(toggle.value) ? 'false' : 'true');
     },
 
     formatSettingValue(entry) {
@@ -668,8 +648,7 @@ document.addEventListener('alpine:init', () => {
 
     settingValueClass(entry) {
       if (entry.type !== 'Boolean') return '';
-      const value = String(entry.value || '').toLowerCase();
-      return value === 'true' ? 'settings-bool-on' : 'settings-bool-off';
+      return parseBool(entry.value) ? 'settings-bool-on' : 'settings-bool-off';
     },
 
     settingDiffersFromDefault(entry) {
@@ -706,33 +685,25 @@ document.addEventListener('alpine:init', () => {
       const settings = this.activeSettings;
       const previousValue = entry.value;
       const wasOverridden = entry.isOverridden;
-      const featureToggle = this.findSettingsSection(sectionId)?.featureToggle;
-      const isFeatureToggle = featureToggle?.key === entry.key;
       this.savingSettingKey = saveKey;
       try {
         const res = scope === 'global'
           ? await Api.updateGlobalSetting(sectionId, entry.key, String(rawValue))
           : await Api.updateSaveSetting(sectionId, entry.key, String(rawValue));
         entry.value = res.value ?? String(rawValue);
-        if (isFeatureToggle) {
-          this.updateFeatureToggle(sectionId, entry.value);
-        }
         if (scope === 'global') {
           this.settingsSave = null;
         } else {
           entry.isOverridden = res.isOverridden ?? this.settingDiffersFromGlobal(entry);
         }
         if (settings) {
-          settings.configVersion = this.status.configVersion;
+          settings.configVersion = Math.max(settings.configVersion, this.status.configVersion);
         }
         this.lastConfigVersion = this.status.configVersion;
         this.showToast(res.message || 'Saved');
       } catch (e) {
         entry.value = previousValue;
         entry.isOverridden = wasOverridden;
-        if (isFeatureToggle) {
-          this.updateFeatureToggle(sectionId, previousValue);
-        }
         this.showToast(e.message || 'Failed to save setting');
         await this.loadPageData(true);
       } finally {

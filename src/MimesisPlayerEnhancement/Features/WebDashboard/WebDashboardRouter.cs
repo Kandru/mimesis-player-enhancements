@@ -168,47 +168,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            if (path == "/api/settings" && method == "GET")
-            {
-                if (!WebDashboardGameState.CanEditGlobalSettings())
-                {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
-                    return;
-                }
-
-                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildGlobalSettings()));
-                return;
-            }
-
-            if (path == "/api/settings" && method == "POST")
-            {
-                if (!WebDashboardGameState.CanEditGlobalSettings())
-                {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
-                    return;
-                }
-
-                string body = ReadRequestBody(context.Request);
-                WebDashboardConfigUpdateRequest? request = ModJson.Deserialize<WebDashboardConfigUpdateRequest>(body);
-                if (request == null
-                    || string.IsNullOrWhiteSpace(request.SectionId)
-                    || string.IsNullOrWhiteSpace(request.Key))
-                {
-                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
-                    return;
-                }
-
-                WebDashboardConfigUpdateResult result = WebDashboardConfigUpdateQueue.EnqueueAndWait(
-                    WebDashboardConfigScope.Global,
-                    saveSlotId: -1,
-                    request.SectionId,
-                    request.Key,
-                    request.Value ?? "");
-
-                WriteJson(context, result.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(result));
-                return;
-            }
-
             if (path.StartsWith("/api/players/", StringComparison.Ordinal))
             {
                 HandlePlayerApi(context, method, path, snapshot);
