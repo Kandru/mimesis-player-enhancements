@@ -35,10 +35,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return File.Exists(filePath) || File.Exists(filePath + ".bak");
         }
 
-        internal static void Save(string slotPath, List<SpeechEvent> speechEvents)
+        internal static SpeechEventSaveSnapshot Serialize(string slotPath, List<SpeechEvent> speechEvents)
         {
             string speechPath = GetSpeechEventsPath(slotPath);
+            byte[]? speechBytes = null;
             int serializedCount = 0;
+            long totalAudioBytes = 0;
 
             if (speechEvents.Count > 0)
             {
@@ -64,7 +66,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 serializedCount = serializedEvents.Count;
                 bw.Write(serializedCount);
 
-                long totalAudioBytes = 0;
                 foreach ((byte[] metaData, byte[] audioData) in serializedEvents)
                 {
                     bw.Write(metaData.Length);
@@ -74,18 +75,18 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     totalAudioBytes += audioData.Length;
                 }
 
-                AtomicFileIO.WriteBytes(speechPath, ms.ToArray(), Feature);
+                speechBytes = ms.ToArray();
                 ModLog.Debug(Feature, $"Serialized {serializedCount} SpeechEvents, audio={totalAudioBytes / 1024}KB");
             }
-            else
-            {
-                AtomicFileIO.Delete(speechPath, Feature);
-            }
 
-            AtomicFileIO.WriteText(
-                Path.Combine(slotPath, MetadataFile),
-                $"{{\"version\":{MetadataVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"speechCount\":{serializedCount}}}",
-                Feature);
+            return new SpeechEventSaveSnapshot
+            {
+                SpeechPath = speechPath,
+                SpeechBytes = speechBytes,
+                MetadataPath = Path.Combine(slotPath, MetadataFile),
+                MetadataJson = $"{{\"version\":{MetadataVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"speechCount\":{serializedCount}}}",
+                SerializedCount = serializedCount,
+            };
         }
 
         internal static List<SpeechEvent>? Load(int slotId, string slotPath)

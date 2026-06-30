@@ -1,5 +1,6 @@
 using System;
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
@@ -87,6 +88,7 @@ namespace MimesisPlayerEnhancement
         public override void OnDeinitializeMelon()
         {
             StatisticsWriteQueue.FlushAllSync();
+            PersistenceWriteQueue.FlushAllSync();
             PlayerTuningApplier.RestoreOnShutdown();
             WebDashboardServer.StopOnDeinit();
             HostStatusCache.Invalidate();

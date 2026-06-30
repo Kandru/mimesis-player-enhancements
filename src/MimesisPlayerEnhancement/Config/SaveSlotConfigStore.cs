@@ -256,11 +256,11 @@ namespace MimesisPlayerEnhancement
 
                 if (SparseTomlConfig.IsEmpty(doc))
                 {
-                    AtomicFileIO.Delete(filePath, Feature);
+                    BackgroundFileWriteQueue.EnqueueDelete(filePath, Feature);
                     return true;
                 }
 
-                AtomicFileIO.WriteText(filePath, SparseTomlConfig.Serialize(doc), Feature);
+                BackgroundFileWriteQueue.EnqueueText(filePath, SparseTomlConfig.Serialize(doc), Feature);
                 return true;
             }
             catch (Exception ex)

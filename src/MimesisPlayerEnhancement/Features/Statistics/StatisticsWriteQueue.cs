@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
@@ -15,19 +14,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static readonly HashSet<ulong> DirtyPlayers = [];
         private static readonly HashSet<int> DirtyLeaderboards = [];
-        private static readonly ConcurrentDictionary<string, PendingWrite> InFlight = new(StringComparer.OrdinalIgnoreCase);
         private static readonly object DirtyLock = new();
 
         private static float _nextFlushTime;
         private static int _loadedSlotId = -999;
         private static Func<ulong, PlayerStatisticsDocument?>? _documentResolver;
         private static Func<int, LeaderboardDocument>? _leaderboardResolver;
-
-        private sealed class PendingWrite
-        {
-            internal string? LatestJson;
-            internal Task? WriteTask;
-        }
 
         internal static void Configure(
             int slotId,
@@ -84,7 +76,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 _ = DirtyPlayers.Remove(doc.SteamId);
             }
 
-            StatisticsStore.SavePlayer(slotId, doc);
+            string? path = StatisticsStore.GetPlayerFilePath(slotId, doc.SteamId);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            string json = StatisticsStore.SerializePreparedPlayer(doc);
+            BackgroundFileWriteQueue.EnqueueText(path, json, Feature);
         }
 
         internal static void SaveLeaderboardImmediate(int slotId, LeaderboardDocument leaderboard)
@@ -94,7 +93,17 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 _ = DirtyLeaderboards.Remove(slotId);
             }
 
-            StatisticsStore.SaveLeaderboard(slotId, leaderboard);
+            string? path = StatisticsStore.GetLeaderboardFilePath(slotId);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            leaderboard.Version = LeaderboardDocument.CurrentVersion;
+            leaderboard.SaveSlotId = slotId;
+            leaderboard.UpdatedAtUtc = DateTime.UtcNow;
+            string json = StatisticsJson.SerializeLeaderboard(leaderboard);
+            BackgroundFileWriteQueue.EnqueueText(path, json, Feature);
         }
 
         internal static void ProcessDebounced()
@@ -123,7 +132,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static void FlushAllSync()
         {
             FlushDirty(async: false);
-            WaitForInFlightWrites();
+            BackgroundFileWriteQueue.FlushAllSync();
         }
 
         private static void FlushDirty(bool async)
@@ -188,94 +197,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static void EnqueueWrite(string path, string json, bool waitForCompletion)
         {
-            PendingWrite pending = InFlight.GetOrAdd(path, static _ => new PendingWrite());
-            lock (pending)
-            {
-                pending.LatestJson = json;
-                if (pending.WriteTask is { IsCompleted: false })
-                {
-                    if (!waitForCompletion)
-                    {
-                        return;
-                    }
-
-                    WaitForTask(pending.WriteTask);
-                }
-
-                string snapshot = json;
-                pending.WriteTask = Task.Run(() => WriteToDisk(path, snapshot));
-                if (waitForCompletion)
-                {
-                    WaitForTask(pending.WriteTask);
-                }
-            }
-        }
-
-        private static void WriteToDisk(string path, string json)
-        {
-            try
-            {
-                StatisticsStore.SafeWriteText(path, json);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Background statistics write failed ({System.IO.Path.GetFileName(path)}): {ex.Message}");
-            }
-
-            CompleteWrite(path, json);
-        }
-
-        private static void CompleteWrite(string path, string json)
-        {
-            if (!InFlight.TryGetValue(path, out PendingWrite? pending))
-            {
-                return;
-            }
-
-            lock (pending)
-            {
-                if (pending.LatestJson != null && pending.LatestJson != json)
-                {
-                    string newer = pending.LatestJson;
-                    pending.LatestJson = null;
-                    pending.WriteTask = Task.Run(() => WriteToDisk(path, newer));
-                    return;
-                }
-
-                pending.LatestJson = null;
-                _ = InFlight.TryRemove(path, out _);
-            }
-        }
-
-        private static void WaitForInFlightWrites()
-        {
-            foreach (KeyValuePair<string, PendingWrite> kvp in InFlight)
-            {
-                Task? task;
-                lock (kvp.Value)
-                {
-                    task = kvp.Value.WriteTask;
-                }
-
-                WaitForTask(task);
-            }
-        }
-
-        private static void WaitForTask(Task? task)
-        {
-            if (task == null || task.IsCompleted)
-            {
-                return;
-            }
-
-            try
-            {
-                _ = task.Wait(TimeSpan.FromSeconds(10));
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Statistics write wait failed: {ex.Message}");
-            }
+            BackgroundFileWriteQueue.EnqueueText(path, json, Feature, waitForCompletion);
         }
     }
 }

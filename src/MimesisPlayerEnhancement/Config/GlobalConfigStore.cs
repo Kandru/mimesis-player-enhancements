@@ -78,7 +78,7 @@ namespace MimesisPlayerEnhancement
 
                 if (SparseTomlConfig.IsEmpty(doc) && File.Exists(ModConfig.FilePath))
                 {
-                    AtomicFileIO.Delete(ModConfig.FilePath, Feature);
+                    BackgroundFileWriteQueue.EnqueueDelete(ModConfig.FilePath, Feature);
                     return true;
                 }
 
@@ -87,7 +87,10 @@ namespace MimesisPlayerEnhancement
                     return true;
                 }
 
-                AtomicFileIO.WriteText(ModConfig.FilePath, SparseTomlConfig.Serialize(doc), Feature);
+                BackgroundFileWriteQueue.EnqueueText(
+                    ModConfig.FilePath,
+                    SparseTomlConfig.Serialize(doc),
+                    Feature);
                 return true;
             }
             catch (Exception ex)

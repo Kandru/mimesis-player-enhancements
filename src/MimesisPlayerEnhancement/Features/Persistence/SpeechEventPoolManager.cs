@@ -461,58 +461,71 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             _localArchive = null;
         }
 
-        public static void SavePlayerMapping(int slotId)
+        public static bool TryBuildPlayerMappingJson(
+            int slotId,
+            out string filePath,
+            out string json)
         {
+            filePath = string.Empty;
+            json = string.Empty;
+
             string? slotPath = MimesisSaveManager.GetMimesisSlotPath(slotId);
             if (string.IsNullOrEmpty(slotPath))
             {
-                ModLog.Warn(Feature, "SavePlayerMapping: slot path is null/empty!");
-                return;
+                ModLog.Warn(Feature, "TryBuildPlayerMappingJson: slot path is null/empty!");
+                return false;
             }
 
             try
             {
-                Dictionary<ulong, string> mapping = [];
-
-                foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
-                {
-                    try
-                    {
-                        string pid = archive.PlayerId;
-                        long uid = archive.PlayerUID;
-                        bool isLocal = archive.IsLocal;
-
-                        if (string.IsNullOrEmpty(pid))
-                        {
-                            continue;
-                        }
-
-                        ulong steamId = GameSessionAccess.ResolveSteamId(uid, isLocal);
-                        if (steamId != 0)
-                        {
-                            mapping[steamId] = pid;
-                        }
-                    }
-                    catch (Exception archEx)
-                    {
-                        ModLog.Warn(Feature, $"Archive error during mapping save: {archEx.Message}");
-                    }
-                }
-
-                foreach (KeyValuePair<ulong, string> kvp in GetDisconnectedPlayerMappings())
-                {
-                    mapping.TryAdd(kvp.Key, kvp.Value);
-                }
-
-                _ = Directory.CreateDirectory(slotPath);
-                string filePath = Path.Combine(slotPath, PlayerMappingFile);
-                AtomicFileIO.WriteText(filePath, ModJson.Serialize(mapping), Feature);
-                ModLog.Debug(Feature, $"Saved player mapping: {mapping.Count} entries -> {filePath}");
+                Dictionary<ulong, string> mapping = BuildPlayerMapping();
+                filePath = Path.Combine(slotPath, PlayerMappingFile);
+                json = ModJson.Serialize(mapping);
+                ModLog.Debug(Feature, $"Built player mapping: {mapping.Count} entries -> {filePath}");
+                return true;
             }
             catch (Exception ex)
             {
-                ModLog.Error(Feature, $"SavePlayerMapping FAILED: {ex}");
+                ModLog.Error(Feature, $"TryBuildPlayerMappingJson FAILED: {ex}");
+                return false;
             }
+        }
+
+        private static Dictionary<ulong, string> BuildPlayerMapping()
+        {
+            Dictionary<ulong, string> mapping = [];
+
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                try
+                {
+                    string pid = archive.PlayerId;
+                    long uid = archive.PlayerUID;
+                    bool isLocal = archive.IsLocal;
+
+                    if (string.IsNullOrEmpty(pid))
+                    {
+                        continue;
+                    }
+
+                    ulong steamId = GameSessionAccess.ResolveSteamId(uid, isLocal);
+                    if (steamId != 0)
+                    {
+                        mapping[steamId] = pid;
+                    }
+                }
+                catch (Exception archEx)
+                {
+                    ModLog.Warn(Feature, $"Archive error during mapping build: {archEx.Message}");
+                }
+            }
+
+            foreach (KeyValuePair<ulong, string> kvp in GetDisconnectedPlayerMappings())
+            {
+                mapping.TryAdd(kvp.Key, kvp.Value);
+            }
+
+            return mapping;
         }
 
         private static void LoadPlayerMapping(int slotId)

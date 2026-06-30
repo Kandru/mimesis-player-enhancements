@@ -120,10 +120,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 _ = Directory.CreateDirectory(slotPath);
 
                 List<SpeechEvent> speechEvents = CollectAllSpeechEvents();
-                SpeechEventFileStore.Save(slotPath, speechEvents);
-                SpeechEventPoolManager.SavePlayerMapping(slotId);
+                SpeechEventSaveSnapshot snapshot = SpeechEventFileStore.Serialize(slotPath, speechEvents);
+                if (!SpeechEventPoolManager.TryBuildPlayerMappingJson(slotId, out string playerMappingPath, out string playerMappingJson))
+                {
+                    ModLog.Warn(Feature, "Skip save: player mapping path unavailable.");
+                    return;
+                }
 
-                ModLog.Info(Feature, $"Saved slot {slotId} — speechEvents={speechEvents.Count}");
+                PersistenceWriteQueue.EnqueueSave(slotId, snapshot, playerMappingPath, playerMappingJson);
             }
             catch (Exception ex)
             {
