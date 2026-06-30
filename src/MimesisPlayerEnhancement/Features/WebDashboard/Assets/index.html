@@ -31,6 +31,21 @@
           <a class="app-header-link"
              href="#/donation"
              :class="{ active: route === 'donation' }">Donation</a>
+          <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
+            <span class="app-header-blind-label">Blind mode</span>
+            <button type="button"
+                    class="feature-toggle"
+                    role="switch"
+                    :class="{ 'is-on': playerBlindMode }"
+                    title="Hide alive/dead status and respawn actions to avoid spoilers."
+                    aria-label="Blind mode"
+                    @click="togglePlayerBlindMode">
+              <span class="feature-toggle-track" aria-hidden="true">
+                <span class="feature-toggle-thumb"></span>
+              </span>
+              <span class="feature-toggle-label" x-text="playerBlindMode ? 'On' : 'Off'"></span>
+            </button>
+          </div>
         </nav>
       </div>
     </header>
@@ -128,8 +143,8 @@
                         <span x-text="p.displayName"></span>
                         <span class="badge host" x-show="p.isHost">Host</span>
                         <span class="badge local" x-show="p.isLocal">You</span>
-                        <span class="badge alive" x-show="p.isAlive">Alive</span>
-                        <span class="badge dead" x-show="!p.isAlive">Dead</span>
+                        <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive">Alive</span>
+                        <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive">Dead</span>
                         <span class="badge banned" x-show="p.isBanned">Banned</span>
                       </strong>
                       <small class="player-connection">
@@ -143,7 +158,7 @@
                           </span>
                         </template>
                       </small>
-                      <small class="player-session-stats" x-show="p.currentSession" x-text="sessionLine(p)"></small>
+                      <small class="player-session-stats" x-show="showPlayerSessionStats(p)" x-text="sessionLine(p)"></small>
                     </div>
                     <div class="player-status">
                       <span class="ping-label" x-text="pingLabel(p)"></span>
@@ -224,7 +239,7 @@
               <template x-if="minimap?.markers?.length && minimapShowsMap()">
                 <div class="minimap-legend">
                   <template x-for="m in minimap.markers" :key="m.steamId">
-                    <span class="minimap-legend-item" :class="{ dead: !m.isAlive, local: m.isLocal, host: m.isHost }"
+                    <span class="minimap-legend-item" :class="{ dead: !playerBlindMode && !m.isAlive, local: m.isLocal, host: m.isHost }"
                           x-text="minimapMarkerSummary(m)"></span>
                   </template>
                 </div>

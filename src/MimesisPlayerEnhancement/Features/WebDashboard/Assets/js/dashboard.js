@@ -113,6 +113,7 @@ document.addEventListener('alpine:init', () => {
     minimapAreaId: '',
     minimapLastLayoutVersion: -1,
     minimapLastActiveAreaId: '',
+    playerBlindMode: false,
 
     get isGameRoute() {
       return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
@@ -198,6 +199,7 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
       this.minimapAreaId = localStorage.getItem('minimapAreaId') || '';
+      this.playerBlindMode = parseBool(localStorage.getItem('playerBlindMode'));
       window.addEventListener('hashchange', () => this.onHashChange());
       this.parseRoute();
       this.setConnectedMode();
@@ -501,8 +503,22 @@ document.addEventListener('alpine:init', () => {
       return this.status.isHost && !p.isLocal;
     },
 
+    showPlayerAliveState(p) {
+      return !this.playerBlindMode || p.isLocal;
+    },
+
+    showPlayerSessionStats(p) {
+      return !this.playerBlindMode && p.currentSession;
+    },
+
+    togglePlayerBlindMode() {
+      this.playerBlindMode = !this.playerBlindMode;
+      localStorage.setItem('playerBlindMode', this.playerBlindMode ? '1' : '0');
+      this.applyMinimapFilter(true);
+    },
+
     canRespawn(p) {
-      return this.status.isHost && !p.isAlive && p.playerUid;
+      return this.status.isHost && !this.playerBlindMode && !p.isAlive && p.playerUid;
     },
 
     async moderate(steamId, action) {
@@ -885,6 +901,7 @@ document.addEventListener('alpine:init', () => {
           : [],
         train: this.resolveTrainForArea(this.minimapRaw.train, activeAreaId),
         markers: areaMarkers,
+        blindMode: this.playerBlindMode,
       };
       this.minimapLastLayoutVersion = this.minimapRaw.layoutVersion;
       this.minimapLastActiveAreaId = activeAreaId;
@@ -912,7 +929,7 @@ document.addEventListener('alpine:init', () => {
       if (marker.areaId && marker.areaId !== this.minimap.activeAreaId) {
         parts.push(marker.areaId);
       }
-      if (!marker.isAlive) parts.push('dead');
+      if (!this.playerBlindMode && !marker.isAlive) parts.push('dead');
       return parts.join(' · ');
     },
   }));

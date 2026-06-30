@@ -238,9 +238,10 @@ const MinimapRenderer = {
 
     const markers = document.createElementNS(ns, 'g');
     markers.setAttribute('class', 'minimap-markers');
+    const blindMode = !!data.blindMode;
     (data.markers || []).forEach((marker) => {
       const group = document.createElementNS(ns, 'g');
-      group.setAttribute('class', this.markerClass(marker));
+      group.setAttribute('class', this.markerClass(marker, blindMode));
       group.setAttribute('transform', this.markerPositionTransform(viewport, marker));
 
       const body = document.createElementNS(ns, 'g');
@@ -265,7 +266,7 @@ const MinimapRenderer = {
 
       const title = document.createElementNS(ns, 'title');
       const room = marker.roomName ? ' · ' + marker.roomName : '';
-      const status = marker.isAlive ? '' : ' (dead)';
+      const status = blindMode || marker.isAlive ? '' : ' (dead)';
       title.textContent = (marker.displayName || marker.steamId) + room + status;
       group.appendChild(title);
 
@@ -283,9 +284,9 @@ const MinimapRenderer = {
     return 'translate(' + pos.x + ' ' + pos.y + ')';
   },
 
-  markerClass(marker) {
+  markerClass(marker, blindMode) {
     let cls = 'minimap-marker';
-    if (!marker.isAlive) cls += ' dead';
+    if (!blindMode && !marker.isAlive) cls += ' dead';
     if (marker.isLocal) cls += ' local';
     if (marker.isHost) cls += ' host';
     return cls;

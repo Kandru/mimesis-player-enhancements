@@ -162,6 +162,20 @@ body.waiting .app {
   background: rgba(130, 177, 255, 0.08);
 }
 
+.app-header-blind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.app-header-blind-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--md-text-secondary);
+  white-space: nowrap;
+}
+
 .app-brand {
   min-width: 0;
 }
