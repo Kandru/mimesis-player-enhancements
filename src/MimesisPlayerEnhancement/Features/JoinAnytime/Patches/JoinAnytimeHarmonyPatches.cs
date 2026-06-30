@@ -399,6 +399,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
+        private static readonly FieldInfo? RoomListDataField =
+            typeof(UIPrefab_PublicRoomList).GetField("roomListData", InstanceFlags);
+
+        private static readonly MethodInfo? SetRoomListUiMethod =
+            typeof(UIPrefab_PublicRoomList).GetMethod("SetRoomListUI", InstanceFlags);
+
         private static MethodBase? TargetMethod() =>
             AccessTools.Method(typeof(UIPrefab_PublicRoomList), "SetRoomList");
 
@@ -410,9 +416,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            FieldInfo? roomListDataField = typeof(UIPrefab_PublicRoomList).GetField(
-                "roomListData",
-                InstanceFlags);
+            FieldInfo? roomListDataField = RoomListDataField;
             if (roomListDataField?.GetValue(__instance) is not List<PublicRoomListData> roomListData)
             {
                 return;
@@ -446,10 +450,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            MethodInfo? setRoomListUi = typeof(UIPrefab_PublicRoomList).GetMethod(
-                "SetRoomListUI",
-                InstanceFlags);
-            setRoomListUi?.Invoke(__instance, null);
+            SetRoomListUiMethod?.Invoke(__instance, null);
         }
     }
 

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluNetwork.ConstEnum;
 using ReluProtocol;
@@ -16,14 +15,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private const string Feature = "JoinAnytime";
         private const float TramRouteRetryIntervalSeconds = 0.5f;
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly HashSet<long> SentPreGameStateUids = [];
         private static readonly HashSet<long> PendingTramRouteUids = [];
-
-        private static readonly FieldInfo? SessionVPlayerField =
-            typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
 
         private static float _nextTramRouteRetryTime;
 
@@ -111,11 +104,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _ = PendingTramRouteUids.Remove(uid);
         }
 
-        internal static void RefreshLobbyVisibilityAfterSteamUpdate()
-        {
-            JoinAnytimeLobbyController.RefreshAfterSteamLobbyDataUpdate();
-        }
-
         private static void TryRouteLateJoinerToTram(VPlayer player, bool allowResend)
         {
             if (!IsEnabled || player == null || player.IsHost)
@@ -169,9 +157,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
             {
-                if (SessionVPlayerField?.GetValue(context) is not VPlayer player
-                    || player.IsHost
-                    || !player.LevelLoadCompleted)
+                VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+                if (player == null || player.IsHost || !player.LevelLoadCompleted)
                 {
                     continue;
                 }
@@ -190,7 +177,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             List<long> pending = [.. PendingTramRouteUids];
             foreach (long uid in pending)
             {
-                if (!TryResolvePlayer(uid, out VPlayer? player))
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player))
                 {
                     _ = PendingTramRouteUids.Remove(uid);
                     continue;
@@ -220,32 +207,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
             return pdata?.ClientMode == NetworkClientMode.Host
                 && pdata.main is InTramWaitingScene or GamePlayScene;
-        }
-
-        private static bool TryResolvePlayer(long uid, out VPlayer? player)
-        {
-            player = null;
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager == null)
-            {
-                return false;
-            }
-
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
-            {
-                if (context.GetPlayerUID() != uid)
-                {
-                    continue;
-                }
-
-                if (SessionVPlayerField?.GetValue(context) is VPlayer resolved)
-                {
-                    player = resolved;
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

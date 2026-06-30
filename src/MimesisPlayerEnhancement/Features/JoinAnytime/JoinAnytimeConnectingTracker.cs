@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluNetwork.ConstEnum;
 using ReluProtocol.Enum;
@@ -12,13 +11,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     {
         private const string Feature = "JoinAnytime";
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo? SessionVPlayerField =
-            typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
-
         private static readonly Dictionary<long, PendingConnection> PendingByUid = [];
+
+        private static int _blockingPendingCount;
 
         internal static void OnServerLogin(SessionContext context)
         {
@@ -85,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host)
             {
                 PendingByUid.Clear();
+                _blockingPendingCount = 0;
                 return;
             }
 
@@ -101,7 +97,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
-                if (!TryResolvePlayer(pending.Uid, out VPlayer? player))
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(pending.Uid, out VPlayer? player))
                 {
                     toRemove.Add(entry.Key);
                     continue;
@@ -128,7 +124,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             foreach (long uid in toRemove)
             {
-                _ = PendingByUid.Remove(uid);
+                RemovePending(uid);
             }
 
             foreach (long uid in timedOut)
@@ -138,14 +134,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
-                _ = PendingByUid.Remove(uid);
+                RemovePending(uid);
 
                 if (ShouldIgnoreUid(uid))
                 {
                     continue;
                 }
 
-                if (TryResolvePlayer(uid, out VPlayer? player) && (player!.IsHost || IsPlayerFullyReady(player)))
+                if (WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player)
+                    && (player!.IsHost || IsPlayerFullyReady(player)))
                 {
                     continue;
                 }
@@ -154,23 +151,37 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        internal static bool HasPending()
-        {
-            foreach (long uid in PendingByUid.Keys)
-            {
-                if (!ShouldIgnoreUid(uid))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        internal static bool HasPending() => _blockingPendingCount > 0;
 
         private static void RegisterPending(long uid, long sessionId)
         {
+            if (PendingByUid.ContainsKey(uid))
+            {
+                RemovePending(uid);
+            }
+
+            bool countsAsBlocking = !ShouldIgnoreUid(uid);
             float deadline = Time.time + GraceSeconds;
-            PendingByUid[uid] = new PendingConnection(uid, sessionId, deadline);
+            PendingByUid[uid] = new PendingConnection(uid, sessionId, deadline, countsAsBlocking);
+
+            if (countsAsBlocking)
+            {
+                _blockingPendingCount++;
+            }
+        }
+
+        private static void RemovePending(long uid)
+        {
+            if (!PendingByUid.TryGetValue(uid, out PendingConnection pending))
+            {
+                return;
+            }
+
+            _ = PendingByUid.Remove(uid);
+            if (pending.CountsAsBlocking && _blockingPendingCount > 0)
+            {
+                _blockingPendingCount--;
+            }
         }
 
         private static void TryMarkReady(long uid)
@@ -180,14 +191,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            if (!TryResolvePlayer(uid, out VPlayer? player))
+            if (!WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player))
             {
                 return;
             }
 
             if (IsPlayerFullyReady(player!))
             {
-                _ = PendingByUid.Remove(uid);
+                RemovePending(uid);
                 ModLog.Debug(Feature, $"Connecting tracker — uid={uid} marked ready");
             }
         }
@@ -216,7 +227,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            if (TryResolvePlayer(pending.Uid, out VPlayer? player) && player!.IsHost)
+            if (WebDashboardSessionAccess.TryGetPlayerByUid(pending.Uid, out VPlayer? player) && player!.IsHost)
             {
                 return;
             }
@@ -236,55 +247,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             ModLog.Info(Feature, $"Connecting tracker — kicked uid={pending.Uid} after {GraceSeconds}s timeout");
         }
 
-        private static bool TryResolvePlayer(long uid, out VPlayer? player)
-        {
-            player = null;
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager == null)
-            {
-                return false;
-            }
-
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
-            {
-                if (context.GetPlayerUID() != uid)
-                {
-                    continue;
-                }
-
-                if (SessionVPlayerField?.GetValue(context) is VPlayer resolved)
-                {
-                    player = resolved;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool TryGetHostPlayerUid(out long hostUid)
-        {
-            hostUid = 0;
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager == null)
-            {
-                return false;
-            }
-
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
-            {
-                if (SessionVPlayerField?.GetValue(context) is not VPlayer player || !player.IsHost)
-                {
-                    continue;
-                }
-
-                hostUid = player.UID;
-                return true;
-            }
-
-            return false;
-        }
-
         private static bool IsHostSession(SessionContext context)
         {
             if (context.PlayerInfoSnapshot?.IsHost == true)
@@ -292,7 +254,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return true;
             }
 
-            return TryGetHostPlayerUid(out long hostUid) && context.GetPlayerUID() == hostUid;
+            return WebDashboardSessionAccess.TryGetHostPlayerUid(out long hostUid)
+                && context.GetPlayerUID() == hostUid;
         }
 
         private static bool ShouldIgnoreUid(long uid)
@@ -302,28 +265,24 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return true;
             }
 
-            if (TryGetHostPlayerUid(out long hostUid) && uid == hostUid)
+            if (WebDashboardSessionAccess.TryGetHostPlayerUid(out long hostUid) && uid == hostUid)
             {
                 return true;
             }
 
-            if (TryResolvePlayer(uid, out VPlayer? player) && player!.IsHost)
-            {
-                return true;
-            }
-
-            return false;
+            return WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player) && player!.IsHost;
         }
 
         private static float GraceSeconds => ModConfig.JoinConnectionGraceSeconds.Value;
 
         private sealed class PendingConnection
         {
-            internal PendingConnection(long uid, long sessionId, float deadline)
+            internal PendingConnection(long uid, long sessionId, float deadline, bool countsAsBlocking)
             {
                 Uid = uid;
                 SessionId = sessionId;
                 Deadline = deadline;
+                CountsAsBlocking = countsAsBlocking;
             }
 
             internal long Uid { get; }
@@ -331,6 +290,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             internal long SessionId { get; }
 
             internal float Deadline { get; }
+
+            internal bool CountsAsBlocking { get; }
         }
     }
 }

@@ -41,6 +41,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly FieldInfo? DispatcherLobbyNameField =
             typeof(SteamInviteDispatcher).GetField("lobbyName", InstanceFlags);
 
+        private static readonly PropertyInfo? InGameMenuRoomNameFieldProp =
+            typeof(UIPrefab_InGameMenu).GetProperty("UE_InputFieldRoomName", InstanceFlags);
+
+        private static readonly Type? TmpTextType =
+            Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
+
         private static string _baseLobbyName = string.Empty;
         private static string _lastPublishedName = string.Empty;
         private static JoinAnytimeSessionPhase _lastPhase = JoinAnytimeSessionPhase.None;
@@ -159,10 +165,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             try
             {
-                PropertyInfo? inputFieldProp = typeof(UIPrefab_InGameMenu).GetProperty(
-                    "UE_InputFieldRoomName",
-                    InstanceFlags);
-                object? inputField = inputFieldProp?.GetValue(menu);
+                object? inputField = InGameMenuRoomNameFieldProp?.GetValue(menu);
                 if (inputField != null)
                 {
                     PropertyInfo? textProp = inputField.GetType().GetProperty("text");
@@ -171,13 +174,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
                 ((Selectable)menu.UE_ChangeRoomNameButton).interactable = false;
 
-                Type? tmpTextType = Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
-                if (tmpTextType != null && GetComponentInChildrenMethod != null)
+                if (TmpTextType != null && GetComponentInChildrenMethod != null)
                 {
                     object? label = GetComponentInChildrenMethod.Invoke(
                         menu.UE_ChangeRoomNameButton,
-                        [tmpTextType]);
-                    PropertyInfo? labelTextProp = tmpTextType.GetProperty("text");
+                        [TmpTextType]);
+                    PropertyInfo? labelTextProp = TmpTextType.GetProperty("text");
                     labelTextProp?.SetValue(label, GetAppliedButtonLabel());
                 }
             }
@@ -269,21 +271,23 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 JoinAnytimeRoomTools.TryGetActiveDungeonWaitMinutes(out waitMinutes);
             }
 
-            string displayName = BuildDisplayLobbyName(phase, waitMinutes);
+            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
+            string displayName = BuildDisplayLobbyName(phase, waitMinutes, sessionCount);
             if (!force && string.Equals(displayName, _lastPublishedName, StringComparison.Ordinal))
             {
                 return;
             }
 
             _lastPhase = phase;
-            PublishLobbyState(dispatcher, phase, displayName, JoinAnytimeRoomTools.AreJoinsOpen());
+            PublishLobbyState(dispatcher, phase, displayName, JoinAnytimeRoomTools.AreJoinsOpen(), sessionCount);
         }
 
         private static void PublishLobbyState(
             SteamInviteDispatcher dispatcher,
             JoinAnytimeSessionPhase phase,
             string displayName,
-            bool joinsOpen)
+            bool joinsOpen,
+            int sessionCount)
         {
             string phaseKey = phase switch
             {
@@ -320,7 +324,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             try
             {
-                int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
                 dispatcher.UpdatePlayerGroupSize(sessionCount);
             }
             catch (Exception ex)
@@ -329,7 +332,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static string BuildDisplayLobbyName(JoinAnytimeSessionPhase phase, int waitMinutes)
+        private static string BuildDisplayLobbyName(
+            JoinAnytimeSessionPhase phase,
+            int waitMinutes,
+            int sessionCount)
         {
             string baseName = string.IsNullOrEmpty(_baseLobbyName) ? "Train" : _baseLobbyName;
             string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
@@ -340,7 +346,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     ? " [open]"
                     : string.Empty;
 
-            return $"{baseName}{tag} ({JoinAnytimeRoomTools.GetSessionPlayerCount()}/{MorePlayersPatches.GetMaxPlayers()})";
+            return $"{baseName}{tag} ({sessionCount}/{MorePlayersPatches.GetMaxPlayers()})";
         }
 
         internal static void OnHostSceneReady()

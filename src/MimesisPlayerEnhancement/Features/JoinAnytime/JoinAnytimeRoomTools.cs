@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Bifrost.Cooked;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
 using ReluNetwork.ConstEnum;
 using ReluProtocol.Enum;
@@ -95,12 +96,21 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
-            if (sessionInfo.GameSessionState is VGameSessionState.OnPlaying or VGameSessionState.AfterGame)
+            VGameSessionState sessionState = sessionInfo.GameSessionState;
+            if (sessionState is VGameSessionState.OnPlaying or VGameSessionState.AfterGame)
             {
                 return WaitingRoomBlockReason.ActiveDungeon;
             }
 
-            if (CountDungeonPlayers(vroomManager) > 0)
+            if (sessionState is VGameSessionState.DeathMatch)
+            {
+                return WaitingRoomBlockReason.None;
+            }
+
+            if (TryScanRooms(vroomManager, out RoomScanResult scan)
+                && scan.DungeonPlayerCount > 0
+                && scan.ActiveDungeonRoom is DungeonRoom activeDungeon
+                && !activeDungeon.IsSessionEnding)
             {
                 return WaitingRoomBlockReason.ActiveDungeon;
             }
@@ -125,8 +135,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void MoveCurrentPlayerToSnapshot(SessionContext context)
         {
-            FieldInfo playerField = typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
-            if (playerField?.GetValue(context) is not VPlayer player)
+            if (WebDashboardSessionAccess.GetVPlayer(context) is not VPlayer player)
             {
                 ModLog.Warn(Feature, "MoveCurrentPlayerToSnapshot skipped — _vPlayer not found");
                 return;
@@ -239,7 +248,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             waitingRoom = TryGetWaitingRoom(vroomManager);
             if (waitingRoom != null)
             {
-                PrepareWaitingRoomForLateJoin(waitingRoom);
+                EnsureWaitingRoomPlayable(waitingRoom);
                 return true;
             }
 
@@ -264,13 +273,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else
             {
-                PrepareWaitingRoomForLateJoin(waitingRoom);
+                EnsureWaitingRoomPlayable(waitingRoom);
             }
 
             return waitingRoom != null;
         }
 
-        private static void PrepareWaitingRoomForLateJoin(IVroom waitingRoom)
+        /// <summary>
+        /// A waiting room stopped by a prior lever pull (OnDecideRoom → Stop) rejects EnterRoom and
+        /// skips ProcessEnterWaitQueue while _stopped is set, which leaves EnterWaitingRoomReq
+        /// unanswered until the client hits its 60s timeout.
+        /// </summary>
+        internal static void EnsureWaitingRoomPlayable(IVroom waitingRoom)
         {
             if (waitingRoom is not VWaitingRoom vWaitingRoom)
             {
@@ -303,6 +317,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            EnsureWaitingRoomPlayable(waitingRoom);
+
             bool hasLoadedOccupant = false;
             waitingRoom.IterateAllPlayer(player =>
             {
@@ -329,22 +345,46 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return null;
             }
 
+            return TryScanRooms(vroomManager, out RoomScanResult scan) ? scan.ActiveDungeonRoom : null;
+        }
+
+        private struct RoomScanResult
+        {
+            internal IVroom? WaitingRoom;
+            internal IVroom? ActiveDungeonRoom;
+            internal int DungeonPlayerCount;
+        }
+
+        private static bool TryScanRooms(VRoomManager vroomManager, out RoomScanResult scan)
+        {
+            scan = default;
             if (ReflectionHelper.GetFieldValue(vroomManager, "_vrooms") is not Dictionary<long, IVroom> rooms)
             {
-                return null;
+                return false;
             }
 
+            IVroom? waitingRoom = null;
             IVroom? bestOccupied = null;
             int bestOccupiedCount = -1;
             IVroom? newest = null;
             long newestRoomId = long.MinValue;
+            int dungeonPlayerCount = 0;
 
             foreach (IVroom room in rooms.Values)
             {
+                if (room is VWaitingRoom)
+                {
+                    waitingRoom = room;
+                    continue;
+                }
+
                 if (room is not DungeonRoom)
                 {
                     continue;
                 }
+
+                int memberCount = room.GetMemberCount();
+                dungeonPlayerCount += memberCount;
 
                 if (room.RoomID > newestRoomId)
                 {
@@ -352,7 +392,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     newestRoomId = room.RoomID;
                 }
 
-                int memberCount = room.GetMemberCount();
                 if (memberCount <= 0)
                 {
                     continue;
@@ -367,44 +406,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 }
             }
 
-            return bestOccupied ?? newest;
+            scan = new RoomScanResult
+            {
+                WaitingRoom = waitingRoom,
+                ActiveDungeonRoom = bestOccupied ?? newest,
+                DungeonPlayerCount = dungeonPlayerCount,
+            };
+            return true;
         }
 
         private static IVroom? TryGetWaitingRoom(VRoomManager vroomManager)
         {
-            if (ReflectionHelper.GetFieldValue(vroomManager, "_vrooms") is not Dictionary<long, IVroom> rooms)
-            {
-                return null;
-            }
-
-            foreach (IVroom room in rooms.Values)
-            {
-                if (room is VWaitingRoom)
-                {
-                    return room;
-                }
-            }
-
-            return null;
-        }
-
-        private static int CountDungeonPlayers(VRoomManager vroomManager)
-        {
-            if (ReflectionHelper.GetFieldValue(vroomManager, "_vrooms") is not Dictionary<long, IVroom> rooms)
-            {
-                return 0;
-            }
-
-            int count = 0;
-            foreach (IVroom room in rooms.Values)
-            {
-                if (room is DungeonRoom)
-                {
-                    count += room.GetMemberCount();
-                }
-            }
-
-            return count;
+            return TryScanRooms(vroomManager, out RoomScanResult scan) ? scan.WaitingRoom : null;
         }
 
         private static bool TryGetDataman(out DataManager dataman)

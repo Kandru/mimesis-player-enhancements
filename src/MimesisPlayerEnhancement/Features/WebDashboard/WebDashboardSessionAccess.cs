@@ -80,6 +80,60 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return SessionVPlayerField?.GetValue(context) as VPlayer;
         }
 
+        internal static bool TryGetPlayerByUid(long uid, out VPlayer? player)
+        {
+            player = null;
+            if (uid == 0)
+            {
+                return false;
+            }
+
+            SessionManager? sessionManager = GetSessionManager();
+            if (sessionManager == null)
+            {
+                return false;
+            }
+
+            foreach (SessionContext context in EnumerateSessionContexts(sessionManager))
+            {
+                if (context.GetPlayerUID() != uid)
+                {
+                    continue;
+                }
+
+                VPlayer? resolved = GetVPlayer(context);
+                if (resolved != null)
+                {
+                    player = resolved;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetHostPlayerUid(out long hostUid)
+        {
+            hostUid = 0;
+            SessionManager? sessionManager = GetSessionManager();
+            if (sessionManager == null)
+            {
+                return false;
+            }
+
+            foreach (SessionContext context in EnumerateSessionContexts(sessionManager))
+            {
+                VPlayer? player = GetVPlayer(context);
+                if (player != null && player.IsHost)
+                {
+                    hostUid = player.UID;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static int GetEnterPktHashCode(SessionContext context)
         {
             return EnterPktHashCodeField?.GetValue(context) is int hashCode ? hashCode : context.EnterPktHashCode;
