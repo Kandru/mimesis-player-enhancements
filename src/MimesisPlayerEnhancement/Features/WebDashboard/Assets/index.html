@@ -133,11 +133,27 @@
                   <div class="player-entry-meta">
                     <div class="player-entry-name">
                       <span class="player-entry-display-name" x-text="p.displayName"></span>
+                      <span class="badge ping" :class="pingClass(p)"
+                        :title="'Connection: ' + pingLabel(p)" x-text="pingLabel(p)"></span>
+                      <a class="badge badge-link" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
                       <span class="badge host" x-show="p.isHost">Host</span>
                       <span class="badge local" x-show="p.isLocal">You</span>
                       <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive">Alive</span>
                       <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive">Dead</span>
                       <span class="badge banned" x-show="p.isBanned">Banned</span>
+                      <span class="player-entry-actions"
+                        x-show="status.isHost && (canModerate(p) || canRespawn(p) || canHeal(p) || p.isBanned)">
+                        <button class="btn btn-outlined btn-badge" x-show="canHeal(p)"
+                          @click="moderate(p.steamId, 'heal')">Heal</button>
+                        <button class="btn btn-outlined btn-badge" x-show="canRespawn(p)"
+                          @click="moderate(p.steamId, 'respawn')">Respawn</button>
+                        <button class="btn btn-outlined btn-badge" x-show="canModerate(p)"
+                          @click="moderate(p.steamId, 'kick')">Kick</button>
+                        <button class="btn btn-danger btn-badge" x-show="canModerate(p)"
+                          @click="moderate(p.steamId, 'ban')">Ban</button>
+                        <button class="btn btn-text btn-badge" x-show="p.isBanned"
+                          @click="moderate(p.steamId, 'unban')">Unban</button>
+                      </span>
                     </div>
                     <small class="player-entry-detail">
                       <span x-text="playerDetailLines(p).connection"></span>
@@ -161,6 +177,7 @@
                           <span class="vital-bar-track">
                             <span class="vital-bar-fill health"
                               :style="{ width: Math.min(100, Math.max(0, vitalsPercent(p).health ?? 0)) + '%' }"></span>
+                            <span class="vital-bar-value" x-text="formatVitalPercent(vitalsPercent(p).health)"></span>
                           </span>
                         </span>
                         <span class="vital-bar" title="Toxicity">
@@ -168,34 +185,11 @@
                           <span class="vital-bar-track">
                             <span class="vital-bar-fill toxic"
                               :style="{ width: Math.min(100, Math.max(0, vitalsPercent(p).toxic ?? 0)) + '%' }"></span>
+                            <span class="vital-bar-value" x-text="formatVitalPercent(vitalsPercent(p).toxic)"></span>
                           </span>
                         </span>
                       </span>
                     </small>
-                  </div>
-                  <div class="player-entry-ping">
-                    <span class="ping-label" x-text="pingLabel(p)"></span>
-                    <span class="ping-bars" :class="pingClass(p)" :title="pingLabel(p)" x-show="pingActive(p) > 0">
-                      <template x-for="i in 4" :key="i">
-                        <span :style="pingBarHeight(i)" :class="{ on: i <= pingActive(p) }"></span>
-                      </template>
-                    </span>
-                    <span class="ping-bars ping-unknown" x-show="pingActive(p) === 0" title="Unknown">—</span>
-                  </div>
-                  <a class="btn btn-text btn-compact player-entry-stats-link" x-show="status.isHost"
-                    :href="'#/player/' + p.steamId">Stats</a>
-                  <div class="player-entry-actions"
-                    x-show="status.isHost && (canModerate(p) || canRespawn(p) || canHeal(p) || p.isBanned)">
-                    <button class="btn btn-outlined btn-compact" x-show="canHeal(p)"
-                      @click="moderate(p.steamId, 'heal')">Heal</button>
-                    <button class="btn btn-outlined btn-compact" x-show="canRespawn(p)"
-                      @click="moderate(p.steamId, 'respawn')">Respawn</button>
-                    <button class="btn btn-outlined btn-compact" x-show="canModerate(p)"
-                      @click="moderate(p.steamId, 'kick')">Kick</button>
-                    <button class="btn btn-danger btn-compact" x-show="canModerate(p)"
-                      @click="moderate(p.steamId, 'ban')">Ban</button>
-                    <button class="btn btn-text btn-compact" x-show="p.isBanned"
-                      @click="moderate(p.steamId, 'unban')">Unban</button>
                   </div>
                 </article>
               </template>

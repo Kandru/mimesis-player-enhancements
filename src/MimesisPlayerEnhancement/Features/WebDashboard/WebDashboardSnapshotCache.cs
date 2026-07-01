@@ -191,6 +191,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 _minimapFingerprint = "";
                 WebDashboardAvatarService.Clear();
                 WebDashboardLeaderboardCache.Clear();
+                WebDashboardPlayerNameStore.Clear();
             }
             else
             {

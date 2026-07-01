@@ -430,19 +430,21 @@ document.addEventListener('alpine:init', () => {
 
     resolveDisplayName(steamId) {
       const id = String(steamId);
-      if (this.playerStats && this.playerStats.displayName) {
-        const name = String(this.playerStats.displayName).trim();
-        if (name && name !== id) return name;
-      }
-      const entry = (this.leaderboard && this.leaderboard.entries || []).find(
+      const usable = (name) => {
+        const text = String(name ?? '').trim();
+        return text && text !== id ? text : '';
+      };
+      // Server centralizes name resolution on the players payload; other
+      // sources are fallbacks, and the raw Steam ID is the last resort.
+      const player = (this.players || []).find((p) => String(p.steamId) === id);
+      if (player && usable(player.displayName)) return usable(player.displayName);
+      const entry = ((this.leaderboard && this.leaderboard.entries) || []).find(
         (e) => String(e.steamId) === id
       );
-      if (entry && entry.displayName && String(entry.displayName) !== id) {
-        return entry.displayName;
-      }
-      const player = this.players.find((p) => String(p.steamId) === id);
-      if (player && player.displayName && String(player.displayName) !== id) {
-        return player.displayName;
+      if (entry && usable(entry.displayName)) return usable(entry.displayName);
+      if (this.playerStats && String(this.playerStats.steamId) === id) {
+        const name = usable(this.playerStats.displayName);
+        if (name) return name;
       }
       return id;
     },
@@ -456,7 +458,7 @@ document.addEventListener('alpine:init', () => {
 
     pingClass(p) {
       if (p.isHost || (this.status.isHost && p.isLocal)) return '';
-      if (p.networkGrade == null || p.networkGrade < 0) return '';
+      if (p.networkGrade == null || p.networkGrade < 0) return 'unknown';
       const level = Math.max(0, Math.min(4, p.networkGrade));
       if (level <= 1) return 'poor';
       if (level <= 2) return 'medium';
@@ -467,10 +469,6 @@ document.addEventListener('alpine:init', () => {
       if (p.isHost || (this.status.isHost && p.isLocal)) return 4;
       if (p.networkGrade == null || p.networkGrade < 0) return 0;
       return Math.max(0, Math.min(4, p.networkGrade)) + 1;
-    },
-
-    pingBarHeight(i) {
-      return { height: 4 + i * 3 + 'px' };
     },
 
     connectionMeta(p) {
@@ -589,15 +587,6 @@ document.addEventListener('alpine:init', () => {
         && p.health != null;
     },
 
-    vitalsLine(p) {
-      if (p.health == null) return '';
-      const healthPercent = p.maxHealth > 0
-        ? (Number(p.health) / Number(p.maxHealth)) * 100
-        : null;
-      return 'HP ' + formatVitalPercent(healthPercent)
-        + ' · Toxic ' + formatVitalPercent(p.toxicPercent);
-    },
-
     canHeal(p) {
       return this.status.isHost && p.playerUid && p.isAlive;
     },
@@ -628,6 +617,10 @@ document.addEventListener('alpine:init', () => {
 
     formatDuration(seconds) {
       return formatDuration(seconds);
+    },
+
+    formatVitalPercent(value) {
+      return formatVitalPercent(value);
     },
 
     avatarUrl(steamId) {
@@ -971,13 +964,20 @@ document.addEventListener('alpine:init', () => {
 
       const activeAreaId = this.resolveMinimapAreaId(allFiltered);
       const activeArea = this.resolveMinimapArea(activeAreaId);
-      const areaMarkers = allFiltered.filter((marker) => {
-        if (!activeAreaId) return true;
-        if (!marker.areaId) {
-          return this.minimapRaw.displayMode === 'markers-only';
-        }
-        return marker.areaId === activeAreaId;
-      });
+      const areaMarkers = allFiltered
+        .filter((marker) => {
+          if (!activeAreaId) return true;
+          if (!marker.areaId) {
+            return this.minimapRaw.displayMode === 'markers-only';
+          }
+          return marker.areaId === activeAreaId;
+        })
+        .map((marker) => {
+          // Prefer a resolved username over a raw Steam ID for marker labels.
+          const name = String(marker.displayName || '').trim();
+          if (name && name !== String(marker.steamId)) return marker;
+          return Object.assign({}, marker, { displayName: this.resolveDisplayName(marker.steamId) });
+        });
 
       const layoutChanged = this.minimapRaw.layoutVersion !== this.minimapLastLayoutVersion;
       const activeAreaChanged = activeAreaId !== this.minimapLastActiveAreaId;

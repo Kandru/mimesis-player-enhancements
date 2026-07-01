@@ -79,19 +79,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void OnUpdate()
         {
-            if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
-            {
-                _syncDeferred = false;
-                ApplySyncFromConfig();
-            }
-
+            // Flush before and after queue processing: a deferred sync may already be
+            // pending, and processing the queue can defer another one.
+            FlushDeferredSync();
             WebDashboardConfigUpdateQueue.Process();
-
-            if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
-            {
-                _syncDeferred = false;
-                ApplySyncFromConfig();
-            }
+            FlushDeferredSync();
 
             if (!_running)
             {
@@ -100,6 +92,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             WebDashboardActionQueue.Process();
             WebDashboardSnapshotCache.Tick(_listenUrl);
+        }
+
+        private static void FlushDeferredSync()
+        {
+            if (_syncDeferred && !WebDashboardConfigUpdateQueue.IsProcessing)
+            {
+                _syncDeferred = false;
+                ApplySyncFromConfig();
+            }
         }
 
         internal static void StopOnDeinit()

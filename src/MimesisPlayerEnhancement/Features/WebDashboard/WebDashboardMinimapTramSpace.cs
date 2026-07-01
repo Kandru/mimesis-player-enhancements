@@ -1,4 +1,3 @@
-using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using UnityEngine;
 
@@ -12,15 +11,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private const float WaitingRoomFallbackHalfSpanX = 18f;
         private const float WaitingRoomFallbackHalfSpanZ = 30f;
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo? BgRootField =
-            typeof(GameMainBase).GetField("BGRoot", InstanceFlags);
-
-        private static readonly FieldInfo? TramConsoleField =
-            typeof(GameMainBase).GetField("tramConsole", InstanceFlags);
-
         internal static bool IsWaitingRoom(GameMainBase? main)
         {
             return main is InTramWaitingScene;
@@ -28,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static Transform? TryGetAnchor(GameMainBase? main)
         {
-            return main != null ? BgRootField?.GetValue(main) as Transform : null;
+            return WebDashboardSceneRoots.TryGetBgRoot(main);
         }
 
         internal static Transform? TryGetInteriorScope(GameMainBase? main)
@@ -38,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return null;
             }
 
-            if (TramConsoleField?.GetValue(main) is Component console)
+            if (WebDashboardSceneRoots.TryGetTramConsole(main) is Component console)
             {
                 Transform parent = console.transform.parent;
                 return parent != null ? parent : console.transform;

@@ -20,10 +20,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly FieldInfo? BgRootField =
-            typeof(GameMainBase).GetField("BGRoot", InstanceFlags);
-        private static readonly FieldInfo? MaintenanceRoomRootField =
-            typeof(MaintenanceScene).GetField("maintenanceRoomRoot", InstanceFlags);
         private static string _cachedRunKey = "";
         private static bool _rebuildRequested;
 
@@ -164,6 +160,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return BuildMarkersOnlyLayout(gps, sceneLabel, "dungeon");
             }
 
+            AppendTeleporterConnectionPoints(layout, gps);
             layout.DefaultAreaId = ResolveDefaultAreaId(layout.Areas);
             MirrorLegacyFields(layout);
             return layout;
@@ -198,22 +195,38 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return layout.Areas.Exists(static area => area.Kind == "indoor");
         }
 
+        private readonly struct RawMapTile
+        {
+            internal RawMapTile(string id, string label, float centerX, float centerZ, float width, float height, bool isMainPath)
+            {
+                Id = id;
+                Label = label;
+                CenterX = centerX;
+                CenterZ = centerZ;
+                Width = width;
+                Height = height;
+                IsMainPath = isMainPath;
+            }
+
+            internal readonly string Id;
+            internal readonly string Label;
+            internal readonly float CenterX;
+            internal readonly float CenterZ;
+            internal readonly float Width;
+            internal readonly float Height;
+            internal readonly bool IsMainPath;
+        }
+
         private static WebDashboardMinimapAreaDto BuildAreaFromGraph(
             WebDashboardMinimapDungeonGraph graph,
             string areaId,
             string label,
             string kind)
         {
-            List<(Tile tile, float centerX, float centerZ, float width, float height)> rawTiles = [];
-
-            float minX = float.PositiveInfinity;
-            float maxX = float.NegativeInfinity;
-            float minZ = float.PositiveInfinity;
-            float maxZ = float.NegativeInfinity;
-
+            List<RawMapTile> rawTiles = [];
             foreach (Tile tile in graph.Tiles)
             {
-                if (tile == null)
+                if (tile == null || !graph.TileIds.TryGetValue(tile, out int tileIndex))
                 {
                     continue;
                 }
@@ -222,14 +235,62 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Vector3 center = bounds.center;
                 float halfW = Mathf.Max(bounds.extents.x, 0.5f);
                 float halfH = Mathf.Max(bounds.extents.z, 0.5f);
-
-                rawTiles.Add((tile, center.x, center.z, halfW * 2f, halfH * 2f));
-                minX = Mathf.Min(minX, center.x - halfW);
-                maxX = Mathf.Max(maxX, center.x + halfW);
-                minZ = Mathf.Min(minZ, center.z - halfH);
-                maxZ = Mathf.Max(maxZ, center.z + halfH);
+                rawTiles.Add(new RawMapTile(
+                    $"tile-{tileIndex}",
+                    ResolveTileLabel(tile),
+                    center.x,
+                    center.z,
+                    halfW * 2f,
+                    halfH * 2f,
+                    graph.MainPath.Contains(tile)));
             }
 
+            List<(string fromId, string toId)> connections = [];
+            foreach ((int from, int to) in graph.Connections)
+            {
+                connections.Add(($"tile-{from}", $"tile-{to}"));
+            }
+
+            return BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections);
+        }
+
+        private static WebDashboardMinimapAreaDto BuildAreaFromGridGraph(
+            WebDashboardMinimapGridGraph graph,
+            string areaId,
+            string label,
+            string kind)
+        {
+            List<RawMapTile> rawTiles = [];
+            foreach (WebDashboardMinimapGridCell cell in graph.Cells)
+            {
+                rawTiles.Add(new RawMapTile(
+                    WebDashboardMinimapGridSource.BuildCellId(cell.Coordinate),
+                    "Sector",
+                    cell.CenterX,
+                    cell.CenterZ,
+                    cell.Size,
+                    cell.Size,
+                    isMainPath: false));
+            }
+
+            List<(string fromId, string toId)> connections = [];
+            foreach ((int from, int to) in graph.Connections)
+            {
+                connections.Add((
+                    WebDashboardMinimapGridSource.BuildCellId(graph.Cells[from].Coordinate),
+                    WebDashboardMinimapGridSource.BuildCellId(graph.Cells[to].Coordinate)));
+            }
+
+            return BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections);
+        }
+
+        private static WebDashboardMinimapAreaDto BuildAreaFromRawTiles(
+            string areaId,
+            string label,
+            string kind,
+            List<RawMapTile> rawTiles,
+            List<(string fromId, string toId)> connections)
+        {
             WebDashboardMinimapAreaDto area = new()
             {
                 Id = areaId,
@@ -240,6 +301,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (rawTiles.Count == 0)
             {
                 return area;
+            }
+
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+            foreach (RawMapTile tile in rawTiles)
+            {
+                float halfW = tile.Width * 0.5f;
+                float halfH = tile.Height * 0.5f;
+                minX = Mathf.Min(minX, tile.CenterX - halfW);
+                maxX = Mathf.Max(maxX, tile.CenterX + halfW);
+                minZ = Mathf.Min(minZ, tile.CenterZ - halfH);
+                maxZ = Mathf.Max(maxZ, tile.CenterZ + halfH);
             }
 
             float spanX = Mathf.Max(maxX - minX, 1f);
@@ -262,33 +337,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             };
 
             Dictionary<string, WebDashboardMinimapTileDto> tilesById = [];
-            foreach ((Tile tile, float centerX, float centerZ, float width, float height) in rawTiles)
+            foreach (RawMapTile tile in rawTiles)
             {
-                if (!graph.TileIds.TryGetValue(tile, out int tileIndex))
-                {
-                    continue;
-                }
-
-                string tileId = $"tile-{tileIndex}";
                 WebDashboardMinimapTileDto tileDto = new()
                 {
-                    Id = tileId,
-                    Label = ResolveTileLabel(tile),
-                    X = Normalize(centerX - (width * 0.5f), minX, spanX),
-                    Z = Normalize(centerZ - (height * 0.5f), minZ, spanZ),
-                    W = Mathf.Clamp01(width / spanX),
-                    H = Mathf.Clamp01(height / spanZ),
-                    IsMainPath = graph.MainPath.Contains(tile),
+                    Id = tile.Id,
+                    Label = tile.Label,
+                    X = Normalize(tile.CenterX - (tile.Width * 0.5f), minX, spanX),
+                    Z = Normalize(tile.CenterZ - (tile.Height * 0.5f), minZ, spanZ),
+                    W = Mathf.Clamp01(tile.Width / spanX),
+                    H = Mathf.Clamp01(tile.Height / spanZ),
+                    IsMainPath = tile.IsMainPath,
                 };
                 area.Tiles.Add(tileDto);
-                tilesById[tileId] = tileDto;
+                tilesById[tileDto.Id] = tileDto;
             }
 
             HashSet<string> seenConnections = [];
-            foreach ((int from, int to) in graph.Connections)
+            foreach ((string fromId, string toId) in connections)
             {
-                string fromId = $"tile-{from}";
-                string toId = $"tile-{to}";
                 if (fromId == toId)
                 {
                     continue;
@@ -327,119 +394,87 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return area;
         }
 
-        private static WebDashboardMinimapAreaDto BuildAreaFromGridGraph(
-            WebDashboardMinimapGridGraph graph,
-            string areaId,
-            string label,
-            string kind)
+        // Teleporters between indoor and outdoor are not part of the dungeon tile graph,
+        // so they are collected from the scene and pinned into their containing area.
+        private static void AppendTeleporterConnectionPoints(
+            WebDashboardMinimapLayoutDto layout,
+            GamePlayScene gps)
         {
-            List<(WebDashboardMinimapGridCell cell, float centerX, float centerZ, float width, float height)> rawCells = [];
-
-            float minX = float.PositiveInfinity;
-            float maxX = float.NegativeInfinity;
-            float minZ = float.PositiveInfinity;
-            float maxZ = float.NegativeInfinity;
-
-            foreach (WebDashboardMinimapGridCell cell in graph.Cells)
+            try
             {
-                float half = cell.Size * 0.5f;
-                rawCells.Add((cell, cell.CenterX, cell.CenterZ, cell.Size, cell.Size));
-                minX = Mathf.Min(minX, cell.CenterX - half);
-                maxX = Mathf.Max(maxX, cell.CenterX + half);
-                minZ = Mathf.Min(minZ, cell.CenterZ - half);
-                maxZ = Mathf.Max(maxZ, cell.CenterZ + half);
-            }
-
-            WebDashboardMinimapAreaDto area = new()
-            {
-                Id = areaId,
-                Label = label,
-                Kind = kind,
-            };
-
-            if (rawCells.Count == 0)
-            {
-                return area;
-            }
-
-            float spanX = Mathf.Max(maxX - minX, 1f);
-            float spanZ = Mathf.Max(maxZ - minZ, 1f);
-            float padX = spanX * BoundsPadding;
-            float padZ = spanZ * BoundsPadding;
-            minX -= padX;
-            maxX += padX;
-            minZ -= padZ;
-            maxZ += padZ;
-            spanX = maxX - minX;
-            spanZ = maxZ - minZ;
-
-            area.Bounds = new WebDashboardMinimapBoundsDto
-            {
-                MinX = minX,
-                MinZ = minZ,
-                MaxX = maxX,
-                MaxZ = maxZ,
-            };
-
-            Dictionary<string, WebDashboardMinimapTileDto> tilesById = [];
-            foreach ((WebDashboardMinimapGridCell cell, float centerX, float centerZ, float width, float height) in rawCells)
-            {
-                string tileId = WebDashboardMinimapGridSource.BuildCellId(cell.Coordinate);
-                WebDashboardMinimapTileDto tileDto = new()
+                DungeonRoom? room = JoinAnytimeRoomTools.GetActiveDungeonRoom() as DungeonRoom;
+                TeleporterLevelObject[] teleporters =
+                    UnityEngine.Object.FindObjectsByType<TeleporterLevelObject>(FindObjectsSortMode.None);
+                foreach (TeleporterLevelObject teleporter in teleporters)
                 {
-                    Id = tileId,
-                    Label = "Sector",
-                    X = Normalize(centerX - (width * 0.5f), minX, spanX),
-                    Z = Normalize(centerZ - (height * 0.5f), minZ, spanZ),
-                    W = Mathf.Clamp01(width / spanX),
-                    H = Mathf.Clamp01(height / spanZ),
-                    IsMainPath = false,
-                };
-                area.Tiles.Add(tileDto);
-                tilesById[tileId] = tileDto;
-            }
+                    if (teleporter == null)
+                    {
+                        continue;
+                    }
 
-            HashSet<string> seenConnections = [];
-            foreach ((int from, int to) in graph.Connections)
-            {
-                string fromId = WebDashboardMinimapGridSource.BuildCellId(graph.Cells[from].Coordinate);
-                string toId = WebDashboardMinimapGridSource.BuildCellId(graph.Cells[to].Coordinate);
-                if (fromId == toId)
-                {
-                    continue;
-                }
+                    Vector3 position = teleporter.transform.position;
+                    string? areaId = room != null
+                        ? WebDashboardMinimapAreaResolver.ResolvePlayerAreaId(gps, room, position)
+                        : null;
+                    if (string.IsNullOrWhiteSpace(areaId))
+                    {
+                        continue;
+                    }
 
-                string pairKey = string.CompareOrdinal(fromId, toId) < 0
-                    ? fromId + "|" + toId
-                    : toId + "|" + fromId;
-                if (!seenConnections.Add(pairKey))
-                {
-                    continue;
-                }
+                    WebDashboardMinimapAreaDto? area = null;
+                    foreach (WebDashboardMinimapAreaDto candidate in layout.Areas)
+                    {
+                        if (candidate.Id == areaId)
+                        {
+                            area = candidate;
+                            break;
+                        }
+                    }
 
-                if (!tilesById.TryGetValue(fromId, out WebDashboardMinimapTileDto? fromTile)
-                    || !tilesById.TryGetValue(toId, out WebDashboardMinimapTileDto? toTile))
-                {
-                    continue;
-                }
+                    if (area == null || area.Bounds.MaxX <= area.Bounds.MinX || area.Bounds.MaxZ <= area.Bounds.MinZ)
+                    {
+                        continue;
+                    }
 
-                if (TryComputeConnectionPoint(fromTile, toTile, out float pointX, out float pointZ)
-                    && TryComputeConnectionDirection(fromTile, toTile, out float dirX, out float dirZ))
-                {
+                    string targetAreaId = teleporter.DestinationIsToInDoor
+                        ? ResolveFirstIndoorAreaId(layout, areaId)
+                        : WebDashboardMinimapAreaResolver.OutdoorAreaId;
+                    if (string.IsNullOrWhiteSpace(targetAreaId) || targetAreaId == areaId)
+                    {
+                        continue;
+                    }
+
+                    float spanX = area.Bounds.MaxX - area.Bounds.MinX;
+                    float spanZ = area.Bounds.MaxZ - area.Bounds.MinZ;
+                    Vector3 forward = teleporter.transform.forward;
                     area.ConnectionPoints.Add(new WebDashboardMinimapConnectionPointDto
                     {
-                        X = pointX,
-                        Z = pointZ,
-                        DirX = dirX,
-                        DirZ = dirZ,
-                        FromTileId = fromId,
-                        ToTileId = toId,
-                        CrossArea = false,
+                        X = Normalize(position.x, area.Bounds.MinX, spanX),
+                        Z = Normalize(position.z, area.Bounds.MinZ, spanZ),
+                        DirX = forward.x,
+                        DirZ = forward.z,
+                        TargetAreaId = targetAreaId,
+                        CrossArea = true,
                     });
                 }
             }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"Teleporter collection failed — {ex.Message}");
+            }
+        }
 
-            return area;
+        private static string ResolveFirstIndoorAreaId(WebDashboardMinimapLayoutDto layout, string excludeAreaId)
+        {
+            foreach (WebDashboardMinimapAreaDto area in layout.Areas)
+            {
+                if (area.Kind == "indoor" && area.Id != excludeAreaId && area.Tiles.Count > 0)
+                {
+                    return area.Id;
+                }
+            }
+
+            return WebDashboardMinimapAreaResolver.IndoorAreaId;
         }
 
         private static void AppendCrossAreaConnections(
@@ -824,7 +859,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static WebDashboardMinimapBoundsDto TryBuildHubBounds(GameMainBase? main)
         {
-            Transform? bgRoot = main != null ? BgRootField?.GetValue(main) as Transform : null;
+            Transform? bgRoot = WebDashboardSceneRoots.TryGetBgRoot(main);
             float minX = float.PositiveInfinity;
             float maxX = float.NegativeInfinity;
             float minZ = float.PositiveInfinity;
@@ -836,7 +871,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (main is MaintenanceScene maintenanceScene)
                 {
                     ExpandBoundsFromTransform(
-                        MaintenanceRoomRootField?.GetValue(maintenanceScene) as Transform,
+                        WebDashboardSceneRoots.TryGetMaintenanceRoomRoot(maintenanceScene),
                         ref minX,
                         ref maxX,
                         ref minZ,

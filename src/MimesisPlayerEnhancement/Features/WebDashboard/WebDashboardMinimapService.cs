@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
@@ -12,15 +11,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardMinimapService
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo? BgRootField =
-            typeof(GameMainBase).GetField("BGRoot", InstanceFlags);
-
-        private static readonly FieldInfo? TramConsoleField =
-            typeof(GameMainBase).GetField("tramConsole", InstanceFlags);
-
         internal static List<WebDashboardMinimapMarkerDto> CollectRawMarkers()
         {
             List<WebDashboardMinimapMarkerDto> markers = [];
@@ -347,8 +337,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             try
             {
-                Transform? root = BgRootField?.GetValue(main) as Transform;
-                if (root == null && TramConsoleField?.GetValue(main) is Component console)
+                Transform? root = WebDashboardSceneRoots.TryGetBgRoot(main);
+                if (root == null && WebDashboardSceneRoots.TryGetTramConsole(main) is Component console)
                 {
                     root = console.transform;
                     while (root.parent != null && root.parent != root.root)

@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement
         SpeechMapping,
         Overrides,
         Statistics,
+        PlayerNames,
     }
 
     /// <summary>
@@ -69,6 +70,8 @@ namespace MimesisPlayerEnhancement
 
         internal static string? GetStatisticsPath(int slotId) => GetSidecarPath(slotId, "stats");
 
+        internal static string? GetPlayerNamesPath(int slotId) => GetSidecarPath(slotId, "names");
+
         internal static IEnumerable<string> EnumerateSidecarFiles(int slotId, SidecarKind? filter = null)
         {
             string? saveFolder = GetSaveFolderPath();
@@ -120,6 +123,7 @@ namespace MimesisPlayerEnhancement
                 SidecarKind.SpeechMapping => fileName.Equals(prefix + "speech-mapping" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 SidecarKind.Overrides => fileName.Equals(prefix + "overrides" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 SidecarKind.Statistics => fileName.Equals(prefix + "stats" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
+                SidecarKind.PlayerNames => fileName.Equals(prefix + "names" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 _ => false,
             };
         }

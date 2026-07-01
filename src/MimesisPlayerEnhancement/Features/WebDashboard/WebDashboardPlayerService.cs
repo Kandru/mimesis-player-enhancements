@@ -90,7 +90,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (WebDashboardGameState.IsHost())
             {
-                MergeStoredLeaderboardPlayers(playersBySteam, localSteamId);
+                MergeStoredLeaderboardPlayers(playersBySteam, localSteamId, nameCache);
             }
 
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
@@ -103,79 +103,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return players;
         }
 
-        internal static bool TryFindPlayer(ulong steamId, out WebDashboardPlayerDto? player)
-        {
-            player = null;
-            if (steamId == 0)
-            {
-                return false;
-            }
-
-            foreach (WebDashboardPlayerDto candidate in CollectPlayers())
-            {
-                if (candidate.SteamId == steamId)
-                {
-                    player = candidate;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         internal static string ResolveDisplayNameForSteamId(ulong steamId, int saveSlotId = -1)
         {
-            if (steamId == 0)
-            {
-                return "";
-            }
-
-            if (TryFindPlayer(steamId, out WebDashboardPlayerDto? connected)
-                && connected != null
-                && !string.IsNullOrWhiteSpace(connected.DisplayName)
-                && connected.DisplayName != steamId.ToString())
-            {
-                return connected.DisplayName;
-            }
-
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is PlayerStatisticsDocument live
-                && !string.IsNullOrWhiteSpace(live.DisplayName)
-                && live.DisplayName != steamId.ToString())
-            {
-                return live.DisplayName;
-            }
-
-            if (saveSlotId >= 0)
-            {
-                PlayerStatisticsDocument stored = StatisticsStore.LoadPlayer(saveSlotId, steamId);
-                if (!string.IsNullOrWhiteSpace(stored.DisplayName) && stored.DisplayName != steamId.ToString())
-                {
-                    return stored.DisplayName;
-                }
-            }
-
-            string? fromLeaderboard = TryGetLeaderboardDisplayName(saveSlotId, steamId);
-            if (!string.IsNullOrWhiteSpace(fromLeaderboard))
-            {
-                return fromLeaderboard;
-            }
-
-            Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
-            if (nameCache != null
-                && nameCache.TryGetValue(steamId, out string? cached)
-                && !string.IsNullOrWhiteSpace(cached))
-            {
-                return cached;
-            }
-
-            string? fromActor = ResolveNickNameFromActorMap(0, steamId);
-            if (!string.IsNullOrWhiteSpace(fromActor))
-            {
-                return fromActor;
-            }
-
-            string? localNick = TryGetLocalNickName();
-            return localNick != null && LocalPlayerHelper.IsLocalSteamId(steamId) ? localNick : steamId.ToString();
+            return steamId == 0
+                ? ""
+                : ResolveDisplayNameCore(null, steamId, 0, TryGetSteamNameCache(), saveSlotId);
         }
 
         private static WebDashboardPlayerDto? BuildFallbackPlayerDto(
@@ -217,7 +149,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = steamId,
                 PlayerUid = playerUid,
-                DisplayName = ResolveDisplayName(null, steamId, playerUid, nameCache),
+                DisplayName = ResolveDisplayNameCore(null, steamId, playerUid, nameCache),
                 IsHost = isHost,
                 IsLocal = isLocal,
                 IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -237,7 +169,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void MergeStoredLeaderboardPlayers(
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam,
-            ulong localSteamId)
+            ulong localSteamId,
+            Dictionary<ulong, string>? nameCache)
         {
             int saveSlotId = WebDashboardGameState.GetSaveSlotId();
             if (saveSlotId < 0)
@@ -262,9 +195,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardPlayerDto dto = new()
                 {
                     SteamId = entry.SteamId,
-                    DisplayName = !string.IsNullOrWhiteSpace(entry.DisplayName)
+                    DisplayName = IsUsableName(entry.DisplayName, entry.SteamId)
                         ? entry.DisplayName
-                        : ResolveDisplayNameForSteamId(entry.SteamId, saveSlotId),
+                        : ResolveDisplayNameCore(null, entry.SteamId, 0, nameCache, saveSlotId),
                     IsHost = WebDashboardGameState.IsHost() && isLocal,
                     IsLocal = isLocal,
                 };
@@ -329,7 +262,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     SteamId = steamId,
                     PlayerUid = playerUid,
-                    DisplayName = ResolveDisplayName(context, steamId, playerUid, nameCache),
+                    DisplayName = ResolveDisplayNameCore(context, steamId, playerUid, nameCache),
                     IsHost = isHost,
                     IsLocal = isLocal,
                     IsBanned = WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -506,37 +439,94 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return false;
         }
 
-        private static string ResolveDisplayName(
+        private static bool IsUsableName(string? name, ulong steamId)
+        {
+            return !string.IsNullOrWhiteSpace(name) && name != steamId.ToString();
+        }
+
+        // Single fallback chain for every payload: live session nick → Steam name cache → actor nick
+        // → live statistics doc → stored statistics doc → leaderboard entry → local nick → Steam ID.
+        private static string ResolveDisplayNameCore(
             SessionContext? context,
             ulong steamId,
             long playerUid,
-            Dictionary<ulong, string>? nameCache)
+            Dictionary<ulong, string>? nameCache,
+            int saveSlotId = -1)
         {
-            if (!string.IsNullOrWhiteSpace(context?.NickName))
+            if (IsUsableName(context?.NickName, steamId))
             {
-                return context.NickName;
+                return context!.NickName;
             }
 
-            if (nameCache != null && nameCache.TryGetValue(steamId, out string? cached) && !string.IsNullOrWhiteSpace(cached))
+            if (nameCache != null
+                && nameCache.TryGetValue(steamId, out string? cached)
+                && IsUsableName(cached, steamId))
             {
                 return cached;
             }
 
             string? fromActor = ResolveNickNameFromActorMap(playerUid, steamId);
-            if (!string.IsNullOrWhiteSpace(fromActor))
+            if (IsUsableName(fromActor, steamId))
             {
-                return fromActor;
+                return fromActor!;
             }
 
             if (StatisticsTracker.TryGetPlayerDocument(steamId) is PlayerStatisticsDocument live
-                && !string.IsNullOrWhiteSpace(live.DisplayName)
-                && live.DisplayName != steamId.ToString())
+                && IsUsableName(live.DisplayName, steamId))
             {
                 return live.DisplayName;
             }
 
+            if (saveSlotId < 0)
+            {
+                saveSlotId = WebDashboardGameState.GetSaveSlotId();
+            }
+
+            string? remembered = WebDashboardPlayerNameStore.TryGetName(saveSlotId, steamId);
+            if (IsUsableName(remembered, steamId))
+            {
+                return remembered!;
+            }
+
+            if (saveSlotId >= 0 && ModConfig.EnableStatistics.Value)
+            {
+                PlayerStatisticsDocument stored = StatisticsStore.LoadPlayer(saveSlotId, steamId);
+                if (IsUsableName(stored.DisplayName, steamId))
+                {
+                    return stored.DisplayName;
+                }
+            }
+
+            string? fromLeaderboard = TryGetLeaderboardDisplayName(saveSlotId, steamId);
+            if (IsUsableName(fromLeaderboard, steamId))
+            {
+                return fromLeaderboard!;
+            }
+
             string? localNick = TryGetLocalNickName();
             return localNick != null && LocalPlayerHelper.IsLocalSteamId(steamId) ? localNick : steamId.ToString();
+        }
+
+        // Keeps the live statistics document and the name sidecar current so offline views
+        // and later sessions show the latest known name after a player reconnects.
+        private static void PersistDisplayName(WebDashboardPlayerDto dto)
+        {
+            if (!IsUsableName(dto.DisplayName, dto.SteamId))
+            {
+                return;
+            }
+
+            WebDashboardPlayerNameStore.RememberName(
+                WebDashboardGameState.GetSaveSlotId(),
+                dto.SteamId,
+                dto.DisplayName);
+
+            if (ModConfig.EnableStatistics.Value
+                && StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is PlayerStatisticsDocument doc
+                && doc.DisplayName != dto.DisplayName)
+            {
+                doc.DisplayName = dto.DisplayName;
+            }
         }
 
         private static string? ResolveNickNameFromActorMap(long playerUid, ulong steamId = 0)
@@ -589,6 +579,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionContext? context)
         {
             ApplyConnectionInfo(dto, context);
+
+            PersistDisplayName(dto);
 
             ApplyAliveStatus(dto, context);
 

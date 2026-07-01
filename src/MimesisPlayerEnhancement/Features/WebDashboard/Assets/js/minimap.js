@@ -1,8 +1,10 @@
 const MinimapRenderer = {
   VIEW_SIZE: 1000,
   CONTENT_PADDING: 0.08,
-  CONNECTION_LINE_LENGTH: 20,
-  CONNECTION_STROKE_WIDTH: 2,
+  DOOR_LENGTH: 22,
+  // Room walls are stroked at 2px; doors are 3x as thick so they overlap the wall.
+  DOOR_STROKE_WIDTH: 6,
+  TELEPORTER_RADIUS: 9,
 
   filterMarkers(markers, focusSteamId, showAll, isHost) {
     const list = markers || [];
@@ -99,6 +101,7 @@ const MinimapRenderer = {
     const tiles = data.tiles || [];
     svgEl._minimapViewport = this.computeViewport(tiles);
     this.drawMapContent(svgEl, data, ns, svgEl._minimapViewport);
+    this.drawTrain(svgEl, data, ns, svgEl._minimapViewport);
     this.drawMarkers(svgEl, data, ns, svgEl._minimapViewport);
   },
 
@@ -112,56 +115,75 @@ const MinimapRenderer = {
     }
 
     const ns = 'http://www.w3.org/2000/svg';
-    const existing = svgEl.querySelector('.minimap-markers');
-    if (existing) {
-      existing.remove();
-    }
+    svgEl.querySelector('.minimap-markers')?.remove();
+    svgEl.querySelector('.minimap-train')?.remove();
 
     const viewport = svgEl._minimapViewport || this.computeViewport(data.tiles || []);
+    this.drawTrain(svgEl, data, ns, viewport);
     this.drawMarkers(svgEl, data, ns, viewport);
   },
 
-  createConnectionLine(viewport, point, tilesById, ns) {
+  connectionGeometry(viewport, point, tilesById) {
     const fromTile = tilesById.get(point.fromTileId);
     const toTile = tilesById.get(point.toTileId);
-    let centerX;
-    let centerY;
-    let dirX;
-    let dirY;
+    const mid = this.mapPoint(viewport, point.x, point.z);
 
+    let dirX = null;
+    let dirY = null;
     if (fromTile && toTile) {
       const fromCenter = this.tileCenter(viewport, fromTile);
       const toCenter = this.tileCenter(viewport, toTile);
-      const mid = this.mapPoint(viewport, point.x, point.z);
-      centerX = mid.x;
-      centerY = mid.y;
       const length = Math.hypot(toCenter.x - fromCenter.x, toCenter.y - fromCenter.y) || 1;
       dirX = (toCenter.x - fromCenter.x) / length;
       dirY = (toCenter.y - fromCenter.y) / length;
     } else if (point.dirX != null && point.dirZ != null) {
-      const mid = this.mapPoint(viewport, point.x, point.z);
       const dirPoint = this.mapPoint(viewport, point.x + point.dirX * 0.01, point.z + point.dirZ * 0.01);
-      centerX = mid.x;
-      centerY = mid.y;
       const length = Math.hypot(dirPoint.x - mid.x, dirPoint.y - mid.y) || 1;
       dirX = (dirPoint.x - mid.x) / length;
       dirY = (dirPoint.y - mid.y) / length;
-    } else {
+    }
+
+    return { fromTile, toTile, mid, dirX, dirY };
+  },
+
+  createConnectionLine(viewport, point, tilesById, ns) {
+    const geo = this.connectionGeometry(viewport, point, tilesById);
+
+    // Cross-area transitions (teleporters, stairs) render as a red diamond.
+    if (point.crossArea) {
+      const group = document.createElementNS(ns, 'g');
+      group.setAttribute('class', 'minimap-teleporter');
+      group.setAttribute('transform', 'translate(' + geo.mid.x + ' ' + geo.mid.y + ')');
+      const r = this.TELEPORTER_RADIUS;
+      const diamond = document.createElementNS(ns, 'polygon');
+      diamond.setAttribute('points', '0,-' + r + ' ' + r + ',0 0,' + r + ' -' + r + ',0');
+      group.appendChild(diamond);
+      const teleTitle = document.createElementNS(ns, 'title');
+      teleTitle.textContent = 'Teleporter → ' + (point.targetAreaId || 'other area');
+      group.appendChild(teleTitle);
+      return group;
+    }
+
+    if (geo.dirX == null || geo.dirY == null) {
       return null;
     }
 
-    const half = this.CONNECTION_LINE_LENGTH * 0.5;
+    // Doors lie along the shared wall, thicker than the wall stroke so they
+    // overlap it on both sides.
+    const wallX = geo.dirX;
+    const wallY = geo.dirY;
+    const half = this.DOOR_LENGTH * 0.5;
     const line = document.createElementNS(ns, 'line');
-    line.setAttribute('x1', String(centerX - dirX * half));
-    line.setAttribute('y1', String(centerY - dirY * half));
-    line.setAttribute('x2', String(centerX + dirX * half));
-    line.setAttribute('y2', String(centerY + dirY * half));
-    line.setAttribute('stroke-width', String(this.CONNECTION_STROKE_WIDTH));
-    line.setAttribute('class', point.crossArea ? 'minimap-connection-cross' : 'minimap-connection');
+    line.setAttribute('x1', String(geo.mid.x - wallX * half));
+    line.setAttribute('y1', String(geo.mid.y - wallY * half));
+    line.setAttribute('x2', String(geo.mid.x + wallX * half));
+    line.setAttribute('y2', String(geo.mid.y + wallY * half));
+    line.setAttribute('stroke-width', String(this.DOOR_STROKE_WIDTH));
+    line.setAttribute('class', 'minimap-connection');
 
     const title = document.createElementNS(ns, 'title');
-    const fromLabel = fromTile?.label || point.fromTileId || 'Room';
-    const toLabel = toTile?.label || point.toTileId || point.targetAreaId || 'Area';
+    const fromLabel = geo.fromTile?.label || point.fromTileId || 'Room';
+    const toLabel = geo.toTile?.label || point.toTileId || point.targetAreaId || 'Area';
     title.textContent = fromLabel + ' ↔ ' + toLabel;
     line.appendChild(title);
 
@@ -176,16 +198,6 @@ const MinimapRenderer = {
 
     const mapRoot = document.createElementNS(ns, 'g');
     mapRoot.setAttribute('class', 'minimap-map-root');
-
-    const connectionPoints = document.createElementNS(ns, 'g');
-    connectionPoints.setAttribute('class', 'minimap-connection-points');
-    (data.connectionPoints || []).forEach((point) => {
-      const line = this.createConnectionLine(viewport, point, tilesById, ns);
-      if (line) {
-        connectionPoints.appendChild(line);
-      }
-    });
-    mapRoot.appendChild(connectionPoints);
 
     const tileLayer = document.createElementNS(ns, 'g');
     tileLayer.setAttribute('class', 'minimap-tiles');
@@ -216,20 +228,32 @@ const MinimapRenderer = {
       }
     });
     mapRoot.appendChild(tileLayer);
-    svgEl.appendChild(mapRoot);
 
-    if (data.train) {
-      const train = document.createElementNS(ns, 'g');
-      train.setAttribute('class', 'minimap-train');
-      train.setAttribute('transform', this.markerTransform(viewport, data.train));
-      train.innerHTML =
-        '<rect x="-14" y="-8" width="28" height="16" rx="3"></rect>' +
-        '<polygon points="14,-6 22,0 14,6"></polygon>';
-      const trainTitle = document.createElementNS(ns, 'title');
-      trainTitle.textContent = 'Train';
-      train.appendChild(trainTitle);
-      svgEl.appendChild(train);
-    }
+    // Doors/teleporters draw above the tiles so they overlap room wall strokes.
+    const connectionPoints = document.createElementNS(ns, 'g');
+    connectionPoints.setAttribute('class', 'minimap-connection-points');
+    (data.connectionPoints || []).forEach((point) => {
+      const line = this.createConnectionLine(viewport, point, tilesById, ns);
+      if (line) {
+        connectionPoints.appendChild(line);
+      }
+    });
+    mapRoot.appendChild(connectionPoints);
+    svgEl.appendChild(mapRoot);
+  },
+
+  drawTrain(svgEl, data, ns, viewport) {
+    if (!data.train) return;
+    const train = document.createElementNS(ns, 'g');
+    train.setAttribute('class', 'minimap-train');
+    train.setAttribute('transform', this.markerTransform(viewport, data.train));
+    train.innerHTML =
+      '<rect x="-14" y="-8" width="28" height="16" rx="3"></rect>' +
+      '<polygon points="14,-6 22,0 14,6"></polygon>';
+    const trainTitle = document.createElementNS(ns, 'title');
+    trainTitle.textContent = 'Train';
+    train.appendChild(trainTitle);
+    svgEl.appendChild(train);
   },
 
   drawMarkers(svgEl, data, ns, viewport) {
