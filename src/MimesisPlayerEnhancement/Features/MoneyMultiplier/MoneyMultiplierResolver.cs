@@ -12,7 +12,6 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 MoneyType.RoundGoal => ModConfig.AutoScaleRoundGoalMoneyByPlayerCount.Value,
                 MoneyType.ScrapSellValue => ModConfig.AutoScaleScrapSellValueByPlayerCount.Value,
                 MoneyType.ShopBuyPrice => ModConfig.AutoScaleShopBuyPriceByPlayerCount.Value,
-                MoneyType.ShopItems => ModConfig.AutoScaleShopItemsByPlayerCount.Value,
                 MoneyType.ReinforcePrice => ModConfig.AutoScaleReinforcePriceByPlayerCount.Value,
                 _ => false,
             };
@@ -26,7 +25,6 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 MoneyType.RoundGoal => ModConfig.RoundGoalMoneyMultiplier.Value,
                 MoneyType.ScrapSellValue => ModConfig.ScrapSellValueMultiplier.Value,
                 MoneyType.ShopBuyPrice => ModConfig.ShopBuyPriceMultiplier.Value,
-                MoneyType.ShopItems => ModConfig.ShopItemsMultiplier.Value,
                 MoneyType.ReinforcePrice => ModConfig.ReinforcePriceMultiplier.Value,
                 _ => 1f,
             };

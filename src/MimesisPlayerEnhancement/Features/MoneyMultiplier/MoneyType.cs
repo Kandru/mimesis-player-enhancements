@@ -6,7 +6,6 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
         RoundGoal,
         ScrapSellValue,
         ShopBuyPrice,
-        ShopItems,
         ReinforcePrice,
     }
 }

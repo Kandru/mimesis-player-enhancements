@@ -14,11 +14,12 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
         private sealed class RoomState
         {
             internal int AppliedConfigGeneration = -1;
+            internal bool LoadedFromSave;
         }
 
         private static int _configGeneration;
         private static readonly ConditionalWeakTable<MaintenanceRoom, RoomState> States = [];
-        private static readonly ConditionalWeakTable<MaintenanceRoom, Dictionary<int, int>> VanillaPricesByRoom = [];
+        private static readonly ConditionalWeakTable<MaintenanceRoom, Dictionary<int, int>> BasePricesByRoom = [];
 
         internal static void NotifyConfigChanged()
         {
@@ -28,22 +29,27 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
         internal static void PrepareForShopInit(MaintenanceRoom room)
         {
             MarkDirty(room);
-            ClearVanillaPrices(room);
+            ClearBasePrices(room);
+            GetState(room).LoadedFromSave = false;
         }
 
         internal static void ApplyAfterShopInit(MaintenanceRoom room)
         {
-            MoneyMultiplierApplier.ApplyShopItems(room);
-            ApplyDiscounts(room);
             ApplyBuyPrices(room);
+            ApplyDiscounts(room);
             MarkApplied(room);
         }
 
         internal static void ApplyAfterLoad(MaintenanceRoom room)
         {
-            PrepareForShopInit(room);
-            // Saved shop prices already include rolled discounts — do not re-roll on load.
-            ApplyBuyPrices(room);
+            GetState(room).LoadedFromSave = true;
+
+            if (MaintenanceRoomAccess.GetPriceForItems(room) is Dictionary<int, ShopItemPriceInfo> priceForItems
+                && priceForItems.Count > 0)
+            {
+                MaintenanceRoomAccess.SyncVendingMachines(room, priceForItems);
+            }
+
             MarkApplied(room);
         }
 
@@ -55,12 +61,13 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
 
             RoomState state = GetState(room);
-            if (state.AppliedConfigGeneration == _configGeneration)
+            if (state.AppliedConfigGeneration == _configGeneration || state.LoadedFromSave)
             {
                 return;
             }
 
             ApplyBuyPrices(room);
+            ApplyDiscounts(room);
             state.AppliedConfigGeneration = _configGeneration;
         }
 
@@ -84,14 +91,85 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             GetState(room).AppliedConfigGeneration = Volatile.Read(ref _configGeneration);
         }
 
-        private static void ClearVanillaPrices(MaintenanceRoom room)
+        private static void ClearBasePrices(MaintenanceRoom room)
         {
             if (room == null)
             {
                 return;
             }
 
-            _ = VanillaPricesByRoom.Remove(room);
+            _ = BasePricesByRoom.Remove(room);
+        }
+
+        private static void ApplyBuyPrices(MaintenanceRoom room)
+        {
+            if (!MoneyMultiplierApplier.IsEnabled())
+            {
+                return;
+            }
+
+            if (MaintenanceRoomAccess.GetPriceForItems(room) is not Dictionary<int, ShopItemPriceInfo> priceForItems
+                || priceForItems.Count == 0)
+            {
+                return;
+            }
+
+            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
+            float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
+            bool modDiscountsEnabled = ModConfig.ShopDiscountChancePercent.Value > 0;
+
+            Dictionary<int, int> basePrices = BasePricesByRoom.GetOrCreateValue(room);
+
+            int scaledCount = 0;
+            foreach (KeyValuePair<int, ShopItemPriceInfo> entry in priceForItems)
+            {
+                ShopItemPriceInfo? info = entry.Value;
+                if (info == null || info.Price <= 0)
+                {
+                    continue;
+                }
+
+                if (!basePrices.TryGetValue(entry.Key, out int basePrice))
+                {
+                    basePrice = GetBasePrice(info.Price, info.DiscountRate);
+                    basePrices[entry.Key] = basePrice;
+                }
+
+                int scaledBase = effective == 1f ? basePrice : MoneyMultiplierResolver.ScaleAmount(basePrice, effective);
+                int newPrice;
+                if (modDiscountsEnabled)
+                {
+                    info.DiscountRate = 0f;
+                    newPrice = scaledBase;
+                }
+                else
+                {
+                    newPrice = ApplyDiscountRate(scaledBase, info.DiscountRate);
+                }
+
+                if (info.Price == newPrice)
+                {
+                    continue;
+                }
+
+                info.Price = newPrice;
+                scaledCount++;
+            }
+
+            if (scaledCount == 0 && effective == 1f)
+            {
+                return;
+            }
+
+            MaintenanceRoomAccess.SyncVendingMachines(room, priceForItems);
+
+            if (scaledCount > 0 || ModConfig.EnableDebugLogging.Value)
+            {
+                ModLog.Info(
+                    Feature,
+                    $"Shop buy prices scaled — {scaledCount}/{priceForItems.Count} items " +
+                    $"(players={playerCount}, effective={effective:0.##}×)");
+            }
         }
 
         private static void ApplyDiscounts(MaintenanceRoom room)
@@ -143,7 +221,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
                 int discountPercent = RollDiscountPercent(minPercent, maxPercent);
                 info.DiscountRate = discountPercent / 100f;
-                info.Price = Math.Max(1, (int)Math.Round(basePrice * (1f - info.DiscountRate)));
+                info.Price = ApplyDiscountRate(basePrice, info.DiscountRate);
                 discounted++;
             }
 
@@ -158,68 +236,21 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
         }
 
-        private static void ApplyBuyPrices(MaintenanceRoom room)
-        {
-            if (!MoneyMultiplierApplier.IsEnabled())
-            {
-                return;
-            }
-
-            if (MaintenanceRoomAccess.GetPriceForItems(room) is not Dictionary<int, ShopItemPriceInfo> priceForItems
-                || priceForItems.Count == 0)
-            {
-                return;
-            }
-
-            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
-
-            Dictionary<int, int> vanillaPrices = VanillaPricesByRoom.GetOrCreateValue(room);
-
-            int scaledCount = 0;
-            foreach (KeyValuePair<int, ShopItemPriceInfo> entry in priceForItems)
-            {
-                ShopItemPriceInfo? info = entry.Value;
-                if (info == null || info.Price <= 0)
-                {
-                    continue;
-                }
-
-                if (!vanillaPrices.TryGetValue(entry.Key, out int vanilla))
-                {
-                    vanilla = info.Price;
-                    vanillaPrices[entry.Key] = vanilla;
-                }
-
-                int scaled = effective == 1f ? vanilla : MoneyMultiplierResolver.ScaleAmount(vanilla, effective);
-                if (info.Price == scaled)
-                {
-                    continue;
-                }
-
-                info.Price = scaled;
-                scaledCount++;
-            }
-
-            if (scaledCount == 0 && effective == 1f)
-            {
-                return;
-            }
-
-            MaintenanceRoomAccess.SyncVendingMachines(room, priceForItems);
-
-            if (scaledCount > 0 || ModConfig.EnableDebugLogging.Value)
-            {
-                ModLog.Info(
-                    Feature,
-                    $"Shop buy prices scaled — {scaledCount}/{priceForItems.Count} items " +
-                    $"(players={playerCount}, effective={effective:0.##}×)");
-            }
-        }
-
         private static int GetBasePrice(int price, float discountRate)
         {
             return price <= 0 ? 0 : discountRate is <= 0f or >= 1f ? price : Math.Max(1, (int)Math.Round(price / (1f - discountRate)));
+        }
+
+        private static int ApplyDiscountRate(int basePrice, float discountRate)
+        {
+            if (basePrice <= 0)
+            {
+                return 0;
+            }
+
+            return discountRate is <= 0f or >= 1f
+                ? basePrice
+                : Math.Max(1, (int)Math.Round(basePrice * (1f - discountRate)));
         }
 
         private static bool RollDiscount(int chancePercent)

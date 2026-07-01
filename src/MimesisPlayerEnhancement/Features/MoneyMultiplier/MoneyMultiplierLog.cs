@@ -24,7 +24,6 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 MoneyType.RoundGoal => "Round goal",
                 MoneyType.ScrapSellValue => "Scrap/sell value",
                 MoneyType.ShopBuyPrice => "Shop buy price",
-                MoneyType.ShopItems => "Shop items",
                 MoneyType.ReinforcePrice => "Reinforce price",
                 _ => type.ToString(),
             };

@@ -87,8 +87,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; private set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; private set; } = null!;
         public static MelonPreferences_Entry<float> ShopBuyPriceMultiplier { get; private set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleShopItemsByPlayerCount { get; private set; } = null!;
-        public static MelonPreferences_Entry<float> ShopItemsMultiplier { get; private set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountMinPercent { get; private set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountMaxPercent { get; private set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountChancePercent { get; private set; } = null!;
@@ -425,7 +423,7 @@ namespace MimesisPlayerEnhancement
                 "EnableMoneyMultiplier",
                 false,
                 "Enable Money Multiplier",
-                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, shop item count, and reinforce costs. Host only.");
+                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only.");
 
             AutoScaleStartupMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleStartupMoneyByPlayerCount",
@@ -437,7 +435,7 @@ namespace MimesisPlayerEnhancement
                 "StartupMoneyMultiplier",
                 1f,
                 "Startup Money Multiplier",
-                "Starting maintenance-room currency on a new game or session reset (1 = vanilla, 2 = double).");
+                "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game.");
 
             AutoScaleRoundGoalMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleRoundGoalMoneyByPlayerCount",
@@ -474,18 +472,6 @@ namespace MimesisPlayerEnhancement
                 1f,
                 "Shop Buy Price Multiplier",
                 "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round.");
-
-            AutoScaleShopItemsByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
-                "AutoScaleShopItemsByPlayerCount",
-                true,
-                "Auto Scale Shop Items By Player Count",
-                "When enabled, multiply maintenance shop item count by player count / 4 for sessions with more than 4 players (stacks with ShopItemsMultiplier).");
-
-            ShopItemsMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
-                "ShopItemsMultiplier",
-                1f,
-                "Shop Items Multiplier",
-                "Number of unique items offered in the maintenance shop (1 = vanilla, 2 = double). Extra items are rolled from vending-machine shop groups on the map.");
 
             ShopDiscountMinPercent = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopDiscountMinPercent",
@@ -822,14 +808,12 @@ namespace MimesisPlayerEnhancement
             AutoScaleRoundGoalMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(AutoScaleRoundGoalMoneyByPlayerCount));
             AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(AutoScaleScrapSellValueByPlayerCount));
             AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(AutoScaleShopBuyPriceByPlayerCount));
-            AutoScaleShopItemsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(AutoScaleShopItemsByPlayerCount));
             AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(AutoScaleReinforcePriceByPlayerCount));
 
             StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, StartupMoneyMultiplier));
             RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, RoundGoalMoneyMultiplier));
             ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ScrapSellValueMultiplier));
             ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ShopBuyPriceMultiplier));
-            ShopItemsMultiplier.OnEntryValueChanged.Subscribe((_, value) => OnSpawnMultiplierChanged(logger, value, ShopItemsMultiplier));
             ShopDiscountMinPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ShopDiscountMinPercent));
             ShopDiscountMaxPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ShopDiscountMaxPercent));
             ShopDiscountChancePercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ShopDiscountChancePercent));
@@ -974,7 +958,6 @@ namespace MimesisPlayerEnhancement
                 RoundGoalMoneyMultiplier,
                 ScrapSellValueMultiplier,
                 ShopBuyPriceMultiplier,
-                ShopItemsMultiplier,
                 ReinforcePriceMultiplier,
                 ExtraShiftSecondsPerPlayerAboveBaseline,
                 MimicPossessionMinTimeSeconds,
