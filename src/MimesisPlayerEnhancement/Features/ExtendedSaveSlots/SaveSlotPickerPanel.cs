@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MimesisPlayerEnhancement.Ui;
 using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 using UnityEngine;
@@ -45,7 +46,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal bool TryOpen()
         {
-            Transform? parent = SaveSlotPickerUiBuilder.GetUiTopParent();
+            Transform? parent = ModUiRoot.GetTop();
             if (parent == null)
             {
                 ModLog.Warn(Feature, "UIManager Top layer unavailable; cannot show save picker.");

@@ -48,12 +48,5 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             root.color = color;
             root.raycastTarget = true;
         }
-
-        internal static void SetButtonEnabled(Button button, bool enabled, Color enabledColor, Color disabledColor)
-        {
-            button.interactable = enabled;
-            Component? text = SaveSlotTextHelper.FindTextComponent(button.gameObject);
-            SaveSlotTextHelper.SetColor(text, enabled ? enabledColor : disabledColor);
-        }
     }
 }

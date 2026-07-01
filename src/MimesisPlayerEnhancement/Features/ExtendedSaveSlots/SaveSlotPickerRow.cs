@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,7 +16,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private SaveSlotEntry _entry = null!;
         private Image _background = null!;
         private Component _label = null!;
-        private SaveSlotPickerUiAssets _assets = SaveSlotPickerUiAssets.Fallback;
+        private ModUiAssets _assets = ModUiAssets.Fallback;
         private Action<SaveSlotPickerRow>? _onSelected;
         private Action<SaveSlotPickerRow>? _onDoubleClicked;
         private Coroutine? _blinkCoroutine;
@@ -29,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             SaveSlotEntry entry,
             Image background,
             Component label,
-            SaveSlotPickerUiAssets assets,
+            ModUiAssets assets,
             Action<SaveSlotPickerRow> onSelected,
             Action<SaveSlotPickerRow> onDoubleClicked)
         {
@@ -78,7 +79,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal void RefreshText()
         {
-            SaveSlotTextHelper.SetText(
+            ModUiText.SetText(
                 _label,
                 SaveSlotPickerRowText.Compose(_entry, SaveSlotPickerRowText.Line2Style.Normal));
         }
@@ -99,17 +100,17 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             for (int blink = 0; blink < 4; blink++)
             {
-                SaveSlotTextHelper.SetText(
+                ModUiText.SetText(
                     _label,
                     SaveSlotPickerRowText.Compose(_entry, SaveSlotPickerRowText.Line2Style.VersionBlinkHidden));
                 yield return new WaitForSeconds(halfPeriod);
-                SaveSlotTextHelper.SetText(
+                ModUiText.SetText(
                     _label,
                     SaveSlotPickerRowText.Compose(_entry, SaveSlotPickerRowText.Line2Style.VersionBlink));
                 yield return new WaitForSeconds(halfPeriod);
             }
 
-            SaveSlotTextHelper.SetText(
+            ModUiText.SetText(
                 _label,
                 SaveSlotPickerRowText.Compose(_entry, SaveSlotPickerRowText.Line2Style.VersionBlink));
             _blinkCoroutine = null;
@@ -126,7 +127,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                         : RowNormalColor;
             }
 
-            SaveSlotTextHelper.SetColor(_label, _assets.SlotTextColor);
+            ModUiText.SetColor(_label, _assets.TextColor);
         }
     }
 }

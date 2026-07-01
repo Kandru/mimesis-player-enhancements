@@ -41,6 +41,34 @@ Config: `src/MimesisPlayerEnhancement/Config/ModConfig.cs` + TOML sections `Mime
 8. Document config keys in [CONFIG.md](CONFIG.md) (linked from the README Config section).
 9. Run `./scripts/build.sh` (Debug and Release if touching build-sensitive code).
 
+## UI toolkit
+
+Shared uGUI/TextMeshPro primitives live in `src/MimesisPlayerEnhancement/Ui/` (namespace `MimesisPlayerEnhancement.Ui`). Features compose these instead of doing RectTransform math or TMP reflection themselves; Harmony patches and game-specific wiring stay in the feature.
+
+- **ModUiRoot** — attach point into the game's UI hierarchy (`UIManager.nodes[eUIHeight.Top]`).
+- **ModUiAssets** — sprites/font/SFX/colors cloned from vanilla prefabs (`TryCaptureFromMainMenu`), with `Fallback` solid-color defaults.
+- **ModPage** — full-screen overlay with title, content, action and back bands.
+- **ModPanel** — dim overlay with a centered panel.
+- **ModButton** — styled button with TMP label and hover/click SFX.
+- **ModScrollList** — vertical scroll view; add rows into `Content` with a row factory.
+- **ModUiText / ModUiLayout / ModUiFactory** — TMP reflection helpers, anchor math, low-level element creation.
+
+Minimal example:
+
+```csharp
+if (!ModUiAssets.TryCaptureFromMainMenu(mainMenu, loadTram, out ModUiAssets assets))
+{
+    assets = ModUiAssets.Fallback;
+}
+
+GameObject root = ModUiRoot.CreateUiRoot(ModUiRoot.GetTop()!, "MyFeatureUi");
+ModPage page = ModPage.Create(root.transform, assets);
+page.CreateTitle(assets, "My Feature");
+ModButton.Create(page.CreateActionButtonRow(), assets, "Apply", expandWidth: true, () => MyFeatureApplier.Apply());
+```
+
+`Features/ExtendedSaveSlots/` (save slot picker) is the reference consumer.
+
 ## Host-only and session access
 
 - **HostApplyGate** — returns false for join-anytime participants and when the feature toggle is off; allows solo/host play when network pdata is null.

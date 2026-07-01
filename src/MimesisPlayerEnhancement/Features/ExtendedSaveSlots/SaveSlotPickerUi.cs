@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,9 +8,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal sealed class SaveSlotPickerUi : MonoBehaviour
     {
-        private SaveSlotPickerUiAssets _assets = SaveSlotPickerUiAssets.Fallback;
-        private RectTransform _content = null!;
-        private ScrollRect _scrollRect = null!;
+        private ModUiAssets _assets = ModUiAssets.Fallback;
+        private ModScrollList _scrollList = null!;
         private GameObject? _emptyLabel;
         private readonly List<SaveSlotPickerRow> _rows = [];
         private SaveSlotPickerRow? _selectedRow;
@@ -31,12 +31,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             UIPrefab_MainMenu mainMenu,
             UIPrefab_LoadTram loadTram)
         {
-            if (!SaveSlotPickerUiAssets.TryCapture(mainMenu, loadTram, out SaveSlotPickerUiAssets assets))
+            if (!ModUiAssets.TryCaptureFromMainMenu(mainMenu, loadTram, out ModUiAssets assets))
             {
-                assets = SaveSlotPickerUiAssets.Fallback;
+                assets = ModUiAssets.Fallback;
             }
 
-            GameObject rootGo = SaveSlotPickerUiBuilder.CreateUiRoot(parent, "SaveSlotPickerUi");
+            GameObject rootGo = ModUiRoot.CreateUiRoot(parent, "SaveSlotPickerUi");
             SaveSlotPickerUi ui = rootGo.AddComponent<SaveSlotPickerUi>();
             ui._assets = assets;
             ui.Build(rootGo.transform, loadTram);
@@ -60,8 +60,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             {
                 if (_emptyLabel == null)
                 {
-                    _emptyLabel = SaveSlotPickerUiBuilder
-                        .CreateEmptyLabel(_content, _assets, "No save games found.")
+                    _emptyLabel = _scrollList
+                        .CreatePlaceholderLabel(_assets, "No save games found.")
                         .gameObject;
                 }
 
@@ -76,8 +76,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             foreach (SaveSlotEntry entry in entries)
             {
-                SaveSlotPickerRow row = SaveSlotPickerUiBuilder.CreateSlotRow(
-                    _content,
+                SaveSlotPickerRow row = SaveSlotRowFactory.CreateSlotRow(
+                    _scrollList.Content,
                     _assets,
                     entry,
                     OnRowSelected,
@@ -85,13 +85,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 _rows.Add(row);
             }
 
-            RefreshScrollLayout();
-        }
-
-        private void RefreshScrollLayout()
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_content);
-            _scrollRect.verticalNormalizedPosition = 1f;
+            _scrollList.ScrollToTop();
         }
 
         internal void SetSelection(SaveSlotPickerRow? row)
@@ -110,58 +104,45 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal void SetActionButtons(bool loadEnabled, bool deleteEnabled, bool newTramEnabled)
         {
-            SaveSlotPickerChrome.SetButtonEnabled(
-                LoadButton,
-                loadEnabled,
-                _assets.SlotTextColor,
-                _assets.DisabledTextColor);
-            SaveSlotPickerChrome.SetButtonEnabled(
-                DeleteButton,
-                deleteEnabled,
-                _assets.SlotTextColor,
-                _assets.DisabledTextColor);
-            SaveSlotPickerChrome.SetButtonEnabled(
-                NewTramButton,
-                newTramEnabled,
-                _assets.SlotTextColor,
-                _assets.DisabledTextColor);
+            ModButton.SetEnabled(LoadButton, loadEnabled, _assets.TextColor, _assets.DisabledTextColor);
+            ModButton.SetEnabled(DeleteButton, deleteEnabled, _assets.TextColor, _assets.DisabledTextColor);
+            ModButton.SetEnabled(NewTramButton, newTramEnabled, _assets.TextColor, _assets.DisabledTextColor);
         }
 
         private void Build(Transform root, UIPrefab_LoadTram loadTram)
         {
-            GameObject panel = SaveSlotPickerUiBuilder.CreateFullScreenPanel(root, _assets);
-            SaveSlotPickerLayoutBands bands = SaveSlotPickerUiBuilder.CreateLayoutBands(panel.transform);
-            bands.ScrollBand.SetAsLastSibling();
+            ModPage page = ModPage.Create(root, _assets);
+            page.ContentBand.SetAsLastSibling();
 
             string loadLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_LOAD_TRAM");
             string newLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_NEW_TRAM");
-            SaveSlotPickerUiBuilder.CreateTitle(bands.TitleBand, _assets, loadLabel + " / " + newLabel);
+            page.CreateTitle(_assets, loadLabel + " / " + newLabel);
 
-            _content = SaveSlotPickerUiBuilder.CreateScrollView(bands.ScrollBand, out _scrollRect);
+            _scrollList = ModScrollList.Create(page.ContentBand);
 
-            RectTransform actionRow = SaveSlotPickerUiBuilder.CreateActionButtonRow(bands.ActionBand);
-            NewTramButton = SaveSlotPickerUiBuilder.CreateFooterButton(
+            RectTransform actionRow = page.CreateActionButtonRow();
+            NewTramButton = ModButton.Create(
                 actionRow,
                 _assets,
                 newLabel,
                 expandWidth: true,
                 () => NewTramClicked?.Invoke());
-            DeleteButton = SaveSlotPickerUiBuilder.CreateFooterButton(
+            DeleteButton = ModButton.Create(
                 actionRow,
                 _assets,
                 "Delete",
                 expandWidth: true,
                 () => DeleteClicked?.Invoke());
-            LoadButton = SaveSlotPickerUiBuilder.CreateFooterButton(
+            LoadButton = ModButton.Create(
                 actionRow,
                 _assets,
                 loadLabel,
                 expandWidth: true,
                 () => LoadClicked?.Invoke());
 
-            RectTransform backRow = SaveSlotPickerUiBuilder.CreateBackButtonRow(bands.BackBand);
+            RectTransform backRow = page.CreateBackButtonRow();
             string backLabel = ReadButtonLabel(loadTram.UE_ButtonClose.gameObject) ?? "Back";
-            BackButton = SaveSlotPickerUiBuilder.CreateFooterButton(
+            BackButton = ModButton.Create(
                 backRow,
                 _assets,
                 backLabel,
@@ -197,16 +178,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static string? ReadButtonLabel(GameObject buttonRoot)
         {
-            Component? text = SaveSlotTextHelper.FindTextComponent(buttonRoot);
-            if (text == null)
-            {
-                return null;
-            }
-
-            System.Reflection.PropertyInfo? textProp = text.GetType().GetProperty(
-                "text",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-            return textProp?.GetValue(text) as string;
+            Component? text = ModUiText.FindTextComponent(buttonRoot);
+            return ModUiText.GetText(text);
         }
 
         private void OnDestroy() => ClearRows();

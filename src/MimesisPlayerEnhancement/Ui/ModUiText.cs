@@ -3,10 +3,17 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
+namespace MimesisPlayerEnhancement.Ui
 {
-    internal static class SaveSlotTextHelper
+    /// <summary>
+    /// Reflection helpers for TextMeshProUGUI components (TMP is not referenced directly;
+    /// it is resolved at runtime via <c>Type.GetType</c>).
+    /// </summary>
+    internal static class ModUiText
     {
+        internal const int OverflowOverflow = 0;
+        internal const int OverflowEllipsis = 1;
+
         private static readonly Dictionary<System.Type, (PropertyInfo? Text, PropertyInfo? Color)> PropertyCache = new();
 
         internal static Component? FindTextComponent(GameObject root)
@@ -28,6 +35,16 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return null;
         }
 
+        internal static string? GetText(Component? textComponent)
+        {
+            if (textComponent == null)
+            {
+                return null;
+            }
+
+            return GetCachedProperties(textComponent).Text?.GetValue(textComponent) as string;
+        }
+
         internal static void SetText(Component? textComponent, string value)
         {
             if (textComponent == null)
@@ -35,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 return;
             }
 
-            PropertyInfo? textProperty = GetTextProperty(textComponent);
+            PropertyInfo? textProperty = GetCachedProperties(textComponent).Text;
             textProperty?.SetValue(textComponent, value, null);
         }
 
@@ -46,13 +63,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 return;
             }
 
-            PropertyInfo? colorProperty = GetColorProperty(textComponent);
+            PropertyInfo? colorProperty = GetCachedProperties(textComponent).Color;
             colorProperty?.SetValue(textComponent, color, null);
-        }
-
-        internal static void ApplyDefaultColor(Component? textComponent)
-        {
-            SetColor(textComponent, SaveSlotDisplayFormatter.DefaultTextColor);
         }
 
         internal static void SetAlignment(Component? textComponent, bool upperLeft)
@@ -84,6 +96,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             alignmentProperty.SetValue(textComponent, value, null);
         }
 
+        // TMP TextAlignmentOptions raw values.
         private enum TextAlignment
         {
             TopLeft = 257,
@@ -129,16 +142,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 "richText",
                 BindingFlags.Instance | BindingFlags.Public);
             richTextProp?.SetValue(textComponent, true, null);
-        }
-
-        private static PropertyInfo? GetTextProperty(Component textComponent)
-        {
-            return GetCachedProperties(textComponent).Text;
-        }
-
-        private static PropertyInfo? GetColorProperty(Component textComponent)
-        {
-            return GetCachedProperties(textComponent).Color;
         }
 
         private static (PropertyInfo? Text, PropertyInfo? Color) GetCachedProperties(Component textComponent)

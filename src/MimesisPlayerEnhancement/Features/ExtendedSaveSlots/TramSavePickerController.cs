@@ -310,14 +310,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void ApplyLabelToButton(GameObject buttonRoot, string label)
         {
-            Component? text = SaveSlotTextHelper.FindTextComponent(buttonRoot);
+            Component? text = Ui.ModUiText.FindTextComponent(buttonRoot);
             if (text == null)
             {
                 ModLog.Warn(Feature, "Could not find button label text to replace.");
                 return;
             }
 
-            SaveSlotTextHelper.SetText(text, label);
+            Ui.ModUiText.SetText(text, label);
         }
 
 #pragma warning disable CS0618

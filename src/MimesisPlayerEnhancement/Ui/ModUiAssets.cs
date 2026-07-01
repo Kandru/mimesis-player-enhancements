@@ -2,20 +2,28 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
+namespace MimesisPlayerEnhancement.Ui
 {
-    internal sealed class SaveSlotPickerUiAssets
+    /// <summary>
+    /// Sprites, font template, colors and SFX ids cloned from vanilla UI prefabs, with
+    /// solid-color fallbacks when capture fails. Capture once per menu session and pass
+    /// the instance to the widget factories.
+    /// </summary>
+    internal sealed class ModUiAssets
     {
-        internal static readonly SaveSlotPickerUiAssets Fallback = new();
+        /// <summary>Warm parchment tone matching the vanilla save-slot text.</summary>
+        internal static readonly Color DefaultTextColor = new Color32(255, 240, 194, 255);
 
-        internal Sprite? SlotButtonSprite { get; private set; }
-        internal Image.Type SlotButtonImageType { get; private set; } = Image.Type.Sliced;
-        internal Sprite? FooterButtonSprite { get; private set; }
-        internal Image.Type FooterButtonImageType { get; private set; } = Image.Type.Sliced;
+        internal static readonly ModUiAssets Fallback = new();
+
+        internal Sprite? RowSprite { get; private set; }
+        internal Image.Type RowImageType { get; private set; } = Image.Type.Sliced;
+        internal Sprite? ButtonSprite { get; private set; }
+        internal Image.Type ButtonImageType { get; private set; } = Image.Type.Sliced;
         internal Sprite? RowHighlightSprite { get; private set; }
         internal Image.Type RowHighlightImageType { get; private set; } = Image.Type.Sliced;
         internal Component? FontTemplate { get; private set; }
-        internal Color SlotTextColor { get; private set; } = SaveSlotDisplayFormatter.DefaultTextColor;
+        internal Color TextColor { get; private set; } = DefaultTextColor;
         internal Color TitleTextColor { get; private set; } = Color.white;
         internal Color HoverTextColor { get; private set; } = Color.white;
         internal Color DisabledTextColor { get; private set; } = Color.gray;
@@ -23,24 +31,27 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         internal Color DimOverlayColor { get; private set; } = new(0f, 0f, 0f, 0.45f);
         internal string ButtonClickSfxId { get; private set; } = "ButtonClick";
         internal string ButtonHoverSfxId { get; private set; } = "ButtonHover";
-        internal float SlotRowHeight { get; private set; } = 112f;
-        internal float FooterButtonWidth { get; private set; } = 200f;
-        internal float FooterButtonHeight { get; private set; } = 48f;
+        internal float RowHeight { get; private set; } = 112f;
+        internal float ButtonWidth { get; private set; } = 200f;
+        internal float ButtonHeight { get; private set; } = 48f;
 
-        internal static bool TryCapture(UIPrefab_MainMenu mainMenu, UIPrefab_LoadTram loadTram, out SaveSlotPickerUiAssets assets)
+        internal static bool TryCaptureFromMainMenu(
+            UIPrefab_MainMenu mainMenu,
+            UIPrefab_LoadTram loadTram,
+            out ModUiAssets assets)
         {
-            assets = new SaveSlotPickerUiAssets();
+            assets = new ModUiAssets();
 
-            CaptureImage(loadTram.UE_SavedFile1?.GetComponent<Image>(), out Sprite? slotSprite, out Image.Type slotType);
-            assets.SlotButtonSprite = slotSprite;
-            assets.SlotButtonImageType = slotType;
+            CaptureImage(loadTram.UE_SavedFile1?.GetComponent<Image>(), out Sprite? rowSprite, out Image.Type rowType);
+            assets.RowSprite = rowSprite;
+            assets.RowImageType = rowType;
 
             CaptureImage(
                 loadTram.UE_ButtonClose?.GetComponent<Image>() ?? mainMenu.UE_HostButton?.GetComponent<Image>(),
-                out Sprite? footerSprite,
-                out Image.Type footerType);
-            assets.FooterButtonSprite = footerSprite;
-            assets.FooterButtonImageType = footerType;
+                out Sprite? buttonSprite,
+                out Image.Type buttonType);
+            assets.ButtonSprite = buttonSprite;
+            assets.ButtonImageType = buttonType;
 
             UiPrefab_RoomCard? roomCard = FindRoomCardTemplate();
             if (roomCard != null)
@@ -52,35 +63,35 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             if (mainMenu.UE_HostButton != null)
             {
-                assets.FontTemplate = SaveSlotTextHelper.FindTextComponent(mainMenu.UE_HostButton.gameObject);
+                assets.FontTemplate = ModUiText.FindTextComponent(mainMenu.UE_HostButton.gameObject);
             }
 
             if (assets.FontTemplate == null && loadTram.UE_SavedFile1 != null)
             {
-                assets.FontTemplate = SaveSlotTextHelper.FindTextComponent(loadTram.UE_SavedFile1.gameObject);
+                assets.FontTemplate = ModUiText.FindTextComponent(loadTram.UE_SavedFile1.gameObject);
             }
 
-            RectTransform? slotRect = loadTram.UE_SavedFile1?.GetComponent<RectTransform>();
-            if (slotRect != null && slotRect.rect.height > 1f)
+            RectTransform? rowRect = loadTram.UE_SavedFile1?.GetComponent<RectTransform>();
+            if (rowRect != null && rowRect.rect.height > 1f)
             {
-                assets.SlotRowHeight = Mathf.Max(slotRect.rect.height, 104f);
+                assets.RowHeight = Mathf.Max(rowRect.rect.height, 104f);
             }
 
-            RectTransform? footerRect = loadTram.UE_ButtonClose?.GetComponent<RectTransform>();
-            if (footerRect != null)
+            RectTransform? buttonRect = loadTram.UE_ButtonClose?.GetComponent<RectTransform>();
+            if (buttonRect != null)
             {
-                if (footerRect.rect.width > 1f)
+                if (buttonRect.rect.width > 1f)
                 {
-                    assets.FooterButtonWidth = footerRect.rect.width;
+                    assets.ButtonWidth = buttonRect.rect.width;
                 }
 
-                if (footerRect.rect.height > 1f)
+                if (buttonRect.rect.height > 1f)
                 {
-                    assets.FooterButtonHeight = footerRect.rect.height;
+                    assets.ButtonHeight = buttonRect.rect.height;
                 }
             }
 
-            UIManager? uiManager = SaveSlotGameAccess.TryGetUiManager();
+            UIManager? uiManager = ModUiGameAccess.TryGetUiManager();
             if (uiManager != null)
             {
                 PropertyInfo? hoverColorProp = typeof(UIManager).GetProperty(
@@ -92,7 +103,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 }
             }
 
-            return assets.FontTemplate != null || assets.SlotButtonSprite != null;
+            return assets.FontTemplate != null || assets.RowSprite != null;
         }
 
         internal void ApplyFont(Component? textComponent)

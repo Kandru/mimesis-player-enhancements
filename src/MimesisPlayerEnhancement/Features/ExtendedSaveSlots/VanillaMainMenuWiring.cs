@@ -69,8 +69,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void ApplyButtonLabel(GameObject buttonRoot, string label)
         {
-            Component? text = SaveSlotTextHelper.FindTextComponent(buttonRoot);
-            SaveSlotTextHelper.SetText(text, label);
+            Component? text = Ui.ModUiText.FindTextComponent(buttonRoot);
+            Ui.ModUiText.SetText(text, label);
         }
     }
 }

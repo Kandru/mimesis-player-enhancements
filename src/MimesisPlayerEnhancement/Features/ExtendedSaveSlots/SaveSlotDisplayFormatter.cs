@@ -1,4 +1,5 @@
 using System.Linq;
+using MimesisPlayerEnhancement.Ui;
 using ReluProtocol;
 using UnityEngine;
 
@@ -15,9 +16,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     internal static class SaveSlotDisplayFormatter
     {
         private const int MinimumUsableSaveDataVersion = 1;
-        private static readonly UnityEngine.Color SlotTextColor = new Color32(255, 240, 194, 255);
 
-        internal static UnityEngine.Color DefaultTextColor => SlotTextColor;
+        internal static UnityEngine.Color DefaultTextColor => ModUiAssets.DefaultTextColor;
 
         internal static SaveSlotDisplayInfo Format(MMSaveGameData data)
         {
@@ -73,7 +73,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal static void ApplyDefaultTextColor(Component? textComponent)
         {
-            SaveSlotTextHelper.ApplyDefaultColor(textComponent);
+            ModUiText.SetColor(textComponent, DefaultTextColor);
         }
 
         private static string BuildVersionCheckPrefix(string versionCheckText, bool isRed)
