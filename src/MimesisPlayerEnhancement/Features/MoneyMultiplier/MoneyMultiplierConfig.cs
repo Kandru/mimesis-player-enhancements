@@ -1,0 +1,167 @@
+using MelonLoader;
+
+namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+{
+    /// <summary>
+    /// Registers the [MimesisPlayerEnhancement_MoneyMultiplier] section. Entries are still
+    /// exposed via <see cref="ModConfig"/> properties; only registration lives here.
+    /// Call order is driven by <see cref="ModConfig.Initialize"/> to keep TOML layout unchanged.
+    /// </summary>
+    internal static class MoneyMultiplierConfig
+    {
+        private static MelonPreferences_Category _category = null!;
+
+        internal static void CreateCategory()
+        {
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MoneyMultiplier", "Money Multiplier");
+        }
+
+        internal static void CreateEntries()
+        {
+            ModConfig.EnableMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "EnableMoneyMultiplier",
+                false,
+                "Enable Money Multiplier",
+                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only.");
+
+            ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleStartupMoneyByPlayerCount",
+                true,
+                "Auto Scale Startup Money By Player Count",
+                "When enabled, multiply startup money by player count / 4 for sessions with more than 4 players (stacks with StartupMoneyMultiplier).");
+
+            ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "StartupMoneyMultiplier",
+                1f,
+                "Startup Money Multiplier",
+                "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game.");
+
+            ModConfig.AutoScaleRoundGoalMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleRoundGoalMoneyByPlayerCount",
+                true,
+                "Auto Scale Round Goal Money By Player Count",
+                "When enabled, multiply the stage target currency (quota) by player count / 4 for sessions with more than 4 players (stacks with RoundGoalMoneyMultiplier).");
+
+            ModConfig.RoundGoalMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "RoundGoalMoneyMultiplier",
+                1f,
+                "Round Goal Money Multiplier",
+                "Target currency required to finish a stage (1 = vanilla, 2 = double).");
+
+            ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleScrapSellValueByPlayerCount",
+                true,
+                "Auto Scale Scrap Sell Value By Player Count",
+                "When enabled, multiply item scrap/sell values by player count / 4 for sessions with more than 4 players (stacks with ScrapSellValueMultiplier).");
+
+            ModConfig.ScrapSellValueMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ScrapSellValueMultiplier",
+                1f,
+                "Scrap Sell Value Multiplier",
+                "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double).");
+
+            ModConfig.AutoScaleShopBuyPriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleShopBuyPriceByPlayerCount",
+                true,
+                "Auto Scale Shop Buy Price By Player Count",
+                "When enabled, multiply maintenance shop buy prices by player count / 4 for sessions with more than 4 players (stacks with ShopBuyPriceMultiplier).");
+
+            ModConfig.ShopBuyPriceMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ShopBuyPriceMultiplier",
+                1f,
+                "Shop Buy Price Multiplier",
+                "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round.");
+
+            ModConfig.ShopDiscountMinPercent = ModConfig.CreateTrackedEntry(_category,
+                "ShopDiscountMinPercent",
+                0,
+                "Shop Discount Min Percent",
+                "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0.");
+
+            ModConfig.ShopDiscountMaxPercent = ModConfig.CreateTrackedEntry(_category,
+                "ShopDiscountMaxPercent",
+                100,
+                "Shop Discount Max Percent",
+                "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent.");
+
+            ModConfig.ShopDiscountChancePercent = ModConfig.CreateTrackedEntry(_category,
+                "ShopDiscountChancePercent",
+                0,
+                "Shop Discount Chance Percent",
+                "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted).");
+
+            ModConfig.AutoScaleReinforcePriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleReinforcePriceByPlayerCount",
+                true,
+                "Auto Scale Reinforce Price By Player Count",
+                "When enabled, multiply item reinforcement costs by player count / 4 for sessions with more than 4 players (stacks with ReinforcePriceMultiplier).");
+
+            ModConfig.ReinforcePriceMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ReinforcePriceMultiplier",
+                1f,
+                "Reinforce Price Multiplier",
+                "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
+        }
+
+        /// <summary>Clamps persisted shop discount percents once at startup, before change handlers are wired.</summary>
+        internal static void SanitizeInitialValues(MelonLogger.Instance logger)
+        {
+            OnShopDiscountPercentChanged(logger, ModConfig.ShopDiscountMinPercent.Value, ModConfig.ShopDiscountMinPercent);
+            OnShopDiscountPercentChanged(logger, ModConfig.ShopDiscountMaxPercent.Value, ModConfig.ShopDiscountMaxPercent);
+            OnShopDiscountPercentChanged(logger, ModConfig.ShopDiscountChancePercent.Value, ModConfig.ShopDiscountChancePercent);
+        }
+
+        internal static void WireValidation(MelonLogger.Instance logger)
+        {
+            ModConfig.EnableMoneyMultiplier.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableMoneyMultiplier));
+            ModConfig.AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleStartupMoneyByPlayerCount));
+            ModConfig.AutoScaleRoundGoalMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleRoundGoalMoneyByPlayerCount));
+            ModConfig.AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleScrapSellValueByPlayerCount));
+            ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
+            ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
+
+            ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
+            ModConfig.RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.RoundGoalMoneyMultiplier));
+            ModConfig.ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValueMultiplier));
+            ModConfig.ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ShopBuyPriceMultiplier));
+            ModConfig.ShopDiscountMinPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMinPercent));
+            ModConfig.ShopDiscountMaxPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMaxPercent));
+            ModConfig.ShopDiscountChancePercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountChancePercent));
+            ModConfig.ReinforcePriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ReinforcePriceMultiplier));
+        }
+
+        internal static void RegisterFloatEntries()
+        {
+            ModConfig.TrackFloatEntry(ModConfig.StartupMoneyMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.RoundGoalMoneyMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ScrapSellValueMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ShopBuyPriceMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ReinforcePriceMultiplier);
+        }
+
+        private static void OnShopDiscountPercentChanged(MelonLogger.Instance logger, int value, MelonPreferences_Entry<int> entry)
+        {
+            if (value < 0)
+            {
+                logger.Warning($"{entry.Identifier} must be >= 0; resetting to 0.");
+                entry.Value = 0;
+                return;
+            }
+
+            if (value > 100)
+            {
+                logger.Warning($"{entry.Identifier} must be <= 100; resetting to 100.");
+                entry.Value = 100;
+                return;
+            }
+
+            if (ModConfig.ShopDiscountMaxPercent.Value < ModConfig.ShopDiscountMinPercent.Value)
+            {
+                logger.Warning("ShopDiscountMaxPercent must be >= ShopDiscountMinPercent; syncing max to min.");
+                ModConfig.ShopDiscountMaxPercent.Value = ModConfig.ShopDiscountMinPercent.Value;
+            }
+
+            ModConfig.NotifyChanged(entry);
+        }
+    }
+}

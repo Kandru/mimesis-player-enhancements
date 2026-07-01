@@ -14,7 +14,6 @@ namespace MimesisPlayerEnhancement
     {
         internal const string MainSectionId = "MimesisPlayerEnhancement";
         internal const string WebDashboardSectionId = "MimesisPlayerEnhancement_WebDashboard";
-        internal const string MoneyMultiplierSectionId = "MimesisPlayerEnhancement_MoneyMultiplier";
         private const string SectionPrefix = "MimesisPlayerEnhancement_";
 
         private static readonly Dictionary<string, Dictionary<string, MelonPreferences_Entry>> EntriesBySection =
