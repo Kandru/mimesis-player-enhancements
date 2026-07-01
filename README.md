@@ -33,6 +33,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **More Voices** | Record more player voice lines per context (default: 3000 instead of ~150) | No — host only |
 | **Persistence** | Save player voice lines to disk | No — host only |
 | **Join Anytime** | Let friends join an active lobby whenever players are not inside a dungeon | No — host only |
+| **Extended Save Slots** | Unified main-menu save picker with up to 99 manual slots (vanilla: 3) | No — local UI only |
 | **Statistics** | Session stats and leaderboards per save slot | No — host only |
 | **Web Dashboard** | Browser UI for players, stats, and moderation | No — host only |
 | **Player Announcements** | In-game notifications for dungeon settings, boss spawns, and per-map death stats | No — host only |
@@ -142,6 +143,7 @@ Late joiners cannot be dropped straight into an active dungeon (the game has no 
 2. When a joiner appears in `MaintenanceRoom`, ensures a `VWaitingRoom` exists on the server (creates one with `InitWaitingRoom` if the original was wiped when the dungeon started).
 3. Sends unicast `MakeRoomCompleteSig` (`roomType = Waiting`) and `MoveToWaitingRoomSig` so the stock client loads `InTramWaitingScene` and completes `EnterWaitingRoomReq`.
 4. Blocks the tram start lever on the server (`VWaitingRoom.OnRequestStartGame`) while players are split — e.g. some still in the dungeon, or not everyone is in the waiting room yet (`CantStartGame`).
+5. While a joiner is still loading, blocks tram departure for `JoinConnectionGraceSeconds`; players who do not finish loading in time are kicked (host is never kicked).
 
 **Limitations:**
 
@@ -153,6 +155,15 @@ Late joiners cannot be dropped straight into an active dungeon (the game has no 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableJoinAnytime` | bool | `true` | Let players join after a session has already started. |
+| `JoinConnectionGraceSeconds` | int | `30` | After a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked). Minimum is `1`. |
+
+### Extended Save Slots — `[MimesisPlayerEnhancement_ExtendedSaveSlots]`
+
+Local UI. Replaces the separate New/Load Tram menus with a unified scrollable save picker on the main menu. Slot 0 remains autosave; manual slots 1–99 are available when enabled (vanilla allows 1–3). The Host button opens the picker instead of the vanilla flow; press ESC to close. Existing saves in slots 1–3 remain compatible. Other players in a session do not need the mod.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableExtendedSaveSlots` | bool | `true` | Replace vanilla New/Load Tram with the unified save picker and 99-slot limit. When `false`, vanilla Tram menus and the 3-slot limit return. |
 
 ### Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
@@ -253,18 +264,20 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 
 ### Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
-Host-only. When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This feature can randomize the speak window per possession and/or scale the cooldown. Off by default — set `EnableMimicTuning = true` to turn it on.
+Host-only. When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`, 12 seconds) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This feature can randomize the speak window per possession and/or scale the cooldown. Off by default — set `EnableMimicTuning = true` to turn it on.
 
-**Speak duration:** When `RandomizeMimicPossessionDuration` is enabled, each possession rolls a random duration between `MimicPossessionMinTimeMultiplier` × vanilla and `MimicPossessionMaxTimeMultiplier` × vanilla. At `1.0` / `1.0` the roll equals vanilla length.
+Upgrading from older configs: legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted once automatically to seconds (`multiplier × 12`).
+
+**Speak duration:** When `RandomizeMimicPossessionDuration` is enabled, each possession rolls a random duration between `MimicPossessionMinTimeSeconds` and `MimicPossessionMaxTimeSeconds`. At `12.0` / `12.0` the roll equals vanilla length.
 
 **Cooldown:** `MimicPossessionCooltimeMultiplier` scales the wait after possession ends (`1` = vanilla, `2` = double). Independent of the random duration toggle.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableMimicTuning` | bool | `false` | Master toggle for mimic possession timing tweaks. |
-| `RandomizeMimicPossessionDuration` | bool | `false` | Roll a random speak duration per E-possession between the min and max multipliers below. |
-| `MimicPossessionMinTimeMultiplier` | float | `1.0` | Minimum rolled speak duration as a multiple of vanilla (`1` = vanilla). Valid range is `0.1`–`10.0`. |
-| `MimicPossessionMaxTimeMultiplier` | float | `1.0` | Maximum rolled speak duration as a multiple of vanilla (`1` = vanilla). Valid range is `0.1`–`10.0`. |
+| `RandomizeMimicPossessionDuration` | bool | `false` | Roll a random speak duration per E-possession between the min and max seconds below. |
+| `MimicPossessionMinTimeSeconds` | float | `12.0` | Minimum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
+| `MimicPossessionMaxTimeSeconds` | float | `12.0` | Maximum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionCooltimeMultiplier` | float | `1.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Valid range is `0.1`–`10.0`. |
 
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
@@ -326,9 +339,12 @@ Host-only. Serves a local HTTP dashboard from the game process. Open `http://<Li
 | **Global Settings** | Host (or idle before session) | Edit `UserData/MimesisPlayerEnhancement.cfg` defaults from the header menu |
 | **Settings** | Host in an active save | Per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`); keys matching global are omitted automatically |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
+| **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs; focus player and area selectors |
 | **Leaderboard** | Host only | Per-save-slot stats leaderboard (requires **Statistics** enabled) |
 | **Player stats** | Host only | Per-player statistics for the active save slot (requires **Statistics** enabled) |
-| **Moderation** | Host only | Kick, ban, and unban actions queued on the game thread |
+| **Moderation** | Host only | Kick, ban, unban, respawn, and heal actions queued on the game thread |
+
+**Blind mode** (header toggle, host only): hides alive/dead status and respawn actions to avoid spoilers.
 
 **Security:** Default bind is `127.0.0.1` (loopback) so only your machine can connect. Binding to another address (e.g. `0.0.0.0` or your LAN IP) exposes the dashboard to anyone on that network — there is no login. Only use a non-loopback address on a network you trust.
 
@@ -372,6 +388,10 @@ ShowPlayerAnnouncements = true
 
 [MimesisPlayerEnhancement_JoinAnytime]
 EnableJoinAnytime = true
+JoinConnectionGraceSeconds = 30
+
+[MimesisPlayerEnhancement_ExtendedSaveSlots]
+EnableExtendedSaveSlots = true
 
 [MimesisPlayerEnhancement_SpawnScaling]
 EnableSpawnScaling = false
@@ -398,8 +418,8 @@ ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
 [MimesisPlayerEnhancement_MimicTuning]
 EnableMimicTuning = false
 RandomizeMimicPossessionDuration = false
-MimicPossessionMinTimeMultiplier = 1.0
-MimicPossessionMaxTimeMultiplier = 1.0
+MimicPossessionMinTimeSeconds = 12.0
+MimicPossessionMaxTimeSeconds = 12.0
 MimicPossessionCooltimeMultiplier = 1.0
 
 [MimesisPlayerEnhancement_PlayerTuning]

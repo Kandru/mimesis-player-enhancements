@@ -18,6 +18,7 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 | **More Voices** | Record more player voice lines per context (default: 3000 instead of ~150) | No — host only |
 | **Persistence** | Save player voice lines to disk | No — host only |
 | **Join Anytime** | Let friends join an active lobby whenever players are not inside a dungeon | No — host only |
+| **Extended Save Slots** | Unified main-menu save picker with up to 99 manual slots (vanilla: 3) | No — local UI only |
 | **Statistics** | Session stats and leaderboards per save slot | No — host only |
 | **Web Dashboard** | Browser UI for players, stats, and moderation | No — host only |
 | **Player Announcements** | In-game notifications for dungeon settings, boss spawns, and per-map death stats | No — host only |
