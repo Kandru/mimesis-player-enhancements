@@ -1,6 +1,6 @@
 {
   "name": "MimesisPlayerEnhancement",
-  "version_number": "26.7.2",
+  "version_number": "26.7.3",
   "website_url": "https://github.com/Kandru/mimesis-player-enhancements",
   "description": "One MIMESIS mod for hosts: more players, voices, persistence, join anytime, spawn/loot/money scaling, dungeon randomizer, player and mimic tuning, session stats, and a better savegame UI. Includes a local web dashboard for lobby moderation and settings.",
   "dependencies": [
