@@ -282,7 +282,7 @@ namespace MimesisPlayerEnhancement
 
             EnableExtendedSaveSlots = CreateTrackedEntry(_extendedSaveSlotsCategory,
                 "EnableExtendedSaveSlots",
-                false,
+                true,
                 "Enable Extended Save Slots",
                 "When enabled, replaces the separate New/Load Tram menus with a unified save picker (up to 99 manual slots). When disabled, vanilla New/Load Tram behavior is used.");
 
