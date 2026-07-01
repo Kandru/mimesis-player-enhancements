@@ -16,6 +16,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static bool IsProgrammaticSync => _programmaticSyncDepth > 0;
 
+        internal static void OnMenuStart(UIPrefab_InGameMenu menu)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value
+                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host
+                || menu == null)
+            {
+                return;
+            }
+
+            InstallHostPublicRoomListener(menu);
+            // Vanilla Start() sets isOn=false after our first OnEnable sync (Unity runs OnEnable before Start).
+            SyncToggleDisplay(menu, JoinAnytimeLobbyController.HostWantsPublicMatchmaking());
+        }
+
         internal static void InstallHostPublicRoomListener(UIPrefab_InGameMenu menu)
         {
             if (!ModConfig.EnableJoinAnytime.Value

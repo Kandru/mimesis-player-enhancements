@@ -431,7 +431,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_InGameMenu __instance)
         {
-            JoinAnytimeInGameMenuTools.InstallHostPublicRoomListener(__instance);
+            JoinAnytimeInGameMenuTools.OnMenuStart(__instance);
         }
     }
 
