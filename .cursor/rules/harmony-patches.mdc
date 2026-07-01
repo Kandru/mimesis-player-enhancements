@@ -1,0 +1,15 @@
+---
+description: Harmony patch conventions for Mimesis Player Enhancement features
+globs: "**/Features/**/Patches/**/*.cs,**/*Patches.cs"
+alwaysApply: false
+---
+
+# Harmony patches
+
+- Each feature exposes a static `{Feature}Patches.Apply(Harmony harmony)` method registered in `FeatureModules.All`.
+- Put patch types as nested classes in the main patches file, or in `Features/{Feature}/Patches/` as separate types.
+- Use `HarmonyPatchHelper.GetNestedPatchTypes` / `GetNamespacePatchTypes` for discovery and `ApplyPatchTypes` for apply + logging.
+- Define `private const string Feature = "FeatureName"` matching the config section and log tag.
+- Prefer `AccessTools.Method` / `AccessTools.Field` over string literals when the target type is known.
+- Static `TargetMethod()` helpers must return a valid `MethodBase` or Harmony will fail silently — log via `HarmonyPatchHelper` audit on failure.
+- Do not patch game types without confirming signatures via MimesisInspectionTool or decompiled source in `deps/decompiled/`.

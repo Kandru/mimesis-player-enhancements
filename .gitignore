@@ -25,3 +25,4 @@ Directory.Build.user.props
 # custom
 references/
 .tmp-*/
+.formatting.lock

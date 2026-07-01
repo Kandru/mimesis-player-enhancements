@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Reflection;
 using MelonLoader;
-using Mimic.Actors;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Actors;
 using ReluProtocol.C2S;
 using UnityEngine;
 

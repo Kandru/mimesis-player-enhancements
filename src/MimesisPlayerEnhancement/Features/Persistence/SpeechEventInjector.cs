@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FishNet.Object.Synchronizing;
-using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

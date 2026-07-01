@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
-using Mimic.Actors;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Actors;
 using UnityEngine;
 using UnityEngine.UI;
 

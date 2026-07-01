@@ -2,8 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

@@ -1,7 +1,7 @@
 using System;
 using HarmonyLib;
-using Mimic.Actors;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Actors;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements

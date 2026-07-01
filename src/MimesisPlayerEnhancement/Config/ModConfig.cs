@@ -190,91 +190,91 @@ namespace MimesisPlayerEnhancement
             _webDashboardCategory = CreateCategory("MimesisPlayerEnhancement_WebDashboard", "Web Dashboard");
             _extendedSaveSlotsCategory = CreateCategory("MimesisPlayerEnhancement_ExtendedSaveSlots", "Extended Save Slots");
 
-            ModToastDurationSeconds = CreateTrackedEntry(_mainCategory, 
+            ModToastDurationSeconds = CreateTrackedEntry(_mainCategory,
                 "ModToastDurationSeconds",
                 5f,
                 "Mod Toast Duration (seconds)",
                 "How long [PlayerEnhancements] toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally.");
 
-            EnableDebugLogging = CreateTrackedEntry(_mainCategory, 
+            EnableDebugLogging = CreateTrackedEntry(_mainCategory,
                 "EnableDebugLogging",
                 false,
                 "Enable Debug Logging",
                 "Emit verbose diagnostic lines to the MelonLoader console.");
 
-            EnableMorePlayers = CreateTrackedEntry(_morePlayersCategory, 
+            EnableMorePlayers = CreateTrackedEntry(_morePlayersCategory,
                 "EnableMorePlayers",
                 false,
                 "Enable More Players",
                 "Raise the multiplayer player cap above 4.");
 
-            MaxPlayers = CreateTrackedEntry(_morePlayersCategory, 
+            MaxPlayers = CreateTrackedEntry(_morePlayersCategory,
                 "MaxPlayers",
                 32,
                 "Max Players",
                 "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.).");
 
-            EnableMoreVoices = CreateTrackedEntry(_moreVoicesCategory, 
+            EnableMoreVoices = CreateTrackedEntry(_moreVoicesCategory,
                 "EnableMoreVoices",
                 true,
                 "Enable More Voices",
                 "Raise per-player voice recording limits.");
 
-            MaxIndoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
+            MaxIndoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory,
                 "MaxIndoorVoiceEvents",
                 3000,
                 "Max Indoor Voice Events",
                 "Maximum stored voice events per player in indoor dungeon runs (default game limit is much lower).");
 
-            MaxDeathMatchVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
+            MaxDeathMatchVoiceEvents = CreateTrackedEntry(_moreVoicesCategory,
                 "MaxDeathMatchVoiceEvents",
                 3000,
                 "Max Deathmatch Voice Events",
                 "Maximum stored voice events per player in deathmatch (default game limit is much lower).");
 
-            MaxOutdoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory, 
+            MaxOutdoorVoiceEvents = CreateTrackedEntry(_moreVoicesCategory,
                 "MaxOutdoorVoiceEvents",
                 3000,
                 "Max Outdoor Voice Events",
                 "Maximum stored voice events per player outdoors (default game limit is much lower).");
 
-            EnablePersistence = CreateTrackedEntry(_persistenceCategory, 
+            EnablePersistence = CreateTrackedEntry(_persistenceCategory,
                 "EnablePersistence",
                 true,
                 "Enable Voice Persistence",
                 "Save and restore mimic voice recordings across save/load.");
 
-            EnableStatistics = CreateTrackedEntry(_statisticsCategory, 
+            EnableStatistics = CreateTrackedEntry(_statisticsCategory,
                 "EnableStatistics",
                 true,
                 "Enable Player Statistics",
                 "Track per-session and global player statistics per save slot.");
 
-            SessionReconnectGraceMinutes = CreateTrackedEntry(_statisticsCategory, 
+            SessionReconnectGraceMinutes = CreateTrackedEntry(_statisticsCategory,
                 "SessionReconnectGraceMinutes",
                 5,
                 "Session Reconnect Grace (minutes)",
                 "Reuse the previous session when a player reconnects within this many minutes.");
 
-            ShowStatisticsToasts = CreateTrackedEntry(_statisticsCategory, 
+            ShowStatisticsToasts = CreateTrackedEntry(_statisticsCategory,
                 "ShowStatisticsToasts",
                 true,
                 "Show Statistics Toasts",
                 "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
 
-            ShowPlayerAnnouncements = CreateTrackedEntry(_playerAnnouncementsCategory, 
+            ShowPlayerAnnouncements = CreateTrackedEntry(_playerAnnouncementsCategory,
                 "ShowPlayerAnnouncements",
                 true,
                 "Show Player Announcements",
                 "Show in-game toasts for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
 
-            EnableJoinAnytime = CreateTrackedEntry(_joinAnytimeCategory, 
+            EnableJoinAnytime = CreateTrackedEntry(_joinAnytimeCategory,
                 "EnableJoinAnytime",
                 true,
                 "Enable Join Anytime",
                 "Allow players to join a session after it has already started.");
 
-            JoinConnectionGraceSeconds = CreateTrackedEntry(_joinAnytimeCategory, 
+            JoinConnectionGraceSeconds = CreateTrackedEntry(_joinAnytimeCategory,
                 "JoinConnectionGraceSeconds",
                 30,
                 "Join Connection Grace Seconds",
@@ -286,211 +286,211 @@ namespace MimesisPlayerEnhancement
                 "Enable Extended Save Slots",
                 "When enabled, replaces the separate New/Load Tram menus with a unified save picker (up to 99 manual slots). When disabled, vanilla New/Load Tram behavior is used.");
 
-            EnableSpawnScaling = CreateTrackedEntry(_spawnScalingCategory, 
+            EnableSpawnScaling = CreateTrackedEntry(_spawnScalingCategory,
                 "EnableSpawnScaling",
                 false,
                 "Enable Spawn Scaling",
                 "Scale dungeon monster spawn budgets by type. Host only.");
 
-            AutoScaleMimicSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleMimicSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleMimicSpawnsByPlayerCount",
                 true,
                 "Auto Scale Mimic Spawns By Player Count",
                 "When enabled, multiply mimic spawn budgets by player count / 4 for sessions with more than 4 players (stacks with MimicSpawnMultiplier).");
 
-            MimicSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            MimicSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "MimicSpawnMultiplier",
                 1f,
                 "Mimic Spawn Multiplier",
                 "Total mimic spawn budget across the run, including periodic spawns (1 = vanilla, 2 = double).");
 
-            AutoScaleBossSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleBossSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleBossSpawnsByPlayerCount",
                 true,
                 "Auto Scale Boss Spawns By Player Count",
                 "When enabled, multiply boss spawn budgets by player count / 4 for sessions with more than 4 players (stacks with BossSpawnMultiplier).");
 
-            BossSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            BossSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "BossSpawnMultiplier",
                 1f,
                 "Boss Spawn Multiplier",
                 "Map-placed bosses: activates unused alternate markers and schedules bonus encounters after kill (1 = vanilla, 2 = double).");
 
-            AutoScaleJakoSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleJakoSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleJakoSpawnsByPlayerCount",
                 true,
                 "Auto Scale Jako Spawns By Player Count",
                 "When enabled, multiply jako spawn budgets by player count / 4 for sessions with more than 4 players (stacks with JakoSpawnMultiplier).");
 
-            JakoSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            JakoSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "JakoSpawnMultiplier",
                 1f,
                 "Jako Spawn Multiplier",
                 "Total normal-monster threat budget for ambient dungeon spawns (1 = vanilla, 2 = double).");
 
-            AutoScaleSpecialSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleSpecialSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleSpecialSpawnsByPlayerCount",
                 true,
                 "Auto Scale Special Spawns By Player Count",
                 "When enabled, multiply special spawn budgets by player count / 4 for sessions with more than 4 players (stacks with SpecialSpawnMultiplier).");
 
-            SpecialSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            SpecialSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "SpecialSpawnMultiplier",
                 1f,
                 "Special Spawn Multiplier",
                 "Special monster budget for periodic spawns and map-placed specials (1 = vanilla, 2 = double).");
 
-            AutoScaleTrapSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleTrapSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleTrapSpawnsByPlayerCount",
                 true,
                 "Auto Scale Trap Spawns By Player Count",
                 "When enabled, multiply trap spawn counts by player count / 4 for sessions with more than 4 players (stacks with TrapSpawnMultiplier).");
 
-            TrapSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            TrapSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "TrapSpawnMultiplier",
                 1f,
                 "Trap Spawn Multiplier",
                 "Map-placed traps: activates unused alternate markers and schedules bonus encounters after trigger/kill (1 = vanilla, 2 = double).");
 
-            MapPlacedEncounterDelayMinSeconds = CreateTrackedEntry(_spawnScalingCategory, 
+            MapPlacedEncounterDelayMinSeconds = CreateTrackedEntry(_spawnScalingCategory,
                 "MapPlacedEncounterDelayMinSeconds",
                 5f,
                 "Map-Placed Encounter Delay Min (seconds)",
                 "Shortest wait after a map-placed enemy, trap, or loot marker is cleared before the next bonus encounter from scaling can appear there.");
 
-            MapPlacedEncounterDelayMaxSeconds = CreateTrackedEntry(_spawnScalingCategory, 
+            MapPlacedEncounterDelayMaxSeconds = CreateTrackedEntry(_spawnScalingCategory,
                 "MapPlacedEncounterDelayMaxSeconds",
                 30f,
                 "Map-Placed Encounter Delay Max (seconds)",
                 "Longest wait for that random delay. Actual delay is picked between min and max.");
 
-            MapPlacedEncounterMinPlayerDistanceMeters = CreateTrackedEntry(_spawnScalingCategory, 
+            MapPlacedEncounterMinPlayerDistanceMeters = CreateTrackedEntry(_spawnScalingCategory,
                 "MapPlacedEncounterMinPlayerDistanceMeters",
                 10f,
                 "Map-Placed Encounter Min Player Distance (m)",
                 "After the delay, hold the spawn until no living players are within this radius of the marker. 0 = spawn as soon as the delay elapses.");
 
-            AutoScaleOtherSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory, 
+            AutoScaleOtherSpawnsByPlayerCount = CreateTrackedEntry(_spawnScalingCategory,
                 "AutoScaleOtherSpawnsByPlayerCount",
                 true,
                 "Auto Scale Other Spawns By Player Count",
                 "When enabled, multiply other spawn counts by player count / 4 for sessions with more than 4 players (stacks with OtherSpawnMultiplier).");
 
-            OtherSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory, 
+            OtherSpawnMultiplier = CreateTrackedEntry(_spawnScalingCategory,
                 "OtherSpawnMultiplier",
                 1f,
                 "Other Spawn Multiplier",
                 "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps.");
 
-            EnableLootMultiplicator = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            EnableLootMultiplicator = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "EnableLootMultiplicator",
                 false,
                 "Enable Loot Multiplicator",
                 "Scale how much loot appears in a run. Host only. See each Map/Drop/Trigger entry below for what it affects.");
 
-            AutoScaleMapConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleMapConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleMapConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Map Consumable Loot By Player Count",
                 "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with MapConsumableLootMultiplier).");
 
-            MapConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            MapConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "MapConsumableLootMultiplier",
                 1f,
                 "Map Consumable Loot Multiplier",
                 "Multiplier for consumables on map spawn points: stack size on fixed markers and respawn count at room load. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
-            AutoScaleMapEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleMapEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleMapEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Map Equipment Loot By Player Count",
                 "Map loot = items placed on the dungeon map. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with MapEquipmentLootMultiplier).");
 
-            MapEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            MapEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "MapEquipmentLootMultiplier",
                 1f,
                 "Map Equipment Loot Multiplier",
                 "Multiplier for equipment on map spawn points: respawn count at room load and fixed-loot marker activation. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
-            AutoScaleMapMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleMapMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleMapMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Map Miscellany Loot By Player Count",
                 "Map loot = items placed on the dungeon map. Miscellany = other pickup items (keys, misc objects). When enabled, multiply by player count / 4 above 4 players (stacks with MapMiscellanyLootMultiplier).");
 
-            MapMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            MapMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "MapMiscellanyLootMultiplier",
                 1f,
                 "Map Miscellany Loot Multiplier",
                 "Multiplier for miscellany on map spawn points: respawn count at room load and fixed-loot marker activation. Random pools scale via dungeon misc budget. 1 = vanilla, 2 = double.");
 
-            AutoScaleDropConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleDropConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleDropConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Drop Consumable Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with DropConsumableLootMultiplier).");
 
-            DropConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            DropConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "DropConsumableLootMultiplier",
                 1f,
                 "Drop Consumable Loot Multiplier",
                 "Multiplier for consumables in enemy death drops: extra weighted re-rolls from the drop table and consumable stack count on spawn. 1 = vanilla, 2 = double.");
 
-            AutoScaleDropEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleDropEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleDropEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Drop Equipment Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with DropEquipmentLootMultiplier).");
 
-            DropEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            DropEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "DropEquipmentLootMultiplier",
                 1f,
                 "Drop Equipment Loot Multiplier",
                 "Multiplier for equipment in enemy death drops: extra weighted re-rolls from the drop table. 1 = vanilla, 2 = double.");
 
-            AutoScaleDropMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleDropMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleDropMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Drop Miscellany Loot By Player Count",
                 "Drop loot = items from enemy death tables when killed. Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with DropMiscellanyLootMultiplier).");
 
-            DropMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            DropMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "DropMiscellanyLootMultiplier",
                 1f,
                 "Drop Miscellany Loot Multiplier",
                 "Multiplier for miscellany in enemy death drops: extra weighted re-rolls from the drop table. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleTriggerConsumableLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleTriggerConsumableLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Consumable Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Consumables = ammo, healing, and other used-up items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerConsumableLootMultiplier).");
 
-            TriggerConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            TriggerConsumableLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "TriggerConsumableLootMultiplier",
                 1f,
                 "Trigger Consumable Loot Multiplier",
                 "Multiplier for consumables from map events/triggers: extra weighted picks and consumable stack count on spawn. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleTriggerEquipmentLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleTriggerEquipmentLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Equipment Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Equipment = tools, weapons, and gear you equip. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerEquipmentLootMultiplier).");
 
-            TriggerEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            TriggerEquipmentLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "TriggerEquipmentLootMultiplier",
                 1f,
                 "Trigger Equipment Loot Multiplier",
                 "Multiplier for equipment from map events/triggers: extra weighted picks from the event item table. 1 = vanilla, 2 = double.");
 
-            AutoScaleTriggerMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            AutoScaleTriggerMiscellanyLootByPlayerCount = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "AutoScaleTriggerMiscellanyLootByPlayerCount",
                 true,
                 "Auto Scale Trigger Miscellany Loot By Player Count",
                 "Trigger loot = items spawned by map events/trigger volumes (EventAction spawns only). Miscellany = other pickup items. When enabled, multiply by player count / 4 above 4 players (stacks with TriggerMiscellanyLootMultiplier).");
 
-            TriggerMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory, 
+            TriggerMiscellanyLootMultiplier = CreateTrackedEntry(_lootMultiplicatorCategory,
                 "TriggerMiscellanyLootMultiplier",
                 1f,
                 "Trigger Miscellany Loot Multiplier",
@@ -520,109 +520,109 @@ namespace MimesisPlayerEnhancement
                 "Convert Fake Death Drops To Real Chance",
                 "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real.");
 
-            EnableMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            EnableMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "EnableMoneyMultiplier",
                 false,
                 "Enable Money Multiplier",
                 "Scale startup money, round goal quota, scrap/sell values, shop buy prices, shop item count, and reinforce costs. Host only.");
 
-            AutoScaleStartupMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleStartupMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleStartupMoneyByPlayerCount",
                 true,
                 "Auto Scale Startup Money By Player Count",
                 "When enabled, multiply startup money by player count / 4 for sessions with more than 4 players (stacks with StartupMoneyMultiplier).");
 
-            StartupMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            StartupMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "StartupMoneyMultiplier",
                 1f,
                 "Startup Money Multiplier",
                 "Starting maintenance-room currency on a new game or session reset (1 = vanilla, 2 = double).");
 
-            AutoScaleRoundGoalMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleRoundGoalMoneyByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleRoundGoalMoneyByPlayerCount",
                 true,
                 "Auto Scale Round Goal Money By Player Count",
                 "When enabled, multiply the stage target currency (quota) by player count / 4 for sessions with more than 4 players (stacks with RoundGoalMoneyMultiplier).");
 
-            RoundGoalMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            RoundGoalMoneyMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "RoundGoalMoneyMultiplier",
                 1f,
                 "Round Goal Money Multiplier",
                 "Target currency required to finish a stage (1 = vanilla, 2 = double).");
 
-            AutoScaleScrapSellValueByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleScrapSellValueByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleScrapSellValueByPlayerCount",
                 true,
                 "Auto Scale Scrap Sell Value By Player Count",
                 "When enabled, multiply item scrap/sell values by player count / 4 for sessions with more than 4 players (stacks with ScrapSellValueMultiplier).");
 
-            ScrapSellValueMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ScrapSellValueMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ScrapSellValueMultiplier",
                 1f,
                 "Scrap Sell Value Multiplier",
                 "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double).");
 
-            AutoScaleShopBuyPriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleShopBuyPriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleShopBuyPriceByPlayerCount",
                 true,
                 "Auto Scale Shop Buy Price By Player Count",
                 "When enabled, multiply maintenance shop buy prices by player count / 4 for sessions with more than 4 players (stacks with ShopBuyPriceMultiplier).");
 
-            ShopBuyPriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ShopBuyPriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopBuyPriceMultiplier",
                 1f,
                 "Shop Buy Price Multiplier",
                 "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round.");
 
-            AutoScaleShopItemsByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleShopItemsByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleShopItemsByPlayerCount",
                 true,
                 "Auto Scale Shop Items By Player Count",
                 "When enabled, multiply maintenance shop item count by player count / 4 for sessions with more than 4 players (stacks with ShopItemsMultiplier).");
 
-            ShopItemsMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ShopItemsMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopItemsMultiplier",
                 1f,
                 "Shop Items Multiplier",
                 "Number of unique items offered in the maintenance shop (1 = vanilla, 2 = double). Extra items are rolled from vending-machine shop groups on the map.");
 
-            ShopDiscountMinPercent = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ShopDiscountMinPercent = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopDiscountMinPercent",
                 0,
                 "Shop Discount Min Percent",
                 "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0.");
 
-            ShopDiscountMaxPercent = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ShopDiscountMaxPercent = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopDiscountMaxPercent",
                 100,
                 "Shop Discount Max Percent",
                 "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent.");
 
-            ShopDiscountChancePercent = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ShopDiscountChancePercent = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ShopDiscountChancePercent",
                 0,
                 "Shop Discount Chance Percent",
                 "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted).");
 
-            AutoScaleReinforcePriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory, 
+            AutoScaleReinforcePriceByPlayerCount = CreateTrackedEntry(_moneyMultiplierCategory,
                 "AutoScaleReinforcePriceByPlayerCount",
                 true,
                 "Auto Scale Reinforce Price By Player Count",
                 "When enabled, multiply item reinforcement costs by player count / 4 for sessions with more than 4 players (stacks with ReinforcePriceMultiplier).");
 
-            ReinforcePriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory, 
+            ReinforcePriceMultiplier = CreateTrackedEntry(_moneyMultiplierCategory,
                 "ReinforcePriceMultiplier",
                 1f,
                 "Reinforce Price Multiplier",
                 "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
 
-            EnableDungeonTime = CreateTrackedEntry(_dungeonTimeCategory, 
+            EnableDungeonTime = CreateTrackedEntry(_dungeonTimeCategory,
                 "EnableDungeonTime",
                 false,
                 "Enable Dungeon Time",
                 "Extend dungeon shift length on the host when player count exceeds the baseline.");
 
-            DungeonTimeBaselinePlayerCount = CreateTrackedEntry(_dungeonTimeCategory, 
+            DungeonTimeBaselinePlayerCount = CreateTrackedEntry(_dungeonTimeCategory,
                 "DungeonTimeBaselinePlayerCount",
                 4,
                 "Dungeon Time Baseline Player Count",
@@ -724,67 +724,67 @@ namespace MimesisPlayerEnhancement
                 "Enable Dungeon Randomizer",
                 "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
 
-            RandomizeDungeonPick = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            RandomizeDungeonPick = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "RandomizeDungeonPick",
                 true,
                 "Randomize Dungeon Pick",
                 "Override which dungeon master ID is rolled on the tram.");
 
-            DungeonPickPoolMode = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            DungeonPickPoolMode = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "DungeonPickPoolMode",
                 "WidenVanilla",
                 "Dungeon Pick Pool Mode",
                 "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table).");
 
-            DungeonAllowlist = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            DungeonAllowlist = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "DungeonAllowlist",
                 "",
                 "Dungeon Allowlist",
                 "Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible.");
 
-            DungeonBlocklist = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            DungeonBlocklist = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "DungeonBlocklist",
                 "",
                 "Dungeon Blocklist",
                 "Comma-separated dungeon master IDs to exclude from the pool.");
 
-            IgnoreDungeonExcludeList = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            IgnoreDungeonExcludeList = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "IgnoreDungeonExcludeList",
                 true,
                 "Ignore Dungeon Exclude List",
                 "When using WidenVanilla, do not exclude recently played dungeons from the tram roll.");
 
-            RandomizeLayoutFlow = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            RandomizeLayoutFlow = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "RandomizeLayoutFlow",
                 true,
                 "Randomize Layout Flow",
                 "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls.");
 
-            RandomizeMapVariant = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            RandomizeMapVariant = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "RandomizeMapVariant",
                 true,
                 "Randomize Map Variant",
                 "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection.");
 
-            RandomizeDungeonSeed = CreateTrackedEntry(_dungeonRandomizerCategory, 
+            RandomizeDungeonSeed = CreateTrackedEntry(_dungeonRandomizerCategory,
                 "RandomizeDungeonSeed",
                 true,
                 "Randomize Dungeon Seed",
                 "Replace the procedural dungeon seed with a new random value when a dungeon is chosen.");
 
-            EnableWebDashboard = CreateTrackedEntry(_webDashboardCategory, 
+            EnableWebDashboard = CreateTrackedEntry(_webDashboardCategory,
                 "EnableWebDashboard",
                 true,
                 "Enable Web Dashboard",
                 "Serve a local web UI for connected players and host moderation. Default bind is loopback only.");
 
-            WebDashboardListenAddress = CreateTrackedEntry(_webDashboardCategory, 
+            WebDashboardListenAddress = CreateTrackedEntry(_webDashboardCategory,
                 "WebDashboardListenAddress",
                 "127.0.0.1",
                 "Listen Address",
                 "HTTP bind address. Use 127.0.0.1 for local-only access.");
 
-            WebDashboardListenPort = CreateTrackedEntry(_webDashboardCategory, 
+            WebDashboardListenPort = CreateTrackedEntry(_webDashboardCategory,
                 "WebDashboardListenPort",
                 8001,
                 "Listen Port",

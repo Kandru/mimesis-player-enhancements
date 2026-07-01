@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <Import Project="Directory.Packages.props" Condition="Exists('Directory.Packages.props')" />
+
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 </Project>

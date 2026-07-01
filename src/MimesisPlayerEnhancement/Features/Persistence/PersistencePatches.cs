@@ -1,6 +1,6 @@
 using HarmonyLib;
-using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

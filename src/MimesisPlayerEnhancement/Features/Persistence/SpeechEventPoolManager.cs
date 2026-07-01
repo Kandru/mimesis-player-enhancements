@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Mimic.Voice.SpeechSystem;
 using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

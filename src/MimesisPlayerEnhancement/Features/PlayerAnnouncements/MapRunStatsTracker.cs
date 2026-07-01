@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Mimic.Actors;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Util;
+using Mimic.Actors;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 {
