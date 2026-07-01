@@ -13,14 +13,26 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         internal const float MaxCooltimeMultiplier = 10f;
         private const float VanillaEpsilon = 0.001f;
 
+        private static bool _cachedEnable;
+        private static bool _cachedRandomizeDuration;
+        private static float _cachedCooltimeMultiplier;
+
+        static MimicTuningResolver()
+        {
+            ModConfig.Changed += OnConfigChanged;
+            RefreshConfigCache();
+        }
+
+        internal static bool IsEnabled => _cachedEnable;
+
         internal static bool ShouldApplyHost =>
-            HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableMimicTuning.Value);
+            HostApplyGate.ShouldApplyHostOnlyFeature(() => _cachedEnable);
 
         internal static bool ShouldRandomizeDuration =>
-            ShouldApplyHost && ModConfig.RandomizeMimicPossessionDuration.Value;
+            ShouldApplyHost && _cachedRandomizeDuration;
 
         internal static bool ShouldScaleCooltime =>
-            ShouldApplyHost && !IsVanillaMultiplier(ModConfig.MimicPossessionCooltimeMultiplier.Value);
+            ShouldApplyHost && !IsVanillaMultiplier(_cachedCooltimeMultiplier);
 
         internal static bool IsVanillaMultiplier(float multiplier) =>
             Math.Abs(multiplier - 1f) < VanillaEpsilon;
@@ -49,7 +61,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
         internal static long RollPossessionDurationMs(long vanillaMs, int mimicActorId)
         {
-            if (!ModConfig.EnableMimicTuning.Value || !ShouldRandomizeDuration || vanillaMs <= 0)
+            if (!_cachedEnable || !ShouldRandomizeDuration || vanillaMs <= 0)
             {
                 return vanillaMs;
             }
@@ -69,18 +81,18 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
         internal static long ScalePossessionCooltimeMs(long vanillaMs)
         {
-            if (!ModConfig.EnableMimicTuning.Value || !ShouldScaleCooltime || vanillaMs <= 0)
+            if (!_cachedEnable || !ShouldScaleCooltime || vanillaMs <= 0)
             {
                 return vanillaMs;
             }
 
-            return Math.Max(0L, (long)(vanillaMs * ModConfig.MimicPossessionCooltimeMultiplier.Value));
+            return Math.Max(0L, (long)(vanillaMs * _cachedCooltimeMultiplier));
         }
 
         internal static float GetProgressBarTotalSeconds(int mimicActorId, float serverLeftTimeMs)
         {
             float vanillaSeconds = GetVanillaPossessionDurationSeconds();
-            if (!ModConfig.EnableMimicTuning.Value || !ModConfig.RandomizeMimicPossessionDuration.Value)
+            if (!_cachedEnable || !_cachedRandomizeDuration)
             {
                 return vanillaSeconds;
             }
@@ -107,12 +119,28 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 return 0f;
             }
 
-            if (!ModConfig.EnableMimicTuning.Value || !ShouldScaleCooltime)
+            if (!_cachedEnable || !ShouldScaleCooltime)
             {
                 return vanillaMs * 0.001f;
             }
 
             return ScalePossessionCooltimeMs(vanillaMs) * 0.001f;
+        }
+
+        private static void OnConfigChanged(ModConfigChangeInfo change)
+        {
+            if (change.IsFullReload
+                || change.AffectsSection("MimesisPlayerEnhancement_MimicTuning"))
+            {
+                RefreshConfigCache();
+            }
+        }
+
+        private static void RefreshConfigCache()
+        {
+            _cachedEnable = ModConfig.EnableMimicTuning.Value;
+            _cachedRandomizeDuration = ModConfig.RandomizeMimicPossessionDuration.Value;
+            _cachedCooltimeMultiplier = ModConfig.MimicPossessionCooltimeMultiplier.Value;
         }
     }
 }

@@ -503,7 +503,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             foreach (CSteamID lobbyId in lobbyIDs)
             {
                 int playerCount = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
-                if (playerCount < 4 || existing.Contains(lobbyId))
+                if (playerCount < JoinAnytimeLobbyDisplay.VanillaBrowseDenominator || existing.Contains(lobbyId))
                 {
                     continue;
                 }

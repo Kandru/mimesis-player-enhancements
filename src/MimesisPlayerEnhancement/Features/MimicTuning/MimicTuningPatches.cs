@@ -24,6 +24,19 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         private static readonly MethodInfo? PossessionProgressbarCoMethod =
             AccessTools.Method(typeof(ProtoActor), "PossessionProgressbarCo");
 
+        private delegate IEnumerator PossessionProgressbarCoDelegate(
+            ProtoActor instance,
+            float targetLeftTime,
+            float currentLeftTime,
+            float possessionDurationTime);
+
+        private static readonly PossessionProgressbarCoDelegate? RunPossessionProgressbarCo =
+            PossessionProgressbarCoMethod != null
+                ? (PossessionProgressbarCoDelegate)Delegate.CreateDelegate(
+                    typeof(PossessionProgressbarCoDelegate),
+                    PossessionProgressbarCoMethod)
+                : null;
+
         private static readonly MethodInfo RollPossessionDurationMsMethod =
             AccessTools.Method(typeof(MimicTuningResolver), nameof(MimicTuningResolver.RollPossessionDurationMs));
 
@@ -32,7 +45,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
         private static readonly Dictionary<int, ProgressBarRestartState> ProgressBarRestartStates = [];
 
-        private static readonly object[] ProgressBarCoArgs = new object[3];
+        private const float CooltimeFillCompleteThreshold = 0.99f;
 
         private sealed class ProgressBarRestartState
         {
@@ -115,7 +128,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 ref Coroutine ____progressCoroutine,
                 Image ____possessionProgressbar)
             {
-                if (!ModConfig.EnableMimicTuning.Value || PossessionProgressbarCoMethod == null)
+                if (!MimicTuningResolver.IsEnabled || RunPossessionProgressbarCo == null)
                 {
                     return true;
                 }
@@ -142,12 +155,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
                     float currentLeftTime = ____possessionProgressbar.fillAmount * totalSeconds;
 
-                    ProgressBarCoArgs[0] = targetLeftTime;
-                    ProgressBarCoArgs[1] = currentLeftTime;
-                    ProgressBarCoArgs[2] = totalSeconds;
-                    IEnumerator routine = (IEnumerator)PossessionProgressbarCoMethod.Invoke(
+                    IEnumerator routine = RunPossessionProgressbarCo(
                         __instance,
-                        ProgressBarCoArgs);
+                        targetLeftTime,
+                        currentLeftTime,
+                        totalSeconds);
                     ____progressCoroutine = __instance.StartCoroutine(routine);
                     ProgressBarRestartStates[__instance.ActorID] = new ProgressBarRestartState
                     {
@@ -172,7 +184,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             {
                 try
                 {
-                    if (!ModConfig.EnableMimicTuning.Value)
+                    if (!MimicTuningResolver.IsEnabled)
                     {
                         return;
                     }
@@ -197,14 +209,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             {
                 try
                 {
-                    if (!ModConfig.EnableMimicTuning.Value
+                    if (!MimicTuningResolver.IsEnabled
                         || !MimicTuningResolver.ShouldScaleCooltime
                         || inCooltime <= 0f)
                     {
                         return;
                     }
 
-                    if (____possessionKeyCooltime != null && ____possessionKeyCooltime.fillAmount >= 0.99f)
+                    if (____possessionKeyCooltime != null && ____possessionKeyCooltime.fillAmount >= CooltimeFillCompleteThreshold)
                     {
                         ____possessionCooltime = inCooltime * 0.001f;
                     }

@@ -124,7 +124,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             List<WebDashboardPlayerDto> players = _lastPlayers;
             if (players.Count == 0)
             {
-                players = WebDashboardPlayerService.CollectPlayers();
+                players = ClonePlayers(WebDashboardPlayerService.CollectPlayers());
             }
 
             WebDashboardMinimapLayoutBuilder.EnsureLayout();
@@ -143,12 +143,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSnapshot next = new()
             {
                 Status = previous.Status,
-                Players = previous.Players,
+                Players = ClonePlayers(previous.Players),
                 LeaderboardJson = previous.LeaderboardJson,
-                ConnectedSteamIds = previous.ConnectedSteamIds,
+                ConnectedSteamIds = CloneSteamIds(previous.ConnectedSteamIds),
                 PlayerStatsJson = previous.PlayerStatsJson,
                 MinimapLayout = layout,
-                MinimapMarkers = markers,
+                MinimapMarkers = CloneMarkers(markers),
                 MinimapTrain = train,
             };
 
@@ -194,7 +194,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
             else
             {
-                List<WebDashboardPlayerDto> players = WebDashboardPlayerService.CollectPlayers();
+                List<WebDashboardPlayerDto> players = ClonePlayers(WebDashboardPlayerService.CollectPlayers());
                 if (players.Count > 0)
                 {
                     _lastPlayers = players;
@@ -204,7 +204,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     players = _lastPlayers;
                 }
 
-                next.Players = players;
+                next.Players = ClonePlayers(players);
 
                 HashSet<ulong> avatarSteamIds = [];
                 foreach (WebDashboardPlayerDto player in players)
@@ -217,7 +217,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 if (isHost && saveSlotId >= 0)
                 {
-                    List<ulong> connectedSteamIds = WebDashboardStatisticsBridge.GetConnectedSteamIds();
+                    List<ulong> connectedSteamIds = CloneSteamIds(WebDashboardStatisticsBridge.GetConnectedSteamIds());
                     if (connectedSteamIds.Count > 0)
                     {
                         _lastConnectedSteamIds = connectedSteamIds;
@@ -227,7 +227,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         connectedSteamIds = _lastConnectedSteamIds;
                     }
 
-                    next.ConnectedSteamIds = connectedSteamIds;
+                    next.ConnectedSteamIds = CloneSteamIds(connectedSteamIds);
                     LeaderboardDocument? leaderboard = WebDashboardStatisticsBridge.GetLeaderboardDocument(saveSlotId);
                     string? leaderboardJson = WebDashboardLeaderboardCache.GetOrSchedule(
                         saveSlotId,
@@ -270,16 +270,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     && _snapshot.MinimapMarkers.Count > 0)
                 {
                     next.MinimapLayout = _snapshot.MinimapLayout;
-                    next.MinimapMarkers = _snapshot.MinimapMarkers;
+                    next.MinimapMarkers = CloneMarkers(_snapshot.MinimapMarkers);
                     next.MinimapTrain = _snapshot.MinimapTrain;
                 }
                 else
                 {
                     WebDashboardMinimapLayoutBuilder.EnsureLayout();
                     next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
-                    next.MinimapMarkers = WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train);
+                    List<WebDashboardMinimapMarkerDto> markers =
+                        WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train);
+                    next.MinimapMarkers = CloneMarkers(markers);
                     next.MinimapTrain = train;
-                    _minimapFingerprint = BuildMinimapFingerprint(next.MinimapMarkers, train);
+                    _minimapFingerprint = BuildMinimapFingerprint(markers, train);
                     _lastMinimapRefreshMs = nowMs;
                 }
             }
@@ -288,6 +290,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _ = Interlocked.Increment(ref _version);
             WebDashboardSseHub.NotifySnapshotChanged();
         }
+
+        private static List<WebDashboardPlayerDto> ClonePlayers(IReadOnlyList<WebDashboardPlayerDto> players) =>
+            players.Count == 0 ? [] : [.. players];
+
+        private static List<ulong> CloneSteamIds(IReadOnlyList<ulong> steamIds) =>
+            steamIds.Count == 0 ? [] : [.. steamIds];
+
+        private static List<WebDashboardMinimapMarkerDto> CloneMarkers(
+            IReadOnlyList<WebDashboardMinimapMarkerDto> markers) =>
+            markers.Count == 0 ? [] : [.. markers];
 
         private static string BuildMinimapFingerprint(
             IReadOnlyList<WebDashboardMinimapMarkerDto> markers,

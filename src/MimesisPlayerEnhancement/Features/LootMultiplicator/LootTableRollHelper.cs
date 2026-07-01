@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Bifrost.Cooked;
 using MimesisPlayerEnhancement.Util;
 
@@ -15,7 +14,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return 0;
             }
 
-            int totalRate = candidates.Sum(candidate => candidate.Rate);
+            int totalRate = 0;
+            foreach (ItemDropCandidateInfo candidate in candidates)
+            {
+                totalRate += candidate.Rate;
+            }
+
             if (totalRate <= 0)
             {
                 return 0;
@@ -24,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             int roll = SimpleRandUtil.Next(0, totalRate + 1);
             int cumulative = 0;
 
-            foreach (ItemDropCandidateInfo candidate in candidates.OrderByDescending(c => c.Rate))
+            foreach (ItemDropCandidateInfo candidate in candidates)
             {
                 cumulative += candidate.Rate;
                 if (roll <= cumulative)

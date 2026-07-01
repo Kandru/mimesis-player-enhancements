@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     internal static class JoinAnytimeLobbyDisplay
     {
         private const int BrowseCap = 3;
-        private const int VanillaBrowseDenominator = 4;
+        internal const int VanillaBrowseDenominator = 4;
 
         internal static int GetBrowsePlayerCount(int realCount)
         {

@@ -21,6 +21,8 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             AccessTools.Method(typeof(MoneyMultiplierApplier), nameof(MoneyMultiplierApplier.ScaleReinforceCost))
             ?? throw new InvalidOperationException("MoneyMultiplierApplier.ScaleReinforceCost not found");
 
+        private static bool IsScrapHotPathEnabled => ModConfig.EnableMoneyMultiplier.Value;
+
         public static void Apply(HarmonyLib.Harmony harmony)
         {
             _ = GameNetworkApi.GetGameAssembly();
@@ -145,6 +147,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             [HarmonyPostfix]
             public static void Postfix(ref int __result)
             {
+                if (!IsScrapHotPathEnabled)
+                {
+                    return;
+                }
+
                 try
                 {
                     int scaled = MoneyMultiplierApplier.ScaleScrapValue(__result);
@@ -166,6 +173,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             [HarmonyPostfix]
             public static void Postfix(ref ItemInfo __result)
             {
+                if (!IsScrapHotPathEnabled)
+                {
+                    return;
+                }
+
                 try
                 {
                     __result.price = MoneyMultiplierApplier.ScaleScrapValue(__result.price);
@@ -183,6 +195,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             [HarmonyPostfix]
             public static void Postfix(ref ItemInfo __result)
             {
+                if (!IsScrapHotPathEnabled)
+                {
+                    return;
+                }
+
                 try
                 {
                     __result.price = MoneyMultiplierApplier.ScaleScrapValue(__result.price);
@@ -200,6 +217,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             [HarmonyPostfix]
             public static void Postfix(ref int __result)
             {
+                if (!IsScrapHotPathEnabled)
+                {
+                    return;
+                }
+
                 try
                 {
                     int scaled = MoneyMultiplierApplier.ScaleScrapValue(__result);

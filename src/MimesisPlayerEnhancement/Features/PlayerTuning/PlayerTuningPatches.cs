@@ -39,7 +39,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             {
                 try
                 {
-                    if (!__result || type != ActorType.Player)
+                    if (!ModConfig.EnablePlayerTuning.Value || !__result || type != ActorType.Player)
                     {
                         return;
                     }
@@ -61,6 +61,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             {
                 try
                 {
+                    if (!ModConfig.EnablePlayerTuning.Value)
+                    {
+                        return;
+                    }
+
                     PlayerTuningApplier.ApplyInventoryWeightPenalty(__instance);
                 }
                 catch (Exception ex)

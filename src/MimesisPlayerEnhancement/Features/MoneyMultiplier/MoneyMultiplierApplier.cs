@@ -11,6 +11,9 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             AccessTools.Field(typeof(GameSessionInfo), "_targetCurrency")
             ?? throw new InvalidOperationException("GameSessionInfo._targetCurrency not found");
 
+        private static int _scrapScaleFrame = -1;
+        private static int _scrapScalePlayerCount = SessionPlayerCountHelper.VanillaPlayerBaseline;
+
         internal static bool IsEnabled()
         {
             return ModConfig.EnableMoneyMultiplier.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
@@ -85,7 +88,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 return vanilla;
             }
 
-            int playerCount = SessionPlayerCountHelper.ResolveFromSession();
+            int playerCount = ResolvePlayerCountForScrap();
             float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount);
             if (effective == 1f)
             {
@@ -109,6 +112,18 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
         internal static int ScaleReinforceCost(int upgradeCost, MaintenanceRoom room)
         {
             return ScaleReinforcePrice(room, upgradeCost);
+        }
+
+        private static int ResolvePlayerCountForScrap()
+        {
+            int frame = UnityEngine.Time.frameCount;
+            if (frame != _scrapScaleFrame)
+            {
+                _scrapScaleFrame = frame;
+                _scrapScalePlayerCount = SessionPlayerCountHelper.ResolveFromSession();
+            }
+
+            return _scrapScalePlayerCount;
         }
     }
 }

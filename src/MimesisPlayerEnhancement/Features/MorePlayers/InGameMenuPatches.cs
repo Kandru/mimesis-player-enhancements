@@ -49,6 +49,11 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             [HarmonyPostfix]
             private static void Postfix(UIPrefab_InGameMenu __instance)
             {
+                if (!ModConfig.EnableMorePlayers.Value)
+                {
+                    return;
+                }
+
                 InGameMenuPlayerGrid.ResizeTempVolumeList(__instance);
             }
         }

@@ -19,6 +19,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static FieldInfo? _avatarCacheField;
         private static FieldInfo? _playerUiElementsField;
         private static FieldInfo? _playerInfosField;
+        private static FieldInfo? _playerInfoSteamIdField;
+        private static FieldInfo? _uiAvatarButtonField;
+        private static PropertyInfo? _avatarButtonImageProperty;
+        private static PropertyInfo? _imageSpriteProperty;
+        private static PropertyInfo? _spriteTextureProperty;
+        private static bool _playerUiReflectionInitialized;
 
         internal static bool TryGetPng(ulong steamId, out byte[] png)
         {
@@ -210,6 +216,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
+            EnsurePlayerUiReflectionCached();
+            if (_playerInfoSteamIdField == null || _uiAvatarButtonField == null)
+            {
+                return false;
+            }
+
             int count = Math.Min(uiElements.Count, playerInfos.Count);
             bool imported = false;
 
@@ -222,25 +234,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                string? steamIdText = info.GetType().GetField("steamID", InstanceMemberFlags)?.GetValue(info) as string;
+                string? steamIdText = _playerInfoSteamIdField.GetValue(info) as string;
                 if (string.IsNullOrEmpty(steamIdText) || !ulong.TryParse(steamIdText, out ulong steamId) || steamId == 0)
                 {
                     continue;
                 }
 
-                FieldInfo? avatarButtonField = ui.GetType().GetField("avatarButton", InstanceMemberFlags);
-                object? avatarButton = avatarButtonField?.GetValue(ui);
-                if (avatarButton == null)
+                object? avatarButton = _uiAvatarButtonField.GetValue(ui);
+                if (avatarButton == null || _avatarButtonImageProperty == null)
                 {
                     continue;
                 }
 
-                PropertyInfo? imageProperty = avatarButton.GetType().GetProperty("image", InstanceMemberFlags);
-                object? image = imageProperty?.GetValue(avatarButton);
-                PropertyInfo? spriteProperty = image?.GetType().GetProperty("sprite", InstanceMemberFlags);
-                object? sprite = spriteProperty?.GetValue(image);
-                PropertyInfo? textureProperty = sprite?.GetType().GetProperty("texture", InstanceMemberFlags);
-                Texture2D? texture = textureProperty?.GetValue(sprite) as Texture2D;
+                object? image = _avatarButtonImageProperty.GetValue(avatarButton);
+                object? sprite = _imageSpriteProperty?.GetValue(image);
+                Texture2D? texture = _spriteTextureProperty?.GetValue(sprite) as Texture2D;
                 if (texture == null)
                 {
                     continue;
@@ -253,6 +261,35 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             return imported;
+        }
+
+        private static void EnsurePlayerUiReflectionCached()
+        {
+            if (_playerUiReflectionInitialized)
+            {
+                return;
+            }
+
+            _playerUiReflectionInitialized = true;
+
+            Type? playerInfoType = _playerInfosField?.FieldType.IsGenericType == true
+                ? _playerInfosField.FieldType.GetGenericArguments()[0]
+                : null;
+            _playerInfoSteamIdField = playerInfoType?.GetField("steamID", InstanceMemberFlags);
+
+            Type? uiElementType = _playerUiElementsField?.FieldType.IsGenericType == true
+                ? _playerUiElementsField.FieldType.GetGenericArguments()[0]
+                : null;
+            _uiAvatarButtonField = uiElementType?.GetField("avatarButton", InstanceMemberFlags);
+
+            Type? avatarButtonType = _uiAvatarButtonField?.FieldType;
+            _avatarButtonImageProperty = avatarButtonType?.GetProperty("image", InstanceMemberFlags);
+
+            Type imageType = typeof(UnityEngine.UI.Image);
+            _imageSpriteProperty = imageType.GetProperty("sprite", InstanceMemberFlags);
+
+            Type spriteType = typeof(Sprite);
+            _spriteTextureProperty = spriteType.GetProperty("texture", InstanceMemberFlags);
         }
 
         private static bool TryStoreTexture(ulong steamId, Texture2D texture, out byte[] png)
