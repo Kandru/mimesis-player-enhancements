@@ -38,7 +38,7 @@ Config: `src/MimesisPlayerEnhancement/Config/ModConfig.cs` + TOML sections `Mime
 5. If host-only, gate mutations with `HostApplyGate.ShouldApplyHostOnlyFeature()`.
 6. If the feature has multipliers, implement resolver → applier with `FeatureToggleGate` neutral values when disabled.
 7. Add `{Feature}Log.cs` delegating to `ModLog` with matching feature string.
-8. Document config keys in [README.md](../README.md).
+8. Document config keys in [CONFIG.md](CONFIG.md) (linked from the README Config section).
 9. Run `./scripts/build.sh` (Debug and Release if touching build-sensitive code).
 
 ## Host-only and session access
@@ -48,20 +48,7 @@ Config: `src/MimesisPlayerEnhancement/Config/ModConfig.cs` + TOML sections `Mime
 
 ## Build and deploy
 
-Requires [.NET SDK 8+](https://dotnet.microsoft.com/download). Game install is not required to compile.
-
-```bash
-chmod +x scripts/*.sh
-./scripts/bootstrap-deps.sh   # first time — populates deps/reference/
-./scripts/build.sh            # dist/debug/MimesisPlayerEnhancement.dll
-./scripts/build.sh Release    # dist/prod/
-```
-
-Copy to game for local testing:
-
-```bash
-COPY_TO_MODS=true MIMESIS_PATH="/path/to/MIMESIS" ./scripts/build.sh
-```
+See [BUILD.md](BUILD.md) for compile commands, bootstrap, and copying the DLL into your game for testing.
 
 ## Formatting
 

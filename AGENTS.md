@@ -91,7 +91,7 @@ For each feature:
 
 1. Add `Enable{Feature}` master toggle and options in `src/MimesisPlayerEnhancement/Config/ModConfig.cs`
 2. TOML section: `[MimesisPlayerEnhancement_{FeatureName}]`
-3. Update the README config table
+3. Update [docs/CONFIG.md](docs/CONFIG.md)
 
 Per-save overrides use `SaveSlotConfigStore`; global options live in the main section.
 
