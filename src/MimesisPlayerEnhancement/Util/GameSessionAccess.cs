@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
+using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Util
@@ -67,6 +68,22 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static bool IsValidSaveSlotId(int slotId)
         {
+            if (slotId == -1)
+            {
+                return false;
+            }
+
+            if (ModConfig.IsInitialized && ModConfig.EnableExtendedSaveSlots.Value)
+            {
+                if (slotId == SaveSlotLimits.AutosaveSlotId)
+                {
+                    return true;
+                }
+
+                int maxManual = SaveSlotDiscovery.GetMaxManualSlots();
+                return slotId >= SaveSlotLimits.MinManualSlotId && slotId <= maxManual;
+            }
+
             return MMSaveGameData.CheckSaveSlotID(slotId, true);
         }
 

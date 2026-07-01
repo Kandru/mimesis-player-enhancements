@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Mimic.Actors;
 using Mimic.Voice.SpeechSystem;
+using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
@@ -85,6 +86,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         playersBySteam[bannedSteamId] = bannedOffline;
                     }
                 }
+            }
+
+            if (WebDashboardGameState.IsHost())
+            {
+                MergeStoredLeaderboardPlayers(playersBySteam, localSteamId);
             }
 
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
@@ -227,6 +233,60 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             EnrichPlayerDto(dto, sessionManager, matchedContext);
             return dto;
+        }
+
+        private static void MergeStoredLeaderboardPlayers(
+            Dictionary<ulong, WebDashboardPlayerDto> playersBySteam,
+            ulong localSteamId)
+        {
+            int saveSlotId = WebDashboardGameState.GetSaveSlotId();
+            if (saveSlotId < 0)
+            {
+                return;
+            }
+
+            LeaderboardDocument? leaderboard = WebDashboardStatisticsBridge.GetLeaderboardDocument(saveSlotId);
+            if (leaderboard?.Entries == null)
+            {
+                return;
+            }
+
+            foreach (LeaderboardEntry entry in leaderboard.Entries)
+            {
+                if (entry.SteamId == 0 || playersBySteam.ContainsKey(entry.SteamId))
+                {
+                    continue;
+                }
+
+                bool isLocal = localSteamId != 0 && entry.SteamId == localSteamId;
+                WebDashboardPlayerDto dto = new()
+                {
+                    SteamId = entry.SteamId,
+                    DisplayName = !string.IsNullOrWhiteSpace(entry.DisplayName)
+                        ? entry.DisplayName
+                        : ResolveDisplayNameForSteamId(entry.SteamId, saveSlotId),
+                    IsHost = WebDashboardGameState.IsHost() && isLocal,
+                    IsLocal = isLocal,
+                };
+
+                EnrichStoredPlayerDto(dto, saveSlotId);
+                playersBySteam[entry.SteamId] = dto;
+            }
+        }
+
+        private static void EnrichStoredPlayerDto(WebDashboardPlayerDto dto, int saveSlotId)
+        {
+            if (dto.SteamId == 0 || saveSlotId < 0 || !ModConfig.EnableStatistics.Value)
+            {
+                return;
+            }
+
+            PlayerStatisticsDocument doc = StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is PlayerStatisticsDocument live
+                ? live
+                : StatisticsStore.LoadPlayer(saveSlotId, dto.SteamId);
+
+            dto.CurrentSession = BuildSessionStatsFromDocument(doc);
+            dto.VoiceEventCount = (int)(doc.Global?.Counters?.VoiceEvents ?? 0);
         }
 
         private static WebDashboardPlayerDto? TryBuildPlayerDto(
@@ -568,6 +628,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc
                 || doc.CurrentSession?.Counters == null)
+            {
+                return null;
+            }
+
+            return BuildSessionStatsFromDocument(doc);
+        }
+
+        private static WebDashboardSessionStatsDto? BuildSessionStatsFromDocument(PlayerStatisticsDocument doc)
+        {
+            if (doc.CurrentSession?.Counters == null)
             {
                 return null;
             }

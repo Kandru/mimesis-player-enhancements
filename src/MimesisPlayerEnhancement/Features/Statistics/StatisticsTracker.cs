@@ -582,7 +582,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static bool TryGetLoadedSlotId(out int slotId)
         {
             slotId = _loadedSlotId;
-            return MimesisSaveManager.IsValidSaveSlotId(slotId);
+            return slotId >= 0;
         }
 
         internal static ulong TryResolveSteamId(Mimic.Actors.ProtoActor actor)

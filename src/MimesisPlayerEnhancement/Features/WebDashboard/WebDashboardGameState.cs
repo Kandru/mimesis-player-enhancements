@@ -1,5 +1,6 @@
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using MimesisPlayerEnhancement.Features.Persistence;
+using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Util;
 using ReluNetwork.ConstEnum;
 using Steamworks;
@@ -42,7 +43,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static int GetSaveSlotId()
         {
-            return MimesisSaveManager.TryGetActiveSaveSlotId(out int slotId) ? slotId : -1;
+            if (MimesisSaveManager.TryGetActiveSaveSlotId(out int slotId))
+            {
+                return slotId;
+            }
+
+            if (!IsHost())
+            {
+                return -1;
+            }
+
+            if (SaveSlotConfigStore.ActiveSlotId >= 0)
+            {
+                return SaveSlotConfigStore.ActiveSlotId;
+            }
+
+            slotId = GameSessionAccess.GetSaveSlotId();
+            if (slotId >= 0 && GameSessionAccess.IsValidSaveSlotId(slotId))
+            {
+                return slotId;
+            }
+
+            return StatisticsTracker.TryGetLoadedSlotId(out slotId) ? slotId : -1;
         }
 
         internal static string GetLobbyName()
