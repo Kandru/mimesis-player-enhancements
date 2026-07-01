@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.Persistence;
-using MimesisPlayerEnhancement.Features.PlayerTuning;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
@@ -16,7 +13,6 @@ namespace MimesisPlayerEnhancement
     public sealed class Mod : MelonMod
     {
         private HarmonyLib.Harmony? _harmony;
-        private bool _statisticsWasEnabled;
         private float _nextEncounterSpawnProcessTime;
 
         public override void OnInitializeMelon()
@@ -30,7 +26,6 @@ namespace MimesisPlayerEnhancement
                 module.ApplyPatches(_harmony);
             }
 
-            _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
             SyncFromConfig(ModConfigChangeInfo.FullReload);
             LogStartupSummary();
         }
@@ -88,10 +83,11 @@ namespace MimesisPlayerEnhancement
 
         public override void OnDeinitializeMelon()
         {
-            StatisticsWriteQueue.FlushAllSync();
-            PersistenceWriteQueue.FlushAllSync();
-            PlayerTuningApplier.RestoreOnShutdown();
-            WebDashboardServer.StopOnDeinit();
+            foreach (IFeatureModule module in FeatureModules.All)
+            {
+                module.OnDeinitialize();
+            }
+
             HostStatusCache.Invalidate();
             ModConfig.Changed -= SyncFromConfig;
             if (_harmony != null)
@@ -125,16 +121,6 @@ namespace MimesisPlayerEnhancement
                 }
 
                 module.SyncFromConfig();
-            }
-
-            if (change.IsFullReload || change.AffectsSection(ModConfigRegistry.StatisticsSectionId))
-            {
-                if (_statisticsWasEnabled && !ModConfig.EnableStatistics.Value)
-                {
-                    StatisticsTracker.ClearRuntimeState();
-                }
-
-                _statisticsWasEnabled = ModConfig.EnableStatistics.Value;
             }
 
             ModLog.Debug("Config", $"Synced — {BuildConfigSummary()}");

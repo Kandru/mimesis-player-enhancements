@@ -29,6 +29,21 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private static float _nextConnectedTimeFlushTime;
 
         private static int _loadedSlotId = -999;
+        private static bool _wasEnabled;
+
+        /// <summary>
+        /// Config-sync hook — clears runtime state when the feature is toggled off live.
+        /// </summary>
+        internal static void RefreshFromConfig()
+        {
+            bool enabled = ModConfig.EnableStatistics.Value;
+            if (_wasEnabled && !enabled)
+            {
+                ClearRuntimeState();
+            }
+
+            _wasEnabled = enabled;
+        }
 
         internal static void ClearRuntimeState()
         {

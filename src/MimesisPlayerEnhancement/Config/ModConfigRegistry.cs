@@ -14,7 +14,6 @@ namespace MimesisPlayerEnhancement
     {
         internal const string MainSectionId = "MimesisPlayerEnhancement";
         internal const string WebDashboardSectionId = "MimesisPlayerEnhancement_WebDashboard";
-        internal const string StatisticsSectionId = "MimesisPlayerEnhancement_Statistics";
         internal const string MoneyMultiplierSectionId = "MimesisPlayerEnhancement_MoneyMultiplier";
         private const string SectionPrefix = "MimesisPlayerEnhancement_";
 

@@ -30,6 +30,10 @@ namespace MimesisPlayerEnhancement.Util
         void OnUpdate()
         {
         }
+
+        void OnDeinitialize()
+        {
+        }
     }
 
     internal sealed class FeatureModule : IFeatureModule
@@ -37,18 +41,21 @@ namespace MimesisPlayerEnhancement.Util
         private readonly Action<HarmonyLib.Harmony> _applyPatches;
         private readonly Action? _syncFromConfig;
         private readonly Action? _onUpdate;
+        private readonly Action? _onDeinitialize;
 
         public FeatureModule(
             string name,
             Action<HarmonyLib.Harmony> applyPatches,
             Action? syncFromConfig = null,
             Action? onUpdate = null,
-            bool throttledUpdate = false)
+            bool throttledUpdate = false,
+            Action? onDeinitialize = null)
         {
             Name = name;
             _applyPatches = applyPatches;
             _syncFromConfig = syncFromConfig;
             _onUpdate = onUpdate;
+            _onDeinitialize = onDeinitialize;
             if (throttledUpdate)
             {
                 ThrottledUpdate = true;
@@ -73,6 +80,11 @@ namespace MimesisPlayerEnhancement.Util
         {
             _onUpdate?.Invoke();
         }
+
+        public void OnDeinitialize()
+        {
+            _onDeinitialize?.Invoke();
+        }
     }
 
     internal static class FeatureModules
@@ -82,10 +94,14 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig),
             new FeatureModule("Persistence", PersistencePatches.Apply, onUpdate: () =>
             {
-                if (ModConfig.EnablePersistence.Value) { SpeechEventPoolManager.ProcessDeferredUpdates(); } }),
-            new FeatureModule("Statistics", StatisticsPatches.Apply, onUpdate: () =>
+                if (ModConfig.EnablePersistence.Value) { SpeechEventPoolManager.ProcessDeferredUpdates(); } },
+                onDeinitialize: PersistenceWriteQueue.FlushAllSync),
+            new FeatureModule("Statistics", StatisticsPatches.Apply,
+                syncFromConfig: StatisticsTracker.RefreshFromConfig,
+                onUpdate: () =>
             {
-                if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } }),
+                if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } },
+                onDeinitialize: StatisticsWriteQueue.FlushAllSync),
             new FeatureModule("PlayerAnnouncements", PlayerAnnouncementPatches.Apply),
             new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
             new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply,
@@ -106,11 +122,13 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
             new FeatureModule("MimicTuning", MimicTuningPatches.Apply),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
-                syncFromConfig: PlayerTuningApplier.RefreshFromConfig),
+                syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
+                onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),
             new FeatureModule("DungeonRandomizer", DungeonRandomizerPatches.Apply),
             new FeatureModule("WebDashboard", WebDashboardServer.Apply,
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
-                onUpdate: WebDashboardServer.OnUpdate),
+                onUpdate: WebDashboardServer.OnUpdate,
+                onDeinitialize: WebDashboardServer.StopOnDeinit),
             new FeatureModule("ModVersionDisplay", ModVersionDisplayPatches.Apply),
             new FeatureModule(
                 "ExtendedSaveSlots",
