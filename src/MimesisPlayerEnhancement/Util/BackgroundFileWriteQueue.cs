@@ -77,24 +77,39 @@ namespace MimesisPlayerEnhancement.Util
             {
                 pending.Latest = payload;
                 pending.LogFeature = logFeature;
+
                 if (pending.WriteTask is { IsCompleted: false })
                 {
                     if (!waitForCompletion)
                     {
                         return;
                     }
-
-                    WaitForTask(pending.WriteTask);
                 }
-
-                FileWritePayload snapshot = payload;
-                string feature = logFeature;
-                pending.WriteTask = Task.Run(() => WriteToDisk(path, snapshot, feature));
-                if (waitForCompletion)
+                else
                 {
-                    WaitForTask(pending.WriteTask);
+                    StartWriteTask(pending, path, payload, logFeature);
+                    if (!waitForCompletion)
+                    {
+                        return;
+                    }
                 }
             }
+
+            if (waitForCompletion)
+            {
+                WaitForPendingWrites(path, pending);
+            }
+        }
+
+        private static void StartWriteTask(
+            PendingWrite pending,
+            string path,
+            FileWritePayload payload,
+            string logFeature)
+        {
+            FileWritePayload snapshot = payload;
+            string feature = logFeature;
+            pending.WriteTask = Task.Run(() => WriteToDisk(path, snapshot, feature));
         }
 
         private static void WriteToDisk(string path, FileWritePayload payload, string logFeature)
@@ -175,12 +190,32 @@ namespace MimesisPlayerEnhancement.Util
 
         private static void WaitForInFlightWrites()
         {
-            foreach (KeyValuePair<string, PendingWrite> kvp in InFlight)
+            foreach (KeyValuePair<string, PendingWrite> kvp in InFlight.ToArray())
+            {
+                WaitForPendingWrites(kvp.Key, kvp.Value);
+            }
+        }
+
+        private static void WaitForPendingWrites(string path, PendingWrite pending)
+        {
+            while (true)
             {
                 Task? task;
-                lock (kvp.Value)
+                lock (pending)
                 {
-                    task = kvp.Value.WriteTask;
+                    task = pending.WriteTask is { IsCompleted: false } ? pending.WriteTask : null;
+                    if (task == null && pending.Latest != null)
+                    {
+                        FileWritePayload next = pending.Latest;
+                        string feature = pending.LogFeature;
+                        StartWriteTask(pending, path, next, feature);
+                        task = pending.WriteTask is { IsCompleted: false } ? pending.WriteTask : null;
+                    }
+                }
+
+                if (task == null)
+                {
+                    return;
                 }
 
                 WaitForTask(task);
@@ -196,7 +231,10 @@ namespace MimesisPlayerEnhancement.Util
 
             try
             {
-                _ = task.Wait(TimeSpan.FromSeconds(30));
+                if (!task.Wait(TimeSpan.FromSeconds(30)))
+                {
+                    ModLog.Warn("FileIO", "Background file write timed out after 30 seconds.");
+                }
             }
             catch (Exception ex)
             {
