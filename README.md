@@ -43,7 +43,6 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity by where it comes from and item type | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, scrap/sell values, shop buy prices, shop item count, and reinforce costs | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by real seconds per player above a baseline (default: +10s per player above 4) | No — host only |
-| **Room Entry Delay** | Multiply hold/teleport timing when entering rooms via E at teleporters and dungeon doors | No — host only |
 | **Mimic Tuning** | Randomize dead-player mimic possession speak duration and scale post-possession cooldown | No — host only |
 | **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
@@ -279,15 +278,6 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
-### Room Entry Delay — `[MimesisPlayerEnhancement_RoomEntryDelay]`
-
-Host-only. Multiplies vanilla timing when players press **E** on indoor↔outdoor crossing doors: fixed teleporters (`TeleporterLevelObject`) or procedural dungeon doors (`RandomTeleporterLevelObject`) where the door side and destination differ (`IsIndoor != DestinationIsToInDoor`). Same-zone teleporters are unchanged. Server-side action delay applies to all players; the hold ring on the crosshair follows the host config on the host client only (participants keep vanilla hold UI).
-
-| Key | Type | Default | What it does |
-|-----|------|---------|--------------|
-| `EnableRoomEntryDelay` | bool | `false` | Master toggle for room entry timing multiplier. |
-| `RoomEntryDelayMultiplier` | float | `1.0` | Timing multiplier (`1` = vanilla, `0.5` = half as long, `2` = double). Valid range is `0.1`–`10.0`. |
-
 ### Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
 Host-only. When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This feature can randomize the speak window per possession and/or scale the cooldown. Off by default — set `EnableMimicTuning = true` to turn it on.
@@ -429,10 +419,6 @@ StartupMoneyMultiplier = 1.0
 EnableDungeonTime = false
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
-
-[MimesisPlayerEnhancement_RoomEntryDelay]
-EnableRoomEntryDelay = false
-RoomEntryDelayMultiplier = 1.0
 
 [MimesisPlayerEnhancement_MimicTuning]
 EnableMimicTuning = false

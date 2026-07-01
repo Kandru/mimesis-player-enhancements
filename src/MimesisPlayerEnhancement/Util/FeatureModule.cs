@@ -11,7 +11,6 @@ using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
-using MimesisPlayerEnhancement.Features.RoomEntryDelay;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.ModVersionDisplay;
@@ -98,7 +97,6 @@ namespace MimesisPlayerEnhancement.Util
                 if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); } }, throttledUpdate: true),
             new FeatureModule("MoneyMultiplier", MoneyMultiplierPatches.Apply),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
-            new FeatureModule("RoomEntryDelay", RoomEntryDelayPatches.Apply),
             new FeatureModule("MimicTuning", MimicTuningPatches.Apply),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig),
