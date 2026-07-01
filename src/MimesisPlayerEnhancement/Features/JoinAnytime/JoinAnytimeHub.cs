@@ -21,6 +21,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly FieldInfo? IsPublicRoomField =
             typeof(SteamInviteDispatcher).GetField("isPublicRoom", InstanceFlags);
 
+        private static FieldInfo? _uimanField;
+        private static PropertyInfo? _uimanProperty;
+
         private static bool _warnedMissingFields;
 
         internal static Hub.PersistentData? GetPdata()
@@ -113,9 +116,56 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        internal static void SyncIsPublicLobby(bool isPublic)
+        {
+            Hub.PersistentData? pdata = GetPdata();
+            if (pdata == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pdata.IsPublicLobby = isPublic;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"Sync IsPublicLobby failed — {ex.Message}");
+            }
+        }
+
         internal static bool IsHost()
         {
             return GetPdata()?.ClientMode == NetworkClientMode.Host;
+        }
+
+        internal static UIPrefab_InGameMenu? GetInGameMenu()
+        {
+            if (Hub.s == null)
+            {
+                return null;
+            }
+
+            UIManager? uiman = ResolveUiManager();
+            return uiman?.inGameMenu;
+        }
+
+        private static UIManager? ResolveUiManager()
+        {
+            if (Hub.s == null)
+            {
+                return null;
+            }
+
+            _uimanProperty ??= typeof(Hub).GetProperty("uiman", InstanceFlags);
+            if (_uimanProperty?.GetValue(Hub.s) is UIManager propertyManager)
+            {
+                return propertyManager;
+            }
+
+            _uimanField ??= typeof(Hub).GetField("uiman", InstanceFlags)
+                ?? typeof(Hub).GetField("<uiman>k__BackingField", InstanceFlags);
+            return _uimanField?.GetValue(Hub.s) as UIManager;
         }
 
         private static void WarnMissingFieldsOnce()

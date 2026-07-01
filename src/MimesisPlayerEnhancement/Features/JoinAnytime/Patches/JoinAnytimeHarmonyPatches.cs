@@ -60,6 +60,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix()
         {
             JoinAnytimeRoomTools.InvalidateWaitingRoomPrepareCache();
+            JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
             JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
     }
@@ -70,6 +71,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
+            JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
             JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
     }
@@ -367,10 +369,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             }
 
             if (string.Equals(key, SteamInviteDispatcher.IS_PUBLIC_KEY, StringComparison.Ordinal)
+                && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
+                && JoinAnytimeHub.IsHost())
+            {
+                JoinAnytimeLobbyController.SetHostWantsPublicMatchmaking(true);
+            }
+
+            if (string.Equals(key, SteamInviteDispatcher.IS_PUBLIC_KEY, StringComparison.Ordinal)
                 && string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
                 && JoinAnytimeLobbyController.ShouldBlockPublicRoomClose())
             {
                 ModLog.Debug("JoinAnytime", "Blocked PublicRoom=false lobby data update for join-anytime host.");
+                JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
                 return false;
             }
 
@@ -412,6 +422,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         {
             JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
             LateJoinManager.OnLevelLoadCompleted(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(UIPrefab_InGameMenu), "Start")]
+    internal static class UIPrefabInGameMenuStartJoinAnytimePatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(UIPrefab_InGameMenu __instance)
+        {
+            JoinAnytimeInGameMenuTools.InstallHostPublicRoomListener(__instance);
         }
     }
 

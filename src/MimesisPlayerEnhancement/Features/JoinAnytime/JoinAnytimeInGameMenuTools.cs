@@ -1,35 +1,39 @@
-using System.Reflection;
 using ReluNetwork.ConstEnum;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
+    /// <summary>
+    /// Host ESC menu: unlock public-room controls outside maintenance and mirror intent on the toggle.
+    /// The toggle listener is installed once in Start — never re-bound on OnEnable.
+    /// </summary>
     internal static class JoinAnytimeInGameMenuTools
     {
         private const string Feature = "JoinAnytime";
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private static int _programmaticSyncDepth;
 
-        private static FieldInfo? _uimanField;
-        private static PropertyInfo? _uimanProperty;
+        internal static bool IsProgrammaticSync => _programmaticSyncDepth > 0;
 
-        internal static void SyncPublicRoomToggle(bool isPublic)
+        internal static void InstallHostPublicRoomListener(UIPrefab_InGameMenu menu)
         {
-            UIPrefab_InGameMenu? menu = TryGetInGameMenu();
-            if (menu == null)
+            if (!ModConfig.EnableJoinAnytime.Value
+                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host
+                || menu == null)
             {
                 return;
             }
 
             try
             {
-                menu.UE_PublicRoomToggle.GetComponent<Toggle>().SetIsOnWithoutNotify(isPublic);
+                Toggle toggle = menu.UE_PublicRoomToggle.GetComponent<Toggle>();
+                toggle.onValueChanged.RemoveAllListeners();
+                toggle.onValueChanged.AddListener(OnPublicRoomToggleChanged);
             }
             catch (System.Exception ex)
             {
-                ModLog.Debug(Feature, $"Public room toggle sync failed — {ex.Message}");
+                ModLog.Debug(Feature, $"Public room listener install failed — {ex.Message}");
             }
         }
 
@@ -46,14 +50,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 menu.UE_PublicRoom.GetComponent<RectTransform>().SetAsLastSibling();
                 menu.UE_RoomPassword.GetComponent<RectTransform>().SetAsLastSibling();
-
-                Toggle toggle = menu.UE_PublicRoomToggle.GetComponent<Toggle>();
-                SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
-                bool isPublic = dispatcher != null && JoinAnytimeHub.IsHostLobbyPublic(dispatcher);
-                SyncPublicRoomToggle(isPublic);
-
-                toggle.onValueChanged.RemoveAllListeners();
-                toggle.onValueChanged.AddListener(OnPublicRoomToggleChanged);
+                SyncToggleDisplay(menu, JoinAnytimeLobbyController.HostWantsPublicMatchmaking());
             }
             catch (System.Exception ex)
             {
@@ -61,52 +58,36 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        internal static void SyncToggleDisplay(UIPrefab_InGameMenu? menu, bool isPublic)
+        {
+            if (menu == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _programmaticSyncDepth++;
+                menu.UE_PublicRoomToggle.GetComponent<Toggle>().SetIsOnWithoutNotify(isPublic);
+            }
+            catch (System.Exception ex)
+            {
+                ModLog.Debug(Feature, $"Public room toggle sync failed — {ex.Message}");
+            }
+            finally
+            {
+                _programmaticSyncDepth--;
+            }
+        }
+
         private static void OnPublicRoomToggleChanged(bool isPublic)
         {
-            if (!ModConfig.EnableJoinAnytime.Value
-                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host)
+            if (IsProgrammaticSync)
             {
                 return;
             }
 
-            SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
-            if (dispatcher == null)
-            {
-                return;
-            }
-
-            ModLog.Debug(Feature, $"Public room toggle — isPublic={isPublic}");
-            JoinAnytimeLobbyController.SetHostWantsPublicMatchmaking(isPublic);
-            dispatcher.SetLobbyPublic(isPublic);
-        }
-
-        private static UIPrefab_InGameMenu? TryGetInGameMenu()
-        {
-            if (Hub.s == null)
-            {
-                return null;
-            }
-
-            UIManager? uiman = ResolveUiManager();
-            return uiman?.inGameMenu;
-        }
-
-        private static UIManager? ResolveUiManager()
-        {
-            if (Hub.s == null)
-            {
-                return null;
-            }
-
-            _uimanProperty ??= typeof(Hub).GetProperty("uiman", InstanceFlags);
-            if (_uimanProperty?.GetValue(Hub.s) is UIManager propertyManager)
-            {
-                return propertyManager;
-            }
-
-            _uimanField ??= typeof(Hub).GetField("uiman", InstanceFlags)
-                ?? typeof(Hub).GetField("<uiman>k__BackingField", InstanceFlags);
-            return _uimanField?.GetValue(Hub.s) as UIManager;
+            JoinAnytimeLobbyController.ApplyUserPublicMatchmakingChoice(isPublic);
         }
     }
 }

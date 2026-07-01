@@ -61,6 +61,27 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _hostWantsPublicMatchmaking = wantsPublic;
         }
 
+        /// <summary>
+        /// Host explicitly changed the public-room toggle in the ESC menu.
+        /// </summary>
+        internal static void ApplyUserPublicMatchmakingChoice(bool wantsPublic)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || !IsHost())
+            {
+                return;
+            }
+
+            SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
+            if (dispatcher == null)
+            {
+                return;
+            }
+
+            SetHostWantsPublicMatchmaking(wantsPublic);
+            ModLog.Debug(Feature, $"Public room toggle — wantsPublic={wantsPublic}");
+            dispatcher.SetLobbyPublic(wantsPublic);
+        }
+
         internal static void OnUpdate()
         {
             if (!ModConfig.EnableJoinAnytime.Value || !IsHost())
@@ -123,6 +144,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (!requestedPublic && _hostWantsPublicMatchmaking)
             {
                 ModLog.Debug(Feature, "Ignored SetLobbyPublic(false) — host still wants public matchmaking.");
+                RestoreToggleDisplay();
                 return;
             }
 
@@ -152,9 +174,42 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             ModLog.Debug(Feature, "Applying host public lobby intent.");
-            JoinAnytimeInGameMenuTools.SyncPublicRoomToggle(isPublic: true);
+            RestoreToggleDisplay();
             JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: true);
+            JoinAnytimeHub.SyncIsPublicLobby(isPublic: true);
+            WritePublicRoomSteamData(dispatcher, isPublic: true);
+            ApplyLobbyPresence(dispatcher, wantsPublic: true);
             dispatcher.SetLobbyPublic(true);
+        }
+
+        private static void RestoreToggleDisplay()
+        {
+            if (!JoinAnytimeHub.IsHost())
+            {
+                return;
+            }
+
+            UIPrefab_InGameMenu? menu = JoinAnytimeHub.GetInGameMenu();
+            if (menu == null)
+            {
+                return;
+            }
+
+            JoinAnytimeInGameMenuTools.SyncToggleDisplay(menu, _hostWantsPublicMatchmaking);
+        }
+
+        private static void WritePublicRoomSteamData(SteamInviteDispatcher dispatcher, bool isPublic)
+        {
+            try
+            {
+                dispatcher.UpdateLobbyData(
+                    SteamInviteDispatcher.IS_PUBLIC_KEY,
+                    isPublic.ToString().ToLowerInvariant());
+            }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"PublicRoom lobby data write failed — {ex.Message}");
+            }
         }
 
         internal static void OnPublicRoomNameChanged(UIPrefab_InGameMenu menu, string rawLobbyName)

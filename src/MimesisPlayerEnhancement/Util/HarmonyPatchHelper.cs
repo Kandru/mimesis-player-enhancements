@@ -118,6 +118,38 @@ namespace MimesisPlayerEnhancement.Util
             ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patch Audit"), stripped, segments);
         }
 
+        /// <summary>
+        /// Returns the compiler-generated MoveNext for an iterator method (IEnumerator/async).
+        /// Transpilers must patch MoveNext — not the outer iterator stub.
+        /// </summary>
+        public static MethodInfo? GetEnumeratorMoveNext(Type declaringType, string methodName, Type[]? parameters = null)
+        {
+            MethodInfo? iterator = parameters == null
+                ? AccessTools.Method(declaringType, methodName)
+                : AccessTools.Method(declaringType, methodName, parameters);
+            if (iterator == null)
+            {
+                return null;
+            }
+
+            string prefix = "<" + methodName + ">";
+            foreach (Type nested in declaringType.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public))
+            {
+                if (!nested.Name.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                MethodInfo? moveNext = AccessTools.Method(nested, "MoveNext");
+                if (moveNext != null)
+                {
+                    return moveNext;
+                }
+            }
+
+            return null;
+        }
+
         public static bool IsPatched(IReadOnlyCollection<MethodBase> patched, MethodBase? expected)
         {
             if (expected == null)
