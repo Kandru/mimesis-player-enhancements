@@ -501,7 +501,25 @@ document.addEventListener('alpine:init', () => {
     },
 
     showPlayerAliveState(p) {
+      if (!p.playerUid) return false;
       return !this.playerBlindMode || p.isLocal;
+    },
+
+    overviewPlayers() {
+      const list = [...(this.players || [])];
+      list.sort((a, b) => {
+        const tier = (p) => {
+          if (!p.playerUid) return 2;
+          return p.isAlive ? 0 : 1;
+        };
+        const tierCmp = tier(a) - tier(b);
+        if (tierCmp !== 0) return tierCmp;
+        if (a.isHost !== b.isHost) return a.isHost ? -1 : 1;
+        return String(a.displayName || '').localeCompare(String(b.displayName || ''), undefined, {
+          sensitivity: 'base',
+        });
+      });
+      return list;
     },
 
     showPlayerSessionStats(p) {
