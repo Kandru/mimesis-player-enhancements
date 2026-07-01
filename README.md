@@ -63,7 +63,7 @@ If you do not trust a pre-built `.dll`, you can [build this mod yourself](docs/B
 
 ### Intuitive savegame UI
 
-![Mimesis Player Enhancement Logo](images/savegames.jpg)
+![Feature: Savegame UI](images/savegames.jpg)
 
 ## Config
 

@@ -31,3 +31,9 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
+
+## Screenshot(s)
+
+### Intuitive savegame UI
+
+![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/savegames.jpg)
