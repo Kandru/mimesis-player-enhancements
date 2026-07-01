@@ -47,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public WebDashboardSessionStatsDto? CurrentSession;
         public long? Health;
         public long? MaxHealth;
-        public int? ToxicPercent;
+        public double? ToxicPercent;
     }
 
     internal sealed class WebDashboardMinimapBoundsDto

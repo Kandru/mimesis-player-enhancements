@@ -379,11 +379,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 StatController stats = vPlayer.StatControlUnit;
                 dto.Health = stats.GetCurrentHP();
                 dto.MaxHealth = stats.GetSpecificStatValue(StatType.HP);
-                dto.ToxicPercent = (int)stats.GetMutableStatPercent(MutableStatType.Conta);
+                dto.ToxicPercent = ComputeVitalPercent(
+                    stats.GetCurrentConta(),
+                    stats.GetSpecificStatValue(StatType.Conta));
                 return;
             }
 
-            if (TryGetVitalsFromProtoActor(dto.PlayerUid, dto.SteamId, out long health, out long maxHealth, out int toxicPercent))
+            if (TryGetVitalsFromProtoActor(dto.PlayerUid, dto.SteamId, out long health, out long maxHealth, out double toxicPercent))
             {
                 dto.Health = health;
                 dto.MaxHealth = maxHealth;
@@ -391,12 +393,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        private static double? ComputeVitalPercent(long current, long max)
+        {
+            if (max <= 0)
+            {
+                return null;
+            }
+
+            return System.Math.Clamp((double)current / max * 100.0, 0.0, 100.0);
+        }
+
         private static bool TryGetVitalsFromProtoActor(
             long playerUid,
             ulong steamId,
             out long health,
             out long maxHealth,
-            out int toxicPercent)
+            out double toxicPercent)
         {
             health = 0;
             maxHealth = 0;
@@ -435,9 +447,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     maxHealth = actor.netSyncActorData.maxHP;
                     long conta = actor.netSyncActorData.conta;
                     long maxConta = actor.netSyncActorData.maxConta;
-                    toxicPercent = maxConta > 0
-                        ? (int)System.Math.Clamp(conta * 100 / maxConta, 0, 100)
-                        : 0;
+                    toxicPercent = ComputeVitalPercent(conta, maxConta) ?? 0;
                     return true;
                 }
             }

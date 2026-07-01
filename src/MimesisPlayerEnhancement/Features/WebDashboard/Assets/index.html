@@ -32,7 +32,7 @@
             <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
               <span class="app-header-blind-label">Blind mode</span>
               <button type="button" class="feature-toggle" role="switch" :class="{ 'is-on': playerBlindMode }"
-                title="Hide alive/dead status and respawn actions to avoid spoilers." aria-label="Blind mode"
+                title="Hide alive/dead status, health, toxic, and respawn actions to avoid spoilers." aria-label="Blind mode"
                 @click="togglePlayerBlindMode">
                 <span class="feature-toggle-track" aria-hidden="true">
                   <span class="feature-toggle-thumb"></span>

@@ -41,6 +41,13 @@ function avatarUrl(steamId) {
   return url;
 }
 
+function formatVitalPercent(value) {
+  if (value == null) return '?';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '?';
+  return n.toFixed(2).replace(/\.?0+$/, '') + '%';
+}
+
 function parseBool(value) {
   if (value === true) return true;
   if (value === false) return false;
@@ -528,16 +535,18 @@ document.addEventListener('alpine:init', () => {
 
     showPlayerVitals(p) {
       return this.status.isHost
+        && !this.playerBlindMode
         && p.playerUid
-        && p.health != null
-        && (!this.playerBlindMode || p.isLocal);
+        && p.health != null;
     },
 
     vitalsLine(p) {
       if (p.health == null) return '';
-      const max = p.maxHealth != null ? p.maxHealth : '?';
-      const toxic = p.toxicPercent != null ? p.toxicPercent : '?';
-      return 'HP ' + p.health + '/' + max + ' · Toxic ' + toxic + '%';
+      const healthPercent = p.maxHealth > 0
+        ? (Number(p.health) / Number(p.maxHealth)) * 100
+        : null;
+      return 'HP ' + formatVitalPercent(healthPercent)
+        + ' · Toxic ' + formatVitalPercent(p.toxicPercent);
     },
 
     canHeal(p) {

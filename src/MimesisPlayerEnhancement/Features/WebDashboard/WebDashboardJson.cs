@@ -261,7 +261,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public SessionStatsApiDto? CurrentSession;
             public long? Health;
             public long? MaxHealth;
-            public int? ToxicPercent;
+            public double? ToxicPercent;
         }
 
         private sealed class SessionStatsApiDto
