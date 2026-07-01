@@ -13,13 +13,18 @@
 
 ![Mimesis Player Enhancement Logo](logo.png)
 
-> **Warning — use at your own risk.** I am not responsible for any damage, data loss, bans, or other problems that come from using this mod. Mods change how the game runs, and things can break.
->
-> Only download software from official sources — for example the real [MelonLoader](https://melonwiki.xyz/) installer, not random repacks. Fake downloads can contain viruses or malware.
->
+> [!NOTE]  
+> Disclosure: this project is being build with help of AI!
+
+> [!WARNING]  
+> I am not responsible for any damage, data loss, bans, or other problems that come from using this mod. Mods change how the game runs, and things can break.
+
+> [!TIP]
 > If you do not trust a pre-built `.dll`, you can [build this mod yourself](#build-from-source) from the source code here on GitHub. That takes some basic dev setup, but you know exactly what you are running.
 
-You want more from MIMESIS multiplayer — more players, more voice lines, voices that stick around after saving, letting friends join an active lobby (they wait in the tram until the current run ends), and stats that actually track who did what. This mod bundles those tweaks into **one plugin** with a single config file, instead of juggling several separate mods.
+Mimesis Player Enhancement is a mod for Mimesis that consolidates and extends a lot of tweaks into one maintained package. Hosts can raise the player cap, expand mimic voice recording and persistence, allow join-anytime lobbies, scale spawns/loot/money to match their needs, randomize dungeons, tune player and mimic behavior, and track session statistics — all from one config file. Clients do not need the mod; only the host does. It also enables the player to use up to 99 different save games within a new UI.
+
+There is also a webinterface listening on http://127.0.0.1:8001 per default after the game has been started. It allows you to manage bigger lobbies (kick, ban, respawn) as well as change settings per savegame or globally.
 
 Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 
@@ -48,12 +53,13 @@ Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com
 ## Install
 
 1. Install the latest [MelonLoader](https://melonwiki.xyz/) on your MIMESIS Steam copy.
-2. Download `MimesisPlayerEnhancement.dll` from the [latest release](https://github.com/Kandru/mimesis-player-enhancements/releases).
-3. Copy the file into your game folder:  
+2. Download the [latest release](https://github.com/Kandru/mimesis-player-enhancements/releases).
+3. Copy the file(s) and Folder into your game folder:  
    `<Mimesis Steam folder>/Mods/MimesisPlayerEnhancement.dll`
+   `<Mimesis Steam folder>/Mods/MimesisPlayerEnhancement/*`
 4. Start the game once.
 
-If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime, **MoreMimics**), remove them so they do not fight with this one. Spawn scaling in this mod replaces MoreMimics.
+If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime, MoreMimics), remove them so they do not fight with this one or disable the feature inside this modification.
 
 ## Config
 
@@ -65,12 +71,6 @@ After the first launch, the mod creates a config file here:
 
 You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
 
-**Per-save overrides:** When you host a campaign, the web dashboard **Settings** tab (in-game nav) can store differences from global defaults in `Save/{SteamID}/MMGameData{N}.mpe-overrides.sav`. Only keys that differ from global are written; setting a value back to the global default removes it from that file.
-
-**Per-save mod data (Steam cloud):** Persistence (mimic voices), statistics, and per-save overrides are stored as flat sidecar files beside vanilla saves under `Save/{SteamID}/`, using names like `MMGameData01.mpe-speech.sav`, `MMGameData01.mpe-speech-mapping.sav`, `MMGameData01.mpe-stats.sav`, and `MMGameData01.mpe-overrides.sav`. These match the game's Steam Auto-Cloud pattern (`MMGameData*.sav`) so they sync with your saves. Pre-existing data under `MimesisData/Slot{N}/` is not migrated automatically.
-
-**Float values:** Most multipliers, timers, and similar settings are floats — not just whole numbers. Values like `0.1`, `1.5`, or `2.5` are valid (`0.1` = 10% of vanilla where `1` = vanilla). On load the mod normalizes saved floats to one or two decimal places (e.g. `1` → `1.0`, `1.22222` → `1.22`).
-
 Settings are grouped into TOML sections in the config file:
 
 - **`[MimesisPlayerEnhancement]`** — global options not tied to a single feature
@@ -78,7 +78,6 @@ Settings are grouped into TOML sections in the config file:
 
 Each feature section has its own master toggle plus feature-specific options.
 
-**Player-count scaling:** Several features offer an **Auto Scale … By Player Count** toggle. When enabled and the session has more than 4 players, the effective value is multiplied by player count ÷ 4 (e.g. 8 players → ×2 on top of your base multiplier).
 
 ### Global — `[MimesisPlayerEnhancement]`
 
@@ -139,9 +138,9 @@ Host-only. In-game toasts for dungeon run settings at shift start, boss spawn al
 
 Host-only. Lets players join a lobby after a session has already started. **Joiners do not need this mod** — only the host does.
 
-Late joiners cannot be dropped straight into an active dungeon (the game has no stock path for that). Instead, the host server sends vanilla packets so they follow the normal **maintenance → tram waiting room** flow. They wait on the tram map until the party finishes the current dungeon; when everyone returns to the tram, the next lever pull starts the next run together.
+Late joiners cannot be dropped straight into an active dungeon (the game has no stock path for that). Instead, the host server sends the player into a waiting room. They wait on the tram map until the party finishes the current dungeon; when everyone returns to the tram, the next lever pull starts the next run together.
 
-**What the host mod does:**
+**What it does:**
 
 1. Allows login while a session is already running (`CanEnterSession`).
 2. When a joiner appears in `MaintenanceRoom`, ensures a `VWaitingRoom` exists on the server (creates one with `InitWaitingRoom` if the original was wiped when the dungeon started).
