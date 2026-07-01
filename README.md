@@ -5,7 +5,7 @@
 
 # Mimesis Player Enhancement
 
-![Mimesis Player Enhancement Logo](logo.png)
+![Mimesis Player Enhancement Logo](images/logo.png)
 
 > [!NOTE]  
 > Disclosure: this project is being build with help of AI!
@@ -58,6 +58,12 @@ Install through [Thunderstore](https://thunderstore.io/c/mimesis/p/Kandru/Mimesi
 If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime, MoreMimics), remove them so they do not fight with this one or disable the feature inside this modification.
 
 If you do not trust a pre-built `.dll`, you can [build this mod yourself](docs/BUILD.md) from the source code here on GitHub.
+
+## Screenshot(s)
+
+### Intuitive savegame UI
+
+![Mimesis Player Enhancement Logo](images/savegames.jpg)
 
 ## Config
 
