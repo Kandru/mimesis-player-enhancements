@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         internal static SaveSlotPickerPanel? Panel => _panel;
 
         internal static bool IsSavePickerList(UIPrefab_PublicRoomList? list) =>
-            IsSavePickerOpen && list != null && ReferenceEquals(list, _activeSavePickerList);
+            list != null && Panel?.List != null && ReferenceEquals(list, Panel.List);
 
         internal static void SetSavePickerOpen(bool open, UIPrefab_PublicRoomList? list)
         {
@@ -57,43 +57,61 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return false;
         }
 
-        internal static void Initialize(MainMenu mainMenu, UIPrefab_MainMenu mainMenuUi)
+        internal static void OnMainMenuStarted(MainMenu mainMenu, UIPrefab_MainMenu mainMenuUi)
         {
-            if (!IsActive)
-            {
-                return;
-            }
-
             _mainMenu = mainMenu;
             _mainMenuUi = mainMenuUi;
             RestoreMainMenuRoot();
-
-            if (!TryEnsurePanelReady())
-            {
-                ModLog.Warn(Feature, "Failed to initialize save picker during MainMenu.Start.");
-            }
-            else
-            {
-                ModLog.Info(Feature, "Unified save picker initialized.");
-            }
-
-            ConfigureMainMenuButtons();
-            ApplyFunnyHostButtonLabel();
-            HideLoadButton();
+            RefreshMenuMode();
         }
 
         internal static void OnMainMenuShown(UIPrefab_MainMenu mainMenuUi)
         {
-            if (!IsActive)
+            _mainMenuUi = mainMenuUi;
+            RestoreMainMenuRoot();
+            RefreshMenuMode();
+        }
+
+        internal static void ApplyExtendedMode()
+        {
+            if (_mainMenuUi == null)
             {
                 return;
             }
 
-            _mainMenuUi = mainMenuUi;
             RestoreMainMenuRoot();
-            ConfigureMainMenuButtons();
+
+            if (!TryEnsurePanelReady())
+            {
+                ModLog.Warn(Feature, "Failed to initialize save picker.");
+                return;
+            }
+
+            ConfigureExtendedMainMenuButtons();
             ApplyFunnyHostButtonLabel();
             HideLoadButton();
+        }
+
+        internal static void ApplyVanillaMode()
+        {
+            if (_panel?.IsOpen == true)
+            {
+                _panel.Close();
+            }
+
+            if (_mainMenuUi != null)
+            {
+                SaveSlotUiShellCustomizer.RestoreMainMenuDimming(_mainMenuUi);
+            }
+
+            if (_mainMenu != null && _mainMenuUi != null)
+            {
+                VanillaMainMenuWiring.Restore(_mainMenu, _mainMenuUi);
+            }
+            else if (_mainMenuUi != null)
+            {
+                _mainMenuUi.UE_LoadButton.gameObject.SetActive(true);
+            }
         }
 
         internal static void TryHandleHostButtonClick(UIPrefab_MainMenu mainMenuUi)
@@ -104,7 +122,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             }
 
             _mainMenuUi = mainMenuUi;
-            ConfigureMainMenuButtons();
+            ConfigureExtendedMainMenuButtons();
 
             if (!TryEnsurePanelReady())
             {
@@ -139,6 +157,18 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             if (_panel!.TryOpen())
             {
                 ModLog.Info(Feature, "Save picker opened.");
+            }
+        }
+
+        private static void RefreshMenuMode()
+        {
+            if (IsActive)
+            {
+                ApplyExtendedMode();
+            }
+            else
+            {
+                ApplyVanillaMode();
             }
         }
 
@@ -222,7 +252,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return true;
         }
 
-        private static void ConfigureMainMenuButtons()
+        private static void ConfigureExtendedMainMenuButtons()
         {
             if (_mainMenuUi == null)
             {
@@ -271,23 +301,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void ApplyLabelToButton(GameObject buttonRoot, string label)
         {
-            Component[] components = buttonRoot.GetComponentsInChildren<Component>(true);
-            bool applied = false;
-            foreach (Component component in components)
+            Component? text = SaveSlotTextHelper.FindTextComponent(buttonRoot);
+            if (text == null)
             {
-                if (component == null || component.GetType().Name is not ("TextMeshProUGUI" or "TMP_Text"))
-                {
-                    continue;
-                }
-
-                SaveSlotTextHelper.SetText(component, label);
-                applied = true;
+                ModLog.Warn(Feature, "Could not find button label text to replace.");
+                return;
             }
 
-            if (!applied)
-            {
-                ModLog.Warn(Feature, "Could not find HostButton label text to replace.");
-            }
+            SaveSlotTextHelper.SetText(text, label);
         }
 
 #pragma warning disable CS0618

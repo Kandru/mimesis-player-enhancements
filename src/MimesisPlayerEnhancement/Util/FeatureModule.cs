@@ -107,7 +107,10 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
                 onUpdate: WebDashboardServer.OnUpdate),
             new FeatureModule("ModVersionDisplay", ModVersionDisplayPatches.Apply),
-            new FeatureModule("ExtendedSaveSlots", ExtendedSaveSlotsPatches.Apply),
+            new FeatureModule(
+                "ExtendedSaveSlots",
+                ExtendedSaveSlotsPatches.Apply,
+                syncFromConfig: ExtendedSaveSlotsRuntime.RefreshFromConfig),
         ];
     }
 }

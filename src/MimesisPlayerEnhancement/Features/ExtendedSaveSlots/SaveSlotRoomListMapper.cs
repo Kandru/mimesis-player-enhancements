@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ReluProtocol;
 using Steamworks;
 
@@ -7,8 +8,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     internal sealed class SaveSlotRowContext
     {
         internal int SlotId { get; set; }
-        internal bool IsEmpty { get; set; }
-        internal SaveSlotEntry? Entry { get; set; }
+        internal SaveSlotEntry Entry { get; set; } = null!;
     }
 
     internal static class SaveSlotRoomListMapper
@@ -22,87 +22,69 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         {
             rowContexts = new Dictionary<CSteamID, SaveSlotRowContext>();
             List<PublicRoomListData> rows = [];
+            List<SaveSlotEntry> entries = [];
 
             SaveSlotEntry? autosave = SaveSlotDiscovery.TryLoadAutosave();
             if (autosave != null)
             {
-                PublicRoomListData row = ToOccupiedRow(autosave);
-                rows.Add(row);
-                rowContexts[row.lobbyID] = new SaveSlotRowContext
-                {
-                    SlotId = autosave.SlotId,
-                    IsEmpty = false,
-                    Entry = autosave,
-                };
+                entries.Add(autosave);
             }
 
-            foreach (SaveSlotEntry entry in SaveSlotDiscovery.GetManualSaves())
+            entries.AddRange(SaveSlotDiscovery.GetManualSaves());
+            entries.Sort(static (a, b) => b.Data.RegDateTime.CompareTo(a.Data.RegDateTime));
+
+            foreach (SaveSlotEntry entry in entries)
             {
                 PublicRoomListData row = ToOccupiedRow(entry);
                 rows.Add(row);
                 rowContexts[row.lobbyID] = new SaveSlotRowContext
                 {
                     SlotId = entry.SlotId,
-                    IsEmpty = false,
                     Entry = entry,
-                };
-            }
-
-            int maxManual = SaveSlotDiscovery.GetMaxManualSlots();
-            for (int slotId = SaveSlotLimits.MinManualSlotId; slotId <= maxManual; slotId++)
-            {
-                if (SaveSlotDiscovery.IsManualSlotOccupied(slotId))
-                {
-                    continue;
-                }
-
-                PublicRoomListData row = ToEmptySlotRow(slotId);
-                rows.Add(row);
-                rowContexts[row.lobbyID] = new SaveSlotRowContext
-                {
-                    SlotId = slotId,
-                    IsEmpty = true,
-                    Entry = null,
                 };
             }
 
             return rows;
         }
 
-        internal static PublicRoomListData ToOccupiedRow(SaveSlotEntry entry)
+        internal static string FormatSlotNumber(SaveSlotEntry entry)
+        {
+            if (entry.SlotId == SaveSlotLimits.AutosaveSlotId)
+            {
+                return SaveSlotDisplayFormatter.FormatAutosaveTitle(entry.Data);
+            }
+
+            return "#" + entry.SlotId;
+        }
+
+        internal static string FormatLobbyName(SaveSlotEntry entry)
+        {
+            string hostName = entry.Data.PlayerNames?.FirstOrDefault() ?? string.Empty;
+            return SaveSlotGameAccess.GetL10NText("STRING_PUBLIC_TRAM_TITLE_DEFAULT", hostName);
+        }
+
+        internal static string FormatPlayerNames(MMSaveGameData save)
+        {
+            if (save.PlayerNames == null || save.PlayerNames.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(", ", save.PlayerNames.ToArray());
+        }
+
+        private static PublicRoomListData ToOccupiedRow(SaveSlotEntry entry)
         {
             MMSaveGameData save = entry.Data;
-            int cycle = save.StageCount;
-            int repairStatus = cycle == 1
-                ? 0
-                : save.TramRepaired ? 2 : 1;
-
-            string lobbyName = entry.SlotId == SaveSlotLimits.AutosaveSlotId
-                ? SaveSlotDisplayFormatter.FormatAutosaveTitle(save) + " — " + entry.Display.BaseText
-                : entry.Display.BaseText;
 
             return new PublicRoomListData
             {
                 lobbyID = ToRowKey(entry.SlotId),
-                locale = string.Empty,
-                lobbyName = lobbyName,
-                cycle = cycle,
-                repairStatus = repairStatus,
-                PlayerCount = save.PlayerNames?.Count ?? 0,
-                password = string.Empty,
-            };
-        }
-
-        internal static PublicRoomListData ToEmptySlotRow(int slotId)
-        {
-            return new PublicRoomListData
-            {
-                lobbyID = ToRowKey(slotId),
-                locale = string.Empty,
-                lobbyName = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_NEW_TRAM"),
-                cycle = 0,
+                locale = FormatSlotNumber(entry),
+                lobbyName = FormatLobbyName(entry),
+                cycle = save.StageCount,
                 repairStatus = 0,
-                PlayerCount = 0,
+                PlayerCount = save.PlayerNames?.Count ?? 0,
                 password = string.Empty,
             };
         }

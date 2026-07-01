@@ -13,23 +13,10 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
     internal static class SaveSlotDiscovery
     {
-        internal static int GetMaxManualSlots()
-        {
-            if (!ModConfig.EnableExtendedSaveSlots.Value)
-            {
-                return 3;
-            }
-
-            int configured = ModConfig.MaxManualSaveSlots.Value;
-            if (configured < SaveSlotLimits.MinConfigurableManualSlots)
-            {
-                return SaveSlotLimits.MinConfigurableManualSlots;
-            }
-
-            return configured > SaveSlotLimits.AbsoluteMaxManualSlotId
-                ? SaveSlotLimits.AbsoluteMaxManualSlotId
-                : configured;
-        }
+        internal static int GetMaxManualSlots() =>
+            ModConfig.EnableExtendedSaveSlots.Value
+                ? SaveSlotLimits.MaxManualSlotId
+                : SaveSlotLimits.VanillaMaxManualSlotId;
 
         internal static SaveSlotEntry? TryLoadAutosave()
         {

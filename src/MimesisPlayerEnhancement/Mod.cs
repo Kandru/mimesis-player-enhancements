@@ -159,9 +159,6 @@ namespace MimesisPlayerEnhancement
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
                 $"ExtendedSaveSlots={ModConfig.EnableExtendedSaveSlots.Value}" +
-                (ModConfig.EnableExtendedSaveSlots.Value
-                    ? $" (max manual {ModConfig.MaxManualSaveSlots.Value})"
-                    : "") +
                 $", WebDashboard={ModConfig.EnableWebDashboard.Value}" +
                 (ModConfig.EnableWebDashboard.Value
                     ? $" ({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})"
