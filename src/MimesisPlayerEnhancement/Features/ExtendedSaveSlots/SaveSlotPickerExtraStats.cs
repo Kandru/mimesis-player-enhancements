@@ -8,7 +8,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotPickerExtraStats
     {
-        internal static string? TryFormatLine3(int slotId)
+        private const string NoStatisticsText = "No statistics available yet";
+
+        internal static string FormatLine3(int slotId)
         {
             List<string> parts = [];
 
@@ -24,24 +26,17 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 parts.Add(savedVoices + " saved voices");
             }
 
-            return parts.Count == 0 ? null : string.Join(" · ", parts);
+            return parts.Count == 0 ? NoStatisticsText : string.Join(" · ", parts);
         }
 
-        internal static float ComputeRowHeight(bool hasLine3)
+        internal static float ComputeRowHeight()
         {
             const float verticalPadding = 10f;
-            const float lineSpacing = 6f;
-            const float line1Height = 26f;
-            const float line2Height = 24f;
-            const float line3Height = 20f;
+            const float line1Height = 24f;
+            const float line2Height = 22f;
+            const float line3Height = 18f;
 
-            float height = verticalPadding + line1Height + lineSpacing + line2Height + verticalPadding;
-            if (hasLine3)
-            {
-                height += lineSpacing + line3Height;
-            }
-
-            return height;
+            return verticalPadding + line1Height + line2Height + line3Height + verticalPadding;
         }
 
         private static void AppendLeaderboardSummary(List<string> parts, List<LeaderboardEntry> entries)

@@ -21,18 +21,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             sb.Append('\n');
             sb.Append("<size=17>").Append(line2).Append("</size>");
 
-            string? line3 = SaveSlotPickerExtraStats.TryFormatLine3(entry.SlotId);
-            if (!string.IsNullOrEmpty(line3))
-            {
-                sb.Append('\n');
-                sb.Append("<size=15><color=#B8AE94>").Append(EscapeRichText(line3)).Append("</color></size>");
-            }
+            string line3 = SaveSlotPickerExtraStats.FormatLine3(entry.SlotId);
+            sb.Append('\n');
+            sb.Append("<size=15><color=#B8AE94>").Append(EscapeRichText(line3)).Append("</color></size>");
 
             return sb.ToString();
         }
-
-        internal static bool HasLine3(SaveSlotEntry entry) =>
-            !string.IsNullOrEmpty(SaveSlotPickerExtraStats.TryFormatLine3(entry.SlotId));
 
         private static string GetLine2(SaveSlotEntry entry, Line2Style style)
         {

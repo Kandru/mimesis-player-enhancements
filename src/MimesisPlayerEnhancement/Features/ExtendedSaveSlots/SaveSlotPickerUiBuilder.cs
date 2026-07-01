@@ -276,8 +276,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             Action<SaveSlotPickerRow> onSelected,
             Action<SaveSlotPickerRow> onDoubleClicked)
         {
-            bool hasLine3 = SaveSlotPickerRowText.HasLine3(entry);
-            float rowHeight = SaveSlotPickerExtraStats.ComputeRowHeight(hasLine3);
+            float rowHeight = SaveSlotPickerExtraStats.ComputeRowHeight();
 
             GameObject rowGo = CreateChild("SaveSlotRow", parent);
             RectTransform rowRect = rowGo.GetComponent<RectTransform>();
