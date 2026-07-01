@@ -36,4 +36,4 @@ Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com
 
 ### Intuitive savegame UI
 
-![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/savegames.jpg)
+![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/savegames.jpg?raw=true)
