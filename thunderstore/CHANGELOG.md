@@ -1,3 +1,6 @@
+## 26.7.4
+- embedded assets into DLL to avoid issues when copying the DLL via Mod loaders
+
 ## 26.7.3
 - code optimization (thx Claude Fable5)
 - allow Host to heal players
