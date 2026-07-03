@@ -42,11 +42,9 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
-            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
+            List<(string, MethodBase?)> checks =
             [
                 ("CanEnterChannel/IVroom", AccessTools.Method(typeof(IVroom), "CanEnterChannel")),
-                ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
-                ("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))),
                 ("AddPlayerSteamID/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.AddPlayerSteamID))),
                 ("GetMaximumClients/ServerSocket", AccessTools.Method(typeof(FishySteamworks.Server.ServerSocket), "GetMaximumClients")),
                 ("SetMaximumClients/ServerSocket", AccessTools.Method(typeof(FishySteamworks.Server.ServerSocket), "SetMaximumClients")),
@@ -59,7 +57,14 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 ("SetRemoteVolumeController_v2/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))),
                 ("SetPingImage/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
-            ]);
+            ];
+
+            foreach (MethodBase lambda in MaxPlayerCountFieldTranspiler.FindEnterRoomLambdaMethods())
+            {
+                checks.Add(($"{lambda.Name}/VRoomManager (closure)", lambda));
+            }
+
+            HarmonyPatchHelper.LogPatchAudit(Feature, harmony, checks);
         }
 
         /// <summary>Re-applies player-cap limits to live networking state after config changes.</summary>
@@ -129,9 +134,56 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             internal static IEnumerable<MethodBase> TargetMethods()
             {
                 yield return AccessTools.Method(typeof(IVroom), "CanEnterChannel");
-                yield return AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom));
-                yield return AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom));
                 yield return AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.AddPlayerSteamID));
+
+                // EnterWaitingRoom/EnterMaintenenceRoom run their player-cap check inside a
+                // _commandExecutor.Invoke(delegate { ... }) closure, so the C_MaxPlayerCount load
+                // lives in a compiler-generated lambda method — the outer methods contain nothing
+                // to transpile. Patch the closure methods instead.
+                foreach (MethodBase lambda in FindEnterRoomLambdaMethods())
+                {
+                    yield return lambda;
+                }
+            }
+
+            internal static IEnumerable<MethodBase> FindEnterRoomLambdaMethods()
+            {
+                const BindingFlags allDeclared =
+                    BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+                foreach (Type nestedType in typeof(VRoomManager).GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
+                {
+                    foreach (MethodInfo method in nestedType.GetMethods(allDeclared))
+                    {
+                        bool isEnterRoomLambda =
+                            method.Name.Contains(nameof(VRoomManager.EnterWaitingRoom))
+                            || method.Name.Contains(nameof(VRoomManager.EnterMaintenenceRoom));
+                        if (isEnterRoomLambda && MethodReadsMaxPlayerCountField(method))
+                        {
+                            yield return method;
+                        }
+                    }
+                }
+            }
+
+            private static bool MethodReadsMaxPlayerCountField(MethodBase method)
+            {
+                try
+                {
+                    foreach (KeyValuePair<OpCode, object> instruction in PatchProcessor.ReadMethodBody(method))
+                    {
+                        if (instruction.Value is FieldInfo field && field.Name == "C_MaxPlayerCount")
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Failed to read IL of {method.DeclaringType?.Name}.{method.Name}: {ex.Message}");
+                }
+
+                return false;
             }
 
             [HarmonyTranspiler]
