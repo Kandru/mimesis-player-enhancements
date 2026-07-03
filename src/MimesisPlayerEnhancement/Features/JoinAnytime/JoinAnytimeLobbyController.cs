@@ -19,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private static readonly Regex DisplaySuffixPattern = new(
-            @"\s*(\[(open|wait \d+ min)\])?\s*\(\d+/\d+\)$",
+            @"\s*(\[(join now|join in \d+ min|open|wait \d+ min)\])?\s*\(\d+/\d+\)$",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly MethodInfo? GetL10NTextMethod =
