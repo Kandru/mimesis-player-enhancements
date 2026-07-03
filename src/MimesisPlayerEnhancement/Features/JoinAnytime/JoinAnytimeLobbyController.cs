@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using ReluNetwork.ConstEnum;
+using Steamworks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -178,6 +179,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: true);
             JoinAnytimeHub.SyncIsPublicLobby(isPublic: true);
             WritePublicRoomSteamData(dispatcher, isPublic: true);
+            EnsureLobbySlotAvailable(dispatcher);
             ApplyLobbyPresence(dispatcher, wantsPublic: true);
             dispatcher.SetLobbyPublic(true);
         }
@@ -338,15 +340,59 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 JoinAnytimeRoomTools.TryGetActiveDungeonWaitMinutes(out waitMinutes);
             }
 
-            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            string displayName = BuildDisplayLobbyName(phase, waitMinutes, sessionCount);
+            int advertisedCount = GetAdvertisedPlayerCount();
+            string displayName = BuildDisplayLobbyName(phase, waitMinutes, advertisedCount);
             if (!force && string.Equals(displayName, _lastPublishedName, StringComparison.Ordinal))
             {
                 return;
             }
 
             _lastPhase = phase;
-            PublishLobbyState(dispatcher, phase, displayName, JoinAnytimeRoomTools.AreJoinsOpen(), sessionCount);
+            PublishLobbyState(dispatcher, phase, displayName, JoinAnytimeRoomTools.AreJoinsOpen(), advertisedCount);
+        }
+
+        /// <summary>
+        /// Player count advertised to Steam. Never reports the lobby as full: with a full session
+        /// the count is clamped to maxPlayers - 1 (e.g. "3/4") so the lobby stays visible in the
+        /// public room list; below that the real count is reported.
+        /// </summary>
+        private static int GetAdvertisedPlayerCount()
+        {
+            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
+            int maxPlayers = MorePlayersPatches.GetMaxPlayers();
+            return Math.Min(sessionCount, Math.Max(1, maxPlayers - 1));
+        }
+
+        /// <summary>
+        /// Steam hides lobbies without free slots from lobby-list results
+        /// (AddRequestLobbyListFilterSlotsAvailable). Keep the real member limit one above the
+        /// current member count so a full public lobby stays discoverable; the in-game player cap
+        /// is still enforced by the session-level checks.
+        /// </summary>
+        private static void EnsureLobbySlotAvailable(SteamInviteDispatcher dispatcher)
+        {
+            try
+            {
+                CSteamID lobbyId = dispatcher.joinedLobbyID;
+                if (lobbyId == CSteamID.Nil)
+                {
+                    return;
+                }
+
+                int memberCount = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
+                int desiredLimit = Math.Max(MorePlayersPatches.GetMaxPlayers(), memberCount + 1);
+                if (SteamMatchmaking.GetLobbyMemberLimit(lobbyId) != desiredLimit)
+                {
+                    SteamMatchmaking.SetLobbyMemberLimit(lobbyId, desiredLimit);
+                    ModLog.Debug(
+                        Feature,
+                        $"Lobby member limit set to {desiredLimit} — members={memberCount}, keeps lobby discoverable.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"Lobby member limit update failed — {ex.Message}");
+            }
         }
 
         private static void PublishLobbyState(
@@ -354,7 +400,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             JoinAnytimeSessionPhase phase,
             string displayName,
             bool joinsOpen,
-            int sessionCount)
+            int advertisedCount)
         {
             string phaseKey = phase switch
             {
@@ -376,6 +422,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (JoinAnytimeHub.IsHostLobbyPublic(dispatcher))
             {
+                EnsureLobbySlotAvailable(dispatcher);
                 ApplyLobbyPresence(dispatcher, wantsPublic: true);
             }
 
@@ -391,7 +438,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             try
             {
-                dispatcher.UpdatePlayerGroupSize(sessionCount);
+                dispatcher.UpdatePlayerGroupSize(advertisedCount);
             }
             catch (Exception ex)
             {
