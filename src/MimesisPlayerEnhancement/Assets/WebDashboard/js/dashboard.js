@@ -130,7 +130,10 @@ document.addEventListener('alpine:init', () => {
     minimapAreaId: '',
     minimapLastLayoutVersion: -1,
     minimapLastActiveAreaId: '',
-    playerBlindMode: false,
+    playerBlindMode: true,
+    playerBlindModeUserEnabled: true,
+    playerBlindModeAutoSuspended: false,
+    _localPlayerWasAlive: null,
 
     get isGameRoute() {
       return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
@@ -216,7 +219,6 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
       this.minimapAreaId = localStorage.getItem('minimapAreaId') || '';
-      this.playerBlindMode = parseBool(localStorage.getItem('playerBlindMode'));
       window.addEventListener('hashchange', () => this.onHashChange());
       this.parseRoute();
       this.setConnectedMode();
@@ -327,6 +329,9 @@ document.addEventListener('alpine:init', () => {
           this.minimapRaw = payload.minimap;
         }
       }
+      if (this.status.isConnected) {
+        this.syncBlindModeForLocalPlayer();
+      }
       this.apiError = false;
       this.setConnectedMode();
 
@@ -337,6 +342,7 @@ document.addEventListener('alpine:init', () => {
         this.settingsSave = null;
         this.minimapRaw = null;
         this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
+        this._localPlayerWasAlive = null;
       } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
         this.applyMinimapFilter();
       }
@@ -642,9 +648,54 @@ document.addEventListener('alpine:init', () => {
       return this.status.isHost && p.playerUid && p.isAlive;
     },
 
+    getLocalPlayer() {
+      return (this.players || []).find((p) => p.isLocal && p.playerUid);
+    },
+
+    syncEffectiveBlindMode() {
+      const next = this.playerBlindModeUserEnabled && !this.playerBlindModeAutoSuspended;
+      const changed = this.playerBlindMode !== next;
+      this.playerBlindMode = next;
+      return changed;
+    },
+
+    syncBlindModeForLocalPlayer() {
+      const local = this.getLocalPlayer();
+      if (!local) return;
+
+      const isAlive = local.isAlive;
+      const wasAlive = this._localPlayerWasAlive;
+
+      if (wasAlive === null) {
+        if (!isAlive && this.playerBlindModeUserEnabled) {
+          this.playerBlindModeAutoSuspended = true;
+        }
+        this._localPlayerWasAlive = isAlive;
+      } else if (wasAlive && !isAlive) {
+        if (this.playerBlindModeUserEnabled) {
+          this.playerBlindModeAutoSuspended = true;
+        }
+        this._localPlayerWasAlive = isAlive;
+      } else if (!wasAlive && isAlive) {
+        if (this.playerBlindModeUserEnabled && this.playerBlindModeAutoSuspended) {
+          this.playerBlindModeAutoSuspended = false;
+        }
+        this._localPlayerWasAlive = isAlive;
+      }
+
+      if (this.syncEffectiveBlindMode()) {
+        this.applyMinimapFilter(true);
+      }
+    },
+
     togglePlayerBlindMode() {
-      this.playerBlindMode = !this.playerBlindMode;
-      localStorage.setItem('playerBlindMode', this.playerBlindMode ? '1' : '0');
+      this.playerBlindModeUserEnabled = !this.playerBlindModeUserEnabled;
+      this.playerBlindModeAutoSuspended = false;
+      const local = this.getLocalPlayer();
+      if (local && !local.isAlive && this.playerBlindModeUserEnabled) {
+        this.playerBlindModeAutoSuspended = true;
+      }
+      this.syncEffectiveBlindMode();
       this.applyMinimapFilter(true);
     },
 
