@@ -1,3 +1,13 @@
+## 26.7.6
+Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
+- proper lobby name updates in any case
+- improved logging
+- optimized webinterface for larger player counts (to avoid lags)
+- optimized savegame lifecycle (saves mod-data only when auto-save or manual save button is being pressed)
+- possible fix for late joiner who are not always being transported to the train scene between dungeons.
+- exclude crow shop detox from loot duplication
+- player-count auto scaling (Spawn Scaling, Loot Multiplicator, Money Multiplier) now uses a configurable rate per extra player above 4 (default +10% instead of the old +25% / `players / 4` curve); set `SpawnScalingPlayerCountScaleRate`, `LootMultiplicatorPlayerCountScaleRate`, or `MoneyMultiplierPlayerCountScaleRate` to `0.25` to restore the previous curve
+
 ## 26.7.5
 - fixed an issue with the lobby naming and not showing
 - fixed an issue which caused problems with more then 4 players
