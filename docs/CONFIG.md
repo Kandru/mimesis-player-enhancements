@@ -126,13 +126,14 @@ Local UI. Replaces the separate New/Load Tram menus with a unified scrollable sa
 
 ### Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
-Host-only. Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets plus faster spawn windows. Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent slots, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
+Host-only. Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets plus faster spawn windows. Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent slots, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load). Each **Auto Scale … By Player Count** toggle stacks with its per-type multiplier using `SpawnScalingPlayerCountScaleRate` per player above 4 (default `0.10` = +10% per extra player).
 
 Upgrading from older configs: legacy `FixedSpawnRespawn*` keys are copied once automatically to the `MapPlacedEncounter*` keys below.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableSpawnScaling` | bool | `false` | Master toggle for all spawn scaling below. |
+| `SpawnScalingPlayerCountScaleRate` | float | `0.10` | Extra multiplier per player above 4 when an Auto Scale toggle is on (`0.10` = +10% per extra player). Set `0.25` to match the old `players / 4` curve. Minimum is `0`. |
 | `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
 | `MimicSpawnMultiplier` | float | `1.0` | Total mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). Minimum is `0`. |
 | `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | Player-count scaling for boss spawns (stacks with `BossSpawnMultiplier`). |
@@ -151,7 +152,7 @@ Upgrading from older configs: legacy `FixedSpawnRespawn*` keys are copied once a
 
 ### Loot Multiplicator — `[MimesisPlayerEnhancement_LootMultiplicator]`
 
-Host-only. Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle when player-count scaling is enabled (`players / 4` above 4 players).
+Host-only. Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle using `LootMultiplicatorPlayerCountScaleRate` per player above 4 (default `0.10` = +10% per extra player).
 
 **Breaking change:** Per-item-type keys (`MapConsumableLootMultiplier`, `Trigger*`, etc.) were removed. Set `MapLootMultiplier` and `DropLootMultiplier` instead; old TOML keys are ignored.
 
@@ -167,6 +168,7 @@ Map events / trigger spawns are **not** scaled (vanilla).
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableLootMultiplicator` | bool | `false` | Master toggle for all loot scaling below. |
+| `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | Extra multiplier per player above 4 when an Auto Scale toggle is on (`0.10` = +10% per extra player). Set `0.25` to match the old `players / 4` curve. Minimum is `0`. |
 | `AutoScaleMapLootByPlayerCount` | bool | `true` | Player-count scaling for map loot. |
 | `MapLootMultiplier` | float | `1.0` | Multiplier for all map-placed pickup loot. Minimum is `0`. |
 | `AutoScaleDropLootByPlayerCount` | bool | `true` | Player-count scaling for enemy death drops. |
@@ -180,7 +182,7 @@ Does **not** scale: map event/trigger spawns, items you release from inventory, 
 
 ### Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`
 
-Host-only. Scales five separate money values. Each has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Minimum multiplier is `0`.
+Host-only. Scales five separate money values. Each has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `MoneyMultiplierPlayerCountScaleRate` per player above 4 (default `0.10` = +10% per extra player). Minimum multiplier is `0`.
 
 | Money type | What it affects |
 |------------|-----------------|
@@ -197,6 +199,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
 | `EnableMoneyMultiplier` | bool | `false` | Master toggle for all money scaling below. |
+| `MoneyMultiplierPlayerCountScaleRate` | float | `0.10` | Extra multiplier per player above 4 when an Auto Scale toggle is on (`0.10` = +10% per extra player). Set `0.25` to match the old `players / 4` curve. Minimum is `0`. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | Startup money multiplier on new save or session reset. Minimum is `0`. Does not apply when loading a save. |
 | `AutoScaleRoundGoalMoneyByPlayerCount` | bool | `true` | Player-count scaling for stage target currency. |
@@ -354,11 +357,13 @@ EnableExtendedSaveSlots = true
 
 [MimesisPlayerEnhancement_SpawnScaling]
 EnableSpawnScaling = false
+SpawnScalingPlayerCountScaleRate = 0.10
 MimicSpawnMultiplier = 1.0
 # … other spawn keys …
 
 [MimesisPlayerEnhancement_LootMultiplicator]
 EnableLootMultiplicator = false
+LootMultiplicatorPlayerCountScaleRate = 0.10
 MapLootMultiplier = 1.0
 DropLootMultiplier = 1.0
 ConvertFakeActorDyingDropChancePercent = 30
@@ -366,6 +371,7 @@ ConvertFakeActorDyingDropChancePercent = 30
 
 [MimesisPlayerEnhancement_MoneyMultiplier]
 EnableMoneyMultiplier = false
+MoneyMultiplierPlayerCountScaleRate = 0.10
 StartupMoneyMultiplier = 1.0
 # … other money keys …
 

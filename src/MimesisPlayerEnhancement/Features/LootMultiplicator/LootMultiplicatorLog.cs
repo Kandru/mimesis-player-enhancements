@@ -11,10 +11,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void InfoScalingApplied(int playerCount)
         {
-            float sharedPlayerScale = playerCount > 4 ? playerCount / 4f : 1f;
+            float sharedPlayerScale = ScalingMath.GetPlayerScale(
+                playerCount,
+                autoScaleEnabled: true,
+                ModConfig.LootMultiplicatorPlayerCountScaleRate.Value);
             ModLog.Info(
                 Feature,
-                $"Loot scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× when auto enabled), " +
+                $"Loot scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× at rate={ModConfig.LootMultiplicatorPlayerCountScaleRate.Value:0.##} when auto enabled), " +
                 $"mapLoot={ModConfig.MapLootMultiplier.Value:0.##}× auto={ModConfig.AutoScaleMapLootByPlayerCount.Value}, " +
                 $"dropLoot={ModConfig.DropLootMultiplier.Value:0.##}× auto={ModConfig.AutoScaleDropLootByPlayerCount.Value}");
         }

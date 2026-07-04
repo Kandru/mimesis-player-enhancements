@@ -17,7 +17,10 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static float GetPlayerScale(LootSource source, ItemType itemType, int playerCount)
         {
-            return ScalingMath.GetPlayerScale(playerCount, IsAutoScaleEnabled(source, itemType));
+            return ScalingMath.GetPlayerScale(
+                playerCount,
+                IsAutoScaleEnabled(source, itemType),
+                ModConfig.LootMultiplicatorPlayerCountScaleRate.Value);
         }
 
         internal static float GetBaseMultiplier(LootSource source, ItemType itemType)

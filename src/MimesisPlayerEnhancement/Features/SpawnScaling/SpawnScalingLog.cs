@@ -28,10 +28,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void InfoScalingApplied(int playerCount)
         {
-            float sharedPlayerScale = playerCount > 4 ? playerCount / 4f : 1f;
+            float sharedPlayerScale = ScalingMath.GetPlayerScale(
+                playerCount,
+                autoScaleEnabled: true,
+                ModConfig.SpawnScalingPlayerCountScaleRate.Value);
             ModLog.Info(
                 Feature,
-                $"Spawn scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× when auto enabled), " +
+                $"Spawn scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× at rate={ModConfig.SpawnScalingPlayerCountScaleRate.Value:0.##} when auto enabled), " +
                 $"mimic={ModConfig.MimicSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleMimicSpawnsByPlayerCount.Value}, " +
                 $"boss={ModConfig.BossSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleBossSpawnsByPlayerCount.Value}, " +
                 $"jako={ModConfig.JakoSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleJakoSpawnsByPlayerCount.Value}, " +

@@ -3,10 +3,16 @@ namespace MimesisPlayerEnhancement.Util
     internal static class ScalingMath
     {
         internal const int VanillaPlayerBaseline = 4;
+        internal const float DefaultPlayerCountScaleRate = 0.10f;
 
-        internal static float GetPlayerScale(int playerCount, bool autoScaleEnabled)
+        internal static float GetPlayerScale(int playerCount, bool autoScaleEnabled, float scaleRatePerExtraPlayer)
         {
-            return !autoScaleEnabled || playerCount <= VanillaPlayerBaseline ? 1f : playerCount / (float)VanillaPlayerBaseline;
+            if (!autoScaleEnabled || playerCount <= VanillaPlayerBaseline)
+            {
+                return 1f;
+            }
+
+            return 1f + (playerCount - VanillaPlayerBaseline) * scaleRatePerExtraPlayer;
         }
 
         internal static int ScaleCount(int vanilla, float multiplier)

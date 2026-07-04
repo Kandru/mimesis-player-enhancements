@@ -66,6 +66,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> JoinTramRouteRetrySeconds { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableSpawnScaling { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> SpawnScalingPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleMimicSpawnsByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicSpawnMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleBossSpawnsByPlayerCount { get; internal set; } = null!;
@@ -83,6 +84,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> OtherSpawnMultiplier { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableLootMultiplicator { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> LootMultiplicatorPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleMapLootByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MapLootMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleDropLootByPlayerCount { get; internal set; } = null!;
@@ -93,6 +95,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> ConvertFakeActorDyingDropChancePercent { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoneyMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> MoneyMultiplierPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleRoundGoalMoneyByPlayerCount { get; internal set; } = null!;

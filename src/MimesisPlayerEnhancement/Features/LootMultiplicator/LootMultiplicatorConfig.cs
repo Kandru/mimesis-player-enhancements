@@ -25,11 +25,17 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "Enable Loot Multiplicator",
                 "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only.");
 
+            ModConfig.LootMultiplicatorPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
+                "LootMultiplicatorPlayerCountScaleRate",
+                ScalingMath.DefaultPlayerCountScaleRate,
+                "Player Count Scale Rate",
+                "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0.");
+
             ModConfig.AutoScaleMapLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMapLootByPlayerCount",
                 true,
                 "Auto Scale Map Loot By Player Count",
-                "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). When enabled, multiply by player count / 4 above 4 players (stacks with MapLootMultiplier).");
+                "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with MapLootMultiplier).");
 
             ModConfig.MapLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MapLootMultiplier",
@@ -41,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "AutoScaleDropLootByPlayerCount",
                 true,
                 "Auto Scale Drop Loot By Player Count",
-                "Drop loot = items from enemy death tables when killed. When enabled, multiply by player count / 4 above 4 players (stacks with DropLootMultiplier).");
+                "Drop loot = items from enemy death tables when killed. When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with DropLootMultiplier).");
 
             ModConfig.DropLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "DropLootMultiplier",
@@ -77,6 +83,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableLootMultiplicator.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableLootMultiplicator));
+            ModConfig.LootMultiplicatorPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.LootMultiplicatorPlayerCountScaleRate));
             ModConfig.AutoScaleMapLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleMapLootByPlayerCount));
             ModConfig.AutoScaleDropLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleDropLootByPlayerCount));
 
@@ -91,6 +99,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void RegisterFloatEntries()
         {
+            ModConfig.TrackFloatEntry(ModConfig.LootMultiplicatorPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.MapLootMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.DropLootMultiplier);
         }

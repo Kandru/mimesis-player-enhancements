@@ -17,7 +17,10 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static float GetPlayerScale(SpawnCategory category, int playerCount)
         {
-            return ScalingMath.GetPlayerScale(playerCount, IsAutoScaleEnabled(category));
+            return ScalingMath.GetPlayerScale(
+                playerCount,
+                IsAutoScaleEnabled(category),
+                ModConfig.SpawnScalingPlayerCountScaleRate.Value);
         }
 
         internal static float GetPerCategoryMultiplier(SpawnCategory category)

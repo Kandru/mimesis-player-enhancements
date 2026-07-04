@@ -25,11 +25,17 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "Enable Spawn Scaling",
                 "Scale dungeon monster spawn budgets by type. Host only.");
 
+            ModConfig.SpawnScalingPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
+                "SpawnScalingPlayerCountScaleRate",
+                ScalingMath.DefaultPlayerCountScaleRate,
+                "Player Count Scale Rate",
+                "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0.");
+
             ModConfig.AutoScaleMimicSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMimicSpawnsByPlayerCount",
                 true,
                 "Auto Scale Mimic Spawns By Player Count",
-                "When enabled, multiply mimic spawn budgets by player count / 4 for sessions with more than 4 players (stacks with MimicSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with MimicSpawnMultiplier).");
 
             ModConfig.MimicSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicSpawnMultiplier",
@@ -41,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "AutoScaleBossSpawnsByPlayerCount",
                 true,
                 "Auto Scale Boss Spawns By Player Count",
-                "When enabled, multiply boss spawn budgets by player count / 4 for sessions with more than 4 players (stacks with BossSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with BossSpawnMultiplier).");
 
             ModConfig.BossSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "BossSpawnMultiplier",
@@ -53,7 +59,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "AutoScaleJakoSpawnsByPlayerCount",
                 true,
                 "Auto Scale Jako Spawns By Player Count",
-                "When enabled, multiply jako spawn budgets by player count / 4 for sessions with more than 4 players (stacks with JakoSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with JakoSpawnMultiplier).");
 
             ModConfig.JakoSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "JakoSpawnMultiplier",
@@ -65,7 +71,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "AutoScaleSpecialSpawnsByPlayerCount",
                 true,
                 "Auto Scale Special Spawns By Player Count",
-                "When enabled, multiply special spawn budgets by player count / 4 for sessions with more than 4 players (stacks with SpecialSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with SpecialSpawnMultiplier).");
 
             ModConfig.SpecialSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "SpecialSpawnMultiplier",
@@ -77,7 +83,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "AutoScaleTrapSpawnsByPlayerCount",
                 true,
                 "Auto Scale Trap Spawns By Player Count",
-                "When enabled, multiply trap spawn counts by player count / 4 for sessions with more than 4 players (stacks with TrapSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with TrapSpawnMultiplier).");
 
             ModConfig.TrapSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "TrapSpawnMultiplier",
@@ -107,7 +113,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "AutoScaleOtherSpawnsByPlayerCount",
                 true,
                 "Auto Scale Other Spawns By Player Count",
-                "When enabled, multiply other spawn counts by player count / 4 for sessions with more than 4 players (stacks with OtherSpawnMultiplier).");
+                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with OtherSpawnMultiplier).");
 
             ModConfig.OtherSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "OtherSpawnMultiplier",
@@ -119,6 +125,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableSpawnScaling.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableSpawnScaling));
+            ModConfig.SpawnScalingPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpawnScalingPlayerCountScaleRate));
             ModConfig.AutoScaleMimicSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleMimicSpawnsByPlayerCount));
             ModConfig.AutoScaleBossSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleBossSpawnsByPlayerCount));
             ModConfig.AutoScaleJakoSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleJakoSpawnsByPlayerCount));
@@ -139,6 +147,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void RegisterFloatEntries()
         {
+            ModConfig.TrackFloatEntry(ModConfig.SpawnScalingPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.MimicSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.BossSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.JakoSpawnMultiplier);

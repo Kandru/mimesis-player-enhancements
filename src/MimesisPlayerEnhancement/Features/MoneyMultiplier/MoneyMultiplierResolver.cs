@@ -30,7 +30,10 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         internal static float GetPlayerScale(MoneyType type, int playerCount)
         {
-            return ScalingMath.GetPlayerScale(playerCount, IsAutoScaleEnabled(type));
+            return ScalingMath.GetPlayerScale(
+                playerCount,
+                IsAutoScaleEnabled(type),
+                ModConfig.MoneyMultiplierPlayerCountScaleRate.Value);
         }
 
         internal static float GetEffectiveMultiplier(MoneyType type, int playerCount)
