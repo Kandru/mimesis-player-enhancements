@@ -55,6 +55,15 @@ function parseBool(value) {
   return text === 'true' || text === '1' || text === 'yes' || text === 'on';
 }
 
+function formatFloatSettingValue(raw) {
+  const n = Math.round(parseFloat(raw) * 100) / 100;
+  if (!Number.isFinite(n)) return String(raw ?? '');
+  const fixed = n.toFixed(2);
+  if (fixed.endsWith('00')) return n.toFixed(1);
+  if (fixed.endsWith('0')) return fixed.slice(0, -1);
+  return fixed;
+}
+
 function settingsHaystack(entry, sectionTitle) {
   return [
     entry.key,
@@ -109,6 +118,7 @@ document.addEventListener('alpine:init', () => {
     apiError: false,
     lastSnapshotVersion: -1,
     savingSettingKey: '',
+    resettingSectionId: '',
     lastRoute: '',
     lastSteamId: null,
     eventSource: null,
@@ -799,15 +809,83 @@ document.addEventListener('alpine:init', () => {
       return parseBool(entry.value) ? 'settings-bool-on' : 'settings-bool-off';
     },
 
+    settingValuesEqual(entry, a, b) {
+      if (entry.type === 'Single') {
+        return formatFloatSettingValue(a) === formatFloatSettingValue(b);
+      }
+      if (entry.type === 'Boolean') {
+        return parseBool(a) === parseBool(b);
+      }
+      return String(a ?? '') === String(b ?? '');
+    },
+
     settingDiffersFromDefault(entry) {
       if (this.activeSettingsScope === 'save') {
         return this.settingDiffersFromGlobal(entry);
       }
-      return String(entry.value ?? '') !== String(entry.defaultValue ?? '');
+      return !this.settingValuesEqual(entry, entry.value, entry.defaultValue);
     },
 
     settingDiffersFromGlobal(entry) {
-      return String(entry.value ?? '') !== String(entry.globalValue ?? '');
+      return !this.settingValuesEqual(entry, entry.value, entry.globalValue);
+    },
+
+    settingResetTarget(entry) {
+      return this.activeSettingsScope === 'save'
+        ? entry.globalValue
+        : entry.defaultValue;
+    },
+
+    settingCanReset(entry) {
+      return !this.settingValuesEqual(entry, entry.value, this.settingResetTarget(entry));
+    },
+
+    sectionResettableEntries(sectionId) {
+      const section = this.findSettingsSection(sectionId);
+      if (!section?.entries?.length) return [];
+      return section.entries.filter((entry) => this.settingCanReset(entry));
+    },
+
+    sectionHasResettableEntries(sectionId) {
+      return this.sectionResettableEntries(sectionId).length > 0;
+    },
+
+    isResettingSection(sectionId) {
+      return this.resettingSectionId === sectionId;
+    },
+
+    async resetSetting(sectionId, entry) {
+      if (!this.settingCanReset(entry) || this.isSavingSetting(sectionId, entry)) return;
+      await this.saveSetting(sectionId, entry, this.settingResetTarget(entry));
+    },
+
+    async resetSectionSettings(sectionId) {
+      if (this.isResettingSection(sectionId)) return;
+      const entries = this.sectionResettableEntries(sectionId);
+      if (!entries.length) return;
+
+      this.resettingSectionId = sectionId;
+      let resetCount = 0;
+      try {
+        for (const entry of entries) {
+          if (!this.settingCanReset(entry)) continue;
+          await this.saveSetting(sectionId, entry, this.settingResetTarget(entry), true);
+          resetCount++;
+        }
+        if (resetCount > 0) {
+          const label = this.activeSettingsScope === 'save'
+            ? 'Reset ' + resetCount + ' setting' + (resetCount === 1 ? '' : 's') + ' to global'
+            : 'Reset ' + resetCount + ' setting' + (resetCount === 1 ? '' : 's') + ' to defaults';
+          this.showToast(label);
+        }
+      } catch (e) {
+        this.showToast(e.message || 'Failed to reset settings');
+        await this.loadPageData(true);
+      } finally {
+        if (this.resettingSectionId === sectionId) {
+          this.resettingSectionId = '';
+        }
+      }
     },
 
     settingInputId(sectionId, entry) {
@@ -831,7 +909,7 @@ document.addEventListener('alpine:init', () => {
       return entry.value == null ? '' : String(entry.value);
     },
 
-    async saveSetting(sectionId, entry, rawValue) {
+    async saveSetting(sectionId, entry, rawValue, quiet = false) {
       const scope = this.activeSettingsScope;
       const saveKey = scope + '/' + sectionId + '/' + entry.key;
       if (this.savingSettingKey === saveKey) return;
@@ -846,17 +924,25 @@ document.addEventListener('alpine:init', () => {
         const res = scope === 'global'
           ? await Api.updateGlobalSetting(sectionId, entry.key, nextValue)
           : await Api.updateSaveSetting(sectionId, entry.key, nextValue);
+        if (res.value != null && res.value !== '') {
+          entry.value = res.value;
+        }
         if (scope === 'global') {
           this.settingsSave = null;
         } else {
           entry.isOverridden = res.isOverridden ?? this.settingDiffersFromGlobal(entry);
         }
-        this.showToast(res.message || 'Saved');
+        if (!quiet) {
+          this.showToast(res.message || 'Saved');
+        }
       } catch (e) {
         entry.value = previousValue;
         entry.isOverridden = wasOverridden;
-        this.showToast(e.message || 'Failed to save setting');
+        if (!quiet) {
+          this.showToast(e.message || 'Failed to save setting');
+        }
         await this.loadPageData(true);
+        throw e;
       } finally {
         if (this.savingSettingKey === saveKey) {
           this.savingSettingKey = '';
@@ -869,8 +955,12 @@ document.addEventListener('alpine:init', () => {
     },
 
     onTextSettingCommit(sectionId, entry, event) {
-      const nextValue = event.target.value;
-      if (String(nextValue) === this.settingDraftValue(entry)) {
+      let nextValue = event.target.value;
+      if (entry.type === 'Single') {
+        nextValue = formatFloatSettingValue(nextValue);
+        event.target.value = nextValue;
+      }
+      if (this.settingValuesEqual(entry, nextValue, entry.value)) {
         return;
       }
       this.saveSetting(sectionId, entry, nextValue);

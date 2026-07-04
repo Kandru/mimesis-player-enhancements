@@ -1431,6 +1431,28 @@ tr.connected:hover {
   gap: 0.35rem;
 }
 
+.settings-entry-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.settings-entry-input-row .settings-input,
+.settings-entry-input-row .settings-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-reset-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.settings-section-reset-btn {
+  white-space: nowrap;
+}
+
 .settings-value {
   display: inline-flex;
   align-items: center;
@@ -1539,6 +1561,10 @@ tr.connected:hover {
   .settings-entry-value-wrap {
     align-items: flex-end;
     text-align: right;
+  }
+
+  .settings-entry-input-row {
+    justify-content: flex-end;
   }
 }
 

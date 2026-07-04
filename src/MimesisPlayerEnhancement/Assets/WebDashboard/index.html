@@ -477,6 +477,13 @@
                               x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
                           </button>
                         </template>
+                        <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
+                          x-show="sectionHasResettableEntries(section.id)"
+                          :disabled="isResettingSection(section.id)"
+                          :title="activeSettingsScope === 'save' ? 'Reset all to global values' : 'Reset all to defaults'"
+                          @click="resetSectionSettings(section.id)">
+                          Reset all
+                        </button>
                         <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
                           x-text="sectionEntryCount(section.id) + ' keys'"></span>
                       </div>
@@ -496,38 +503,49 @@
                             <code class="settings-key" x-text="entry.key"></code>
                           </div>
                           <div class="settings-entry-value-wrap">
-                            <template x-if="entry.type === 'Boolean'">
-                              <select class="settings-input settings-select"
-                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                :disabled="isSavingSetting(section.id, entry)"
-                                @change="onBooleanSettingChange(section.id, entry, $event)">
-                                <option value="true">On</option>
-                                <option value="false">Off</option>
-                              </select>
-                            </template>
-                            <template x-if="entry.type === 'Int32'">
-                              <input type="number" class="settings-input"
-                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
-                                :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
-                                @change="onTextSettingCommit(section.id, entry, $event)">
-                            </template>
-                            <template x-if="entry.type === 'Single'">
-                              <input type="number" class="settings-input"
-                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
-                                :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
-                                @change="onTextSettingCommit(section.id, entry, $event)">
-                            </template>
-                            <template
-                              x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                              <input type="text" class="settings-input"
-                                :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                :disabled="isSavingSetting(section.id, entry)"
-                                @change="onTextSettingCommit(section.id, entry, $event)">
-                            </template>
+                            <div class="settings-entry-input-row">
+                              <template x-if="entry.type === 'Boolean'">
+                                <select class="settings-input settings-select"
+                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                  :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                  @change="onBooleanSettingChange(section.id, entry, $event)">
+                                  <option value="true">On</option>
+                                  <option value="false">Off</option>
+                                </select>
+                              </template>
+                              <template x-if="entry.type === 'Int32'">
+                                <input type="number" class="settings-input"
+                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                  :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                  :value="settingDraftValue(entry)"
+                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                  @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
+                              <template x-if="entry.type === 'Single'">
+                                <input type="number" class="settings-input"
+                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                  :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                  :value="settingDraftValue(entry)"
+                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                  @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
+                              <template
+                                x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                                <input type="text" class="settings-input"
+                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                  :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                  @change="onTextSettingCommit(section.id, entry, $event)">
+                              </template>
+                              <button type="button" class="btn btn-text btn-compact settings-reset-btn"
+                                x-show="settingCanReset(entry)"
+                                :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                :title="activeSettingsScope === 'save' ? 'Reset to global' : 'Reset to default'"
+                                @click="resetSetting(section.id, entry)">
+                                Reset
+                              </button>
+                            </div>
                             <small class="settings-default-hint" x-show="settingDiffersFromDefault(entry)"
                               x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
                           </div>
@@ -625,6 +643,13 @@
                                   x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
                               </button>
                             </template>
+                            <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
+                              x-show="sectionHasResettableEntries(section.id)"
+                              :disabled="isResettingSection(section.id)"
+                              :title="activeSettingsScope === 'save' ? 'Reset all to global values' : 'Reset all to defaults'"
+                              @click="resetSectionSettings(section.id)">
+                              Reset all
+                            </button>
                             <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
                               x-text="sectionEntryCount(section.id) + ' keys'"></span>
                           </div>
@@ -647,38 +672,49 @@
                                 <code class="settings-key" x-text="entry.key"></code>
                               </div>
                               <div class="settings-entry-value-wrap">
-                                <template x-if="entry.type === 'Boolean'">
-                                  <select class="settings-input settings-select"
-                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                    :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                    :disabled="isSavingSetting(section.id, entry)"
-                                    @change="onBooleanSettingChange(section.id, entry, $event)">
-                                    <option value="true">On</option>
-                                    <option value="false">Off</option>
-                                  </select>
-                                </template>
-                                <template x-if="entry.type === 'Int32'">
-                                  <input type="number" class="settings-input"
-                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                    :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
-                                    :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
-                                    @change="onTextSettingCommit(section.id, entry, $event)">
-                                </template>
-                                <template x-if="entry.type === 'Single'">
-                                  <input type="number" class="settings-input"
-                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                    :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
-                                    :value="settingDraftValue(entry)" :disabled="isSavingSetting(section.id, entry)"
-                                    @change="onTextSettingCommit(section.id, entry, $event)">
-                                </template>
-                                <template
-                                  x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                                  <input type="text" class="settings-input"
-                                    :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                    :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                    :disabled="isSavingSetting(section.id, entry)"
-                                    @change="onTextSettingCommit(section.id, entry, $event)">
-                                </template>
+                                <div class="settings-entry-input-row">
+                                  <template x-if="entry.type === 'Boolean'">
+                                    <select class="settings-input settings-select"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onBooleanSettingChange(section.id, entry, $event)">
+                                      <option value="true">On</option>
+                                      <option value="false">Off</option>
+                                    </select>
+                                  </template>
+                                  <template x-if="entry.type === 'Int32'">
+                                    <input type="number" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                      :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <template x-if="entry.type === 'Single'">
+                                    <input type="number" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                      :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <template
+                                    x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
+                                    <input type="text" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <button type="button" class="btn btn-text btn-compact settings-reset-btn"
+                                    x-show="settingCanReset(entry)"
+                                    :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                    :title="activeSettingsScope === 'save' ? 'Reset to global' : 'Reset to default'"
+                                    @click="resetSetting(section.id, entry)">
+                                    Reset
+                                  </button>
+                                </div>
                                 <small class="settings-default-hint" x-show="settingDiffersFromGlobal(entry)"
                                   x-text="'Global: ' + formatSettingValue({ type: entry.type, value: entry.globalValue })"></small>
                               </div>
