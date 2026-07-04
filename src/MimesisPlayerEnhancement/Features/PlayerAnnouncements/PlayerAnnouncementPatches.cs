@@ -1,6 +1,4 @@
 using System;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
 using Mimic.Actors;
 using ReluProtocol.Enum;
 

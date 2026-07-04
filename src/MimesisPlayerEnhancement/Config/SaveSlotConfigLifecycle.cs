@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Util;
-
 namespace MimesisPlayerEnhancement
 {
     internal static class SaveSlotConfigLifecycle

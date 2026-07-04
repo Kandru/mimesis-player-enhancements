@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard

@@ -1,5 +1,4 @@
 using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {

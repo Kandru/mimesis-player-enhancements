@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using MimesisPlayerEnhancement.Util;
 using Mimic.Voice.SpeechSystem;
 using ReluReplay.Data;
 using ReluReplay.Serializer;
-using ReluReplay.Shared;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

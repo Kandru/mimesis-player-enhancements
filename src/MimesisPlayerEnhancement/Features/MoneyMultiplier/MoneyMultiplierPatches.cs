@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Bifrost.Cooked;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.MoneyMultiplier

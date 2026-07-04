@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.Statistics

@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Util;
-
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnMultiplierResolver

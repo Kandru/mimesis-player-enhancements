@@ -1,6 +1,5 @@
 using System.Reflection;
 using Bifrost.ConstEnum;
-using HarmonyLib;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator

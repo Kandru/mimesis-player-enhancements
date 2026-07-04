@@ -1,5 +1,3 @@
-using HarmonyLib;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
     [HarmonyPatch(typeof(PlayReportManager), nameof(PlayReportManager.IncreaseCurrency))]

@@ -1,6 +1,4 @@
 using System;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerTuning

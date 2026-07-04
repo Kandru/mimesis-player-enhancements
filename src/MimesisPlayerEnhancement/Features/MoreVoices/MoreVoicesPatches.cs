@@ -1,7 +1,4 @@
 using System;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Features.Persistence;
-using MimesisPlayerEnhancement.Util;
 using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices

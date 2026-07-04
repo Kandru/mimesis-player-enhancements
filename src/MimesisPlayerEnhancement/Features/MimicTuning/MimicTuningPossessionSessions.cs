@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MimesisPlayerEnhancement.Features.MimicTuning
 {
     internal static class MimicTuningPossessionSessions

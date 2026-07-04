@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootItemFilter

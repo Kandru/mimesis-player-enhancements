@@ -1,7 +1,5 @@
 using System;
 using System.Reflection;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots

@@ -1,5 +1,3 @@
-using HarmonyLib;
-
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))]

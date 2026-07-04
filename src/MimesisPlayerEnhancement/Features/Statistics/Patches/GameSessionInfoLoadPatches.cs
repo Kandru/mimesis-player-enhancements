@@ -1,4 +1,3 @@
-using HarmonyLib;
 using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches

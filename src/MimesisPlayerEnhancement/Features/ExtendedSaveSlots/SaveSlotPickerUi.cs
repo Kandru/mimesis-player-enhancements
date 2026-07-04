@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 using UnityEngine.UI;

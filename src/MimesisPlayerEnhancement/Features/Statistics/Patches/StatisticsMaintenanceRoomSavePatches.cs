@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using HarmonyLib;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches

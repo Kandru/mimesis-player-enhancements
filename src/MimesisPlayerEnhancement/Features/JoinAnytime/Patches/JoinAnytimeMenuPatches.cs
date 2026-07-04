@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
 using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches

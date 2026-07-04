@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using HarmonyLib;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {

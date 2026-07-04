@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {

@@ -1,5 +1,3 @@
-using System;
-
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class FunnyTramMenuLabels

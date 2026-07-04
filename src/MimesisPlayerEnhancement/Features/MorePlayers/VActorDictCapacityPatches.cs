@@ -1,6 +1,4 @@
 using System;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
 {

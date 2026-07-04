@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using MelonLoader;
-using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(MimesisPlayerEnhancement.Mod), "MimesisPlayerEnhancement", MimesisPlayerEnhancement.VersionInfo.ModuleVersion, "kalle")]

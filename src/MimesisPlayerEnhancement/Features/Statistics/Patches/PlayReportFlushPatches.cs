@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using HarmonyLib;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
     [HarmonyPatch(typeof(PlayReportManager), nameof(PlayReportManager.FlushCurrentToAccumulated))]

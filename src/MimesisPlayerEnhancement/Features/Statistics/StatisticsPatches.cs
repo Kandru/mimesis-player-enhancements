@@ -1,6 +1,3 @@
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
-
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     public static class StatisticsPatches

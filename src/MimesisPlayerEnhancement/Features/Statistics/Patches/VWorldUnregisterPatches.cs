@@ -1,5 +1,3 @@
-using HarmonyLib;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
     [HarmonyPatch(typeof(VWorld), nameof(VWorld.OnUnregistPlayer))]

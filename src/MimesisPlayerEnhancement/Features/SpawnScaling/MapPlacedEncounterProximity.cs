@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.SpawnScaling

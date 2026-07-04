@@ -1,6 +1,3 @@
-using HarmonyLib;
-using MimesisPlayerEnhancement.Util;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnRegistPlayer))]

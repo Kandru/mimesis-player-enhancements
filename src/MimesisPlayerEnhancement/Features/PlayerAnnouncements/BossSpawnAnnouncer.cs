@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using UnityEngine;

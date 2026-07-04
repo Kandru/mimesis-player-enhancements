@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
@@ -73,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (pending != 0 && pending != _cachedRevision)
                 {
                     WebDashboardSnapshotCache.MarkDirty();
-                WebDashboardSnapshotCache.RequestFullPublish();
+                    WebDashboardSnapshotCache.RequestFullPublish();
                 }
             }
         }

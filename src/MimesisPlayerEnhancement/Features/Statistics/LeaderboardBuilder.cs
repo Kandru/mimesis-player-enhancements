@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 

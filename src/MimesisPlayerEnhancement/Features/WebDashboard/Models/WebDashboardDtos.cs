@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
 {
     internal sealed class WebDashboardStatusDto

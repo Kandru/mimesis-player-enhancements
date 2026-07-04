@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -135,7 +132,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (pending != 0 && pending != cachedRevision)
                 {
                     WebDashboardSnapshotCache.MarkDirty();
-                WebDashboardSnapshotCache.RequestFullPublish();
+                    WebDashboardSnapshotCache.RequestFullPublish();
                 }
             }
         }

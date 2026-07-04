@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.Persistence.Patches;
-using MimesisPlayerEnhancement.Features.Statistics;
-using MimesisPlayerEnhancement.Util;
 using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence

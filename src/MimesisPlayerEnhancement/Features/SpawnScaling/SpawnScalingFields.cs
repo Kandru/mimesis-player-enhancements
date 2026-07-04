@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using HarmonyLib;
 
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
