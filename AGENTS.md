@@ -62,7 +62,7 @@ Always verify changes compile before considering work complete:
 
 Equivalent: `dotnet build src/MimesisPlayerEnhancement.sln -c Debug`.
 
-Optional formatting check: `dotnet format --verify-no-changes src/MimesisPlayerEnhancement.sln`
+Build runs `./scripts/format-code.sh` before compile (skip with `SKIP_FORMAT=true`). Verify only: `./scripts/format-code.sh --verify`
 
 ## Mod development
 

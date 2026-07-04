@@ -100,18 +100,20 @@ See [BUILD.md](BUILD.md) for compile commands, bootstrap, and copying the DLL in
 
 ## Formatting
 
-Code style is defined in `.editorconfig` at the repo root. Format before committing:
+Code style is defined in `.editorconfig` at the repo root. `./scripts/build.sh` runs `./scripts/format-code.sh` before compiling (unused usings, import order, whitespace, and other editorconfig/analyzer fixes). Skip with `SKIP_FORMAT=true`.
+
+Format manually:
 
 ```bash
-dotnet format src/MimesisPlayerEnhancement.sln
+./scripts/format-code.sh
 ```
 
 Verify without modifying files:
 
 ```bash
-dotnet format --verify-no-changes src/MimesisPlayerEnhancement.sln
+./scripts/format-code.sh --verify
 ```
 
-Auto-format-on-build is intentionally not enabled — run `dotnet format` manually when needed.
+Direct `dotnet build` does not run formatting — use `./scripts/build.sh` or run `./scripts/format-code.sh` first.
 
 Project-wide global usings live in `src/MimesisPlayerEnhancement/GlobalUsings.cs` (`System.Collections.Generic`, `HarmonyLib`, `MimesisPlayerEnhancement.Util`). `System` is omitted because it conflicts with `UnityEngine.Object` and `UnityEngine.Random`.

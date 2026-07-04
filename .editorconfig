@@ -17,6 +17,11 @@ csharp_prefer_braces = true:warning
 csharp_prefer_simple_using_statement = false:suggestion
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# Analyzer fixes applied by dotnet format (scripts/format-code.sh, build.sh)
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0060.severity = none
 
 # Naming — match existing codebase (_ prefix on private fields)
 dotnet_naming_rule.private_fields_should_be_camel_case_with_underscore.severity = suggestion

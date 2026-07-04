@@ -5,9 +5,11 @@ You need [.NET SDK 8+](https://dotnet.microsoft.com/download). You do **not** ne
 ```bash
 chmod +x scripts/*.sh
 ./scripts/bootstrap-deps.sh   # first time only — downloads build dependencies
-./scripts/build.sh            # → dist/debug/MimesisPlayerEnhancement.dll
-./scripts/build.sh Release    # → dist/prod/MimesisPlayerEnhancement.dll
+./scripts/build.sh            # format + compile → dist/debug/MimesisPlayerEnhancement.dll
+./scripts/build.sh Release    # format + compile → dist/prod/MimesisPlayerEnhancement.dll
 ```
+
+Skip auto-format with `SKIP_FORMAT=true ./scripts/build.sh`.
 
 To copy the built DLL straight into your game for testing:
 

@@ -23,6 +23,10 @@ if [[ "${COPY_TO_MODS:-false}" == "true" ]]; then
   fi
 fi
 
+if [[ "${SKIP_FORMAT:-false}" != "true" ]]; then
+  "$ROOT/scripts/format-code.sh"
+fi
+
 dotnet build "$ROOT/src/MimesisPlayerEnhancement.sln" -c "$DOTNET_CONFIG" "${EXTRA[@]}" "$@"
 
 OUT_DIR="$ROOT/dist/$([[ "$DOTNET_CONFIG" == "Release" ]] && echo prod || echo debug)"
