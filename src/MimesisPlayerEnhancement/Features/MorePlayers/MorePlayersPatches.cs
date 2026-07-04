@@ -29,7 +29,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         {
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNestedPatchTypes(typeof(MorePlayersPatches))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SurvivalResultPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPatches)));
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPatches)))
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(VActorDictCapacityPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -57,6 +58,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 ("SetRemoteVolumeController_v2/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))),
                 ("SetPingImage/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
+                ("ctor/IVroom", AccessTools.Constructor(typeof(IVroom), [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty), typeof(OnCreateRoomDelegate)])),
             ];
 
             foreach (MethodBase lambda in MaxPlayerCountFieldTranspiler.FindEnterRoomLambdaMethods())
@@ -84,15 +86,13 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             }
 
             int maxPlayers = GetMaxPlayers();
-            if (maxPlayers == _lastAppliedMaxClients)
-            {
-                return;
-            }
-
-            if (ApplyMaxClientsToSocket(maxPlayers))
+            if (maxPlayers != _lastAppliedMaxClients
+                && ApplyMaxClientsToSocket(maxPlayers))
             {
                 _lastAppliedMaxClients = maxPlayers;
             }
+
+            VActorDictCapacity.ApplyToAllRooms();
         }
 
         private static bool ApplyMaxClientsToSocket(int maxClients)
