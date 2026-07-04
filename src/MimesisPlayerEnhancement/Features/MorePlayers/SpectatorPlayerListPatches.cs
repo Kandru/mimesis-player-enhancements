@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Threading;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
@@ -56,19 +57,27 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             }
         }
 
-        [HarmonyPatch(typeof(UIPrefab_Spectator_PlayerListView), "OnDisable")]
-        internal static class PlayerListViewOnDisablePostfix
+        [HarmonyPatch]
+        internal static class PlayerListViewHidePostfix
         {
+            internal static MethodBase? TargetMethod() =>
+                AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide));
+
             [HarmonyPostfix]
-            private static void Postfix(UIPrefab_Spectator_PlayerListView __instance)
+            private static void Postfix(UIPrefabScript __instance)
             {
+                if (__instance is not UIPrefab_Spectator_PlayerListView listView)
+                {
+                    return;
+                }
+
                 try
                 {
-                    SpectatorPlayerGrid.HandleDisable(__instance);
+                    SpectatorPlayerGrid.HandleDisable(listView);
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn(Feature, $"Spectator player list disable cleanup failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"Spectator player list hide cleanup failed — {ex.Message}");
                 }
             }
         }
