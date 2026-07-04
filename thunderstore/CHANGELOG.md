@@ -1,3 +1,9 @@
+## 26.7.5
+- fixed an issue with the lobby naming and not showing
+- fixed an issue which caused problems with more then 4 players
+- fixed an issue which caused problems with more then 10 players as well
+- renamed "open" to "join now" to make it clear what the user can do
+
 ## 26.7.4
 - embedded assets into DLL to avoid issues when copying the DLL via Mod loaders
 
