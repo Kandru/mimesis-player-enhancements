@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal static class DungeonTimeApplier
     {
+        private const string Feature = "DungeonTime";
+
         internal static void EnsureApplied(DungeonRoom room)
         {
             if (DungeonRoomAppliedSet.IsApplied(room, DungeonRoomApplyKind.DungeonTime))

@@ -106,7 +106,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 }
 
                 GameNetworkApi.SetMaximumClients(socket, maxClients);
-                ModLog.Debug(Feature, $"Server socket max clients refreshed to {maxClients}.");
+                ModLog.Info(Feature, $"Server socket max clients set to {maxClients}.");
                 return true;
             }
             catch (Exception ex)
@@ -306,9 +306,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                         PlayerPrefs.SetInt("TempLobbyIsOpen", isOpenForRandomMatch ? 1 : 0);
                     }
 
-                    ModLog.Info(
-                        Feature,
-                        $"Steam lobby created — maxPlayers={GetMaxPlayers()}, openForMatchmaking={isOpenForRandomMatch}, retry={isRetryAttempt}.");
+                    ModLog.Info(Feature, $"Steam lobby created — maxPlayers={GetMaxPlayers()}, openForMatchmaking={isOpenForRandomMatch}, retry={isRetryAttempt}.");
                     return false;
                 }
                 catch (Exception ex)

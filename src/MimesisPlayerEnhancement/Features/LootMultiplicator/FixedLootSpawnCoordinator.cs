@@ -159,9 +159,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 int remainingQuota = need - activated;
                 state.SetRemainingQuota(masterId, remainingQuota);
 
-                ModLog.Info(
-                    Feature,
-                    $"Fixed loot scaling — type={itemType}, master={masterId}, " +
+                ModLog.Info(Feature, $"Fixed loot scaling — type={itemType}, master={masterId}, " +
                     $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={activated}, respawnQuota={remainingQuota})");
             }
 
@@ -237,9 +235,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 {
                     if (ModConfig.EnableDebugLogging.Value)
                     {
-                        ModLog.Debug(
-                            Feature,
-                            $"Fixed loot respawn waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
+                        ModLog.Debug(Feature, $"Fixed loot respawn waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
                             $"players within {ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value:0.#}m");
                     }
 
@@ -314,9 +310,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 catch (Exception ex)
                 {
                     spawnDatas.Remove(key);
-                    ModLog.Warn(
-                        Feature,
-                        $"Fixed loot marker activation failed — master={marker.masterID}, marker={marker.ID}: {ex.Message}");
+                    ModLog.Warn(Feature, $"Fixed loot marker activation failed — master={marker.masterID}, marker={marker.ID}: {ex.Message}");
                 }
             }
 
@@ -475,9 +469,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             if (ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    Feature,
-                    $"Fixed loot respawn scheduled — master={masterId}, marker={spawnData.Index}, delay={delay:0.0}s");
+                ModLog.Debug(Feature, $"Fixed loot respawn scheduled — master={masterId}, marker={spawnData.Index}, delay={delay:0.0}s");
             }
         }
 

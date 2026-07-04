@@ -7,6 +7,8 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 {
     internal static class MoneyMultiplierApplier
     {
+        private const string Feature = "MoneyMultiplier";
+
         private static readonly FieldInfo TargetCurrencyField =
             AccessTools.Field(typeof(GameSessionInfo), "_targetCurrency")
             ?? throw new InvalidOperationException("GameSessionInfo._targetCurrency not found");
@@ -39,11 +41,19 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
         }
 
-        internal static int ScaleForType(MoneyType type, int vanilla, int playerCount)
+        internal static int ScaleForType(MoneyType type, int vanilla, int playerCount, bool logAsInfo = false)
         {
             float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(type, playerCount);
             int scaled = MoneyMultiplierResolver.ScaleAmount(vanilla, effective);
-            MoneyMultiplierLog.DebugScaled(type, vanilla, scaled, playerCount, effective);
+            if (logAsInfo)
+            {
+                MoneyMultiplierLog.InfoApplied(type, vanilla, scaled, playerCount, effective);
+            }
+            else
+            {
+                MoneyMultiplierLog.DebugScaled(type, vanilla, scaled, playerCount, effective);
+            }
+
             return scaled;
         }
 
@@ -60,7 +70,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            currency = ScaleForType(MoneyType.Startup, currency, playerCount);
+            currency = ScaleForType(MoneyType.Startup, currency, playerCount, logAsInfo: true);
         }
 
         internal static void ApplyRoundGoal(GameSessionInfo info)
@@ -77,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
 
             int playerCount = SessionPlayerCountHelper.ResolveFromSession(info);
-            int scaled = ScaleForType(MoneyType.RoundGoal, vanilla, playerCount);
+            int scaled = ScaleForType(MoneyType.RoundGoal, vanilla, playerCount, logAsInfo: true);
             TargetCurrencyField.SetValue(info, scaled);
         }
 

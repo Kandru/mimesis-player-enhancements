@@ -7,6 +7,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeTramLeverTools
     {
+        private const string Feature = "JoinAnytime";
+
         internal static bool ShouldBlockDepartureLeverUse(IVroom room, ILevelObjectInfo levelObject, int toState)
         {
             if (room is not VWaitingRoom waitingRoom || waitingRoom.BackToMaintenance)
@@ -54,7 +56,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     occupy: false,
                     out _);
 
-                ModLog.Debug("JoinAnytime", $"Reset tram lever object={entry.Key} to Idle after blocked departure");
+                ModLog.Debug(Feature, $"Reset tram lever object={entry.Key} to Idle after blocked departure");
                 return;
             }
         }

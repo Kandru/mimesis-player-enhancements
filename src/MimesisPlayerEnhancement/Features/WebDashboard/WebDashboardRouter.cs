@@ -11,6 +11,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardRouter
     {
+        private const string Feature = "WebDashboard";
+
         internal static void Handle(HttpListenerContext context)
         {
             try
@@ -28,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
             catch (Exception ex)
             {
-                ModLog.Warn("WebDashboard", $"Request failed: {ex.Message}");
+                ModLog.Warn(Feature, $"Request failed: {ex.Message}");
                 TryWriteError(context, 500, "Internal server error.");
             }
         }

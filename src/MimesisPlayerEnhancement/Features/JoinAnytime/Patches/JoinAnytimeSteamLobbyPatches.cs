@@ -17,6 +17,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetLobbyPublic))]
     internal static class SteamInviteDispatcherSetLobbyPublicPatch
     {
+        private const string Feature = "JoinAnytime";
+
         [HarmonyPrefix]
         private static bool Prefix(bool isPublic)
         {
@@ -31,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             }
             else if (JoinAnytimeLobbyController.ShouldBlockPublicRoomClose())
             {
-                ModLog.Debug("JoinAnytime", "Blocked SetLobbyPublic(false) for join-anytime host.");
+                ModLog.Debug(Feature, "Blocked SetLobbyPublic(false) for join-anytime host.");
                 return false;
             }
 
@@ -91,6 +93,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdateLobbyData))]
     internal static class SteamInviteDispatcherUpdateLobbyDataPatch
     {
+        private const string Feature = "JoinAnytime";
+
         [HarmonyPrefix]
         private static bool Prefix(SteamInviteDispatcher __instance, string key, string value)
         {
@@ -110,7 +114,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 && string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
                 && JoinAnytimeLobbyController.ShouldBlockPublicRoomClose())
             {
-                ModLog.Debug("JoinAnytime", "Blocked PublicRoom=false lobby data update for join-anytime host.");
+                ModLog.Debug(Feature, "Blocked PublicRoom=false lobby data update for join-anytime host.");
                 JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
                 return false;
             }

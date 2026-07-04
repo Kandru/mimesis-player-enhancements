@@ -6,6 +6,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class DropLootTableScaler
     {
+        private const string Feature = "LootMultiplicator";
+
         internal static void ScaleDropList(ItemDropInfo dropInfo, List<int> dropList)
         {
             if (!LootScalingGate.ShouldScale() || dropInfo == null || dropList == null)

@@ -112,9 +112,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 int remainingCredits = need - registered;
                 state.SetRemainingCredits(masterId, remainingCredits);
 
-                ModLog.Info(
-                    Feature,
-                    $"Map-placed encounter scaling — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
+                ModLog.Info(Feature, $"Map-placed encounter scaling — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
                     $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={registered}, credits={remainingCredits})");
             }
 
@@ -189,9 +187,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 {
                     if (ModConfig.EnableDebugLogging.Value)
                     {
-                        ModLog.Debug(
-                            Feature,
-                            $"Bonus encounter waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
+                        ModLog.Debug(Feature, $"Bonus encounter waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
                             $"players within {ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value:0.#}m");
                     }
 
@@ -253,9 +249,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
                 if (ModConfig.EnableDebugLogging.Value)
                 {
-                    ModLog.Debug(
-                        Feature,
-                        $"Registered unused map marker — master={marker.masterID}, marker={marker.ID}, " +
+                    ModLog.Debug(Feature, $"Registered unused map marker — master={marker.masterID}, marker={marker.ID}, " +
                         $"pos={SpawnScalingLog.FormatLocation(room, marker.pos.pos)}");
                 }
             }
@@ -350,9 +344,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    Feature,
-                    $"Bonus encounter scheduled — master={masterId}, marker={spawnData.Index}, " +
+                ModLog.Debug(Feature, $"Bonus encounter scheduled — master={masterId}, marker={spawnData.Index}, " +
                     $"pos={SpawnScalingLog.FormatLocation(room, spawnData.PosVector)}, delay={delay:0.0}s");
             }
         }

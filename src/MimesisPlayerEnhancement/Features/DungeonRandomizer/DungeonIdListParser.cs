@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonIdListParser
     {
+        private const string Feature = "DungeonRandomizer";
+
         internal static HashSet<int> Parse(string? csv)
         {
             HashSet<int> ids = [];
@@ -27,7 +29,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 else
                 {
-                    DungeonRandomizerLog.Debug($"Ignoring invalid dungeon ID token: '{trimmed}'");
+                    ModLog.Debug(Feature, $"Ignoring invalid dungeon ID token: '{trimmed}'");
                 }
             }
 

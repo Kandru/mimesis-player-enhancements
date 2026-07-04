@@ -128,9 +128,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 localOnly: true,
                 ignoreFeatureToggles: true);
 
-            ModLog.Debug(
-                Feature,
-                immediate
+            ModLog.Debug(Feature, immediate
                     ? $"Showed tram lever blocked toast ({reason}, server)"
                     : $"Showed tram lever blocked toast ({reason}, client feedback)");
         }

@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootItemIdListParser
     {
+        private const string Feature = "LootMultiplicator";
+
         internal static HashSet<int> Parse(string? csv)
         {
             HashSet<int> ids = [];
@@ -27,7 +29,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
                 else if (ModConfig.EnableDebugLogging.Value)
                 {
-                    ModLog.Debug("LootMultiplicator", $"Ignoring invalid loot item ID token: '{trimmed}'");
+                    ModLog.Debug(Feature, $"Ignoring invalid loot item ID token: '{trimmed}'");
                 }
             }
 

@@ -6,6 +6,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeLobbyDisplay
     {
+        private const string Feature = "JoinAnytime";
+
         private const int BrowseCap = 3;
         internal const int VanillaBrowseDenominator = 4;
 
@@ -94,7 +96,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             catch (Exception ex)
             {
-                ModLog.Debug("JoinAnytime", $"Browse player count UI patch failed — {ex.Message}");
+                ModLog.Debug(Feature, $"Browse player count UI patch failed — {ex.Message}");
             }
         }
     }

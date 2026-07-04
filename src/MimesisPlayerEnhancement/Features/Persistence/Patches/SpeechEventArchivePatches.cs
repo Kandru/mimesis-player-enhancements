@@ -90,17 +90,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 {
                     SpeechEventPoolManager.RegisterDeferredInjection(__instance);
                     (int pending, _) = SpeechEventPoolManager.GetCounts();
-                    ModLog.Info(
-                        Feature,
-                        $"Player connecting — {VoiceEventStats.DescribePlayer(__instance)} — " +
+                    ModLog.Info(Feature, $"Player connecting — {VoiceEventStats.DescribePlayer(__instance)} — " +
                         $"voice injection deferred (pendingPool={pending}, " +
                         $"disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount})");
                 }
                 else
                 {
-                    ModLog.Info(
-                        Feature,
-                        $"Player connecting — {VoiceEventStats.DescribePlayer(__instance)} — awaiting identity sync");
+                    ModLog.Info(Feature, $"Player connecting — {VoiceEventStats.DescribePlayer(__instance)} — awaiting identity sync");
                 }
 
                 return;
@@ -119,31 +115,23 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 
             if (result.TotalAdded > 0)
             {
-                ModLog.Info(
-                    Feature,
-                    $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — " +
+                ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — " +
                     $"restored {result.TotalAdded} voice events (pool={result.FromPool}, reconnect={result.FromReconnect}, " +
                     $"before={eventsBefore}, after={eventsAfter})");
             }
             else if (SpeechEventPoolManager.HasPending() || SpeechEventPoolManager.DisconnectedCacheCount > 0)
             {
-                ModLog.Info(
-                    Feature,
-                    $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — no matching saved voices");
+                ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — no matching saved voices");
             }
             else
             {
-                ModLog.Info(
-                    Feature,
-                    $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — no persistence data");
+                ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(__instance)} — no persistence data");
             }
 
             StatisticsTracker.SyncVoiceBaseline(__instance);
 
             (int pendingCount, int injectedCount) = SpeechEventPoolManager.GetCounts();
-            ModLog.Debug(
-                Feature,
-                $"Archive detail — slot={slotId} poolState={pendingCount}P/{injectedCount}I " +
+            ModLog.Debug(Feature, $"Archive detail — slot={slotId} poolState={pendingCount}P/{injectedCount}I " +
                 $"disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount}");
         }
 

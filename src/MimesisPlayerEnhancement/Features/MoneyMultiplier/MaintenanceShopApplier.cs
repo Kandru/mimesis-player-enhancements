@@ -242,9 +242,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
             if (scaledCount > 0 || ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Info(
-                    Feature,
-                    $"Shop buy prices scaled — {scaledCount}/{priceForItems.Count} items " +
+                ModLog.Info(Feature, $"Shop buy prices scaled — {scaledCount}/{priceForItems.Count} items " +
                     $"(players={playerCount}, effective={effective:0.##}×)");
             }
         }
@@ -306,9 +304,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
             if (discounted > 0 || ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    Feature,
-                    $"Shop discounts applied — {discounted}/{priceForItems.Count} items discounted " +
+                ModLog.Debug(Feature, $"Shop discounts applied — {discounted}/{priceForItems.Count} items discounted " +
                     $"(chance={chancePercent}%, range={minPercent}-{maxPercent}%)");
             }
         }

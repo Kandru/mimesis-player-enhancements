@@ -6,6 +6,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeNetworkTools
     {
+        private const string Feature = "JoinAnytime";
+
         internal static bool SendPreGameTramStateToClient(VPlayer player, bool allowResend = false)
         {
             if (player.VRoom is VWaitingRoom)
@@ -31,22 +33,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 if (!allowResend)
                 {
-                    ModLog.Debug("JoinAnytime", $"Skipping duplicate pre-game tram state send for uid={uid}");
+                    ModLog.Debug(Feature, $"Skipping duplicate pre-game tram state send for uid={uid}");
                     return player.VRoom is not MaintenanceRoom;
                 }
 
-                ModLog.Debug("JoinAnytime", $"Resending pre-game tram state for uid={uid} — still in maintenance");
+                ModLog.Debug(Feature, $"Resending pre-game tram state for uid={uid} — still in maintenance");
             }
 
             if (!JoinAnytimeRoomTools.TryEnsureWaitingRoom(out IVroom? waitingRoom))
             {
-                ModLog.Warn("JoinAnytime", $"SendPreGameTramState failed — waiting room unavailable for uid={uid}");
+                ModLog.Warn(Feature, $"SendPreGameTramState failed — waiting room unavailable for uid={uid}");
                 return false;
             }
 
-            ModLog.Info(
-                "JoinAnytime",
-                $"Sending pre-game tram state to uid={uid} — waitingRoomUID={waitingRoom!.RoomID}");
+            ModLog.Info(Feature, $"Sending pre-game tram state to uid={uid} — waitingRoomUID={waitingRoom!.RoomID}");
 
             send(new MakeRoomCompleteSig
             {

@@ -2,6 +2,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonSeedResolver
     {
+        private const string Feature = "DungeonRandomizer";
+
         internal static int RollSeed(int vanillaSeed)
         {
             if (!ModConfig.RandomizeDungeonSeed.Value)
@@ -10,7 +12,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             }
 
             int seed = UnityEngine.Random.Range(1, int.MaxValue);
-            DungeonRandomizerLog.Debug($"Dungeon seed: {vanillaSeed} -> {seed}");
+            DungeonRandomizerLog.InfoSeedRolled(vanillaSeed, seed);
             return seed;
         }
     }

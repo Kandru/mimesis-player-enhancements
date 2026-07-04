@@ -6,6 +6,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class RuntimeLootScaler
     {
+        private const string Feature = "LootMultiplicator";
+
         internal static void ScaleSpawnedItem(
             IVroom? room,
             ItemElement element,

@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardLeaderboardCache
     {
+        private const string Feature = "WebDashboard";
+
         private static readonly object SerializeLock = new();
 
         private static string? _cachedJson;
@@ -73,7 +75,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
             catch (Exception ex)
             {
-                ModLog.Warn("WebDashboard", $"Background leaderboard serialize failed: {ex.Message}");
+                ModLog.Warn(Feature, $"Background leaderboard serialize failed: {ex.Message}");
             }
             finally
             {

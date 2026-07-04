@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 {
     internal static class InGameMenuPatches
     {
+        private const string Feature = "MorePlayers";
+
         private static readonly MethodInfo GetMaxPlayersMethod =
             AccessTools.Method(typeof(MorePlayersPatches), nameof(MorePlayersPatches.GetMaxPlayers));
 
@@ -28,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 }
                 catch (System.Exception ex)
                 {
-                    ModLog.Warn("MorePlayers", $"InGameMenu slot extension failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"InGameMenu slot extension failed — {ex.Message}");
                 }
             }
         }

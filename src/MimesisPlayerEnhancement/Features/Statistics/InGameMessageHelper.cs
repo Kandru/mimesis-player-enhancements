@@ -13,6 +13,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     /// </summary>
     public static class InGameMessageHelper
     {
+        private const string Feature = "Statistics";
+
         internal const string MessagePrefix = "[PlayerEnhancements]";
 
         /// <summary>Distinct from the game's green enter / red exit toasts (see <see cref="UIPrefab_PlayerEnterInfo"/>).</summary>
@@ -72,11 +74,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     return;
                 }
 
-                ModLog.Debug("Statistics", "Player enter info UI unavailable for mod toast.");
+                ModLog.Debug(Feature, "Player enter info UI unavailable for mod toast.");
             }
             catch (Exception ex)
             {
-                ModLog.Debug("Statistics", $"Mod toast failed: {ex.Message}");
+                ModLog.Debug(Feature, $"Mod toast failed: {ex.Message}");
             }
         }
 

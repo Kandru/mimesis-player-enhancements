@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 {
     internal static class MimicTuningResolver
     {
+        private const string Feature = "MimicTuning";
+
         // Const.json POSSESSION_DURATION (12000 ms) -> C_PossessionDuration.
         internal const float VanillaPossessionDurationSeconds = 12f;
         internal const float MinDurationSeconds = 0.1f;
@@ -76,6 +78,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 : UnityEngine.Random.Range((int)minMs, (int)maxMs + 1);
 
             MimicTuningPossessionSessions.SetSessionDurationMs(mimicActorId, rolled);
+            MimicTuningLog.DebugPossessionDurationRolled(mimicActorId, vanillaMs, rolled);
             return rolled;
         }
 
@@ -86,7 +89,9 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 return vanillaMs;
             }
 
-            return Math.Max(0L, (long)(vanillaMs * _cachedCooltimeMultiplier));
+            long scaled = Math.Max(0L, (long)(vanillaMs * _cachedCooltimeMultiplier));
+            MimicTuningLog.DebugCooltimeScaled(vanillaMs, scaled, _cachedCooltimeMultiplier);
+            return scaled;
         }
 
         internal static float GetProgressBarTotalSeconds(int mimicActorId, float serverLeftTimeMs)

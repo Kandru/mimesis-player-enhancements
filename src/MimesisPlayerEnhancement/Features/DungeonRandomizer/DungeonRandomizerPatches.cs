@@ -78,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 catch (Exception ex)
                 {
-                    DungeonRandomizerLog.Warn($"PickDungeon prefix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"PickDungeon prefix failed — {ex.Message}");
                 }
             }
 
@@ -96,7 +96,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 catch (Exception ex)
                 {
-                    DungeonRandomizerLog.Warn($"PickDungeon postfix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"PickDungeon postfix failed — {ex.Message}");
                 }
                 finally
                 {
@@ -126,7 +126,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 catch (Exception ex)
                 {
-                    DungeonRandomizerLog.Warn($"GetRandomDungenName postfix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"GetRandomDungenName postfix failed — {ex.Message}");
                 }
             }
         }
@@ -152,7 +152,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 catch (Exception ex)
                 {
-                    DungeonRandomizerLog.Warn($"PickMapID postfix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"PickMapID postfix failed — {ex.Message}");
                 }
             }
         }
@@ -174,7 +174,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 }
                 catch (Exception ex)
                 {
-                    DungeonRandomizerLog.Warn($"SetNextDungeonMasterID prefix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"SetNextDungeonMasterID prefix failed — {ex.Message}");
                 }
             }
         }

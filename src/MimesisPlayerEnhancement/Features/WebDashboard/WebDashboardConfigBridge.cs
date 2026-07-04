@@ -14,6 +14,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
     internal static class WebDashboardConfigBridge
     {
+        private const string Feature = "WebDashboard";
+
         internal static WebDashboardSettingsDto BuildGlobalSettings()
         {
             if (!ModConfig.IsInitialized)
@@ -197,7 +199,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (!ModConfigRegistry.TrySetEntryValue(sectionId, key, overrideRaw, out error))
             {
-                ModLog.Warn("WebDashboard", $"Save override {sectionId}/{key} for slot {slotId} could not be re-applied: {error}");
+                ModLog.Warn(Feature, $"Save override {sectionId}/{key} for slot {slotId} could not be re-applied: {error}");
             }
         }
 

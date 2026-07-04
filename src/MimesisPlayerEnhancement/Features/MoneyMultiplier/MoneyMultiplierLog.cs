@@ -4,6 +4,18 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
     {
         private const string Feature = "MoneyMultiplier";
 
+        internal static void InfoApplied(MoneyType type, int vanilla, int scaled, int playerCount, float effectiveMultiplier)
+        {
+            if (scaled == vanilla)
+            {
+                return;
+            }
+
+            ModLog.Info(
+                Feature,
+                $"{FormatType(type)} applied — {vanilla} -> {scaled} (players={playerCount}, effective={effectiveMultiplier:0.##}×)");
+        }
+
         internal static void DebugScaled(MoneyType type, int vanilla, int scaled, int playerCount, float effectiveMultiplier)
         {
             if (!ModConfig.EnableDebugLogging.Value || scaled == vanilla)

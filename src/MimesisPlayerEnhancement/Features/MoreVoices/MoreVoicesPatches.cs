@@ -98,9 +98,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     SpeechEventArchiveLimits.VanillaMaxEvents,
                     SpeechEventArchiveLimits.VanillaMaxDeathMatchEvents,
                     SpeechEventArchiveLimits.VanillaMaxOutDoorEvents));
-                ModLog.Info(
-                    Feature,
-                    $"Restored vanilla voice limits on {restored} archive(s) — " +
+                ModLog.Info(Feature, $"Restored vanilla voice limits on {restored} archive(s) — " +
                     SpeechEventArchiveLimits.FormatEffectiveCaps(vanillaCaps));
             }
             else
@@ -144,9 +142,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                         return;
                     }
 
-                    ModLog.Info(
-                        Feature,
-                        $"Voice archive started — {SpeechEventArchiveLimits.FormatEffectiveCaps(SpeechEventArchiveLimits.ToEffectiveCaps(limits.Value))}, " +
+                    ModLog.Info(Feature, $"Voice archive started — {SpeechEventArchiveLimits.FormatEffectiveCaps(SpeechEventArchiveLimits.ToEffectiveCaps(limits.Value))}, " +
                         $"{VoiceEventStats.DescribePlayer(__instance)}");
                 }
                 catch (Exception ex)

@@ -11,6 +11,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     /// </summary>
     internal static class FakeLootDropConverter
     {
+        private const string Feature = "LootMultiplicator";
+
         internal static void TryConvertActorDyingDrop(IVroom? vroom, ref ItemElement? element, ReasonOfSpawn reasonOfSpawn)
         {
             if (vroom == null
@@ -42,9 +44,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             if (ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    "LootMultiplicator",
-                    $"Converted fake ActorDying drop to real — master={real.ItemMasterID}, type={real.ItemType}, chance={chancePercent}%");
+                ModLog.Debug(Feature, $"Converted fake ActorDying drop to real — master={real.ItemMasterID}, type={real.ItemType}, chance={chancePercent}%");
             }
         }
 

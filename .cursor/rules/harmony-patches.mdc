@@ -13,3 +13,4 @@ alwaysApply: false
 - Prefer `AccessTools.Method` / `AccessTools.Field` over string literals when the target type is known.
 - Static `TargetMethod()` helpers must return a valid `MethodBase` or Harmony will fail silently — log via `HarmonyPatchHelper` audit on failure.
 - Do not patch game types without confirming signatures via MimesisInspectionTool or decompiled source in `deps/decompiled/`.
+- Wrap patch bodies in try/catch; log recoverable failures with `ModLog.Warn(Feature, ...)` — do not swallow silently.

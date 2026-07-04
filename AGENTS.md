@@ -109,11 +109,66 @@ Most gameplay features are host-only. Use `HostApplyGate.ShouldApplyHostOnlyFeat
 
 ### Logging
 
-Per-feature static log wrappers (e.g. `SpawnScalingLog`) delegate to `ModLog`:
+All log output goes through `ModLog` (`src/MimesisPlayerEnhancement/Logging/ModLog.cs`). Do not call `MelonLogger` directly from feature code.
 
-- Feature tag is added automatically — do not repeat it in messages
+#### Default: inline `ModLog` + `Feature` const
+
+For most logging — patch catch blocks, one-off messages, simple features — use a local feature tag and call `ModLog` directly:
+
+```csharp
+private const string Feature = "JoinAnytime"; // must match config section / HarmonyPatchHelper tag
+
+ModLog.Info(Feature, $"Late joiner in maintenance — uid={player.UID}");
+ModLog.Debug(Feature, "Moving player snapshot Maintenance -> Waiting");
+ModLog.Warn(Feature, $"SendPreGameTramState failed — {ex.Message}");
+```
+
+- The feature tag is added automatically — **do not repeat it in message bodies**
 - Use em dashes (—) to separate clauses
 - `ModLog.Debug` only emits when `EnableDebugLogging` is true
+- Patch files: put `private const string Feature` on **each nested class** that logs (nested classes do not inherit outer constants)
+
+#### When to add `{Feature}Log.cs`
+
+Add a dedicated log class **only when** the feature has shared formatting or repeated semantic events — not for every new feature:
+
+```csharp
+internal static class SpawnScalingLog
+{
+    private const string Feature = "SpawnScaling";
+
+    internal static void DebugEntitySpawned(...) =>
+        ModLog.Debug(Feature, $"Entity spawned — category={...}, ...");
+
+    internal static void InfoScalingApplied(int playerCount) => ...;
+}
+```
+
+Good candidates: multi-parameter message builders, hot-path debug helpers with early-return, formatting reused across many call sites.
+
+#### Level guide
+
+| Level | When | Examples |
+|-------|------|----------|
+| **Info** | Session/run-level outcomes users or hosts care about | Feature applied to a room, dungeon pick changed, player joined/kicked |
+| **Debug** | Diagnostic detail; gated by `EnableDebugLogging` | Per-spawn traces, skip/defer reasons, hot-path scalings |
+| **Warn** | Recoverable failures, fallbacks, patch errors | Empty dungeon pool, Harmony exception, missing reflection target |
+| **Error** | Rare; unrecoverable or data-loss risk | Corrupt save, failed critical write |
+
+**Do log:** first application to game state, values changed by mod logic, host-only skips once per context (`MarkSkippedOnce`), patch summaries via `HarmonyPatchHelper`.
+
+**Do not log:** every frame/hot path when unchanged, when feature is off and vanilla runs unchanged, duplicate unchanged state.
+
+For hot paths (scrap prices, per-spawn rolls), use debug helpers that early-return when `EnableDebugLogging` is false or values are unchanged. Reserve **Info** for run-level events (`MoneyMultiplierLog.InfoApplied` vs inline debug in patches).
+
+#### Reference implementations
+
+| Style | Examples |
+|-------|----------|
+| Inline `ModLog` | JoinAnytime, Persistence, Statistics, MorePlayers, WebDashboard |
+| `{Feature}Log` with semantic methods | SpawnScaling, LootMultiplicator, MoneyMultiplier, DungeonRandomizer, PlayerTuning, DungeonTime, MimicTuning |
+
+`HarmonyPatchHelper` may call `ModLog` directly (infrastructure).
 
 ### Game inspection workflow
 

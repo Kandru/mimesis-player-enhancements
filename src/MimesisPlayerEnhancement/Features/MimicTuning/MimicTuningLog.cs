@@ -1,0 +1,27 @@
+namespace MimesisPlayerEnhancement.Features.MimicTuning
+{
+    internal static class MimicTuningLog
+    {
+        private const string Feature = "MimicTuning";
+
+        internal static void DebugPossessionDurationRolled(int mimicActorId, long vanillaMs, long rolledMs)
+        {
+            ModLog.Debug(
+                Feature,
+                $"Possession duration rolled — actor={mimicActorId}, {vanillaMs}ms -> {rolledMs}ms " +
+                $"({ModConfig.MimicPossessionMinTimeSeconds.Value:0.##}-{ModConfig.MimicPossessionMaxTimeSeconds.Value:0.##}s range)");
+        }
+
+        internal static void DebugCooltimeScaled(long vanillaMs, long scaledMs, float multiplier)
+        {
+            ModLog.Debug(
+                Feature,
+                $"Possession cooltime scaled — {vanillaMs}ms -> {scaledMs}ms ({multiplier:0.##}×)");
+        }
+
+        internal static void DebugSkipped(string reason)
+        {
+            ModLog.Debug(Feature, $"Skipped — {reason}");
+        }
+    }
+}

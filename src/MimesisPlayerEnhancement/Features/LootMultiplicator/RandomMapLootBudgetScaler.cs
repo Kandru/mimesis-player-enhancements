@@ -44,9 +44,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             int scaled = LootMultiplierResolver.ScaleCount(vanillaBudget, multiplier);
             if (ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    Feature,
-                    $"Random map loot budget scaled {vanillaBudget} -> {scaled} ({multiplier:0.##}×, players={playerCount})");
+                ModLog.Debug(Feature, $"Random map loot budget scaled {vanillaBudget} -> {scaled} ({multiplier:0.##}×, players={playerCount})");
             }
 
             return scaled;

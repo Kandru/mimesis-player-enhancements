@@ -20,7 +20,7 @@ Each feature lives under `src/MimesisPlayerEnhancement/Features/{FeatureName}/`:
 |--------------|------|
 | `{Feature}Patches.cs` | Harmony entry point, nested patch classes |
 | `Patches/*.cs` | Additional patch types (optional) |
-| `{Feature}Log.cs` | Feature-scoped logging via `ModLog` |
+| `{Feature}Log.cs` | Optional — shared formatting / semantic log helpers via `ModLog` |
 | `{Feature}Resolver.cs` | Computes multipliers/values from config |
 | `{Feature}Applier.cs` | Applies resolved values to game state |
 | `{Feature}Runtime.cs` | Per-frame or session state (optional) |
@@ -37,7 +37,7 @@ Config: `src/MimesisPlayerEnhancement/Config/ModConfig.cs` + TOML sections `Mime
 4. Register in `FeatureModules.All` (`Util/FeatureModule.cs`).
 5. If host-only, gate mutations with `HostApplyGate.ShouldApplyHostOnlyFeature()`.
 6. If the feature has multipliers, implement resolver → applier with `FeatureToggleGate` neutral values when disabled.
-7. Add `{Feature}Log.cs` delegating to `ModLog` with matching feature string.
+7. Log via `ModLog` with a local `Feature` const; add `{Feature}Log.cs` only when you need shared message formatting or semantic helpers (see [AGENTS.md](../AGENTS.md#logging)).
 8. Document config keys in [CONFIG.md](CONFIG.md) (linked from the README Config section).
 9. Run `./scripts/build.sh` (Debug and Release if touching build-sensitive code).
 

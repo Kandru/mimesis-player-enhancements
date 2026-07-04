@@ -12,6 +12,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     [HarmonyPatch(typeof(IVroom), "RunEventActionInternal")]
     internal static class IVroomRunEventActionInternalPatch
     {
+        private const string Feature = "JoinAnytime";
+
         [HarmonyPrefix]
         private static bool Prefix(
             IVroom __instance,
@@ -42,7 +44,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             }
 
             int actorId = GameActionParamHelper.FindParam<GameActionParamActor>(paramList)?.ActorID ?? 0;
-            ModLog.Info("JoinAnytime", $"Blocked tram lever — reason={reason}");
+            ModLog.Info(Feature, $"Blocked tram lever — reason={reason}");
             JoinAnytimeTramLeverTools.TryResetTramDepartureLever(waitingRoom, actorId);
             JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorId);
             __result = false;
@@ -53,6 +55,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.HandleLevelObject))]
     internal static class IVroomHandleLevelObjectTramLeverPatch
     {
+        private const string Feature = "JoinAnytime";
+
         [HarmonyPrefix]
         private static bool Prefix(
             IVroom __instance,
@@ -86,9 +90,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 prevState = stateInfo.CurrentState;
             }
 
-            ModLog.Info(
-                "JoinAnytime",
-                $"Blocked tram lever state change to {state} — reason={JoinAnytimeRoomTools.GetWaitingRoomBlockReason()}");
+            ModLog.Info(Feature, $"Blocked tram lever state change to {state} — reason={JoinAnytimeRoomTools.GetWaitingRoomBlockReason()}");
 
             JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorID);
             __result = MsgErrorCode.CantAction;

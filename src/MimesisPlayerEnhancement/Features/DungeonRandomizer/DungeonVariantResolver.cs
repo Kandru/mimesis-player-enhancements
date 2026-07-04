@@ -2,6 +2,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonVariantResolver
     {
+        private const string Feature = "DungeonRandomizer";
+
         internal static string? ResolveLayoutFlow(DungeonMasterInfo info, string vanillaFlow)
         {
             if (!ModConfig.RandomizeLayoutFlow.Value)
@@ -11,11 +13,11 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
             if (!DungeonDataAccess.TryPickUniformLayoutFlow(info, out string flowName))
             {
-                DungeonRandomizerLog.Debug($"Layout flow: no candidates for dungeon {info.ID}; keeping '{vanillaFlow}'");
+                ModLog.Debug(Feature, $"Layout flow: no candidates for dungeon {info.ID}; keeping '{vanillaFlow}'");
                 return null;
             }
 
-            DungeonRandomizerLog.Debug($"Layout flow: dungeon {info.ID} '{vanillaFlow}' -> '{flowName}'");
+            DungeonRandomizerLog.InfoLayoutFlowChanged(info.ID, vanillaFlow, flowName);
             return flowName;
         }
 
@@ -28,11 +30,11 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
             if (!DungeonDataAccess.TryPickUniformMapId(info, out int mapId))
             {
-                DungeonRandomizerLog.Debug($"Map variant: no MapIDs for dungeon {info.ID}; keeping {vanillaMapId}");
+                ModLog.Debug(Feature, $"Map variant: no MapIDs for dungeon {info.ID}; keeping {vanillaMapId}");
                 return null;
             }
 
-            DungeonRandomizerLog.Debug($"Map variant: dungeon {info.ID} {vanillaMapId} -> {mapId}");
+            DungeonRandomizerLog.InfoMapVariantChanged(info.ID, vanillaMapId, mapId);
             return mapId;
         }
     }

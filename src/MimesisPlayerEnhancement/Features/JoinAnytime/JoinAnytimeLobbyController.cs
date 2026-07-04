@@ -122,9 +122,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             CaptureBaseFromDispatcher(dispatcher);
-            ModLog.Debug(
-                Feature,
-                $"Lobby created — publicMatch={isOpenForRandomMatch}, baseName=\"{_baseLobbyName}\"");
+            ModLog.Debug(Feature, $"Lobby created — publicMatch={isOpenForRandomMatch}, baseName=\"{_baseLobbyName}\"");
 
             if (isOpenForRandomMatch)
             {
@@ -154,9 +152,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 SetHostWantsPublicMatchmaking(false);
             }
 
-            ModLog.Debug(
-                Feature,
-                $"SetLobbyPublic completed — requested={requestedPublic}, hostWantsPublic={_hostWantsPublicMatchmaking}");
+            ModLog.Debug(Feature, $"SetLobbyPublic completed — requested={requestedPublic}, hostWantsPublic={_hostWantsPublicMatchmaking}");
 
             RefreshLobbyState(force: true);
         }
@@ -384,9 +380,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 if (SteamMatchmaking.GetLobbyMemberLimit(lobbyId) != desiredLimit)
                 {
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyId, desiredLimit);
-                    ModLog.Debug(
-                        Feature,
-                        $"Lobby member limit set to {desiredLimit} — members={memberCount}, keeps lobby discoverable.");
+                    ModLog.Debug(Feature, $"Lobby member limit set to {desiredLimit} — members={memberCount}, keeps lobby discoverable.");
                 }
             }
             catch (Exception ex)

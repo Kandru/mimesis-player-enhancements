@@ -6,6 +6,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonPickResolver
     {
+        private const string Feature = "DungeonRandomizer";
+
         private static HashSet<int>? _cachedAllowlist;
         private static HashSet<int>? _cachedBlocklist;
         private static string _cachedAllowlistRaw = "";
@@ -20,20 +22,21 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 && IsEligible(vanillaResult, allowlist, blocklist)
                 && !DungeonDataAccess.IsExcluded(vanillaResult, excludeDungeonIds))
             {
-                DungeonRandomizerLog.Debug($"Dungeon pick (WidenVanilla): keeping vanilla result {vanillaResult}");
+                ModLog.Debug(Feature, $"Dungeon pick (WidenVanilla): keeping vanilla result {vanillaResult}");
                 return vanillaResult;
             }
 
-            if (TryPickUniformFromActivePool(allowlist, blocklist, excludeDungeonIds, mode, out int pick))
+            if (TryPickUniformFromActivePool(vanillaResult, allowlist, blocklist, excludeDungeonIds, mode, out int pick))
             {
                 return pick;
             }
 
-            DungeonRandomizerLog.Warn($"Dungeon pick pool empty after filters; keeping vanilla result {vanillaResult}");
+            ModLog.Warn(Feature, $"Dungeon pick pool empty after filters; keeping vanilla result {vanillaResult}");
             return vanillaResult;
         }
 
         private static bool TryPickUniformFromActivePool(
+            int vanillaResult,
             HashSet<int> allowlist,
             HashSet<int> blocklist,
             IReadOnlyList<int> excludeDungeonIds,
@@ -45,7 +48,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             List<int> eligiblePool = DungeonDataAccess.FilterExcluded(pool, excludeDungeonIds);
             if (eligiblePool.Count == 0 && excludeDungeonIds.Count > 0)
             {
-                DungeonRandomizerLog.Warn(
+                ModLog.Warn(Feature, 
                     $"{mode} pool empty after tram excludes; falling back to full filtered pool.");
                 eligiblePool = pool;
             }
@@ -55,8 +58,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 return false;
             }
 
-            DungeonRandomizerLog.Debug(
-                $"Dungeon pick ({mode}): {pick} from pool of {eligiblePool.Count}");
+            DungeonRandomizerLog.InfoDungeonPick(vanillaResult, pick, mode, eligiblePool.Count);
             return true;
         }
 

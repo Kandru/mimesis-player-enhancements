@@ -75,9 +75,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnTimingOverrideApplier.ConfigureTimingOverrides(room, state, dungeonInfo, jakoMultiplier, mimicMultiplier);
             }
 
-            ModLog.Info(
-                Feature,
-                $"Spawn budgets updated — mimic {mimicMultiplier:0.##}× (max={mimicMax}, remain={mimicRemain}), " +
+            ModLog.Info(Feature, $"Spawn budgets updated — mimic {mimicMultiplier:0.##}× (max={mimicMax}, remain={mimicRemain}), " +
                 $"jako {jakoMultiplier:0.##}× (limit={threatLimit}, remain={threatRemain}, min={threatMin}), " +
                 $"specialGroups={specialGroups}, spawnPoints={spawnPoints}, bonusGroupWaves={bonusGroupWaves}");
         }
@@ -113,9 +111,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 _ = ScaleField(spawnInfo, SpawnScalingFields.SpecialSpawnInfoSpawnCountMaxField, multiplier, $"specialGroup[{spawnInfo.MasterID}].spawnCountMaxInfo");
 
                 scaled++;
-                ModLog.Debug(
-                    Feature,
-                    $"Special group configured — category={SpawnCategoryLookup.Format(category)}, name={entityName}, " +
+                ModLog.Debug(Feature, $"Special group configured — category={SpawnCategoryLookup.Format(category)}, name={entityName}, " +
                     $"master={spawnInfo.MasterID}, {multiplier:0.##}× (max={max}, remain={remain})");
             }
 
@@ -183,9 +179,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 state.SetBonusGroupWaves(groupData.GroupID, bonusWaves);
                 configured++;
 
-                ModLog.Debug(
-                    Feature,
-                    $"Group spawn configured — category={SpawnCategoryLookup.Format(category)}, name={entityName ?? "unknown"}, " +
+                ModLog.Debug(Feature, $"Group spawn configured — category={SpawnCategoryLookup.Format(category)}, name={entityName ?? "unknown"}, " +
                     $"id={groupData.GroupID}, {groupMultiplier.Value:0.##}× (bonusWaves={bonusWaves})");
             }
 
@@ -252,9 +246,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (scaled)
             {
-                ModLog.Debug(
-                    Feature,
-                    $"Spawn point configured — category={SpawnCategoryLookup.Format(category)}, name={entityName}, " +
+                ModLog.Debug(Feature, $"Spawn point configured — category={SpawnCategoryLookup.Format(category)}, name={entityName}, " +
                     $"master={masterId}, {multiplier:0.##}×");
             }
 

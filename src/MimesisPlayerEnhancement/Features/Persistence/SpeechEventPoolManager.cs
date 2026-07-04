@@ -215,16 +215,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                     if (result.TotalAdded > 0)
                     {
-                        ModLog.Info(
-                            Feature,
-                            $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
+                        ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
                             $"restored {result.TotalAdded} voice events (deferred injection)");
                     }
                     else
                     {
-                        ModLog.Info(
-                            Feature,
-                            $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
+                        ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
                             "no matching saved voices (deferred injection)");
                     }
                 }

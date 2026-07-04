@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class GroupSpawnBonusWaveApplier
     {
+        private const string Feature = "SpawnScaling";
+
         internal static void OnMemberDead(GroupSpawnData groupData, bool groupWiped)
         {
             if (!ModConfig.EnableSpawnScaling.Value || !groupWiped)
@@ -31,9 +33,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (ModConfig.EnableDebugLogging.Value)
             {
-                ModLog.Debug(
-                    "SpawnScaling",
-                    $"Bonus group wave armed — groupId={groupData.GroupID}");
+                ModLog.Debug(Feature, $"Bonus group wave armed — groupId={groupData.GroupID}");
             }
         }
 

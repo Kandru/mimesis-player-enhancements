@@ -145,9 +145,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             IVroom? oldRoom = player.VRoom;
             int oldActorId = player.ObjectID;
 
-            ModLog.Debug(
-                Feature,
-                $"Removing old player actor={oldActorId} room={oldRoom?.GetType().Name ?? "null"}");
+            ModLog.Debug(Feature, $"Removing old player actor={oldActorId} room={oldRoom?.GetType().Name ?? "null"}");
 
             oldRoom?.PendRemovePlayer(oldActorId, backup: false, kill: false);
             context.CreatePlayerSnapshot(true);
@@ -165,9 +163,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            ModLog.Info(
-                Feature,
-                $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
+            ModLog.Info(Feature, $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
 
             maintenanceRoom.PendRemovePlayer(player.ObjectID, backup: false, kill: false);
         }

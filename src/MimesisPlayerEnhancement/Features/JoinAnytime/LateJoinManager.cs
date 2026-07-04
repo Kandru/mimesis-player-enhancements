@@ -140,9 +140,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            ModLog.Info(
-                Feature,
-                $"Late joiner in maintenance — uid={player.UID} hostScene={JoinAnytimeHub.GetPdata()?.main?.GetType().Name ?? "null"}");
+            ModLog.Info(Feature, $"Late joiner in maintenance — uid={player.UID} hostScene={JoinAnytimeHub.GetPdata()?.main?.GetType().Name ?? "null"}");
 
             bool resend = allowResend
                 || (HasPreGameStateBeenSent(player.UID) && player.VRoom is MaintenanceRoom);
