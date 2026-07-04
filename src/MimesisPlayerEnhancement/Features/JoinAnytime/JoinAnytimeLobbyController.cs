@@ -498,6 +498,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        internal static void OnSessionRosterChanged()
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || !IsHost())
+            {
+                return;
+            }
+
+            ScheduleDeferredLobbyRefresh();
+        }
+
         internal static void ScheduleDeferredLobbyRefresh()
         {
             ScheduleImmediateRefresh();

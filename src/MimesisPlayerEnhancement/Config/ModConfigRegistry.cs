@@ -235,6 +235,12 @@ namespace MimesisPlayerEnhancement
                 if (TryGetFeatureModuleName(change.SectionId, out string moduleName))
                 {
                     _ = modules.Add(moduleName);
+
+                    // MaxPlayers affects the lobby name denominator when JoinAnytime is enabled.
+                    if (string.Equals(moduleName, "MorePlayers", StringComparison.Ordinal))
+                    {
+                        _ = modules.Add("JoinAnytime");
+                    }
                 }
             }
 

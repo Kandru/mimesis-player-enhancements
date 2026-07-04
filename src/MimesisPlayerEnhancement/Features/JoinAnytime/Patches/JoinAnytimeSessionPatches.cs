@@ -42,6 +42,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         {
             HostStatusCache.Invalidate();
             JoinAnytimeConnectingTracker.OnServerLogin(__instance);
+            JoinAnytimeLobbyController.OnSessionRosterChanged();
+        }
+    }
+
+    [HarmonyPatch(typeof(SessionManager), nameof(SessionManager.Remove))]
+    internal static class SessionManagerRemovePatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.OnSessionRosterChanged();
         }
     }
 
@@ -79,6 +90,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         {
             JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
             LateJoinManager.OnLevelLoadCompleted(__instance);
+            JoinAnytimeLobbyController.OnSessionRosterChanged();
         }
     }
 }

@@ -25,6 +25,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             [
                 ("CanEnterSession/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.CanEnterSession))),
                 ("Login/SessionContext", AccessTools.Method(typeof(SessionContext), nameof(SessionContext.Login))),
+                ("Remove/SessionManager", AccessTools.Method(typeof(SessionManager), nameof(SessionManager.Remove))),
                 ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
                 ("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))),
                 ("PendMoveToDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))),
