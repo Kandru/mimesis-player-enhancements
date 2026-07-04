@@ -101,7 +101,7 @@ namespace MimesisPlayerEnhancement.Util
                 onUpdate: () =>
             {
                 if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } },
-                onDeinitialize: StatisticsWriteQueue.FlushAllSync),
+                onDeinitialize: SaveSlotSidecarPersistence.FlushAllSync),
             new FeatureModule("PlayerAnnouncements", PlayerAnnouncementPatches.Apply),
             new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
             new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply,

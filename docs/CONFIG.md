@@ -13,7 +13,7 @@ Settings are grouped into TOML sections in the config file:
 - **`[MimesisPlayerEnhancement]`** — global options not tied to a single feature
 - **`[MimesisPlayerEnhancement_FeatureName]`** — one section per feature (e.g. `[MimesisPlayerEnhancement_MorePlayers]`)
 
-Each feature section has its own master toggle plus feature-specific options. The web dashboard can edit global defaults and per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`).
+Each feature section has its own master toggle plus feature-specific options. The web dashboard can edit global defaults (written to the main config file immediately) and per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`, loaded at save load, applied live in memory, written on vanilla save).
 
 ## Contents
 
@@ -73,7 +73,7 @@ Host-only. Keep mimic voice recordings across save and load.
 
 ### Statistics — `[MimesisPlayerEnhancement_Statistics]`
 
-Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, voice events, play time, and more).
+Host-only. Track session stats and a per-save-slot leaderboard (deaths, kills, voice events, play time, and more). Stats load from disk when a save is loaded, stay in memory during gameplay, and are written on vanilla save (including auto-save).
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
@@ -295,7 +295,7 @@ Host-only. Serves a local HTTP dashboard from the game process. Open `http://<Li
 | View | Who can see it | What it shows |
 |------|----------------|---------------|
 | **Global Settings** | Host (or idle before session) | Edit `UserData/MimesisPlayerEnhancement.cfg` defaults from the header menu |
-| **Settings** | Host in an active save | Per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`); keys matching global are omitted automatically |
+| **Settings** | Host in an active save | Per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`); applied live in memory, written on vanilla save; keys matching global are omitted automatically |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
 | **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs; focus player and area selectors |
 | **Leaderboard** | Host only | Per-save-slot stats leaderboard (requires **Statistics** enabled) |

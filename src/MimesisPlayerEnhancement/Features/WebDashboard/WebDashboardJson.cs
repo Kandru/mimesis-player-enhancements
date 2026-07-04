@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
+using System;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
@@ -52,6 +54,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(MapPlayerStats(doc));
         }
 
+        public static string SerializePlayerStatsSnapshot(PlayerStatisticsDocument source, string? displayNameOverride)
+        {
+            PlayerStatisticsDocument snapshot = new()
+            {
+                Version = source.Version,
+                SteamId = source.SteamId,
+                DisplayName = source.DisplayName,
+                Global = source.Global,
+                CurrentSession = source.CurrentSession,
+                RecentSessions = source.RecentSessions,
+            };
+
+            if (!string.IsNullOrWhiteSpace(displayNameOverride)
+                && !string.Equals(displayNameOverride, source.SteamId.ToString(), StringComparison.Ordinal))
+            {
+                snapshot.DisplayName = displayNameOverride;
+            }
+
+            return SerializePlayerStats(snapshot);
+        }
+
         public static string SerializeActionResult(WebDashboardActionResult result)
         {
             return ModJson.Serialize(result);
@@ -84,16 +107,34 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 players.Add(MapPlayer(player));
             }
 
+            bool includeLeaderboard = snapshot.Status.IsHost && !string.IsNullOrEmpty(snapshot.LeaderboardJson);
+            if (includeLeaderboard)
+            {
+                StringBuilder payload = new();
+                _ = payload.Append("{\"status\":")
+                    .Append(ModJson.Serialize(snapshot.Status))
+                    .Append(",\"players\":")
+                    .Append(ModJson.Serialize(players))
+                    .Append(",\"leaderboard\":")
+                    .Append(snapshot.LeaderboardJson);
+                if (snapshot.Status.IsConnected)
+                {
+                    _ = payload.Append(",\"minimap\":")
+                        .Append(SerializeMinimap(
+                            snapshot.MinimapLayout,
+                            snapshot.MinimapMarkers,
+                            snapshot.MinimapTrain));
+                }
+
+                _ = payload.Append('}');
+                return payload.ToString();
+            }
+
             SnapshotEventDto dto = new()
             {
                 Status = snapshot.Status,
                 Players = players,
             };
-
-            if (snapshot.Status.IsHost && !string.IsNullOrEmpty(snapshot.LeaderboardJson))
-            {
-                dto.Leaderboard = ModJson.Deserialize<LeaderboardApiResponse>(snapshot.LeaderboardJson);
-            }
 
             if (snapshot.Status.IsConnected)
             {
@@ -236,7 +277,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             public WebDashboardStatusDto Status = new();
             public List<PlayerApiDto> Players = [];
-            public LeaderboardApiResponse? Leaderboard;
             public MinimapApiResponse? Minimap;
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util;
@@ -30,16 +31,24 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static int _loadedSlotId = -999;
         private static bool _wasEnabled;
+        private static int _revision;
+
+        internal static int Revision => Volatile.Read(ref _revision);
+
+        internal static void BumpRevision()
+        {
+            _ = Interlocked.Increment(ref _revision);
+        }
 
         /// <summary>
-        /// Config-sync hook — clears runtime state when the feature is toggled off live.
+        /// Config-sync hook — persists and clears runtime state when the feature is toggled off live.
         /// </summary>
         internal static void RefreshFromConfig()
         {
             bool enabled = ModConfig.EnableStatistics.Value;
             if (_wasEnabled && !enabled)
             {
-                ClearRuntimeState();
+                OnSessionEnded();
             }
 
             _wasEnabled = enabled;
@@ -53,6 +62,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             _voiceCountCache = null;
             _loadedSlotId = -999;
             _nextConnectedTimeFlushTime = 0f;
+            _revision = 0;
             StatisticsWriteQueue.Clear();
             StatisticsMessages.ClearRuntimeState();
         }
@@ -78,6 +88,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 _voiceEventBaselines.Clear();
                 StatisticsStore.LoadAllPlayersForSlot(slotId, _players);
                 StatisticsWriteQueue.Configure(slotId, () => _players);
+                BumpRevision();
                 ModLog.Info(Feature, $"Loaded statistics for save slot {slotId} ({_players.Count} players).");
             }
             catch (Exception ex)
@@ -101,7 +112,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             if (slotId != _loadedSlotId)
             {
-                LoadForSlot(slotId);
+                return;
             }
 
             if (!IsArchiveIdentityReady(archive))
@@ -168,7 +179,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             _connectedSince[steamId] = now;
             EnsureVoiceBaseline(steamId);
-            PersistSlot(slotId);
+            BumpRevision();
 
             bool isNewSession = !resumeSession;
             int reconnectCount = doc.CurrentSession?.ReconnectCount ?? 0;
@@ -203,7 +214,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             ModLog.Info(Feature, $"Player disconnected — steamId={steamId} displayName={doc.DisplayName}");
-            PersistSlot(_loadedSlotId);
+            BumpRevision();
             StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
             WebDashboardSnapshotCache.MarkDirty();
         }
@@ -242,7 +253,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
                 ModLog.Info(Feature, $"Session finalized — steamId={kvp.Key} session={session.SessionId} after grace period");
                 FinalizeOpenSession(doc, countAsCompleted: true);
-                StatisticsWriteQueue.MarkDirty(kvp.Key);
                 changed = true;
             }
 
@@ -268,7 +278,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             if (changed)
             {
-                StatisticsWriteQueue.FlushPendingWrites();
+                BumpRevision();
             }
         }
 
@@ -314,7 +324,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             UpdateVoiceBaselines(affected, voiceCounts);
             InvalidateVoiceCountCache();
-            PersistSlot(slotId);
+            BumpRevision();
 
             int cycleNumber = manager.AccumulatedCycleCount;
             if (ModConfig.ShowStatisticsToasts.Value)
@@ -343,8 +353,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             doc.CurrentSession ??= NewSession(DateTime.UtcNow);
             doc.CurrentSession.Counters.CurrencyEarned += amount;
             doc.Global.Counters.CurrencyEarned += amount;
-            StatisticsWriteQueue.MarkDirty(hostSteam);
-            WebDashboardSnapshotCache.MarkDirty();
+            BumpRevision();
         }
 
         public static void OnSurvivalPlayerDeath(ulong steamId)
@@ -452,8 +461,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 }
             }
 
-            StatisticsWriteQueue.FlushPendingWrites();
-            WebDashboardSnapshotCache.MarkDirty();
+            BumpRevision();
         }
 
         public static void OnDeathmatchPlayerDeath(ulong steamId)
@@ -474,8 +482,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             IncrementCounter(steamId, counters => counters.DeathmatchWins++);
-            StatisticsWriteQueue.FlushPendingWrites();
-            WebDashboardSnapshotCache.MarkDirty();
         }
 
         public static void OnPlayerRevived(ulong steamId)
@@ -500,15 +506,48 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId) || _loadedSlotId != slotId)
             {
                 return;
             }
 
-            LoadForSlot(slotId);
-            PersistSlot(slotId, waitForCompletion: false);
+            PersistLoadedSlot(waitForCompletion: false);
             ModLog.Debug(Feature, $"Statistics queued on game save for slot {slotId}.");
-            WebDashboardSnapshotCache.MarkDirty();
+        }
+
+        internal static void OnSessionEnded()
+        {
+            if (MimesisSaveManager.IsHost() && _loadedSlotId >= 0)
+            {
+                try
+                {
+                    List<ulong> connectedSteamIds = [.. _connectedSince.Keys];
+                    foreach (ulong steamId in connectedSteamIds)
+                    {
+                        if (_players.TryGetValue(steamId, out PlayerStatisticsDocument? doc))
+                        {
+                            FlushConnectedTime(steamId, doc);
+                        }
+                    }
+
+                    foreach (PlayerStatisticsDocument doc in _players.Values)
+                    {
+                        if (doc.CurrentSession?.IsOpen == true)
+                        {
+                            FinalizeOpenSession(doc, countAsCompleted: true);
+                        }
+                    }
+
+                    BumpRevision();
+                    ModLog.Debug(Feature, $"Statistics finalized in memory for save slot {_loadedSlotId} on session end.");
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"OnSessionEnded finalize failed — {ex.Message}");
+                }
+            }
+
+            ClearRuntimeState();
         }
 
         public static void OnUpdate()
@@ -519,7 +558,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             ProcessDeferred();
-            StatisticsWriteQueue.ProcessDebounced();
         }
 
         private static void IncrementCounter(ulong steamId, Action<StatCounters> increment)
@@ -533,7 +571,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             EnsureCounterDictionaries(doc.Global.Counters);
             increment(doc.CurrentSession.Counters);
             increment(doc.Global.Counters);
-            StatisticsWriteQueue.MarkDirty(steamId);
+            BumpRevision();
         }
 
         private static void IncrementDictionaryCounter(
@@ -555,7 +593,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             EnsureCounterDictionaries(doc.Global.Counters);
             IncrementDictionaryValue(selector(doc.CurrentSession.Counters), key);
             IncrementDictionaryValue(selector(doc.Global.Counters), key);
-            StatisticsWriteQueue.MarkDirty(steamId);
+            BumpRevision();
         }
 
         private static void IncrementDictionaryValue(Dictionary<string, long> dictionary, string key)
@@ -588,12 +626,22 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             if (!_players.TryGetValue(steamId, out PlayerStatisticsDocument? doc))
             {
-                doc = StatisticsStore.LoadPlayer(_loadedSlotId, steamId);
-                doc.SteamId = steamId;
+                doc = NewInMemoryPlayer(steamId);
                 _players[steamId] = doc;
             }
 
             return doc;
+        }
+
+        private static PlayerStatisticsDocument NewInMemoryPlayer(ulong steamId)
+        {
+            return new PlayerStatisticsDocument
+            {
+                Version = PlayerStatisticsDocument.CurrentVersion,
+                SteamId = steamId,
+                DisplayName = steamId.ToString(),
+                Global = new GlobalStats { Counters = new StatCounters() },
+            };
         }
 
         internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId)
@@ -604,6 +652,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static IReadOnlyList<PlayerStatisticsDocument> GetCachedPlayerDocuments()
         {
             return [.. _players.Values];
+        }
+
+        internal static Dictionary<ulong, PlayerStatisticsDocument>.ValueCollection GetCachedPlayerDocumentsView()
+        {
+            return _players.Values;
         }
 
         internal static IReadOnlyCollection<ulong> GetConnectedSteamIds()
@@ -1008,11 +1061,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             if (_loadedSlotId != slotId)
             {
-                LoadForSlot(slotId);
+                return;
             }
 
             StatisticsWriteQueue.Configure(slotId, () => _players);
-            StatisticsWriteQueue.PersistImmediate(waitForCompletion);
+            StatisticsWriteQueue.SaveLoadedSlot(waitForCompletion);
         }
 
         internal static void PersistLoadedSlot(bool waitForCompletion = false)

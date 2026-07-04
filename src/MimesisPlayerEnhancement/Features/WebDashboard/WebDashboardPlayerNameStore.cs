@@ -16,17 +16,52 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly object Gate = new();
         private static Dictionary<ulong, string> _names = [];
         private static int _loadedSlotId = -1;
+        private static bool _dirty;
+
+        internal static void LoadForSlot(int slotId)
+        {
+            if (slotId < 0)
+            {
+                return;
+            }
+
+            lock (Gate)
+            {
+                _names = [];
+                _loadedSlotId = slotId;
+                _dirty = false;
+
+                string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
+                if (string.IsNullOrEmpty(path))
+                {
+                    return;
+                }
+
+                try
+                {
+                    string? json = AtomicFileIO.ReadText(path, Feature);
+                    if (!string.IsNullOrEmpty(json)
+                        && ModJson.Deserialize<Dictionary<ulong, string>>(json) is Dictionary<ulong, string> loaded)
+                    {
+                        _names = loaded;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Failed to load player name sidecar — {ex.Message}");
+                }
+            }
+        }
 
         internal static string? TryGetName(int slotId, ulong steamId)
         {
-            if (slotId < 0 || steamId == 0)
+            if (slotId < 0 || steamId == 0 || slotId != _loadedSlotId)
             {
                 return null;
             }
 
             lock (Gate)
             {
-                EnsureLoaded(slotId);
                 return _names.TryGetValue(steamId, out string? name) && !string.IsNullOrWhiteSpace(name)
                     ? name
                     : null;
@@ -40,16 +75,56 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (slotId != _loadedSlotId)
+            {
+                return;
+            }
+
             lock (Gate)
             {
-                EnsureLoaded(slotId);
                 if (_names.TryGetValue(steamId, out string? existing) && existing == name)
                 {
                     return;
                 }
 
                 _names[steamId] = name;
-                Save(slotId);
+                _dirty = true;
+            }
+        }
+
+        internal static void FlushToDisk(int slotId, bool waitForCompletion = false)
+        {
+            if (slotId < 0 || slotId != _loadedSlotId)
+            {
+                return;
+            }
+
+            lock (Gate)
+            {
+                if (!_dirty)
+                {
+                    return;
+                }
+
+                string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
+                if (string.IsNullOrEmpty(path))
+                {
+                    return;
+                }
+
+                try
+                {
+                    BackgroundFileWriteQueue.EnqueueText(
+                        path,
+                        ModJson.Serialize(_names),
+                        Feature,
+                        waitForCompletion);
+                    _dirty = false;
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Failed to save player name sidecar — {ex.Message}");
+                }
             }
         }
 
@@ -59,55 +134,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 _names = [];
                 _loadedSlotId = -1;
-            }
-        }
-
-        private static void EnsureLoaded(int slotId)
-        {
-            if (slotId == _loadedSlotId)
-            {
-                return;
-            }
-
-            _names = [];
-            _loadedSlotId = slotId;
-
-            string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
-            try
-            {
-                string? json = AtomicFileIO.ReadText(path, Feature);
-                if (!string.IsNullOrEmpty(json)
-                    && ModJson.Deserialize<Dictionary<ulong, string>>(json) is Dictionary<ulong, string> loaded)
-                {
-                    _names = loaded;
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Failed to load player name sidecar — {ex.Message}");
-            }
-        }
-
-        private static void Save(int slotId)
-        {
-            string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
-
-            try
-            {
-                AtomicFileIO.WriteText(path, ModJson.Serialize(_names), Feature);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Failed to save player name sidecar — {ex.Message}");
+                _dirty = false;
             }
         }
     }

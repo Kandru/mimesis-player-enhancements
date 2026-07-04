@@ -179,14 +179,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             error = null;
 
-            if (!SaveSlotConfigStore.IsOverridden(slotId, sectionId, key))
-            {
-                return;
-            }
-
-            SparseTomlConfig.Document doc = SaveSlotConfigStore.LoadOverrides(slotId);
-            if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
-                || !keys.TryGetValue(key, out string overrideRaw))
+            if (!SaveSlotConfigStore.TryGetOverrideRaw(slotId, sectionId, key, out string overrideRaw))
             {
                 return;
             }

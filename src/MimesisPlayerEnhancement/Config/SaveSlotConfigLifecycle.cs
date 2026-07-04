@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement.Features.Persistence;
 using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement
@@ -12,21 +11,10 @@ namespace MimesisPlayerEnhancement
             bool joined = IsSessionJoined();
             if (_wasSessionJoined && !joined)
             {
-                SaveSlotConfigStore.ClearRuntimeToGlobal();
+                SaveSlotSidecarPersistence.OnSessionEnded();
             }
 
             _wasSessionJoined = joined;
-        }
-
-        internal static void OnSaveSlotLoaded(int slotId)
-        {
-            if (!MimesisSaveManager.IsHost())
-            {
-                return;
-            }
-
-            SaveSlotConfigStore.ApplyOverridesToRuntime(slotId);
-            _wasSessionJoined = IsSessionJoined();
         }
 
         private static bool IsSessionJoined()

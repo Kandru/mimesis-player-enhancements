@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement
@@ -14,6 +13,8 @@ namespace MimesisPlayerEnhancement
         private const string Feature = "SaveSlotConfig";
         private static int _activeSlotId = -1;
         private static bool _isApplyingOverrides;
+        private static bool _dirty;
+        private static SparseTomlConfig.Document _runtimeDoc = new();
 
         internal static int ActiveSlotId => _activeSlotId;
 
@@ -24,16 +25,39 @@ namespace MimesisPlayerEnhancement
             return SaveSidecarPaths.GetOverridesPath(slotId);
         }
 
-        internal static SparseTomlConfig.Document LoadOverrides(int slotId)
+        internal static void LoadForSlot(int slotId)
         {
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath))
+            if (!ModConfig.IsInitialized || !MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
-                return new SparseTomlConfig.Document();
+                return;
             }
 
-            string? text = AtomicFileIO.ReadText(filePath, Feature);
-            return SparseTomlConfig.Load(text);
+            ModConfigChangeTracker.BeginBatch();
+            _isApplyingOverrides = true;
+            try
+            {
+                ModConfig.ReloadGlobalFromFile();
+                _activeSlotId = slotId;
+                _runtimeDoc = ReadOverridesFromDisk(slotId);
+                _dirty = false;
+                ApplyRuntimeDoc(_runtimeDoc, slotId);
+                ModConfig.SanitizeFloatEntries();
+            }
+            finally
+            {
+                _isApplyingOverrides = false;
+                ModConfigChangeTracker.EndBatch();
+            }
+        }
+
+        internal static SparseTomlConfig.Document LoadOverrides(int slotId)
+        {
+            if (slotId == _activeSlotId)
+            {
+                return CloneDocument(_runtimeDoc);
+            }
+
+            return ReadOverridesFromDisk(slotId);
         }
 
         internal static bool TrySetOverride(
@@ -49,6 +73,12 @@ namespace MimesisPlayerEnhancement
             if (!ModConfig.IsInitialized)
             {
                 error = "Configuration is not initialized.";
+                return false;
+            }
+
+            if (slotId != _activeSlotId)
+            {
+                error = "Save slot not loaded.";
                 return false;
             }
 
@@ -69,30 +99,24 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath))
+            if (GetOverrideFilePath(slotId) == null)
             {
                 error = "Save slot path unavailable.";
                 return false;
             }
 
-            SparseTomlConfig.Document doc = LoadOverrides(slotId);
-            EnsureSection(doc, sectionId);
+            EnsureSection(_runtimeDoc, sectionId);
 
             if (ModConfigRegistry.RawValuesEqual(sectionId, key, normalized, globalRaw))
             {
-                RemoveKey(doc, sectionId, key);
+                RemoveKey(_runtimeDoc, sectionId, key);
             }
             else
             {
-                doc.Sections[sectionId][key] = normalized;
+                _runtimeDoc.Sections[sectionId][key] = normalized;
             }
 
-            if (!SaveDocument(slotId, filePath, doc, waitForCompletion))
-            {
-                error = "Failed to save override file.";
-                return false;
-            }
+            _dirty = true;
 
             ModConfigChangeTracker.BeginBatch();
             try
@@ -109,42 +133,42 @@ namespace MimesisPlayerEnhancement
                 ModConfigChangeTracker.EndBatch();
             }
 
+            if (waitForCompletion)
+            {
+                FlushToDisk(slotId, waitForCompletion: true);
+            }
+
             return true;
         }
 
         internal static void ClearOverrideKey(int slotId, string sectionId, string key)
         {
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            if (slotId != _activeSlotId)
             {
                 return;
             }
 
-            SparseTomlConfig.Document doc = LoadOverrides(slotId);
-            if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys) || !keys.ContainsKey(key))
+            if (!_runtimeDoc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys) || !keys.ContainsKey(key))
             {
                 return;
             }
 
-            RemoveKey(doc, sectionId, key);
-            _ = SaveDocument(slotId, filePath, doc);
+            RemoveKey(_runtimeDoc, sectionId, key);
+            _dirty = true;
         }
 
         internal static void PruneMatchingGlobal(int slotId, bool waitForCompletion = false)
         {
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            if (slotId != _activeSlotId)
             {
                 return;
             }
 
-            SparseTomlConfig.Document doc = LoadOverrides(slotId);
             bool changed = false;
-
-            List<string> sectionIds = [.. doc.SectionOrder];
+            List<string> sectionIds = [.. _runtimeDoc.SectionOrder];
             foreach (string sectionId in sectionIds)
             {
-                if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
+                if (!_runtimeDoc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
                 {
                     continue;
                 }
@@ -172,8 +196,8 @@ namespace MimesisPlayerEnhancement
 
                 if (keys.Count == 0)
                 {
-                    _ = doc.Sections.Remove(sectionId);
-                    doc.SectionOrder.Remove(sectionId);
+                    _ = _runtimeDoc.Sections.Remove(sectionId);
+                    _runtimeDoc.SectionOrder.Remove(sectionId);
                 }
             }
 
@@ -182,59 +206,37 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            _ = SaveDocument(slotId, filePath, doc, waitForCompletion);
+            _dirty = true;
+            if (waitForCompletion)
+            {
+                FlushToDisk(slotId, waitForCompletion: true);
+            }
         }
 
-        internal static void ApplyOverridesToRuntime(int slotId)
+        internal static void FlushToDisk(int slotId, bool waitForCompletion = false)
         {
-            if (!ModConfig.IsInitialized || !MimesisSaveManager.IsValidSaveSlotId(slotId))
+            if (slotId != _activeSlotId || !_dirty)
             {
                 return;
             }
 
-            ModConfigChangeTracker.BeginBatch();
-            _isApplyingOverrides = true;
-            try
+            string? filePath = GetOverrideFilePath(slotId);
+            if (string.IsNullOrEmpty(filePath))
             {
-                ModConfig.ReloadGlobalFromFile();
-                _activeSlotId = slotId;
-
-                SparseTomlConfig.Document doc = LoadOverrides(slotId);
-                foreach (string sectionId in doc.SectionOrder)
-                {
-                    if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
-                    {
-                        continue;
-                    }
-
-                    foreach (KeyValuePair<string, string> pair in keys)
-                    {
-                        if (!ModConfigRegistry.IsSaveOverrideAllowed(sectionId, pair.Key))
-                        {
-                            continue;
-                        }
-
-                        if (ModConfigRegistry.TrySetEntryValue(sectionId, pair.Key, pair.Value, out _))
-                        {
-                            continue;
-                        }
-
-                        ModLog.Warn(Feature, $"Skipped invalid override {sectionId}/{pair.Key} for slot {slotId}.");
-                    }
-                }
-
-                ModConfig.SanitizeFloatEntries();
+                return;
             }
-            finally
+
+            if (SaveDocument(slotId, filePath, _runtimeDoc, waitForCompletion))
             {
-                _isApplyingOverrides = false;
-                ModConfigChangeTracker.EndBatch();
+                _dirty = false;
             }
         }
 
         internal static void ClearRuntimeToGlobal()
         {
             _activeSlotId = -1;
+            _runtimeDoc = new SparseTomlConfig.Document();
+            _dirty = false;
             if (!ModConfig.IsInitialized)
             {
                 return;
@@ -255,9 +257,80 @@ namespace MimesisPlayerEnhancement
 
         internal static bool IsOverridden(int slotId, string sectionId, string key)
         {
-            SparseTomlConfig.Document doc = LoadOverrides(slotId);
-            return doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
+            if (slotId != _activeSlotId)
+            {
+                return false;
+            }
+
+            return _runtimeDoc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
                 && keys.ContainsKey(key);
+        }
+
+        internal static bool TryGetOverrideRaw(int slotId, string sectionId, string key, out string rawValue)
+        {
+            rawValue = "";
+            if (slotId != _activeSlotId)
+            {
+                return false;
+            }
+
+            return _runtimeDoc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys)
+                && keys.TryGetValue(key, out rawValue!);
+        }
+
+        private static SparseTomlConfig.Document ReadOverridesFromDisk(int slotId)
+        {
+            string? filePath = GetOverrideFilePath(slotId);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return new SparseTomlConfig.Document();
+            }
+
+            string? text = AtomicFileIO.ReadText(filePath, Feature);
+            return SparseTomlConfig.Load(text);
+        }
+
+        private static void ApplyRuntimeDoc(SparseTomlConfig.Document doc, int slotId)
+        {
+            foreach (string sectionId in doc.SectionOrder)
+            {
+                if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
+                {
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, string> pair in keys)
+                {
+                    if (!ModConfigRegistry.IsSaveOverrideAllowed(sectionId, pair.Key))
+                    {
+                        continue;
+                    }
+
+                    if (ModConfigRegistry.TrySetEntryValue(sectionId, pair.Key, pair.Value, out _))
+                    {
+                        continue;
+                    }
+
+                    ModLog.Warn(Feature, $"Skipped invalid override {sectionId}/{pair.Key} for slot {slotId}.");
+                }
+            }
+        }
+
+        private static SparseTomlConfig.Document CloneDocument(SparseTomlConfig.Document source)
+        {
+            SparseTomlConfig.Document clone = new();
+            foreach (string sectionId in source.SectionOrder)
+            {
+                if (!source.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
+                {
+                    continue;
+                }
+
+                clone.SectionOrder.Add(sectionId);
+                clone.Sections[sectionId] = new Dictionary<string, string>(keys, StringComparer.OrdinalIgnoreCase);
+            }
+
+            return clone;
         }
 
         private static bool SaveDocument(

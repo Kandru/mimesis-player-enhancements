@@ -138,8 +138,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public WebDashboardStatusDto Status = new();
         public List<WebDashboardPlayerDto> Players = [];
         public string? LeaderboardJson;
-        public List<ulong> ConnectedSteamIds = [];
-        public Dictionary<ulong, string> PlayerStatsJson = [];
         public WebDashboardMinimapLayoutDto MinimapLayout = new();
         public List<WebDashboardMinimapMarkerDto> MinimapMarkers = [];
         public WebDashboardMinimapTrainDto? MinimapTrain;

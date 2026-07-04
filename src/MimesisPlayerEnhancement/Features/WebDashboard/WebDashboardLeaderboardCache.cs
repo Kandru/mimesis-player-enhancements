@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Util;
 
@@ -14,35 +16,38 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static string? _cachedJson;
         private static int _cachedSlotId = -1;
-        private static long _cachedContentHash;
+        private static int _cachedRevision = -1;
+        private static List<ulong> _cachedLeaderboardSteamIds = [];
         private static int _serializeInFlight;
+        private static int _pendingRevision;
 
-        internal static string? GetOrSchedule(
+        internal static string? UpdateAndGetCached(
             int saveSlotId,
-            LeaderboardDocument? doc,
             IReadOnlyList<ulong> connectedSteamIds)
         {
-            if (doc == null)
+            if (saveSlotId < 0 || !ModConfig.EnableStatistics.Value || !WebDashboardGameState.IsHost())
             {
                 return _cachedSlotId == saveSlotId ? _cachedJson : null;
             }
 
-            long contentHash = ComputeHash(doc, connectedSteamIds);
+            int revision = StatisticsTracker.Revision;
             if (_cachedSlotId == saveSlotId
-                && _cachedContentHash == contentHash
+                && revision == _cachedRevision
                 && !string.IsNullOrEmpty(_cachedJson))
             {
                 return _cachedJson;
             }
 
-            if (System.Threading.Interlocked.CompareExchange(ref _serializeInFlight, 1, 0) == 0)
-            {
-                LeaderboardDocument snapshot = CloneDocument(doc);
-                List<ulong> connectedIds = [.. connectedSteamIds];
-                _ = Task.Run(() => SerializeBackground(saveSlotId, snapshot, connectedIds, contentHash));
-            }
-
+            ScheduleBackgroundRebuild(saveSlotId, connectedSteamIds, revision);
             return _cachedSlotId == saveSlotId ? _cachedJson : null;
+        }
+
+        internal static IReadOnlyList<ulong> GetCachedLeaderboardSteamIds()
+        {
+            lock (SerializeLock)
+            {
+                return _cachedLeaderboardSteamIds;
+            }
         }
 
         internal static void Clear()
@@ -51,94 +56,128 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 _cachedJson = null;
                 _cachedSlotId = -1;
-                _cachedContentHash = 0;
+                _cachedRevision = -1;
+                _cachedLeaderboardSteamIds = [];
             }
+
+            _pendingRevision = 0;
         }
 
-        private static void SerializeBackground(
+        private static void ScheduleBackgroundRebuild(
             int saveSlotId,
-            LeaderboardDocument doc,
+            IReadOnlyList<ulong> connectedSteamIds,
+            int revision)
+        {
+            if (revision > _pendingRevision)
+            {
+                _pendingRevision = revision;
+            }
+
+            if (Interlocked.CompareExchange(ref _serializeInFlight, 1, 0) != 0)
+            {
+                return;
+            }
+
+            List<ulong> connectedIds = [.. connectedSteamIds];
+            int rebuildRevision = revision;
+            _ = Task.Run(() => BuildAndSerializeBackground(saveSlotId, connectedIds, rebuildRevision));
+        }
+
+        private static void BuildAndSerializeBackground(
+            int saveSlotId,
             List<ulong> connectedSteamIds,
-            long contentHash)
+            int revision)
         {
             try
             {
+                List<PlayerStatisticsDocument> livePlayers = CloneForLeaderboard(
+                    StatisticsTracker.GetCachedPlayerDocuments());
+                LeaderboardDocument doc = livePlayers.Count == 0
+                    ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }
+                    : LeaderboardBuilder.Build(saveSlotId, livePlayers);
+
                 string json = WebDashboardJson.SerializeLeaderboardResponse(doc, connectedSteamIds);
+                List<ulong> leaderboardSteamIds = [];
+                foreach (LeaderboardEntry entry in doc.Entries)
+                {
+                    if (entry.SteamId != 0)
+                    {
+                        leaderboardSteamIds.Add(entry.SteamId);
+                    }
+                }
+
                 lock (SerializeLock)
                 {
                     _cachedJson = json;
                     _cachedSlotId = saveSlotId;
-                    _cachedContentHash = contentHash;
+                    _cachedRevision = revision;
+                    _cachedLeaderboardSteamIds = leaderboardSteamIds;
                 }
 
                 WebDashboardSnapshotCache.MarkDirty();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"Background leaderboard serialize failed: {ex.Message}");
+                ModLog.Warn(Feature, $"Background leaderboard build failed — {ex.Message}");
             }
             finally
             {
-                _ = System.Threading.Interlocked.Exchange(ref _serializeInFlight, 0);
+                _ = Interlocked.Exchange(ref _serializeInFlight, 0);
+                int cachedRevision;
+                int pending;
+                lock (SerializeLock)
+                {
+                    cachedRevision = _cachedRevision;
+                }
+
+                pending = Volatile.Read(ref _pendingRevision);
+                if (pending != 0 && pending != cachedRevision)
+                {
+                    WebDashboardSnapshotCache.MarkDirty();
+                }
             }
         }
 
-        private static long ComputeHash(LeaderboardDocument doc, IReadOnlyList<ulong> connectedSteamIds)
+        private static List<PlayerStatisticsDocument> CloneForLeaderboard(
+            IReadOnlyList<PlayerStatisticsDocument> source)
         {
-            unchecked
+            List<PlayerStatisticsDocument> cloned = [];
+            foreach (PlayerStatisticsDocument player in source)
             {
-                long hash = doc.SaveSlotId;
-                hash = (hash * 397) ^ doc.UpdatedAtUtc.Ticks;
-                hash = (hash * 397) ^ doc.Entries.Count;
-                foreach (LeaderboardEntry entry in doc.Entries)
+                if (player.SteamId == 0)
                 {
-                    hash = (hash * 397) ^ (long)entry.SteamId;
-                    hash = (hash * 397) ^ entry.CurrencyEarned;
-                    hash = (hash * 397) ^ entry.VoiceEvents;
+                    continue;
                 }
 
-                foreach (ulong steamId in connectedSteamIds)
+                StatCounters counters = player.Global.Counters;
+                cloned.Add(new PlayerStatisticsDocument
                 {
-                    hash = (hash * 397) ^ (long)steamId;
-                }
-
-                return hash;
-            }
-        }
-
-        private static LeaderboardDocument CloneDocument(LeaderboardDocument source)
-        {
-            List<LeaderboardEntry> entries = [];
-            foreach (LeaderboardEntry entry in source.Entries)
-            {
-                entries.Add(new LeaderboardEntry
-                {
-                    SteamId = entry.SteamId,
-                    DisplayName = entry.DisplayName,
-                    ItemCarryCount = entry.ItemCarryCount,
-                    DamageToAlly = entry.DamageToAlly,
-                    MimicEncounterCount = entry.MimicEncounterCount,
-                    TimeInStartingVolumeMs = entry.TimeInStartingVolumeMs,
-                    CurrencyEarned = entry.CurrencyEarned,
-                    VoiceEvents = entry.VoiceEvents,
-                    SurvivalDeaths = entry.SurvivalDeaths,
-                    SurvivalWins = entry.SurvivalWins,
-                    SurvivalLeftBehind = entry.SurvivalLeftBehind,
-                    DeathmatchDeaths = entry.DeathmatchDeaths,
-                    DeathmatchWins = entry.DeathmatchWins,
-                    Revives = entry.Revives,
-                    TotalConnectedSeconds = entry.TotalConnectedSeconds,
-                    SessionsCompleted = entry.SessionsCompleted,
+                    SteamId = player.SteamId,
+                    DisplayName = player.DisplayName,
+                    Global = new GlobalStats
+                    {
+                        SessionsCompleted = player.Global.SessionsCompleted,
+                        Counters = new StatCounters
+                        {
+                            ItemCarryCount = counters.ItemCarryCount,
+                            DamageToAlly = counters.DamageToAlly,
+                            MimicEncounterCount = counters.MimicEncounterCount,
+                            TimeInStartingVolumeMs = counters.TimeInStartingVolumeMs,
+                            CurrencyEarned = counters.CurrencyEarned,
+                            VoiceEvents = counters.VoiceEvents,
+                            SurvivalDeaths = counters.SurvivalDeaths,
+                            SurvivalWins = counters.SurvivalWins,
+                            SurvivalLeftBehind = counters.SurvivalLeftBehind,
+                            DeathmatchDeaths = counters.DeathmatchDeaths,
+                            DeathmatchWins = counters.DeathmatchWins,
+                            Revives = counters.Revives,
+                            TotalConnectedSeconds = counters.TotalConnectedSeconds,
+                        },
+                    },
                 });
             }
 
-            return new LeaderboardDocument
-            {
-                Version = source.Version,
-                SaveSlotId = source.SaveSlotId,
-                UpdatedAtUtc = source.UpdatedAtUtc,
-                Entries = entries,
-            };
+            return cloned;
         }
     }
 }

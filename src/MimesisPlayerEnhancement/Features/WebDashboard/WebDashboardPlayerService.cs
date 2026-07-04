@@ -14,6 +14,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         internal static List<WebDashboardPlayerDto> CollectPlayers()
         {
+            List<WebDashboardPlayerDto> live = CollectLivePlayers();
+            return MergePlayerLists(live, WebDashboardOfflinePlayerCache.GetCached());
+        }
+
+        internal static List<WebDashboardPlayerDto> CollectLivePlayers()
+        {
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
@@ -88,19 +94,71 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (WebDashboardGameState.IsHost())
+            List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
+            SortPlayers(players);
+            return players;
+        }
+
+        internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers()
+        {
+            if (!WebDashboardGameState.IsHost() || !ModConfig.EnableStatistics.Value)
             {
-                MergeStoredLeaderboardPlayers(playersBySteam, localSteamId, nameCache);
+                return [];
             }
 
+            int saveSlotId = WebDashboardGameState.GetSaveSlotId();
+            if (saveSlotId < 0)
+            {
+                return [];
+            }
+
+            Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
+            ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
+            Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
+            MergeOfflineStatisticsPlayers(playersBySteam, localSteamId, nameCache, saveSlotId);
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
+            SortPlayers(players);
+            return players;
+        }
+
+        internal static List<WebDashboardPlayerDto> MergePlayerLists(
+            IReadOnlyList<WebDashboardPlayerDto> live,
+            IReadOnlyList<WebDashboardPlayerDto> offline)
+        {
+            if (offline.Count == 0)
+            {
+                return live.Count == 0 ? [] : [.. live];
+            }
+
+            Dictionary<ulong, WebDashboardPlayerDto> merged = [];
+            foreach (WebDashboardPlayerDto player in offline)
+            {
+                if (player.SteamId != 0)
+                {
+                    merged[player.SteamId] = player;
+                }
+            }
+
+            foreach (WebDashboardPlayerDto player in live)
+            {
+                if (player.SteamId != 0)
+                {
+                    merged[player.SteamId] = player;
+                }
+            }
+
+            List<WebDashboardPlayerDto> players = [.. merged.Values];
+            SortPlayers(players);
+            return players;
+        }
+
+        private static void SortPlayers(List<WebDashboardPlayerDto> players)
+        {
             players.Sort((a, b) =>
             {
                 int hostCmp = b.IsHost.CompareTo(a.IsHost);
                 return hostCmp != 0 ? hostCmp : string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
             });
-
-            return players;
         }
 
         internal static string ResolveDisplayNameForSteamId(ulong steamId, int saveSlotId = -1)
@@ -167,43 +225,42 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return dto;
         }
 
-        private static void MergeStoredLeaderboardPlayers(
+        private static void MergeOfflineStatisticsPlayers(
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam,
             ulong localSteamId,
-            Dictionary<ulong, string>? nameCache)
+            Dictionary<ulong, string>? nameCache,
+            int saveSlotId)
         {
-            int saveSlotId = WebDashboardGameState.GetSaveSlotId();
             if (saveSlotId < 0)
             {
                 return;
             }
 
-            LeaderboardDocument? leaderboard = WebDashboardStatisticsBridge.GetLeaderboardDocument(saveSlotId);
-            if (leaderboard?.Entries == null)
+            if (!ModConfig.EnableStatistics.Value)
             {
                 return;
             }
 
-            foreach (LeaderboardEntry entry in leaderboard.Entries)
+            foreach (PlayerStatisticsDocument player in StatisticsTracker.GetCachedPlayerDocumentsView())
             {
-                if (entry.SteamId == 0 || playersBySteam.ContainsKey(entry.SteamId))
+                if (player.SteamId == 0 || playersBySteam.ContainsKey(player.SteamId))
                 {
                     continue;
                 }
 
-                bool isLocal = localSteamId != 0 && entry.SteamId == localSteamId;
+                bool isLocal = localSteamId != 0 && player.SteamId == localSteamId;
                 WebDashboardPlayerDto dto = new()
                 {
-                    SteamId = entry.SteamId,
-                    DisplayName = IsUsableName(entry.DisplayName, entry.SteamId)
-                        ? entry.DisplayName
-                        : ResolveDisplayNameCore(null, entry.SteamId, 0, nameCache, saveSlotId),
+                    SteamId = player.SteamId,
+                    DisplayName = IsUsableName(player.DisplayName, player.SteamId)
+                        ? player.DisplayName
+                        : ResolveDisplayNameCore(null, player.SteamId, 0, nameCache, saveSlotId),
                     IsHost = WebDashboardGameState.IsHost() && isLocal,
                     IsLocal = isLocal,
                 };
 
                 EnrichStoredPlayerDto(dto, saveSlotId);
-                playersBySteam[entry.SteamId] = dto;
+                playersBySteam[player.SteamId] = dto;
             }
         }
 
@@ -214,9 +271,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            PlayerStatisticsDocument doc = StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is PlayerStatisticsDocument live
-                ? live
-                : StatisticsStore.LoadPlayer(saveSlotId, dto.SteamId);
+            if (StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is not PlayerStatisticsDocument doc)
+            {
+                return;
+            }
 
             dto.CurrentSession = BuildSessionStatsFromDocument(doc);
         }
@@ -488,21 +546,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return remembered!;
             }
 
-            if (saveSlotId >= 0 && ModConfig.EnableStatistics.Value)
-            {
-                PlayerStatisticsDocument stored = StatisticsStore.LoadPlayer(saveSlotId, steamId);
-                if (IsUsableName(stored.DisplayName, steamId))
-                {
-                    return stored.DisplayName;
-                }
-            }
-
-            string? fromLeaderboard = TryGetLeaderboardDisplayName(saveSlotId, steamId);
-            if (IsUsableName(fromLeaderboard, steamId))
-            {
-                return fromLeaderboard!;
-            }
-
             string? localNick = TryGetLocalNickName();
             return localNick != null && LocalPlayerHelper.IsLocalSteamId(steamId) ? localNick : steamId.ToString();
         }
@@ -750,20 +793,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 MonsterKillsByMasterId = new Dictionary<string, long>(c.MonsterKillsByMasterId ?? []),
                 DeathsByTrapType = new Dictionary<string, long>(c.DeathsByTrapType ?? []),
             };
-        }
-
-        private static string? TryGetLeaderboardDisplayName(int saveSlotId, ulong steamId)
-        {
-            if (saveSlotId < 0)
-            {
-                saveSlotId = WebDashboardGameState.GetSaveSlotId();
-            }
-
-            return saveSlotId < 0
-                ? null
-                : WebDashboardStatisticsBridge.TryGetDisplayNameFromLeaderboard(
-                WebDashboardStatisticsBridge.GetLeaderboardDocument(saveSlotId),
-                steamId);
         }
 
         private static string? TryGetLocalNickName()

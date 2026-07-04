@@ -69,6 +69,26 @@ ModButton.Create(page.CreateActionButtonRow(), assets, "Apply", expandWidth: tru
 
 `Features/ExtendedSaveSlots/` (save slot picker) is the reference consumer.
 
+## Per-save sidecar persistence lifecycle
+
+Per-save data uses sidecar files beside vanilla saves (`MMGameData{N}.mpe-{kind}.sav`). Runtime state lives in memory during an active host session. `SaveSlotSidecarPersistence` coordinates load, flush, and teardown.
+
+| Sidecar | File | Runtime store |
+|---------|------|---------------|
+| Statistics | `.mpe-stats.sav` | `StatisticsTracker._players` |
+| Config overrides | `.mpe-overrides.sav` | `SaveSlotConfigStore._runtimeDoc` |
+| Player names | `.mpe-names.sav` | `WebDashboardPlayerNameStore._names` |
+
+| Phase | Behavior |
+|-------|----------|
+| **Save load** | `GameSessionInfoLoadPatches` → `SaveSlotSidecarPersistence.OnSaveSlotLoaded` reads all three sidecars once. |
+| **Gameplay** | Memory-only mutations. Statistics bump `StatisticsTracker.Revision` on stat changes. Per-save config overrides and player names mark their store dirty. No disk reads or writes. |
+| **Vanilla save** | `MaintenanceRoom.SaveGameData` success → `SaveSlotSidecarPersistence.OnGameSaved` flushes dirty sidecars (manual save and auto-save slot 0). |
+| **Session end** | Host leaves session (`SessionJoined` false) → `OnSessionEnded` finalizes open stats sessions in memory, clears runtime state, reloads global config. **No disk write.** |
+| **Mod unload** | `SaveSlotSidecarPersistence.FlushAllSync` saves any remaining dirty sidecars (safety net). |
+
+The web dashboard reads only from in-memory stores during gameplay. Leaderboard JSON is built on a background thread when `StatisticsTracker.Revision` changes. Global config edits from the web UI still write the main mod TOML immediately; per-save overrides apply live in memory and flush on vanilla save.
+
 ## Host-only and session access
 
 - **HostApplyGate** — returns false for join-anytime participants and when the feature toggle is off; allows solo/host play when network pdata is null.

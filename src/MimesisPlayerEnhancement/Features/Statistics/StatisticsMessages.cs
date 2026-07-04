@@ -107,13 +107,16 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (!MimesisSaveManager.TryGetActiveSaveSlotId(out int slotId))
+            if (!MimesisSaveManager.TryGetActiveSaveSlotId(out _))
             {
                 return;
             }
 
-            PlayerStatisticsDocument doc = StatisticsTracker.TryGetPlayerDocument(steamId)
-                      ?? StatisticsStore.LoadPlayer(slotId, steamId);
+            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            {
+                return;
+            }
+
             doc.DisplayName = userName;
             if (isEntering)
             {

@@ -22,8 +22,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
                     return;
                 }
 
-                StatisticsTracker.LoadForSlot(slotId);
-                SaveSlotConfigLifecycle.OnSaveSlotLoaded(slotId);
+                SaveSlotSidecarPersistence.OnSaveSlotLoaded(slotId);
             });
         }
     }

@@ -4,6 +4,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using MimesisPlayerEnhancement.Features.Statistics;
+using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using MimesisPlayerEnhancement.Util;
 
@@ -234,12 +236,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                if (snapshot.PlayerStatsJson.TryGetValue(steamId, out string? cached))
-                {
-                    WriteJson(context, 200, cached);
-                    return;
-                }
-
                 int slotId = snapshot.Status.SaveSlotId;
                 if (slotId < 0)
                 {
@@ -247,13 +243,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                string? json = WebDashboardStatisticsBridge.BuildPlayerStatsJson(slotId, steamId);
-                if (string.IsNullOrEmpty(json))
+                if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
                 {
                     WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Player statistics not found."));
                     return;
                 }
 
+                string? displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(steamId, slotId);
+                string json = WebDashboardJson.SerializePlayerStatsSnapshot(doc, displayName);
                 WriteJson(context, 200, json);
                 return;
             }

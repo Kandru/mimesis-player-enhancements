@@ -228,15 +228,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             int snapshotVersion = WebDashboardSnapshotCache.Version;
-            string payload;
-            try
+            string? payload = WebDashboardSnapshotEventCache.TryGetPayload(snapshotVersion);
+            if (string.IsNullOrEmpty(payload))
             {
-                payload = WebDashboardJson.SerializeSnapshotEvent(WebDashboardSnapshotCache.Get());
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"SSE snapshot serialization failed: {ex.Message}");
-                return;
+                WebDashboardSnapshot snapshot = WebDashboardSnapshotCache.Get();
+                WebDashboardSnapshotEventCache.ScheduleBuild(snapshot, snapshotVersion);
+                try
+                {
+                    payload = WebDashboardJson.SerializeSnapshotEvent(snapshot);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"SSE snapshot serialization failed: {ex.Message}");
+                    return;
+                }
             }
 
             _lastSnapshotPublishMs = UtcNowMs();
