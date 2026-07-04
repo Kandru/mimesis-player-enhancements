@@ -67,6 +67,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 ("ExecuteLootingObjectSpawn/IVroom", ResolveExecuteLootingObjectSpawnMethod()),
                 ("SpawnLootingObject/IVroom", ResolveSpawnLootingObjectMethod()),
                 ("OnActorDead/SpawnedActorData", AccessTools.Method(typeof(SpawnedActorData), "OnActorDead")),
+                ("BarterItem/InventoryController", AccessTools.Method(typeof(InventoryController), "BarterItem", [typeof(PosWithRot)])),
             ]);
         }
 
@@ -166,6 +167,26 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
 
                 return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(InventoryController), "BarterItem", [typeof(PosWithRot)])]
+        public static class InventoryControllerBarterItemPatch
+        {
+            [HarmonyPrefix]
+            public static void Prefix(ref bool __state)
+            {
+                __state = true;
+                BarterDropTableContext.Enter();
+            }
+
+            [HarmonyFinalizer]
+            public static void Finalizer(bool __state)
+            {
+                if (__state)
+                {
+                    BarterDropTableContext.Exit();
+                }
             }
         }
 

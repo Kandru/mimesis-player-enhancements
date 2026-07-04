@@ -176,7 +176,7 @@ Map events / trigger spawns are **not** scaled (vanilla).
 | `LootBlocklist` | string | `""` | Comma-separated item master IDs to exclude. Used when `LootItemFilterMode` is `BlocklistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md) for all IDs. |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | Chance (0–100) that fake items dropped on enemy death (`ActorDying`, e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. |
 
-Does **not** scale: map event/trigger spawns, items you release from inventory, shop purchases, admin/cheat spawns, creature/monster spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot budgets and spawn data are scaled once at room load; drop extras use table re-rolls at spawn time.
+Does **not** scale: map event/trigger spawns, items you release from inventory, shop purchases, Crow Shop scrap exchange (barter), admin/cheat spawns, creature/monster spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`). Map loot budgets and spawn data are scaled once at room load; drop extras use table re-rolls at spawn time.
 
 ### Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`
 
