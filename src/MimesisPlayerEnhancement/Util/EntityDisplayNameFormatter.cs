@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
+namespace MimesisPlayerEnhancement.Util
 {
     internal static class EntityDisplayNameFormatter
     {

@@ -1,3 +1,4 @@
+using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using Mimic.Actors;
 
@@ -8,14 +9,15 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
         private sealed class MapRunSnapshot
         {
             public long ItemCarryCount;
-            public long DamageToAlly;
+            public long DamageToFriend;
+            public long FriendsKilled;
             public long MimicEncounterCount;
             public long TimeInStartingVolumeMs;
             public long SurvivalDeaths;
             public long SurvivalWins;
             public long SurvivalLeftBehind;
             public long Revives;
-            public Dictionary<string, long> MonsterKillsByMasterId = [];
+            public Dictionary<string, long> MonsterKills = [];
         }
 
         private static readonly Dictionary<ulong, MapRunSnapshot> Baselines = [];
@@ -85,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             if (StatisticsTracker.TryGetCurrentPlayReport(steamId, out PlayReportData report))
             {
                 snapshot.ItemCarryCount = report.TotalItemCarryCount;
-                snapshot.DamageToAlly = report.TotalDamageToAlly;
+                snapshot.DamageToFriend = report.TotalDamageToAlly;
                 snapshot.MimicEncounterCount = report.TotalMimicEncounterCount;
                 snapshot.TimeInStartingVolumeMs = report.TotalTimeInStartingVolume;
             }
@@ -96,7 +98,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 snapshot.SurvivalWins = counters.SurvivalWins;
                 snapshot.SurvivalLeftBehind = counters.SurvivalLeftBehind;
                 snapshot.Revives = counters.Revives;
-                snapshot.MonsterKillsByMasterId = new Dictionary<string, long>(counters.MonsterKillsByMasterId ?? []);
+                snapshot.FriendsKilled = counters.FriendsKilled;
+                snapshot.MonsterKills = new Dictionary<string, long>(counters.MonsterKills ?? []);
             }
 
             return snapshot;
@@ -107,14 +110,15 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             return new()
             {
                 ItemCarryCount = current.ItemCarryCount - baseline.ItemCarryCount,
-                DamageToAlly = current.DamageToAlly - baseline.DamageToAlly,
+                DamageToFriend = current.DamageToFriend - baseline.DamageToFriend,
+                FriendsKilled = current.FriendsKilled - baseline.FriendsKilled,
                 MimicEncounterCount = current.MimicEncounterCount - baseline.MimicEncounterCount,
                 TimeInStartingVolumeMs = current.TimeInStartingVolumeMs - baseline.TimeInStartingVolumeMs,
                 SurvivalDeaths = current.SurvivalDeaths - baseline.SurvivalDeaths,
                 SurvivalWins = current.SurvivalWins - baseline.SurvivalWins,
                 SurvivalLeftBehind = current.SurvivalLeftBehind - baseline.SurvivalLeftBehind,
                 Revives = current.Revives - baseline.Revives,
-                MonsterKillsByMasterId = SubtractDictionary(current.MonsterKillsByMasterId, baseline.MonsterKillsByMasterId),
+                MonsterKills = SubtractDictionary(current.MonsterKills, baseline.MonsterKills),
             };
         }
 
@@ -160,15 +164,19 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 parts.Add($"{stats.Revives} revive{(stats.Revives == 1 ? "" : "s")}");
             }
 
-            long monsterKills = 0;
-            foreach (long count in stats.MonsterKillsByMasterId.Values)
+            foreach (KeyValuePair<string, long> kvp in stats.MonsterKills.OrderByDescending(p => p.Value))
             {
-                monsterKills += count;
+                if (kvp.Value <= 0)
+                {
+                    continue;
+                }
+
+                parts.Add($"{kvp.Value} {kvp.Key} kill{(kvp.Value == 1 ? "" : "s")}");
             }
 
-            if (monsterKills > 0)
+            if (stats.FriendsKilled > 0)
             {
-                parts.Add($"{monsterKills} monster kill{(monsterKills == 1 ? "" : "s")}");
+                parts.Add($"{stats.FriendsKilled} friend{(stats.FriendsKilled == 1 ? "" : "s")} killed");
             }
 
             if (stats.ItemCarryCount > 0)
@@ -181,9 +189,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 parts.Add($"{stats.MimicEncounterCount} mimic encounter{(stats.MimicEncounterCount == 1 ? "" : "s")}");
             }
 
-            if (stats.DamageToAlly > 0)
+            if (stats.DamageToFriend > 0)
             {
-                parts.Add($"{stats.DamageToAlly} ally damage");
+                parts.Add($"{stats.DamageToFriend} friend damage");
             }
 
             return parts.Count == 0 ? "Your run this map: no recorded activity yet." : $"Your run this map: {string.Join(", ", parts)}.";

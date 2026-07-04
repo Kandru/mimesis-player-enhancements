@@ -946,10 +946,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Revives = c.Revives,
                 MimicEncounterCount = c.MimicEncounterCount,
                 ItemCarryCount = c.ItemCarryCount,
-                DamageToAlly = c.DamageToAlly,
+                DamageToFriend = c.DamageToFriend,
+                FriendsKilled = c.FriendsKilled,
                 TotalConnectedSeconds = c.TotalConnectedSeconds,
-                MonsterKillsByMasterId = new Dictionary<string, long>(c.MonsterKillsByMasterId ?? []),
-                DeathsByTrapType = new Dictionary<string, long>(c.DeathsByTrapType ?? []),
+                MonsterKills = new Dictionary<string, long>(c.MonsterKills ?? []),
+                DeathsByMonster = new Dictionary<string, long>(c.DeathsByMonster ?? []),
+                DeathsByTrap = new Dictionary<string, long>(c.DeathsByTrap ?? []),
             };
         }
 

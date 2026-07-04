@@ -12,7 +12,10 @@ function formatCountMap(map, labelPrefix) {
   return Object.entries(map)
     .filter(([, count]) => (count ?? 0) > 0)
     .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
-    .map(([key, count]) => [labelPrefix + ' ' + key, count ?? 0]);
+    .map(([key, count]) => {
+      const label = labelPrefix ? labelPrefix + ' ' + key : key;
+      return [label, count ?? 0];
+    });
 }
 
 function isValidSteamId(steamId) {
@@ -191,11 +194,13 @@ document.addEventListener('alpine:init', () => {
         ['Deathmatch deaths', c.deathmatchDeaths ?? 0],
         ['Revives', c.revives ?? 0],
         ['Voices recorded', c.voiceEvents ?? 0],
-        ['Ally damage', c.damageToAlly ?? 0],
+        ['Friend damage', c.damageToFriend ?? 0],
+        ['Friends killed', c.friendsKilled ?? 0],
         ['Connected time', formatDuration(c.totalConnectedSeconds ?? 0)],
         ['Sessions', this.playerStats.global.sessionsCompleted ?? 0],
-        ...formatCountMap(c.monsterKillsByMasterId, 'Monster kills'),
-        ...formatCountMap(c.deathsByTrapType, 'Trap deaths'),
+        ...formatCountMap(c.monsterKills, ''),
+        ...formatCountMap(c.deathsByMonster, 'Killed by'),
+        ...formatCountMap(c.deathsByTrap, 'Killed by'),
       ];
     },
 
@@ -211,8 +216,11 @@ document.addEventListener('alpine:init', () => {
         ['Deathmatch wins', s.deathmatchWins ?? 0],
         ['Deathmatch deaths', s.deathmatchDeaths ?? 0],
         ['Revives', s.revives ?? 0],
-        ...formatCountMap(s.monsterKillsByMasterId, 'Monster kills'),
-        ...formatCountMap(s.deathsByTrapType, 'Trap deaths'),
+        ['Friend damage', s.damageToFriend ?? 0],
+        ['Friends killed', s.friendsKilled ?? 0],
+        ...formatCountMap(s.monsterKills, ''),
+        ...formatCountMap(s.deathsByMonster, 'Killed by'),
+        ...formatCountMap(s.deathsByTrap, 'Killed by'),
       ];
     },
 
@@ -552,7 +560,8 @@ document.addEventListener('alpine:init', () => {
       if (s.totalConnectedSeconds) parts.push(formatDuration(s.totalConnectedSeconds));
       if (s.mimicEncounterCount) parts.push(s.mimicEncounterCount + ' mimics');
       if (s.itemCarryCount) parts.push(s.itemCarryCount + ' items');
-      if (s.damageToAlly) parts.push(s.damageToAlly + ' ally dmg');
+      if (s.damageToFriend) parts.push(s.damageToFriend + ' friend dmg');
+      if (s.friendsKilled) parts.push(s.friendsKilled + ' friends killed');
       return parts.join(' · ');
     },
 

@@ -255,12 +255,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                    || c.VoiceEvents > 0
                    || c.CurrencyEarned > 0
                    || c.ItemCarryCount > 0
-                   || c.DamageToAlly > 0
+                   || c.DamageToFriend > 0
+                   || c.FriendsKilled > 0
                    || c.MimicEncounterCount > 0
                    || c.TimeInStartingVolumeMs > 0
                    || c.TotalConnectedSeconds > 0
-                   || HasDictionaryCounts(c.MonsterKillsByMasterId)
-                   || HasDictionaryCounts(c.DeathsByTrapType);
+                   || HasDictionaryCounts(c.MonsterKills)
+                   || HasDictionaryCounts(c.DeathsByMonster)
+                   || HasDictionaryCounts(c.DeathsByTrap);
         }
 
         private static bool HasDictionaryCounts(Dictionary<string, long>? counts)

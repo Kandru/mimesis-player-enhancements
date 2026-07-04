@@ -374,13 +374,31 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
+            if (sig.attackerActorID != 0)
+            {
+                VActor? attacker;
+                try
+                {
+                    attacker = room.FindActorByObjectID(sig.attackerActorID);
+                }
+                catch
+                {
+                    attacker = null;
+                }
+
+                if (attacker is VMonster)
+                {
+                    return;
+                }
+            }
+
             if (!DeathAttributionHelper.TryResolveTrapDeath(player, sig, room, out TrapType trapType))
             {
                 return;
             }
 
-            string trapKey = DeathAttributionHelper.FormatTrapType(trapType);
-            IncrementDictionaryCounter(player.SteamID, counters => counters.DeathsByTrapType, trapKey);
+            string trapKey = StatisticsEntityNames.FormatTrapName(trapType);
+            IncrementDictionaryCounter(player.SteamID, counters => counters.DeathsByTrap, trapKey);
         }
 
         public static void OnMonsterKilled(ulong steamId, int monsterMasterId)
@@ -390,8 +408,29 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            string monsterKey = DeathAttributionHelper.FormatMonsterMasterId(monsterMasterId);
-            IncrementDictionaryCounter(steamId, counters => counters.MonsterKillsByMasterId, monsterKey);
+            string monsterKey = StatisticsEntityNames.FormatMonsterName(monsterMasterId);
+            IncrementDictionaryCounter(steamId, counters => counters.MonsterKills, monsterKey);
+        }
+
+        public static void OnDeathByMonster(ulong steamId, int monsterMasterId)
+        {
+            if (!CanTrack() || steamId == 0 || monsterMasterId <= 0)
+            {
+                return;
+            }
+
+            string monsterKey = StatisticsEntityNames.FormatMonsterName(monsterMasterId);
+            IncrementDictionaryCounter(steamId, counters => counters.DeathsByMonster, monsterKey);
+        }
+
+        public static void OnFriendKilled(ulong steamId)
+        {
+            if (!CanTrack() || steamId == 0)
+            {
+                return;
+            }
+
+            IncrementCounter(steamId, counters => counters.FriendsKilled++);
         }
 
         public static void HandleActorDeath(IVroom room, GameActorDeadEventArgs args)
@@ -410,6 +449,30 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 else
                 {
                     OnSurvivalPlayerDeath(player.SteamID);
+                }
+
+                if (args.AttackerActorID != 0)
+                {
+                    VActor? playerAttacker;
+                    try
+                    {
+                        playerAttacker = room.FindActorByObjectID(args.AttackerActorID);
+                    }
+                    catch
+                    {
+                        playerAttacker = null;
+                    }
+
+                    if (playerAttacker is VMonster killingMonster)
+                    {
+                        OnDeathByMonster(player.SteamID, killingMonster.MasterID);
+                    }
+                    else if (playerAttacker is VPlayer friendKiller
+                             && friendKiller.SteamID != player.SteamID
+                             && room is not DeathMatchRoom)
+                    {
+                        OnFriendKilled(friendKiller.SteamID);
+                    }
                 }
 
                 return;
@@ -611,8 +674,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            counters.MonsterKillsByMasterId ??= [];
-            counters.DeathsByTrapType ??= [];
+            counters.MonsterKills ??= [];
+            counters.DeathsByMonster ??= [];
+            counters.DeathsByTrap ??= [];
         }
 
         private static PlayerLifecycleContribution? BuildSessionConnectContribution(
@@ -838,7 +902,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatCounters totals = new()
             {
                 ItemCarryCount = report.TotalItemCarryCount,
-                DamageToAlly = report.TotalDamageToAlly,
+                DamageToFriend = report.TotalDamageToAlly,
                 MimicEncounterCount = report.TotalMimicEncounterCount,
                 TimeInStartingVolumeMs = report.TotalTimeInStartingVolume,
                 CyclesCompleted = 1,

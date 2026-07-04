@@ -324,8 +324,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            counters.MonsterKillsByMasterId ??= [];
-            counters.DeathsByTrapType ??= [];
+            counters.MonsterKills ??= [];
+            counters.DeathsByMonster ??= [];
+            counters.DeathsByTrap ??= [];
         }
 
         private static void TrimRecentSessions(PlayerStatisticsDocument doc)

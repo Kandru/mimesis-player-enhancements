@@ -24,10 +24,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public long Revives;
         public long MimicEncounterCount;
         public long ItemCarryCount;
-        public long DamageToAlly;
+        public long DamageToFriend;
+        public long FriendsKilled;
         public long TotalConnectedSeconds;
-        public Dictionary<string, long> MonsterKillsByMasterId = [];
-        public Dictionary<string, long> DeathsByTrapType = [];
+        public Dictionary<string, long> MonsterKills = [];
+        public Dictionary<string, long> DeathsByMonster = [];
+        public Dictionary<string, long> DeathsByTrap = [];
     }
 
     internal sealed class WebDashboardPlayerDto

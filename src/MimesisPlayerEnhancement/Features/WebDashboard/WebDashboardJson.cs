@@ -250,10 +250,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Revives = stats.Revives,
                 MimicEncounterCount = stats.MimicEncounterCount,
                 ItemCarryCount = stats.ItemCarryCount,
-                DamageToAlly = stats.DamageToAlly,
+                DamageToFriend = stats.DamageToFriend,
+                FriendsKilled = stats.FriendsKilled,
                 TotalConnectedSeconds = stats.TotalConnectedSeconds,
-                MonsterKillsByMasterId = stats.MonsterKillsByMasterId,
-                DeathsByTrapType = stats.DeathsByTrapType,
+                MonsterKills = stats.MonsterKills,
+                DeathsByMonster = stats.DeathsByMonster,
+                DeathsByTrap = stats.DeathsByTrap,
             };
         }
 
@@ -264,7 +266,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 SteamId = entry.SteamId.ToString(),
                 DisplayName = entry.DisplayName,
                 ItemCarryCount = entry.ItemCarryCount,
-                DamageToAlly = entry.DamageToAlly,
+                DamageToFriend = entry.DamageToFriend,
+                FriendsKilled = entry.FriendsKilled,
                 MimicEncounterCount = entry.MimicEncounterCount,
                 TimeInStartingVolumeMs = entry.TimeInStartingVolumeMs,
                 CurrencyEarned = entry.CurrencyEarned,
@@ -346,10 +349,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public long Revives;
             public long MimicEncounterCount;
             public long ItemCarryCount;
-            public long DamageToAlly;
+            public long DamageToFriend;
+            public long FriendsKilled;
             public long TotalConnectedSeconds;
-            public Dictionary<string, long> MonsterKillsByMasterId = [];
-            public Dictionary<string, long> DeathsByTrapType = [];
+            public Dictionary<string, long> MonsterKills = [];
+            public Dictionary<string, long> DeathsByMonster = [];
+            public Dictionary<string, long> DeathsByTrap = [];
         }
 
         private sealed class LeaderboardApiResponse
@@ -365,7 +370,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public string SteamId = "";
             public string DisplayName = "";
             public long ItemCarryCount;
-            public long DamageToAlly;
+            public long DamageToFriend;
+            public long FriendsKilled;
             public long MimicEncounterCount;
             public long TimeInStartingVolumeMs;
             public long CurrencyEarned;

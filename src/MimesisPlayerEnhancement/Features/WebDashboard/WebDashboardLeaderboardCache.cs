@@ -159,7 +159,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         Counters = new StatCounters
                         {
                             ItemCarryCount = counters.ItemCarryCount,
-                            DamageToAlly = counters.DamageToAlly,
+                            DamageToFriend = counters.DamageToFriend,
+                            FriendsKilled = counters.FriendsKilled,
                             MimicEncounterCount = counters.MimicEncounterCount,
                             TimeInStartingVolumeMs = counters.TimeInStartingVolumeMs,
                             CurrencyEarned = counters.CurrencyEarned,

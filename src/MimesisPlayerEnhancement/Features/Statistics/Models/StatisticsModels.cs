@@ -5,7 +5,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
     public sealed class StatCounters
     {
         public long ItemCarryCount;
-        public long DamageToAlly;
+        public long DamageToFriend;
+        public long FriendsKilled;
         public long MimicEncounterCount;
         public long TimeInStartingVolumeMs;
         public long CurrencyEarned;
@@ -18,8 +19,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
         public long Revives;
         public int CyclesCompleted;
         public long TotalConnectedSeconds;
-        public Dictionary<string, long> MonsterKillsByMasterId = [];
-        public Dictionary<string, long> DeathsByTrapType = [];
+        public Dictionary<string, long> MonsterKills = [];
+        public Dictionary<string, long> DeathsByMonster = [];
+        public Dictionary<string, long> DeathsByTrap = [];
 
         public void Add(StatCounters other)
         {
@@ -29,7 +31,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
             }
 
             ItemCarryCount += other.ItemCarryCount;
-            DamageToAlly += other.DamageToAlly;
+            DamageToFriend += other.DamageToFriend;
+            FriendsKilled += other.FriendsKilled;
             MimicEncounterCount += other.MimicEncounterCount;
             TimeInStartingVolumeMs += other.TimeInStartingVolumeMs;
             CurrencyEarned += other.CurrencyEarned;
@@ -42,8 +45,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
             Revives += other.Revives;
             CyclesCompleted += other.CyclesCompleted;
             TotalConnectedSeconds += other.TotalConnectedSeconds;
-            MergeCountDictionary(MonsterKillsByMasterId, other.MonsterKillsByMasterId);
-            MergeCountDictionary(DeathsByTrapType, other.DeathsByTrapType);
+            MergeCountDictionary(MonsterKills, other.MonsterKills);
+            MergeCountDictionary(DeathsByMonster, other.DeathsByMonster);
+            MergeCountDictionary(DeathsByTrap, other.DeathsByTrap);
         }
 
         private static void MergeCountDictionary(Dictionary<string, long> target, Dictionary<string, long>? source)
@@ -70,7 +74,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
             return new StatCounters
             {
                 ItemCarryCount = ItemCarryCount,
-                DamageToAlly = DamageToAlly,
+                DamageToFriend = DamageToFriend,
+                FriendsKilled = FriendsKilled,
                 MimicEncounterCount = MimicEncounterCount,
                 TimeInStartingVolumeMs = TimeInStartingVolumeMs,
                 CurrencyEarned = CurrencyEarned,
@@ -83,8 +88,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
                 Revives = Revives,
                 CyclesCompleted = CyclesCompleted,
                 TotalConnectedSeconds = TotalConnectedSeconds,
-                MonsterKillsByMasterId = CloneCountDictionary(MonsterKillsByMasterId),
-                DeathsByTrapType = CloneCountDictionary(DeathsByTrapType),
+                MonsterKills = CloneCountDictionary(MonsterKills),
+                DeathsByMonster = CloneCountDictionary(DeathsByMonster),
+                DeathsByTrap = CloneCountDictionary(DeathsByTrap),
             };
         }
     }
@@ -108,7 +114,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
 
     public sealed class PlayerStatisticsDocument
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int Version = CurrentVersion;
         public ulong SteamId;
@@ -123,7 +129,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
         public ulong SteamId;
         public string DisplayName = "";
         public long ItemCarryCount;
-        public long DamageToAlly;
+        public long DamageToFriend;
+        public long FriendsKilled;
         public long MimicEncounterCount;
         public long TimeInStartingVolumeMs;
         public long CurrencyEarned;

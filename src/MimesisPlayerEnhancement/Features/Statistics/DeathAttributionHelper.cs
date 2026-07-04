@@ -81,16 +81,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return false;
         }
 
-        internal static string FormatTrapType(TrapType trapType)
-        {
-            return trapType.ToString();
-        }
-
-        internal static string FormatMonsterMasterId(int masterId)
-        {
-            return masterId.ToString();
-        }
-
         private static bool TryGetTrapTypeFromLevelObject(ILevelObjectInfo? info, out TrapType trapType)
         {
             trapType = TrapType.Default;

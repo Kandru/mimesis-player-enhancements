@@ -542,7 +542,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     .Append(':')
                     .Append(session.ItemCarryCount)
                     .Append(':')
-                    .Append(session.DamageToAlly);
+                    .Append(session.DamageToFriend)
+                    .Append(':')
+                    .Append(session.FriendsKilled);
             }
 
             _ = sb.Append(';');
