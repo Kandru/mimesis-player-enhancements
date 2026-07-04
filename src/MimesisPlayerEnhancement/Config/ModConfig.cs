@@ -46,6 +46,7 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableMorePlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxPlayers { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoreVoices { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxIndoorVoiceEvents { get; internal set; } = null!;

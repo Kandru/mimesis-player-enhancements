@@ -51,6 +51,7 @@ Host-only. Raise the vanilla 4-player session cap.
 |-----|------|---------|--------------|
 | `EnableMorePlayers` | bool | `false` | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | Max players in a session, host included. `1` = solo, `2` = host + one friend, and so on. Minimum is `1`. |
+| `EnableExtendedSpectatorPlayerList` | bool | `false` | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires `EnableMorePlayers`. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
 
 ### More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
@@ -391,6 +392,7 @@ EnableDebugLogging = false
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false
 MaxPlayers = 32
+EnableExtendedSpectatorPlayerList = false
 
 [MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true

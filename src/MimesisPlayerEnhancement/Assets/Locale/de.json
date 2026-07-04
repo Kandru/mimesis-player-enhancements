@@ -261,6 +261,10 @@
       "MaxPlayers": {
         "title": "Max. Spieler",
         "description": "Maximale Spieler in einer Sitzung inklusive Host (1 = Solo, 2 = Host + 1 Client usw.)."
+      },
+      "EnableExtendedSpectatorPlayerList": {
+        "title": "Erweiterte Zuschauer-Spielerliste",
+        "description": "Ersetzt die 4-Spieler-Todesliste durch ein zweispaltiges Layout, das sich an die Bildschirmhöhe anpasst. Erfordert „Mehr Spieler aktivieren“. Lebende Spieler werden bei begrenztem Platz zuerst angezeigt; unter den Toten haben Sprecher Vorrang."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {

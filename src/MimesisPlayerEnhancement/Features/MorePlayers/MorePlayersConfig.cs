@@ -29,6 +29,12 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 32,
                 "Max Players",
                 "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.).");
+
+            ModConfig.EnableExtendedSpectatorPlayerList = ModConfig.CreateTrackedEntry(_category,
+                "EnableExtendedSpectatorPlayerList",
+                false,
+                "Extended Spectator Player List",
+                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires EnableMorePlayers. Living players are shown first when space is limited; among dead players, speakers are prioritized.");
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>
@@ -56,6 +62,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             });
 
             ModConfig.EnableMorePlayers.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableMorePlayers));
+            ModConfig.EnableExtendedSpectatorPlayerList.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableExtendedSpectatorPlayerList));
         }
     }
 }

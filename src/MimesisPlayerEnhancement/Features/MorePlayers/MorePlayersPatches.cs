@@ -27,6 +27,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNestedPatchTypes(typeof(MorePlayersPatches))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SurvivalResultPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPatches)))
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(VActorDictCapacityPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
@@ -55,6 +56,9 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 ("SetRemoteVolumeController_v2/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))),
                 ("SetPingImage/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
+                ("Start/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), "Start")),
+                ("UpdatePlayerListView/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), nameof(UIPrefab_Spectator_PlayerListView.UpdatePlayerListView))),
+                ("OnDisable/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), "OnDisable")),
                 ("ctor/IVroom", AccessTools.Constructor(typeof(IVroom), [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty), typeof(OnCreateRoomDelegate)])),
             ];
 
@@ -69,6 +73,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         /// <summary>Re-applies player-cap limits to live networking state after config changes.</summary>
         public static void RefreshFromConfig()
         {
+            SpectatorPlayerGrid.RefreshFromConfig();
+
             if (!ModConfig.EnableMorePlayers.Value)
             {
                 // Revert an elevated live socket cap to vanilla so a disabled feature does not
