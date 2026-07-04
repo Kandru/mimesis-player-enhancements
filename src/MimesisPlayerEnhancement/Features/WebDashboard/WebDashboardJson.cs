@@ -99,12 +99,30 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(result);
         }
 
-        public static string SerializeSnapshotEvent(WebDashboardSnapshot snapshot)
+        public static string SerializeSnapshotEvent(
+            WebDashboardSnapshot snapshot,
+            bool livePlayersOnly = false,
+            IReadOnlyList<WebDashboardPlayerDto>? livePlayers = null)
         {
+            IReadOnlyList<WebDashboardPlayerDto> playerSource =
+                livePlayersOnly && livePlayers != null ? livePlayers : snapshot.Players;
+
             List<PlayerApiDto> players = [];
-            foreach (WebDashboardPlayerDto player in snapshot.Players)
+            foreach (WebDashboardPlayerDto player in playerSource)
             {
                 players.Add(MapPlayer(player));
+            }
+
+            if (livePlayersOnly)
+            {
+                LiveSnapshotEventDto liveDto = new()
+                {
+                    Status = snapshot.Status,
+                    Players = players,
+                    PlayersLiveOnly = true,
+                };
+
+                return ModJson.Serialize(liveDto);
             }
 
             bool includeLeaderboard = snapshot.Status.IsHost && !string.IsNullOrEmpty(snapshot.LeaderboardJson);
@@ -278,6 +296,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public WebDashboardStatusDto Status = new();
             public List<PlayerApiDto> Players = [];
             public MinimapApiResponse? Minimap;
+        }
+
+        private sealed class LiveSnapshotEventDto
+        {
+            public WebDashboardStatusDto Status = new();
+            public List<PlayerApiDto> Players = [];
+            public bool PlayersLiveOnly;
         }
 
         private sealed class PlayersApiResponse

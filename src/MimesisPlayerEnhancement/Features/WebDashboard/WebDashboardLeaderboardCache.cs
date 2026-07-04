@@ -115,6 +115,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 WebDashboardSnapshotCache.MarkDirty();
+                WebDashboardSnapshotCache.RequestFullPublish();
             }
             catch (Exception ex)
             {
@@ -134,6 +135,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (pending != 0 && pending != cachedRevision)
                 {
                     WebDashboardSnapshotCache.MarkDirty();
+                WebDashboardSnapshotCache.RequestFullPublish();
                 }
             }
         }

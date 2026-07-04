@@ -9,6 +9,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal static class WebDashboardSnapshotCache
     {
         private const int FullRefreshIntervalMs = 1000;
+        private const int LargeRosterRefreshIntervalMs = 2000;
+        private const int LargeRosterPlayerThreshold = 64;
         private const int MinDirtyRefreshMs = 500;
         private const int MinimapRefreshIntervalMs = 250;
         private const int TickIntervalMs = 100;
@@ -25,6 +27,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static string? _lastLeaderboardJson;
         private static List<ulong> _lastConnectedSteamIds = [];
         private static int _lastSeenStatisticsRevision = -1;
+        private static List<WebDashboardPlayerDto> _cachedMergedPlayers = [];
+        private static int _cachedOfflineRevision = -1;
+        private static HashSet<ulong> _previousLiveSteamIds = [];
+        private static string _lastPublishFingerprint = "";
+        private static string _cachedOfflinePublishFingerprint = "";
+        private static int _cachedOfflinePublishRevision = -1;
+        private static Dictionary<ulong, int> _mergedIndexBySteam = [];
+        private static bool _requireFullPublish;
+
+        internal static void RequestFullPublish()
+        {
+            _requireFullPublish = true;
+        }
 
         internal static int Version => Volatile.Read(ref _version);
 
@@ -63,22 +78,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     && StatisticsTracker.Revision != _lastSeenStatisticsRevision)
                 {
                     _dirty = true;
+                    _requireFullPublish = true;
                 }
 
                 long nowMs = tickNowMs;
-                if (nowMs - _lastMinimapRefreshMs >= MinimapRefreshIntervalMs)
+                bool hasAudience = WebDashboardSseHub.HasClients;
+
+                if (hasAudience && nowMs - _lastMinimapRefreshMs >= MinimapRefreshIntervalMs)
                 {
                     RefreshMinimapLive();
                     _lastMinimapRefreshMs = nowMs;
                 }
 
-                if (ShouldRunFullRefresh(nowMs))
+                if (!ShouldRunRefresh(nowMs))
                 {
-                    Refresh(listenUrl, nowMs);
-                    _dirty = false;
-                    _lastFullRefreshMs = nowMs;
-                    _lastSeenStatisticsRevision = StatisticsTracker.Revision;
+                    return;
                 }
+
+                Refresh(listenUrl, nowMs);
+                _dirty = false;
+                _lastFullRefreshMs = nowMs;
+                _lastSeenStatisticsRevision = StatisticsTracker.Revision;
 
                 return;
             }
@@ -97,7 +117,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (!ShouldRunFullRefresh(idleNowMs))
+            if (!ShouldRunRefresh(idleNowMs))
             {
                 return;
             }
@@ -108,19 +128,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _minimapFingerprint = "";
         }
 
-        private static bool ShouldRunFullRefresh(long nowMs)
+        private static bool ShouldRunRefresh(long nowMs)
         {
-            if (!_dirty && nowMs - _lastFullRefreshMs < FullRefreshIntervalMs)
+            if (_dirty)
+            {
+                return nowMs - _lastFullRefreshMs >= MinDirtyRefreshMs;
+            }
+
+            if (!WebDashboardSseHub.HasClients)
             {
                 return false;
             }
 
-            if (nowMs - _lastFullRefreshMs >= FullRefreshIntervalMs)
-            {
-                return true;
-            }
+            return nowMs - _lastFullRefreshMs >= ResolveRefreshIntervalMs();
+        }
 
-            return _dirty && nowMs - _lastFullRefreshMs >= MinDirtyRefreshMs;
+        private static int ResolveRefreshIntervalMs()
+        {
+            return _cachedMergedPlayers.Count >= LargeRosterPlayerThreshold
+                ? LargeRosterRefreshIntervalMs
+                : FullRefreshIntervalMs;
         }
 
         internal static void RefreshMinimapLive()
@@ -152,7 +179,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSnapshot next = new()
             {
                 Status = previous.Status,
-                Players = ClonePlayers(previous.Players),
+                Players = previous.Players,
                 LeaderboardJson = previous.LeaderboardJson,
                 MinimapLayout = layout,
                 MinimapMarkers = CloneMarkers(markers),
@@ -174,6 +201,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             bool isHost = WebDashboardGameState.IsHost();
             int saveSlotId = WebDashboardGameState.GetSaveSlotId();
             _lastConnected = connected;
+            int offlineRevision = WebDashboardOfflinePlayerCache.CachedRevision;
 
             WebDashboardSnapshot next = new()
             {
@@ -196,6 +224,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 _lastLeaderboardJson = null;
                 _lastConnectedSteamIds = [];
                 _minimapFingerprint = "";
+                _cachedMergedPlayers = [];
+                _cachedOfflineRevision = -1;
+                _previousLiveSteamIds = [];
+                _lastPublishFingerprint = "";
+                _cachedOfflinePublishFingerprint = "";
+                _cachedOfflinePublishRevision = -1;
+                _mergedIndexBySteam = [];
+                _requireFullPublish = false;
                 WebDashboardAvatarService.Clear();
                 WebDashboardLeaderboardCache.Clear();
                 WebDashboardOfflinePlayerCache.Clear();
@@ -219,10 +255,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     livePlayers = _lastLivePlayers;
                 }
 
-                List<WebDashboardPlayerDto> players = WebDashboardPlayerService.MergePlayerLists(
-                    livePlayers,
-                    WebDashboardOfflinePlayerCache.GetCached());
-                next.Players = players;
+                IReadOnlyList<WebDashboardPlayerDto> offlinePlayers = WebDashboardOfflinePlayerCache.GetCached();
+                offlineRevision = WebDashboardOfflinePlayerCache.CachedRevision;
+                bool needsFullMerge = _requireFullPublish
+                    || _cachedMergedPlayers.Count == 0
+                    || offlineRevision != _cachedOfflineRevision;
+                if (needsFullMerge)
+                {
+                    _cachedMergedPlayers = WebDashboardPlayerService.MergePlayerLists(livePlayers, offlinePlayers);
+                    _mergedIndexBySteam = WebDashboardPlayerService.BuildMergedIndex(_cachedMergedPlayers);
+                }
+                else
+                {
+                    _ = WebDashboardPlayerService.ApplyLiveToMerged(
+                        _cachedMergedPlayers,
+                        _mergedIndexBySteam,
+                        livePlayers,
+                        offlinePlayers,
+                        _previousLiveSteamIds);
+                }
+
+                _cachedOfflineRevision = offlineRevision;
+                _previousLiveSteamIds = CollectLiveSteamIds(livePlayers);
+                next.Players = _cachedMergedPlayers;
 
                 HashSet<ulong> avatarSteamIds = [];
                 foreach (WebDashboardPlayerDto player in livePlayers)
@@ -233,7 +288,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
                 }
 
-                if (isHost && saveSlotId >= 0)
+                if (isHost && saveSlotId >= 0 && (_requireFullPublish || _dirty))
                 {
                     List<ulong> connectedSteamIds = CollectConnectedSteamIds(livePlayers);
                     if (connectedSteamIds.Count > 0)
@@ -275,8 +330,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         }
                     }
                 }
+                else if (isHost && saveSlotId >= 0)
+                {
+                    next.LeaderboardJson = _lastLeaderboardJson ?? _snapshot.LeaderboardJson;
+                }
 
-                WebDashboardAvatarService.PrewarmForPlayers([.. avatarSteamIds]);
+                if (WebDashboardSseHub.HasClients)
+                {
+                    WebDashboardAvatarService.PrewarmForPlayers([.. avatarSteamIds]);
+                }
 
                 if (nowMs - _lastMinimapRefreshMs < MinimapRefreshIntervalMs
                     && _snapshot.MinimapMarkers.Count > 0)
@@ -298,10 +360,181 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
+            bool publishFull = _requireFullPublish;
+            List<WebDashboardPlayerDto> liveForPublish = _lastLivePlayers.Count == 0 ? [] : [.. _lastLivePlayers];
+            string publishFingerprint = publishFull
+                ? BuildPublishFingerprint(next, _previousLiveSteamIds, offlineRevision)
+                : BuildLivePublishFingerprint(next, liveForPublish);
+            if (WebDashboardSseHub.HasClients
+                && publishFingerprint != _lastPublishFingerprint)
+            {
+                _lastPublishFingerprint = publishFingerprint;
+                int newVersion = Interlocked.Increment(ref _version);
+                next.Status.SnapshotVersion = newVersion;
+                bool liveOnly = !publishFull;
+                WebDashboardSnapshotEventCache.ScheduleBuild(
+                    next,
+                    newVersion,
+                    liveOnly,
+                    liveOnly ? liveForPublish : null);
+                WebDashboardSseHub.NotifySnapshotChanged();
+                if (publishFull)
+                {
+                    _requireFullPublish = false;
+                }
+            }
+
             _ = Interlocked.Exchange(ref _snapshot, next);
-            int newVersion = Interlocked.Increment(ref _version);
-            WebDashboardSnapshotEventCache.ScheduleBuild(next, newVersion);
-            WebDashboardSseHub.NotifySnapshotChanged();
+        }
+
+        private static string BuildLivePublishFingerprint(
+            WebDashboardSnapshot snapshot,
+            IReadOnlyList<WebDashboardPlayerDto> livePlayers)
+        {
+            System.Text.StringBuilder sb = new();
+            WebDashboardStatusDto status = snapshot.Status;
+            _ = sb.Append(status.IsConnected ? '1' : '0')
+                .Append(status.IsHost ? '1' : '0')
+                .Append('|')
+                .Append(status.SaveSlotId)
+                .Append('|')
+                .Append(status.ConfigVersion)
+                .Append('|')
+                .Append(livePlayers.Count)
+                .Append('|');
+
+            foreach (WebDashboardPlayerDto player in livePlayers)
+            {
+                AppendPlayerFingerprint(sb, player, includePlaytimeBucket: true);
+            }
+
+            return sb.ToString();
+        }
+
+        private static HashSet<ulong> CollectLiveSteamIds(IReadOnlyList<WebDashboardPlayerDto> livePlayers)
+        {
+            HashSet<ulong> liveIds = new(livePlayers.Count);
+            foreach (WebDashboardPlayerDto player in livePlayers)
+            {
+                if (player.SteamId != 0)
+                {
+                    _ = liveIds.Add(player.SteamId);
+                }
+            }
+
+            return liveIds;
+        }
+
+        private static string BuildPublishFingerprint(
+            WebDashboardSnapshot snapshot,
+            IReadOnlyCollection<ulong> liveSteamIds,
+            int offlineRevision)
+        {
+            System.Text.StringBuilder sb = new();
+            WebDashboardStatusDto status = snapshot.Status;
+            _ = sb.Append(status.IsConnected ? '1' : '0')
+                .Append(status.IsHost ? '1' : '0')
+                .Append('|')
+                .Append(status.SaveSlotId)
+                .Append('|')
+                .Append(status.LobbyName)
+                .Append('|')
+                .Append(status.ConfigVersion)
+                .Append('|')
+                .Append(snapshot.LeaderboardJson?.Length ?? 0)
+                .Append('|')
+                .Append(snapshot.Players.Count)
+                .Append('|');
+
+            if (offlineRevision != _cachedOfflinePublishRevision)
+            {
+                System.Text.StringBuilder offline = new();
+                HashSet<ulong> liveIds = liveSteamIds is HashSet<ulong> set ? set : [.. liveSteamIds];
+                foreach (WebDashboardPlayerDto player in snapshot.Players)
+                {
+                    if (player.SteamId != 0 && liveIds.Contains(player.SteamId))
+                    {
+                        continue;
+                    }
+
+                    AppendPlayerFingerprint(offline, player, includePlaytimeBucket: false);
+                }
+
+                _cachedOfflinePublishFingerprint = offline.ToString();
+                _cachedOfflinePublishRevision = offlineRevision;
+            }
+
+            _ = sb.Append(_cachedOfflinePublishFingerprint).Append('|');
+
+            HashSet<ulong> liveLookup = liveSteamIds is HashSet<ulong> liveSet ? liveSet : [.. liveSteamIds];
+            foreach (WebDashboardPlayerDto player in snapshot.Players)
+            {
+                if (player.SteamId == 0 || !liveLookup.Contains(player.SteamId))
+                {
+                    continue;
+                }
+
+                AppendPlayerFingerprint(sb, player, includePlaytimeBucket: true);
+            }
+
+            return sb.ToString();
+        }
+
+        private static void AppendPlayerFingerprint(
+            System.Text.StringBuilder sb,
+            WebDashboardPlayerDto player,
+            bool includePlaytimeBucket)
+        {
+            _ = sb.Append(player.SteamId)
+                .Append(':')
+                .Append(player.PlayerUid)
+                .Append(':')
+                .Append(player.DisplayName)
+                .Append(':')
+                .Append(player.IsHost ? '1' : '0')
+                .Append(':')
+                .Append(player.IsLocal ? '1' : '0')
+                .Append(':')
+                .Append(player.IsBanned ? '1' : '0')
+                .Append(':')
+                .Append(player.IsAlive ? '1' : '0')
+                .Append(':')
+                .Append(player.NetworkGrade)
+                .Append(':')
+                .Append(player.ConnectionRole)
+                .Append(':')
+                .Append(player.ConnectionAddress)
+                .Append(':')
+                .Append(player.VoiceLineCount)
+                .Append(':')
+                .Append(player.Health ?? -1)
+                .Append(':')
+                .Append(player.MaxHealth ?? -1)
+                .Append(':')
+                .Append(player.ToxicPercent?.ToString("F0") ?? "-");
+
+            WebDashboardSessionStatsDto? session = player.CurrentSession;
+            if (session != null)
+            {
+                _ = sb.Append(':')
+                    .Append(includePlaytimeBucket ? session.TotalConnectedSeconds / 10 : 0)
+                    .Append(':')
+                    .Append(session.CurrencyEarned)
+                    .Append(':')
+                    .Append(session.SurvivalDeaths)
+                    .Append(':')
+                    .Append(session.SurvivalWins)
+                    .Append(':')
+                    .Append(session.Revives)
+                    .Append(':')
+                    .Append(session.MimicEncounterCount)
+                    .Append(':')
+                    .Append(session.ItemCarryCount)
+                    .Append(':')
+                    .Append(session.DamageToAlly);
+            }
+
+            _ = sb.Append(';');
         }
 
         private static List<ulong> CollectConnectedSteamIds(IReadOnlyList<WebDashboardPlayerDto> livePlayers)

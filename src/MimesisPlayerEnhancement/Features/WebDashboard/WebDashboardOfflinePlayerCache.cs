@@ -17,6 +17,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static int _buildInFlight;
         private static int _pendingRevision;
 
+        internal static int CachedRevision => Volatile.Read(ref _cachedRevision);
+
         internal static IReadOnlyList<WebDashboardPlayerDto> GetCached()
         {
             return _cached;
@@ -58,6 +60,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 _cached = built;
                 _cachedRevision = revision;
                 WebDashboardSnapshotCache.MarkDirty();
+                WebDashboardSnapshotCache.RequestFullPublish();
             }
             catch (System.Exception ex)
             {
@@ -70,6 +73,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (pending != 0 && pending != _cachedRevision)
                 {
                     WebDashboardSnapshotCache.MarkDirty();
+                WebDashboardSnapshotCache.RequestFullPublish();
                 }
             }
         }

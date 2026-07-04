@@ -307,9 +307,15 @@ document.addEventListener('alpine:init', () => {
     applySnapshot(payload) {
       const wasConnected = this.status.isConnected;
       this.status = payload.status || this.status;
-      this.players = payload.players || [];
-      this.leaderboard = payload.leaderboard || null;
-      this.minimapRaw = payload.minimap || null;
+      if (payload.playersLiveOnly) {
+        this.mergeLivePlayers(payload.players || []);
+      } else {
+        this.players = payload.players || [];
+        this.leaderboard = payload.leaderboard ?? this.leaderboard;
+        if (payload.minimap != null) {
+          this.minimapRaw = payload.minimap;
+        }
+      }
       this.apiError = false;
       this.setConnectedMode();
 
@@ -327,6 +333,22 @@ document.addEventListener('alpine:init', () => {
       this.ensureDefaultRoute();
       this.syncDocumentTitle();
       return wasConnected !== this.status.isConnected;
+    },
+
+    mergeLivePlayers(livePlayers) {
+      if (!Array.isArray(livePlayers) || livePlayers.length === 0) {
+        return;
+      }
+
+      for (const live of livePlayers) {
+        const id = String(live.steamId);
+        const index = (this.players || []).findIndex((player) => String(player.steamId) === id);
+        if (index >= 0) {
+          this.players[index] = live;
+        } else {
+          this.players.push(live);
+        }
+      }
     },
 
     needsPageRefresh(force) {

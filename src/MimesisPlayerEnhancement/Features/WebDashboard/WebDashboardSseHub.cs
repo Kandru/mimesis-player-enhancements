@@ -28,6 +28,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static long _lastMinimapPublishMs;
         private static int _lastPublishedVersion;
 
+        internal static bool HasClients => Volatile.Read(ref _clientCount) > 0;
+
         internal static void Start()
         {
             lock (Gate)
@@ -70,6 +72,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Clients.Add(client);
                 _ = Interlocked.Increment(ref _clientCount);
             }
+
+            WebDashboardSnapshotCache.MarkDirty();
+            WebDashboardSnapshotCache.RequestFullPublish();
 
             try
             {
@@ -231,17 +236,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string? payload = WebDashboardSnapshotEventCache.TryGetPayload(snapshotVersion);
             if (string.IsNullOrEmpty(payload))
             {
-                WebDashboardSnapshot snapshot = WebDashboardSnapshotCache.Get();
-                WebDashboardSnapshotEventCache.ScheduleBuild(snapshot, snapshotVersion);
-                try
-                {
-                    payload = WebDashboardJson.SerializeSnapshotEvent(snapshot);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"SSE snapshot serialization failed: {ex.Message}");
-                    return;
-                }
+                WebDashboardSnapshotEventCache.ScheduleBuild(
+                    WebDashboardSnapshotCache.Get(),
+                    snapshotVersion,
+                    livePlayersOnly: false,
+                    livePlayers: null);
+                _pendingSnapshotBroadcast = true;
+                _ = BroadcastSignal.Set();
+                return;
             }
 
             _lastSnapshotPublishMs = UtcNowMs();
