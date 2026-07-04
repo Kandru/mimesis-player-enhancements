@@ -145,6 +145,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             ModLog.Debug(Feature, $"Removing old player actor={oldActorId} room={oldRoom?.GetType().Name ?? "null"}");
 
             oldRoom?.PendRemovePlayer(oldActorId, backup: false, kill: false);
+            if (oldRoom is MaintenanceRoom maintenanceRoom)
+            {
+                FlushMaintenanceRoomCommands(maintenanceRoom);
+                FlushVRoomManagerCommandsIfAvailable();
+            }
+
             context.CreatePlayerSnapshot(true);
         }
 
@@ -153,16 +159,19 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         /// maintenance room, which emits LeaveRoomSig. Clients wait for serverRoomState=Nowhere
         /// before loading InTramWaitingScene.
         /// </summary>
-        internal static void ReleaseLateJoinerFromMaintenance(VPlayer player)
+        internal static bool ReleaseLateJoinerFromMaintenance(VPlayer player)
         {
             if (player.VRoom is not MaintenanceRoom maintenanceRoom)
             {
-                return;
+                return true;
             }
 
             ModLog.Info(Feature, $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
 
             maintenanceRoom.PendRemovePlayer(player.ObjectID, backup: false, kill: false);
+            FlushMaintenanceRoomCommands(maintenanceRoom);
+            FlushVRoomManagerCommandsIfAvailable();
+            return true;
         }
 
         internal static string GetSceneNameFromMapId(int mapMasterId)
@@ -397,6 +406,19 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static void FlushRoomCommands(VWaitingRoom waitingRoom)
         {
             waitingRoom.GetCommandExecutor()?.Execute();
+        }
+
+        private static void FlushMaintenanceRoomCommands(MaintenanceRoom maintenanceRoom)
+        {
+            maintenanceRoom.GetCommandExecutor()?.Execute();
+        }
+
+        private static void FlushVRoomManagerCommandsIfAvailable()
+        {
+            if (TryGetVRoomManager(out VRoomManager? vroomManager) && vroomManager != null)
+            {
+                FlushVRoomManagerCommands(vroomManager);
+            }
         }
 
         private static void EnsurePlayerStartPoints(VWaitingRoom waitingRoom)

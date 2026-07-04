@@ -114,6 +114,7 @@ Late joiners cannot be dropped straight into an active dungeon (the game has no 
 |-----|------|---------|--------------|
 | `EnableJoinAnytime` | bool | `true` | Let players join after a session has already started. |
 | `JoinConnectionGraceSeconds` | int | `30` | After a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked). Minimum is `1`. |
+| `JoinTramRouteRetrySeconds` | float | `0.5` | How often the host retries routing a late joiner from maintenance to the tram (packet resend and release). Minimum is `0.1`. Retries continue until the joiner reaches the waiting room or `JoinConnectionGraceSeconds` expires. |
 
 ### Extended Save Slots — `[MimesisPlayerEnhancement_ExtendedSaveSlots]`
 

@@ -43,6 +43,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             RegisterPending(uid, context.GetSessionID());
+            LateJoinManager.OnPlayerRegistered(uid);
             ModLog.Debug(Feature, $"Connecting tracker — registered uid={uid}, deadline={GraceSeconds}s");
         }
 

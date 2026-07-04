@@ -1,4 +1,5 @@
 using System.Reflection;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluProtocol;
 using ReluProtocol.Enum;
 
@@ -49,6 +50,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     [HarmonyPatch(typeof(SessionManager), nameof(SessionManager.Remove))]
     internal static class SessionManagerRemovePatch
     {
+        [HarmonyPrefix]
+        private static void Prefix(SessionManager __instance, long sessionID)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            if (WebDashboardSessionAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
+                && context != null)
+            {
+                long uid = context.GetPlayerUID();
+                if (uid != 0)
+                {
+                    LateJoinManager.OnPlayerDisconnected(uid);
+                }
+            }
+        }
+
         [HarmonyPostfix]
         private static void Postfix()
         {

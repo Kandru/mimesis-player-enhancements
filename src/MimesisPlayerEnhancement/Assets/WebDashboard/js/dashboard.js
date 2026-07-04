@@ -89,6 +89,7 @@ document.addEventListener('alpine:init', () => {
       modVersion: '',
       snapshotVersion: 0,
       configVersion: 0,
+      joinAnytimeRoutingCount: 0,
     },
     players: [],
     leaderboard: null,
@@ -502,6 +503,22 @@ document.addEventListener('alpine:init', () => {
       return parts.join(' · ');
     },
 
+    lateJoinMeta(p) {
+      if (!this.status.isHost || !p.lateJoinLabel) return '';
+      const parts = ['Late join: ' + p.lateJoinLabel];
+      if (p.lateJoinStuckSeconds != null && p.lateJoinStuckSeconds > 0) {
+        parts.push(Math.round(p.lateJoinStuckSeconds) + 's');
+      }
+      if (p.lateJoinAttemptCount > 1) {
+        parts.push(p.lateJoinAttemptCount + ' attempts');
+      }
+      return parts.join(' · ');
+    },
+
+    showLateJoinBadge(p) {
+      return this.status.isHost && !!p.lateJoinLabel && p.lateJoinPhase !== 'InWaitingRoom';
+    },
+
     sessionLine(p) {
       const s = p.currentSession;
       if (!s) return '';
@@ -576,6 +593,8 @@ document.addEventListener('alpine:init', () => {
 
     playerDetailLines(p) {
       const parts = [];
+      const lateJoin = this.lateJoinMeta(p);
+      if (lateJoin) parts.push(lateJoin);
       if (this.showPlayerSessionStats(p)) {
         const session = this.sessionLine(p);
         if (session) parts.push(session);

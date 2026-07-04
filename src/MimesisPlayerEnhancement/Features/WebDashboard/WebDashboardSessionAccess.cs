@@ -111,6 +111,63 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return false;
         }
 
+        internal static bool TryGetSessionContextByUid(long uid, out SessionContext? context)
+        {
+            context = null;
+            if (uid == 0)
+            {
+                return false;
+            }
+
+            SessionManager? sessionManager = GetSessionManager();
+            if (sessionManager == null)
+            {
+                return false;
+            }
+
+            foreach (SessionContext candidate in EnumerateSessionContexts(sessionManager))
+            {
+                if (candidate.GetPlayerUID() != uid)
+                {
+                    continue;
+                }
+
+                context = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetSessionContextBySessionId(
+            SessionManager sessionManager,
+            long sessionId,
+            out SessionContext? context)
+        {
+            context = null;
+            if (sessionId == 0 || sessionManager == null)
+            {
+                return false;
+            }
+
+            if (HostSessionContextField?.GetValue(sessionManager) is SessionContext host
+                && host != null
+                && host.GetSessionID() == sessionId)
+            {
+                context = host;
+                return true;
+            }
+
+            if (ContextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts
+                && contexts.TryGetValue(sessionId, out SessionContext? resolved))
+            {
+                context = resolved;
+                return true;
+            }
+
+            return false;
+        }
+
         internal static bool TryGetHostPlayerUid(out long hostUid)
         {
             hostUid = 0;

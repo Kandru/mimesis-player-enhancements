@@ -63,6 +63,7 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableJoinAnytime { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> JoinConnectionGraceSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> JoinTramRouteRetrySeconds { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableSpawnScaling { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleMimicSpawnsByPlayerCount { get; internal set; } = null!;

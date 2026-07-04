@@ -108,4 +108,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
         }
     }
+
+    [HarmonyPatch]
+    internal static class GamePlaySceneStartPatch
+    {
+        private static System.Reflection.MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(GamePlayScene), "Start");
+
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            JoinAnytimeLobbyController.OnHostSceneReady();
+        }
+    }
 }

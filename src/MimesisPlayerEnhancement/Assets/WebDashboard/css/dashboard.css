@@ -483,6 +483,15 @@ body.connected .app-content {
   color: var(--md-text-secondary);
 }
 
+.page-heading-alert {
+  color: var(--md-primary);
+}
+
+.page-heading-alert + .page-heading-count,
+.page-heading-count + .page-heading-alert {
+  margin-left: 0.75rem;
+}
+
 /* ── Player list ── */
 
 .players-panel {
@@ -771,6 +780,12 @@ body.connected .app-content {
 .badge.banned {
   background: rgba(207, 102, 121, 0.25);
   color: var(--md-error);
+}
+
+.badge.late-join {
+  background: rgba(255, 183, 77, 0.18);
+  color: #ffb74d;
+  border: 1px solid rgba(255, 183, 77, 0.35);
 }
 
 .badge.alive {

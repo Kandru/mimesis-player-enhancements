@@ -12,32 +12,53 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         {
             if (player.VRoom is VWaitingRoom)
             {
-                LateJoinManager.MarkPreGameStateSent(player.UID);
+                LateJoinRouteTracker.MarkInWaitingRoom(player.UID);
                 return true;
             }
 
-            if (!SendPreGameTramState(player, msg => player.SendToMe(msg), allowResend))
+            return SendPreGameTramState(player.UID, msg => player.SendToMe(msg), allowResend)
+                && TryReleaseLateJoiner(player);
+        }
+
+        internal static bool ResendPreGameTramStateToSession(SessionContext context, bool allowResend)
+        {
+            long uid = context.GetPlayerUID();
+            if (uid == 0)
             {
                 return false;
             }
 
-            JoinAnytimeRoomTools.ReleaseLateJoinerFromMaintenance(player);
+            return SendPreGameTramState(uid, msg => { _ = context.Send(msg); }, allowResend);
+        }
+
+        private static bool TryReleaseLateJoiner(VPlayer player)
+        {
+            if (player.VRoom is not MaintenanceRoom)
+            {
+                LateJoinRouteTracker.MarkAwaitingClient(player.UID);
+                return true;
+            }
+
+            if (!JoinAnytimeRoomTools.ReleaseLateJoinerFromMaintenance(player))
+            {
+                return false;
+            }
+
+            LateJoinRouteTracker.MarkAwaitingClient(player.UID);
             return true;
         }
 
-        private static bool SendPreGameTramState(VPlayer player, Action<IMsg> send, bool allowResend)
+        private static bool SendPreGameTramState(long uid, Action<IMsg> send, bool allowResend)
         {
-            long uid = player.UID;
-
-            if (LateJoinManager.HasPreGameStateBeenSent(uid))
+            if (LateJoinRouteTracker.HasCompletedServerRoute(uid))
             {
                 if (!allowResend)
                 {
                     ModLog.Debug(Feature, $"Skipping duplicate pre-game tram state send for uid={uid}");
-                    return player.VRoom is not MaintenanceRoom;
+                    return LateJoinRouteTracker.GetPhase(uid) != LateJoinRoutePhase.InMaintenance;
                 }
 
-                ModLog.Debug(Feature, $"Resending pre-game tram state for uid={uid} — still in maintenance");
+                ModLog.Debug(Feature, $"Resending pre-game tram state for uid={uid} — phase={LateJoinRouteTracker.GetPhase(uid)}");
             }
 
             if (!JoinAnytimeRoomTools.TryEnsureWaitingRoom(out IVroom? waitingRoom))
@@ -59,7 +80,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             send(new MoveToWaitingRoomSig());
 
-            LateJoinManager.MarkPreGameStateSent(uid);
             return true;
         }
     }

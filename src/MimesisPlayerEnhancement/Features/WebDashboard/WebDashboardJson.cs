@@ -230,6 +230,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Health = player.Health,
                 MaxHealth = player.MaxHealth,
                 ToxicPercent = player.ToxicPercent,
+                LateJoinPhase = player.LateJoinPhase,
+                LateJoinLabel = player.LateJoinLabel,
+                LateJoinStuckSeconds = player.LateJoinStuckSeconds,
+                LateJoinAttemptCount = player.LateJoinAttemptCount,
             };
         }
 
@@ -325,6 +329,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public long? Health;
             public long? MaxHealth;
             public double? ToxicPercent;
+            public string LateJoinPhase = "";
+            public string LateJoinLabel = "";
+            public float? LateJoinStuckSeconds;
+            public int LateJoinAttemptCount;
         }
 
         private sealed class SessionStatsApiDto

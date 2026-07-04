@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string ListenUrl = "";
         public int SnapshotVersion;
         public int ConfigVersion;
+        public int JoinAnytimeRoutingCount;
     }
 
     internal sealed class WebDashboardSessionStatsDto
@@ -46,6 +47,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public long? Health;
         public long? MaxHealth;
         public double? ToxicPercent;
+        public string LateJoinPhase = "";
+        public string LateJoinLabel = "";
+        public float? LateJoinStuckSeconds;
+        public int LateJoinAttemptCount;
     }
 
     internal sealed class WebDashboardMinimapBoundsDto

@@ -213,6 +213,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ListenUrl = listenUrl,
                     SnapshotVersion = Version,
                     ConfigVersion = ModConfig.Version,
+                    JoinAnytimeRoutingCount = ModConfig.EnableJoinAnytime.Value
+                        ? LateJoinRouteTracker.GetActiveRoutingCount()
+                        : 0,
                 },
             };
 
@@ -398,6 +401,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append('|')
                 .Append(status.ConfigVersion)
                 .Append('|')
+                .Append(status.JoinAnytimeRoutingCount)
+                .Append('|')
                 .Append(livePlayers.Count)
                 .Append('|');
 
@@ -509,7 +514,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append(':')
                 .Append(player.MaxHealth ?? -1)
                 .Append(':')
-                .Append(player.ToxicPercent?.ToString("F0") ?? "-");
+                .Append(player.ToxicPercent?.ToString("F0") ?? "-")
+                .Append(':')
+                .Append(player.LateJoinPhase)
+                .Append(':')
+                .Append(player.LateJoinLabel)
+                .Append(':')
+                .Append(player.LateJoinStuckSeconds?.ToString("F1") ?? "-")
+                .Append(':')
+                .Append(player.LateJoinAttemptCount);
 
             WebDashboardSessionStatsDto? session = player.CurrentSession;
             if (session != null)

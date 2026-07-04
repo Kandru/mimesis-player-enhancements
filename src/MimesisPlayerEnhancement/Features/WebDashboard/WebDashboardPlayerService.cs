@@ -789,6 +789,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 dto.CurrentSession = BuildSessionStats(dto.SteamId);
             }
+
+            if (WebDashboardGameState.IsHost() && ModConfig.EnableJoinAnytime.Value)
+            {
+                LateJoinRouteTracker.ApplyDashboardFields(dto, context);
+            }
         }
 
         private static void ApplyConnectionInfo(WebDashboardPlayerDto dto, SessionContext? context)

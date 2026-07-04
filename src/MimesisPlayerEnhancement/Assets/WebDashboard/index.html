@@ -118,6 +118,8 @@
               <h2 class="page-heading">Players</h2>
               <span class="page-heading-count" x-show="connectedOverviewPlayers().length > 0"
                 x-text="connectedOverviewPlayers().length + ' connected'"></span>
+              <span class="page-heading-count page-heading-alert" x-show="status.isHost && status.joinAnytimeRoutingCount > 0"
+                x-text="status.joinAnytimeRoutingCount + ' late join routing'"></span>
             </div>
             <div class="empty-state" x-show="connectedOverviewPlayers().length === 0 && !pageError">
               <p>No players connected.</p>
@@ -141,6 +143,7 @@
                       <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive">Alive</span>
                       <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive">Dead</span>
                       <span class="badge banned" x-show="p.isBanned">Banned</span>
+                      <span class="badge late-join" x-show="showLateJoinBadge(p)" x-text="p.lateJoinLabel"></span>
                       <span class="player-entry-actions"
                         x-show="status.isHost && (canModerate(p) || canRespawn(p) || canHeal(p) || p.isBanned)">
                         <button class="btn btn-outlined btn-badge" x-show="canHeal(p)"
