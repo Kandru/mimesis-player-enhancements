@@ -12,21 +12,30 @@ namespace MimesisPlayerEnhancement
     {
         private HarmonyLib.Harmony? _harmony;
         private float _nextEncounterSpawnProcessTime;
+        private bool _isInitializing;
 
         public override void OnInitializeMelon()
         {
-            ModConfig.Initialize(LoggerInstance);
-            ModL10n.Initialize();
-            ModConfig.Changed += SyncFromConfig;
-
-            _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
-            foreach (IFeatureModule module in FeatureModules.All)
+            _isInitializing = true;
+            try
             {
-                module.ApplyPatches(_harmony);
-            }
+                ModConfig.Initialize(LoggerInstance);
+                ModL10n.Initialize();
 
-            SyncFromConfig(ModConfigChangeInfo.FullReload);
-            LogStartupSummary();
+                _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
+                foreach (IFeatureModule module in FeatureModules.All)
+                {
+                    module.ApplyPatches(_harmony);
+                }
+
+                SyncFromConfig(ModConfigChangeInfo.FullReload);
+                LogStartupSummary();
+                ModConfig.Changed += SyncFromConfig;
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
         }
 
         public override void OnPreferencesSaved(string filepath)
@@ -48,7 +57,10 @@ namespace MimesisPlayerEnhancement
 
             ModConfig.SanitizeFloatEntries();
             ModConfig.NormalizeSavedFloats();
-            ModConfig.NotifyFileReloaded();
+            if (!_isInitializing)
+            {
+                ModConfig.NotifyFileReloaded();
+            }
         }
 
         public override void OnUpdate()
