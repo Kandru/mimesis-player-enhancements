@@ -1,6 +1,3 @@
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession;
-
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 {
     internal static class DeadPlayerFeaturesRuntime

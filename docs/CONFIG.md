@@ -226,16 +226,17 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 
 ### Dead Player Features — `[MimesisPlayerEnhancement_DeadPlayerFeatures]`
 
-Umbrella feature for dead-spectator actions. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on. **Host required** for all sub-features below.
+Umbrella feature for dead-spectator actions. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on. Sub-features differ in who must run the mod (see table below).
 
 **Who needs the mod?**
 
 | Sub-feature | Host | Dead client (participant) | Living client |
 |-------------|------|---------------------------|---------------|
 | **Mimic possession tuning** (duration/cooldown) | Required | Not required | Not required |
+| **Monster spectate** (prev/next targets) | Not required | **Required** | Not required |
 | **Dead-player phone ring** | Required | **Required** (input, UI, voice relay) | Not required |
 
-Phone ring adds client-side targeting, UI hints, and network requests that vanilla dead players cannot send. Server-side session logic runs only on the host. Unmodded dead clients keep vanilla mimic E-possession; phone ring is unavailable without the mod on their client.
+Monster spectate patches each dead player's local spectator camera and target list. Unmodded dead clients keep vanilla player-only spectating. Phone ring adds client-side targeting, UI hints, and network requests that vanilla dead players cannot send. Server-side session logic runs only on the host.
 
 Upgrading from older configs: the legacy section `[MimesisPlayerEnhancement_MimicTuning]` and `EnableMimicTuning` are migrated once automatically into this section. Legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted to seconds (`multiplier × 12`).
 
@@ -255,6 +256,25 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | `MimicPossessionMinTimeSeconds` | float | `12.0` | Minimum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionMaxTimeSeconds` | float | `12.0` | Maximum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionCooltimeMultiplier` | float | `1.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Valid range is `0.1`–`10.0`. |
+
+#### Monster spectate (dead clients)
+
+When enabled, dead spectators with the mod installed can cycle prev/next spectator targets to **alive monsters** in addition to living players. Targets use the same orbital spectator camera as player spectating. The sidebar player list stays vanilla (player slots only); use prev/next keys to reach monsters. Off by default — set `EnableMonsterSpectate = true` to opt in.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableMonsterSpectate` | bool | `false` | Sub-toggle — extend dead-player spectator targets to alive monsters. |
+| `SpectateMonstersAfterPlayers` | bool | `true` | Keep living players first in the cycle; append monsters after them. When `false`, merge players and monsters and sort by actor ID. |
+| `IncludeMimicsInMonsterSpectate` | bool | `true` | Include mimic monsters in the monster target pool. |
+
+**Manual test checklist**
+
+1. **Dead client with mod** — after dying, prev/next cycles through living players and nearby alive monsters.
+2. **Unmodded dead client** — prev/next stays player-only (vanilla).
+3. Spectate a monster across indoor/outdoor — visuals and ambient audio stay correct.
+4. Spectate a mimic — vanilla E-possession still works.
+5. Disable `EnableMonsterSpectate` — player-only spectate returns; `EnableDeadPlayerFeatures` can stay on.
+6. All players dead — spectator can still lock onto remaining monsters.
 
 #### Dead-player phone ring (host + dead clients) — **experimental**
 
@@ -428,6 +448,9 @@ RandomizeMimicPossessionDuration = false
 MimicPossessionMinTimeSeconds = 12.0
 MimicPossessionMaxTimeSeconds = 12.0
 MimicPossessionCooltimeMultiplier = 1.0
+EnableMonsterSpectate = false
+SpectateMonstersAfterPlayers = true
+IncludeMimicsInMonsterSpectate = true
 EnableDeadPlayerPhoneRing = false
 DeadPlayerPhoneMaxDistanceMeters = 5.0
 DeadPlayerPhoneMaxLookAngleDegrees = 45.0

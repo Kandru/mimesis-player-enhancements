@@ -1,6 +1,4 @@
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession;
 
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 {
@@ -22,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "EnableDeadPlayerFeatures",
                 false,
                 "Enable Dead Player Features",
-                "Master toggle for dead-spectator enhancements (mimic possession tuning and experimental phone ring). Host required.");
+                "Master toggle for dead-spectator enhancements (mimic possession tuning, monster spectate, and experimental phone ring).");
 
             ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicPossessionTuning",
@@ -102,6 +100,24 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "Dead Player Phone Cooldown (seconds)",
                 "Experimental. Wait time after a completed talk before the same dead player can ring again (0 = none).");
 
+            ModConfig.EnableMonsterSpectate = ModConfig.CreateTrackedEntry(_category,
+                "EnableMonsterSpectate",
+                false,
+                "Enable Monster Spectate",
+                "Allow dead spectators to cycle spectator camera targets to alive monsters in addition to players. Requires the mod on each dead player who participates.");
+
+            ModConfig.SpectateMonstersAfterPlayers = ModConfig.CreateTrackedEntry(_category,
+                "SpectateMonstersAfterPlayers",
+                true,
+                "Spectate Monsters After Players",
+                "When enabled, alive players stay first in the prev/next spectator list and monsters are appended after them.");
+
+            ModConfig.IncludeMimicsInMonsterSpectate = ModConfig.CreateTrackedEntry(_category,
+                "IncludeMimicsInMonsterSpectate",
+                true,
+                "Include Mimics In Monster Spectate",
+                "Include mimic monsters in the monster spectator target pool.");
+
             RefreshResolverCaches();
         }
 
@@ -109,6 +125,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
         {
             MimicPossessionResolver.RefreshFromConfigRegistration();
             DeadPlayerPhoneResolver.RefreshFromConfigRegistration();
+            MonsterSpectateResolver.RefreshFromConfigRegistration();
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -147,6 +164,12 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds));
             ModConfig.DeadPlayerPhoneCooldownSeconds.OnEntryValueChanged.Subscribe((_, value) =>
                 OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneCooldownSeconds));
+            ModConfig.EnableMonsterSpectate.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableMonsterSpectate));
+            ModConfig.SpectateMonstersAfterPlayers.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.SpectateMonstersAfterPlayers));
+            ModConfig.IncludeMimicsInMonsterSpectate.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.IncludeMimicsInMonsterSpectate));
         }
 
         internal static void RegisterFloatEntries()

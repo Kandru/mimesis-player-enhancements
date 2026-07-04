@@ -1,0 +1,4 @@
+global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
+global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone;
+global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession;
+global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MonsterSpectate;

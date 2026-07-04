@@ -1,6 +1,4 @@
-using System;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone.Patches;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession;
+using Mimic.Actors;
 
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 {
@@ -10,49 +8,48 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 
         internal static void Apply(HarmonyLib.Harmony harmony)
         {
-            MimicPossessionPatches.Apply(harmony);
-            DeadPlayerPhonePatches.Apply(harmony);
+            _ = GameNetworkApi.GetGameAssembly();
 
-            HarmonyPatchHelper.PatchApplyResult lifecycleResult = HarmonyPatchHelper.ApplyPatchTypes(
+            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNestedPatchTypes(typeof(DeadPlayerFeaturesPatches)));
+                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(DeadPlayerFeaturesPatches)));
 
-            HarmonyPatchHelper.LogPatchSummary(Feature, lifecycleResult);
+            LogPatchAudit(harmony);
+            HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
 
-        [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))]
-        internal static class CameraManagerOnEnterDungeonPostfix
+        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
-            [HarmonyPostfix]
-            internal static void Postfix()
-            {
-                try
-                {
-                    DeadPlayerFeaturesRuntime.OnDungeonEnter();
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"OnEnterDungeon postfix failed — {ex.Message}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEndDungeon))]
-        internal static class CameraManagerOnEndDungeonPrefix
-        {
-            [HarmonyPrefix]
-            internal static void Prefix()
-            {
-                try
-                {
-                    DeadPlayerFeaturesRuntime.OnDungeonEnd();
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"OnEndDungeon prefix failed — {ex.Message}");
-                }
-            }
+            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
+            [
+                ("OnEnterDungeon/CameraManager",
+                    AccessTools.Method(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))),
+                ("OnEndDungeon/CameraManager",
+                    AccessTools.Method(typeof(CameraManager), nameof(CameraManager.OnEndDungeon))),
+                ("HandleStartPossessing/PossessionController",
+                    AccessTools.Method(typeof(PossessionController), nameof(PossessionController.HandleStartPossessing))),
+                ("ClearPossessingStateInternal/PossessionController",
+                    AccessTools.Method(typeof(PossessionController), "ClearPossessingStateInternal")),
+                ("UpdatePossessionProgressbar/ProtoActor",
+                    AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.UpdatePossessionProgressbar))),
+                ("Start/UIPrefab_Spectator",
+                    AccessTools.Method(typeof(UIPrefab_Spectator), "Start")),
+                ("UpdatePossessionCooltime/UIPrefab_Spectator",
+                    AccessTools.Method(typeof(UIPrefab_Spectator), nameof(UIPrefab_Spectator.UpdatePossessionCooltime))),
+                ("OnEndPossession/ProtoActor",
+                    AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.OnEndPossession))),
+                ("GetAliveSpectator/CameraManager",
+                    AccessTools.Method(typeof(CameraManager), "GetAliveSpectator")),
+                ("ChangeSpectatorCameraTarget/CameraManager",
+                    AccessTools.Method(typeof(CameraManager), nameof(CameraManager.ChangeSpectatorCameraTarget), [typeof(string)])),
+                ("SetupSpectatorCamera/CameraManager",
+                    AccessTools.Method(typeof(CameraManager), "SetupSpectatorCamera")),
+                ("OnActorTeleported_RenderableCulling/GamePlayScene",
+                    AccessTools.Method(typeof(GamePlayScene), "OnActorTeleported_RenderableCulling")),
+                ("UpdateSpectatorHUD/GameMainBase",
+                    AccessTools.Method(typeof(GameMainBase), "UpdateSpectatorHUD", [typeof(ProtoActor), typeof(CameraManager.CameraMode)])),
+            ]);
         }
     }
 }

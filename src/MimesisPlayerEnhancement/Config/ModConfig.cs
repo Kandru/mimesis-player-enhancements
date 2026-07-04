@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using MelonLoader;
 using MelonLoader.Utils;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
@@ -129,6 +128,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMinTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMaxTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> DeadPlayerPhoneCooldownSeconds { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<bool> EnableMonsterSpectate { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> SpectateMonstersAfterPlayers { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> IncludeMimicsInMonsterSpectate { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;

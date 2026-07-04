@@ -1,5 +1,4 @@
 using System;
-using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
