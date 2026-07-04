@@ -6,11 +6,11 @@ using Mimic.Actors;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MimesisPlayerEnhancement.Features.MimicTuning
+namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
 {
-    public static class MimicTuningPatches
+    internal static class MimicPossessionPatches
     {
-        private const string Feature = "MimicTuning";
+        private const string Feature = "DeadPlayerFeatures";
 
         private static readonly FieldInfo? PossessionDurationField =
             AccessTools.Field(typeof(Bifrost.ConstEnum.DataConsts), nameof(Bifrost.ConstEnum.DataConsts.C_PossessionDuration));
@@ -35,10 +35,10 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 : null;
 
         private static readonly MethodInfo RollPossessionDurationMsMethod =
-            AccessTools.Method(typeof(MimicTuningResolver), nameof(MimicTuningResolver.RollPossessionDurationMs));
+            AccessTools.Method(typeof(MimicPossessionResolver), nameof(MimicPossessionResolver.RollPossessionDurationMs));
 
         private static readonly MethodInfo ScalePossessionCooltimeMsMethod =
-            AccessTools.Method(typeof(MimicTuningResolver), nameof(MimicTuningResolver.ScalePossessionCooltimeMs));
+            AccessTools.Method(typeof(MimicPossessionResolver), nameof(MimicPossessionResolver.ScalePossessionCooltimeMs));
 
         private static readonly Dictionary<int, ProgressBarRestartState> ProgressBarRestartStates = [];
 
@@ -50,14 +50,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             internal float TotalSeconds;
         }
 
-        public static void Apply(HarmonyLib.Harmony harmony)
+        internal static void Apply(HarmonyLib.Harmony harmony)
         {
             _ = GameNetworkApi.GetGameAssembly();
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNestedPatchTypes(typeof(MimicTuningPatches)));
+                HarmonyPatchHelper.GetNestedPatchTypes(typeof(MimicPossessionPatches)));
 
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
@@ -125,14 +125,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 ref Coroutine ____progressCoroutine,
                 Image ____possessionProgressbar)
             {
-                if (!MimicTuningResolver.IsEnabled || RunPossessionProgressbarCo == null)
+                if (!MimicPossessionResolver.IsEnabled || RunPossessionProgressbarCo == null)
                 {
                     return true;
                 }
 
                 try
                 {
-                    float totalSeconds = MimicTuningResolver.GetProgressBarTotalSeconds(
+                    float totalSeconds = MimicPossessionResolver.GetProgressBarTotalSeconds(
                         __instance.ActorID,
                         inServerLeftTime);
                     float targetLeftTime = inServerLeftTime * 0.001f;
@@ -181,12 +181,12 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             {
                 try
                 {
-                    if (!MimicTuningResolver.IsEnabled)
+                    if (!MimicPossessionResolver.IsEnabled)
                     {
                         return;
                     }
 
-                    ____possessionCooltime = MimicTuningResolver.GetCooltimeTotalSeconds();
+                    ____possessionCooltime = MimicPossessionResolver.GetCooltimeTotalSeconds();
                 }
                 catch (Exception ex)
                 {
@@ -206,8 +206,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             {
                 try
                 {
-                    if (!MimicTuningResolver.IsEnabled
-                        || !MimicTuningResolver.ShouldScaleCooltime
+                    if (!MimicPossessionResolver.IsEnabled
+                        || !MimicPossessionResolver.ShouldScaleCooltime
                         || inCooltime <= 0f)
                     {
                         return;
@@ -233,7 +233,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             {
                 try
                 {
-                    MimicTuningPossessionSessions.ClearSession(__instance.ActorID);
+                    MimicPossessionSessions.ClearSession(__instance.ActorID);
                     _ = ProgressBarRestartStates.Remove(__instance.ActorID);
                 }
                 catch (Exception ex)

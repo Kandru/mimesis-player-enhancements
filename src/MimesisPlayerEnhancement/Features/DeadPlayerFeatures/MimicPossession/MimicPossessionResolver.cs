@@ -1,12 +1,11 @@
 using System;
 
-namespace MimesisPlayerEnhancement.Features.MimicTuning
+namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
 {
-    internal static class MimicTuningResolver
+    internal static class MimicPossessionResolver
     {
-        private const string Feature = "MimicTuning";
+        private const string Feature = "DeadPlayerFeatures";
 
-        // Const.json POSSESSION_DURATION (12000 ms) -> C_PossessionDuration.
         internal const float VanillaPossessionDurationSeconds = 12f;
         internal const float MinDurationSeconds = 0.1f;
         internal const float MaxDurationSeconds = 120f;
@@ -18,10 +17,9 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         private static bool _cachedRandomizeDuration;
         private static float _cachedCooltimeMultiplier;
 
-        static MimicTuningResolver()
+        static MimicPossessionResolver()
         {
             ModConfig.Changed += OnConfigChanged;
-            RefreshConfigCache();
         }
 
         internal static bool IsEnabled => _cachedEnable;
@@ -76,8 +74,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 ? minMs
                 : UnityEngine.Random.Range((int)minMs, (int)maxMs + 1);
 
-            MimicTuningPossessionSessions.SetSessionDurationMs(mimicActorId, rolled);
-            MimicTuningLog.DebugPossessionDurationRolled(mimicActorId, vanillaMs, rolled);
+            MimicPossessionSessions.SetSessionDurationMs(mimicActorId, rolled);
+            MimicPossessionLog.DebugPossessionDurationRolled(mimicActorId, vanillaMs, rolled);
             return rolled;
         }
 
@@ -89,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             }
 
             long scaled = Math.Max(0L, (long)(vanillaMs * _cachedCooltimeMultiplier));
-            MimicTuningLog.DebugCooltimeScaled(vanillaMs, scaled, _cachedCooltimeMultiplier);
+            MimicPossessionLog.DebugCooltimeScaled(vanillaMs, scaled, _cachedCooltimeMultiplier);
             return scaled;
         }
 
@@ -101,14 +99,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 return vanillaSeconds;
             }
 
-            if (MimicTuningPossessionSessions.TryGetSessionDurationMs(mimicActorId, out long sessionMs))
+            if (MimicPossessionSessions.TryGetSessionDurationMs(mimicActorId, out long sessionMs))
             {
                 return sessionMs * 0.001f;
             }
 
             if (serverLeftTimeMs > 0f)
             {
-                MimicTuningPossessionSessions.SetSessionDurationMs(mimicActorId, (long)serverLeftTimeMs);
+                MimicPossessionSessions.SetSessionDurationMs(mimicActorId, (long)serverLeftTimeMs);
                 return serverLeftTimeMs * 0.001f;
             }
 
@@ -134,7 +132,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         private static void OnConfigChanged(ModConfigChangeInfo change)
         {
             if (change.IsFullReload
-                || change.AffectsSection("MimesisPlayerEnhancement_MimicTuning"))
+                || change.AffectsSection("MimesisPlayerEnhancement_DeadPlayerFeatures"))
             {
                 RefreshConfigCache();
             }
@@ -142,9 +140,22 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
         private static void RefreshConfigCache()
         {
-            _cachedEnable = ModConfig.EnableMimicTuning.Value;
+            if (ModConfig.EnableDeadPlayerFeatures == null
+                || ModConfig.EnableMimicPossessionTuning == null
+                || ModConfig.RandomizeMimicPossessionDuration == null
+                || ModConfig.MimicPossessionCooltimeMultiplier == null)
+            {
+                return;
+            }
+
+            _cachedEnable = ModConfig.EnableDeadPlayerFeatures.Value
+                && ModConfig.EnableMimicPossessionTuning.Value;
             _cachedRandomizeDuration = ModConfig.RandomizeMimicPossessionDuration.Value;
             _cachedCooltimeMultiplier = ModConfig.MimicPossessionCooltimeMultiplier.Value;
         }
+
+        internal static void RefreshFromDungeonLifecycle() => RefreshConfigCache();
+
+        internal static void RefreshFromConfigRegistration() => RefreshConfigCache();
     }
 }

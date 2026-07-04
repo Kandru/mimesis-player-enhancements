@@ -1,6 +1,6 @@
-namespace MimesisPlayerEnhancement.Features.MimicTuning
+namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
 {
-    internal static class MimicTuningPossessionSessions
+    internal static class MimicPossessionSessions
     {
         private static readonly Dictionary<int, long> SessionDurationMsByMimicActorId = [];
 
@@ -27,6 +27,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             }
 
             _ = SessionDurationMsByMimicActorId.Remove(mimicActorId);
+        }
+
+        internal static void ClearAll()
+        {
+            SessionDurationMsByMimicActorId.Clear();
         }
     }
 }

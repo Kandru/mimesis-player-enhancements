@@ -11,6 +11,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - possible fix for late joiner who are not always being transported to the train scene between dungeons.
 - exclude crow shop detox from loot duplication
 - player-count auto scaling (Spawn Scaling, Loot Multiplicator, Money Multiplier) now uses a configurable rate per extra player above 4 (default +10% instead of the old +25% / `players / 4` curve); set `SpawnScalingPlayerCountScaleRate`, `LootMultiplicatorPlayerCountScaleRate`, or `MoneyMultiplierPlayerCountScaleRate` to `0.25` to restore the previous curve
+- draft: ability for a dead player to ring the phone to talk to another player directly (just for testing currently. May gets removed).
 
 ## 26.7.5
 - fixed an issue with the lobby naming and not showing

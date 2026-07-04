@@ -34,7 +34,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity and limit item types | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, and shop buy prices | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by X seconds per player above a baseline (default: +10s per player above 4) | No — host only |
-| **Mimic Tuning** | Randomize dead-player mimic possession speak duration and scale post-possession cooldown | No — host only |
+| **Dead Player Features** | Mimic possession tuning (speak duration/cooldown) and **experimental** dead-player phone ring | Host; everyone for phone ring |
 | **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 
@@ -98,6 +98,11 @@ MaxPlayers = 32
 [MimesisPlayerEnhancement_JoinAnytime]
 EnableJoinAnytime = true
 JoinConnectionGraceSeconds = 30
+
+[MimesisPlayerEnhancement_DeadPlayerFeatures]
+EnableDeadPlayerFeatures = false
+EnableMimicPossessionTuning = false
+EnableDeadPlayerPhoneRing = false
 
 [MimesisPlayerEnhancement_WebDashboard]
 EnableWebDashboard = true

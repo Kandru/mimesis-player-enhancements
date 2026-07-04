@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using MelonLoader;
 using MelonLoader.Utils;
+using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
-using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
@@ -114,11 +114,21 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; internal set; } = null!;
 
-        public static MelonPreferences_Entry<bool> EnableMimicTuning { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableDeadPlayerFeatures { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableMimicPossessionTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeMimicPossessionDuration { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionMinTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionMaxTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionCooltimeMultiplier { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<bool> EnableDeadPlayerPhoneRing { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxDistanceMeters { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxLookAngleDegrees { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxRingTimeSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> RandomizeDeadPlayerPhoneTalkTime { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMinTimeSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMaxTimeSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeadPlayerPhoneCooldownSeconds { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;
@@ -171,7 +181,7 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.CreateCategory();
             MoneyMultiplierConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
-            MimicTuningConfig.CreateCategory();
+            DeadPlayerFeaturesConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
             DungeonRandomizerConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
@@ -200,7 +210,7 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.CreateEntries();
             MoneyMultiplierConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
-            MimicTuningConfig.CreateEntries();
+            DeadPlayerFeaturesConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
             DungeonRandomizerConfig.CreateEntries();
             WebDashboardConfig.CreateEntries();
@@ -232,7 +242,7 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.WireValidation(logger);
             MoneyMultiplierConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
-            MimicTuningConfig.WireValidation(logger);
+            DeadPlayerFeaturesConfig.WireValidation(logger);
             PlayerTuningConfig.WireValidation(logger);
             DungeonRandomizerConfig.WireValidation(logger);
             WebDashboardConfig.WireValidation(logger);
@@ -240,7 +250,7 @@ namespace MimesisPlayerEnhancement
 
             RegisterFloatEntries();
             SpawnScalingConfig.MigrateLegacyKeys(logger);
-            MimicTuningConfig.MigrateLegacyKeys(logger);
+            DeadPlayerFeaturesConfig.MigrateLegacyKeys(logger);
             ModConfigFloatHelper.SanitizeAll(FloatEntries);
             NormalizeSavedFloats();
             ModConfigRegistry.Rebuild();
@@ -300,7 +310,7 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.RegisterFloatEntries();
             MoneyMultiplierConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
-            MimicTuningConfig.RegisterFloatEntries();
+            DeadPlayerFeaturesConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();
         }
 

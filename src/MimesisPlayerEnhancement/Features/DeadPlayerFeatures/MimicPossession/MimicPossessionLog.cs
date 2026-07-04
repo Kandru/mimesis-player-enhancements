@@ -1,8 +1,8 @@
-namespace MimesisPlayerEnhancement.Features.MimicTuning
+namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
 {
-    internal static class MimicTuningLog
+    internal static class MimicPossessionLog
     {
-        private const string Feature = "MimicTuning";
+        private const string Feature = "DeadPlayerFeatures";
 
         internal static void DebugPossessionDurationRolled(int mimicActorId, long vanillaMs, long rolledMs)
         {
@@ -17,11 +17,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             ModLog.Debug(
                 Feature,
                 $"Possession cooltime scaled — {vanillaMs}ms -> {scaledMs}ms ({multiplier:0.##}×)");
-        }
-
-        internal static void DebugSkipped(string reason)
-        {
-            ModLog.Debug(Feature, $"Skipped — {reason}");
         }
     }
 }

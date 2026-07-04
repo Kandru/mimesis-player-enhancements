@@ -158,13 +158,16 @@ namespace MimesisPlayerEnhancement
                 $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
                 $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
                 $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
-                $"MimicTuning={ModConfig.EnableMimicTuning.Value}" +
-                (ModConfig.EnableMimicTuning.Value
-                    ? $" (randomize={ModConfig.RandomizeMimicPossessionDuration.Value}" +
-                      (ModConfig.RandomizeMimicPossessionDuration.Value
+                $"DeadPlayerFeatures={ModConfig.EnableDeadPlayerFeatures.Value}" +
+                (ModConfig.EnableDeadPlayerFeatures.Value
+                    ? $" (mimicTuning={ModConfig.EnableMimicPossessionTuning.Value}" +
+                      (ModConfig.EnableMimicPossessionTuning.Value && ModConfig.RandomizeMimicPossessionDuration.Value
                           ? $", duration={ModConfig.MimicPossessionMinTimeSeconds.Value}-{ModConfig.MimicPossessionMaxTimeSeconds.Value}s"
                           : "") +
-                      $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value})"
+                      (ModConfig.EnableMimicPossessionTuning.Value
+                          ? $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value}"
+                          : "") +
+                      $", phoneRing={ModConfig.EnableDeadPlayerPhoneRing.Value})"
                     : "") +
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +

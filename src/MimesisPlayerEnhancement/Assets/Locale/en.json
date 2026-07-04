@@ -130,10 +130,14 @@
         "description": "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
       }
     },
-    "MimesisPlayerEnhancement_MimicTuning": {
-      "_section": "Mimic Tuning",
-      "EnableMimicTuning": {
-        "title": "Enable Mimic Tuning",
+    "MimesisPlayerEnhancement_DeadPlayerFeatures": {
+      "_section": "Dead Player Features",
+      "EnableDeadPlayerFeatures": {
+        "title": "Enable Dead Player Features",
+        "description": "Master toggle for dead-spectator enhancements (mimic possession tuning and experimental phone ring). Host required."
+      },
+      "EnableMimicPossessionTuning": {
+        "title": "Enable Mimic Possession Tuning",
         "description": "Tune dead-player mimic possession speak duration and cooldown on the host."
       },
       "RandomizeMimicPossessionDuration": {
@@ -151,6 +155,38 @@
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic Possession Cooltime Multiplier",
         "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla). Host only."
+      },
+      "EnableDeadPlayerPhoneRing": {
+        "title": "Enable Dead Player Phone Ring (Experimental)",
+        "description": "Experimental. Allow dead spectators with this mod to ring nearby idle phones. Requires the mod on the host and on each dead player who participates."
+      },
+      "DeadPlayerPhoneMaxDistanceMeters": {
+        "title": "Dead Player Phone Max Distance (meters)",
+        "description": "Experimental. Max distance from the spectated player to the phone (defaults to vanilla mimic possession distance)."
+      },
+      "DeadPlayerPhoneMaxLookAngleDegrees": {
+        "title": "Dead Player Phone Max Look Angle (degrees)",
+        "description": "Experimental. Max horizontal camera angle toward the phone or mimic (vanilla default is 45)."
+      },
+      "DeadPlayerPhoneMaxRingTimeSeconds": {
+        "title": "Dead Player Phone Max Ring Time (seconds)",
+        "description": "Experimental. How long a dead-player-initiated ring lasts before the phone returns to idle if unanswered."
+      },
+      "RandomizeDeadPlayerPhoneTalkTime": {
+        "title": "Randomize Dead Player Phone Talk Time",
+        "description": "Experimental. Roll a random talk window after pickup between min and max seconds below. Host only."
+      },
+      "DeadPlayerPhoneTalkMinTimeSeconds": {
+        "title": "Dead Player Phone Talk Min Time (seconds)",
+        "description": "Experimental. Minimum rolled talk duration after pickup."
+      },
+      "DeadPlayerPhoneTalkMaxTimeSeconds": {
+        "title": "Dead Player Phone Talk Max Time (seconds)",
+        "description": "Experimental. Maximum rolled talk duration after pickup."
+      },
+      "DeadPlayerPhoneCooldownSeconds": {
+        "title": "Dead Player Phone Cooldown (seconds)",
+        "description": "Experimental. Wait time after a completed talk before the same dead player can ring again (0 = none)."
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {

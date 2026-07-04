@@ -1,9 +1,9 @@
 using System;
+using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
-using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
 using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.MorePlayers;
@@ -118,7 +118,11 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("MoneyMultiplier", MoneyMultiplierPatches.Apply,
                 syncFromConfig: MoneyMultiplierPatches.RefreshFromConfig),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
-            new FeatureModule("MimicTuning", MimicTuningPatches.Apply),
+            new FeatureModule(
+                "DeadPlayerFeatures",
+                DeadPlayerFeaturesPatches.Apply,
+                syncFromConfig: DeadPlayerFeaturesRuntime.RefreshFromConfig,
+                onUpdate: DeadPlayerFeaturesRuntime.OnUpdate),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),

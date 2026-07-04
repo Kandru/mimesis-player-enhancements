@@ -29,7 +29,7 @@ Each feature section has its own master toggle plus feature-specific options. Th
 - [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator)
 - [Money Multiplier](#money-multiplier--mimesisplayerenhancement_moneymultiplier)
 - [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime)
-- [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning)
+- [Dead Player Features](#dead-player-features--mimesisplayerenhancement_deadplayerfeatures)
 - [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning)
 - [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer)
 - [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard)
@@ -224,11 +224,24 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 | `DungeonTimeBaselinePlayerCount` | int | `4` | No extra shift time at or below this player count. Minimum is `1`. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | Real seconds added to the shift deadline per player above the baseline. Minimum is `0`. |
 
-### Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
+### Dead Player Features — `[MimesisPlayerEnhancement_DeadPlayerFeatures]`
 
-Host-only. When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`, 12 seconds) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This feature can randomize the speak window per possession and/or scale the cooldown. Off by default — set `EnableMimicTuning = true` to turn it on.
+Umbrella feature for dead-spectator actions. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on. **Host required** for all sub-features below.
 
-Upgrading from older configs: legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted once automatically to seconds (`multiplier × 12`).
+**Who needs the mod?**
+
+| Sub-feature | Host | Dead client (participant) | Living client |
+|-------------|------|---------------------------|---------------|
+| **Mimic possession tuning** (duration/cooldown) | Required | Not required | Not required |
+| **Dead-player phone ring** | Required | **Required** (input, UI, voice relay) | Not required |
+
+Phone ring adds client-side targeting, UI hints, and network requests that vanilla dead players cannot send. Server-side session logic runs only on the host. Unmodded dead clients keep vanilla mimic E-possession; phone ring is unavailable without the mod on their client.
+
+Upgrading from older configs: the legacy section `[MimesisPlayerEnhancement_MimicTuning]` and `EnableMimicTuning` are migrated once automatically into this section. Legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted to seconds (`multiplier × 12`).
+
+#### Mimic possession tuning (host-only)
+
+When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`, 12 seconds) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This sub-feature can randomize the speak window per possession and/or scale the cooldown.
 
 **Speak duration:** When `RandomizeMimicPossessionDuration` is enabled, each possession rolls a random duration between `MimicPossessionMinTimeSeconds` and `MimicPossessionMaxTimeSeconds`. At `12.0` / `12.0` the roll equals vanilla length.
 
@@ -236,11 +249,39 @@ Upgrading from older configs: legacy `MimicPossessionMinTimeMultiplier` / `Mimic
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableMimicTuning` | bool | `false` | Master toggle for mimic possession timing tweaks. |
+| `EnableDeadPlayerFeatures` | bool | `false` | Master toggle for all dead-player features in this section. |
+| `EnableMimicPossessionTuning` | bool | `false` | Sub-toggle for mimic possession timing tweaks (host only). |
 | `RandomizeMimicPossessionDuration` | bool | `false` | Roll a random speak duration per E-possession between the min and max seconds below. |
 | `MimicPossessionMinTimeSeconds` | float | `12.0` | Minimum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionMaxTimeSeconds` | float | `12.0` | Maximum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionCooltimeMultiplier` | float | `1.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Valid range is `0.1`–`10.0`. |
+
+#### Dead-player phone ring (host + dead clients) — **experimental**
+
+When enabled, dead spectators with the mod installed can press **E** to ring a nearby **idle** phone while spectating a living player near that phone. Off by default — set `EnableDeadPlayerPhoneRing = true` to opt in. Only **one** dead-player ring/talk session can be active globally at a time. Look-direction UI shows mimic and phone hints together; the hint for whichever target the camera faces more is shown in bold.
+
+On pickup, the initiating dead player speaks through the phone for a rolled talk duration (same circular fill UI as mimic possession). While ringing or talking, the death camera **follows the phone** (like mimic possession follows the mimic) and **spectator target switching is disabled** until **E** ends the interaction early or the ring/talk timer expires. Host config is authoritative; dead clients only need the DLL installed.
+
+| Key | Type | Default | What it does |
+|-----|------|---------|--------------|
+| `EnableDeadPlayerPhoneRing` | bool | `false` | **Experimental.** Sub-toggle for dead-player phone ring. |
+| `DeadPlayerPhoneMaxDistanceMeters` | float | `5.0` | Max distance from spectated player to phone (vanilla mimic possession distance). |
+| `DeadPlayerPhoneMaxLookAngleDegrees` | float | `45.0` | Max horizontal look angle toward phone or mimic. |
+| `DeadPlayerPhoneMaxRingTimeSeconds` | float | `15.0` | Ring duration before phone returns to idle if unanswered. |
+| `RandomizeDeadPlayerPhoneTalkTime` | bool | `false` | Roll talk duration after pickup between min and max seconds below. |
+| `DeadPlayerPhoneTalkMinTimeSeconds` | float | `12.0` | Minimum rolled talk duration after pickup. Valid range is `0.1`–`120`. |
+| `DeadPlayerPhoneTalkMaxTimeSeconds` | float | `12.0` | Maximum rolled talk duration after pickup. Valid range is `0.1`–`120`. |
+| `DeadPlayerPhoneCooldownSeconds` | float | `0.0` | Cooldown before the same dead player can ring again after talk ends (`0` = none). |
+
+**Manual test checklist**
+
+1. **Host + one dead client both with mod** — each can ring when spectating a player near an idle phone; look-priority bold hints work.
+2. **Unmodded dead client** — cannot see phone hint or ring; vanilla mimic E-possession still works.
+3. Press **E** with phone focused — phone rings; circle counts down; only one dead player can ring at a time (global lock); death camera follows the phone and spectator switching is blocked.
+4. Press **E** again during ring/talk — interaction ends early; camera returns to the previous spectated player.
+5. Living player answers — initiating dead player can speak through phone; talk circle matches rolled duration.
+6. Ring timeout with no answer — phone returns to idle; vanilla phones/mimics still work.
+7. Disable feature on host mid-session — voice/ring state reverts cleanly; dead clients stop offering phone ring.
 
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
@@ -380,12 +421,21 @@ EnableDungeonTime = false
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
 
-[MimesisPlayerEnhancement_MimicTuning]
-EnableMimicTuning = false
+[MimesisPlayerEnhancement_DeadPlayerFeatures]
+EnableDeadPlayerFeatures = false
+EnableMimicPossessionTuning = false
 RandomizeMimicPossessionDuration = false
 MimicPossessionMinTimeSeconds = 12.0
 MimicPossessionMaxTimeSeconds = 12.0
 MimicPossessionCooltimeMultiplier = 1.0
+EnableDeadPlayerPhoneRing = false
+DeadPlayerPhoneMaxDistanceMeters = 5.0
+DeadPlayerPhoneMaxLookAngleDegrees = 45.0
+DeadPlayerPhoneMaxRingTimeSeconds = 15.0
+RandomizeDeadPlayerPhoneTalkTime = false
+DeadPlayerPhoneTalkMinTimeSeconds = 12.0
+DeadPlayerPhoneTalkMaxTimeSeconds = 12.0
+DeadPlayerPhoneCooldownSeconds = 0.0
 
 [MimesisPlayerEnhancement_PlayerTuning]
 EnablePlayerTuning = false

@@ -130,27 +130,63 @@
         "description": "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
       }
     },
-    "MimesisPlayerEnhancement_MimicTuning": {
-      "_section": "Mimic-Tuning",
-      "EnableMimicTuning": {
-        "title": "Mimic Tuning aktivieren",
-        "description": "Tune dead-player mimic possession speak duration and cooldown on the host."
+    "MimesisPlayerEnhancement_DeadPlayerFeatures": {
+      "_section": "Features für tote Spieler",
+      "EnableDeadPlayerFeatures": {
+        "title": "Features für tote Spieler aktivieren",
+        "description": "Master-Schalter für Erweiterungen im Zuschauer-Modus (Mimic-Besitz-Tuning und experimentelles Telefonklingeln). Nur Host."
+      },
+      "EnableMimicPossessionTuning": {
+        "title": "Mimic-Besitz-Tuning aktivieren",
+        "description": "Sprechdauer und Abklingzeit beim Mimic-Besitz für tote Spieler auf dem Host anpassen."
       },
       "RandomizeMimicPossessionDuration": {
-        "title": "Mimic Possession Duration randomisieren",
-        "description": "Roll a random speak window per E-possession between min and max seconds below. Nur Host."
+        "title": "Mimic-Besitz-Dauer randomisieren",
+        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden. Nur Host."
       },
       "MimicPossessionMinTimeSeconds": {
-        "title": "Mimic Possession Min Time (seconds)",
-        "description": "Minimum rolled speak duration in seconds (vanilla is 12). Nur Host."
+        "title": "Mimic-Besitz Mindestzeit (Sekunden)",
+        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). Nur Host."
       },
       "MimicPossessionMaxTimeSeconds": {
-        "title": "Mimic Possession Max Time (seconds)",
-        "description": "Maximum rolled speak duration in seconds (vanilla is 12). Nur Host."
+        "title": "Mimic-Besitz Höchstzeit (Sekunden)",
+        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). Nur Host."
       },
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
-        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = Vanilla). Nur Host."
+        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla). Nur Host."
+      },
+      "EnableDeadPlayerPhoneRing": {
+        "title": "Telefonklingeln für tote Spieler aktivieren (Experimentell)",
+        "description": "Experimentell. Ermöglicht toten Zuschauern mit installiertem Mod, nahe freie Telefone zu klingeln. Mod auf Host und auf jedem teilnehmenden toten Spieler erforderlich."
+      },
+      "DeadPlayerPhoneMaxDistanceMeters": {
+        "title": "Telefon Maximalentfernung (Meter)",
+        "description": "Experimentell. Maximale Entfernung vom beobachteten Spieler zum Telefon (Standard: Vanilla-Mimic-Besitz-Entfernung)."
+      },
+      "DeadPlayerPhoneMaxLookAngleDegrees": {
+        "title": "Telefon Maximaler Blickwinkel (Grad)",
+        "description": "Experimentell. Maximaler horizontaler Kamerawinkel zu Telefon oder Mimic (Vanilla-Standard: 45)."
+      },
+      "DeadPlayerPhoneMaxRingTimeSeconds": {
+        "title": "Telefon Max. Klingeldauer (Sekunden)",
+        "description": "Experimentell. Dauer des Klingelns durch toten Spieler, bevor das Telefon bei Nichtannahme in den Leerlauf zurückkehrt."
+      },
+      "RandomizeDeadPlayerPhoneTalkTime": {
+        "title": "Telefon-Sprechzeit randomisieren",
+        "description": "Experimentell. Zufälliges Sprechfenster nach Abheben zwischen Min- und Max-Sekunden. Nur Host."
+      },
+      "DeadPlayerPhoneTalkMinTimeSeconds": {
+        "title": "Telefon Mindest-Sprechzeit (Sekunden)",
+        "description": "Experimentell. Minimale gewürfelte Sprechdauer nach Abheben."
+      },
+      "DeadPlayerPhoneTalkMaxTimeSeconds": {
+        "title": "Telefon Höchst-Sprechzeit (Sekunden)",
+        "description": "Experimentell. Maximale gewürfelte Sprechdauer nach Abheben."
+      },
+      "DeadPlayerPhoneCooldownSeconds": {
+        "title": "Telefon-Abklingzeit (Sekunden)",
+        "description": "Experimentell. Wartezeit nach Gesprächsende, bevor derselbe tote Spieler erneut klingeln kann (0 = keine)."
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {
