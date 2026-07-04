@@ -110,14 +110,57 @@ namespace MimesisPlayerEnhancement
                 return "archive=null";
             }
 
-            if (!TryGetConnectionInfo(archive, out PlayerConnectionInfo info))
+            return TryGetConnectionInfo(archive, out PlayerConnectionInfo info)
+                ? FormatFull(info, GetVoiceId(archive))
+                : "archive=unavailable";
+        }
+
+        /// <summary>Short player tag for feature debug/operational logs (name + steamId).</summary>
+        public static string DescribePlayerBrief(SpeechEventArchive? archive)
+        {
+            if (archive == null)
             {
-                return "archive=unavailable";
+                return "player=unknown";
             }
 
+            return TryGetConnectionInfo(archive, out PlayerConnectionInfo info)
+                ? FormatBrief(info)
+                : "player=unavailable";
+        }
+
+        public static string DescribeSteamPlayer(ulong steamId, long playerUid = 0)
+        {
+            SessionContext? session = FindSessionContext(playerUid, steamId);
+            if (playerUid == 0 && session != null)
+            {
+                try { playerUid = session.GetPlayerUID(); } catch { /* mid-setup */ }
+            }
+
+            if (playerUid == 0 && steamId != 0)
+            {
+                playerUid = ResolvePlayerUidFromSteamId(steamId);
+            }
+
+            bool isLocal = steamId != 0 && steamId == GetLocalSteamId();
+            if (TryGetConnectionInfo(session, playerUid, steamId, isLocal, out PlayerConnectionInfo info))
+            {
+                return FormatFull(info, voiceId: "(n/a)");
+            }
+
+            return $"steamId={steamId} uid={(playerUid == 0 ? "(pending)" : playerUid.ToString())}";
+        }
+
+        private static string FormatBrief(PlayerConnectionInfo info)
+        {
+            string steamId = info.SteamId == 0 ? "(pending)" : info.SteamId.ToString();
+            return $"name={info.DisplayName} steamId={steamId}";
+        }
+
+        private static string FormatFull(PlayerConnectionInfo info, string voiceId)
+        {
             string uid = info.PlayerUid == 0 ? "(pending)" : info.PlayerUid.ToString();
             string steamId = info.SteamId == 0 ? "(pending)" : info.SteamId.ToString();
-            return $"uid={uid} name={info.DisplayName} role={info.ConnectionRole} steamId={steamId} ip={info.ConnectionAddress} voiceLines={info.VoiceLineCount}";
+            return $"uid={uid} name={info.DisplayName} role={info.ConnectionRole} steamId={steamId} ip={info.ConnectionAddress} voiceId={voiceId} voiceLines={info.VoiceLineCount}";
         }
 
         public static bool TryGetConnectionInfo(SpeechEventArchive? archive, out PlayerConnectionInfo info)
@@ -188,6 +231,27 @@ namespace MimesisPlayerEnhancement
                 steamIdValue = ResolveSteamId(playerUid, isLocal, session);
             }
 
+            if (session != null && playerUid == 0)
+            {
+                try
+                {
+                    long fromSession = session.GetPlayerUID();
+                    if (fromSession != 0)
+                    {
+                        playerUid = fromSession;
+                    }
+                }
+                catch
+                {
+                    /* Context may be mid-setup */
+                }
+            }
+
+            if (playerUid == 0 && steamIdValue != 0)
+            {
+                playerUid = ResolvePlayerUidFromSteamId(steamIdValue);
+            }
+
             return TryBuildConnectionInfo(
                 archive,
                 playerUid,
@@ -234,33 +298,67 @@ namespace MimesisPlayerEnhancement
             return true;
         }
 
-        /// <summary>Same as <see cref="DescribePlayer"/> plus voice-comms UUID (debug only).</summary>
-        public static string DescribePlayerVerbose(SpeechEventArchive? archive)
+        private static long ResolvePlayerUidFromSteamId(ulong steamId)
         {
-            string summary = DescribePlayer(archive);
-            if (archive == null)
+            if (steamId == 0)
             {
-                return summary;
+                return 0;
             }
 
-            long playerUid = 0;
-            try { playerUid = archive.PlayerUID; } catch { /* Player not ready */ }
-
-            SessionContext? session = FindSessionContext(playerUid, 0);
-            string serverId = "(unknown)";
             try
             {
-                if (session != null)
+                object? pdata = GetHubMember("pdata");
+                FieldInfo? field = pdata?.GetType().GetField("actorUIDToSteamID", InstanceMemberFlags);
+                if (field?.GetValue(pdata) is Dictionary<long, ulong> dict)
                 {
-                    serverId = session.ServerID.ToString();
+                    foreach (KeyValuePair<long, ulong> kvp in dict)
+                    {
+                        if (kvp.Value == steamId)
+                        {
+                            return kvp.Key;
+                        }
+                    }
                 }
             }
             catch
             {
-                /* Session may be unavailable */
+                /* Hub / actor map may be unavailable */
             }
 
-            return $"{summary} voiceId={GetVoiceId(archive)} serverId={serverId}";
+            SessionManager? sessionManager = GetSessionManager();
+            if (sessionManager == null)
+            {
+                return 0;
+            }
+
+            try
+            {
+                FieldInfo hostField = typeof(SessionManager).GetField("_hostSessionContext", InstanceMemberFlags);
+                if (hostField?.GetValue(sessionManager) is SessionContext host && host.SteamID == steamId)
+                {
+                    return host.GetPlayerUID();
+                }
+
+                FieldInfo contextsField = typeof(SessionManager).GetField("m_Contexts", InstanceMemberFlags);
+                if (contextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts)
+                {
+                    foreach (SessionContext context in contexts.Values)
+                    {
+                        if (context.SteamID != steamId)
+                        {
+                            continue;
+                        }
+
+                        return context.GetPlayerUID();
+                    }
+                }
+            }
+            catch
+            {
+                /* Session manager may be unavailable */
+            }
+
+            return 0;
         }
 
         /// <summary>

@@ -117,6 +117,26 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             ]);
         }
 
+        internal static PlayerLifecycleContribution? TryDescribeArchiveStarted(SpeechEventArchive archive)
+        {
+            if (!ModConfig.EnableMoreVoices.Value || archive == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                SpeechEventArchiveLimits.EffectiveCaps caps = SpeechEventArchiveLimits.ReadEffectiveCaps(archive);
+                return new PlayerLifecycleContribution(
+                    Feature,
+                    $"caps {SpeechEventArchiveLimits.FormatEffectiveCaps(caps)}");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
         [HarmonyPriority(-100)]
         internal static class SpeechEventArchiveOnStartClientPatch
@@ -135,15 +155,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     {
                         return;
                     }
-
-                    SpeechEventArchiveLimits.PoolLimits? limits = SpeechEventArchiveLimits.ResolveFromConfig();
-                    if (limits == null)
-                    {
-                        return;
-                    }
-
-                    ModLog.Info(Feature, $"Voice archive started — {SpeechEventArchiveLimits.FormatEffectiveCaps(SpeechEventArchiveLimits.ToEffectiveCaps(limits.Value))}, " +
-                        $"{VoiceEventStats.DescribePlayer(__instance)}");
                 }
                 catch (Exception ex)
                 {

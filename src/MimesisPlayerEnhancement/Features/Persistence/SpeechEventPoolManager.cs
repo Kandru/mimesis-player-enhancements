@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using MimesisPlayerEnhancement.Features.Persistence.Patches;
 using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Util;
 using Mimic.Voice.SpeechSystem;
@@ -37,6 +38,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         private static readonly Dictionary<long, SpeechEvent> _disconnectedCache = [];
 
         private static readonly Dictionary<ulong, string> _disconnectedPlayerMappings = [];
+
+        private static readonly HashSet<SpeechEventArchive> _awaitingVoiceUuid = [];
 
         private static readonly FieldInfo? RecordedTimeField =
             typeof(SpeechEvent).GetField("RecordedTime", BindingFlags.Public | BindingFlags.Instance);
@@ -82,8 +85,23 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             LoadPlayerMapping(slotId);
 
-            ModLog.Info(Feature, $"Loaded {_pool.Count} events for slot {slotId} " +
-                            $"({_steamToDissonance.Count} SteamID mappings)");
+            ModLog.Debug(Feature, $"Loaded {_pool.Count} events for slot {slotId} ({_steamToDissonance.Count} SteamID mappings)");
+        }
+
+        public static bool AwaitingVoiceUuid(SpeechEventArchive archive) =>
+            archive != null && _awaitingVoiceUuid.Contains(archive);
+
+        private static string ResolvePersistedVoiceId(IReadOnlyList<SpeechEvent> events)
+        {
+            foreach (SpeechEvent ev in events)
+            {
+                if (ev != null && !string.IsNullOrEmpty(ev.PlayerName))
+                {
+                    return ev.PlayerName;
+                }
+            }
+
+            return "(unknown)";
         }
 
         public static List<SpeechEvent> ClaimEventsForArchive(
@@ -126,6 +144,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             if (claimed.Count > 0)
             {
+                string brief = DescribeBrief(archive, playerUID, isLocal);
+                string savedVoiceId = ResolvePersistedVoiceId(claimed);
+
                 if (!string.IsNullOrEmpty(playerId))
                 {
                     foreach (SpeechEvent ev in claimed)
@@ -133,18 +154,20 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         ev.PlayerName = playerId;
                     }
 
-                    ModLog.Debug(Feature, $"Claimed {claimed.Count} events, PlayerName updated to '{playerId}'");
+                    LogVoiceUuidRemap(brief, claimed.Count, savedVoiceId, playerId);
                 }
                 else if (archive != null)
                 {
                     _deferredNameUpdates.Add((archive, new List<SpeechEvent>(claimed)));
-                    ModLog.Debug(Feature, $"Claimed {claimed.Count} events, PlayerId empty -> deferred PlayerName update");
+                    _ = _awaitingVoiceUuid.Add(archive);
+                    ModLog.Debug(Feature, $"Voice UUID remap deferred — {brief} — {claimed.Count} events, saved voiceId='{savedVoiceId}'");
                 }
             }
             else
             {
                 (int pending, int injected) = GetCounts();
-                ModLog.Debug(Feature, $"No events claimed for PlayerId='{playerId}' " +
+                string brief = DescribeBrief(archive, playerUID, isLocal);
+                ModLog.Debug(Feature, $"No events claimed — {brief} " +
                                 $"(matched names: [{string.Join(", ", matchedPlayerNames)}], pool: {pending}P/{injected}I)");
             }
 
@@ -160,7 +183,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             if (_deferredInjectionArchives.Add(archive))
             {
-                ModLog.Debug(Feature, $"Registered archive for deferred injection " +
+                ModLog.Debug(Feature, $"Deferred injection registered — {VoiceEventStats.DescribePlayerBrief(archive)} " +
                                 $"(waiting for SyncVars, {_deferredInjectionArchives.Count} pending)");
             }
         }
@@ -205,24 +228,18 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         continue;
                     }
 
-                    ModLog.Debug(Feature, $"Deferred injection: SyncVars ready for " +
-                                    $"PlayerId='{playerId}', PlayerUID={playerUID}");
+                    ModLog.Debug(Feature, $"Deferred injection ready — {VoiceEventStats.DescribePlayerBrief(archive)}");
 
+                    int eventsBefore = VoiceEventStats.GetVoiceLineCount(archive);
                     SpeechEventInjector.RestoreResult result = SpeechEventInjector.RestoreIntoArchive(
                         archive, playerId, playerUID, isLocal);
+                    int eventsAfter = VoiceEventStats.GetVoiceLineCount(archive);
 
                     StatisticsTracker.SyncVoiceBaseline(archive);
 
-                    if (result.TotalAdded > 0)
-                    {
-                        ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
-                            $"restored {result.TotalAdded} voice events (deferred injection)");
-                    }
-                    else
-                    {
-                        ModLog.Info(Feature, $"Player connected — {VoiceEventStats.DescribePlayer(archive)} — " +
-                            "no matching saved voices (deferred injection)");
-                    }
+                    PersistenceConnectOutcome outcome = SpeechEventArchivePatches.BuildConnectOutcome(
+                        result, eventsBefore, eventsAfter);
+                    PlayerLifecycleCoordinator.SetPersistenceOutcome(archive, outcome, flush: true);
                 }
             }
 
@@ -250,14 +267,31 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     continue;
                 }
 
+                string oldVoiceId = ResolvePersistedVoiceId(events);
+
                 foreach (SpeechEvent ev in events)
                 {
                     _ = (ev?.PlayerName = newPlayerId);
                 }
 
-                ModLog.Debug(Feature, $"Deferred update: {events.Count} events PlayerName updated to '{newPlayerId}'");
+                LogVoiceUuidRemap(VoiceEventStats.DescribePlayerBrief(archive), events.Count, oldVoiceId, newPlayerId);
+                _ = _awaitingVoiceUuid.Remove(archive);
                 _deferredNameUpdates.RemoveAt(i);
+
+                PlayerLifecycleCoordinator.TryFlushConnect(archive);
             }
+        }
+
+        private static string DescribeBrief(SpeechEventArchive? archive, long playerUID, bool isLocal)
+        {
+            return archive != null
+                ? VoiceEventStats.DescribePlayerBrief(archive)
+                : $"steamId={GameSessionAccess.ResolveSteamId(playerUID, isLocal)}";
+        }
+
+        private static void LogVoiceUuidRemap(string brief, int count, string oldVoiceId, string newVoiceId)
+        {
+            ModLog.Debug(Feature, $"Voice UUID remapped — {brief} — {count} events: '{oldVoiceId}' -> '{newVoiceId}'");
         }
 
         public static SpeechEventArchive? GetLocalArchive()
@@ -371,7 +405,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     _disconnectedPlayerMappings[steamId] = playerId;
                 }
 
-                ModLog.Debug(Feature, $"Disconnect cache — {VoiceEventStats.DescribePlayerVerbose(archive)} — cached {cached} events (totalCache={_disconnectedCache.Count})");
+                ModLog.Debug(Feature, $"Disconnect cache — {VoiceEventStats.DescribePlayerBrief(archive)} — cached {cached} events (totalCache={_disconnectedCache.Count})");
                 return cached;
             }
             catch (Exception ex)
@@ -426,8 +460,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             if (claimed.Count > 0)
             {
-                ModLog.Debug(Feature, $"Reclaimed {claimed.Count} events from disconnected cache " +
-                                $"for PlayerId='{playerId}' (remaining cache: {_disconnectedCache.Count})");
+                ModLog.Debug(Feature, $"Reclaimed {claimed.Count} events from disconnected cache for PlayerId='{playerId}', uid={playerUID} (remaining cache: {_disconnectedCache.Count})");
             }
 
             return claimed;
@@ -452,6 +485,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             _steamToDissonance.Clear();
             _deferredNameUpdates.Clear();
             _deferredInjectionArchives.Clear();
+            _awaitingVoiceUuid.Clear();
             _disconnectedCache.Clear();
             _disconnectedPlayerMappings.Clear();
             _loadedSlotId = -1;

@@ -218,8 +218,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     return false;
                 }
 
-                ModLog.Info(Feature, $"Re-trimmed {removed.Count} voice event(s) after limit decrease — " +
-                    $"{VoiceEventStats.DescribePlayer(archive)}");
+                ModLog.Info(Feature, $"Re-trimmed {removed.Count} voice event(s) after limit decrease — {VoiceEventStats.DescribePlayerBrief(archive)}");
                 return true;
             }
             catch (Exception ex)

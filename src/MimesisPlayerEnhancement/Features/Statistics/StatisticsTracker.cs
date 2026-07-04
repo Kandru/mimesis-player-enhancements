@@ -168,13 +168,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 doc.CurrentSession.ReconnectCount++;
                 doc.CurrentSession.LastConnectedAtUtc = now;
                 doc.CurrentSession.LastDisconnectedAtUtc = null;
-                ModLog.Info(Feature, $"Player resumed session — steamId={steamId} session={doc.CurrentSession.SessionId} reconnects={doc.CurrentSession.ReconnectCount}");
             }
             else
             {
                 FinalizeOpenSession(doc, countAsCompleted: true);
                 doc.CurrentSession = NewSession(now);
-                ModLog.Info(Feature, $"Player started session — steamId={steamId} session={doc.CurrentSession.SessionId}");
             }
 
             _connectedSince[steamId] = now;
@@ -185,6 +183,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             int reconnectCount = doc.CurrentSession?.ReconnectCount ?? 0;
             StatisticsMessages.OnPlayerJoinedSession(steamId, doc.DisplayName, doc, isNewSession, reconnectCount);
             WebDashboardSnapshotCache.MarkDirty();
+
+            PlayerLifecycleCoordinator.NotifyStatisticsConnect(steamId, BuildSessionConnectContribution(doc, isNewSession, reconnectCount));
         }
 
         public static void OnPlayerUnregistered(ulong steamId)
@@ -204,6 +204,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 doc = GetOrCreatePlayer(steamId);
             }
 
+            PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
+
             FlushConnectedTime(steamId, doc);
             _ = _connectedSince.Remove(steamId);
             _ = _voiceEventBaselines.Remove(steamId);
@@ -213,10 +215,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 doc.CurrentSession.IsOpen = true;
             }
 
-            ModLog.Info(Feature, $"Player disconnected — steamId={steamId} displayName={doc.DisplayName}");
             BumpRevision();
             StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
             WebDashboardSnapshotCache.MarkDirty();
+
+            PlayerLifecycleCoordinator.NotifyStatisticsDisconnect(steamId, disconnectContribution);
         }
 
         public static void ProcessDeferred()
@@ -612,6 +615,48 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             counters.MonsterKillsByMasterId ??= [];
             counters.DeathsByTrapType ??= [];
+        }
+
+        private static PlayerLifecycleContribution? BuildSessionConnectContribution(
+            PlayerStatisticsDocument doc,
+            bool isNewSession,
+            int reconnectCount)
+        {
+            if (doc.CurrentSession == null)
+            {
+                return null;
+            }
+
+            string detail = isNewSession
+                ? $"new session {doc.CurrentSession.SessionId}"
+                : $"resumed session {doc.CurrentSession.SessionId} (reconnects={reconnectCount})";
+            return new PlayerLifecycleContribution("Statistics", detail);
+        }
+
+        private static PlayerLifecycleContribution? BuildSessionDisconnectContribution(
+            ulong steamId,
+            PlayerStatisticsDocument doc)
+        {
+            if (doc.CurrentSession == null)
+            {
+                return null;
+            }
+
+            string detail = $"session {doc.CurrentSession.SessionId} closed";
+            if (_connectedSince.TryGetValue(steamId, out DateTime since))
+            {
+                TimeSpan connected = DateTime.UtcNow - since;
+                if (connected.TotalMinutes >= 1)
+                {
+                    detail += $" (connected {connected.TotalMinutes:F0}m)";
+                }
+                else if (connected.TotalSeconds >= 1)
+                {
+                    detail += $" (connected {connected.TotalSeconds:F0}s)";
+                }
+            }
+
+            return new PlayerLifecycleContribution("Statistics", detail);
         }
 
         private static bool CanTrack()
