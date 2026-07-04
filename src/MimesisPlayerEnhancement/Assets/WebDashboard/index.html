@@ -25,19 +25,21 @@
           </div>
           <nav class="app-header-actions" aria-label="Dashboard navigation">
             <a class="app-header-link" href="#/players" x-show="status.isConnected"
-              :class="{ active: isGameRoute }">Game</a>
-            <a class="app-header-link" href="#/global-settings" :class="{ active: route === 'global-settings' }">Global
-              Settings</a>
-            <a class="app-header-link" href="#/donation" :class="{ active: route === 'donation' }">Donation</a>
+              :class="{ active: isGameRoute }" x-text="t('dashboard.nav_game')"></a>
+            <a class="app-header-link" href="#/global-settings" :class="{ active: route === 'global-settings' }"
+              x-text="t('dashboard.nav_global_settings')"></a>
+            <a class="app-header-link" href="#/donation" :class="{ active: route === 'donation' }"
+              x-text="t('dashboard.nav_donation')"></a>
             <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
-              <span class="app-header-blind-label">Blind mode</span>
+              <span class="app-header-blind-label" x-text="t('dashboard.blind_mode')"></span>
               <button type="button" class="feature-toggle" role="switch" :class="{ 'is-on': playerBlindModeUserEnabled }"
-                title="Hide alive/dead status, health, toxic, and respawn actions to avoid spoilers. Temporarily disabled while you are dead so you can review others' stats." aria-label="Blind mode"
+                :title="t('dashboard.blind_mode_title')" :aria-label="t('dashboard.blind_mode')"
                 @click="togglePlayerBlindMode">
                 <span class="feature-toggle-track" aria-hidden="true">
                   <span class="feature-toggle-thumb"></span>
                 </span>
-                <span class="feature-toggle-label" x-text="playerBlindModeUserEnabled ? 'On' : 'Off'"></span>
+                <span class="feature-toggle-label"
+                  x-text="playerBlindModeUserEnabled ? t('dashboard.on') : t('dashboard.off')"></span>
               </button>
             </div>
           </nav>
@@ -47,16 +49,17 @@
       <nav class="app-nav" aria-label="Main navigation" x-show="status.isConnected" x-cloak>
         <ul>
           <li>
-            <a href="#/players" :class="{ active: route === 'players' }">Players</a>
+            <a href="#/players" :class="{ active: route === 'players' }" x-text="t('dashboard.nav_players')"></a>
           </li>
           <li>
-            <a href="#/minimap" :class="{ active: route === 'minimap' }">Minimap</a>
+            <a href="#/minimap" :class="{ active: route === 'minimap' }" x-text="t('dashboard.nav_minimap')"></a>
           </li>
           <li x-show="status.isHost">
-            <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }">Leaderboard</a>
+            <a href="#/leaderboard" :class="{ active: route === 'leaderboard' }"
+              x-text="t('dashboard.nav_leaderboard')"></a>
           </li>
           <li x-show="status.isHost">
-            <a href="#/settings" :class="{ active: route === 'settings' }">Settings</a>
+            <a href="#/settings" :class="{ active: route === 'settings' }" x-text="t('dashboard.nav_settings')"></a>
           </li>
         </ul>
       </nav>
@@ -68,22 +71,11 @@
 
           <!-- Donation -->
           <div x-show="route === 'donation'" x-cloak>
-            <h2 class="page-heading">Donation</h2>
+            <h2 class="page-heading" x-text="t('dashboard.donation_heading')"></h2>
             <div class="donation-panel surface-card">
-              <p class="donation-lead">
-                Please support my work with a small donation if you can. Maintaining this mod takes a lot of dedicated
-                time.
-              </p>
-              <p>
-                Mimesis Player Enhancement is not a quick patch — it merges several community mods into one maintained
-                package
-                and adds original work on top: Harmony patches across the game, this web dashboard, session statistics,
-                spawn/loot/money scaling, dungeon tweaks, and ongoing compatibility testing with new MIMESIS releases.
-              </p>
-              <p>
-                If you enjoy playing with it and want to say thanks, a small donation is genuinely appreciated
-                <strong>but never required</strong>.
-              </p>
+              <p class="donation-lead" x-text="t('dashboard.donation_lead')"></p>
+              <p x-text="t('dashboard.donation_body1')"></p>
+              <p x-text="t('dashboard.donation_body2')"></p>
               <p class="donation-action">
                 <a class="donation-button" href="https://www.paypal.com/donate/?hosted_button_id=C2AVYKGVP9TRG"
                   target="_blank" rel="noopener noreferrer">
@@ -104,25 +96,22 @@
           <div x-show="!status.isConnected && !isOfflineRoute()" class="waiting-panel">
             <div class="waiting-card">
               <div class="spinner" role="progressbar" aria-label="Waiting for game" x-show="!apiError"></div>
-              <h2 x-text="apiError ? 'Dashboard unavailable' : 'Not connected'"></h2>
-              <p x-text="apiError
-                ? 'Cannot reach the dashboard API. Make sure the game is running with the mod loaded.'
-                : 'Host or join a game in Mimesis first. This dashboard will connect automatically once you are in a game.'">
-              </p>
+              <h2 x-text="apiError ? t('dashboard.waiting_unavailable') : t('dashboard.waiting_not_connected')"></h2>
+              <p x-text="apiError ? t('dashboard.waiting_api_error') : t('dashboard.waiting_connect_hint')"></p>
             </div>
           </div>
 
           <!-- Players -->
           <div x-show="status.isConnected && route === 'players'" x-cloak>
             <div class="page-heading-row">
-              <h2 class="page-heading">Players</h2>
+              <h2 class="page-heading" x-text="t('dashboard.players_heading')"></h2>
               <span class="page-heading-count" x-show="connectedOverviewPlayers().length > 0"
-                x-text="connectedOverviewPlayers().length + ' connected'"></span>
+                x-text="t('dashboard.connected_count', { count: connectedOverviewPlayers().length })"></span>
               <span class="page-heading-count page-heading-alert" x-show="status.isHost && status.joinAnytimeRoutingCount > 0"
-                x-text="status.joinAnytimeRoutingCount + ' late join routing'"></span>
+                x-text="t('dashboard.late_join_routing', { count: status.joinAnytimeRoutingCount })"></span>
             </div>
             <div class="empty-state" x-show="connectedOverviewPlayers().length === 0 && !pageError">
-              <p>No players connected.</p>
+              <p x-text="t('dashboard.no_players')"></p>
             </div>
             <div class="empty-state" x-show="pageError">
               <p x-text="pageError"></p>
@@ -138,24 +127,24 @@
                       <span class="badge ping" :class="pingClass(p)"
                         :title="'Connection: ' + pingLabel(p)" x-text="pingLabel(p)"></span>
                       <a class="badge badge-link" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
-                      <span class="badge host" x-show="p.isHost">Host</span>
-                      <span class="badge local" x-show="p.isLocal">You</span>
-                      <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive">Alive</span>
-                      <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive">Dead</span>
-                      <span class="badge banned" x-show="p.isBanned">Banned</span>
+                      <span class="badge host" x-show="p.isHost" x-text="t('dashboard.badge_host')"></span>
+                      <span class="badge local" x-show="p.isLocal" x-text="t('dashboard.badge_you')"></span>
+                      <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive" x-text="t('dashboard.badge_alive')"></span>
+                      <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive" x-text="t('dashboard.badge_dead')"></span>
+                      <span class="badge banned" x-show="p.isBanned" x-text="t('dashboard.badge_banned')"></span>
                       <span class="badge late-join" x-show="showLateJoinBadge(p)" x-text="p.lateJoinLabel"></span>
                       <span class="player-entry-actions"
                         x-show="status.isHost && (canModerate(p) || canRespawn(p) || canHeal(p) || p.isBanned)">
                         <button class="btn btn-outlined btn-badge" x-show="canHeal(p)"
-                          @click="moderate(p.steamId, 'heal')">Heal</button>
+                          @click="moderate(p.steamId, 'heal')" x-text="t('dashboard.heal')"></button>
                         <button class="btn btn-outlined btn-badge" x-show="canRespawn(p)"
-                          @click="moderate(p.steamId, 'respawn')">Respawn</button>
+                          @click="moderate(p.steamId, 'respawn')" x-text="t('dashboard.respawn')"></button>
                         <button class="btn btn-outlined btn-badge" x-show="canModerate(p)"
-                          @click="moderate(p.steamId, 'kick')">Kick</button>
+                          @click="moderate(p.steamId, 'kick')" x-text="t('dashboard.kick')"></button>
                         <button class="btn btn-danger btn-badge" x-show="canModerate(p)"
-                          @click="moderate(p.steamId, 'ban')">Ban</button>
+                          @click="moderate(p.steamId, 'ban')" x-text="t('dashboard.ban')"></button>
                         <button class="btn btn-text btn-badge" x-show="p.isBanned"
-                          @click="moderate(p.steamId, 'unban')">Unban</button>
+                          @click="moderate(p.steamId, 'unban')" x-text="t('dashboard.unban')"></button>
                       </span>
                     </div>
                     <small class="player-entry-detail">
@@ -403,12 +392,12 @@
           <!-- Global settings -->
           <div x-show="route === 'global-settings'" x-cloak>
             <div class="settings-page">
-              <h2 class="page-heading">Global Settings</h2>
+              <h2 class="page-heading" x-text="t('dashboard.settings_global_heading')"></h2>
 
               <div class="settings-search-panel surface-card">
                 <label class="settings-search-wrap">
-                  <span class="settings-search-label">Search settings</span>
-                  <input type="search" class="settings-search" placeholder="Search by name, key, or value…"
+                  <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
+                  <input type="search" class="settings-search" :placeholder="t('dashboard.settings_search_by_placeholder')"
                     x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
                     :aria-expanded="settingsSearchOpen" aria-controls="global-settings-suggestions"
                     @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
@@ -433,7 +422,7 @@
               <template x-if="settingsGlobal">
                 <div class="settings-toolbar surface-card">
                   <div class="settings-path">
-                    <span class="settings-path-label">Config file</span>
+                    <span class="settings-path-label" x-text="t('dashboard.settings_config_file_label')"></span>
                     <code class="settings-path-value" x-text="settingsGlobal.configPath || '—'"></code>
                   </div>
                 </div>
@@ -443,12 +432,12 @@
                 <p x-text="pageError"></p>
               </div>
               <div class="loading-panel" x-show="loadingSettings && !pageError">
-                <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
+                <div class="spinner" role="progressbar" :aria-label="t('dashboard.settings_loading_aria')"></div>
               </div>
 
               <div class="empty-state"
                 x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections.length === 0">
-                <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'"></p>
+                <p x-text="settingsQuery ? t('dashboard.settings_no_results') : t('dashboard.settings_no_entries')"></p>
               </div>
 
               <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
@@ -474,18 +463,18 @@
                               <span class="feature-toggle-thumb"></span>
                             </span>
                             <span class="feature-toggle-label"
-                              x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                              x-text="featureEnabled(section.id) ? t('dashboard.on') : t('dashboard.off')"></span>
                           </button>
                         </template>
                         <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
                           x-show="sectionHasResettableEntries(section.id)"
                           :disabled="isResettingSection(section.id)"
-                          :title="activeSettingsScope === 'save' ? 'Reset all to global values' : 'Reset all to defaults'"
-                          @click="resetSectionSettings(section.id)">
-                          Reset all
+                          :title="settingsSectionResetTitle()"
+                          @click="resetSectionSettings(section.id)"
+                          x-text="t('dashboard.settings_reset_all')">
                         </button>
                         <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
-                          x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                          x-text="settingsKeysLabel(sectionEntryCount(section.id))"></span>
                       </div>
                     </header>
                     <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
@@ -497,7 +486,7 @@
                             <div class="settings-entry-head">
                               <strong class="settings-entry-title" x-text="entry.title"></strong>
                               <span class="settings-type-pill" x-text="entry.type"></span>
-                              <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
+                              <span class="badge settings-hidden-badge" x-show="entry.isHidden" x-text="t('dashboard.settings_hidden')"></span>
                             </div>
                             <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
                             <code class="settings-key" x-text="entry.key"></code>
@@ -510,8 +499,8 @@
                                   :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
                                   :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                   @change="onBooleanSettingChange(section.id, entry, $event)">
-                                  <option value="true">On</option>
-                                  <option value="false">Off</option>
+                                  <option value="true" x-text="t('dashboard.on')"></option>
+                                  <option value="false" x-text="t('dashboard.off')"></option>
                                 </select>
                               </template>
                               <template x-if="entry.type === 'Int32'">
@@ -541,13 +530,13 @@
                               <button type="button" class="btn btn-text btn-compact settings-reset-btn"
                                 x-show="settingCanReset(entry)"
                                 :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                :title="activeSettingsScope === 'save' ? 'Reset to global' : 'Reset to default'"
-                                @click="resetSetting(section.id, entry)">
-                                Reset
+                                :title="settingsEntryResetTitle()"
+                                @click="resetSetting(section.id, entry)"
+                                x-text="t('dashboard.settings_reset')">
                               </button>
                             </div>
                             <small class="settings-default-hint" x-show="settingDiffersFromDefault(entry)"
-                              x-text="'Default: ' + formatSettingValue({ type: entry.type, value: entry.defaultValue })"></small>
+                              x-text="formatDefaultHint(entry)"></small>
                           </div>
                         </article>
                       </template>
@@ -563,17 +552,17 @@
             <div>
               <template x-if="!status.isHost">
                 <div class="empty-state">
-                  <p>Settings are only available to the host.</p>
+                  <p x-text="t('dashboard.settings_host_only')"></p>
                 </div>
               </template>
               <template x-if="status.isHost">
                 <div class="settings-page">
-                  <h2 class="page-heading">Settings</h2>
+                  <h2 class="page-heading" x-text="t('dashboard.settings_heading')"></h2>
 
                   <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
                     <label class="settings-search-wrap">
-                      <span class="settings-search-label">Search settings</span>
-                      <input type="search" class="settings-search" placeholder="Search by name, key, or value…"
+                      <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
+                      <input type="search" class="settings-search" :placeholder="t('dashboard.settings_search_by_placeholder')"
                         x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
                         :aria-expanded="settingsSearchOpen" aria-controls="save-settings-suggestions"
                         @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true"
@@ -598,7 +587,7 @@
                   <template x-if="settingsSave">
                     <div class="settings-toolbar surface-card">
                       <div class="settings-path">
-                        <span class="settings-path-label">Override file</span>
+                        <span class="settings-path-label" x-text="t('dashboard.settings_override_file_label')"></span>
                         <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
                       </div>
                     </div>
@@ -608,12 +597,12 @@
                     <p x-text="pageError"></p>
                   </div>
                   <div class="loading-panel" x-show="loadingSettings && !pageError">
-                    <div class="spinner" role="progressbar" aria-label="Loading settings"></div>
+                    <div class="spinner" role="progressbar" :aria-label="t('dashboard.settings_loading_aria')"></div>
                   </div>
 
                   <div class="empty-state"
                     x-show="!loadingSettings && !pageError && settingsSave && filteredSections.length === 0">
-                    <p x-text="settingsQuery ? 'No settings match your search.' : 'No configuration entries found.'">
+                    <p x-text="settingsQuery ? t('dashboard.settings_no_results') : t('dashboard.settings_no_entries')">
                     </p>
                   </div>
 
@@ -640,18 +629,18 @@
                                   <span class="feature-toggle-thumb"></span>
                                 </span>
                                 <span class="feature-toggle-label"
-                                  x-text="featureEnabled(section.id) ? 'On' : 'Off'"></span>
+                                  x-text="featureEnabled(section.id) ? t('dashboard.on') : t('dashboard.off')"></span>
                               </button>
                             </template>
                             <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
                               x-show="sectionHasResettableEntries(section.id)"
                               :disabled="isResettingSection(section.id)"
-                              :title="activeSettingsScope === 'save' ? 'Reset all to global values' : 'Reset all to defaults'"
-                              @click="resetSectionSettings(section.id)">
-                              Reset all
+                              :title="settingsSectionResetTitle()"
+                              @click="resetSectionSettings(section.id)"
+                              x-text="t('dashboard.settings_reset_all')">
                             </button>
                             <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
-                              x-text="sectionEntryCount(section.id) + ' keys'"></span>
+                              x-text="settingsKeysLabel(sectionEntryCount(section.id))"></span>
                           </div>
                         </header>
                         <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
@@ -664,8 +653,8 @@
                                   <strong class="settings-entry-title" x-text="entry.title"></strong>
                                   <span class="settings-type-pill" x-text="entry.type"></span>
                                   <span class="badge settings-override-badge"
-                                    x-show="entry.isOverridden">Overridden</span>
-                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden">Hidden</span>
+                                    x-show="entry.isOverridden" x-text="t('dashboard.settings_overridden_badge')"></span>
+                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden" x-text="t('dashboard.settings_hidden')"></span>
                                 </div>
                                 <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description">
                                 </p>
@@ -679,8 +668,8 @@
                                       :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
                                       :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                       @change="onBooleanSettingChange(section.id, entry, $event)">
-                                      <option value="true">On</option>
-                                      <option value="false">Off</option>
+                                      <option value="true" x-text="t('dashboard.on')"></option>
+                                      <option value="false" x-text="t('dashboard.off')"></option>
                                     </select>
                                   </template>
                                   <template x-if="entry.type === 'Int32'">
@@ -710,13 +699,13 @@
                                   <button type="button" class="btn btn-text btn-compact settings-reset-btn"
                                     x-show="settingCanReset(entry)"
                                     :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                    :title="activeSettingsScope === 'save' ? 'Reset to global' : 'Reset to default'"
-                                    @click="resetSetting(section.id, entry)">
-                                    Reset
+                                    :title="settingsEntryResetTitle()"
+                                    @click="resetSetting(section.id, entry)"
+                                    x-text="t('dashboard.settings_reset')">
                                   </button>
                                 </div>
                                 <small class="settings-default-hint" x-show="settingDiffersFromGlobal(entry)"
-                                  x-text="'Global: ' + formatSettingValue({ type: entry.type, value: entry.globalValue })"></small>
+                                  x-text="formatGlobalHint(entry)"></small>
                               </div>
                             </article>
                           </template>
@@ -737,6 +726,7 @@
   <aside id="toast" role="status" aria-live="polite" :class="{ show: toastVisible }" x-text="toastMessage" x-cloak>
   </aside>
 
+  <script defer src="/js/i18n.js"></script>
   <script defer src="/js/api.js"></script>
   <script defer src="/js/sse.js"></script>
   <script defer src="/js/minimap.js"></script>

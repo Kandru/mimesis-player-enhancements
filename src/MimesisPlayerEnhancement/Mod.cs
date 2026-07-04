@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement
         public override void OnInitializeMelon()
         {
             ModConfig.Initialize(LoggerInstance);
+            ModL10n.Initialize();
             ModConfig.Changed += SyncFromConfig;
 
             _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");

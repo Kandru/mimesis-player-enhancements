@@ -14,6 +14,10 @@ const Api = {
     return res.json();
   },
 
+  async getStatus() {
+    return Api.fetchJson('/api/status');
+  },
+
   async getGlobalSettings() {
     return Api.fetchJson('/api/settings/global');
   },

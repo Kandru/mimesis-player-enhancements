@@ -92,11 +92,19 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             string joined = segments.Count switch
             {
                 1 => segments[0],
-                2 => $"{segments[0]} and {segments[1]}",
-                _ => string.Join(", ", segments.GetRange(0, segments.Count - 1)) + $", and {segments[^1]}",
+                2 => ModL10n.Get("announce.spawn_join_two", new Dictionary<string, object>
+                {
+                    ["first"] = segments[0],
+                    ["second"] = segments[1],
+                }),
+                _ => ModL10n.Get("announce.spawn_join_many", new Dictionary<string, object>
+                {
+                    ["rest"] = string.Join(ModL10n.Get("announce.spawn_join_comma"), segments.GetRange(0, segments.Count - 1)),
+                    ["last"] = segments[^1],
+                }),
             };
 
-            return $"{joined} appeared. Be careful!";
+            return ModL10n.Get("announce.spawn_appeared", new Dictionary<string, object> { ["entities"] = joined });
         }
 
         private static string FormatSegment(int count, string humanizedName, bool capitalizeArticle)

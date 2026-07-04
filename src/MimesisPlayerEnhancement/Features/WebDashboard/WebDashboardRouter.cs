@@ -12,6 +12,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
+        private static string L(string key) => ModL10n.Get($"api.{key}");
+
         internal static void Handle(HttpListenerContext context)
         {
             try
@@ -30,7 +32,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"Request failed: {ex.Message}");
-                TryWriteError(context, 500, "Internal server error.");
+                TryWriteError(context, 500, L("internal_error"));
             }
         }
 
@@ -39,6 +41,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (path == "/api/events" && method == "GET")
             {
                 WebDashboardSseHub.Subscribe(context);
+                return;
+            }
+
+            if (path.StartsWith("/api/locale/", StringComparison.Ordinal) && method == "GET")
+            {
+                string locale = path["/api/locale/".Length..];
+                if (ModLocaleAssets.TryReadLocaleJson(locale, out byte[] localeBytes))
+                {
+                    WriteBytes(context, 200, "application/json; charset=utf-8", localeBytes);
+                    return;
+                }
+
+                WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("not_found")));
                 return;
             }
 
@@ -66,7 +81,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!snapshot.Status.IsHost)
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -84,7 +99,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!WebDashboardGameState.CanEditGlobalSettings())
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -96,7 +111,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!WebDashboardGameState.CanEditGlobalSettings())
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -105,7 +120,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     || string.IsNullOrWhiteSpace(globalRequest.SectionId)
                     || string.IsNullOrWhiteSpace(globalRequest.Key))
                 {
-                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
                     return;
                 }
 
@@ -124,7 +139,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!WebDashboardGameState.CanEditSaveSettings())
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -137,7 +152,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!WebDashboardGameState.CanEditSaveSettings())
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -146,7 +161,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     || string.IsNullOrWhiteSpace(saveRequest.SectionId)
                     || string.IsNullOrWhiteSpace(saveRequest.Key))
                 {
-                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid settings update request."));
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
                     return;
                 }
 
@@ -167,14 +182,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Not found."));
+            WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("not_found")));
         }
 
         private static void HandleMinimapApi(HttpListenerContext context, WebDashboardSnapshot snapshot)
         {
             if (!snapshot.Status.IsConnected)
             {
-                WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Not connected to a game."));
+                WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("not_connected")));
                 return;
             }
 
@@ -182,7 +197,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             bool showAll = string.Equals(query["showAll"], "true", StringComparison.OrdinalIgnoreCase);
             if (showAll && !snapshot.Status.IsHost)
             {
-                WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                 return;
             }
 
@@ -190,7 +205,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string? focusParam = query["focusSteamId"];
             if (!string.IsNullOrWhiteSpace(focusParam) && !ulong.TryParse(focusParam, out focusSteamId))
             {
-                WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid focusSteamId."));
+                WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_focus_steam_id")));
                 return;
             }
 
@@ -215,7 +230,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (!ulong.TryParse(steamIdPart, out ulong steamId) || steamId == 0)
             {
-                WriteJson(context, 400, WebDashboardJson.SerializeError(400, "Invalid Steam ID."));
+                WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_steam_id")));
                 return;
             }
 
@@ -229,20 +244,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (!snapshot.Status.IsHost)
                 {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
                 int slotId = snapshot.Status.SaveSlotId;
                 if (slotId < 0)
                 {
-                    WriteJson(context, 404, WebDashboardJson.SerializeError(404, "No active save slot."));
+                    WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("no_active_save_slot")));
                     return;
                 }
 
                 if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
                 {
-                    WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Player statistics not found."));
+                    WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("player_stats_not_found")));
                     return;
                 }
 
@@ -254,13 +269,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (!snapshot.Status.IsHost)
             {
-                WriteJson(context, 403, WebDashboardJson.SerializeError(403, "Host only."));
+                WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                 return;
             }
 
             if (method != "POST")
             {
-                WriteJson(context, 405, WebDashboardJson.SerializeError(405, "Method not allowed."));
+                WriteJson(context, 405, WebDashboardJson.SerializeError(405, L("method_not_allowed")));
                 return;
             }
 
@@ -276,7 +291,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (actionType == null)
             {
-                WriteJson(context, 404, WebDashboardJson.SerializeError(404, "Not found."));
+                WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("not_found")));
                 return;
             }
 
@@ -300,7 +315,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WriteJson(context, 202, WebDashboardJson.SerializeActionResult(new WebDashboardActionResult
             {
                 Success = true,
-                Message = "Action queued.",
+                Message = L("action_queued"),
             }));
         }
 
@@ -309,7 +324,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (!WebDashboardEmbeddedAssets.TryRead(path, out byte[] bytes, out string extension)
                 && !WebDashboardEmbeddedAssets.TryRead(WebDashboardEmbeddedAssets.IndexWebPath, out bytes, out extension))
             {
-                WriteText(context, 404, "text/plain", "Not found.");
+                WriteText(context, 404, "text/plain", L("not_found"));
                 return;
             }
 
@@ -368,6 +383,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void WriteJson(HttpListenerContext context, int statusCode, string json)
         {
             WriteText(context, statusCode, "application/json; charset=utf-8", json);
+        }
+
+        private static void WriteBytes(HttpListenerContext context, int statusCode, string contentType, byte[] bytes)
+        {
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = contentType;
+            context.Response.ContentLength64 = bytes.Length;
+            context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            context.Response.OutputStream.Write(bytes, 0, bytes.Length);
+            context.Response.OutputStream.Close();
         }
 
         private static void WriteText(HttpListenerContext context, int statusCode, string contentType, string body)

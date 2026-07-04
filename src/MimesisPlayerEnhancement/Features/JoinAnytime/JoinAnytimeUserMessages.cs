@@ -11,14 +11,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     internal static class JoinAnytimeUserMessages
     {
         private const string Feature = "JoinAnytime";
-        private const string DungeonBlockedMessage =
-            "Can't depart yet — other players are still in the dungeon.";
-        private const string SplitBlockedMessage =
-            "Can't depart yet — other players are still outside the tram.";
-        private const string ConnectingBlockedMessage =
-            "Can't depart yet — a player is still connecting.";
         private const float LeverFeedbackDelaySeconds = 0.5f;
         private const float LeverFeedbackDedupSeconds = 5f;
+
+        private static string GetMessageForReason(WaitingRoomBlockReason reason) =>
+            reason switch
+            {
+                WaitingRoomBlockReason.PlayersConnecting => ModL10n.Get("joinanytime.blocked_connecting"),
+                WaitingRoomBlockReason.ActiveDungeon => ModL10n.Get("joinanytime.blocked_dungeon"),
+                _ => ModL10n.Get("joinanytime.blocked_split"),
+            };
 
         private static readonly FieldInfo? StartGameSigField =
             typeof(InTramWaitingScene).GetField("startGameSig", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -131,14 +133,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     ? $"Showed tram lever blocked toast ({reason}, server)"
                     : $"Showed tram lever blocked toast ({reason}, client feedback)");
         }
-
-        private static string GetMessageForReason(WaitingRoomBlockReason reason) =>
-            reason switch
-            {
-                WaitingRoomBlockReason.PlayersConnecting => ConnectingBlockedMessage,
-                WaitingRoomBlockReason.ActiveDungeon => DungeonBlockedMessage,
-                _ => SplitBlockedMessage,
-            };
 
         private static bool HasPendingDungeonStart(InTramWaitingScene scene)
         {

@@ -1,4 +1,16 @@
-const GRADE_LABELS = ['Broken', 'Terrible', 'Slow', 'Medium', 'Fine'];
+function t(key, params) {
+  return window.DashboardI18n ? window.DashboardI18n.t(key, params) : key;
+}
+
+function gradeLabels() {
+  return [
+    t('dashboard.grade_broken'),
+    t('dashboard.grade_terrible'),
+    t('dashboard.grade_slow'),
+    t('dashboard.grade_medium'),
+    t('dashboard.grade_fine'),
+  ];
+}
 
 function formatDuration(seconds) {
   if (!seconds) return '0m';
@@ -7,13 +19,13 @@ function formatDuration(seconds) {
   return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
 }
 
-function formatCountMap(map, labelPrefix) {
+function formatCountMap(map, labelKey) {
   if (!map || typeof map !== 'object') return [];
   return Object.entries(map)
     .filter(([, count]) => (count ?? 0) > 0)
     .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))
     .map(([key, count]) => {
-      const label = labelPrefix ? labelPrefix + ' ' + key : key;
+      const label = labelKey ? t(labelKey, { name: key }) : key;
       return [label, count ?? 0];
     });
 }
@@ -102,6 +114,7 @@ document.addEventListener('alpine:init', () => {
       snapshotVersion: 0,
       configVersion: 0,
       joinAnytimeRoutingCount: 0,
+      locale: 'en',
     },
     players: [],
     leaderboard: null,
@@ -137,6 +150,17 @@ document.addEventListener('alpine:init', () => {
     playerBlindModeUserEnabled: true,
     playerBlindModeAutoSuspended: false,
     _localPlayerWasAlive: null,
+    localeVersion: 0,
+
+    t(key, params) {
+      void this.localeVersion;
+      return DashboardI18n.t(key, params);
+    },
+
+    async reloadLocale(lang) {
+      await DashboardI18n.loadLocale(lang || 'en');
+      this.localeVersion++;
+    },
 
     get isGameRoute() {
       return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
@@ -156,22 +180,24 @@ document.addEventListener('alpine:init', () => {
 
     get pageTitle() {
       const name = (this.status.lobbyName || '').trim();
-      return name || 'Mimesis Player Enhancement';
+      return name || t('dashboard.title_default');
     },
 
     get subtitle() {
       if (this.apiError) {
-        return 'Cannot reach dashboard API';
+        return t('dashboard.subtitle_api_error');
       }
       if (!this.status.isConnected) {
         return this.status.modVersion
-          ? 'v' + this.status.modVersion + ' · Waiting for game'
-          : 'Waiting for game';
+          ? 'v' + this.status.modVersion + ' · ' + t('dashboard.subtitle_waiting')
+          : t('dashboard.subtitle_waiting');
       }
       const parts = [];
       if (this.status.modVersion) parts.push('v' + this.status.modVersion);
-      parts.push(this.status.isHost ? 'Host' : 'Client');
-      if (this.status.saveSlotId >= 0) parts.push('Savegame ' + this.status.saveSlotId);
+      parts.push(this.status.isHost ? t('dashboard.subtitle_host') : t('dashboard.subtitle_client'));
+      if (this.status.saveSlotId >= 0) {
+        parts.push(t('dashboard.subtitle_savegame', { slot: this.status.saveSlotId }));
+      }
       return parts.join(' · ');
     },
 
@@ -184,23 +210,23 @@ document.addEventListener('alpine:init', () => {
       if (!this.playerStats || !this.playerStats.global) return [];
       const c = (this.playerStats.global.counters || {});
       return [
-        ['Currency', c.currencyEarned ?? 0],
-        ['Mimic encounters', c.mimicEncounterCount ?? 0],
-        ['Items carried', c.itemCarryCount ?? 0],
-        ['Survival wins', c.survivalWins ?? 0],
-        ['Left behind', c.survivalLeftBehind ?? 0],
-        ['Survival deaths', c.survivalDeaths ?? 0],
-        ['Deathmatch wins', c.deathmatchWins ?? 0],
-        ['Deathmatch deaths', c.deathmatchDeaths ?? 0],
-        ['Revives', c.revives ?? 0],
-        ['Voices recorded', c.voiceEvents ?? 0],
-        ['Friend damage', c.damageToFriend ?? 0],
-        ['Friends killed', c.friendsKilled ?? 0],
-        ['Connected time', formatDuration(c.totalConnectedSeconds ?? 0)],
-        ['Sessions', this.playerStats.global.sessionsCompleted ?? 0],
+        [t('dashboard.stat_currency'), c.currencyEarned ?? 0],
+        [t('dashboard.stat_mimic_encounters'), c.mimicEncounterCount ?? 0],
+        [t('dashboard.stat_items_carried'), c.itemCarryCount ?? 0],
+        [t('dashboard.stat_survival_wins'), c.survivalWins ?? 0],
+        [t('dashboard.stat_left_behind'), c.survivalLeftBehind ?? 0],
+        [t('dashboard.stat_survival_deaths'), c.survivalDeaths ?? 0],
+        [t('dashboard.stat_deathmatch_wins'), c.deathmatchWins ?? 0],
+        [t('dashboard.stat_deathmatch_deaths'), c.deathmatchDeaths ?? 0],
+        [t('dashboard.stat_revives'), c.revives ?? 0],
+        [t('dashboard.stat_voices_recorded'), c.voiceEvents ?? 0],
+        [t('dashboard.stat_friend_damage'), c.damageToFriend ?? 0],
+        [t('dashboard.stat_friends_killed'), c.friendsKilled ?? 0],
+        [t('dashboard.stat_connected_time'), formatDuration(c.totalConnectedSeconds ?? 0)],
+        [t('dashboard.stat_sessions'), this.playerStats.global.sessionsCompleted ?? 0],
         ...formatCountMap(c.monsterKills, ''),
-        ...formatCountMap(c.deathsByMonster, 'Killed by'),
-        ...formatCountMap(c.deathsByTrap, 'Killed by'),
+        ...formatCountMap(c.deathsByMonster, 'dashboard.killed_by'),
+        ...formatCountMap(c.deathsByTrap, 'dashboard.killed_by'),
       ];
     },
 
@@ -209,27 +235,34 @@ document.addEventListener('alpine:init', () => {
       if (!cs || !cs.counters) return [];
       const s = cs.counters;
       return [
-        ['Currency', s.currencyEarned ?? 0],
-        ['Survival deaths', s.survivalDeaths ?? 0],
-        ['Survival wins', s.survivalWins ?? 0],
-        ['Left behind', s.survivalLeftBehind ?? 0],
-        ['Deathmatch wins', s.deathmatchWins ?? 0],
-        ['Deathmatch deaths', s.deathmatchDeaths ?? 0],
-        ['Revives', s.revives ?? 0],
-        ['Friend damage', s.damageToFriend ?? 0],
-        ['Friends killed', s.friendsKilled ?? 0],
+        [t('dashboard.stat_currency'), s.currencyEarned ?? 0],
+        [t('dashboard.stat_survival_deaths'), s.survivalDeaths ?? 0],
+        [t('dashboard.stat_survival_wins'), s.survivalWins ?? 0],
+        [t('dashboard.stat_left_behind'), s.survivalLeftBehind ?? 0],
+        [t('dashboard.stat_deathmatch_wins'), s.deathmatchWins ?? 0],
+        [t('dashboard.stat_deathmatch_deaths'), s.deathmatchDeaths ?? 0],
+        [t('dashboard.stat_revives'), s.revives ?? 0],
+        [t('dashboard.stat_friend_damage'), s.damageToFriend ?? 0],
+        [t('dashboard.stat_friends_killed'), s.friendsKilled ?? 0],
         ...formatCountMap(s.monsterKills, ''),
-        ...formatCountMap(s.deathsByMonster, 'Killed by'),
-        ...formatCountMap(s.deathsByTrap, 'Killed by'),
+        ...formatCountMap(s.deathsByMonster, 'dashboard.killed_by'),
+        ...formatCountMap(s.deathsByTrap, 'dashboard.killed_by'),
       ];
     },
 
-    init() {
+    async init() {
       this.minimapFocusSteamId = localStorage.getItem('minimapFocusSteamId') || '';
       this.minimapAreaId = localStorage.getItem('minimapAreaId') || '';
       window.addEventListener('hashchange', () => this.onHashChange());
       this.parseRoute();
       this.setConnectedMode();
+      try {
+        const status = await Api.getStatus();
+        await this.reloadLocale(status.locale || 'en');
+        this.applySnapshot({ status, players: [], leaderboard: null });
+      } catch {
+        await this.reloadLocale('en');
+      }
       this.syncDocumentTitle();
       if (this.route === 'global-settings') {
         this.loadPageData(true);
@@ -325,9 +358,13 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
-    applySnapshot(payload) {
+    async applySnapshot(payload) {
       const wasConnected = this.status.isConnected;
+      const previousLocale = this.status.locale || 'en';
       this.status = payload.status || this.status;
+      if (payload.status?.locale && payload.status.locale !== previousLocale && window.DashboardI18n) {
+        await this.reloadLocale(payload.status.locale);
+      }
       if (payload.playersLiveOnly) {
         this.mergeLivePlayers(payload.players || []);
       } else {
@@ -458,7 +495,7 @@ document.addEventListener('alpine:init', () => {
           this.applyMinimapFilter(force);
         }
       } catch (e) {
-        this.pageError = e.message || 'Failed to load data';
+        this.pageError = e.message || t('dashboard.failed_load');
       }
 
       this.lastRoute = this.route;
@@ -469,10 +506,38 @@ document.addEventListener('alpine:init', () => {
 
     settingsIntro() {
       if (this.route === 'global-settings') {
-        return 'Edit global mod defaults. These apply everywhere unless overridden for the active save slot.';
+        return this.t('dashboard.settings_intro_global');
       }
       const slot = this.status.saveSlotId >= 0 ? this.status.saveSlotId : (this.settingsSave?.saveSlotId ?? '—');
-      return 'Edit settings for save slot ' + slot + '. Values matching global defaults are not stored in the save override file.';
+      return this.t('dashboard.settings_intro_save', { slot });
+    },
+
+    settingsSectionResetTitle() {
+      return this.activeSettingsScope === 'save'
+        ? this.t('dashboard.settings_reset_all_global_title')
+        : this.t('dashboard.settings_reset_all_defaults_title');
+    },
+
+    settingsEntryResetTitle() {
+      return this.activeSettingsScope === 'save'
+        ? this.t('dashboard.settings_reset_global')
+        : this.t('dashboard.settings_reset_default');
+    },
+
+    settingsKeysLabel(count) {
+      return this.t('dashboard.settings_keys_count', { count });
+    },
+
+    formatDefaultHint(entry) {
+      return this.t('dashboard.settings_default_hint', {
+        value: formatSettingValue({ type: entry.type, value: entry.defaultValue }),
+      });
+    },
+
+    formatGlobalHint(entry) {
+      return this.t('dashboard.settings_global_hint', {
+        value: formatSettingValue({ type: entry.type, value: entry.globalValue }),
+      });
     },
 
     resolveDisplayName(steamId) {
@@ -497,10 +562,10 @@ document.addEventListener('alpine:init', () => {
     },
 
     pingLabel(p) {
-      if (p.isHost || (this.status.isHost && p.isLocal)) return 'Host';
-      if (p.networkGrade == null || p.networkGrade < 0) return 'Unknown';
+      if (p.isHost || (this.status.isHost && p.isLocal)) return t('dashboard.subtitle_host');
+      if (p.networkGrade == null || p.networkGrade < 0) return t('dashboard.ping_unknown');
       const level = Math.max(0, Math.min(4, p.networkGrade));
-      return GRADE_LABELS[level];
+      return gradeLabels()[level];
     },
 
     pingClass(p) {
@@ -523,13 +588,13 @@ document.addEventListener('alpine:init', () => {
       if (p.playerUid) parts.push('#' + p.playerUid);
       if (p.connectionRole) parts.push(p.connectionRole);
       if (p.connectionAddress) parts.push(p.connectionAddress);
-      parts.push(p.voiceLineCount + ' voice lines');
+      parts.push(t('dashboard.voice_lines', { count: p.voiceLineCount }));
       return parts.join(' · ');
     },
 
     lateJoinMeta(p) {
       if (!this.status.isHost || !p.lateJoinLabel) return '';
-      const parts = ['Late join: ' + p.lateJoinLabel];
+      const parts = [t('dashboard.late_join_prefix', { label: p.lateJoinLabel })];
       if (p.lateJoinStuckSeconds != null && p.lateJoinStuckSeconds > 0) {
         parts.push(Math.round(p.lateJoinStuckSeconds) + 's');
       }
@@ -713,10 +778,10 @@ document.addEventListener('alpine:init', () => {
     },
 
     async moderate(steamId, action) {
-      if (!confirm('Confirm ' + action + ' for player ' + steamId + '?')) return;
+      if (!confirm(t('dashboard.confirm_moderation', { action, steamId }))) return;
       try {
         const res = await Api.postAction(steamId, action);
-        this.showToast(res.message || 'Done');
+        this.showToast(res.message || t('api.done'));
       } catch (e) {
         this.showToast(e.message);
       }
@@ -858,7 +923,7 @@ document.addEventListener('alpine:init', () => {
     formatSettingValue(entry) {
       const value = entry.value;
       if (entry.type === 'Boolean') {
-        return parseBool(value) ? 'On' : 'Off';
+        return parseBool(value) ? t('dashboard.on') : t('dashboard.off');
       }
       if (value == null || value === '') return '—';
       return String(value);
@@ -933,13 +998,13 @@ document.addEventListener('alpine:init', () => {
           resetCount++;
         }
         if (resetCount > 0) {
-          const label = this.activeSettingsScope === 'save'
-            ? 'Reset ' + resetCount + ' setting' + (resetCount === 1 ? '' : 's') + ' to global'
-            : 'Reset ' + resetCount + ' setting' + (resetCount === 1 ? '' : 's') + ' to defaults';
-          this.showToast(label);
+          const target = this.activeSettingsScope === 'save'
+            ? t('dashboard.reset_target_global')
+            : t('dashboard.reset_target_defaults');
+          this.showToast(t('dashboard.reset_settings_toast', { count: resetCount, target }));
         }
       } catch (e) {
-        this.showToast(e.message || 'Failed to reset settings');
+        this.showToast(e.message || t('dashboard.failed_reset'));
         await this.loadPageData(true);
       } finally {
         if (this.resettingSectionId === sectionId) {
@@ -993,13 +1058,13 @@ document.addEventListener('alpine:init', () => {
           entry.isOverridden = res.isOverridden ?? this.settingDiffersFromGlobal(entry);
         }
         if (!quiet) {
-          this.showToast(res.message || 'Saved');
+          this.showToast(res.message || t('dashboard.saved'));
         }
       } catch (e) {
         entry.value = previousValue;
         entry.isOverridden = wasOverridden;
         if (!quiet) {
-          this.showToast(e.message || 'Failed to save setting');
+          this.showToast(e.message || t('dashboard.failed_save'));
         }
         await this.loadPageData(true);
         throw e;

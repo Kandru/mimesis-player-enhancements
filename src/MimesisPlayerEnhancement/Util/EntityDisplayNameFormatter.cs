@@ -36,13 +36,19 @@ namespace MimesisPlayerEnhancement.Util
                 return string.Empty;
             }
 
-            string article = GetArticle(humanizedName);
-            if (capitalizeArticle)
+            if (GameLocaleAccess.GetCurrentLanguage() == "de")
             {
-                article = char.ToUpperInvariant(article[0]) + article[1..];
+                string article = capitalizeArticle ? "Ein" : "ein";
+                return $"{article} {humanizedName}";
             }
 
-            return $"{article} {humanizedName}";
+            string englishArticle = GetArticle(humanizedName);
+            if (capitalizeArticle)
+            {
+                englishArticle = char.ToUpperInvariant(englishArticle[0]) + englishArticle[1..];
+            }
+
+            return $"{englishArticle} {humanizedName}";
         }
 
         internal static string Pluralize(string humanizedName)

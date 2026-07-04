@@ -447,11 +447,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         {
             string baseName = string.IsNullOrEmpty(_baseLobbyName) ? "Train" : _baseLobbyName;
             string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
-                ? $" [join in {waitMinutes} min]"
+                ? ModL10n.Get("joinanytime.lobby_join_in_minutes", new Dictionary<string, object> { ["minutes"] = waitMinutes })
                 : phase is JoinAnytimeSessionPhase.Maintenance
                     or JoinAnytimeSessionPhase.Tram
                     or JoinAnytimeSessionPhase.Dungeon
-                    ? " [join now]"
+                    ? ModL10n.Get("joinanytime.lobby_join_now")
                     : string.Empty;
 
             return $"{baseName}{tag} ({sessionCount}/{MorePlayersPatches.GetMaxPlayers()})";

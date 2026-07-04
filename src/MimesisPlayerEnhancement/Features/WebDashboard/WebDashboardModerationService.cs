@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
+        private static string L(string key) => ModL10n.Get($"api.{key}");
+
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -34,18 +36,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (!WebDashboardGameState.IsHost())
             {
-                return Fail("Host only.");
+                return Fail(L("host_only"));
             }
 
             if (action.SteamId != 0 && LocalPlayerHelper.IsLocalSteamId(action.SteamId)
                 && action.Type is not WebDashboardActionType.Respawn and not WebDashboardActionType.Heal)
             {
-                return Fail("Cannot moderate the local host player.");
+                return Fail(L("cannot_moderate_host"));
             }
 
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             return sessionManager == null
-                ? Fail("Session manager unavailable.")
+                ? Fail(L("session_manager_unavailable"))
                 : action.Type switch
                 {
                     WebDashboardActionType.Kick => Kick(sessionManager, action),
@@ -53,7 +55,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardActionType.Unban => Unban(sessionManager, action),
                     WebDashboardActionType.Respawn => Respawn(action),
                     WebDashboardActionType.Heal => Heal(action),
-                    _ => Fail("Unknown action."),
+                    _ => Fail(L("unknown_action")),
                 };
         }
 
@@ -61,17 +63,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (!TryResolveTarget(action, out SessionContext? targetContext, out long playerUid))
             {
-                return Fail("Player not found.");
+                return Fail(L("player_not_found"));
             }
 
             if (!TryGetHostKickContext(sessionManager, out VPlayer? hostPlayer, out int hashCode))
             {
-                return Fail("Host player context unavailable.");
+                return Fail(L("host_context_unavailable"));
             }
 
             if (!WebDashboardSessionAccess.TryGetSessionId(targetContext!, out long sessionId))
             {
-                return Fail("Session ID unavailable.");
+                return Fail(L("session_id_unavailable"));
             }
 
             try
@@ -85,12 +87,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     sessionId,
                     DisconnectReason.KickByServer,
                     "Kicked",
-                    "Player kicked.");
+                    L("player_kicked"));
             }
             catch (System.Exception ex)
             {
                 ModLog.Warn(Feature, $"Kick failed: {ex.Message}");
-                return Fail("Kick failed.");
+                return Fail(L("kick_failed"));
             }
         }
 
@@ -98,12 +100,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (action.SteamId == 0)
             {
-                return Fail("Invalid Steam ID.");
+                return Fail(L("invalid_steam_id"));
             }
 
             if (!WebDashboardSessionAccess.TryAddBan(sessionManager, action.SteamId))
             {
-                return WebDashboardSessionAccess.IsBanned(sessionManager, action.SteamId) ? Ok("Player already banned.") : Fail("Failed to add ban.");
+                return WebDashboardSessionAccess.IsBanned(sessionManager, action.SteamId)
+                    ? Ok(L("player_already_banned"))
+                    : Fail(L("ban_failed"));
             }
 
             ModLog.Info(Feature, $"Banned steam={action.SteamId}.");
@@ -123,10 +127,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         sessionId,
                         DisconnectReason.KickByHost,
                         "Banned and kicked",
-                        "Player banned.");
+                        L("player_banned"));
                     if (!disconnectResult.Success)
                     {
-                        return Ok("Player banned (disconnect may have failed if already offline).");
+                        return Ok(L("player_banned_offline"));
                     }
 
                     return disconnectResult;
@@ -134,11 +138,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 catch (System.Exception ex)
                 {
                     ModLog.Warn(Feature, $"Ban disconnect failed: {ex.Message}");
-                    return Ok("Player banned (disconnect may have failed if already offline).");
+                    return Ok(L("player_banned_offline"));
                 }
             }
 
-            return Ok("Player banned.");
+            return Ok(L("player_banned"));
         }
 
         private static WebDashboardActionResult DisconnectPlayer(
@@ -168,28 +172,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
             {
-                return Fail("Player not found.");
+                return Fail(L("player_not_found"));
             }
 
             VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
             if (vPlayer == null)
             {
-                return Fail("Player not in game.");
+                return Fail(L("player_not_in_game"));
             }
 
             if (vPlayer.LifeCycle != VCreatureLifeCycle.Dead)
             {
-                return Fail("Player is not dead.");
+                return Fail(L("player_not_dead"));
             }
 
             if (vPlayer.VRoom == null || !vPlayer.VRoom.CanReviveCheat())
             {
-                return Fail("Revive not allowed in the current room state.");
+                return Fail(L("revive_not_allowed"));
             }
 
             if (!TryGetReviveSpawnPoint(out MapMarker_CreatureSpawnPoint? spawnPoint))
             {
-                return Fail("No revive point available.");
+                return Fail(L("no_revive_point"));
             }
 
             try
@@ -197,7 +201,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 vPlayer.SetIsIndoor(spawnPoint!.IsIndoor);
                 if (!vPlayer.Revive(spawnPoint.pos))
                 {
-                    return Fail("Revive failed.");
+                    return Fail(L("revive_failed"));
                 }
 
                 if (vPlayer.StatControlUnit != null)
@@ -217,12 +221,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 ModLog.Info(Feature, $"Respawned player uid={vPlayer.UID}.");
                 WebDashboardSnapshotCache.MarkDirty();
-                return Ok("Player respawned.");
+                return Ok(L("player_respawned"));
             }
             catch (System.Exception ex)
             {
                 ModLog.Warn(Feature, $"Respawn failed: {ex.Message}");
-                return Fail("Respawn failed.");
+                return Fail(L("respawn_failed"));
             }
         }
 
@@ -230,23 +234,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
             {
-                return Fail("Player not found.");
+                return Fail(L("player_not_found"));
             }
 
             VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
             if (vPlayer == null)
             {
-                return Fail("Player not in game.");
+                return Fail(L("player_not_in_game"));
             }
 
             if (!vPlayer.IsAliveStatus())
             {
-                return Fail("Player is dead. Use respawn instead.");
+                return Fail(L("player_dead_use_respawn"));
             }
 
             if (vPlayer.StatControlUnit == null)
             {
-                return Fail("Player stats unavailable.");
+                return Fail(L("player_stats_unavailable"));
             }
 
             try
@@ -254,12 +258,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ApplyFullHealthAndClearConta(vPlayer);
                 ModLog.Info(Feature, $"Healed player uid={vPlayer.UID}.");
                 WebDashboardSnapshotCache.MarkDirty();
-                return Ok("Player healed.");
+                return Ok(L("player_healed"));
             }
             catch (System.Exception ex)
             {
                 ModLog.Warn(Feature, $"Heal failed: {ex.Message}");
-                return Fail("Heal failed.");
+                return Fail(L("heal_failed"));
             }
         }
 
@@ -279,16 +283,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             if (action.SteamId == 0)
             {
-                return Fail("Invalid Steam ID.");
+                return Fail(L("invalid_steam_id"));
             }
 
             if (!WebDashboardSessionAccess.TryRemoveBan(sessionManager, action.SteamId))
             {
-                return Fail("Player was not banned.");
+                return Fail(L("player_not_banned"));
             }
 
             ModLog.Info(Feature, $"Unbanned steam={action.SteamId}.");
-            return Ok("Ban removed.");
+            return Ok(L("ban_removed"));
         }
 
         private static bool TryResolveTarget(

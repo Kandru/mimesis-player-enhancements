@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const int WaitTimeoutMs = 5000;
 
+        private static string L(string key) => ModL10n.Get($"api.{key}");
+
         private static readonly ConcurrentQueue<PendingUpdate> Pending = new();
 
         internal static bool IsProcessing { get; private set; }
@@ -35,12 +37,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ? new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = "Timed out waiting for the game thread.",
+                    Message = L("timed_out"),
                 }
                 : pending.Result ?? new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = "Setting update did not complete.",
+                    Message = L("setting_not_complete"),
                 };
         }
 
@@ -70,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         _ => new WebDashboardConfigUpdateResult
                         {
                             Success = false,
-                            Message = "Unknown settings scope.",
+                            Message = L("unknown_scope"),
                         },
                     };
                 }

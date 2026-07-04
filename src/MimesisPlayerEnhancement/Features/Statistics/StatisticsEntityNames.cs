@@ -15,12 +15,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             return trapType switch
             {
-                TrapType.Mine_Invisible => "Invisible Mine",
-                TrapType.Sprinkler => "Sprinkler",
-                TrapType.Weight_Controller => "Weight Trap",
-                TrapType.Weight_Repeater => "Repeating Weight Trap",
-                TrapType.Corrider => "Corridor Trap",
-                TrapType.Default => "Trap",
+                TrapType.Mine_Invisible => ModL10n.Get("entities.invisible_mine"),
+                TrapType.Sprinkler => ModL10n.Get("entities.sprinkler"),
+                TrapType.Weight_Controller => ModL10n.Get("entities.weight_trap"),
+                TrapType.Weight_Repeater => ModL10n.Get("entities.repeating_weight_trap"),
+                TrapType.Corrider => ModL10n.Get("entities.corridor_trap"),
+                TrapType.Default => ModL10n.Get("entities.trap"),
                 _ => EntityDisplayNameFormatter.Humanize(trapType.ToString()),
             };
         }

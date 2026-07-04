@@ -1,7 +1,9 @@
 ## 26.7.6
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
+- added translations
 - proper lobby name updates in any case
 - improved logging
+- improved statistics
 - optimized webinterface for larger player counts (to avoid lags)
 - webinterface now includes a reset button for config options
 - webinterface now automatically toggles the blind-mode

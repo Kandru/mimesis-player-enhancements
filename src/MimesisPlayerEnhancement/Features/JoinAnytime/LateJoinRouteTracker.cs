@@ -206,10 +206,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static string GetDisplayLabelForPhase(LateJoinRoutePhase phase) =>
             phase switch
             {
-                LateJoinRoutePhase.WaitingHostPhase => "waiting for host",
-                LateJoinRoutePhase.InMaintenance => "routing to tram",
-                LateJoinRoutePhase.AwaitingClient => "awaiting tram load",
-                LateJoinRoutePhase.InWaitingRoom => "in tram",
+                LateJoinRoutePhase.WaitingHostPhase => ModL10n.Get("joinanytime.late_join_waiting_host"),
+                LateJoinRoutePhase.InMaintenance => ModL10n.Get("joinanytime.late_join_routing_tram"),
+                LateJoinRoutePhase.AwaitingClient => ModL10n.Get("joinanytime.late_join_awaiting_tram"),
+                LateJoinRoutePhase.InWaitingRoom => ModL10n.Get("joinanytime.late_join_in_tram"),
                 _ => "",
             };
 

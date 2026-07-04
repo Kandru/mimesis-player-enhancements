@@ -1,0 +1,687 @@
+{
+  "config": {
+    "MimesisPlayerEnhancement": {
+      "_section": "Mimesis Player Enhancement",
+      "ModToastDurationSeconds": {
+        "title": "Mod-Toast-Dauer (Sekunden)",
+        "description": "Wie lange [PlayerEnhancements]-Toasts sichtbar bleiben, bevor sie ausblenden. Vanilla Join/Leave-Toasts bleiben unverändert (~2 Sekunden). Jeder Spieler steuert dies lokal."
+      },
+      "EnableDebugLogging": {
+        "title": "Debug-Logging aktivieren",
+        "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben."
+      }
+    },
+    "MimesisPlayerEnhancement_DungeonRandomizer": {
+      "_section": "Dungeon-Randomizer",
+      "EnableDungeonRandomizer": {
+        "title": "Dungeon Randomizer aktivieren",
+        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Nur Host."
+      },
+      "RandomizeDungeonPick": {
+        "title": "Dungeon Pick randomisieren",
+        "description": "Override which dungeon master ID is rolled on the tram."
+      },
+      "DungeonPickPoolMode": {
+        "title": "Dungeon-Auswahl-Pool-Modus",
+        "description": "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table)."
+      },
+      "DungeonAllowlist": {
+        "title": "Dungeon-Allowlist",
+        "description": "Kommagetrennte dungeon master IDs. When non-empty, only these IDs are eligible."
+      },
+      "DungeonBlocklist": {
+        "title": "Dungeon-Blocklist",
+        "description": "Kommagetrennte dungeon master IDs to exclude from the pool."
+      },
+      "IgnoreDungeonExcludeList": {
+        "title": "Ignore Dungeon Exclude List",
+        "description": "When using WidenVanilla, do not exclude recently played dungeons from the tram roll."
+      },
+      "RandomizeLayoutFlow": {
+        "title": "Layout Flow randomisieren",
+        "description": "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls."
+      },
+      "RandomizeMapVariant": {
+        "title": "Map Variant randomisieren",
+        "description": "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection."
+      },
+      "RandomizeDungeonSeed": {
+        "title": "Dungeon Seed randomisieren",
+        "description": "Replace the procedural dungeon seed with a new random value when a dungeon is chosen."
+      }
+    },
+    "MimesisPlayerEnhancement_DungeonTime": {
+      "_section": "Dungeon-Zeit",
+      "EnableDungeonTime": {
+        "title": "Dungeon Time aktivieren",
+        "description": "Extend dungeon shift length on the host when player count exceeds the baseline."
+      },
+      "DungeonTimeBaselinePlayerCount": {
+        "title": "Dungeon Time Baseline Player Count",
+        "description": "No extra shift time at or below this player count (vanilla is 4). Minimum ist 1."
+      },
+      "ExtraShiftSecondsPerPlayerAboveBaseline": {
+        "title": "Extra Shift Seconds Per Player Above Baseline",
+        "description": "Real seconds added to the shift deadline for each player above the baseline. Minimum ist 0."
+      }
+    },
+    "MimesisPlayerEnhancement_ExtendedSaveSlots": {
+      "_section": "Erweiterte Save-Slots",
+      "EnableExtendedSaveSlots": {
+        "title": "Erweiterte Save-Slots aktivieren",
+        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen einheitlichen Save-Picker (bis 99 manuelle Slots)."
+      }
+    },
+    "MimesisPlayerEnhancement_JoinAnytime": {
+      "_section": "Jederzeit beitreten",
+      "EnableJoinAnytime": {
+        "title": "Jederzeit beitreten aktivieren",
+        "description": "Erlaubt Spielern, einer bereits gestarteten Sitzung beizutreten."
+      },
+      "JoinConnectionGraceSeconds": {
+        "title": "Beitritts-Verbindungs-Gnadenzeit (Sekunden)",
+        "description": "Blockiert die Tram-Abfahrt für diese Sekunden, wenn ein Spieler verbindet. Spieler, die nicht fertig laden, werden gekickt (Host nie)."
+      },
+      "JoinTramRouteRetrySeconds": {
+        "title": "Tram-Routen-Wiederholung (Sekunden)",
+        "description": "Wie oft der Host einen Late-Joiner von Maintenance zur Tram weiterleitet, solange er noch verbindet. Minimum 0,1."
+      }
+    },
+    "MimesisPlayerEnhancement_LootMultiplicator": {
+      "_section": "Loot-Multiplikator",
+      "EnableLootMultiplicator": {
+        "title": "Loot Multiplicator aktivieren",
+        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Nur Host."
+      },
+      "LootMultiplicatorPlayerCountScaleRate": {
+        "title": "Spieleranzahl-Skalierungsrate",
+        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum ist 0."
+      },
+      "AutoScaleMapLootByPlayerCount": {
+        "title": "Map Loot automatisch nach Spieleranzahl skalieren",
+        "description": "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). Wenn aktiviert, apply LootMultiplicatorPlayerCountScaleRate pro Spieler über 4 (stacks with MapLootMultiplier)."
+      },
+      "MapLootMultiplier": {
+        "title": "Karten-Loot-Multiplikator",
+        "description": "Multiplier for all map-placed pickup loot: fixed markers, respawn counts, and random pool budgets. 1 = Vanilla, 2 = doppelt."
+      },
+      "AutoScaleDropLootByPlayerCount": {
+        "title": "Drop Loot automatisch nach Spieleranzahl skalieren",
+        "description": "Drop loot = items from enemy death tables when killed. Wenn aktiviert, apply LootMultiplicatorPlayerCountScaleRate pro Spieler über 4 (stacks with DropLootMultiplier)."
+      },
+      "DropLootMultiplier": {
+        "title": "Drop-Loot-Multiplikator",
+        "description": "Multiplier for enemy death drops: extra weighted re-rolls from drop tables and consumable stack count on spawn. 1 = Vanilla, 2 = doppelt."
+      },
+      "LootItemFilterMode": {
+        "title": "Loot-Item-Filtermodus",
+        "description": "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist."
+      },
+      "LootAllowlist": {
+        "title": "Loot-Allowlist",
+        "description": "Kommagetrennte item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+      },
+      "LootBlocklist": {
+        "title": "Loot-Blocklist",
+        "description": "Kommagetrennte item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+      },
+      "ConvertFakeActorDyingDropChancePercent": {
+        "title": "Convert Fake Death Drops To Real Chance",
+        "description": "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
+      }
+    },
+    "MimesisPlayerEnhancement_MimicTuning": {
+      "_section": "Mimic-Tuning",
+      "EnableMimicTuning": {
+        "title": "Mimic Tuning aktivieren",
+        "description": "Tune dead-player mimic possession speak duration and cooldown on the host."
+      },
+      "RandomizeMimicPossessionDuration": {
+        "title": "Mimic Possession Duration randomisieren",
+        "description": "Roll a random speak window per E-possession between min and max seconds below. Nur Host."
+      },
+      "MimicPossessionMinTimeSeconds": {
+        "title": "Mimic Possession Min Time (seconds)",
+        "description": "Minimum rolled speak duration in seconds (vanilla is 12). Nur Host."
+      },
+      "MimicPossessionMaxTimeSeconds": {
+        "title": "Mimic Possession Max Time (seconds)",
+        "description": "Maximum rolled speak duration in seconds (vanilla is 12). Nur Host."
+      },
+      "MimicPossessionCooltimeMultiplier": {
+        "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
+        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = Vanilla). Nur Host."
+      }
+    },
+    "MimesisPlayerEnhancement_MoneyMultiplier": {
+      "_section": "Geld-Multiplikator",
+      "EnableMoneyMultiplier": {
+        "title": "Money Multiplier aktivieren",
+        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Nur Host."
+      },
+      "MoneyMultiplierPlayerCountScaleRate": {
+        "title": "Spieleranzahl-Skalierungsrate",
+        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum ist 0."
+      },
+      "AutoScaleStartupMoneyByPlayerCount": {
+        "title": "Startup Money automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with StartupMoneyMultiplier)."
+      },
+      "StartupMoneyMultiplier": {
+        "title": "Startgeld-Multiplikator",
+        "description": "Starting maintenance-room currency on a new Save-Slot or session reset to vanilla initial money (1 = Vanilla, 2 = double). Does not apply when loading a save game."
+      },
+      "AutoScaleRoundGoalMoneyByPlayerCount": {
+        "title": "Round Goal Money automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with RoundGoalMoneyMultiplier)."
+      },
+      "RoundGoalMoneyMultiplier": {
+        "title": "Runden-Ziel-Multiplikator",
+        "description": "Target currency required to finish a stage (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleScrapSellValueByPlayerCount": {
+        "title": "Scrap Sell Value automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ScrapSellValueMultiplier)."
+      },
+      "ScrapSellValueMultiplier": {
+        "title": "Schrott-Verkaufswert-Multiplikator",
+        "description": "Currency earned when scrapping items and item value counted toward the tram quota (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleShopBuyPriceByPlayerCount": {
+        "title": "Shop Buy Price automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ShopBuyPriceMultiplier)."
+      },
+      "ShopBuyPriceMultiplier": {
+        "title": "Shop-Kaufpreis-Multiplikator",
+        "description": "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = Vanilla, 2 = double). Applied when shop items are initialized each maintenance round."
+      },
+      "ShopDiscountMinPercent": {
+        "title": "Shop Discount Min Percent",
+        "description": "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0."
+      },
+      "ShopDiscountMaxPercent": {
+        "title": "Shop Discount Max Percent",
+        "description": "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent."
+      },
+      "ShopDiscountChancePercent": {
+        "title": "Shop Discount Chance Percent",
+        "description": "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted)."
+      },
+      "AutoScaleReinforcePriceByPlayerCount": {
+        "title": "Reinforce Price automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ReinforcePriceMultiplier)."
+      },
+      "ReinforcePriceMultiplier": {
+        "title": "Verstärkungs-Preis-Multiplikator",
+        "description": "Maintenance item reinforcement cost multiplier (1 = Vanilla, 2 = double)."
+      }
+    },
+    "MimesisPlayerEnhancement_MorePlayers": {
+      "_section": "Mehr Spieler",
+      "EnableMorePlayers": {
+        "title": "Mehr Spieler aktivieren",
+        "description": "Erhöht das Multiplayer-Spielerlimit über 4 hinaus."
+      },
+      "MaxPlayers": {
+        "title": "Max. Spieler",
+        "description": "Maximale Spieler in einer Sitzung inklusive Host (1 = Solo, 2 = Host + 1 Client usw.)."
+      }
+    },
+    "MimesisPlayerEnhancement_MoreVoices": {
+      "_section": "Mehr Stimmen",
+      "EnableMoreVoices": {
+        "title": "Mehr Stimmen aktivieren",
+        "description": "Erhöht die Stimmen-Aufnahmelimits pro Spieler."
+      },
+      "MaxIndoorVoiceEvents": {
+        "title": "Max. Indoor-Stimmereignisse",
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler in Indoor-Dungeon-Läufen."
+      },
+      "MaxDeathMatchVoiceEvents": {
+        "title": "Max. Deathmatch-Stimmereignisse",
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Deathmatch."
+      },
+      "MaxOutdoorVoiceEvents": {
+        "title": "Max. Outdoor-Stimmereignisse",
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Freien."
+      }
+    },
+    "MimesisPlayerEnhancement_Persistence": {
+      "_section": "Persistenz",
+      "EnablePersistence": {
+        "title": "Stimmen-Persistenz aktivieren",
+        "description": "Speichert und stellt Mimic-Stimmaufnahmen über Speichern/Laden wieder her."
+      }
+    },
+    "MimesisPlayerEnhancement_PlayerAnnouncements": {
+      "_section": "Spieler-Ankündigungen",
+      "ShowPlayerAnnouncements": {
+        "title": "Spieler-Ankündigungen anzeigen",
+        "description": "Zeigt In-Game-Toasts für Dungeon-Einstellungen, Boss-Spawns und deine Karten-Stats beim Tod."
+      }
+    },
+    "MimesisPlayerEnhancement_PlayerTuning": {
+      "_section": "Spieler-Tuning",
+      "EnablePlayerTuning": {
+        "title": "Player Tuning aktivieren",
+        "description": "Scale player move speed, stamina, and carry weight on the host. Joining clients do not need the mod."
+      },
+      "MoveSpeedMultiplier": {
+        "title": "Bewegungsgeschwindigkeits-Multiplikator",
+        "description": "Scales walk and run base speed (1 = Vanilla, 2 = double). Nur Host."
+      },
+      "MaxStaminaMultiplier": {
+        "title": "Max.-Ausdauer-Multiplikator",
+        "description": "Scales maximum stamina (1 = Vanilla, 2 = double). Nur Host."
+      },
+      "StaminaDrainMultiplier": {
+        "title": "Ausdauer-Verbrauchs-Multiplikator",
+        "description": "Scales sprint stamina cost per tick (1 = Vanilla, 0.5 = half drain). Nur Host."
+      },
+      "StaminaRegenMultiplier": {
+        "title": "Ausdauer-Regenerations-Multiplikator",
+        "description": "Scales stamina recovered per regen tick (1 = Vanilla, 2 = double). Nur Host."
+      },
+      "StaminaRegenDelayMultiplier": {
+        "title": "Ausdauer-Regenerations-Verzögerungs-Multiplikator",
+        "description": "Scales wait time before stamina regen starts after sprinting (1 = Vanilla, 0.5 = regen starts sooner). Nur Host."
+      },
+      "MaxCarryWeightMultiplier": {
+        "title": "Max.-Tragegewichts-Multiplikator",
+        "description": "Scales carry capacity before encumbrance slows movement (1 = Vanilla, 2 = double capacity). Nur Host."
+      }
+    },
+    "MimesisPlayerEnhancement_SpawnScaling": {
+      "_section": "Spawn-Skalierung",
+      "EnableSpawnScaling": {
+        "title": "Spawn-Skalierung aktivieren",
+        "description": "Skaliert Dungeon-Monster-Spawn-Budgets nach Typ. Nur Host."
+      },
+      "SpawnScalingPlayerCountScaleRate": {
+        "title": "Spieleranzahl-Skalierungsrate",
+        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum ist 0."
+      },
+      "AutoScaleMimicSpawnsByPlayerCount": {
+        "title": "Mimic Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with MimicSpawnMultiplier)."
+      },
+      "MimicSpawnMultiplier": {
+        "title": "Mimic-Spawn-Multiplikator",
+        "description": "Total mimic spawn budget across the run, including periodic spawns (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleBossSpawnsByPlayerCount": {
+        "title": "Boss Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with BossSpawnMultiplier)."
+      },
+      "BossSpawnMultiplier": {
+        "title": "Boss-Spawn-Multiplikator",
+        "description": "Map-placed bosses: activates unused alternate markers and schedules bonus encounters after kill (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleJakoSpawnsByPlayerCount": {
+        "title": "Jako Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with JakoSpawnMultiplier)."
+      },
+      "JakoSpawnMultiplier": {
+        "title": "Jako-Spawn-Multiplikator",
+        "description": "Total normal-monster threat budget for ambient dungeon spawns (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleSpecialSpawnsByPlayerCount": {
+        "title": "Special Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with SpecialSpawnMultiplier)."
+      },
+      "SpecialSpawnMultiplier": {
+        "title": "Spezial-Spawn-Multiplikator",
+        "description": "Special monster budget for periodic spawns and map-placed specials (1 = Vanilla, 2 = double)."
+      },
+      "AutoScaleTrapSpawnsByPlayerCount": {
+        "title": "Trap Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with TrapSpawnMultiplier)."
+      },
+      "TrapSpawnMultiplier": {
+        "title": "Fallen-Spawn-Multiplikator",
+        "description": "Map-placed traps: activates unused alternate markers and schedules bonus encounters after trigger/kill (1 = Vanilla, 2 = double)."
+      },
+      "MapPlacedEncounterDelayMinSeconds": {
+        "title": "Map-Placed Encounter Delay Min (seconds)",
+        "description": "Shortest wait after a map-placed enemy, trap, or loot marker is cleared before the next bonus encounter from scaling can appear there."
+      },
+      "MapPlacedEncounterDelayMaxSeconds": {
+        "title": "Map-Placed Encounter Delay Max (seconds)",
+        "description": "Longest wait for that random delay. Actual delay is picked between min and max."
+      },
+      "MapPlacedEncounterMinPlayerDistanceMeters": {
+        "title": "Map-Placed Encounter Min Player Distance (m)",
+        "description": "After the delay, hold the spawn until no living players are within this radius of the marker. 0 = spawn as soon as the delay elapses."
+      },
+      "AutoScaleOtherSpawnsByPlayerCount": {
+        "title": "Other Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with OtherSpawnMultiplier)."
+      },
+      "OtherSpawnMultiplier": {
+        "title": "Sonstige-Spawn-Multiplikator",
+        "description": "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps."
+      }
+    },
+    "MimesisPlayerEnhancement_Statistics": {
+      "_section": "Statistiken",
+      "EnableStatistics": {
+        "title": "Spielerstatistiken aktivieren",
+        "description": "Verfolgt Sitzungs- und globale Spielerstatistiken pro Save-Slot."
+      },
+      "SessionReconnectGraceMinutes": {
+        "title": "Wiederverbindungs-Gnadenfrist (Minuten)",
+        "description": "Verwendet die vorherige Sitzung erneut, wenn ein Spieler innerhalb dieser Minuten wiederverbindet."
+      },
+      "ShowStatisticsToasts": {
+        "title": "Statistik-Toasts anzeigen",
+        "description": "Zeigt Mod-Statistik-Toasts (Sitzungsintro für dich, globale Stats bei Join/Leave). Ersetzt nicht die eigenen Verbindungsnachrichten des Spiels."
+      }
+    },
+    "MimesisPlayerEnhancement_WebDashboard": {
+      "_section": "Web-Dashboard",
+      "EnableWebDashboard": {
+        "title": "Web-Dashboard aktivieren",
+        "description": "Stellt eine lokale Web-UI für verbundene Spieler und Host-Moderation bereit. Standard: nur Loopback."
+      },
+      "WebDashboardListenAddress": {
+        "title": "Listen-Adresse",
+        "description": "HTTP-Bind-Adresse. 127.0.0.1 für nur lokalen Zugriff."
+      },
+      "WebDashboardListenPort": {
+        "title": "Listen-Port",
+        "description": "TCP-Port für das lokale Web-Dashboard."
+      }
+    }
+  },
+  "stats": {
+    "session_started": "Eine neue Statistik-Sitzung wurde gestartet.",
+    "session_resumed": "Statistik-Sitzung fortgesetzt.",
+    "session_resumed_reconnect": "Statistik-Sitzung fortgesetzt (Wiederverbindung {count}).",
+    "dungeon_completed": "Dungeon-Lauf aufgezeichnet (Zyklus {cycle}).",
+    "intro_version": "v{version}, entwickelt von {author}, herunterladbar über {url}",
+    "no_stats": "noch keine Statistiken",
+    "summary_separator": " — ",
+    "sessions": "{count} Sitzungen",
+    "cycles": "{count} Zyklen",
+    "survival_wins": "{count} Überlebens-Siege",
+    "left_behind": "{count} zurückgelassen",
+    "survival_deaths": "{count} Überlebens-Tode",
+    "deathmatch_wins": "{count} Deathmatch-Siege",
+    "deathmatch_deaths": "{count} Deathmatch-Tode",
+    "revives": "{count} Wiederbelebungen",
+    "voices_recorded": "{count} Stimmen aufgezeichnet",
+    "currency": "{count} Währung",
+    "playtime_seconds": "{seconds}s gespielt",
+    "playtime_hours_minutes": "{hours}h {minutes}m gespielt",
+    "playtime_hours": "{hours}h gespielt",
+    "playtime_minutes": "{minutes}m gespielt",
+    "list_separator": ", "
+  },
+  "announce": {
+    "map_run_empty": "Dein Lauf auf dieser Karte: keine Aktivität aufgezeichnet.",
+    "map_run_prefix": "Dein Lauf auf dieser Karte: {summary}.",
+    "deaths": "{count} Tod",
+    "deaths_plural": "{count} Tode",
+    "wins": "{count} Sieg",
+    "wins_plural": "{count} Siege",
+    "left_behind": "{count} left behind",
+    "revives": "{count} Wiederbelebung",
+    "revives_plural": "{count} Wiederbelebungen",
+    "monster_kills": "{count} {name}-Kill",
+    "monster_kills_plural": "{count} {name}-Kills",
+    "friends_killed": "{count} Freund getötet",
+    "friends_killed_plural": "{count} Freunde getötet",
+    "items_carried": "{count} getragenes Item",
+    "items_carried_plural": "{count} getragene Items",
+    "mimic_encounters": "{count} Mimic-Begegnung",
+    "mimic_encounters_plural": "{count} Mimic-Begegnungen",
+    "friend_damage": "{count} Freundes-Schaden",
+    "dungeon_run_prefix": "Dieser Lauf: {summary}.",
+    "players_count": "{count} Spieler",
+    "boss_spawns": "Boss-Spawns",
+    "special_spawns": "Spezial-Spawns",
+    "monster_spawns": "Monster-Spawns",
+    "map_loot": "Karten-Loot",
+    "drop_loot": "Drop-Loot",
+    "quota": "Quote",
+    "scrap_value": "Schrott-Wert",
+    "shift_time_bonus": "+{seconds}s Schichtzeit",
+    "dungeon_randomizer_on": "Dungeon-Randomizer an",
+    "multiplier_prefix": "{label} {multiplier}",
+    "spawn_appeared": "{entities} erschienen. Vorsicht!",
+    "spawn_join_two": "{first} und {second}",
+    "spawn_join_many": "{rest} und {last}"
+  },
+  "joinanytime": {
+    "blocked_dungeon": "Abfahrt noch nicht möglich — andere Spieler sind noch im Dungeon.",
+    "blocked_split": "Abfahrt noch nicht möglich — andere Spieler sind noch außerhalb der Tram.",
+    "blocked_connecting": "Abfahrt noch nicht möglich — ein Spieler verbindet sich noch.",
+    "lobby_join_now": " [jetzt beitreten]",
+    "lobby_join_in_minutes": " [Beitritt in {minutes} Min.]",
+    "late_join_waiting_host": "warte auf Host",
+    "late_join_routing_tram": "Route zur Tram",
+    "late_join_awaiting_tram": "warte auf Tram-Laden",
+    "late_join_in_tram": "in der Tram"
+  },
+  "saveslots": {
+    "no_statistics": "Noch keine Statistiken verfügbar",
+    "survival_wins": "{count} Überlebens-Siege",
+    "survival_deaths": "{count} Überlebens-Tode",
+    "revives": "{count} Wiederbelebungen",
+    "voice_events": "{count} Stimmereignisse",
+    "players": "{count} Spieler",
+    "players_plural": "{count} Spieler",
+    "sessions": "{count} Sitzung",
+    "sessions_plural": "{count} Sitzungen",
+    "playtime": "{time} gespielt",
+    "funny_tram_01": "Ich mag Züge",
+    "funny_tram_02": "Tschu-tschu",
+    "funny_tram_03": "Einsteigen in den Schmerz-Express",
+    "funny_tram_04": "Thomas hat Dinge gesehen",
+    "funny_tram_05": "Trammy McTramface",
+    "funny_tram_06": "F drücken, um den Fahrpreis zu zahlen",
+    "funny_tram_07": "Steig in die Hype-Tram ein",
+    "funny_tram_08": "Diese Tram fährt mit Schreien",
+    "funny_tram_09": "Nächster Halt: Hölle",
+    "funny_tram_10": "Achtung vor Mimics",
+    "funny_tram_11": "Tickets fürs Trauma, bitte",
+    "funny_tram_12": "Express ins Verderben",
+    "funny_tram_13": "Pfeife, während du in Panik gerätst",
+    "funny_tram_14": "Keine Rückerstattung auf dieser Fahrt",
+    "funny_tram_15": "Fahrplan: auf unbestimmte Zeit verspätet",
+    "funny_tram_16": "Angetrieben von Freundschaft und Angst",
+    "funny_tram_17": "Tram des Grauens",
+    "funny_tram_18": "Vorsicht vor schließenden Türen (und Mimics)",
+    "funny_tram_19": "Alle Stationen Richtung Leid",
+    "funny_tram_20": "Ding ding, Verzweiflung im Anmarsch",
+    "funny_tram_21": "Endstation Richtung Tod",
+    "funny_tram_22": "Seelen-Tram ohne Bremsen",
+    "funny_tram_23": "Schreien optional, Sterben Pflicht",
+    "funny_tram_24": "Nicht der Schaffner, den du verdienst",
+    "funny_tram_25": "Entgleist, aber entschlossen",
+    "funny_tram_26": "Dein Spiel, unser kollektives Trauma",
+    "funny_tram_27": "Bitte festhalten an eurer Beute",
+    "funny_tram_28": "Abfahrt vom Bahnhof der guten Ideen",
+    "funny_tram_29": "Geister-Tram geht brr",
+    "funny_tram_30": "Ticket entwertet, Schicksal besiegelt"
+  },
+  "entities": {
+    "invisible_mine": "Unsichtbare Mine",
+    "sprinkler": "Sprinkler",
+    "weight_trap": "Gewichtsfalle",
+    "repeating_weight_trap": "Wiederholende Gewichtsfalle",
+    "corridor_trap": "Korridorfalle",
+    "trap": "Falle"
+  },
+  "api": {
+    "host_only": "Nur Host.",
+    "internal_error": "Interner Serverfehler.",
+    "not_found": "Nicht gefunden.",
+    "not_connected": "Nicht mit einem Spiel verbunden.",
+    "action_queued": "Aktion in Warteschlange.",
+    "config_not_initialized": "Konfiguration ist nicht initialisiert.",
+    "web_dashboard_readonly": "Web-Dashboard-Einstellungen können nicht über die Web-UI geändert werden. Bearbeite stattdessen die Konfigurationsdatei.",
+    "web_dashboard_no_save_override": "Web-Dashboard-Einstellungen können nicht pro Save-Slot überschrieben werden.",
+    "invalid_value": "Ungültiger Wert.",
+    "invalid_settings_request": "Ungültige Einstellungs-Anfrage.",
+    "invalid_steam_id": "Ungültige Steam-ID.",
+    "invalid_focus_steam_id": "Ungültige focusSteamId.",
+    "method_not_allowed": "Methode nicht erlaubt.",
+    "no_active_save_slot": "Kein aktiver Save-Slot.",
+    "player_stats_not_found": "Spielerstatistiken nicht gefunden.",
+    "saved_global": "In globale Konfiguration gespeichert.",
+    "saved_save": "In Save-Slot-Overrides gespeichert.",
+    "failed_apply": "Einstellung konnte nicht angewendet werden.",
+    "failed_save_global": "Globale Konfiguration konnte nicht gespeichert werden.",
+    "setting_not_complete": "Einstellungs-Update nicht abgeschlossen.",
+    "unknown_scope": "Unbekannter Einstellungsbereich.",
+    "player_kicked": "Spieler gekickt.",
+    "player_banned": "Spieler gebannt.",
+    "player_already_banned": "Spieler bereits gebannt.",
+    "player_banned_offline": "Spieler gebannt (Trennung evtl. fehlgeschlagen, wenn bereits offline).",
+    "kick_failed": "Kick fehlgeschlagen.",
+    "ban_failed": "Ban fehlgeschlagen.",
+    "heal_failed": "Heilung fehlgeschlagen.",
+    "player_healed": "Spieler geheilt.",
+    "player_respawned": "Spieler respawnt.",
+    "respawn_failed": "Respawn fehlgeschlagen.",
+    "revive_failed": "Wiederbelebung fehlgeschlagen.",
+    "revive_not_allowed": "Wiederbelebung im aktuellen Raumzustand nicht erlaubt.",
+    "no_revive_point": "Kein Wiederbelebungs-Punkt verfügbar.",
+    "player_not_dead": "Spieler ist nicht tot.",
+    "player_dead_use_respawn": "Spieler ist tot. Verwende Respawn.",
+    "player_not_in_game": "Spieler nicht im Spiel.",
+    "player_not_found": "Spieler nicht gefunden.",
+    "player_stats_unavailable": "Spielerstatistiken nicht verfügbar.",
+    "cannot_moderate_host": "Lokalen Host-Spieler kann nicht moderiert werden.",
+    "session_manager_unavailable": "Session-Manager nicht verfügbar.",
+    "host_context_unavailable": "Host-Spieler-Kontext nicht verfügbar.",
+    "session_id_unavailable": "Session-ID nicht verfügbar.",
+    "unknown_action": "Unbekannte Aktion.",
+    "ban_removed": "Ban entfernt.",
+    "player_not_banned": "Spieler war nicht gebannt.",
+    "timed_out": "Zeitüberschreitung beim Warten auf den Spiel-Thread.",
+    "reset_global": "Auf globale Standardwerte zurückgesetzt.",
+    "reset_defaults": "Auf Standardwerte zurückgesetzt.",
+    "done": "Fertig."
+  },
+  "dashboard": {
+    "title_default": "Mimesis Player Enhancement",
+    "subtitle_api_error": "Dashboard-API nicht erreichbar",
+    "subtitle_waiting": "Warte auf Spiel",
+    "subtitle_host": "Host",
+    "subtitle_client": "Client",
+    "subtitle_savegame": "Savegame {slot}",
+    "nav_game": "Spiel",
+    "nav_global_settings": "Globale Einstellungen",
+    "nav_donation": "Spende",
+    "nav_players": "Spieler",
+    "nav_minimap": "Minimap",
+    "nav_leaderboard": "Bestenliste",
+    "nav_settings": "Einstellungen",
+    "blind_mode": "Blindmodus",
+    "blind_mode_title": "Hide alive/dead status, health, toxic, and respawn actions to avoid spoilers. Temporarily disabled while you are dead so you can review others' stats.",
+    "on": "An",
+    "off": "Aus",
+    "donation_heading": "Spende",
+    "donation_lead": "Bitte unterstütze meine Arbeit mit einer kleinen Spende, wenn du kannst. Die Pflege dieses Mods erfordert viel Zeit.",
+    "donation_body1": "Mimesis Player Enhancement is not a quick patch — it merges several community mods into one maintained package and adds original work on top: Harmony patches across the game, this web dashboard, session statistics, spawn/loot/money scaling, dungeon tweaks, and ongoing compatibility testing with new MIMESIS releases.",
+    "donation_body2": "If you enjoy playing with it and want to say thanks, a small donation is genuinely appreciated but never required.",
+    "donation_footnote": "The mod stays free and open source either way. Please also support the original mod authors listed in the GitHub README.",
+    "waiting_unavailable": "Dashboard nicht verfügbar",
+    "waiting_not_connected": "Nicht verbunden",
+    "waiting_api_error": "Dashboard-API nicht erreichbar. Stelle sicher, dass das Spiel mit geladenem Mod läuft.",
+    "waiting_connect_hint": "Hoste oder tritt zuerst einem Spiel in Mimesis bei. Dieses Dashboard verbindet sich automatisch, sobald du im Spiel bist.",
+    "players_heading": "Spieler",
+    "connected_count": "{count} verbunden",
+    "late_join_routing": "{count} Late-Join-Routing",
+    "no_players": "Keine Spieler verbunden.",
+    "badge_host": "Host",
+    "badge_you": "Du",
+    "badge_alive": "Lebt",
+    "badge_dead": "Tot",
+    "badge_banned": "Gebannt",
+    "badge_stats": "Stats",
+    "heal": "Heilen",
+    "respawn": "Respawn",
+    "kick": "Kicken",
+    "ban": "Bannen",
+    "unban": "Entbannen",
+    "previously_connected": "Zuvor verbunden",
+    "connection_label": "Connection: {label}",
+    "minimap_heading": "Minimap",
+    "minimap_focus": "Spieler fokussieren",
+    "minimap_area": "Bereich",
+    "minimap_show_all": "Alle lebenden Spieler anzeigen",
+    "minimap_session": "Sitzung",
+    "minimap_following": "Spieler folgen",
+    "minimap_no_map_tram": "Fokussierter Spieler ist in der Tram — keine Karte verfügbar.",
+    "minimap_no_map": "Keine Karte für diese Szene verfügbar.",
+    "minimap_you_suffix": " (du)",
+    "leaderboard_heading": "Bestenliste",
+    "settings_heading": "Einstellungen",
+    "settings_global_heading": "Globale Einstellungen",
+    "settings_search_label": "Einstellungen suchen",
+    "settings_search_placeholder": "Einstellungen suchen…",
+    "settings_search_by_placeholder": "Nach Name, Schlüssel oder Wert suchen…",
+    "settings_config_file_label": "Konfigurationsdatei",
+    "settings_override_file_label": "Override-Datei",
+    "settings_intro_global": "Globale Mod-Standardwerte bearbeiten. Diese gelten überall, sofern nicht für den aktiven Save-Slot überschrieben.",
+    "settings_intro_save": "Einstellungen für Save-Slot {slot} bearbeiten. Werte, die globalen Standardwerten entsprechen, werden nicht in der Save-Override-Datei gespeichert.",
+    "settings_no_results": "Keine Einstellungen entsprechen der Suche.",
+    "settings_no_entries": "Keine Konfigurationseinträge gefunden.",
+    "settings_reset": "Zurücksetzen",
+    "settings_reset_all": "Alle zurücksetzen",
+    "settings_reset_global": "Auf global zurücksetzen",
+    "settings_reset_default": "Auf Standard zurücksetzen",
+    "settings_reset_all_global_title": "Alle auf globale Werte zurücksetzen",
+    "settings_reset_all_defaults_title": "Alle auf Standardwerte zurücksetzen",
+    "settings_default_hint": "Standard: {value}",
+    "settings_global_hint": "Global: {value}",
+    "settings_overridden_badge": "Überschrieben",
+    "settings_hidden": "Versteckt",
+    "settings_keys_count": "{count} Schlüssel",
+    "settings_host_only": "Einstellungen sind nur für den Host verfügbar.",
+    "settings_loading_aria": "Einstellungen werden geladen",
+    "failed_load": "Daten konnten nicht geladen werden",
+    "confirm_moderation": "{action} für Spieler {steamId} bestätigen?",
+    "late_join_prefix": "Late Join: {label}",
+    "late_join_attempts": "{count} attempts",
+    "ping_unknown": "Unbekannt",
+    "grade_broken": "Kaputt",
+    "grade_terrible": "Schrecklich",
+    "grade_slow": "Langsam",
+    "grade_medium": "Mittel",
+    "grade_fine": "Gut",
+    "stat_currency": "Währung",
+    "stat_mimic_encounters": "Mimic-Begegnungen",
+    "stat_items_carried": "Getragene Items",
+    "stat_survival_wins": "Überlebens-Siege",
+    "stat_left_behind": "Zurückgelassen",
+    "stat_survival_deaths": "Überlebens-Tode",
+    "stat_deathmatch_wins": "Deathmatch-Siege",
+    "stat_deathmatch_deaths": "Deathmatch-Tode",
+    "stat_revives": "Wiederbelebungen",
+    "stat_voices_recorded": "Aufgezeichnete Stimmen",
+    "stat_friend_damage": "Freundes-Schaden",
+    "stat_friends_killed": "Freunde getötet",
+    "stat_connected_time": "Verbundene Zeit",
+    "stat_sessions": "Sitzungen",
+    "killed_by": "Getötet von {name}",
+    "voice_lines": "{count} Stimmzeilen",
+    "saved": "Gespeichert",
+    "failed_save": "Einstellung konnte nicht gespeichert werden",
+    "reset_settings_toast": "{count} Einstellung(en) auf {target} zurückgesetzt",
+    "reset_target_global": "global",
+    "reset_target_defaults": "Standardwerte",
+    "failed_reset": "Einstellungen konnten nicht zurückgesetzt werden",
+    "player_stats_heading": "Spielerstatistiken",
+    "global_stats": "Globale Statistiken",
+    "session_stats": "Aktuelle Sitzung",
+    "back_to_players": "Zurück zu Spielern",
+    "minimap_tooltip_room": "Raum",
+    "minimap_tooltip_train": "Zug",
+    "minimap_tooltip_area": "Bereich",
+    "minimap_tooltip_teleporter": "Teleporter → {target}"
+  }
+}

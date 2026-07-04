@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int SnapshotVersion;
         public int ConfigVersion;
         public int JoinAnytimeRoutingCount;
+        public string Locale = "en";
     }
 
     internal sealed class WebDashboardSessionStatsDto

@@ -9,20 +9,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly MethodInfo? GetL10NTextMethod =
-            AccessTools.Method(typeof(Hub), "GetL10NText", [typeof(string), typeof(object[])]);
-
         private static readonly MethodInfo? LoadSaveMethod =
             AccessTools.Method(typeof(PlatformMgr), "Load")?.MakeGenericMethod(typeof(MMSaveGameData));
 
         internal static string GetL10NText(string key, params object[] formattingArgs)
         {
-            if (GetL10NTextMethod != null)
-            {
-                return GetL10NTextMethod.Invoke(null, [key, formattingArgs]) as string ?? key;
-            }
-
-            return key;
+            return GameLocaleAccess.GetL10NText(key, formattingArgs);
         }
 
         internal static UIManager? TryGetUiManager() => Ui.ModUiGameAccess.TryGetUiManager();

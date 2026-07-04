@@ -37,8 +37,10 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         private const int RowsPerColumn = 4;
         private const float ColumnGap = 12f;
 
-        private static readonly MethodInfo? GetL10NTextMethod =
-            AccessTools.Method(typeof(Hub), "GetL10NText", [typeof(string), typeof(object[])]);
+        private static string GetL10NText(string key, params object[] formattingArgs)
+        {
+            return GameLocaleAccess.GetL10NText(key, formattingArgs);
+        }
 
         private static readonly PropertyInfo? HubPdataProperty =
             AccessTools.Property(typeof(Hub), "pdata");
@@ -353,15 +355,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             return textProperty?.GetValue(textComponent) as string ?? string.Empty;
         }
 
-        private static string GetL10NText(string key, params object[] formattingArgs)
-        {
-            if (GetL10NTextMethod != null)
-            {
-                return GetL10NTextMethod.Invoke(null, [key, formattingArgs]) as string ?? key;
-            }
-
-            return key;
-        }
 
         private static object? GetRandomDungeonSeed()
         {

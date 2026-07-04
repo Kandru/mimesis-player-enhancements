@@ -143,25 +143,26 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
         private static string FormatMapRunStats(MapRunSnapshot stats)
         {
             List<string> parts = [];
+            string separator = ModL10n.Get("stats.list_separator");
 
             if (stats.SurvivalDeaths > 0)
             {
-                parts.Add($"{stats.SurvivalDeaths} death{(stats.SurvivalDeaths == 1 ? "" : "s")}");
+                parts.Add(Count("announce.deaths", "announce.deaths_plural", stats.SurvivalDeaths));
             }
 
             if (stats.SurvivalWins > 0)
             {
-                parts.Add($"{stats.SurvivalWins} win{(stats.SurvivalWins == 1 ? "" : "s")}");
+                parts.Add(Count("announce.wins", "announce.wins_plural", stats.SurvivalWins));
             }
 
             if (stats.SurvivalLeftBehind > 0)
             {
-                parts.Add($"{stats.SurvivalLeftBehind} left behind");
+                parts.Add(ModL10n.Get("announce.left_behind", new Dictionary<string, object> { ["count"] = stats.SurvivalLeftBehind }));
             }
 
             if (stats.Revives > 0)
             {
-                parts.Add($"{stats.Revives} revive{(stats.Revives == 1 ? "" : "s")}");
+                parts.Add(Count("announce.revives", "announce.revives_plural", stats.Revives));
             }
 
             foreach (KeyValuePair<string, long> kvp in stats.MonsterKills.OrderByDescending(p => p.Value))
@@ -171,30 +172,41 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                     continue;
                 }
 
-                parts.Add($"{kvp.Value} {kvp.Key} kill{(kvp.Value == 1 ? "" : "s")}");
+                parts.Add(kvp.Value == 1
+                    ? ModL10n.Get("announce.monster_kills", new Dictionary<string, object> { ["count"] = kvp.Value, ["name"] = kvp.Key })
+                    : ModL10n.Get("announce.monster_kills_plural", new Dictionary<string, object> { ["count"] = kvp.Value, ["name"] = kvp.Key }));
             }
 
             if (stats.FriendsKilled > 0)
             {
-                parts.Add($"{stats.FriendsKilled} friend{(stats.FriendsKilled == 1 ? "" : "s")} killed");
+                parts.Add(Count("announce.friends_killed", "announce.friends_killed_plural", stats.FriendsKilled));
             }
 
             if (stats.ItemCarryCount > 0)
             {
-                parts.Add($"{stats.ItemCarryCount} item{(stats.ItemCarryCount == 1 ? "" : "s")} carried");
+                parts.Add(Count("announce.items_carried", "announce.items_carried_plural", stats.ItemCarryCount));
             }
 
             if (stats.MimicEncounterCount > 0)
             {
-                parts.Add($"{stats.MimicEncounterCount} mimic encounter{(stats.MimicEncounterCount == 1 ? "" : "s")}");
+                parts.Add(Count("announce.mimic_encounters", "announce.mimic_encounters_plural", stats.MimicEncounterCount));
             }
 
             if (stats.DamageToFriend > 0)
             {
-                parts.Add($"{stats.DamageToFriend} friend damage");
+                parts.Add(ModL10n.Get("announce.friend_damage", new Dictionary<string, object> { ["count"] = stats.DamageToFriend }));
             }
 
-            return parts.Count == 0 ? "Your run this map: no recorded activity yet." : $"Your run this map: {string.Join(", ", parts)}.";
+            return parts.Count == 0
+                ? ModL10n.Get("announce.map_run_empty")
+                : ModL10n.Get("announce.map_run_prefix", new Dictionary<string, object> { ["summary"] = string.Join(separator, parts) });
+        }
+
+        private static string Count(string singularKey, string pluralKey, long count)
+        {
+            return count == 1
+                ? ModL10n.Get(singularKey, new Dictionary<string, object> { ["count"] = count })
+                : ModL10n.Get(pluralKey, new Dictionary<string, object> { ["count"] = count });
         }
     }
 }

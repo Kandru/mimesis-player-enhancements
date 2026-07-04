@@ -4,8 +4,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotPickerExtraStats
     {
-        private const string NoStatisticsText = "No statistics available yet";
-
         internal static string FormatLine3(int slotId)
         {
             List<string> parts = [];
@@ -19,10 +17,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             int voiceEvents = SpeechEventFileStore.TryGetSavedSpeechEventCount(slotId);
             if (voiceEvents > 0)
             {
-                parts.Add(voiceEvents + " voice events");
+                parts.Add(ModL10n.Get("saveslots.voice_events", new Dictionary<string, object> { ["count"] = voiceEvents }));
             }
 
-            return parts.Count == 0 ? NoStatisticsText : string.Join(" · ", parts);
+            return parts.Count == 0
+                ? ModL10n.Get("saveslots.no_statistics")
+                : string.Join(" · ", parts);
         }
 
         internal static float ComputeRowHeight()
@@ -37,7 +37,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void AppendLeaderboardSummary(List<string> parts, List<LeaderboardEntry> entries)
         {
-            parts.Add(entries.Count + (entries.Count == 1 ? " player" : " players"));
+            parts.Add(entries.Count == 1
+                ? ModL10n.Get("saveslots.players", new Dictionary<string, object> { ["count"] = entries.Count })
+                : ModL10n.Get("saveslots.players_plural", new Dictionary<string, object> { ["count"] = entries.Count }));
 
             long sessions = 0;
             long survivalWins = 0;
@@ -56,27 +58,29 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             if (sessions > 0)
             {
-                parts.Add(sessions + (sessions == 1 ? " session" : " sessions"));
+                parts.Add(sessions == 1
+                    ? ModL10n.Get("saveslots.sessions", new Dictionary<string, object> { ["count"] = sessions })
+                    : ModL10n.Get("saveslots.sessions_plural", new Dictionary<string, object> { ["count"] = sessions }));
             }
 
             if (survivalWins > 0)
             {
-                parts.Add(survivalWins + " survival wins");
+                parts.Add(ModL10n.Get("saveslots.survival_wins", new Dictionary<string, object> { ["count"] = survivalWins }));
             }
 
             if (survivalDeaths > 0)
             {
-                parts.Add(survivalDeaths + " survival deaths");
+                parts.Add(ModL10n.Get("saveslots.survival_deaths", new Dictionary<string, object> { ["count"] = survivalDeaths }));
             }
 
             if (revives > 0)
             {
-                parts.Add(revives + " revives");
+                parts.Add(ModL10n.Get("saveslots.revives", new Dictionary<string, object> { ["count"] = revives }));
             }
 
             if (playSeconds >= 60)
             {
-                parts.Add(FormatPlaytime(playSeconds));
+                parts.Add(ModL10n.Get("saveslots.playtime", new Dictionary<string, object> { ["time"] = FormatPlaytime(playSeconds) }));
             }
         }
 
@@ -91,14 +95,16 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         {
             if (totalSeconds < 60)
             {
-                return totalSeconds + "s played";
+                return ModL10n.Get("stats.playtime_seconds", new Dictionary<string, object> { ["seconds"] = totalSeconds });
             }
 
             long hours = totalSeconds / 3600;
             long minutes = (totalSeconds % 3600) / 60;
             return hours > 0
-                ? minutes > 0 ? hours + "h " + minutes + "m played" : hours + "h played"
-                : minutes + "m played";
+                ? minutes > 0
+                    ? ModL10n.Get("stats.playtime_hours_minutes", new Dictionary<string, object> { ["hours"] = hours, ["minutes"] = minutes })
+                    : ModL10n.Get("stats.playtime_hours", new Dictionary<string, object> { ["hours"] = hours })
+                : ModL10n.Get("stats.playtime_minutes", new Dictionary<string, object> { ["minutes"] = minutes });
         }
     }
 }

@@ -14,6 +14,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
+        private static string L(string key) => ModL10n.Get($"api.{key}");
+
         internal static WebDashboardSettingsDto BuildGlobalSettings()
         {
             if (!ModConfig.IsInitialized)
@@ -66,7 +68,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = "Configuration is not initialized.",
+                    Message = L("config_not_initialized"),
                 };
             }
 
@@ -75,7 +77,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = "Web dashboard settings cannot be changed from the web UI. Edit the config file instead.",
+                    Message = L("web_dashboard_readonly"),
                 };
             }
 
@@ -84,7 +86,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = error ?? "Invalid value.",
+                    Message = error ?? L("invalid_value"),
                 };
             }
 
@@ -96,7 +98,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return new WebDashboardConfigUpdateResult
                     {
                         Success = false,
-                        Message = error ?? "Failed to apply setting.",
+                        Message = error ?? L("failed_apply"),
                     };
                 }
 
@@ -107,7 +109,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return new WebDashboardConfigUpdateResult
                     {
                         Success = false,
-                        Message = error ?? "Failed to save global config.",
+                        Message = error ?? L("failed_save_global"),
                     };
                 }
 
@@ -127,7 +129,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ModConfigChangeTracker.EndBatch();
             }
 
-            return BuildUpdateResult(sectionId, key, normalized, "Saved to global config.");
+            return BuildUpdateResult(sectionId, key, normalized, L("saved_global"));
         }
 
         internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
@@ -137,7 +139,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = "Web dashboard settings cannot be overridden per save slot.",
+                    Message = L("web_dashboard_no_save_override"),
                 };
             }
 
@@ -146,7 +148,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = error ?? "Invalid value.",
+                    Message = error ?? L("invalid_value"),
                 };
             }
 
@@ -155,7 +157,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardConfigUpdateResult
                 {
                     Success = true,
-                    Message = "Saved to save slot overrides.",
+                    Message = L("saved_save"),
                     ConfigVersion = ModConfig.Version,
                     SectionId = sectionId,
                     Key = key,
@@ -235,7 +237,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return new WebDashboardConfigUpdateResult
             {
                 Success = true,
-                Message = "Saved to save slot overrides.",
+                Message = L("saved_save"),
                 ConfigVersion = ModConfig.Version,
                 SectionId = sectionId,
                 Key = key,
@@ -263,6 +265,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     title = sectionId;
                 }
+
+                title = ModL10n.GetConfigSectionTitle(sectionId) ?? title;
 
                 WebDashboardConfigSectionDto section = new()
                 {
@@ -300,8 +304,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardConfigEntryDto entryDto = new()
                     {
                         Key = entry.Identifier,
-                        Title = entry.DisplayName ?? entry.Identifier,
-                        Description = entry.Description ?? "",
+                        Title = ModL10n.GetConfigEntryTitle(sectionId, key) ?? entry.DisplayName ?? entry.Identifier,
+                        Description = ModL10n.GetConfigEntryDescription(sectionId, key) ?? entry.Description ?? "",
                         Type = entry.GetReflectedType()?.Name ?? "Unknown",
                         Value = saveScope
                             ? ModConfigRegistry.FormatEntryValue(entry)

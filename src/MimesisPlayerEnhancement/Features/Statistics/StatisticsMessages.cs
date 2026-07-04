@@ -84,7 +84,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            InGameMessageHelper.ShowModMessage($"Dungeon run recorded (cycle {cycleNumber}).");
+            InGameMessageHelper.ShowModMessage(ModL10n.Get("stats.dungeon_completed", new Dictionary<string, object> { ["cycle"] = cycleNumber }));
         }
 
         internal static void OnGamePlayerInfoShown(string userName, bool isEntering)
@@ -192,18 +192,23 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             List<string> lines =
             [
-                $"v{VersionInfo.ModuleVersion}, developed by {AuthorName}, downloadable via {DownloadUrl}",
+                ModL10n.Get("stats.intro_version", new Dictionary<string, object>
+                {
+                    ["version"] = VersionInfo.ModuleVersion,
+                    ["author"] = AuthorName,
+                    ["url"] = DownloadUrl,
+                }),
             ];
 
             if (isNewSession == true)
             {
-                lines.Add("A new stats session has been started.");
+                lines.Add(ModL10n.Get("stats.session_started"));
             }
             else if (isNewSession == false)
             {
                 lines.Add(reconnectCount > 0
-                    ? $"Stats session resumed (reconnect {reconnectCount})."
-                    : "Stats session resumed.");
+                    ? ModL10n.Get("stats.session_resumed_reconnect", new Dictionary<string, object> { ["count"] = reconnectCount })
+                    : ModL10n.Get("stats.session_resumed"));
             }
 
             return string.Join("\n", lines);
@@ -287,55 +292,56 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             StatCounters c = global.Counters;
             List<string> parts = [];
+            string separator = ModL10n.Get("stats.list_separator");
 
             if (global.SessionsCompleted > 0)
             {
-                parts.Add($"{global.SessionsCompleted} sessions");
+                parts.Add(ModL10n.Get("stats.sessions", new Dictionary<string, object> { ["count"] = global.SessionsCompleted }));
             }
 
             if (c.CyclesCompleted > 0)
             {
-                parts.Add($"{c.CyclesCompleted} cycles");
+                parts.Add(ModL10n.Get("stats.cycles", new Dictionary<string, object> { ["count"] = c.CyclesCompleted }));
             }
 
             if (c.SurvivalWins > 0)
             {
-                parts.Add($"{c.SurvivalWins} survival wins");
+                parts.Add(ModL10n.Get("stats.survival_wins", new Dictionary<string, object> { ["count"] = c.SurvivalWins }));
             }
 
             if (c.SurvivalLeftBehind > 0)
             {
-                parts.Add($"{c.SurvivalLeftBehind} left behind");
+                parts.Add(ModL10n.Get("stats.left_behind", new Dictionary<string, object> { ["count"] = c.SurvivalLeftBehind }));
             }
 
             if (c.SurvivalDeaths > 0)
             {
-                parts.Add($"{c.SurvivalDeaths} survival deaths");
+                parts.Add(ModL10n.Get("stats.survival_deaths", new Dictionary<string, object> { ["count"] = c.SurvivalDeaths }));
             }
 
             if (c.DeathmatchWins > 0)
             {
-                parts.Add($"{c.DeathmatchWins} deathmatch wins");
+                parts.Add(ModL10n.Get("stats.deathmatch_wins", new Dictionary<string, object> { ["count"] = c.DeathmatchWins }));
             }
 
             if (c.DeathmatchDeaths > 0)
             {
-                parts.Add($"{c.DeathmatchDeaths} deathmatch deaths");
+                parts.Add(ModL10n.Get("stats.deathmatch_deaths", new Dictionary<string, object> { ["count"] = c.DeathmatchDeaths }));
             }
 
             if (c.Revives > 0)
             {
-                parts.Add($"{c.Revives} revives");
+                parts.Add(ModL10n.Get("stats.revives", new Dictionary<string, object> { ["count"] = c.Revives }));
             }
 
             if (c.VoiceEvents > 0)
             {
-                parts.Add($"{c.VoiceEvents} voices recorded");
+                parts.Add(ModL10n.Get("stats.voices_recorded", new Dictionary<string, object> { ["count"] = c.VoiceEvents }));
             }
 
             if (c.CurrencyEarned > 0)
             {
-                parts.Add($"{c.CurrencyEarned} currency");
+                parts.Add(ModL10n.Get("stats.currency", new Dictionary<string, object> { ["count"] = c.CurrencyEarned }));
             }
 
             if (c.TotalConnectedSeconds > 0)
@@ -343,20 +349,24 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 parts.Add(FormatPlaytime(c.TotalConnectedSeconds));
             }
 
-            string summary = parts.Count > 0 ? string.Join(", ", parts) : "no recorded stats yet";
-            return $"{displayName} — {summary}";
+            string summary = parts.Count > 0 ? string.Join(separator, parts) : ModL10n.Get("stats.no_stats");
+            return displayName + ModL10n.Get("stats.summary_separator") + summary;
         }
 
         private static string FormatPlaytime(long totalSeconds)
         {
             if (totalSeconds < 60)
             {
-                return $"{totalSeconds}s played";
+                return ModL10n.Get("stats.playtime_seconds", new Dictionary<string, object> { ["seconds"] = totalSeconds });
             }
 
             long hours = totalSeconds / 3600;
             long minutes = (totalSeconds % 3600) / 60;
-            return hours > 0 ? minutes > 0 ? $"{hours}h {minutes}m played" : $"{hours}h played" : $"{minutes}m played";
+            return hours > 0
+                ? minutes > 0
+                    ? ModL10n.Get("stats.playtime_hours_minutes", new Dictionary<string, object> { ["hours"] = hours, ["minutes"] = minutes })
+                    : ModL10n.Get("stats.playtime_hours", new Dictionary<string, object> { ["hours"] = hours })
+                : ModL10n.Get("stats.playtime_minutes", new Dictionary<string, object> { ["minutes"] = minutes });
         }
 
         private static ulong ResolveSteamIdFromDisplayName(string displayName)

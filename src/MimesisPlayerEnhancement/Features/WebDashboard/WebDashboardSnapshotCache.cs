@@ -216,6 +216,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     JoinAnytimeRoutingCount = ModConfig.EnableJoinAnytime.Value
                         ? LateJoinRouteTracker.GetActiveRoutingCount()
                         : 0,
+                    Locale = GameLocaleAccess.GetCurrentLanguage(),
                 },
             };
 

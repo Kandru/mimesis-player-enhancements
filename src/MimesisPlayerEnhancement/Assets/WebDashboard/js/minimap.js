@@ -159,7 +159,9 @@ const MinimapRenderer = {
       diamond.setAttribute('points', '0,-' + r + ' ' + r + ',0 0,' + r + ' -' + r + ',0');
       group.appendChild(diamond);
       const teleTitle = document.createElementNS(ns, 'title');
-      teleTitle.textContent = 'Teleporter → ' + (point.targetAreaId || 'other area');
+      teleTitle.textContent = (window.DashboardI18n
+        ? window.DashboardI18n.t('dashboard.minimap_tooltip_teleporter', { target: point.targetAreaId || 'other area' })
+        : 'Teleporter → ' + (point.targetAreaId || 'other area'));
       group.appendChild(teleTitle);
       return group;
     }
@@ -182,8 +184,8 @@ const MinimapRenderer = {
     line.setAttribute('class', 'minimap-connection');
 
     const title = document.createElementNS(ns, 'title');
-    const fromLabel = geo.fromTile?.label || point.fromTileId || 'Room';
-    const toLabel = geo.toTile?.label || point.toTileId || point.targetAreaId || 'Area';
+    const fromLabel = geo.fromTile?.label || point.fromTileId || (window.DashboardI18n ? window.DashboardI18n.t('dashboard.minimap_tooltip_room') : 'Room');
+    const toLabel = geo.toTile?.label || point.toTileId || point.targetAreaId || (window.DashboardI18n ? window.DashboardI18n.t('dashboard.minimap_tooltip_area') : 'Area');
     title.textContent = fromLabel + ' ↔ ' + toLabel;
     line.appendChild(title);
 
@@ -213,7 +215,7 @@ const MinimapRenderer = {
       el.setAttribute('class', tile.isMainPath ? 'minimap-tile main-path' : 'minimap-tile branch');
 
       const title = document.createElementNS(ns, 'title');
-      title.textContent = tile.label || 'Room';
+      title.textContent = tile.label || (window.DashboardI18n ? window.DashboardI18n.t('dashboard.minimap_tooltip_room') : 'Room');
       el.appendChild(title);
       tileLayer.appendChild(el);
 
@@ -251,7 +253,7 @@ const MinimapRenderer = {
       '<rect x="-14" y="-8" width="28" height="16" rx="3"></rect>' +
       '<polygon points="14,-6 22,0 14,6"></polygon>';
     const trainTitle = document.createElementNS(ns, 'title');
-    trainTitle.textContent = 'Train';
+    trainTitle.textContent = window.DashboardI18n ? window.DashboardI18n.t('dashboard.minimap_tooltip_train') : 'Train';
     train.appendChild(trainTitle);
     svgEl.appendChild(train);
   },
