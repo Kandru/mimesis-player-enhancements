@@ -522,6 +522,7 @@
                                 <input type="number" class="settings-input"
                                   :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
                                   :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                  :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
                                   :value="settingDraftValue(entry)"
                                   :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                   @change="onTextSettingCommit(section.id, entry, $event)">
@@ -530,6 +531,7 @@
                                 <input type="number" class="settings-input"
                                   :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
                                   :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                  :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
                                   :value="settingDraftValue(entry)"
                                   :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                   @change="onTextSettingCommit(section.id, entry, $event)">
@@ -690,6 +692,7 @@
                                     <input type="number" class="settings-input"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
                                       :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
                                       :value="settingDraftValue(entry)"
                                       :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                       @change="onTextSettingCommit(section.id, entry, $event)">
@@ -698,6 +701,7 @@
                                     <input type="number" class="settings-input"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
                                       :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
                                       :value="settingDraftValue(entry)"
                                       :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                       @change="onTextSettingCommit(section.id, entry, $event)">

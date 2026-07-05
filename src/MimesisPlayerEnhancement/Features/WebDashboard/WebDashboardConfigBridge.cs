@@ -93,7 +93,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             ModConfigChangeTracker.BeginBatch();
             try
             {
-                if (!ModConfigRegistry.TrySetEntryValue(sectionId, key, normalized, out error))
+                if (!ModConfigRegistry.TryApplyNormalizedEntry(sectionId, key, normalized, out string effectiveValue, out error))
                 {
                     return new WebDashboardConfigUpdateResult
                     {
@@ -102,9 +102,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     };
                 }
 
-                ModConfig.SanitizeFloatEntries();
-
-                if (!GlobalConfigStore.TryWriteValue(sectionId, key, normalized, out error, waitForCompletion: false))
+                if (!GlobalConfigStore.TryWriteValue(sectionId, key, effectiveValue, out error, waitForCompletion: false))
                 {
                     return new WebDashboardConfigUpdateResult
                     {
@@ -121,15 +119,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 if (activeSlotId >= 0)
                 {
-                    ReconcileActiveSaveOverride(activeSlotId, sectionId, key, normalized, out error);
+                    ReconcileActiveSaveOverride(activeSlotId, sectionId, key, effectiveValue, out error);
                 }
+
+                return BuildUpdateResult(sectionId, key, effectiveValue, L("saved_global"));
             }
             finally
             {
                 ModConfigChangeTracker.EndBatch();
             }
-
-            return BuildUpdateResult(sectionId, key, normalized, L("saved_global"));
         }
 
         internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
@@ -307,14 +305,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         Title = ModL10n.GetConfigEntryTitle(sectionId, key) ?? entry.DisplayName ?? entry.Identifier,
                         Description = ModL10n.GetConfigEntryDescription(sectionId, key) ?? entry.Description ?? "",
                         Type = entry.GetReflectedType()?.Name ?? "Unknown",
-                        Value = saveScope
-                            ? ModConfigRegistry.FormatEntryValue(entry)
-                            : ModConfigRegistry.FormatEntryValue(entry),
+                        Value = ModConfigRegistry.FormatEntryValue(entry),
                         DefaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry),
                         GlobalValue = globalValue,
                         IsOverridden = isOverridden,
                         IsHidden = entry.IsHidden,
                     };
+
+                    if (ModConfigEntryBounds.TryGet(sectionId, key, out ModConfigEntryBound bounds))
+                    {
+                        entryDto.MinValue = bounds.MinValue;
+                        entryDto.MaxValue = bounds.MaxValue;
+                    }
 
                     if (!string.IsNullOrEmpty(featureToggleKey)
                         && string.Equals(key, featureToggleKey, StringComparison.Ordinal))

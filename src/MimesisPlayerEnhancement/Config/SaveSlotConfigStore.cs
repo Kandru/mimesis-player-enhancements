@@ -103,33 +103,31 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
-            EnsureSection(_runtimeDoc, sectionId);
-
-            if (ModConfigRegistry.RawValuesEqual(sectionId, key, normalized, globalRaw))
-            {
-                RemoveKey(_runtimeDoc, sectionId, key);
-            }
-            else
-            {
-                _runtimeDoc.Sections[sectionId][key] = normalized;
-            }
-
-            _dirty = true;
-
             ModConfigChangeTracker.BeginBatch();
+            string effectiveValue;
             try
             {
-                if (!ModConfigRegistry.TrySetEntryValue(sectionId, key, normalized, out error))
+                if (!ModConfigRegistry.TryApplyNormalizedEntry(sectionId, key, normalized, out effectiveValue, out error))
                 {
                     return false;
                 }
-
-                ModConfig.SanitizeFloatEntries();
             }
             finally
             {
                 ModConfigChangeTracker.EndBatch();
             }
+
+            if (ModConfigRegistry.RawValuesEqual(sectionId, key, effectiveValue, globalRaw))
+            {
+                RemoveKey(_runtimeDoc, sectionId, key);
+            }
+            else
+            {
+                EnsureSection(_runtimeDoc, sectionId);
+                _runtimeDoc.Sections[sectionId][key] = effectiveValue;
+            }
+
+            _dirty = true;
 
             if (waitForCompletion)
             {

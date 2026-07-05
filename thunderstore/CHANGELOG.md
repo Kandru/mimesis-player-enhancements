@@ -7,6 +7,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - optimized webinterface for larger player counts (to avoid lags)
 - webinterface now includes a reset button for config options
 - webinterface now automatically toggles the blind-mode
+- webinterface now correctly enforces settings value limits
 - optimized savegame lifecycle (saves mod-data only when auto-save or manual save button is being pressed)
 - possible fix for late joiner who are not always being transported to the train scene between dungeons.
 - exclude crow shop detox from loot duplication

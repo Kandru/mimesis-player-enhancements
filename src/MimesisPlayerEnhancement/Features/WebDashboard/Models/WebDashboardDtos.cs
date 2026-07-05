@@ -199,6 +199,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string GlobalValue = "";
         public bool IsOverridden;
         public bool IsHidden;
+        public string? MinValue;
+        public string? MaxValue;
     }
 
     internal sealed class WebDashboardConfigUpdateRequest

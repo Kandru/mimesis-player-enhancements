@@ -195,6 +195,32 @@ namespace MimesisPlayerEnhancement
             return true;
         }
 
+        internal static bool TryApplyNormalizedEntry(
+            string sectionId,
+            string key,
+            string normalized,
+            out string effectiveValue,
+            out string? error)
+        {
+            effectiveValue = normalized;
+            error = null;
+
+            if (!TrySetEntryValue(sectionId, key, normalized, out error))
+            {
+                return false;
+            }
+
+            ModConfig.SanitizeFloatEntries();
+
+            if (!TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                return true;
+            }
+
+            effectiveValue = FormatEntryValue(entry);
+            return true;
+        }
+
         internal static void SaveToFile()
         {
             if (!ModConfig.IsInitialized || SaveSlotConfigStore.IsApplyingOverrides)

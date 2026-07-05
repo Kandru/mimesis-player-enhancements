@@ -73,6 +73,44 @@ function formatFloatSettingValue(raw) {
   return fixed;
 }
 
+function clampSettingValue(entry, rawValue) {
+  let nextValue = String(rawValue ?? '');
+  if (entry.type !== 'Int32' && entry.type !== 'Single') {
+    return nextValue;
+  }
+
+  const n = entry.type === 'Int32'
+    ? parseInt(nextValue, 10)
+    : parseFloat(nextValue);
+  if (!Number.isFinite(n)) {
+    return nextValue;
+  }
+
+  let clamped = n;
+  if (entry.minValue != null && entry.minValue !== '') {
+    const min = entry.type === 'Int32'
+      ? parseInt(entry.minValue, 10)
+      : parseFloat(entry.minValue);
+    if (Number.isFinite(min)) {
+      clamped = Math.max(clamped, min);
+    }
+  }
+  if (entry.maxValue != null && entry.maxValue !== '') {
+    const max = entry.type === 'Int32'
+      ? parseInt(entry.maxValue, 10)
+      : parseFloat(entry.maxValue);
+    if (Number.isFinite(max)) {
+      clamped = Math.min(clamped, max);
+    }
+  }
+
+  if (entry.type === 'Single') {
+    return formatFloatSettingValue(String(clamped));
+  }
+
+  return String(Math.trunc(clamped));
+}
+
 function settingsHaystack(entry, sectionTitle) {
   return [
     entry.key,
@@ -1160,9 +1198,10 @@ document.addEventListener('alpine:init', () => {
     },
 
     onTextSettingCommit(sectionId, entry, event) {
-      let nextValue = event.target.value;
+      let nextValue = clampSettingValue(entry, event.target.value);
       if (entry.type === 'Single') {
-        nextValue = formatFloatSettingValue(nextValue);
+        event.target.value = nextValue;
+      } else if (entry.type === 'Int32') {
         event.target.value = nextValue;
       }
       if (this.settingValuesEqual(entry, nextValue, entry.value)) {
