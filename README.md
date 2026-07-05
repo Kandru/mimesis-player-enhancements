@@ -63,7 +63,16 @@ If you do not trust a pre-built `.dll`, you can [build this mod yourself](docs/B
 
 ### Intuitive savegame UI
 
-![Feature: Savegame UI](images/savegames.jpg)
+![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/savegames.jpg?raw=true)
+
+### Webinterface
+
+#### Webinterface (Blind Mode on)
+![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/webinterface_players_blind_mode_on.png?raw=true)
+
+#### Webinterface (Blind Mode off)
+![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/webinterface_players_blind_mode_off.png?raw=true)
+
 
 ## Config
 
