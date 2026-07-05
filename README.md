@@ -24,18 +24,18 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 |---------|--------------|-------------------------|
 | **More Players** | Raise the 4-player limit (default: 32) | No — host only |
 | **More Voices** | Record more player voice lines per context (default: 3000 instead of ~150) | No — host only |
-| **Persistence** | Save player voice lines to disk | No — host only |
-| **Join Anytime** | Let friends join an active lobby whenever players are not inside a dungeon | No — host only |
-| **Extended Save Slots** | Unified main-menu save picker with up to 99 manual slots (vanilla: 3) | No — local UI only |
-| **Statistics** | Session stats and leaderboards per save slot | No — host only |
-| **Web Dashboard** | Browser UI for players, stats, and moderation | No — host only |
-| **Player Announcements** | In-game notifications for dungeon settings, boss spawns, and per-map death stats | No — host only |
-| **Spawn Scaling** | Scale mimic/monster spawns by type and player count | No — host only |
-| **Loot Multiplicator** | Scale loot quantity and limit item types | No — host only |
-| **Money Multiplier** | Scale startup money, round goal, and shop buy prices | No — host only |
-| **Dungeon Time** | Extend dungeon shift length by X seconds per player above a baseline (default: +10s per player above 4) | No — host only |
-| **Dead Player Features** | Mimic possession tuning — randomize speak duration and scale cooldown after E-possess | No — host only |
-| **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
+| **Persistence** | Save player voice lines to disk per savegame | No — host only |
+| **Join Anytime** | Let friends join an active lobby (whenever you're not inside a dungeon)| No — host only |
+| **Extended Save Slots** | Re-designed savegame page with up to 99 save games (vanilla: 3) | No — local UI only |
+| **Statistics** | Session statistics and leaderboards per save game | No — host only |
+| **Web Dashboard** | Browser-based UI for players, statistics, and moderation | No — host only |
+| **Player Announcements** | In-game notifications for dungeon settings, boss spawns, and statistics | No — host only |
+| **Spawn Scaling** | Scale mimic/monster/trap spawns by multiplier and/or player count | No — host only |
+| **Loot Multiplicator** | Scale loot quantity by multiplier and/or player count and limit item types | No — host only |
+| **Money Multiplier** | Scale startup money, round goal, and shop buy prices by multiplier and/or player count | No — host only |
+| **Dungeon Time** | Extend dungeon shift length by X seconds per player above Y (default: +10s per player above 4) | No — host only |
+| **Dead Player Features** | Mimic possession tuning — randomize speak duration and scale cooldown for player possessions | No — host only |
+| **Player Tuning** | Scale player movement speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
@@ -82,7 +82,7 @@ After the first launch, the mod creates a config file here:
 <Mimesis Steam folder>/UserData/MimesisPlayerEnhancement.cfg
 ```
 
-You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**. Some settings may not update correctly until you quit and start again.
+You can edit it anytime. The game reloads the file while running, but **most changes only fully apply after a restart**.
 
 Settings are grouped into TOML sections:
 
@@ -92,31 +92,6 @@ Settings are grouped into TOML sections:
 Each feature section has its own master toggle plus feature-specific options. The web dashboard can edit global defaults and per-save-slot overrides.
 
 **Full config reference:** [docs/CONFIG.md](docs/CONFIG.md)
-
-Example section layout:
-
-```toml
-[MimesisPlayerEnhancement]
-ModToastDurationSeconds = 5.0
-EnableDebugLogging = false
-
-[MimesisPlayerEnhancement_MorePlayers]
-EnableMorePlayers = false
-MaxPlayers = 32
-
-[MimesisPlayerEnhancement_JoinAnytime]
-EnableJoinAnytime = true
-JoinConnectionGraceSeconds = 30
-
-[MimesisPlayerEnhancement_DeadPlayerFeatures]
-EnableDeadPlayerFeatures = false
-EnableMimicPossessionTuning = false
-
-[MimesisPlayerEnhancement_WebDashboard]
-EnableWebDashboard = true
-WebDashboardListenAddress = "127.0.0.1"
-WebDashboardListenPort = 8001
-```
 
 ## Build from source
 
