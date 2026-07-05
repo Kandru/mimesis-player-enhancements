@@ -260,7 +260,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 #### Monster spectate (dead clients)
 
-When enabled, dead spectators with the mod installed can cycle prev/next spectator targets to **alive monsters** in addition to living players. Targets use the same orbital spectator camera as player spectating. The sidebar player list stays vanilla (player slots only); use prev/next keys to reach monsters. Off by default — set `EnableMonsterSpectate = true` to opt in.
+When enabled, dead spectators with the mod installed can cycle prev/next spectator targets to **alive monsters** in addition to living players. Targets use the same orbital spectator camera as player spectating. The sidebar player list stays vanilla (player slots only); use prev/next keys to reach monsters. Map-placed trap creatures are excluded from the monster pool. Off by default — set `EnableMonsterSpectate = true` to opt in.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|

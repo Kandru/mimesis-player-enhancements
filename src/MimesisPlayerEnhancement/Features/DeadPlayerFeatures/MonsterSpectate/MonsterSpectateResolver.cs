@@ -1,4 +1,5 @@
 using System;
+using MimesisPlayerEnhancement.Features.SpawnScaling;
 using Mimic.Actors;
 using ReluProtocol.Enum;
 
@@ -165,6 +166,11 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MonsterSpectate
                 }
 
                 if (!_cachedIncludeMimics && actor.IsMimic())
+                {
+                    continue;
+                }
+
+                if (SpawnCategoryLookup.GetCategory(actor.monsterMasterID) == SpawnCategory.Trap)
                 {
                     continue;
                 }
