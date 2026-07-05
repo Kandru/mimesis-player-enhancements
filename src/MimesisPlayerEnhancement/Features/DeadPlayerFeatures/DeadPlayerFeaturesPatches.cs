@@ -37,16 +37,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                     AccessTools.Method(typeof(UIPrefab_Spectator), nameof(UIPrefab_Spectator.UpdatePossessionCooltime))),
                 ("OnEndPossession/ProtoActor",
                     AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.OnEndPossession))),
-                ("GetAliveSpectator/CameraManager",
-                    AccessTools.Method(typeof(CameraManager), "GetAliveSpectator")),
-                ("ChangeSpectatorCameraTarget/CameraManager",
-                    AccessTools.Method(typeof(CameraManager), nameof(CameraManager.ChangeSpectatorCameraTarget), [typeof(string)])),
-                ("SetupSpectatorCamera/CameraManager",
-                    AccessTools.Method(typeof(CameraManager), "SetupSpectatorCamera")),
-                ("OnActorTeleported_RenderableCulling/GamePlayScene",
-                    AccessTools.Method(typeof(GamePlayScene), "OnActorTeleported_RenderableCulling")),
-                ("UpdateSpectatorHUD/GameMainBase",
-                    AccessTools.Method(typeof(GameMainBase), "UpdateSpectatorHUD", [typeof(ProtoActor), typeof(CameraManager.CameraMode)])),
             ]);
         }
     }

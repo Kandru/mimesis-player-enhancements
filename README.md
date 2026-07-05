@@ -34,7 +34,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 | **Loot Multiplicator** | Scale loot quantity and limit item types | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, and shop buy prices | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by X seconds per player above a baseline (default: +10s per player above 4) | No — host only |
-| **Dead Player Features** | Mimic possession tuning (speak duration/cooldown) and monster spectate for dead spectators | Host for mimic tuning; dead clients need mod for monster spectate |
+| **Dead Player Features** | Mimic possession tuning — randomize speak duration and scale cooldown after E-possess | No — host only |
 | **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 

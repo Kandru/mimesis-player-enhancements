@@ -227,22 +227,9 @@ Host-only. When a dungeon shift starts (all members entered), extends the real s
 
 ### Dead Player Features — `[MimesisPlayerEnhancement_DeadPlayerFeatures]`
 
-Umbrella feature for dead-spectator actions. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on. Sub-features differ in who must run the mod (see table below).
+Host-only mimic possession tuning for dead players. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on.
 
-**Who needs the mod?**
-
-| Sub-feature | Host | Dead client (participant) | Living client |
-|-------------|------|---------------------------|---------------|
-| **Mimic possession tuning** (duration/cooldown) | Required | Not required | Not required |
-| **Monster spectate** (prev/next targets) | Not required | **Required** | Not required |
-
-Monster spectate patches each dead player's local spectator camera and target list. Unmodded dead clients keep vanilla player-only spectating.
-
-Upgrading from older configs: the legacy section `[MimesisPlayerEnhancement_MimicTuning]` and `EnableMimicTuning` are migrated once automatically into this section. Legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted to seconds (`multiplier × 12`).
-
-#### Mimic possession tuning (host-only)
-
-When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`, 12 seconds) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This sub-feature can randomize the speak window per possession and/or scale the cooldown.
+When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (`C_PossessionDuration`, 12 seconds) and a fixed cooldown before the next possession (`C_PossessionCooltime`). This feature can randomize the speak window per possession and/or scale the cooldown.
 
 **Speak duration:** When `RandomizeMimicPossessionDuration` is enabled, each possession rolls a random duration between `MimicPossessionMinTimeSeconds` and `MimicPossessionMaxTimeSeconds`. At `12.0` / `12.0` the roll equals vanilla length.
 
@@ -250,31 +237,14 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
-| `EnableDeadPlayerFeatures` | bool | `false` | Master toggle for all dead-player features in this section. |
+| `EnableDeadPlayerFeatures` | bool | `false` | Master toggle for mimic possession tuning in this section. |
 | `EnableMimicPossessionTuning` | bool | `false` | Sub-toggle for mimic possession timing tweaks (host only). |
 | `RandomizeMimicPossessionDuration` | bool | `false` | Roll a random speak duration per E-possession between the min and max seconds below. |
 | `MimicPossessionMinTimeSeconds` | float | `12.0` | Minimum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionMaxTimeSeconds` | float | `12.0` | Maximum rolled speak duration in seconds (vanilla is 12). Valid range is `0.1`–`120`. |
 | `MimicPossessionCooltimeMultiplier` | float | `1.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Valid range is `0.1`–`10.0`. |
 
-#### Monster spectate (dead clients)
-
-When enabled, dead spectators with the mod installed can cycle prev/next spectator targets to **alive monsters** in addition to living players. Targets use the same orbital spectator camera as player spectating. The sidebar player list stays vanilla (player slots only); use prev/next keys to reach monsters. Map-placed trap creatures are excluded from the monster pool. Off by default — set `EnableMonsterSpectate = true` to opt in.
-
-| Key | Type | Default | What it does |
-|-----|------|---------|--------------|
-| `EnableMonsterSpectate` | bool | `false` | Sub-toggle — extend dead-player spectator targets to alive monsters. |
-| `SpectateMonstersAfterPlayers` | bool | `true` | Keep living players first in the cycle; append monsters after them. When `false`, merge players and monsters and sort by actor ID. |
-| `IncludeMimicsInMonsterSpectate` | bool | `true` | Include mimic monsters in the monster target pool. |
-
-**Manual test checklist**
-
-1. **Dead client with mod** — after dying, prev/next cycles through living players and nearby alive monsters.
-2. **Unmodded dead client** — prev/next stays player-only (vanilla).
-3. Spectate a monster across indoor/outdoor — visuals and ambient audio stay correct.
-4. Spectate a mimic — vanilla E-possession still works.
-5. Disable `EnableMonsterSpectate` — player-only spectate returns; `EnableDeadPlayerFeatures` can stay on.
-6. All players dead — spectator can still lock onto remaining monsters.
+Upgrading from older configs: the legacy section `[MimesisPlayerEnhancement_MimicTuning]` and `EnableMimicTuning` are migrated once automatically into this section. Legacy `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` keys are converted to seconds (`multiplier × 12`).
 
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
@@ -422,9 +392,6 @@ RandomizeMimicPossessionDuration = false
 MimicPossessionMinTimeSeconds = 12.0
 MimicPossessionMaxTimeSeconds = 12.0
 MimicPossessionCooltimeMultiplier = 1.0
-EnableMonsterSpectate = false
-SpectateMonstersAfterPlayers = true
-IncludeMimicsInMonsterSpectate = true
 
 [MimesisPlayerEnhancement_PlayerTuning]
 EnablePlayerTuning = false

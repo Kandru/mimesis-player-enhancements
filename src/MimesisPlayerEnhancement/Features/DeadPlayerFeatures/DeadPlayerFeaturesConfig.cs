@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "EnableDeadPlayerFeatures",
                 false,
                 "Enable Dead Player Features",
-                "Master toggle for dead-spectator enhancements (mimic possession tuning and monster spectate).");
+                "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown).");
 
             ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicPossessionTuning",
@@ -32,43 +32,25 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "RandomizeMimicPossessionDuration",
                 false,
                 "Randomize Mimic Possession Duration",
-                "Roll a random speak window per E-possession between min and max seconds below. Host only.");
+                "Roll a random speak window per E-possession between min and max seconds below.");
 
             ModConfig.MimicPossessionMinTimeSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionMinTimeSeconds",
                 MimicPossessionResolver.VanillaPossessionDurationSeconds,
                 "Mimic Possession Min Time (seconds)",
-                "Minimum rolled speak duration in seconds (vanilla is 12). Host only.");
+                "Minimum rolled speak duration in seconds (vanilla is 12).");
 
             ModConfig.MimicPossessionMaxTimeSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionMaxTimeSeconds",
                 MimicPossessionResolver.VanillaPossessionDurationSeconds,
                 "Mimic Possession Max Time (seconds)",
-                "Maximum rolled speak duration in seconds (vanilla is 12). Host only.");
+                "Maximum rolled speak duration in seconds (vanilla is 12).");
 
             ModConfig.MimicPossessionCooltimeMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionCooltimeMultiplier",
                 1f,
                 "Mimic Possession Cooltime Multiplier",
-                "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla). Host only.");
-
-            ModConfig.EnableMonsterSpectate = ModConfig.CreateTrackedEntry(_category,
-                "EnableMonsterSpectate",
-                false,
-                "Enable Monster Spectate",
-                "Allow dead spectators to cycle spectator camera targets to alive monsters in addition to players. Requires the mod on each dead player who participates.");
-
-            ModConfig.SpectateMonstersAfterPlayers = ModConfig.CreateTrackedEntry(_category,
-                "SpectateMonstersAfterPlayers",
-                true,
-                "Spectate Monsters After Players",
-                "When enabled, alive players stay first in the prev/next spectator list and monsters are appended after them.");
-
-            ModConfig.IncludeMimicsInMonsterSpectate = ModConfig.CreateTrackedEntry(_category,
-                "IncludeMimicsInMonsterSpectate",
-                true,
-                "Include Mimics In Monster Spectate",
-                "Include mimic monsters in the monster spectator target pool.");
+                "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla).");
 
             RefreshResolverCaches();
         }
@@ -76,7 +58,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
         internal static void RefreshResolverCaches()
         {
             MimicPossessionResolver.RefreshFromConfigRegistration();
-            MonsterSpectateResolver.RefreshFromConfigRegistration();
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -93,12 +74,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMaxTimeSeconds));
             ModConfig.MimicPossessionCooltimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnMimicPossessionCooltimeMultiplierChanged(logger, value));
-            ModConfig.EnableMonsterSpectate.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableMonsterSpectate));
-            ModConfig.SpectateMonstersAfterPlayers.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.SpectateMonstersAfterPlayers));
-            ModConfig.IncludeMimicsInMonsterSpectate.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.IncludeMimicsInMonsterSpectate));
         }
 
         internal static void RegisterFloatEntries()

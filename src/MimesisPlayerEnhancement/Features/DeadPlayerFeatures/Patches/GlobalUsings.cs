@@ -1,4 +1,3 @@
 global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures;
 global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession;
-global using MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MonsterSpectate;
 global using Mimic.Actors;

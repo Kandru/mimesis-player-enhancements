@@ -15,7 +15,7 @@
       "_section": "Dungeon-Randomizer",
       "EnableDungeonRandomizer": {
         "title": "Dungeon Randomizer aktivieren",
-        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Nur Host."
+        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. "
       },
       "RandomizeDungeonPick": {
         "title": "Dungeon Pick randomisieren",
@@ -91,7 +91,7 @@
       "_section": "Loot-Multiplikator",
       "EnableLootMultiplicator": {
         "title": "Loot Multiplicator aktivieren",
-        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Nur Host."
+        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. "
       },
       "LootMultiplicatorPlayerCountScaleRate": {
         "title": "Spieleranzahl-Skalierungsrate",
@@ -134,7 +134,7 @@
       "_section": "Features für tote Spieler",
       "EnableDeadPlayerFeatures": {
         "title": "Features für tote Spieler aktivieren",
-        "description": "Master-Schalter für Erweiterungen im Zuschauer-Modus (Mimic-Besitz-Tuning und Monster-Zuschauen). Nur Host."
+        "description": "Master-Schalter für Mimic-Besitz-Tuning (Sprechdauer und Abklingzeit) für tote Spieler. "
       },
       "EnableMimicPossessionTuning": {
         "title": "Mimic-Besitz-Tuning aktivieren",
@@ -142,26 +142,26 @@
       },
       "RandomizeMimicPossessionDuration": {
         "title": "Mimic-Besitz-Dauer randomisieren",
-        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden. Nur Host."
+        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden. "
       },
       "MimicPossessionMinTimeSeconds": {
         "title": "Mimic-Besitz Mindestzeit (Sekunden)",
-        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). Nur Host."
+        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). "
       },
       "MimicPossessionMaxTimeSeconds": {
         "title": "Mimic-Besitz Höchstzeit (Sekunden)",
-        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). Nur Host."
+        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). "
       },
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
-        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla). Nur Host."
+        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla). "
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {
       "_section": "Geld-Multiplikator",
       "EnableMoneyMultiplier": {
         "title": "Money Multiplier aktivieren",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Nur Host."
+        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. "
       },
       "MoneyMultiplierPlayerCountScaleRate": {
         "title": "Spieleranzahl-Skalierungsrate",
@@ -276,34 +276,34 @@
       },
       "MoveSpeedMultiplier": {
         "title": "Bewegungsgeschwindigkeits-Multiplikator",
-        "description": "Scales walk and run base speed (1 = Vanilla, 2 = double). Nur Host."
+        "description": "Scales walk and run base speed (1 = Vanilla, 2 = double). "
       },
       "MaxStaminaMultiplier": {
         "title": "Max.-Ausdauer-Multiplikator",
-        "description": "Scales maximum stamina (1 = Vanilla, 2 = double). Nur Host."
+        "description": "Scales maximum stamina (1 = Vanilla, 2 = double). "
       },
       "StaminaDrainMultiplier": {
         "title": "Ausdauer-Verbrauchs-Multiplikator",
-        "description": "Scales sprint stamina cost per tick (1 = Vanilla, 0.5 = half drain). Nur Host."
+        "description": "Scales sprint stamina cost per tick (1 = Vanilla, 0.5 = half drain). "
       },
       "StaminaRegenMultiplier": {
         "title": "Ausdauer-Regenerations-Multiplikator",
-        "description": "Scales stamina recovered per regen tick (1 = Vanilla, 2 = double). Nur Host."
+        "description": "Scales stamina recovered per regen tick (1 = Vanilla, 2 = double). "
       },
       "StaminaRegenDelayMultiplier": {
         "title": "Ausdauer-Regenerations-Verzögerungs-Multiplikator",
-        "description": "Scales wait time before stamina regen starts after sprinting (1 = Vanilla, 0.5 = regen starts sooner). Nur Host."
+        "description": "Scales wait time before stamina regen starts after sprinting (1 = Vanilla, 0.5 = regen starts sooner). "
       },
       "MaxCarryWeightMultiplier": {
         "title": "Max.-Tragegewichts-Multiplikator",
-        "description": "Scales carry capacity before encumbrance slows movement (1 = Vanilla, 2 = double capacity). Nur Host."
+        "description": "Scales carry capacity before encumbrance slows movement (1 = Vanilla, 2 = double capacity). "
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn-Skalierung",
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
-        "description": "Skaliert Dungeon-Monster-Spawn-Budgets nach Typ. Nur Host."
+        "description": "Skaliert Dungeon-Monster-Spawn-Budgets nach Typ. "
       },
       "SpawnScalingPlayerCountScaleRate": {
         "title": "Spieleranzahl-Skalierungsrate",
@@ -520,7 +520,7 @@
     "trap": "Falle"
   },
   "api": {
-    "host_only": "Nur Host.",
+    "host_only": "Nur Host",
     "internal_error": "Interner Serverfehler.",
     "not_found": "Nicht gefunden.",
     "not_connected": "Nicht mit einem Spiel verbunden.",

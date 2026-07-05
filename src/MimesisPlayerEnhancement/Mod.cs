@@ -167,7 +167,7 @@ namespace MimesisPlayerEnhancement
                       (ModConfig.EnableMimicPossessionTuning.Value
                           ? $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value}"
                           : "") +
-                      $", monsterSpectate={ModConfig.EnableMonsterSpectate.Value})"
+                      ")"
                     : "") +
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +

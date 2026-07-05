@@ -15,7 +15,7 @@
       "_section": "Dungeon Randomizer",
       "EnableDungeonRandomizer": {
         "title": "Enable Dungeon Randomizer",
-        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Host only."
+        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed."
       },
       "RandomizeDungeonPick": {
         "title": "Randomize Dungeon Pick",
@@ -91,7 +91,7 @@
       "_section": "Loot Multiplicator",
       "EnableLootMultiplicator": {
         "title": "Enable Loot Multiplicator",
-        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only."
+        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot."
       },
       "LootMultiplicatorPlayerCountScaleRate": {
         "title": "Player Count Scale Rate",
@@ -134,7 +134,7 @@
       "_section": "Dead Player Features",
       "EnableDeadPlayerFeatures": {
         "title": "Enable Dead Player Features",
-        "description": "Master toggle for dead-spectator enhancements (mimic possession tuning and monster spectate). Host required."
+        "description": "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown)."
       },
       "EnableMimicPossessionTuning": {
         "title": "Enable Mimic Possession Tuning",
@@ -142,26 +142,26 @@
       },
       "RandomizeMimicPossessionDuration": {
         "title": "Randomize Mimic Possession Duration",
-        "description": "Roll a random speak window per E-possession between min and max seconds below. Host only."
+        "description": "Roll a random speak window per E-possession between min and max seconds below."
       },
       "MimicPossessionMinTimeSeconds": {
         "title": "Mimic Possession Min Time (seconds)",
-        "description": "Minimum rolled speak duration in seconds (vanilla is 12). Host only."
+        "description": "Minimum rolled speak duration in seconds (vanilla is 12)."
       },
       "MimicPossessionMaxTimeSeconds": {
         "title": "Mimic Possession Max Time (seconds)",
-        "description": "Maximum rolled speak duration in seconds (vanilla is 12). Host only."
+        "description": "Maximum rolled speak duration in seconds (vanilla is 12)."
       },
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic Possession Cooltime Multiplier",
-        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla). Host only."
+        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla)."
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {
       "_section": "Money Multiplier",
       "EnableMoneyMultiplier": {
         "title": "Enable Money Multiplier",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only."
+        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs."
       },
       "MoneyMultiplierPlayerCountScaleRate": {
         "title": "Player Count Scale Rate",
@@ -276,34 +276,34 @@
       },
       "MoveSpeedMultiplier": {
         "title": "Move Speed Multiplier",
-        "description": "Scales walk and run base speed (1 = vanilla, 2 = double). Host only."
+        "description": "Scales walk and run base speed (1 = vanilla, 2 = double)."
       },
       "MaxStaminaMultiplier": {
         "title": "Max Stamina Multiplier",
-        "description": "Scales maximum stamina (1 = vanilla, 2 = double). Host only."
+        "description": "Scales maximum stamina (1 = vanilla, 2 = double)."
       },
       "StaminaDrainMultiplier": {
         "title": "Stamina Drain Multiplier",
-        "description": "Scales sprint stamina cost per tick (1 = vanilla, 0.5 = half drain). Host only."
+        "description": "Scales sprint stamina cost per tick (1 = vanilla, 0.5 = half drain)."
       },
       "StaminaRegenMultiplier": {
         "title": "Stamina Regen Multiplier",
-        "description": "Scales stamina recovered per regen tick (1 = vanilla, 2 = double). Host only."
+        "description": "Scales stamina recovered per regen tick (1 = vanilla, 2 = double)."
       },
       "StaminaRegenDelayMultiplier": {
         "title": "Stamina Regen Delay Multiplier",
-        "description": "Scales wait time before stamina regen starts after sprinting (1 = vanilla, 0.5 = regen starts sooner). Host only."
+        "description": "Scales wait time before stamina regen starts after sprinting (1 = vanilla, 0.5 = regen starts sooner)."
       },
       "MaxCarryWeightMultiplier": {
         "title": "Max Carry Weight Multiplier",
-        "description": "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity). Host only."
+        "description": "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity)."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn Scaling",
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
-        "description": "Scale dungeon monster spawn budgets by type. Host only."
+        "description": "Scale dungeon monster spawn budgets by type."
       },
       "SpawnScalingPlayerCountScaleRate": {
         "title": "Player Count Scale Rate",

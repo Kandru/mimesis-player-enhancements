@@ -121,10 +121,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> MimicPossessionMaxTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionCooltimeMultiplier { get; internal set; } = null!;
 
-        public static MelonPreferences_Entry<bool> EnableMonsterSpectate { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> SpectateMonstersAfterPlayers { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> IncludeMimicsInMonsterSpectate { get; internal set; } = null!;
-
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MaxStaminaMultiplier { get; internal set; } = null!;
