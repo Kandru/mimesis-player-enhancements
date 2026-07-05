@@ -13,7 +13,32 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     public static class SpeechEventPoolManager
     {
         private const string Feature = "Persistence";
+        private const float DeferredRetryTimeoutSec = 30f;
+
         public enum EventState { Pending, Injected }
+
+        internal readonly struct ArchiveRestoreOutcome
+        {
+            internal ArchiveRestoreOutcome(
+                SpeechEventInjector.RestoreResult restoreResult,
+                int eventsBefore,
+                int eventsAfter,
+                bool shouldDeferRetry,
+                bool identityPending)
+            {
+                RestoreResult = restoreResult;
+                EventsBefore = eventsBefore;
+                EventsAfter = eventsAfter;
+                ShouldDeferRetry = shouldDeferRetry;
+                IdentityPending = identityPending;
+            }
+
+            internal SpeechEventInjector.RestoreResult RestoreResult { get; }
+            internal int EventsBefore { get; }
+            internal int EventsAfter { get; }
+            internal bool ShouldDeferRetry { get; }
+            internal bool IdentityPending { get; }
+        }
 
         private static readonly Dictionary<long, (SpeechEvent ev, EventState state, string originalPlayerName)> _pool
             = [];
@@ -33,9 +58,15 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static readonly Dictionary<long, SpeechEvent> _disconnectedCache = [];
 
+        private static readonly Dictionary<ulong, HashSet<long>> _disconnectedCacheBySteam = [];
+
         private static readonly Dictionary<ulong, string> _disconnectedPlayerMappings = [];
 
         private static readonly HashSet<SpeechEventArchive> _awaitingVoiceUuid = [];
+
+        private static readonly Dictionary<SpeechEventArchive, float> _deferredRetryStartTime = [];
+
+        private static readonly HashSet<ulong> _restoreGiveUpWarnedSteamIds = [];
 
         private static readonly FieldInfo? RecordedTimeField =
             typeof(SpeechEvent).GetField("RecordedTime", BindingFlags.Public | BindingFlags.Instance);
@@ -86,6 +117,101 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static bool AwaitingVoiceUuid(SpeechEventArchive archive) =>
             archive != null && _awaitingVoiceUuid.Contains(archive);
+
+        internal static ArchiveRestoreOutcome TryRestoreToArchive(SpeechEventArchive archive)
+        {
+            if (archive == null || archive.events == null)
+            {
+                return default;
+            }
+
+            string? playerId = null;
+            long playerUID = 0;
+            bool isLocal = false;
+
+            try
+            {
+                playerId = archive.PlayerId;
+                playerUID = archive.PlayerUID;
+                isLocal = archive.IsLocal;
+            }
+            catch
+            {
+                RegisterDeferredInjection(archive);
+                return new ArchiveRestoreOutcome(default, 0, 0, shouldDeferRetry: true, identityPending: true);
+            }
+
+            if (!isLocal && string.IsNullOrEmpty(playerId) && playerUID == 0)
+            {
+                if (HasPending() || DisconnectedCacheCount > 0)
+                {
+                    RegisterDeferredInjection(archive);
+                }
+
+                return new ArchiveRestoreOutcome(default, 0, 0, shouldDeferRetry: true, identityPending: true);
+            }
+
+            int eventsBefore = VoiceEventStats.GetVoiceLineCount(archive);
+            SpeechEventInjector.RestoreResult result = SpeechEventInjector.RestoreIntoArchive(
+                archive, playerId, playerUID, isLocal);
+            int eventsAfter = VoiceEventStats.GetVoiceLineCount(archive);
+
+            StatisticsTracker.SyncVoiceBaseline(archive);
+
+            bool shouldDefer = false;
+            if (result.TotalAdded > 0)
+            {
+                ClearDeferredRetry(archive);
+                SpeechEventArchiveInitialSync.RequestAfterRestore(archive, result.TotalAdded);
+            }
+            else
+            {
+                shouldDefer = ShouldDeferRestoreRetry(archive, playerId, playerUID, isLocal);
+                if (shouldDefer)
+                {
+                    RegisterDeferredInjection(archive);
+                }
+                else
+                {
+                    MaybeWarnRestoreGiveUp(archive, playerId, playerUID, isLocal);
+                    ClearDeferredRetry(archive);
+                }
+            }
+
+            return new ArchiveRestoreOutcome(
+                result,
+                eventsBefore,
+                eventsAfter,
+                shouldDefer,
+                identityPending: false);
+        }
+
+        internal static void ApplyRestoreOutcome(SpeechEventArchive archive, ArchiveRestoreOutcome outcome, bool flush = false)
+        {
+            if (archive == null)
+            {
+                return;
+            }
+
+            if (outcome.IdentityPending || outcome.ShouldDeferRetry)
+            {
+                (int pending, _) = GetCounts();
+                string detail = outcome.IdentityPending
+                    ? HasPending() || DisconnectedCacheCount > 0
+                        ? $"voice injection deferred (pendingPool={pending}, disconnectedCache={DisconnectedCacheCount})"
+                        : "awaiting identity sync"
+                    : $"voice restore retrying (pendingPool={pending}, disconnectedCache={DisconnectedCacheCount})";
+                PlayerLifecycleCoordinator.SetPersistenceOutcome(
+                    archive,
+                    new PersistenceConnectOutcome(PersistenceConnectPhase.Connecting, detail),
+                    flush);
+                return;
+            }
+
+            PersistenceConnectOutcome connectOutcome = SpeechEventArchivePatches.BuildConnectOutcome(
+                outcome.RestoreResult, outcome.EventsBefore, outcome.EventsAfter, archive);
+            PlayerLifecycleCoordinator.SetPersistenceOutcome(archive, connectOutcome, flush);
+        }
 
         private static string ResolvePersistedVoiceId(IReadOnlyList<SpeechEvent> events)
         {
@@ -177,6 +303,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 return;
             }
 
+            if (!_deferredRetryStartTime.ContainsKey(archive))
+            {
+                _deferredRetryStartTime[archive] = GameSessionAccess.GetCurrentTickSec();
+            }
+
             if (_deferredInjectionArchives.Add(archive))
             {
                 ModLog.Debug(Feature, $"Deferred injection registered — {VoiceEventStats.DescribePlayerBrief(archive)} " +
@@ -203,39 +334,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         continue;
                     }
 
-                    string playerId;
-                    long playerUID;
-                    bool isLocal;
-                    try
-                    {
-                        playerId = archive.PlayerId;
-                        playerUID = archive.PlayerUID;
-                        isLocal = archive.IsLocal;
-                    }
-                    catch
-                    {
-                        _ = _deferredInjectionArchives.Add(archive);
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(playerId) && playerUID == 0)
-                    {
-                        _ = _deferredInjectionArchives.Add(archive);
-                        continue;
-                    }
-
                     ModLog.Debug(Feature, $"Deferred injection ready — {VoiceEventStats.DescribePlayerBrief(archive)}");
 
-                    int eventsBefore = VoiceEventStats.GetVoiceLineCount(archive);
-                    SpeechEventInjector.RestoreResult result = SpeechEventInjector.RestoreIntoArchive(
-                        archive, playerId, playerUID, isLocal);
-                    int eventsAfter = VoiceEventStats.GetVoiceLineCount(archive);
-
-                    StatisticsTracker.SyncVoiceBaseline(archive);
-
-                    PersistenceConnectOutcome outcome = SpeechEventArchivePatches.BuildConnectOutcome(
-                        result, eventsBefore, eventsAfter);
-                    PlayerLifecycleCoordinator.SetPersistenceOutcome(archive, outcome, flush: true);
+                    ArchiveRestoreOutcome outcome = TryRestoreToArchive(archive);
+                    ApplyRestoreOutcome(archive, outcome, flush: true);
                 }
             }
 
@@ -383,9 +485,17 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     return 0;
                 }
 
+                int eventsBefore = VoiceEventStats.GetVoiceLineCount(archive);
+
                 List<SpeechEvent> collectedEvents = [];
                 HashSet<long> seenIds = [];
                 _ = SpeechEventInjector.CollectFromArchive(archive, seenIds, collectedEvents);
+
+                ulong steamId = steamIdHint;
+                if (steamId == 0)
+                {
+                    steamId = GameSessionAccess.ResolveSteamId(playerUID, false);
+                }
 
                 int cached = 0;
                 foreach (SpeechEvent ev in collectedEvents)
@@ -396,13 +506,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     }
 
                     _disconnectedCache[ev.Id] = ev;
+                    IndexDisconnectedEvent(steamId, ev.Id);
                     cached++;
                 }
 
-                ulong steamId = steamIdHint;
-                if (steamId == 0)
+                if (string.IsNullOrEmpty(playerId) && collectedEvents.Count > 0)
                 {
-                    steamId = GameSessionAccess.ResolveSteamId(playerUID, false);
+                    playerId = ResolveDominantPlayerName(collectedEvents);
                 }
 
                 if (steamId != 0 && !string.IsNullOrEmpty(playerId))
@@ -414,6 +524,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ? VoiceEventStats.DescribeSteamPlayer(steamId, playerUID)
                     : VoiceEventStats.DescribePlayerBrief(archive);
                 ModLog.Debug(Feature, $"Disconnect cache — {brief} — cached {cached} events (totalCache={_disconnectedCache.Count})");
+
+                if (cached == 0 && eventsBefore > 0)
+                {
+                    ModLog.Warn(Feature, $"Disconnect cache captured 0 events but archive had {eventsBefore} — {brief}");
+                }
+
+                TryRestoreToLiveArchiveAfterCache(archive, steamId, playerUID);
+
                 return cached;
             }
             catch (Exception ex)
@@ -432,6 +550,21 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             HashSet<string> matchedPlayerNames = ResolveMatchedPlayerNames(playerId, playerUID, isLocal, useDisconnectedMapping: true);
+            ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
+
+            if (matchedPlayerNames.Count == 0 && steamId != 0
+                && _disconnectedCacheBySteam.TryGetValue(steamId, out HashSet<long>? steamEventIds))
+            {
+                foreach (long id in steamEventIds)
+                {
+                    if (_disconnectedCache.TryGetValue(id, out SpeechEvent? ev) && ev != null
+                        && !string.IsNullOrEmpty(ev.PlayerName))
+                    {
+                        _ = matchedPlayerNames.Add(ev.PlayerName);
+                    }
+                }
+            }
+
             if (matchedPlayerNames.Count == 0)
             {
                 return claimed;
@@ -457,10 +590,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             foreach (long id in idsToRemove)
             {
-                _ = _disconnectedCache.Remove(id);
+                RemoveDisconnectedEvent(id, steamId);
             }
 
-            ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
             if (steamId != 0 && claimed.Count > 0)
             {
                 _ = _disconnectedPlayerMappings.Remove(steamId);
@@ -486,6 +618,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static int DisconnectedCacheCount => _disconnectedCache.Count;
 
+        public static bool HasDisconnectedCacheForSteam(ulong steamId) =>
+            steamId != 0 && _disconnectedCacheBySteam.ContainsKey(steamId);
+
         public static void Reset()
         {
             _pool.Clear();
@@ -495,7 +630,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             _deferredInjectionArchives.Clear();
             _awaitingVoiceUuid.Clear();
             _disconnectedCache.Clear();
+            _disconnectedCacheBySteam.Clear();
             _disconnectedPlayerMappings.Clear();
+            _deferredRetryStartTime.Clear();
+            _restoreGiveUpWarnedSteamIds.Clear();
             _loadedSlotId = -1;
             _localArchive = null;
         }
@@ -528,6 +666,218 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 ModLog.Error(Feature, $"TryBuildPlayerMappingJson FAILED: {ex}");
                 return false;
             }
+        }
+
+        private static void TryRestoreToLiveArchiveAfterCache(
+            SpeechEventArchive disconnectingArchive,
+            ulong steamId,
+            long playerUID)
+        {
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                if (archive == null || ReferenceEquals(archive, disconnectingArchive))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    if (archive.IsLocal)
+                    {
+                        continue;
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+
+                if (!ArchiveMatchesIdentity(archive, steamId, playerUID))
+                {
+                    continue;
+                }
+
+                ModLog.Debug(Feature, $"Disconnect cache restore to live archive — {VoiceEventStats.DescribePlayerBrief(archive)}");
+                ArchiveRestoreOutcome outcome = TryRestoreToArchive(archive);
+                ApplyRestoreOutcome(archive, outcome, flush: true);
+                return;
+            }
+        }
+
+        private static bool ArchiveMatchesIdentity(SpeechEventArchive archive, ulong steamId, long playerUID)
+        {
+            if (steamId == 0 && playerUID == 0)
+            {
+                return false;
+            }
+
+            if (VoiceEventStats.TryCaptureArchiveIdentity(archive, out long liveUid, out _, out ulong liveSteam))
+            {
+                if (steamId != 0 && liveSteam == steamId)
+                {
+                    return true;
+                }
+
+                if (playerUID != 0 && liveUid == playerUID)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ShouldDeferRestoreRetry(
+            SpeechEventArchive archive,
+            string? playerId,
+            long playerUID,
+            bool isLocal)
+        {
+            if (!HasPending() && DisconnectedCacheCount == 0)
+            {
+                return false;
+            }
+
+            if (!CouldStillMatchArchive(playerId, playerUID, isLocal))
+            {
+                return false;
+            }
+
+            if (!_deferredRetryStartTime.TryGetValue(archive, out float startedAt))
+            {
+                return true;
+            }
+
+            float elapsed = GameSessionAccess.GetCurrentTickSec() - startedAt;
+            return elapsed < DeferredRetryTimeoutSec;
+        }
+
+        private static bool CouldStillMatchArchive(string? playerId, long playerUID, bool isLocal)
+        {
+            ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
+            if (steamId == 0 && string.IsNullOrEmpty(playerId) && playerUID == 0)
+            {
+                return HasPending() || DisconnectedCacheCount > 0;
+            }
+
+            if (HasPending())
+            {
+                HashSet<string> poolNames = ResolveMatchedPlayerNames(playerId, playerUID, isLocal);
+                if (poolNames.Count > 0)
+                {
+                    return true;
+                }
+            }
+
+            if (DisconnectedCacheCount > 0)
+            {
+                HashSet<string> cacheNames = ResolveMatchedPlayerNames(
+                    playerId, playerUID, isLocal, useDisconnectedMapping: true);
+                if (cacheNames.Count > 0)
+                {
+                    return true;
+                }
+
+                if (steamId != 0 && _disconnectedCacheBySteam.ContainsKey(steamId))
+                {
+                    return true;
+                }
+            }
+
+            return steamId == 0 && playerUID != 0 && DisconnectedCacheCount > 0;
+        }
+
+        private static void MaybeWarnRestoreGiveUp(
+            SpeechEventArchive archive,
+            string? playerId,
+            long playerUID,
+            bool isLocal)
+        {
+            if (DisconnectedCacheCount == 0 && !HasPending())
+            {
+                return;
+            }
+
+            ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
+            if (steamId != 0 && !_restoreGiveUpWarnedSteamIds.Add(steamId))
+            {
+                return;
+            }
+
+            string brief = DescribeBrief(archive, playerUID, isLocal);
+            ModLog.Warn(Feature, $"Voice restore gave up — {brief} — disconnectedCache={DisconnectedCacheCount}, pendingPool={GetCounts().pending}");
+        }
+
+        private static void ClearDeferredRetry(SpeechEventArchive archive)
+        {
+            _ = _deferredRetryStartTime.Remove(archive);
+        }
+
+        private static void IndexDisconnectedEvent(ulong steamId, long eventId)
+        {
+            if (steamId == 0)
+            {
+                return;
+            }
+
+            if (!_disconnectedCacheBySteam.TryGetValue(steamId, out HashSet<long>? ids))
+            {
+                ids = [];
+                _disconnectedCacheBySteam[steamId] = ids;
+            }
+
+            _ = ids.Add(eventId);
+        }
+
+        private static void RemoveDisconnectedEvent(long eventId, ulong steamIdHint)
+        {
+            _ = _disconnectedCache.Remove(eventId);
+
+            if (steamIdHint != 0
+                && _disconnectedCacheBySteam.TryGetValue(steamIdHint, out HashSet<long>? ids))
+            {
+                _ = ids.Remove(eventId);
+                if (ids.Count == 0)
+                {
+                    _ = _disconnectedCacheBySteam.Remove(steamIdHint);
+                }
+            }
+            else
+            {
+                foreach (KeyValuePair<ulong, HashSet<long>> kvp in _disconnectedCacheBySteam)
+                {
+                    if (kvp.Value.Remove(eventId) && kvp.Value.Count == 0)
+                    {
+                        _ = _disconnectedCacheBySteam.Remove(kvp.Key);
+                    }
+                }
+            }
+        }
+
+        private static string? ResolveDominantPlayerName(IReadOnlyList<SpeechEvent> events)
+        {
+            Dictionary<string, int> counts = [];
+            string? dominant = null;
+            int max = 0;
+
+            foreach (SpeechEvent ev in events)
+            {
+                if (ev == null || string.IsNullOrEmpty(ev.PlayerName))
+                {
+                    continue;
+                }
+
+                counts.TryGetValue(ev.PlayerName, out int count);
+                count++;
+                counts[ev.PlayerName] = count;
+                if (count > max)
+                {
+                    max = count;
+                    dominant = ev.PlayerName;
+                }
+            }
+
+            return dominant;
         }
 
         private static Dictionary<ulong, string> BuildPlayerMapping()
@@ -626,26 +976,41 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
+
+            AddMappedVoiceId(matchedPlayerNames, steamId, _disconnectedPlayerMappings, useDisconnectedMapping);
+
+            if (useDisconnectedMapping)
+            {
+                AddMappedVoiceId(matchedPlayerNames, steamId, _steamToDissonance, requirePoolMatch: false);
+            }
+            else
+            {
+                AddMappedVoiceId(matchedPlayerNames, steamId, _steamToDissonance, requirePoolMatch: true);
+            }
+
             if (steamId == 0)
             {
                 return matchedPlayerNames;
             }
 
-            Dictionary<ulong, string> mappingSource = useDisconnectedMapping
-                ? _disconnectedPlayerMappings
-                : _steamToDissonance;
-
-            if (mappingSource.TryGetValue(steamId, out string oldDissonanceId)
-                && _byPlayerName.ContainsKey(oldDissonanceId))
-            {
-                _ = matchedPlayerNames.Add(oldDissonanceId);
-            }
-            else if (useDisconnectedMapping && mappingSource.TryGetValue(steamId, out oldDissonanceId))
-            {
-                _ = matchedPlayerNames.Add(oldDissonanceId);
-            }
-
             return matchedPlayerNames;
+        }
+
+        private static void AddMappedVoiceId(
+            HashSet<string> matchedPlayerNames,
+            ulong steamId,
+            Dictionary<ulong, string> mappingSource,
+            bool requirePoolMatch)
+        {
+            if (steamId == 0 || !mappingSource.TryGetValue(steamId, out string oldDissonanceId))
+            {
+                return;
+            }
+
+            if (!requirePoolMatch || _byPlayerName.ContainsKey(oldDissonanceId))
+            {
+                _ = matchedPlayerNames.Add(oldDissonanceId);
+            }
         }
     }
 }

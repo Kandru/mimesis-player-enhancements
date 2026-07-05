@@ -67,62 +67,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 SpeechEventPoolManager.SetLocalArchive(__instance);
             }
 
-            string? playerId = null;
-            long playerUID = 0;
-            bool isLocal = false;
-
-            try
-            {
-                playerId = __instance.PlayerId;
-                playerUID = __instance.PlayerUID;
-                isLocal = __instance.IsLocal;
-            }
-            catch
-            {
-                /* Player component may not be ready yet */
-            }
-
-            int eventsBefore = VoiceEventStats.GetVoiceLineCount(__instance);
-
-            if (!isLocal && string.IsNullOrEmpty(playerId) && playerUID == 0)
-            {
-                bool hasDataToInject = SpeechEventPoolManager.HasPending()
-                                       || SpeechEventPoolManager.DisconnectedCacheCount > 0;
-                if (hasDataToInject)
-                {
-                    SpeechEventPoolManager.RegisterDeferredInjection(__instance);
-                    (int pending, _) = SpeechEventPoolManager.GetCounts();
-                    PlayerLifecycleCoordinator.SetPersistenceOutcome(
-                        __instance,
-                        new PersistenceConnectOutcome(
-                            PersistenceConnectPhase.Connecting,
-                            $"voice injection deferred (pendingPool={pending}, disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount})"));
-                }
-                else
-                {
-                    PlayerLifecycleCoordinator.SetPersistenceOutcome(
-                        __instance,
-                        new PersistenceConnectOutcome(PersistenceConnectPhase.Connecting, "awaiting identity sync"));
-                }
-
-                return;
-            }
-
             if (__instance.events == null)
             {
                 ModLog.Warn(Feature, $"Player archive has no event list — {VoiceEventStats.DescribePlayer(__instance)}");
                 return;
             }
 
-            SpeechEventInjector.RestoreResult result = SpeechEventInjector.RestoreIntoArchive(
-                __instance, playerId, playerUID, isLocal);
-
-            int eventsAfter = VoiceEventStats.GetVoiceLineCount(__instance);
-            PlayerLifecycleCoordinator.SetPersistenceOutcome(
-                __instance,
-                BuildConnectOutcome(result, eventsBefore, eventsAfter));
-
-            StatisticsTracker.SyncVoiceBaseline(__instance);
+            SpeechEventPoolManager.ArchiveRestoreOutcome outcome = SpeechEventPoolManager.TryRestoreToArchive(__instance);
+            SpeechEventPoolManager.ApplyRestoreOutcome(__instance, outcome);
 
             (int pendingCount, int injectedCount) = SpeechEventPoolManager.GetCounts();
             ModLog.Debug(Feature, $"Archive detail — slot={slotId} poolState={pendingCount}P/{injectedCount}I disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount}");
@@ -131,7 +83,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
         internal static PersistenceConnectOutcome BuildConnectOutcome(
             SpeechEventInjector.RestoreResult result,
             int eventsBefore,
-            int eventsAfter)
+            int eventsAfter,
+            SpeechEventArchive? archive = null)
         {
             if (result.TotalAdded > 0)
             {
@@ -142,10 +95,34 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 
             if (SpeechEventPoolManager.HasPending() || SpeechEventPoolManager.DisconnectedCacheCount > 0)
             {
+                MaybeWarnNoMatchingVoices(archive);
                 return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "no matching saved voices");
             }
 
             return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "no persistence data");
+        }
+
+        private static void MaybeWarnNoMatchingVoices(SpeechEventArchive? archive)
+        {
+            if (archive == null)
+            {
+                return;
+            }
+
+            if (!VoiceEventStats.TryCaptureArchiveIdentity(archive, out _, out _, out ulong steamId)
+                || steamId == 0)
+            {
+                return;
+            }
+
+            if (!SpeechEventPoolManager.HasDisconnectedCacheForSteam(steamId))
+            {
+                return;
+            }
+
+            ModLog.Warn(
+                Feature,
+                $"No matching saved voices while disconnect cache holds entries — {VoiceEventStats.DescribePlayerBrief(archive)}");
         }
 
         internal static void EnsurePoolLoaded(int slotId)
