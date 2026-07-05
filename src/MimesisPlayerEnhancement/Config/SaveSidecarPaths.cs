@@ -12,6 +12,7 @@ namespace MimesisPlayerEnhancement
         Overrides,
         Statistics,
         PlayerNames,
+        Lobby,
     }
 
     /// <summary>
@@ -70,6 +71,8 @@ namespace MimesisPlayerEnhancement
 
         internal static string? GetPlayerNamesPath(int slotId) => GetSidecarPath(slotId, "names");
 
+        internal static string? GetLobbyPath(int slotId) => GetSidecarPath(slotId, "lobby");
+
         internal static IEnumerable<string> EnumerateSidecarFiles(int slotId, SidecarKind? filter = null)
         {
             string? saveFolder = GetSaveFolderPath();
@@ -122,6 +125,7 @@ namespace MimesisPlayerEnhancement
                 SidecarKind.Overrides => fileName.Equals(prefix + "overrides" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 SidecarKind.Statistics => fileName.Equals(prefix + "stats" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 SidecarKind.PlayerNames => fileName.Equals(prefix + "names" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
+                SidecarKind.Lobby => fileName.Equals(prefix + "lobby" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 _ => false,
             };
         }

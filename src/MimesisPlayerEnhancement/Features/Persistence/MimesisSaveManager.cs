@@ -133,7 +133,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     SidecarKind.SpeechMetadata,
                     SidecarKind.SpeechMapping,
                     SidecarKind.Overrides,
-                    SidecarKind.PlayerNames);
+                    SidecarKind.PlayerNames,
+                    SidecarKind.Lobby);
             }
             catch (Exception ex)
             {

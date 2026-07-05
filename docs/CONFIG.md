@@ -109,7 +109,7 @@ Late joiners cannot be dropped straight into an active dungeon (the game has no 
 - Joiners **do not** land mid-dungeon; they sit out the current run in the tram.
 - If the host is still in maintenance or already in the tram (pre-lever), joiners are routed to the same waiting room via the same packets.
 - Public lobby visibility helpers still run on the host when this feature is enabled.
-- Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run — not only in the maintenance room.
+- Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run — not only in the maintenance room. Lobby title and public/private preference are saved with the game (per save slot).
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|

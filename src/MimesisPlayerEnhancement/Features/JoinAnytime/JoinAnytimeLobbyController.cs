@@ -80,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             SetHostWantsPublicMatchmaking(wantsPublic);
             ModLog.Debug(Feature, $"Public room toggle — host requested {(wantsPublic ? "public" : "private")} lobby");
+            PersistLobbyRuntimeState(isPublicLobby: wantsPublic);
             dispatcher.SetLobbyPublic(wantsPublic);
         }
 
@@ -116,18 +117,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            if (isOpenForRandomMatch)
+            EnsureSidecarLoadedForActiveSlot();
+
+            int slotId = GameSessionAccess.GetSaveSlotId();
+            if (!JoinAnytimeLobbyStore.HasPersistedPublicPreference(slotId) && isOpenForRandomMatch)
             {
                 SetHostWantsPublicMatchmaking(true);
             }
 
-            CaptureBaseFromDispatcher(dispatcher);
-            ModLog.Debug(Feature, $"Lobby created — publicMatch={isOpenForRandomMatch}, baseName=\"{_baseLobbyName}\"");
+            EnsureBaseLobbyName(dispatcher);
+            ModLog.Debug(Feature, $"Lobby created — publicMatch={isOpenForRandomMatch}, baseName=\"{_baseLobbyName}\", wantsPublic={_hostWantsPublicMatchmaking}");
 
-            if (isOpenForRandomMatch)
-            {
-                ApplyHostPublicLobbyIntent();
-            }
+            RestorePublicLobbyIfNeeded();
 
             RefreshLobbyState(force: true);
             ScheduleImmediateRefresh();
@@ -150,6 +151,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (!requestedPublic)
             {
                 SetHostWantsPublicMatchmaking(false);
+                PersistLobbyRuntimeState(isPublicLobby: false);
             }
 
             ModLog.Debug(Feature, $"SetLobbyPublic completed — lobby is now {(_hostWantsPublicMatchmaking ? "public" : "private")}");
@@ -261,7 +263,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ?? "Applied";
         }
 
-        internal static void SetBaseLobbyName(string rawName)
+        internal static void SetBaseLobbyName(string rawName, bool persist = true)
         {
             if (string.IsNullOrWhiteSpace(rawName))
             {
@@ -269,6 +271,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             _baseLobbyName = StripDisplaySuffix(rawName.Trim());
+            if (persist)
+            {
+                PersistLobbyRuntimeState(baseLobbyName: _baseLobbyName);
+            }
         }
 
         internal static void ApplyLobbyPresence(SteamInviteDispatcher dispatcher, bool wantsPublic)
@@ -321,7 +327,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (string.IsNullOrEmpty(_baseLobbyName))
             {
-                CaptureBaseFromDispatcher(dispatcher);
+                EnsureBaseLobbyName(dispatcher);
             }
 
             JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
@@ -464,19 +470,123 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            EnsureSidecarLoadedForActiveSlot();
+
             SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
             if (dispatcher == null)
             {
                 return;
             }
 
-            CaptureBaseFromDispatcher(dispatcher);
+            EnsureBaseLobbyName(dispatcher);
             _lastPhase = JoinAnytimeSessionPhase.None;
             _lastPublishedName = string.Empty;
+
+            RestorePublicLobbyIfNeeded();
 
             RefreshLobbyState(force: true);
             LateJoinManager.OnHostSceneReady();
             ScheduleImmediateRefresh();
+        }
+
+        internal static void OnSaveSlotSidecarLoaded(int slotId)
+        {
+            ApplyPersistedLobbySettings(slotId);
+        }
+
+        internal static void ApplyPersistedLobbySettings(int slotId)
+        {
+            _baseLobbyName = string.Empty;
+            _lastPublishedName = string.Empty;
+            _hostWantsPublicMatchmaking = false;
+
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
+                || !JoinAnytimeLobbyStore.TryReadSidecarForSlot(slotId, out JoinAnytimeLobbySidecarData? data)
+                || data == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(data.BaseLobbyName))
+            {
+                _baseLobbyName = data.BaseLobbyName.Trim();
+            }
+
+            if (data.IsPublicLobby.HasValue)
+            {
+                _hostWantsPublicMatchmaking = data.IsPublicLobby.Value;
+            }
+        }
+
+        internal static void OnSessionEnded()
+        {
+            _baseLobbyName = string.Empty;
+            _lastPublishedName = string.Empty;
+            _hostWantsPublicMatchmaking = false;
+        }
+
+        private static void EnsureBaseLobbyName(SteamInviteDispatcher dispatcher)
+        {
+            if (!string.IsNullOrEmpty(_baseLobbyName))
+            {
+                return;
+            }
+
+            int slotId = GameSessionAccess.GetSaveSlotId();
+            if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                string? fromSidecar = JoinAnytimeLobbyStore.TryReadBaseLobbyNameForSlot(slotId);
+                if (!string.IsNullOrWhiteSpace(fromSidecar))
+                {
+                    _baseLobbyName = fromSidecar;
+                    return;
+                }
+            }
+
+            CaptureBaseFromDispatcher(dispatcher);
+        }
+
+        private static void RestorePublicLobbyIfNeeded()
+        {
+            if (!_hostWantsPublicMatchmaking)
+            {
+                return;
+            }
+
+            ApplyHostPublicLobbyIntent();
+            ScheduleDeferredPublicLobbyIntent();
+        }
+
+        internal static bool TryExportLobbyState(out string? baseLobbyName, out bool isPublicLobby)
+        {
+            baseLobbyName = string.IsNullOrWhiteSpace(_baseLobbyName) ? null : _baseLobbyName;
+            isPublicLobby = _hostWantsPublicMatchmaking;
+            return ModConfig.EnableJoinAnytime.Value;
+        }
+
+        private static void PersistLobbyRuntimeState(string? baseLobbyName = null, bool? isPublicLobby = null)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
+            int slotId = GameSessionAccess.GetSaveSlotId();
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                return;
+            }
+
+            JoinAnytimeLobbyStore.RememberRuntimeState(slotId, baseLobbyName, isPublicLobby);
+        }
+
+        private static void EnsureSidecarLoadedForActiveSlot()
+        {
+            int slotId = GameSessionAccess.GetSaveSlotId();
+            if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
+            }
         }
 
         private static string StripDisplaySuffix(string value)
@@ -494,7 +604,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             string? raw = DispatcherLobbyNameField?.GetValue(dispatcher) as string;
             if (!string.IsNullOrWhiteSpace(raw))
             {
-                SetBaseLobbyName(raw);
+                SetBaseLobbyName(raw, persist: false);
             }
         }
 
@@ -511,6 +621,44 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static void ScheduleDeferredLobbyRefresh()
         {
             ScheduleImmediateRefresh();
+        }
+
+        private static void ScheduleDeferredPublicLobbyIntent()
+        {
+            if (!_hostWantsPublicMatchmaking)
+            {
+                return;
+            }
+
+            _ = MelonCoroutines.Start(DeferredPublicLobbyIntentCoroutine());
+        }
+
+        private static IEnumerator DeferredPublicLobbyIntentCoroutine()
+        {
+            for (int attempt = 0; attempt < 8; attempt++)
+            {
+                yield return null;
+
+                if (!ModConfig.EnableJoinAnytime.Value || !IsHost() || !_hostWantsPublicMatchmaking)
+                {
+                    yield break;
+                }
+
+                SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
+                if (dispatcher == null)
+                {
+                    continue;
+                }
+
+                ApplyHostPublicLobbyIntent();
+                if (JoinAnytimeHub.IsHostLobbyPublic(dispatcher))
+                {
+                    RefreshLobbyState(force: true);
+                    yield break;
+                }
+            }
+
+            ModLog.Debug(Feature, "Deferred public lobby intent exhausted retries — lobby may still be private.");
         }
 
         private static void ScheduleImmediateRefresh()

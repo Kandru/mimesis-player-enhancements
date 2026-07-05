@@ -20,7 +20,29 @@ namespace MimesisPlayerEnhancement
             StatisticsTracker.LoadForSlot(slotId);
             SaveSlotConfigStore.LoadForSlot(slotId);
             WebDashboardPlayerNameStore.LoadForSlot(slotId);
+            JoinAnytimeLobbyStore.LoadForSlot(slotId);
+            JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
             ModLog.Debug(Feature, $"Loaded slot sidecars for save slot {slotId}.");
+        }
+
+        /// <summary>
+        /// Loads sidecars when the host session is active but ApplyLoadedGameData ran before host was ready.
+        /// </summary>
+        internal static void EnsureSaveSlotLoaded(int slotId)
+        {
+            if (!MimesisSaveManager.IsHost() || !MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                return;
+            }
+
+            if (SaveSlotConfigStore.ActiveSlotId == slotId)
+            {
+                JoinAnytimeLobbyStore.EnsureSlotBound(slotId);
+                JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
+                return;
+            }
+
+            OnSaveSlotLoaded(slotId);
         }
 
         internal static void OnGameSaved(int slotId)
@@ -33,6 +55,8 @@ namespace MimesisPlayerEnhancement
             StatisticsTracker.OnGameSaved(slotId);
             SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
             WebDashboardPlayerNameStore.FlushToDisk(slotId, waitForCompletion: false);
+            JoinAnytimeLobbyStore.CaptureFromController(slotId);
+            JoinAnytimeLobbyStore.FlushToDisk(slotId, waitForCompletion: false);
             ModLog.Debug(Feature, $"Queued slot sidecar flush for save slot {slotId}.");
         }
 
@@ -41,6 +65,8 @@ namespace MimesisPlayerEnhancement
             StatisticsTracker.OnSessionEnded();
             SaveSlotConfigStore.ClearRuntimeToGlobal();
             WebDashboardPlayerNameStore.Clear();
+            JoinAnytimeLobbyStore.Clear();
+            JoinAnytimeLobbyController.OnSessionEnded();
         }
 
         internal static void FlushAllSync()
@@ -51,6 +77,8 @@ namespace MimesisPlayerEnhancement
                 StatisticsTracker.PersistLoadedSlot(waitForCompletion: true);
                 SaveSlotConfigStore.FlushToDisk(activeSlotId, waitForCompletion: true);
                 WebDashboardPlayerNameStore.FlushToDisk(activeSlotId, waitForCompletion: true);
+                JoinAnytimeLobbyStore.CaptureFromController(activeSlotId);
+                JoinAnytimeLobbyStore.FlushToDisk(activeSlotId, waitForCompletion: true);
             }
 
             StatisticsStore.FlushAllSync();

@@ -38,6 +38,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal static string FormatLobbyName(SaveSlotEntry entry)
         {
+            string? savedName = JoinAnytimeLobbyStore.TryReadBaseLobbyNameForSlot(entry.SlotId);
+            if (!string.IsNullOrWhiteSpace(savedName))
+            {
+                return savedName;
+            }
+
             string hostName = string.Empty;
             if (entry.Data.PlayerNames != null && entry.Data.PlayerNames.Count > 0)
             {

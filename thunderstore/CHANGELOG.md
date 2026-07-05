@@ -14,6 +14,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: ability for a dead player to ring the phone to talk to another player directly (just for testing currently. May gets removed).
 - draft: allow dead players to spectate monsters in addition to players (just for testing currently. May gets removed).
 - draft: extended spectator death player list (just for testing currently. May gets removed).
+- draft: properly rename lobby when saved via the save button (and properly load when savegame is being loaded). Same for the lobby public type
 
 ## 26.7.5
 - fixed an issue with the lobby naming and not showing
