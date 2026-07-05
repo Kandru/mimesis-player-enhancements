@@ -1,6 +1,5 @@
 using System;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
-using Mimic.Actors;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MonsterSpectate

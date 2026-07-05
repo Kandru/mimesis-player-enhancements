@@ -1,6 +1,5 @@
 using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using Mimic.Actors;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 {

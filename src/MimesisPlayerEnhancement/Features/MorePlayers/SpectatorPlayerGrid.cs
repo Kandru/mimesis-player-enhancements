@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Mimic.Actors;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers

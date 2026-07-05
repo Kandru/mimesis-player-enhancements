@@ -1,5 +1,4 @@
 using System;
-using Mimic.Actors;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
