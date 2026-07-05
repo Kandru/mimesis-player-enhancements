@@ -758,7 +758,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     canHeal(p) {
-      return this.status.isHost && p.playerUid && p.isAlive;
+      return this.status.isHost && !this.playerBlindMode && p.playerUid && p.isAlive;
     },
 
     canGiveItem(p) {
