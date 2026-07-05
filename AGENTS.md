@@ -4,20 +4,24 @@ Instructions for AI coding agents working in this repository.
 
 ## Do not create `.tmp-*` scratch projects
 
-When you need to inspect game or MelonLoader assemblies, **use the existing dev tools under `src/`**. Do not create throwaway folders like `.tmp-inspect/`, `.tmp-reflect/`, or similar at the repo root.
+When you need game source or MelonLoader APIs, **use the paths below**. Do not create throwaway folders like `.tmp-inspect/`, `.tmp-reflect/`, or similar at the repo root.
 
-| Need | Tool | Path |
-|------|------|------|
-| Game types, methods, constants (`Assembly-CSharp`) | **MimesisInspectionTool** | `src/MimesisInspectionTool/` |
-| Full decompiled C# source (browse/read code) | **decompile-game.sh** | `scripts/decompile-game.sh` → `deps/decompiled/` |
+| Need | Where | Path |
+|------|-------|------|
+| Game source (types, methods, call chains, constants) | **Decompiled source** | `deps/decompiled/**/*` |
 | MelonLoader APIs (logging, mod base types, loader internals) | **MimesisReflectionTool** | `src/MimesisReflectionTool/` |
+| Quick metadata lookup (optional; no file read) | **MimesisInspectionTool** | `src/MimesisInspectionTool/` |
+| Regenerate decompiled trees after a game update | **decompile-game.sh** | `scripts/decompile-game.sh` |
 
-Both tools are in `src/MimesisPlayerEnhancement.sln`, build with `dotnet build`, and output to their own `bin/` folders (not `dist/`).
+Inspection and reflection tools live in `src/MimesisPlayerEnhancement.sln`, build with `dotnet build`, and output to their own `bin/` folders (not `dist/`).
 
 ### Quick start
 
 ```bash
-# Game metadata (safe, no code execution)
+# Game source — search/read under deps/decompiled/ (e.g. Assembly-CSharp/**/MMSaveGameData.cs)
+rg "CheckSaveSlotID" deps/decompiled/
+
+# Optional quick metadata (no file read)
 dotnet run --project src/MimesisInspectionTool -- constants MMSaveGameData
 dotnet run --project src/MimesisInspectionTool -- member MMSaveGameData CheckSaveSlotID
 
@@ -40,7 +44,7 @@ See each tool's README for full command reference:
 
 Run `./scripts/bootstrap-deps.sh` once to populate `deps/reference/Managed/` and `deps/reference/MelonLoader/net35/`. Tools fall back to `MIMESIS_PATH` or `--game` / `--managed` / `--melonloader` flags when bootstrap paths are missing.
 
-For readable source when inspecting types or call chains, run `./scripts/decompile-game.sh` (requires `dotnet tool install -g ilspycmd`). Output lands in `deps/decompiled/` and is gitignored.
+Game source is already decompiled under `deps/decompiled/` (gitignored). Search and read files there — e.g. `deps/decompiled/Assembly-CSharp/**/*.cs`. Run `./scripts/decompile-game.sh` only to refresh after a game patch (requires `dotnet tool install -g ilspycmd`).
 
 ## Mod project layout
 
@@ -172,10 +176,11 @@ For hot paths (scrap prices, per-spawn rolls), use debug helpers that early-retu
 
 ### Game inspection workflow
 
-| Goal | Tool |
-|------|------|
-| Type/method signatures, constants, quick lookup | **MimesisInspectionTool** |
+| Goal | Where |
+|------|-------|
+| Game types, method bodies, call chains, constants | **`deps/decompiled/**/*`** |
 | MelonLoader / loader APIs | **MimesisReflectionTool** |
-| Read full call chains, browse decompiled source | **decompile-game.sh** → `deps/decompiled/` |
+| Quick metadata without opening files (optional) | **MimesisInspectionTool** |
+| Refresh decompiled output after game update | **`scripts/decompile-game.sh`** |
 
-Start with InspectionTool for targeted lookups; decompile when you need readable method bodies or cross-type navigation.
+Start in `deps/decompiled/` for patch design and cross-type navigation. Use MimesisInspectionTool only for fast one-off metadata when you do not need full method bodies.

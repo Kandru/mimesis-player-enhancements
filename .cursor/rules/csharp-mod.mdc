@@ -11,7 +11,7 @@ alwaysApply: false
 - Namespace: `MimesisPlayerEnhancement.Features.{FeatureName}` for feature code.
 - Use descriptive names (`approvedSaveSlotIds`, not `list` or `ids`) so intent is clear without reading surrounding code.
 - Add brief comments for non-obvious business logic (host-only rules, game quirks, timing constraints).
-- Do not create `.tmp-*` scratch projects — use MimesisInspectionTool, MimesisReflectionTool, or `scripts/decompile-game.sh`.
+- Do not create `.tmp-*` scratch projects — search `deps/decompiled/**/*` for game source; use MimesisReflectionTool for MelonLoader APIs.
 - New features: register in `FeatureModules.All`, add config to `ModConfig.cs`, update [docs/CONFIG.md](../../docs/CONFIG.md).
 - Run `./scripts/build.sh` before considering changes complete.
 - Match existing patterns: `_` prefix on private fields is used throughout this codebase — keep it consistent.
