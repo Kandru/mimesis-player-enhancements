@@ -57,4 +57,18 @@ const Api = {
     }
     return body;
   },
+
+  async getItems() {
+    return Api.fetchJson('/api/items');
+  },
+
+  async spawnItem(steamId, itemId, percent) {
+    const body = { itemId };
+    if (percent != null) body.percent = percent;
+    return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/spawn-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
 };

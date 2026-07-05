@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Text;
 using MimesisPlayerEnhancement.Features.MoreVoices;
-using MimesisPlayerEnhancement.Features.Persistence;
 using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement

@@ -652,6 +652,32 @@ body.connected .app-content {
   padding-left: 0.75rem;
 }
 
+.player-entry-spawn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.spawn-item-label {
+  font-size: 0.8125rem;
+  color: var(--md-on-surface-variant);
+  flex: 0 0 auto;
+}
+
+.spawn-item-select {
+  min-width: 10rem;
+  max-width: 100%;
+  flex: 1 1 10rem;
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--md-radius-sm);
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+}
+
 .player-links,
 .player-external-links {
   display: inline;

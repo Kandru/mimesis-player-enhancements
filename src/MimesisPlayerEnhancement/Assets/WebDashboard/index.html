@@ -182,6 +182,24 @@
                         </span>
                       </span>
                     </small>
+                    <div class="player-entry-spawn" x-show="canGiveItem(p) && itemCatalog.length > 0">
+                      <label class="spawn-item-label" x-text="t('dashboard.spawn_item')"></label>
+                      <select class="spawn-item-select" :value="getSpawnItemId(p.steamId)"
+                        @change="setSpawnItemId(p.steamId, $event.target.value)">
+                        <template x-for="item in itemCatalog" :key="item.id">
+                          <option :value="item.id" x-text="item.label"></option>
+                        </template>
+                      </select>
+                      <select class="spawn-item-select" x-show="hasItemVariants(p.steamId)"
+                        :value="getSpawnPercent(p.steamId)"
+                        @change="setSpawnPercent(p.steamId, $event.target.value)">
+                        <template x-for="variant in getItemVariants(p.steamId)" :key="variant.percent">
+                          <option :value="variant.percent" x-text="formatSpawnPercent(variant.percent)"></option>
+                        </template>
+                      </select>
+                      <button class="btn btn-outlined btn-compact" type="button" @click="giveItem(p)"
+                        x-text="t('dashboard.spawn_item_give')"></button>
+                    </div>
                   </div>
                 </article>
               </template>

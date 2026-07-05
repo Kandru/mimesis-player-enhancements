@@ -219,4 +219,37 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Type = "";
         public bool IsOverridden;
     }
+
+    internal sealed class WebDashboardItemOptionDto
+    {
+        public string Id = "";
+        public string Label = "";
+        public string Type = "";
+        public int? MasterId;
+        public List<WebDashboardItemVariantDto>? Variants;
+    }
+
+    internal sealed class WebDashboardItemVariantDto
+    {
+        public int Percent;
+        public int MasterId;
+    }
+
+    internal sealed class WebDashboardItemsApiResponse
+    {
+        public List<WebDashboardItemOptionDto> Items = [];
+    }
+
+    internal sealed class WebDashboardSpawnItemRequest
+    {
+        public string ItemId = "";
+        public int? Percent = null;
+    }
+
+    internal sealed class WebDashboardSpawnItemResult
+    {
+        public bool Success;
+        public string Message = "";
+        public string Location = "";
+    }
 }

@@ -97,6 +97,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(result);
         }
 
+        public static string SerializeItems(IReadOnlyList<WebDashboardItemOptionDto> items)
+        {
+            return ModJson.Serialize(new WebDashboardItemsApiResponse { Items = [.. items] });
+        }
+
+        public static string SerializeSpawnItemResult(WebDashboardSpawnItemResult result)
+        {
+            return ModJson.Serialize(result);
+        }
+
         public static string SerializeSnapshotEvent(
             WebDashboardSnapshot snapshot,
             bool livePlayersOnly = false,

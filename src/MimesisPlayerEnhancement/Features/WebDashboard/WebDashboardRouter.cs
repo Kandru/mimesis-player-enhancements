@@ -176,6 +176,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/items" && method == "GET")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardJson.SerializeItems(WebDashboardItemCatalogService.BuildCatalog()));
+                return;
+            }
+
             if (path.StartsWith("/api/players/", StringComparison.Ordinal))
             {
                 HandlePlayerApi(context, method, path, snapshot);
@@ -267,6 +279,37 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (action == "spawn-item" && method == "POST")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardSpawnItemRequest? spawnRequest =
+                    ModJson.Deserialize<WebDashboardSpawnItemRequest>(ReadRequestBody(context.Request));
+                if (spawnRequest == null || string.IsNullOrWhiteSpace(spawnRequest.ItemId))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_spawn_item_request")));
+                    return;
+                }
+
+                long spawnPlayerUid = ResolvePlayerUid(snapshot, steamId);
+
+                WebDashboardSpawnItemResult spawnResult = WebDashboardItemSpawnQueue.EnqueueAndWait(
+                    steamId,
+                    spawnPlayerUid,
+                    spawnRequest.ItemId,
+                    spawnRequest.Percent);
+
+                WriteJson(
+                    context,
+                    spawnResult.Success ? 200 : 400,
+                    WebDashboardJson.SerializeSpawnItemResult(spawnResult));
+                return;
+            }
+
             if (!snapshot.Status.IsHost)
             {
                 WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
@@ -295,15 +338,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            long playerUid = 0;
-            foreach (WebDashboardPlayerDto player in snapshot.Players)
-            {
-                if (player.SteamId == steamId)
-                {
-                    playerUid = player.PlayerUid;
-                    break;
-                }
-            }
+            long playerUid = ResolvePlayerUid(snapshot, steamId);
 
             WebDashboardActionQueue.Enqueue(new WebDashboardPendingAction
             {
@@ -317,6 +352,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Success = true,
                 Message = L("action_queued"),
             }));
+        }
+
+        private static long ResolvePlayerUid(WebDashboardSnapshot snapshot, ulong steamId)
+        {
+            foreach (WebDashboardPlayerDto player in snapshot.Players)
+            {
+                if (player.SteamId == steamId)
+                {
+                    return player.PlayerUid;
+                }
+            }
+
+            return 0;
         }
 
         private static void ServeStatic(HttpListenerContext context, string path)

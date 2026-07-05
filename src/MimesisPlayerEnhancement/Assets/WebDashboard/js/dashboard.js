@@ -145,6 +145,9 @@ document.addEventListener('alpine:init', () => {
     playerBlindModeAutoSuspended: false,
     _localPlayerWasAlive: null,
     localeVersion: 0,
+    itemCatalog: [],
+    itemCatalogLocale: '',
+    spawnSelections: {},
 
     t(key, params) {
       void this.localeVersion;
@@ -488,6 +491,10 @@ document.addEventListener('alpine:init', () => {
         if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
           this.applyMinimapFilter(force);
         }
+
+        if (this.status.isHost && this.route === 'players') {
+          await this.loadItemCatalog();
+        }
       } catch (e) {
         this.pageError = e.message || t('dashboard.failed_load');
       }
@@ -714,6 +721,89 @@ document.addEventListener('alpine:init', () => {
 
     canHeal(p) {
       return this.status.isHost && p.playerUid && p.isAlive;
+    },
+
+    canGiveItem(p) {
+      return this.canHeal(p);
+    },
+
+    async loadItemCatalog() {
+      if (!this.status.isHost) return;
+      const locale = this.status.locale || 'en';
+      if (this.itemCatalog.length > 0 && this.itemCatalogLocale === locale) return;
+      try {
+        const res = await Api.getItems();
+        this.itemCatalog = res.items || [];
+        this.itemCatalogLocale = locale;
+      } catch (_) {
+        /* catalog optional — spawn controls stay hidden if empty */
+      }
+    },
+
+    ensureSpawnSelection(steamId) {
+      const key = String(steamId);
+      if (!this.spawnSelections[key]) {
+        this.spawnSelections[key] = {
+          itemId: this.itemCatalog[0]?.id || '',
+          percent: 100,
+        };
+      }
+    },
+
+    getSpawnItemId(steamId) {
+      this.ensureSpawnSelection(steamId);
+      return this.spawnSelections[String(steamId)].itemId;
+    },
+
+    setSpawnItemId(steamId, itemId) {
+      this.ensureSpawnSelection(steamId);
+      const sel = this.spawnSelections[String(steamId)];
+      sel.itemId = itemId;
+      const option = this.itemCatalog.find((item) => item.id === itemId);
+      if (option?.variants?.length) {
+        sel.percent = option.variants[0].percent;
+      }
+    },
+
+    getSelectedItemOption(steamId) {
+      const itemId = this.getSpawnItemId(steamId);
+      return this.itemCatalog.find((item) => item.id === itemId);
+    },
+
+    hasItemVariants(steamId) {
+      const option = this.getSelectedItemOption(steamId);
+      return !!(option?.variants?.length);
+    },
+
+    getItemVariants(steamId) {
+      return this.getSelectedItemOption(steamId)?.variants || [];
+    },
+
+    getSpawnPercent(steamId) {
+      this.ensureSpawnSelection(steamId);
+      return this.spawnSelections[String(steamId)].percent;
+    },
+
+    setSpawnPercent(steamId, percent) {
+      this.ensureSpawnSelection(steamId);
+      this.spawnSelections[String(steamId)].percent = parseInt(percent, 10);
+    },
+
+    formatSpawnPercent(percent) {
+      return t('dashboard.spawn_item_percent_option', { percent });
+    },
+
+    async giveItem(p) {
+      this.ensureSpawnSelection(p.steamId);
+      const sel = this.spawnSelections[String(p.steamId)];
+      if (!sel.itemId) return;
+      const percent = this.hasItemVariants(p.steamId) ? sel.percent : null;
+      try {
+        const res = await Api.spawnItem(p.steamId, sel.itemId, percent);
+        this.showToast(res.message || t('api.done'));
+      } catch (e) {
+        this.showToast(e.message);
+      }
     },
 
     getLocalPlayer() {

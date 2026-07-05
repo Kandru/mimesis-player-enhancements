@@ -80,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             // pending, and processing the queue can defer another one.
             FlushDeferredSync();
             WebDashboardConfigUpdateQueue.Process();
+            WebDashboardItemSpawnQueue.Process();
             FlushDeferredSync();
 
             if (!_running)

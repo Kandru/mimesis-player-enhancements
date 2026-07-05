@@ -601,7 +601,13 @@
     "timed_out": "Zeitüberschreitung beim Warten auf den Spiel-Thread.",
     "reset_global": "Auf globale Standardwerte zurückgesetzt.",
     "reset_defaults": "Auf Standardwerte zurückgesetzt.",
-    "done": "Fertig."
+    "done": "Fertig.",
+    "invalid_spawn_item_request": "Ungültige Item-Anfrage.",
+    "invalid_item": "Unbekannter Gegenstand.",
+    "invalid_item_percent": "Ungültige Item-Stärke.",
+    "item_spawn_failed": "Item konnte nicht erstellt werden.",
+    "item_spawned_inventory": "Item zum Inventar hinzugefügt.",
+    "item_spawned_world": "Inventar voll — Item vor dem Spieler abgelegt."
   },
   "dashboard": {
     "title_default": "Mimesis Player Enhancement",
@@ -645,6 +651,9 @@
     "kick": "Kicken",
     "ban": "Bannen",
     "unban": "Entbannen",
+    "spawn_item": "Item geben",
+    "spawn_item_give": "Geben",
+    "spawn_item_percent_option": "{percent} %",
     "previously_connected": "Zuvor verbunden",
     "connection_label": "Connection: {label}",
     "minimap_heading": "Minimap",
