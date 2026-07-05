@@ -136,7 +136,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MonsterSpectate
 
         internal static bool ShouldHandleMonsterTeleportCulling(ProtoActor teleportedActor)
         {
-            CameraManager? cameraman = DeadPlayerPhoneGameAccess.TryGetCameraManager();
+            CameraManager? cameraman = DeadPlayerFeaturesGameAccess.TryGetCameraManager();
             if (!IsEnabled
                 || teleportedActor == null
                 || teleportedActor.ActorType != ActorType.Monster

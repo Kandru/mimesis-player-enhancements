@@ -121,15 +121,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> MimicPossessionMaxTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionCooltimeMultiplier { get; internal set; } = null!;
 
-        public static MelonPreferences_Entry<bool> EnableDeadPlayerPhoneRing { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxDistanceMeters { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxLookAngleDegrees { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneMaxRingTimeSeconds { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> RandomizeDeadPlayerPhoneTalkTime { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMinTimeSeconds { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneTalkMaxTimeSeconds { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> DeadPlayerPhoneCooldownSeconds { get; internal set; } = null!;
-
         public static MelonPreferences_Entry<bool> EnableMonsterSpectate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> SpectateMonstersAfterPlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> IncludeMimicsInMonsterSpectate { get; internal set; } = null!;

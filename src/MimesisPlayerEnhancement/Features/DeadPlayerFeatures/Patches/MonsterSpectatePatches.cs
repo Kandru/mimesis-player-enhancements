@@ -139,7 +139,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
                     return true;
                 }
 
-                CameraManager? cameraman = DeadPlayerPhoneGameAccess.TryGetCameraManager();
+                CameraManager? cameraman = DeadPlayerFeaturesGameAccess.TryGetCameraManager();
                 if (cameraman == null
                     || !cameraman.TryGetCurrentSpectatorTarget(out ProtoActor? target)
                     || target == null)
@@ -149,7 +149,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
 
                 bool isIndoor = __instance.CheckActorIsIndoor(target);
                 MonsterSpectatePatchSupport.SwitchRenderablesMethod?.Invoke(__instance, [isIndoor]);
-                DeadPlayerPhoneGameAccess.TryGetVoiceManager()?.SetTransmitterChannelRecv(isIndoor);
+                DeadPlayerFeaturesGameAccess.TryGetVoiceManager()?.SetTransmitterChannelRecv(isIndoor);
                 MonsterSpectatePatchSupport.ApplyDetectorAudioSettings(__instance.GetMyAvatar(), isIndoor);
                 MonsterSpectatePatchSupport.NotifyAmbientSpectatorChangedMethod?.Invoke(__instance, null);
                 return false;

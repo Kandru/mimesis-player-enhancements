@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "EnableDeadPlayerFeatures",
                 false,
                 "Enable Dead Player Features",
-                "Master toggle for dead-spectator enhancements (mimic possession tuning, monster spectate, and experimental phone ring).");
+                "Master toggle for dead-spectator enhancements (mimic possession tuning and monster spectate).");
 
             ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicPossessionTuning",
@@ -52,54 +52,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "Mimic Possession Cooltime Multiplier",
                 "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla). Host only.");
 
-            ModConfig.EnableDeadPlayerPhoneRing = ModConfig.CreateTrackedEntry(_category,
-                "EnableDeadPlayerPhoneRing",
-                false,
-                "Enable Dead Player Phone Ring (Experimental)",
-                "Experimental. Allow dead spectators with this mod to ring nearby idle phones. Requires the mod on the host and on each dead player who participates.");
-
-            ModConfig.DeadPlayerPhoneMaxDistanceMeters = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneMaxDistanceMeters",
-                DeadPlayerPhoneResolver.GetVanillaPossessionDistanceMeters(),
-                "Dead Player Phone Max Distance (meters)",
-                "Experimental. Max distance from the spectated player to the phone (defaults to vanilla mimic possession distance).");
-
-            ModConfig.DeadPlayerPhoneMaxLookAngleDegrees = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneMaxLookAngleDegrees",
-                DeadPlayerPhoneResolver.DefaultLookAngleDegrees,
-                "Dead Player Phone Max Look Angle (degrees)",
-                "Experimental. Max horizontal camera angle toward the phone or mimic (vanilla default is 45).");
-
-            ModConfig.DeadPlayerPhoneMaxRingTimeSeconds = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneMaxRingTimeSeconds",
-                DeadPlayerPhoneResolver.DefaultMaxRingTimeSeconds,
-                "Dead Player Phone Max Ring Time (seconds)",
-                "Experimental. How long a dead-player-initiated ring lasts before the phone returns to idle if unanswered.");
-
-            ModConfig.RandomizeDeadPlayerPhoneTalkTime = ModConfig.CreateTrackedEntry(_category,
-                "RandomizeDeadPlayerPhoneTalkTime",
-                false,
-                "Randomize Dead Player Phone Talk Time",
-                "Experimental. Roll a random talk window after pickup between min and max seconds below. Host only.");
-
-            ModConfig.DeadPlayerPhoneTalkMinTimeSeconds = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneTalkMinTimeSeconds",
-                MimicPossessionResolver.VanillaPossessionDurationSeconds,
-                "Dead Player Phone Talk Min Time (seconds)",
-                "Experimental. Minimum rolled talk duration after pickup.");
-
-            ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneTalkMaxTimeSeconds",
-                MimicPossessionResolver.VanillaPossessionDurationSeconds,
-                "Dead Player Phone Talk Max Time (seconds)",
-                "Experimental. Maximum rolled talk duration after pickup.");
-
-            ModConfig.DeadPlayerPhoneCooldownSeconds = ModConfig.CreateTrackedEntry(_category,
-                "DeadPlayerPhoneCooldownSeconds",
-                0f,
-                "Dead Player Phone Cooldown (seconds)",
-                "Experimental. Wait time after a completed talk before the same dead player can ring again (0 = none).");
-
             ModConfig.EnableMonsterSpectate = ModConfig.CreateTrackedEntry(_category,
                 "EnableMonsterSpectate",
                 false,
@@ -124,24 +76,15 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
         internal static void RefreshResolverCaches()
         {
             MimicPossessionResolver.RefreshFromConfigRegistration();
-            DeadPlayerPhoneResolver.RefreshFromConfigRegistration();
             MonsterSpectateResolver.RefreshFromConfigRegistration();
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableDeadPlayerFeatures.OnEntryValueChanged.Subscribe((_, _) =>
-            {
-                ModConfig.NotifyChanged(ModConfig.EnableDeadPlayerFeatures);
-                DeadPlayerFeaturesRuntime.RefreshFromConfig();
-            });
+                ModConfig.NotifyChanged(ModConfig.EnableDeadPlayerFeatures));
             ModConfig.EnableMimicPossessionTuning.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableMimicPossessionTuning));
-            ModConfig.EnableDeadPlayerPhoneRing.OnEntryValueChanged.Subscribe((_, _) =>
-            {
-                ModConfig.NotifyChanged(ModConfig.EnableDeadPlayerPhoneRing);
-                DeadPlayerFeaturesRuntime.RefreshFromConfig();
-            });
             ModConfig.RandomizeMimicPossessionDuration.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.RandomizeMimicPossessionDuration));
             ModConfig.MimicPossessionMinTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
@@ -150,20 +93,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMaxTimeSeconds));
             ModConfig.MimicPossessionCooltimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnMimicPossessionCooltimeMultiplierChanged(logger, value));
-            ModConfig.DeadPlayerPhoneMaxDistanceMeters.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneDistanceChanged(logger, value));
-            ModConfig.DeadPlayerPhoneMaxLookAngleDegrees.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneAngleChanged(logger, value));
-            ModConfig.DeadPlayerPhoneMaxRingTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneMaxRingTimeSeconds));
-            ModConfig.RandomizeDeadPlayerPhoneTalkTime.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.RandomizeDeadPlayerPhoneTalkTime));
-            ModConfig.DeadPlayerPhoneTalkMinTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneTalkMinTimeSeconds));
-            ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds));
-            ModConfig.DeadPlayerPhoneCooldownSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnPhoneDurationChanged(logger, value, ModConfig.DeadPlayerPhoneCooldownSeconds));
             ModConfig.EnableMonsterSpectate.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableMonsterSpectate));
             ModConfig.SpectateMonstersAfterPlayers.OnEntryValueChanged.Subscribe((_, _) =>
@@ -177,12 +106,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
             ModConfig.TrackFloatEntry(ModConfig.MimicPossessionMinTimeSeconds);
             ModConfig.TrackFloatEntry(ModConfig.MimicPossessionMaxTimeSeconds);
             ModConfig.TrackFloatEntry(ModConfig.MimicPossessionCooltimeMultiplier);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneMaxDistanceMeters);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneMaxLookAngleDegrees);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneMaxRingTimeSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneTalkMinTimeSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.DeadPlayerPhoneCooldownSeconds);
         }
 
         internal static void MigrateLegacyKeys(MelonLogger.Instance logger)
@@ -340,84 +263,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 
             ModConfigFloatHelper.SanitizeEntry(ModConfig.MimicPossessionCooltimeMultiplier);
             ModConfig.NotifyChanged(ModConfig.MimicPossessionCooltimeMultiplier);
-        }
-
-        private static void OnPhoneDistanceChanged(MelonLogger.Instance logger, float value)
-        {
-            if (value < DeadPlayerPhoneResolver.MinDistanceMeters)
-            {
-                logger.Warning(
-                    $"DeadPlayerPhoneMaxDistanceMeters must be at least {DeadPlayerPhoneResolver.MinDistanceMeters}; resetting.");
-                ModConfig.DeadPlayerPhoneMaxDistanceMeters.Value = DeadPlayerPhoneResolver.MinDistanceMeters;
-                return;
-            }
-
-            if (value > DeadPlayerPhoneResolver.MaxAllowedDistanceMeters)
-            {
-                logger.Warning(
-                    $"DeadPlayerPhoneMaxDistanceMeters must be at most {DeadPlayerPhoneResolver.MaxAllowedDistanceMeters}; resetting.");
-                ModConfig.DeadPlayerPhoneMaxDistanceMeters.Value = DeadPlayerPhoneResolver.MaxAllowedDistanceMeters;
-                return;
-            }
-
-            ModConfigFloatHelper.SanitizeEntry(ModConfig.DeadPlayerPhoneMaxDistanceMeters);
-            ModConfig.NotifyChanged(ModConfig.DeadPlayerPhoneMaxDistanceMeters);
-        }
-
-        private static void OnPhoneAngleChanged(MelonLogger.Instance logger, float value)
-        {
-            if (value is <= 0f or > 180f)
-            {
-                logger.Warning("DeadPlayerPhoneMaxLookAngleDegrees must be between 0 and 180; resetting.");
-                ModConfig.DeadPlayerPhoneMaxLookAngleDegrees.Value = DeadPlayerPhoneResolver.DefaultLookAngleDegrees;
-                return;
-            }
-
-            ModConfigFloatHelper.SanitizeEntry(ModConfig.DeadPlayerPhoneMaxLookAngleDegrees);
-            ModConfig.NotifyChanged(ModConfig.DeadPlayerPhoneMaxLookAngleDegrees);
-        }
-
-        private static void OnPhoneDurationChanged(
-            MelonLogger.Instance logger,
-            float value,
-            MelonPreferences_Entry<float> entry)
-        {
-            if (value < 0f)
-            {
-                logger.Warning($"{entry.Identifier} must be >= 0; resetting.");
-                entry.Value = 0f;
-                return;
-            }
-
-            if (value > 0f && value < DeadPlayerPhoneResolver.MinDurationSeconds)
-            {
-                logger.Warning(
-                    $"{entry.Identifier} must be at least {DeadPlayerPhoneResolver.MinDurationSeconds} or 0; resetting.");
-                entry.Value = DeadPlayerPhoneResolver.MinDurationSeconds;
-                return;
-            }
-
-            if (value > DeadPlayerPhoneResolver.MaxDurationSeconds)
-            {
-                logger.Warning(
-                    $"{entry.Identifier} must be at most {DeadPlayerPhoneResolver.MaxDurationSeconds}; resetting.");
-                entry.Value = DeadPlayerPhoneResolver.MaxDurationSeconds;
-                return;
-            }
-
-            float min = ModConfig.DeadPlayerPhoneTalkMinTimeSeconds.Value;
-            float max = ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds.Value;
-            if (entry == ModConfig.DeadPlayerPhoneTalkMinTimeSeconds && max < min)
-            {
-                ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds.Value = min;
-            }
-            else if (entry == ModConfig.DeadPlayerPhoneTalkMaxTimeSeconds && max < min)
-            {
-                entry.Value = min;
-            }
-
-            ModConfigFloatHelper.SanitizeEntry(entry);
-            ModConfig.NotifyChanged(entry);
         }
     }
 }

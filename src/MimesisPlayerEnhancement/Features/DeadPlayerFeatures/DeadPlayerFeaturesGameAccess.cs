@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Threading;
 
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
+namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 {
     /// <summary>
     /// Reflection-based Hub access for internal game managers (cameraman, voiceman, main).
     /// </summary>
-    internal static class DeadPlayerPhoneGameAccess
+    internal static class DeadPlayerFeaturesGameAccess
     {
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;

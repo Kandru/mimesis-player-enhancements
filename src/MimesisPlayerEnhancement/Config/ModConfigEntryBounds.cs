@@ -97,18 +97,6 @@ namespace MimesisPlayerEnhancement
             FloatRange(DeadPlayerFeatures, "MimicPossessionCooltimeMultiplier",
                 MimicPossessionResolver.MinCooltimeMultiplier,
                 MimicPossessionResolver.MaxCooltimeMultiplier);
-            FloatRange(DeadPlayerFeatures, "DeadPlayerPhoneMaxDistanceMeters",
-                DeadPlayerPhoneResolver.MinDistanceMeters,
-                DeadPlayerPhoneResolver.MaxAllowedDistanceMeters);
-            FloatRange(DeadPlayerFeatures, "DeadPlayerPhoneMaxLookAngleDegrees", 0.1f, 180f);
-            Float(DeadPlayerFeatures, "DeadPlayerPhoneMaxRingTimeSeconds", 0f,
-                DeadPlayerPhoneResolver.MaxDurationSeconds);
-            Float(DeadPlayerFeatures, "DeadPlayerPhoneTalkMinTimeSeconds", 0f,
-                DeadPlayerPhoneResolver.MaxDurationSeconds);
-            Float(DeadPlayerFeatures, "DeadPlayerPhoneTalkMaxTimeSeconds", 0f,
-                DeadPlayerPhoneResolver.MaxDurationSeconds);
-            Float(DeadPlayerFeatures, "DeadPlayerPhoneCooldownSeconds", 0f,
-                DeadPlayerPhoneResolver.MaxDurationSeconds);
         }
 
         internal static bool TryGet(string sectionId, string key, out ModConfigEntryBound bound)

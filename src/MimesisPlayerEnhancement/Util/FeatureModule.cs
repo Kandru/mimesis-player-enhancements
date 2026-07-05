@@ -119,9 +119,7 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
             new FeatureModule(
                 "DeadPlayerFeatures",
-                DeadPlayerFeaturesPatches.Apply,
-                syncFromConfig: DeadPlayerFeaturesRuntime.RefreshFromConfig,
-                onUpdate: DeadPlayerFeaturesRuntime.OnUpdate),
+                DeadPlayerFeaturesPatches.Apply),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),

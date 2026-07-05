@@ -26,7 +26,7 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 | **Loot Multiplicator** | Scale loot quantity and limit item types | No — host only |
 | **Money Multiplier** | Scale startup money, round goal, and shop buy prices | No — host only |
 | **Dungeon Time** | Extend dungeon shift length by X seconds per player above a baseline (default: +10s per player above 4) | No — host only |
-| **Dead Player Features** | Mimic possession tuning (host) + **experimental** dead-player phone ring (host + dead clients) | Host; dead clients for phone ring |
+| **Dead Player Features** | Mimic possession tuning (host) + monster spectate for dead spectators | Host for mimic tuning; dead clients for monster spectate |
 | **Player Tuning** | Scale player move speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
 | **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
 

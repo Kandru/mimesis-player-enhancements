@@ -134,7 +134,7 @@
       "_section": "Features für tote Spieler",
       "EnableDeadPlayerFeatures": {
         "title": "Features für tote Spieler aktivieren",
-        "description": "Master-Schalter für Erweiterungen im Zuschauer-Modus (Mimic-Besitz-Tuning und experimentelles Telefonklingeln). Nur Host."
+        "description": "Master-Schalter für Erweiterungen im Zuschauer-Modus (Mimic-Besitz-Tuning und Monster-Zuschauen). Nur Host."
       },
       "EnableMimicPossessionTuning": {
         "title": "Mimic-Besitz-Tuning aktivieren",
@@ -155,38 +155,6 @@
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
         "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla). Nur Host."
-      },
-      "EnableDeadPlayerPhoneRing": {
-        "title": "Telefonklingeln für tote Spieler aktivieren (Experimentell)",
-        "description": "Experimentell. Ermöglicht toten Zuschauern mit installiertem Mod, nahe freie Telefone zu klingeln. Mod auf Host und auf jedem teilnehmenden toten Spieler erforderlich."
-      },
-      "DeadPlayerPhoneMaxDistanceMeters": {
-        "title": "Telefon Maximalentfernung (Meter)",
-        "description": "Experimentell. Maximale Entfernung vom beobachteten Spieler zum Telefon (Standard: Vanilla-Mimic-Besitz-Entfernung)."
-      },
-      "DeadPlayerPhoneMaxLookAngleDegrees": {
-        "title": "Telefon Maximaler Blickwinkel (Grad)",
-        "description": "Experimentell. Maximaler horizontaler Kamerawinkel zu Telefon oder Mimic (Vanilla-Standard: 45)."
-      },
-      "DeadPlayerPhoneMaxRingTimeSeconds": {
-        "title": "Telefon Max. Klingeldauer (Sekunden)",
-        "description": "Experimentell. Dauer des Klingelns durch toten Spieler, bevor das Telefon bei Nichtannahme in den Leerlauf zurückkehrt."
-      },
-      "RandomizeDeadPlayerPhoneTalkTime": {
-        "title": "Telefon-Sprechzeit randomisieren",
-        "description": "Experimentell. Zufälliges Sprechfenster nach Abheben zwischen Min- und Max-Sekunden. Nur Host."
-      },
-      "DeadPlayerPhoneTalkMinTimeSeconds": {
-        "title": "Telefon Mindest-Sprechzeit (Sekunden)",
-        "description": "Experimentell. Minimale gewürfelte Sprechdauer nach Abheben."
-      },
-      "DeadPlayerPhoneTalkMaxTimeSeconds": {
-        "title": "Telefon Höchst-Sprechzeit (Sekunden)",
-        "description": "Experimentell. Maximale gewürfelte Sprechdauer nach Abheben."
-      },
-      "DeadPlayerPhoneCooldownSeconds": {
-        "title": "Telefon-Abklingzeit (Sekunden)",
-        "description": "Experimentell. Wartezeit nach Gesprächsende, bevor derselbe tote Spieler erneut klingeln kann (0 = keine)."
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {
