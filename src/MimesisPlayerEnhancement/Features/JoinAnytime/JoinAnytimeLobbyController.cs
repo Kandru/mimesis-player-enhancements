@@ -79,7 +79,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             SetHostWantsPublicMatchmaking(wantsPublic);
-            ModLog.Debug(Feature, $"Public room toggle — wantsPublic={wantsPublic}");
+            ModLog.Debug(Feature, $"Public room toggle — host requested {(wantsPublic ? "public" : "private")} lobby");
             dispatcher.SetLobbyPublic(wantsPublic);
         }
 
@@ -142,7 +142,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (!requestedPublic && _hostWantsPublicMatchmaking)
             {
-                ModLog.Debug(Feature, "Ignored SetLobbyPublic(false) — host still wants public matchmaking.");
+                ModLog.Debug(Feature, "SetLobbyPublic(false) ignored — lobby remains public");
                 RestoreToggleDisplay();
                 return;
             }
@@ -152,7 +152,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 SetHostWantsPublicMatchmaking(false);
             }
 
-            ModLog.Debug(Feature, $"SetLobbyPublic completed — requested={requestedPublic}, hostWantsPublic={_hostWantsPublicMatchmaking}");
+            ModLog.Debug(Feature, $"SetLobbyPublic completed — lobby is now {(_hostWantsPublicMatchmaking ? "public" : "private")}");
 
             RefreshLobbyState(force: true);
         }
