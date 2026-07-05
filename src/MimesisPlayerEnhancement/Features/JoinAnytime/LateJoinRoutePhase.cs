@@ -4,7 +4,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     internal enum LateJoinRoutePhase
     {
         None = 0,
-        WaitingHostPhase,
+        InMaintenanceLobby,
         InMaintenance,
         AwaitingClient,
         InWaitingRoom,

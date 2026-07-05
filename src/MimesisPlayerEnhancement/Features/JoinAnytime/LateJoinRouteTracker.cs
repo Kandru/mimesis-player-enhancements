@@ -56,7 +56,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 state.SetPhase(ShouldRouteToTram()
                     ? LateJoinRoutePhase.InMaintenance
-                    : LateJoinRoutePhase.WaitingHostPhase);
+                    : LateJoinRoutePhase.InMaintenanceLobby);
             }
 
             if (state.Phase != previous)
@@ -135,8 +135,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             int count = 0;
             foreach (RouteState state in StatesByUid.Values)
             {
-                if (state.Phase is LateJoinRoutePhase.WaitingHostPhase
-                    or LateJoinRoutePhase.InMaintenance
+                if (state.Phase is LateJoinRoutePhase.InMaintenance
                     or LateJoinRoutePhase.AwaitingClient)
                 {
                     count++;
@@ -155,18 +154,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     yield return state.Uid;
                 }
             }
-        }
-
-        internal static string GetDisplayLabel(long uid)
-        {
-            return GetPhase(uid) switch
-            {
-                LateJoinRoutePhase.WaitingHostPhase => "late join — waiting for host",
-                LateJoinRoutePhase.InMaintenance => "late join — routing to tram",
-                LateJoinRoutePhase.AwaitingClient => "late join — awaiting tram load",
-                LateJoinRoutePhase.InWaitingRoom => "late join — in tram",
-                _ => "",
-            };
         }
 
         internal static void ApplyDashboardFields(WebDashboard.Models.WebDashboardPlayerDto dto, SessionContext? context)
@@ -189,11 +176,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else if (phase == LateJoinRoutePhase.None && vPlayer?.VRoom is MaintenanceRoom)
             {
-                phase = LateJoinRoutePhase.WaitingHostPhase;
+                phase = LateJoinRoutePhase.InMaintenanceLobby;
             }
-            else if (phase == LateJoinRoutePhase.None && vPlayer?.VRoom is VWaitingRoom)
+
+            if (phase is LateJoinRoutePhase.None or LateJoinRoutePhase.InWaitingRoom)
             {
-                phase = LateJoinRoutePhase.InWaitingRoom;
+                dto.LateJoinPhase = "";
+                dto.LateJoinLabel = "";
+                dto.LateJoinStuckSeconds = null;
+                dto.LateJoinAttemptCount = 0;
+                return;
             }
 
             dto.LateJoinPhase = phase.ToString();
@@ -206,12 +198,19 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static string GetDisplayLabelForPhase(LateJoinRoutePhase phase) =>
             phase switch
             {
-                LateJoinRoutePhase.WaitingHostPhase => ModL10n.Get("joinanytime.late_join_waiting_host"),
-                LateJoinRoutePhase.InMaintenance => ModL10n.Get("joinanytime.late_join_routing_tram"),
+                LateJoinRoutePhase.InMaintenanceLobby => ModL10n.Get("joinanytime.late_join_in_maintenance"),
+                LateJoinRoutePhase.InMaintenance => GetRoutingTramLabel(),
                 LateJoinRoutePhase.AwaitingClient => ModL10n.Get("joinanytime.late_join_awaiting_tram"),
-                LateJoinRoutePhase.InWaitingRoom => ModL10n.Get("joinanytime.late_join_in_tram"),
                 _ => "",
             };
+
+        private static string GetRoutingTramLabel()
+        {
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            return pdata?.main is InTramWaitingScene
+                ? ModL10n.Get("joinanytime.late_join_joining_tram")
+                : ModL10n.Get("joinanytime.late_join_routing_tram");
+        }
 
         private static RouteState GetOrCreate(long uid)
         {

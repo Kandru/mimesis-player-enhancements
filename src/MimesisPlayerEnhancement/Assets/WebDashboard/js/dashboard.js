@@ -606,7 +606,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     showLateJoinBadge(p) {
-      return this.status.isHost && !!p.lateJoinLabel && p.lateJoinPhase !== 'InWaitingRoom';
+      return this.status.isHost && !!p.lateJoinLabel;
     },
 
     sessionLine(p) {

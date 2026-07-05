@@ -496,10 +496,10 @@
     "blocked_dungeon": "Abfahrt noch nicht möglich — andere Spieler sind noch im Dungeon.",
     "blocked_split": "Abfahrt noch nicht möglich — andere Spieler sind noch außerhalb der Tram.",
     "blocked_connecting": "Abfahrt noch nicht möglich — ein Spieler verbindet sich noch.",
-    "late_join_waiting_host": "warte auf Host",
+    "late_join_in_maintenance": "im Wartungsraum",
+    "late_join_joining_tram": "Tram beitreten",
     "late_join_routing_tram": "Route zur Tram",
-    "late_join_awaiting_tram": "warte auf Tram-Laden",
-    "late_join_in_tram": "in der Tram"
+    "late_join_awaiting_tram": "warte auf Tram (Laden)"
   },
   "saveslots": {
     "no_statistics": "Noch keine Statistiken verfügbar",

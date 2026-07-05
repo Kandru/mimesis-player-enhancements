@@ -70,7 +70,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else
             {
-                SyncWaitingHostPhasePlayers();
+                SyncMaintenanceLobbyPlayers();
             }
         }
 
@@ -305,7 +305,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static void SyncWaitingHostPhasePlayers()
+        private static void SyncMaintenanceLobbyPlayers()
         {
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             if (sessionManager == null)

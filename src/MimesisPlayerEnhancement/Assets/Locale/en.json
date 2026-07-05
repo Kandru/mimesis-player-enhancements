@@ -496,10 +496,10 @@
     "blocked_dungeon": "Can't depart yet — other players are still in the dungeon.",
     "blocked_split": "Can't depart yet — other players are still outside the tram.",
     "blocked_connecting": "Can't depart yet — a player is still connecting.",
-    "late_join_waiting_host": "waiting for host",
+    "late_join_in_maintenance": "in maintenance",
+    "late_join_joining_tram": "joining tram",
     "late_join_routing_tram": "routing to tram",
-    "late_join_awaiting_tram": "awaiting tram load",
-    "late_join_in_tram": "in tram"
+    "late_join_awaiting_tram": "awaiting tram load"
   },
   "saveslots": {
     "no_statistics": "No statistics available yet",
