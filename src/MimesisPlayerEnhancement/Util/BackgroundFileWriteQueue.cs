@@ -217,27 +217,11 @@ namespace MimesisPlayerEnhancement.Util
                     return;
                 }
 
-                WaitForTask(task);
-            }
-        }
-
-        private static void WaitForTask(Task? task)
-        {
-            if (task == null || task.IsCompleted)
-            {
-                return;
-            }
-
-            try
-            {
-                if (!task.Wait(TimeSpan.FromSeconds(30)))
-                {
-                    ModLog.Warn("FileIO", "Background file write timed out after 30 seconds.");
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn("FileIO", $"Background file write wait failed: {ex.Message}");
+                TaskWaitHelper.WaitSync(
+                    task,
+                    "FileIO",
+                    "Background file write",
+                    "Background file write timed out after 30 seconds.");
             }
         }
     }

@@ -66,18 +66,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return -1;
         }
 
-        internal static bool IsManualSlotOccupied(int slotId)
-        {
-            if (slotId < SaveSlotLimits.MinManualSlotId || slotId > GetMaxManualSlots())
-            {
-                return false;
-            }
-
-            PlatformMgr platformMgr = MonoSingleton<PlatformMgr>.Instance;
-            return platformMgr != null
-                && platformMgr.IsSaveFileExist(MMSaveGameData.GetSaveFileName(slotId));
-        }
-
         private static SaveSlotEntry? TryLoadSlot(int slotId, PlatformMgr? platformMgr = null)
         {
             platformMgr ??= MonoSingleton<PlatformMgr>.Instance;

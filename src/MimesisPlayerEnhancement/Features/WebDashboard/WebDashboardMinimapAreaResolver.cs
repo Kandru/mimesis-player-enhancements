@@ -41,16 +41,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 || areaId.StartsWith(IndoorAreaId + "-", System.StringComparison.Ordinal);
         }
 
-        internal static string? ResolvePlayerArea(DungeonRoom? room, Vector3 position)
-        {
-            if (room == null)
-            {
-                return null;
-            }
-
-            return ResolveIndoorAreaId(room, position);
-        }
-
         private static bool TryResolveAreaFromSpaceGroup(
             Vector3 position,
             object? spaceGroupObj,
@@ -93,11 +83,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static ISpaceGroup? TryGetOutdoorSpaceGroup(DungeonRoom room)
         {
             return SpaceGroupField?.GetValue(room) as ISpaceGroup;
-        }
-
-        internal static VSpaceTileGroup? TryGetOutdoorTileGroup(DungeonRoom room)
-        {
-            return SpaceGroupField?.GetValue(room) as VSpaceTileGroup;
         }
 
         internal static VSpaceGridGroup? TryGetOutdoorGridGroup(DungeonRoom room)

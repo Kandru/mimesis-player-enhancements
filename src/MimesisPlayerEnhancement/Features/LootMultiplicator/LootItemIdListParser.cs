@@ -8,31 +8,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static HashSet<int> Parse(string? csv)
         {
-            HashSet<int> ids = [];
-            if (string.IsNullOrWhiteSpace(csv))
-            {
-                return ids;
-            }
-
-            foreach (string token in csv.Split(','))
-            {
-                string trimmed = token.Trim();
-                if (trimmed.Length == 0)
-                {
-                    continue;
-                }
-
-                if (int.TryParse(trimmed, out int id) && id > 0)
-                {
-                    _ = ids.Add(id);
-                }
-                else if (ModConfig.EnableDebugLogging.Value)
-                {
-                    ModLog.Debug(Feature, $"Ignoring invalid loot item ID token: '{trimmed}'");
-                }
-            }
-
-            return ids;
+            return CsvIdSetParser.Parse(csv, Feature, "loot item ID");
         }
 
         internal static LootItemFilterMode ParseMode(string? value)

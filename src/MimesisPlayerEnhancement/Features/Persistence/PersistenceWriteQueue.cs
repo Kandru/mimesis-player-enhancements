@@ -139,19 +139,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static void WaitForTask(Task? task)
         {
-            if (task == null || task.IsCompleted)
-            {
-                return;
-            }
-
-            try
-            {
-                _ = task.Wait(TimeSpan.FromSeconds(30));
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Background save wait failed: {ex.Message}");
-            }
+            TaskWaitHelper.WaitSync(task, Feature, "Background save");
         }
     }
 }

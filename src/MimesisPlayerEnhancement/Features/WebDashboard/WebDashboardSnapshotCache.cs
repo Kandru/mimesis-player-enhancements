@@ -264,12 +264,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     || offlineRevision != _cachedOfflineRevision;
                 if (needsFullMerge)
                 {
-                    _cachedMergedPlayers = WebDashboardPlayerService.MergePlayerLists(livePlayers, offlinePlayers);
-                    _mergedIndexBySteam = WebDashboardPlayerService.BuildMergedIndex(_cachedMergedPlayers);
+                    _cachedMergedPlayers = WebDashboardPlayerListMerger.MergePlayerLists(livePlayers, offlinePlayers);
+                    _mergedIndexBySteam = WebDashboardPlayerListMerger.BuildMergedIndex(_cachedMergedPlayers);
                 }
                 else
                 {
-                    _ = WebDashboardPlayerService.ApplyLiveToMerged(
+                    _ = WebDashboardPlayerListMerger.ApplyLiveToMerged(
                         _cachedMergedPlayers,
                         _mergedIndexBySteam,
                         livePlayers,

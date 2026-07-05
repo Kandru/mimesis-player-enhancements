@@ -332,8 +332,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                         return false;
                     }
 
-                    if (!LootSpawnScalingContext.IsDuplicating
-                        && __instance is DungeonRoom dungeonRoom
+                    if (__instance is DungeonRoom dungeonRoom
                         && spawnPointIndex != 0
                         && LootSpawnDataLookup.TryFindByMarkerIndex(dungeonRoom, spawnPointIndex, out SpawnedActorData? spawnData)
                         && MapPlacedEncounterProximity.ShouldBlockBonusLootRespawn(dungeonRoom, spawnData))

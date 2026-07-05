@@ -280,12 +280,6 @@ namespace MimesisPlayerEnhancement
             SanitizeFloatEntries();
         }
 
-        /// <summary>Notify listeners that runtime config changed without persisting global file.</summary>
-        internal static void NotifyRuntimeChanged()
-        {
-            ModConfigRegistry.NotifyRuntimeChange();
-        }
-
         /// <summary>Update a single preference by section and key. Validation runs through existing entry change handlers.</summary>
         public static bool TrySetEntryValue(string sectionId, string key, string value, out string? error)
         {

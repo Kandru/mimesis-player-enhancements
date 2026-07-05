@@ -13,9 +13,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly PropertyInfo? HubDatamanProperty =
-            typeof(Hub).GetProperty("dataman", InstanceFlags);
-
         private static readonly PropertyInfo? HubVworldProperty =
             typeof(Hub).GetProperty("vworld", InstanceFlags);
 
@@ -181,42 +178,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return string.Empty;
             }
 
-            if (!TryGetDataman(out DataManager dataman))
+            if (HubGameDataAccess.Excel is not ExcelDataManager excel)
             {
                 ModLog.Warn(Feature, "GetSceneNameFromMapId failed — dataman unavailable");
                 return string.Empty;
             }
 
-            MapMasterInfo? mapInfo = dataman.ExcelDataManager.GetMapInfo(mapMasterId);
+            MapMasterInfo? mapInfo = excel.GetMapInfo(mapMasterId);
             return mapInfo?.SceneName ?? string.Empty;
-        }
-
-        internal static string GetSceneNameFromDungeon(int dungeonMasterId, int pickedMapId = 0)
-        {
-            int resolvedMapId = pickedMapId != 0 ? pickedMapId : ResolvePickedMapId(null);
-            if (resolvedMapId != 0)
-            {
-                return GetSceneNameFromMapId(resolvedMapId);
-            }
-
-            if (!TryGetDataman(out DataManager dataman))
-            {
-                ModLog.Warn(Feature, "GetSceneNameFromDungeon failed — dataman unavailable");
-                return string.Empty;
-            }
-
-            DungeonMasterInfo? dungeonInfo = dataman.ExcelDataManager.GetDungeonInfo(dungeonMasterId);
-            if (dungeonInfo == null)
-            {
-                return string.Empty;
-            }
-
-            if (dungeonInfo.MapIDs.IsDefaultOrEmpty)
-            {
-                return string.Empty;
-            }
-
-            return GetSceneNameFromMapId(dungeonInfo.MapIDs[0]);
         }
 
         internal static int ResolvePickedMapId(IVroom? room)
@@ -553,18 +522,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static IVroom? TryGetWaitingRoom(VRoomManager vroomManager)
         {
             return TryScanRooms(vroomManager, out RoomScanResult scan) ? scan.WaitingRoom : null;
-        }
-
-        private static bool TryGetDataman(out DataManager dataman)
-        {
-            dataman = null!;
-            if (Hub.s == null || HubDatamanProperty?.GetValue(Hub.s) is not DataManager resolved)
-            {
-                return false;
-            }
-
-            dataman = resolved;
-            return true;
         }
 
         private static bool TryGetVRoomManager(out VRoomManager? vroomManager)

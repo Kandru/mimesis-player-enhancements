@@ -48,16 +48,6 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        internal static SparseTomlConfig.Document LoadOverrides(int slotId)
-        {
-            if (slotId == _activeSlotId)
-            {
-                return CloneDocument(_runtimeDoc);
-            }
-
-            return ReadOverridesFromDisk(slotId);
-        }
-
         internal static bool TrySetOverride(
             int slotId,
             string sectionId,
@@ -151,62 +141,6 @@ namespace MimesisPlayerEnhancement
 
             RemoveKey(_runtimeDoc, sectionId, key);
             _dirty = true;
-        }
-
-        internal static void PruneMatchingGlobal(int slotId, bool waitForCompletion = false)
-        {
-            if (slotId != _activeSlotId)
-            {
-                return;
-            }
-
-            bool changed = false;
-            List<string> sectionIds = [.. _runtimeDoc.SectionOrder];
-            foreach (string sectionId in sectionIds)
-            {
-                if (!_runtimeDoc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
-                {
-                    continue;
-                }
-
-                List<string> toRemove = [];
-                foreach (KeyValuePair<string, string> pair in keys)
-                {
-                    if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, pair.Key, out string globalRaw))
-                    {
-                        toRemove.Add(pair.Key);
-                        continue;
-                    }
-
-                    if (ModConfigRegistry.RawValuesEqual(sectionId, pair.Key, pair.Value, globalRaw))
-                    {
-                        toRemove.Add(pair.Key);
-                    }
-                }
-
-                foreach (string key in toRemove)
-                {
-                    _ = keys.Remove(key);
-                    changed = true;
-                }
-
-                if (keys.Count == 0)
-                {
-                    _ = _runtimeDoc.Sections.Remove(sectionId);
-                    _runtimeDoc.SectionOrder.Remove(sectionId);
-                }
-            }
-
-            if (!changed)
-            {
-                return;
-            }
-
-            _dirty = true;
-            if (waitForCompletion)
-            {
-                FlushToDisk(slotId, waitForCompletion: true);
-            }
         }
 
         internal static void FlushToDisk(int slotId, bool waitForCompletion = false)
@@ -310,23 +244,6 @@ namespace MimesisPlayerEnhancement
                     ModLog.Warn(Feature, $"Skipped invalid override {sectionId}/{pair.Key} for slot {slotId}.");
                 }
             }
-        }
-
-        private static SparseTomlConfig.Document CloneDocument(SparseTomlConfig.Document source)
-        {
-            SparseTomlConfig.Document clone = new();
-            foreach (string sectionId in source.SectionOrder)
-            {
-                if (!source.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
-                {
-                    continue;
-                }
-
-                clone.SectionOrder.Add(sectionId);
-                clone.Sections[sectionId] = new Dictionary<string, string>(keys, StringComparer.OrdinalIgnoreCase);
-            }
-
-            return clone;
         }
 
         private static bool SaveDocument(

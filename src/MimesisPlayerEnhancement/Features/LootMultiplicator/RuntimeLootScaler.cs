@@ -19,11 +19,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (LootSpawnScalingContext.IsDuplicating)
-            {
-                return;
-            }
-
             if (!LootSourceResolver.ShouldScaleSpawn(reasonOfSpawn, isRestored)
                 || !LootSourceResolver.TryResolveLootSource(reasonOfSpawn, spawnPointIndex, out LootSource source))
             {

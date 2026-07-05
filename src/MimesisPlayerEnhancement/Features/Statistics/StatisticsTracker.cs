@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using System.Threading;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard;
@@ -11,18 +10,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     public static class StatisticsTracker
     {
         private const string Feature = "Statistics";
-        private const BindingFlags InstanceMemberFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private static readonly Dictionary<ulong, PlayerStatisticsDocument> _players = [];
         private static readonly Dictionary<ulong, DateTime> _connectedSince = [];
-        private static readonly Dictionary<ulong, int> _voiceEventBaselines = [];
-        private static Dictionary<ulong, int>? _voiceCountCache;
-
-        private static FieldInfo? _steamIdToNameCacheField;
-        private static FieldInfo? _myNickNameField;
-        private static object? _cachedNameCacheOwner;
-        private static Dictionary<ulong, string>? _cachedNameDictionary;
 
         private const float ConnectedTimeFlushIntervalSeconds = 1f;
         private static float _nextConnectedTimeFlushTime;
@@ -56,8 +46,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             _players.Clear();
             _connectedSince.Clear();
-            _voiceEventBaselines.Clear();
-            _voiceCountCache = null;
+            StatisticsVoiceCounter.Clear();
             _loadedSlotId = -999;
             _nextConnectedTimeFlushTime = 0f;
             _revision = 0;
@@ -83,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 _loadedSlotId = slotId;
                 _players.Clear();
                 _connectedSince.Clear();
-                _voiceEventBaselines.Clear();
+                StatisticsVoiceCounter.Clear();
                 StatisticsStore.LoadAllPlayersForSlot(slotId, _players);
                 StatisticsWriteQueue.Configure(slotId, () => _players);
                 BumpRevision();
@@ -113,12 +102,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (!IsArchiveIdentityReady(archive))
+            if (!StatisticsArchiveIdentity.IsArchiveIdentityReady(archive))
             {
                 return;
             }
 
-            ulong steamId = ResolveSteamIdFromArchive(archive);
+            ulong steamId = StatisticsArchiveIdentity.ResolveSteamIdFromArchive(archive);
             if (steamId == 0)
             {
                 return;
@@ -152,7 +141,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             LoadForSlot(slotId);
 
             PlayerStatisticsDocument doc = GetOrCreatePlayer(steamId);
-            doc.DisplayName = ResolveDisplayName(steamId, doc.DisplayName);
+            doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
 
@@ -174,7 +163,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             _connectedSince[steamId] = now;
-            EnsureVoiceBaseline(steamId);
+            StatisticsVoiceCounter.EnsureBaseline(steamId);
             BumpRevision();
 
             bool isNewSession = !resumeSession;
@@ -206,7 +195,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             FlushConnectedTime(steamId, doc);
             _ = _connectedSince.Remove(steamId);
-            _ = _voiceEventBaselines.Remove(steamId);
+            StatisticsVoiceCounter.RemoveBaseline(steamId);
             if (doc.CurrentSession != null)
             {
                 doc.CurrentSession.LastDisconnectedAtUtc = DateTime.UtcNow;
@@ -313,18 +302,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 _ = affected.Add(steamId);
             }
 
-            Dictionary<ulong, int> voiceCounts = GetVoiceCountCache();
+            Dictionary<ulong, int> voiceCounts = StatisticsVoiceCounter.GetVoiceCountCache();
 
             foreach (ulong steamId in affected)
             {
                 PlayerStatisticsDocument doc = GetOrCreatePlayer(steamId);
-                doc.DisplayName = ResolveDisplayName(steamId, doc.DisplayName);
+                doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
                 ApplyVoiceDelta(steamId, doc, voiceCounts);
                 FlushConnectedTime(steamId, doc);
             }
 
-            UpdateVoiceBaselines(affected, voiceCounts);
-            InvalidateVoiceCountCache();
+            StatisticsVoiceCounter.UpdateBaselines(affected, voiceCounts);
+            StatisticsVoiceCounter.InvalidateVoiceCountCache();
             BumpRevision();
 
             int cycleNumber = manager.AccumulatedCycleCount;
@@ -913,9 +902,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static void ApplyVoiceDelta(ulong steamId, PlayerStatisticsDocument doc, Dictionary<ulong, int> voiceCounts)
         {
-            int current = voiceCounts.TryGetValue(steamId, out int count) ? count : 0;
-            int baseline = _voiceEventBaselines.TryGetValue(steamId, out int b) ? b : current;
-            int delta = Math.Max(0, current - baseline);
+            int delta = StatisticsVoiceCounter.GetDeltaSinceBaseline(steamId, voiceCounts);
             if (delta == 0)
             {
                 return;
@@ -926,40 +913,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             doc.Global.Counters.VoiceEvents += delta;
         }
 
-        private static void UpdateVoiceBaselines(IEnumerable<ulong> steamIds, Dictionary<ulong, int> voiceCounts)
-        {
-            foreach (ulong steamId in steamIds)
-            {
-                _voiceEventBaselines[steamId] = voiceCounts.TryGetValue(steamId, out int count) ? count : 0;
-            }
-        }
-
         private static void MergeDelta(PlayerStatisticsDocument doc, StatCounters delta)
         {
             doc.CurrentSession ??= NewSession(DateTime.UtcNow);
             doc.CurrentSession.Counters.Add(delta);
             doc.Global.Counters.Add(delta);
-        }
-
-        private static void EnsureVoiceBaseline(ulong steamId)
-        {
-            if (_voiceEventBaselines.ContainsKey(steamId))
-            {
-                return;
-            }
-
-            _voiceEventBaselines[steamId] = CountVoiceEventsForSteamId(steamId);
-        }
-
-        private static Dictionary<ulong, int> GetVoiceCountCache()
-        {
-            _voiceCountCache ??= BuildVoiceCountCache();
-            return _voiceCountCache;
-        }
-
-        private static void InvalidateVoiceCountCache()
-        {
-            _voiceCountCache = null;
         }
 
         internal static void SyncVoiceBaseline(SpeechEventArchive archive)
@@ -969,18 +927,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (!IsArchiveIdentityReady(archive))
+            if (!StatisticsArchiveIdentity.IsArchiveIdentityReady(archive))
             {
                 return;
             }
 
-            ulong steamId = ResolveSteamIdFromArchive(archive);
+            ulong steamId = StatisticsArchiveIdentity.ResolveSteamIdFromArchive(archive);
             if (steamId == 0)
             {
                 return;
             }
 
-            _voiceEventBaselines[steamId] = CountVoiceEventsForSteamId(steamId);
+            StatisticsVoiceCounter.SetBaselineToCurrent(steamId);
         }
 
         private static PlayReportData? TryGetPlayReport(ulong steamId)
@@ -1002,161 +960,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             return PlayerResultStatus.Alived;
-        }
-
-        private static Dictionary<ulong, int> BuildVoiceCountCache()
-        {
-            Dictionary<ulong, int> cache = [];
-            try
-            {
-                IEnumerable<SpeechEventArchive> archives = SpeechEventArchiveRegistry.EnumerateActive();
-                foreach (SpeechEventArchive archive in archives)
-                {
-                    if (archive == null)
-                    {
-                        continue;
-                    }
-
-                    long playerUid = 0;
-                    bool isLocal = false;
-                    try
-                    {
-                        playerUid = archive.PlayerUID;
-                        isLocal = archive.IsLocal;
-                    }
-                    catch
-                    {
-                        /* not ready */
-                    }
-
-                    ulong archiveSteam = GameSessionAccess.ResolveSteamId(playerUid, isLocal);
-                    if (archiveSteam == 0)
-                    {
-                        continue;
-                    }
-
-                    _ = cache.TryGetValue(archiveSteam, out int current);
-                    cache[archiveSteam] = current + VoiceEventStats.GetVoiceLineCount(archive);
-                }
-            }
-            catch
-            {
-                /* ignore */
-            }
-
-            return cache;
-        }
-
-        private static int CountVoiceEventsForSteamId(ulong steamId)
-        {
-            Dictionary<ulong, int> cache = GetVoiceCountCache();
-            return cache.TryGetValue(steamId, out int count) ? count : 0;
-        }
-
-        private static ulong ResolveSteamIdFromArchive(SpeechEventArchive archive)
-        {
-            long playerUid;
-            bool isLocal;
-            try
-            {
-                playerUid = archive.PlayerUID;
-                isLocal = archive.IsLocal;
-            }
-            catch
-            {
-                return 0;
-            }
-
-            if (!isLocal && playerUid == 0)
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(archive.PlayerId))
-                    {
-                        return 0;
-                    }
-                }
-                catch
-                {
-                    return 0;
-                }
-            }
-
-            return GameSessionAccess.ResolveSteamId(playerUid, isLocal);
-        }
-
-        private static bool IsArchiveIdentityReady(SpeechEventArchive archive)
-        {
-            long playerUid;
-            bool isLocal;
-            try
-            {
-                playerUid = archive.PlayerUID;
-                isLocal = archive.IsLocal;
-            }
-            catch
-            {
-                return false;
-            }
-
-            if (!isLocal && playerUid == 0)
-            {
-                try
-                {
-                    return !string.IsNullOrEmpty(archive.PlayerId);
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static string ResolveDisplayName(ulong steamId, string fallback)
-        {
-            try
-            {
-                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-                object? main = pdata?.GetType().GetField("main", InstanceMemberFlags)?.GetValue(pdata);
-                if (main != null)
-                {
-                    _steamIdToNameCacheField ??= main.GetType().GetField("steamIDToNameCache", InstanceMemberFlags);
-                    if (_steamIdToNameCacheField != null)
-                    {
-                        if (!ReferenceEquals(_cachedNameCacheOwner, main))
-                        {
-                            _cachedNameCacheOwner = main;
-                            _cachedNameDictionary = _steamIdToNameCacheField.GetValue(main) as Dictionary<ulong, string>;
-                        }
-
-                        if (_cachedNameDictionary != null
-                            && _cachedNameDictionary.TryGetValue(steamId, out string? name)
-                            && !string.IsNullOrWhiteSpace(name))
-                        {
-                            return name;
-                        }
-                    }
-                }
-
-                _myNickNameField ??= pdata?.GetType().GetField("MyNickName", InstanceMemberFlags);
-                if (_myNickNameField?.GetValue(pdata) is string myNick
-                    && !string.IsNullOrWhiteSpace(myNick))
-                {
-                    ulong localSteam = GameSessionAccess.GetLocalSteamId();
-                    if (localSteam == steamId)
-                    {
-                        return myNick;
-                    }
-                }
-            }
-            catch
-            {
-                /* ignore */
-            }
-
-            return string.IsNullOrWhiteSpace(fallback) ? steamId.ToString() : fallback;
         }
 
         internal static void PersistSlot(int slotId, bool waitForCompletion = false)

@@ -339,19 +339,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static void WaitForTask(Task? task)
         {
-            if (task == null)
-            {
-                return;
-            }
-
-            try
-            {
-                _ = task.Wait(TimeSpan.FromSeconds(30));
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Statistics save wait failed: {ex.Message}");
-            }
+            TaskWaitHelper.WaitSync(task, Feature, "Statistics save");
         }
     }
 }

@@ -22,22 +22,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 $"dropLoot={ModConfig.DropLootMultiplier.Value:0.##}× auto={ModConfig.AutoScaleDropLootByPlayerCount.Value}");
         }
 
-        internal static void InfoRuntimeScaled(
-            LootSource source,
-            ItemType itemType,
-            int masterId,
-            int before,
-            int after,
-            float multiplier,
-            string context)
-        {
-            string name = ItemTypeLookup.GetDisplayName(masterId);
-            ModLog.Info(
-                Feature,
-                $"{context} — source={source}, type={itemType}, item={name}, master={masterId}, " +
-                $"{multiplier:0.##}× (count {before} -> {after})");
-        }
-
         internal static void InfoDropTableScaled(int vanillaCount, int entriesAdded, int playerCount)
         {
             ModLog.Info(

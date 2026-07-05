@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using Bifrost.ConstEnum;
 using Bifrost.Cooked;
 
@@ -7,26 +6,15 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class ItemTypeLookup
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly PropertyInfo? HubDatamanProperty =
-            typeof(Hub).GetProperty("dataman", InstanceFlags);
-
         internal static bool TryGetItem(int masterId, out ItemMasterInfo info)
         {
             info = null!;
-            if (masterId <= 0 || Hub.s == null)
+            if (masterId <= 0)
             {
                 return false;
             }
 
-            if (HubDatamanProperty?.GetValue(Hub.s) is not DataManager dataman)
-            {
-                return false;
-            }
-
-            ItemMasterInfo? found = dataman.ExcelDataManager.GetItemInfo(masterId);
+            ItemMasterInfo? found = HubGameDataAccess.Excel?.GetItemInfo(masterId);
             if (found == null)
             {
                 return false;
