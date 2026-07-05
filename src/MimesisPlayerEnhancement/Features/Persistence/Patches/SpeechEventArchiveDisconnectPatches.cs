@@ -41,10 +41,16 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                     return;
                 }
 
-                int cached = SpeechEventPoolManager.CacheEventsFromArchive(__instance);
+                ulong steamId = 0;
+                long playerUID = 0;
+                _ = VoiceEventStats.TryCaptureArchiveIdentity(__instance, out playerUID, out _, out steamId);
+
+                int cached = SpeechEventPoolManager.CacheEventsFromArchive(__instance, steamId, playerUID);
                 PlayerLifecycleCoordinator.OnArchiveDisconnecting(
                     __instance,
-                    new PlayerLifecycleContribution(Feature, $"cached {cached} voice events"));
+                    new PlayerLifecycleContribution(Feature, $"cached {cached} voice events"),
+                    steamId,
+                    playerUID);
             }
             catch (Exception ex)
             {

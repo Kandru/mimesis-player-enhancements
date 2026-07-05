@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Text;
 using MimesisPlayerEnhancement.Features.MoreVoices;
+using MimesisPlayerEnhancement.Features.Persistence;
 using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement
@@ -41,6 +43,9 @@ namespace MimesisPlayerEnhancement
         private sealed class DisconnectState
         {
             internal SpeechEventArchive? Archive;
+            internal ulong SteamId;
+            internal long PlayerUid;
+            internal bool DisconnectedLogged;
             internal readonly Dictionary<string, PlayerLifecycleContribution> Contributions = [];
         }
 
@@ -63,11 +68,7 @@ namespace MimesisPlayerEnhancement
                 state.Contributions[moreVoices.Value.Feature] = moreVoices.Value;
             }
 
-            if (state.SteamId != 0 && _pendingStatisticsConnect.Remove(state.SteamId, out PlayerLifecycleContribution stats))
-            {
-                state.Contributions[stats.Feature] = stats;
-            }
-
+            ApplyPendingStatisticsConnect(state);
             TryFlushConnect(state);
         }
 
@@ -110,41 +111,46 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            if (_connectBySteam.TryGetValue(steamId, out ConnectState? state))
+            ConnectState? state = FindConnectStateForSteam(steamId);
+            if (state == null)
             {
-                state.Contributions[contribution.Value.Feature] = contribution.Value;
-                if (!state.ConnectedLogged)
-                {
-                    TryFlushConnect(state);
-                }
-
+                _pendingStatisticsConnect[steamId] = contribution.Value;
                 return;
             }
 
-            _pendingStatisticsConnect[steamId] = contribution.Value;
+            BindConnectSteam(state, steamId);
+            state.Contributions[contribution.Value.Feature] = contribution.Value;
+            if (!state.ConnectedLogged)
+            {
+                TryFlushConnect(state);
+            }
         }
 
-        internal static void OnArchiveDisconnecting(SpeechEventArchive archive, PlayerLifecycleContribution? contribution)
+        internal static void OnArchiveDisconnecting(
+            SpeechEventArchive archive,
+            PlayerLifecycleContribution? contribution,
+            ulong steamIdHint = 0,
+            long playerUidHint = 0)
         {
             if (archive == null)
             {
                 return;
             }
 
-            _ = VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info);
-            if (!_disconnectBySteam.TryGetValue(info.SteamId, out DisconnectState? state))
+            ulong steamId = steamIdHint;
+            long playerUid = playerUidHint;
+            if (steamId == 0 && playerUid == 0)
             {
-                state = new DisconnectState { Archive = archive };
-                _disconnectBySteam[info.SteamId] = state;
+                _ = VoiceEventStats.TryCaptureArchiveIdentity(archive, out playerUid, out _, out steamId);
             }
 
-            state.Archive ??= archive;
+            DisconnectState state = GetOrCreateDisconnectState(steamId, archive, playerUid);
             if (contribution.HasValue)
             {
                 state.Contributions[contribution.Value.Feature] = contribution.Value;
             }
 
-            LogLifecycle("disconnecting", archive, OrderedContributions(state.Contributions));
+            TryFlushDisconnect(state);
         }
 
         internal static void NotifyStatisticsDisconnect(ulong steamId, PlayerLifecycleContribution? contribution)
@@ -154,19 +160,17 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            if (!_disconnectBySteam.TryGetValue(steamId, out DisconnectState? state))
-            {
-                state = new DisconnectState();
-                _disconnectBySteam[steamId] = state;
-            }
-
+            DisconnectState state = GetOrCreateDisconnectState(steamId, archive: null, playerUid: 0);
+            state.SteamId = steamId;
             if (contribution.HasValue)
             {
                 state.Contributions[contribution.Value.Feature] = contribution.Value;
             }
 
-            LogLifecycle("disconnected", state.Archive, OrderedContributions(state.Contributions), steamId);
-            _ = _disconnectBySteam.Remove(steamId);
+            if (!ShouldDeferDisconnectForPersistence(steamId))
+            {
+                TryFlushDisconnect(state);
+            }
         }
 
         internal static void ClearConnectState(SpeechEventArchive archive)
@@ -205,19 +209,199 @@ namespace MimesisPlayerEnhancement
 
             if (VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info) && info.SteamId != 0)
             {
-                state.SteamId = info.SteamId;
-                _connectBySteam[state.SteamId] = state;
+                BindConnectSteam(state, info.SteamId);
             }
+        }
+
+        private static void BindConnectSteam(ConnectState state, ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return;
+            }
+
+            state.SteamId = steamId;
+            _connectBySteam[steamId] = state;
+            ApplyPendingStatisticsConnect(state);
+        }
+
+        private static void ApplyPendingStatisticsConnect(ConnectState state)
+        {
+            if (state.SteamId == 0)
+            {
+                return;
+            }
+
+            if (_pendingStatisticsConnect.Remove(state.SteamId, out PlayerLifecycleContribution stats))
+            {
+                state.Contributions[stats.Feature] = stats;
+            }
+        }
+
+        private static ConnectState? FindConnectStateForSteam(ulong steamId)
+        {
+            if (_connectBySteam.TryGetValue(steamId, out ConnectState? bySteam))
+            {
+                return bySteam;
+            }
+
+            ConnectState? matched = null;
+            ConnectState? unassigned = null;
+            int unassignedCount = 0;
+
+            foreach (ConnectState state in _connectByArchive.Values)
+            {
+                if (state.SteamId != 0)
+                {
+                    continue;
+                }
+
+                unassignedCount++;
+                unassigned = state;
+
+                if (TryArchiveMatchesSteam(state.Archive, steamId))
+                {
+                    matched = state;
+                    break;
+                }
+            }
+
+            if (matched != null)
+            {
+                BindConnectSteam(matched, steamId);
+                return matched;
+            }
+
+            if (unassignedCount == 1 && unassigned != null)
+            {
+                BindConnectSteam(unassigned, steamId);
+                return unassigned;
+            }
+
+            return null;
+        }
+
+        private static bool TryArchiveMatchesSteam(SpeechEventArchive archive, ulong steamId)
+        {
+            if (archive == null || steamId == 0)
+            {
+                return false;
+            }
+
+            if (VoiceEventStats.TryCaptureArchiveIdentity(archive, out long playerUid, out bool isLocal, out ulong archiveSteam))
+            {
+                if (archiveSteam == steamId)
+                {
+                    return true;
+                }
+
+                if (playerUid != 0 && GameSessionAccess.ResolveSteamId(playerUid, isLocal) == steamId)
+                {
+                    return true;
+                }
+            }
+
+            return VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info) && info.SteamId == steamId;
+        }
+
+        private static bool ShouldDeferDisconnectForPersistence(ulong steamId)
+        {
+            return ModConfig.EnablePersistence.Value
+                   && MimesisSaveManager.IsHost()
+                   && steamId != GameSessionAccess.GetLocalSteamId();
+        }
+
+        private static DisconnectState GetOrCreateDisconnectState(ulong steamId, SpeechEventArchive? archive, long playerUid)
+        {
+            if (steamId != 0 && _disconnectBySteam.TryGetValue(steamId, out DisconnectState? bySteam))
+            {
+                if (archive != null)
+                {
+                    bySteam.Archive ??= archive;
+                }
+
+                if (playerUid != 0)
+                {
+                    bySteam.PlayerUid = playerUid;
+                }
+
+                bySteam.SteamId = steamId;
+                return bySteam;
+            }
+
+            if (steamId == 0 && _disconnectBySteam.Count == 1)
+            {
+                KeyValuePair<ulong, DisconnectState> pending = _disconnectBySteam.First();
+                pending.Value.Archive ??= archive;
+                if (playerUid != 0)
+                {
+                    pending.Value.PlayerUid = playerUid;
+                }
+
+                if (steamId != 0)
+                {
+                    pending.Value.SteamId = steamId;
+                }
+
+                return pending.Value;
+            }
+
+            DisconnectState state = new()
+            {
+                Archive = archive,
+                SteamId = steamId,
+                PlayerUid = playerUid,
+            };
+
+            if (steamId != 0)
+            {
+                _disconnectBySteam[steamId] = state;
+            }
+
+            return state;
+        }
+
+        private static void TryFlushDisconnect(DisconnectState state)
+        {
+            if (state.DisconnectedLogged)
+            {
+                return;
+            }
+
+            state.DisconnectedLogged = true;
+            LogLifecycle(
+                "disconnected",
+                state.Archive,
+                OrderedContributions(state.Contributions),
+                state.SteamId,
+                state.PlayerUid);
+
+            if (state.SteamId != 0)
+            {
+                _ = _disconnectBySteam.Remove(state.SteamId);
+            }
+        }
+
+        private static bool HasMinimumIdentity(ConnectState state)
+        {
+            if (state.SteamId != 0)
+            {
+                return true;
+            }
+
+            return state.Archive != null
+                   && VoiceEventStats.TryGetConnectionInfo(state.Archive, out PlayerConnectionInfo info)
+                   && (info.SteamId != 0 || info.PlayerUid != 0);
         }
 
         private static void TryFlushConnect(ConnectState state)
         {
             if (state.PersistencePhase == PersistenceConnectPhase.Connecting)
             {
-                if (!state.ConnectingLogged)
+                if (!state.ConnectingLogged && HasMinimumIdentity(state))
                 {
                     state.ConnectingLogged = true;
-                    LogLifecycle("connecting", state.Archive, OrderedContributions(state.Contributions));
+                    LogLifecycle("connecting", state.Archive, OrderedContributions(state.Contributions), state.SteamId);
                 }
 
                 return;
@@ -235,8 +419,13 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            if (!HasMinimumIdentity(state))
+            {
+                return;
+            }
+
             state.ConnectedLogged = true;
-            LogLifecycle("connected", state.Archive, OrderedContributions(state.Contributions));
+            LogLifecycle("connected", state.Archive, OrderedContributions(state.Contributions), state.SteamId);
         }
 
         private static List<PlayerLifecycleContribution> OrderedContributions(
@@ -258,15 +447,36 @@ namespace MimesisPlayerEnhancement
             string verb,
             SpeechEventArchive? archive,
             IReadOnlyList<PlayerLifecycleContribution> contributions,
-            ulong steamIdFallback = 0)
+            ulong steamIdFallback = 0,
+            long playerUidFallback = 0)
         {
-            string identity = archive != null
-                ? VoiceEventStats.DescribePlayer(archive)
-                : VoiceEventStats.DescribeSteamPlayer(steamIdFallback);
+            string identity = ResolveLifecycleIdentity(archive, steamIdFallback, playerUidFallback);
             string suffix = FormatContributions(contributions);
             ModLog.Info(LogFeature, string.IsNullOrEmpty(suffix)
                 ? $"Player {verb} — {identity}"
                 : $"Player {verb} — {identity} — {suffix}");
+        }
+
+        private static string ResolveLifecycleIdentity(
+            SpeechEventArchive? archive,
+            ulong steamIdFallback,
+            long playerUidFallback = 0)
+        {
+            if (steamIdFallback != 0)
+            {
+                return VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback);
+            }
+
+            if (archive != null
+                && VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info)
+                && (info.SteamId != 0 || info.PlayerUid != 0))
+            {
+                return VoiceEventStats.DescribePlayer(archive);
+            }
+
+            return archive != null
+                ? VoiceEventStats.DescribePlayer(archive)
+                : VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback);
         }
 
         private static string FormatContributions(IReadOnlyList<PlayerLifecycleContribution> contributions)

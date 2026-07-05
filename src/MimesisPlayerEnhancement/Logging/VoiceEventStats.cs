@@ -127,6 +127,51 @@ namespace MimesisPlayerEnhancement
                 : "player=unavailable";
         }
 
+        /// <summary>
+        /// Best-effort identity from a live archive. Prefer this at disconnect prefix time before teardown clears fields.
+        /// </summary>
+        public static bool TryCaptureArchiveIdentity(
+            SpeechEventArchive? archive,
+            out long playerUid,
+            out bool isLocal,
+            out ulong steamId)
+        {
+            playerUid = 0;
+            isLocal = false;
+            steamId = 0;
+
+            if (archive == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                playerUid = archive.PlayerUID;
+                isLocal = archive.IsLocal;
+            }
+            catch
+            {
+                return false;
+            }
+
+            steamId = GameSessionAccess.ResolveSteamId(playerUid, isLocal);
+            if (steamId == 0 && TryGetConnectionInfo(archive, out PlayerConnectionInfo info))
+            {
+                if (info.SteamId != 0)
+                {
+                    steamId = info.SteamId;
+                }
+
+                if (playerUid == 0 && info.PlayerUid != 0)
+                {
+                    playerUid = info.PlayerUid;
+                }
+            }
+
+            return steamId != 0 || playerUid != 0;
+        }
+
         public static string DescribeSteamPlayer(ulong steamId, long playerUid = 0)
         {
             SessionContext? session = FindSessionContext(playerUid, steamId);

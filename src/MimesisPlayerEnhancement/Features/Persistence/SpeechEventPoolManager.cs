@@ -353,7 +353,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             LastPlayedTimeField?.SetValue(ev, currentTime);
         }
 
-        public static int CacheEventsFromArchive(SpeechEventArchive archive)
+        public static int CacheEventsFromArchive(SpeechEventArchive archive, ulong steamIdHint = 0, long playerUidHint = 0)
         {
             if (archive == null)
             {
@@ -363,13 +363,17 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             try
             {
                 string? playerId = null;
-                long playerUID = 0;
+                long playerUID = playerUidHint;
                 bool isLocal = false;
 
                 try
                 {
                     playerId = archive.PlayerId;
-                    playerUID = archive.PlayerUID;
+                    if (playerUID == 0)
+                    {
+                        playerUID = archive.PlayerUID;
+                    }
+
                     isLocal = archive.IsLocal;
                 }
                 catch { /* Player may already be partially destroyed */ }
@@ -395,13 +399,21 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     cached++;
                 }
 
-                ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, false);
+                ulong steamId = steamIdHint;
+                if (steamId == 0)
+                {
+                    steamId = GameSessionAccess.ResolveSteamId(playerUID, false);
+                }
+
                 if (steamId != 0 && !string.IsNullOrEmpty(playerId))
                 {
                     _disconnectedPlayerMappings[steamId] = playerId;
                 }
 
-                ModLog.Debug(Feature, $"Disconnect cache — {VoiceEventStats.DescribePlayerBrief(archive)} — cached {cached} events (totalCache={_disconnectedCache.Count})");
+                string brief = steamId != 0
+                    ? VoiceEventStats.DescribeSteamPlayer(steamId, playerUID)
+                    : VoiceEventStats.DescribePlayerBrief(archive);
+                ModLog.Debug(Feature, $"Disconnect cache — {brief} — cached {cached} events (totalCache={_disconnectedCache.Count})");
                 return cached;
             }
             catch (Exception ex)
