@@ -39,6 +39,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardSettingsDto BuildSaveSettings(int slotId)
         {
+            if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
+            }
+
             string? overridePath = SaveSlotConfigStore.GetOverrideFilePath(slotId);
             if (!ModConfig.IsInitialized)
             {
@@ -139,6 +144,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Success = false,
                     Message = L("web_dashboard_no_save_override"),
                 };
+            }
+
+            if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
             }
 
             if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, value, out string? error, waitForCompletion: false))
