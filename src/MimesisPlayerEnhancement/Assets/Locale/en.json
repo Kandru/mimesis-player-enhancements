@@ -496,8 +496,6 @@
     "blocked_dungeon": "Can't depart yet — other players are still in the dungeon.",
     "blocked_split": "Can't depart yet — other players are still outside the tram.",
     "blocked_connecting": "Can't depart yet — a player is still connecting.",
-    "lobby_join_now": " [join now]",
-    "lobby_join_in_minutes": " [join in {minutes} min]",
     "late_join_waiting_host": "waiting for host",
     "late_join_routing_tram": "routing to tram",
     "late_join_awaiting_tram": "awaiting tram load",

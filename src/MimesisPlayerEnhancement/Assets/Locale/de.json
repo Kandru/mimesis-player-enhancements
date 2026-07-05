@@ -496,8 +496,6 @@
     "blocked_dungeon": "Abfahrt noch nicht möglich — andere Spieler sind noch im Dungeon.",
     "blocked_split": "Abfahrt noch nicht möglich — andere Spieler sind noch außerhalb der Tram.",
     "blocked_connecting": "Abfahrt noch nicht möglich — ein Spieler verbindet sich noch.",
-    "lobby_join_now": " [jetzt beitreten]",
-    "lobby_join_in_minutes": " [Beitritt in {minutes} Min.]",
     "late_join_waiting_host": "warte auf Host",
     "late_join_routing_tram": "Route zur Tram",
     "late_join_awaiting_tram": "warte auf Tram-Laden",
