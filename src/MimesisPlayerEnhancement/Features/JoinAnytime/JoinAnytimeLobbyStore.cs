@@ -84,15 +84,30 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             lock (Gate)
             {
-                if (slotId == _loadedSlotId)
+                if (slotId == _loadedSlotId && HasPersistedContent(_data))
                 {
                     data = CloneDocument(_data);
-                    return HasPersistedContent(data);
+                    return true;
                 }
             }
 
-            data = TryReadSidecarFromDisk(slotId);
-            return data != null && HasPersistedContent(data);
+            JoinAnytimeLobbySidecarData? fromDisk = TryReadSidecarFromDisk(slotId);
+            if (fromDisk == null || !HasPersistedContent(fromDisk))
+            {
+                return false;
+            }
+
+            data = fromDisk;
+            lock (Gate)
+            {
+                if (slotId == _loadedSlotId)
+                {
+                    _data = NormalizeLoaded(fromDisk);
+                    _loadedHadPublicPreference = _data.IsPublicLobby.HasValue;
+                }
+            }
+
+            return true;
         }
 
         internal static void EnsureSlotBound(int slotId)

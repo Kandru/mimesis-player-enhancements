@@ -550,6 +550,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         {
             if (!_hostWantsPublicMatchmaking)
             {
+                int slotId = GameSessionAccess.GetSaveSlotId();
+                if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+                {
+                    ApplyPersistedLobbySettings(slotId);
+                }
+            }
+
+            if (!_hostWantsPublicMatchmaking)
+            {
                 return;
             }
 
@@ -583,10 +592,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static void EnsureSidecarLoadedForActiveSlot()
         {
             int slotId = GameSessionAccess.GetSaveSlotId();
-            if (MimesisSaveManager.IsValidSaveSlotId(slotId))
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
-                SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
+                return;
             }
+
+            SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
+            ApplyPersistedLobbySettings(slotId);
         }
 
         private static string StripDisplaySuffix(string value)
