@@ -176,7 +176,12 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
         private const string Feature = "DeadPlayerFeatures";
 
         [HarmonyPostfix]
-        internal static void Postfix(PhoneLevelObject __instance, int prevState, int currentState)
+        internal static void Postfix(
+            PhoneLevelObject __instance,
+            int actorId,
+            int occupiedActorID,
+            int prevState,
+            int currentState)
         {
             try
             {
@@ -191,6 +196,30 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
                     return;
                 }
 
+                if (prevState == (int)PhoneState.Idle && currentState == (int)PhoneState.Ringing)
+                {
+                    DeadPlayerPhoneClientTalkState.SetRingInitiator(phoneId, actorId);
+                }
+
+                if (prevState == (int)PhoneState.Ringing
+                    && currentState == (int)PhoneState.OnCall
+                    && DeadPlayerPhoneClientTalkState.TryGetRingInitiator(phoneId, out int ringInitiatorActorId))
+                {
+                    GameMainBase? main = DeadPlayerPhoneGameAccess.TryGetMain();
+                    ProtoActor? ringInitiator = main?.GetActorByActorID(ringInitiatorActorId);
+                    int answererActorId = occupiedActorID > 0 ? occupiedActorID : __instance.OccupiedActorID;
+                    if (ringInitiator != null && ringInitiator.dead && answererActorId > 0)
+                    {
+                        DeadPlayerPhoneClientTalkState.BeginTalk(phoneId, ringInitiatorActorId, answererActorId);
+                        DeadPlayerPhoneVoice.TryConnectAnswererRelay(__instance, ringInitiatorActorId);
+                    }
+                }
+
+                if (prevState == (int)PhoneState.Ringing && currentState == (int)PhoneState.OnCall)
+                {
+                    DeadPlayerPhoneClientTalkState.ClearRingInitiator(phoneId);
+                }
+
                 if (DeadPlayerPhoneLocalState.HasActiveLocalSession
                     && DeadPlayerPhoneLocalState.PhoneLevelObjectId == phoneId
                     && prevState == (int)PhoneState.Ringing
@@ -199,6 +228,14 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
                     float talkSeconds = DeadPlayerPhoneResolver.RollTalkDurationSeconds();
                     DeadPlayerPhoneLocalState.StartTalk(phoneId, talkSeconds);
                     DeadPlayerPhoneVoice.TryStartTalk(__instance);
+                }
+
+                if (DeadPlayerPhoneClientTalkState.IsActive
+                    && DeadPlayerPhoneClientTalkState.PhoneLevelObjectId == phoneId
+                    && currentState is (int)PhoneState.Idle or (int)PhoneState.Busy or (int)PhoneState.BusyWait)
+                {
+                    DeadPlayerPhoneVoice.EndAnswererRelay();
+                    DeadPlayerPhoneClientTalkState.Clear();
                 }
 
                 if (DeadPlayerPhoneLocalState.HasActiveLocalSession

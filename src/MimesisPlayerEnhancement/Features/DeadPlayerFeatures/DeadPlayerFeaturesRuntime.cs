@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
             UpdatePhoneCamera();
             UpdateClientUi();
             UpdateLocalSessionTimeouts();
+            DeadPlayerPhoneVoice.UpdateProximitySuppression();
         }
 
         internal static void RefreshFromConfig()
@@ -47,8 +48,10 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 
             if (endVoice)
             {
-                DeadPlayerPhoneVoice.EndTalk();
+                DeadPlayerPhoneVoice.ClearAll();
             }
+
+            DeadPlayerPhoneClientTalkState.Clear();
 
             if (restoreCamera && DeadPlayerPhoneCamera.IsLocked)
             {
@@ -136,6 +139,8 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
             if (DeadPlayerPhoneLocalState.Phase == DeadPlayerPhoneSessionPhase.Talking)
             {
                 DeadPlayerPhoneVoice.EndTalk();
+                DeadPlayerPhoneVoice.EndAnswererRelay();
+                DeadPlayerPhoneClientTalkState.Clear();
             }
 
             DeadPlayerPhoneLocalSession.Clear(endVoice: false);

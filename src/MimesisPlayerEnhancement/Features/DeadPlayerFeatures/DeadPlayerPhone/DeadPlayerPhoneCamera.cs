@@ -1,5 +1,4 @@
 using System.Reflection;
-using Mimic.Actors;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone

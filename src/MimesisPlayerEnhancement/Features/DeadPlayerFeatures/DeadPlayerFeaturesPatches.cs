@@ -1,5 +1,3 @@
-using Mimic.Actors;
-
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
 {
     internal static class DeadPlayerFeaturesPatches

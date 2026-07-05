@@ -120,10 +120,10 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
             }
 
             MsgErrorCode error = room.HandleLevelObject(
-                0,
+                player.ObjectID,
                 levelObjectId,
                 (int)PhoneState.Ringing,
-                occupy: true,
+                occupy: false,
                 out int prevState);
 
             fromState = prevState;
