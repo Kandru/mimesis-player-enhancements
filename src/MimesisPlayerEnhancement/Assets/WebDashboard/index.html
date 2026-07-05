@@ -24,17 +24,17 @@
             <p class="app-subtitle" x-text="subtitle"></p>
           </div>
           <nav class="app-header-actions" aria-label="Dashboard navigation">
-            <a class="app-header-link" href="#/players" x-show="status.isConnected"
-              :class="{ active: isGameRoute }" x-text="t('dashboard.nav_game')"></a>
+            <a class="app-header-link" href="#/players" x-show="status.isConnected" :class="{ active: isGameRoute }"
+              x-text="t('dashboard.nav_game')"></a>
             <a class="app-header-link" href="#/global-settings" :class="{ active: route === 'global-settings' }"
               x-text="t('dashboard.nav_global_settings')"></a>
             <a class="app-header-link" href="#/donation" :class="{ active: route === 'donation' }"
               x-text="t('dashboard.nav_donation')"></a>
             <div class="app-header-blind" x-show="status.isHost && status.isConnected" x-cloak>
               <span class="app-header-blind-label" x-text="t('dashboard.blind_mode')"></span>
-              <button type="button" class="feature-toggle" role="switch" :class="{ 'is-on': playerBlindModeUserEnabled }"
-                :title="t('dashboard.blind_mode_title')" :aria-label="t('dashboard.blind_mode')"
-                @click="togglePlayerBlindMode">
+              <button type="button" class="feature-toggle" role="switch"
+                :class="{ 'is-on': playerBlindModeUserEnabled }" :title="t('dashboard.blind_mode_title')"
+                :aria-label="t('dashboard.blind_mode')" @click="togglePlayerBlindMode">
                 <span class="feature-toggle-track" aria-hidden="true">
                   <span class="feature-toggle-thumb"></span>
                 </span>
@@ -107,7 +107,8 @@
               <h2 class="page-heading" x-text="t('dashboard.players_heading')"></h2>
               <span class="page-heading-count" x-show="connectedOverviewPlayers().length > 0"
                 x-text="t('dashboard.connected_count', { count: connectedOverviewPlayers().length })"></span>
-              <span class="page-heading-count page-heading-alert" x-show="status.isHost && status.joinAnytimeRoutingCount > 0"
+              <span class="page-heading-count page-heading-alert"
+                x-show="status.isHost && status.joinAnytimeRoutingCount > 0"
                 x-text="t('dashboard.late_join_routing', { count: status.joinAnytimeRoutingCount })"></span>
             </div>
             <div class="empty-state" x-show="connectedOverviewPlayers().length === 0 && !pageError">
@@ -124,13 +125,15 @@
                   <div class="player-entry-meta">
                     <div class="player-entry-name">
                       <span class="player-entry-display-name" x-text="p.displayName"></span>
-                      <span class="badge ping" :class="pingClass(p)"
-                        :title="'Connection: ' + pingLabel(p)" x-text="pingLabel(p)"></span>
+                      <span class="badge ping" :class="pingClass(p)" :title="'Connection: ' + pingLabel(p)"
+                        x-text="pingLabel(p)"></span>
                       <a class="badge badge-link" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
                       <span class="badge host" x-show="p.isHost" x-text="t('dashboard.badge_host')"></span>
                       <span class="badge local" x-show="p.isLocal" x-text="t('dashboard.badge_you')"></span>
-                      <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive" x-text="t('dashboard.badge_alive')"></span>
-                      <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive" x-text="t('dashboard.badge_dead')"></span>
+                      <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive"
+                        x-text="t('dashboard.badge_alive')"></span>
+                      <span class="badge dead" x-show="showPlayerAliveState(p) && !p.isAlive"
+                        x-text="t('dashboard.badge_dead')"></span>
                       <span class="badge banned" x-show="p.isBanned" x-text="t('dashboard.badge_banned')"></span>
                       <span class="badge late-join" x-show="showLateJoinBadge(p)" x-text="p.lateJoinLabel"></span>
                       <span class="player-entry-actions"
@@ -143,8 +146,8 @@
                           @click="moderate(p.steamId, 'kick')" x-text="t('dashboard.kick')"></button>
                         <button class="btn btn-danger btn-badge" x-show="canModerate(p)"
                           @click="moderate(p.steamId, 'ban')" x-text="t('dashboard.ban')"></button>
-                        <button class="btn btn-text btn-badge" x-show="p.isBanned"
-                          @click="moderate(p.steamId, 'unban')" x-text="t('dashboard.unban')"></button>
+                        <button class="btn btn-text btn-badge" x-show="p.isBanned" @click="moderate(p.steamId, 'unban')"
+                          x-text="t('dashboard.unban')"></button>
                       </span>
                     </div>
                     <small class="player-entry-detail">
@@ -154,9 +157,6 @@
                           <span x-show="playerDetailLines(p).connection"> · </span>
                           <a class="external-link" :href="steamProfileUrl(p.steamId)" target="_blank"
                             rel="noopener noreferrer">Steam</a>
-                          <span> · </span>
-                          <a class="external-link" :href="csStatsUrl(p.steamId)" target="_blank"
-                            rel="noopener noreferrer">CSStats</a>
                         </span>
                       </template>
                     </small>
@@ -355,9 +355,6 @@
                         <div class="player-external-links" x-show="isValidSteamId(steamId)">
                           <a class="external-link" :href="steamProfileUrl(steamId)" target="_blank"
                             rel="noopener noreferrer">Steam profile</a>
-                          <span> · </span>
-                          <a class="external-link" :href="csStatsUrl(steamId)" target="_blank"
-                            rel="noopener noreferrer">CSStats</a>
                         </div>
                       </div>
                     </div>
@@ -397,10 +394,11 @@
               <div class="settings-search-panel surface-card">
                 <label class="settings-search-wrap">
                   <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
-                  <input type="search" class="settings-search" :placeholder="t('dashboard.settings_search_by_placeholder')"
-                    x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
-                    :aria-expanded="settingsSearchOpen" aria-controls="global-settings-suggestions"
-                    @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
+                  <input type="search" class="settings-search"
+                    :placeholder="t('dashboard.settings_search_by_placeholder')" x-model="settingsQuery"
+                    autocomplete="off" spellcheck="false" role="combobox" :aria-expanded="settingsSearchOpen"
+                    aria-controls="global-settings-suggestions" @input="settingsSearchOpen = true"
+                    @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
                     @keydown.escape.prevent="settingsSearchOpen = false">
                   <ul id="global-settings-suggestions" class="settings-suggestions"
                     x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
@@ -467,10 +465,8 @@
                           </button>
                         </template>
                         <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
-                          x-show="sectionHasResettableEntries(section.id)"
-                          :disabled="isResettingSection(section.id)"
-                          :title="settingsSectionResetTitle()"
-                          @click="resetSectionSettings(section.id)"
+                          x-show="sectionHasResettableEntries(section.id)" :disabled="isResettingSection(section.id)"
+                          :title="settingsSectionResetTitle()" @click="resetSectionSettings(section.id)"
                           x-text="t('dashboard.settings_reset_all')">
                         </button>
                         <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
@@ -486,7 +482,8 @@
                             <div class="settings-entry-head">
                               <strong class="settings-entry-title" x-text="entry.title"></strong>
                               <span class="settings-type-pill" x-text="entry.type"></span>
-                              <span class="badge settings-hidden-badge" x-show="entry.isHidden" x-text="t('dashboard.settings_hidden')"></span>
+                              <span class="badge settings-hidden-badge" x-show="entry.isHidden"
+                                x-text="t('dashboard.settings_hidden')"></span>
                             </div>
                             <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
                             <code class="settings-key" x-text="entry.key"></code>
@@ -530,8 +527,7 @@
                               <button type="button" class="btn btn-text btn-compact settings-reset-btn"
                                 x-show="settingCanReset(entry)"
                                 :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                :title="settingsEntryResetTitle()"
-                                @click="resetSetting(section.id, entry)"
+                                :title="settingsEntryResetTitle()" @click="resetSetting(section.id, entry)"
                                 x-text="t('dashboard.settings_reset')">
                               </button>
                             </div>
@@ -562,11 +558,12 @@
                   <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
                     <label class="settings-search-wrap">
                       <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
-                      <input type="search" class="settings-search" :placeholder="t('dashboard.settings_search_by_placeholder')"
-                        x-model="settingsQuery" autocomplete="off" spellcheck="false" role="combobox"
-                        :aria-expanded="settingsSearchOpen" aria-controls="save-settings-suggestions"
-                        @input="settingsSearchOpen = true" @focus="settingsSearchOpen = true"
-                        @blur="onSettingsSearchBlur()" @keydown.escape.prevent="settingsSearchOpen = false">
+                      <input type="search" class="settings-search"
+                        :placeholder="t('dashboard.settings_search_by_placeholder')" x-model="settingsQuery"
+                        autocomplete="off" spellcheck="false" role="combobox" :aria-expanded="settingsSearchOpen"
+                        aria-controls="save-settings-suggestions" @input="settingsSearchOpen = true"
+                        @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
+                        @keydown.escape.prevent="settingsSearchOpen = false">
                       <ul id="save-settings-suggestions" class="settings-suggestions"
                         x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
                         <template x-for="item in settingsSearchSuggestions" :key="item.id">
@@ -634,10 +631,8 @@
                             </template>
                             <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
                               x-show="sectionHasResettableEntries(section.id)"
-                              :disabled="isResettingSection(section.id)"
-                              :title="settingsSectionResetTitle()"
-                              @click="resetSectionSettings(section.id)"
-                              x-text="t('dashboard.settings_reset_all')">
+                              :disabled="isResettingSection(section.id)" :title="settingsSectionResetTitle()"
+                              @click="resetSectionSettings(section.id)" x-text="t('dashboard.settings_reset_all')">
                             </button>
                             <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
                               x-text="settingsKeysLabel(sectionEntryCount(section.id))"></span>
@@ -652,9 +647,10 @@
                                 <div class="settings-entry-head">
                                   <strong class="settings-entry-title" x-text="entry.title"></strong>
                                   <span class="settings-type-pill" x-text="entry.type"></span>
-                                  <span class="badge settings-override-badge"
-                                    x-show="entry.isOverridden" x-text="t('dashboard.settings_overridden_badge')"></span>
-                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden" x-text="t('dashboard.settings_hidden')"></span>
+                                  <span class="badge settings-override-badge" x-show="entry.isOverridden"
+                                    x-text="t('dashboard.settings_overridden_badge')"></span>
+                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden"
+                                    x-text="t('dashboard.settings_hidden')"></span>
                                 </div>
                                 <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description">
                                 </p>
@@ -699,8 +695,7 @@
                                   <button type="button" class="btn btn-text btn-compact settings-reset-btn"
                                     x-show="settingCanReset(entry)"
                                     :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                    :title="settingsEntryResetTitle()"
-                                    @click="resetSetting(section.id, entry)"
+                                    :title="settingsEntryResetTitle()" @click="resetSetting(section.id, entry)"
                                     x-text="t('dashboard.settings_reset')">
                                   </button>
                                 </div>

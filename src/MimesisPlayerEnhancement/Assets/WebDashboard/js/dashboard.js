@@ -42,12 +42,6 @@ function steamProfileUrl(steamId) {
     : '#';
 }
 
-function csStatsUrl(steamId) {
-  return isValidSteamId(steamId)
-    ? 'https://csstats.gg/player/' + encodeURIComponent(String(steamId))
-    : '#';
-}
-
 function avatarUrl(steamId) {
   if (!isValidSteamId(steamId)) {
     return '/img/default-avatar.svg';
@@ -805,10 +799,6 @@ document.addEventListener('alpine:init', () => {
 
     steamProfileUrl(steamId) {
       return steamProfileUrl(steamId);
-    },
-
-    csStatsUrl(steamId) {
-      return csStatsUrl(steamId);
     },
 
     isValidSteamId(steamId) {
