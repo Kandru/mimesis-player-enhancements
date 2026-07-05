@@ -198,26 +198,25 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
 
                 if (prevState == (int)PhoneState.Idle && currentState == (int)PhoneState.Ringing)
                 {
-                    DeadPlayerPhoneClientTalkState.SetRingInitiator(phoneId, actorId);
+                    DeadPlayerPhoneVoiceSession.SetRingInitiator(phoneId, actorId);
                 }
 
                 if (prevState == (int)PhoneState.Ringing
                     && currentState == (int)PhoneState.OnCall
-                    && DeadPlayerPhoneClientTalkState.TryGetRingInitiator(phoneId, out int ringInitiatorActorId))
+                    && DeadPlayerPhoneVoiceSession.TryGetRingInitiator(phoneId, out int ringInitiatorActorId))
                 {
                     GameMainBase? main = DeadPlayerPhoneGameAccess.TryGetMain();
                     ProtoActor? ringInitiator = main?.GetActorByActorID(ringInitiatorActorId);
                     int answererActorId = occupiedActorID > 0 ? occupiedActorID : __instance.OccupiedActorID;
                     if (ringInitiator != null && ringInitiator.dead && answererActorId > 0)
                     {
-                        DeadPlayerPhoneClientTalkState.BeginTalk(phoneId, ringInitiatorActorId, answererActorId);
-                        DeadPlayerPhoneVoice.TryConnectAnswererRelay(__instance, ringInitiatorActorId);
+                        DeadPlayerPhoneVoiceSession.BeginTalk(__instance, ringInitiatorActorId, answererActorId);
                     }
                 }
 
                 if (prevState == (int)PhoneState.Ringing && currentState == (int)PhoneState.OnCall)
                 {
-                    DeadPlayerPhoneClientTalkState.ClearRingInitiator(phoneId);
+                    DeadPlayerPhoneVoiceSession.ClearRingInitiator(phoneId);
                 }
 
                 if (DeadPlayerPhoneLocalState.HasActiveLocalSession
@@ -227,15 +226,14 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
                 {
                     float talkSeconds = DeadPlayerPhoneResolver.RollTalkDurationSeconds();
                     DeadPlayerPhoneLocalState.StartTalk(phoneId, talkSeconds);
-                    DeadPlayerPhoneVoice.TryStartTalk(__instance);
+                    DeadPlayerPhoneVoiceSession.StartDeadCallerVoice(__instance);
                 }
 
-                if (DeadPlayerPhoneClientTalkState.IsActive
-                    && DeadPlayerPhoneClientTalkState.PhoneLevelObjectId == phoneId
+                if (DeadPlayerPhoneVoiceSession.IsModCallActive
+                    && DeadPlayerPhoneVoiceSession.PhoneLevelObjectId == phoneId
                     && currentState is (int)PhoneState.Idle or (int)PhoneState.Busy or (int)PhoneState.BusyWait)
                 {
-                    DeadPlayerPhoneVoice.EndAnswererRelay();
-                    DeadPlayerPhoneClientTalkState.Clear();
+                    DeadPlayerPhoneVoiceSession.End();
                 }
 
                 if (DeadPlayerPhoneLocalState.HasActiveLocalSession

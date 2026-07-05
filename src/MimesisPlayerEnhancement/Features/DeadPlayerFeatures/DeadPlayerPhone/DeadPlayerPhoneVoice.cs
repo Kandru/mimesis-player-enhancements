@@ -4,11 +4,12 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
 {
+    /// <summary>
+    /// Low-level voice channel control and phone relay wiring for mod calls.
+    /// </summary>
     internal static class DeadPlayerPhoneVoice
     {
         private const string Feature = "DeadPlayerFeatures";
-
-        private const float DefaultRestoredPlayerVolume = 1f;
 
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -25,16 +26,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
         private static readonly MethodInfo? SetObserverChannelMethod =
             typeof(VoiceManager).GetMethod("SetObserverChannel", InstanceFlags, null, [typeof(bool), typeof(bool)], null);
 
-        private static readonly MethodInfo? ConnectVoiceRelayToPhoneMethod =
-            DirectChannelType == null
-                ? null
-                : typeof(VoiceManager).GetMethod(
-                    "ConnectVoiceRelayToPhone",
-                    InstanceFlags,
-                    null,
-                    [DirectChannelType, typeof(PhoneLevelObject)],
-                    null);
-
         private static readonly MethodInfo? DisconnectVoiceRelayFromPhoneMethod =
             DirectChannelType == null
                 ? null
@@ -44,6 +35,9 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
                     null,
                     [DirectChannelType],
                     null);
+
+        private static readonly MethodInfo? GetPlayerVolumeMethod =
+            typeof(VoiceManager).GetMethod("GetPlayerVolume", InstanceFlags, null, [typeof(string)], null);
 
         private static readonly MethodInfo? SetPlayerVolumeMethod =
             typeof(VoiceManager).GetMethod("SetPlayerVolume", InstanceFlags, null, [typeof(string), typeof(float)], null);
@@ -62,20 +56,16 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
 
         private static readonly object? PhoneChannelType = ResolvePhoneChannelType(DirectChannelType);
 
-        private static bool _voiceActive;
+        private static bool _deadCallerChannelsActive;
 
-        private static bool _answererRelayActive;
+        private static bool _modRelayConnected;
 
-        private static bool _proximitySuppressed;
+        internal static bool IsModRelayConnected => _modRelayConnected;
 
-        private static string? _suppressedDeadPlayerId;
-
-        internal static bool IsVoiceActive => _voiceActive;
-
-        internal static void TryStartTalk(PhoneLevelObject phone)
+        internal static void StartDeadCallerChannels()
         {
             VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            if (_voiceActive || voiceman == null || GameSessionAccess.TryGetPdata() == null)
+            if (_deadCallerChannelsActive || voiceman == null || GameSessionAccess.TryGetPdata() == null)
             {
                 return;
             }
@@ -85,189 +75,55 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
                 SetPlayerChannelMethod?.Invoke(voiceman, [true, true]);
                 SetObserverChannelMethod?.Invoke(voiceman, [false, false]);
                 InvokeSpeechRecorderMethod(voiceman, "StartRecording");
-                if (!InvokeConnectPhone(voiceman, phone))
-                {
-                    ModLog.Warn(Feature, "Dead-player phone talk voice relay to caller failed");
-                    EndTalk();
-                    return;
-                }
-
-                _voiceActive = true;
-                ModLog.Info(Feature, "Dead-player phone talk voice started");
+                _deadCallerChannelsActive = true;
+                ModLog.Info(Feature, "Dead-player phone talk channels started");
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"Start talk voice failed — {ex.Message}");
-                EndTalk();
+                ModLog.Warn(Feature, $"Start dead caller channels failed — {ex.Message}");
+                EndDeadCallerChannels();
             }
         }
 
-        internal static void TryConnectAnswererRelay(PhoneLevelObject phone, int deadCallerActorId)
+        internal static void EndDeadCallerChannels()
         {
+            if (!_deadCallerChannelsActive)
+            {
+                return;
+            }
+
             VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            GameMainBase? main = DeadPlayerPhoneGameAccess.TryGetMain();
-            if (_answererRelayActive || voiceman == null || main == null || deadCallerActorId <= 0)
-            {
-                return;
-            }
-
-            ProtoActor? deadCaller = main.GetActorByActorID(deadCallerActorId);
-            if (deadCaller == null)
-            {
-                ModLog.Warn(Feature, $"Answerer relay skipped — dead caller actor {deadCallerActorId} not found");
-                return;
-            }
-
-            if (TryConnectRelayFromPlayerUid(voiceman, deadCaller.UID, phone, deadCaller))
-            {
-                _answererRelayActive = true;
-                ModLog.Info(Feature, $"Answerer phone relay connected — deadCaller={deadCallerActorId}");
-            }
-        }
-
-        internal static void UpdateProximitySuppression()
-        {
-            if (!DeadPlayerPhoneResolver.IsPhoneRingEnabled
-                || !DeadPlayerPhoneClientTalkState.IsActive)
-            {
-                RestoreProximitySuppression();
-                return;
-            }
-
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-            GameMainBase? main = DeadPlayerPhoneGameAccess.TryGetMain();
-            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            if (pdata == null || main == null || voiceman == null)
-            {
-                return;
-            }
-
-            ProtoActor? myAvatar = main.GetMyAvatar();
-            if (myAvatar == null || myAvatar.dead)
-            {
-                RestoreProximitySuppression();
-                return;
-            }
-
-            ProtoActor? deadCaller = main.GetActorByActorID(DeadPlayerPhoneClientTalkState.DeadCallerActorId);
-            if (deadCaller == null)
-            {
-                RestoreProximitySuppression();
-                return;
-            }
-
-            if (!TryResolveDissonancePlayerId(voiceman, deadCaller.UID, out string deadPlayerId))
-            {
-                return;
-            }
-
-            if (!_proximitySuppressed || _suppressedDeadPlayerId != deadPlayerId)
-            {
-                SetPlayerVolumeMethod?.Invoke(voiceman, [deadPlayerId, 0f]);
-                _proximitySuppressed = true;
-                _suppressedDeadPlayerId = deadPlayerId;
-            }
-        }
-
-        internal static void EndTalk()
-        {
-            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            if (!_voiceActive && voiceman == null)
-            {
-                return;
-            }
-
             try
             {
                 if (voiceman != null)
                 {
                     InvokeSpeechRecorderMethod(voiceman, "StopRecording");
-                    DisconnectVoiceRelayFromPhoneMethod?.Invoke(voiceman, [PhoneChannelType]);
                     SetPlayerChannelMethod?.Invoke(voiceman, [false, true]);
                     SetObserverChannelMethod?.Invoke(voiceman, [true, true]);
                 }
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"End talk voice failed — {ex.Message}");
+                ModLog.Warn(Feature, $"End dead caller channels failed — {ex.Message}");
             }
             finally
             {
-                _voiceActive = false;
+                _deadCallerChannelsActive = false;
             }
         }
 
-        internal static void EndAnswererRelay()
-        {
-            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            if (!_answererRelayActive && voiceman == null)
-            {
-                return;
-            }
-
-            try
-            {
-                DisconnectVoiceRelayFromPhoneMethod?.Invoke(voiceman, [PhoneChannelType]);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"End answerer relay failed — {ex.Message}");
-            }
-            finally
-            {
-                _answererRelayActive = false;
-            }
-        }
-
-        internal static void ClearAll()
-        {
-            EndTalk();
-            EndAnswererRelay();
-            RestoreProximitySuppression(force: true);
-        }
-
-        private static void RestoreProximitySuppression(bool force = false)
-        {
-            if (!_proximitySuppressed && !force)
-            {
-                return;
-            }
-
-            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
-            if (voiceman != null && !string.IsNullOrEmpty(_suppressedDeadPlayerId))
-            {
-                SetPlayerVolumeMethod?.Invoke(voiceman, [_suppressedDeadPlayerId, DefaultRestoredPlayerVolume]);
-            }
-
-            _proximitySuppressed = false;
-            _suppressedDeadPlayerId = null;
-        }
-
-        private static bool InvokeConnectPhone(VoiceManager voiceman, PhoneLevelObject phone)
-        {
-            if (ConnectVoiceRelayToPhoneMethod == null || PhoneChannelType == null)
-            {
-                return false;
-            }
-
-            return ConnectVoiceRelayToPhoneMethod.Invoke(voiceman, [PhoneChannelType, phone]) is true;
-        }
-
-        private static bool TryConnectRelayFromPlayerUid(
-            VoiceManager voiceman,
-            long playerUid,
+        internal static bool ConnectRelayToPlayerUid(
             PhoneLevelObject phone,
-            ProtoActor actor)
+            long targetPlayerUid,
+            ProtoActor targetActor)
         {
-            if (PhoneChannelType == null
-                || DirectChannelTypeInfoType == null
-                || DirectChannelsField == null
-                || phone.Receiver == null)
+            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
+            if (voiceman == null || phone.Receiver == null)
             {
                 return false;
             }
 
-            if (!TryResolveDissonancePlayerId(voiceman, playerUid, out string playerId))
+            if (!TryResolveDissonancePlayerId(voiceman, targetPlayerUid, out string playerId))
             {
                 return false;
             }
@@ -286,36 +142,89 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
                 null,
                 [typeof(Mimic.Voice.VoiceAudioReceiver)],
                 null);
-            if (forwarder == null || setReceiverMethod == null)
+            if (forwarder == null || setReceiverMethod == null
+                || PhoneChannelType == null
+                || DirectChannelTypeInfoType == null
+                || DirectChannelsField?.GetValue(voiceman) is not IDictionary directChannels)
             {
                 return false;
             }
 
-            if (DirectChannelsField.GetValue(voiceman) is not IDictionary directChannels)
+            try
             {
+                if (_modRelayConnected)
+                {
+                    DisconnectModRelayIfActive();
+                }
+
+                setReceiverMethod.Invoke(forwarder, [phone.Receiver]);
+                phone.Receiver.StartVoiceRelay();
+
+                object channelInfo = Activator.CreateInstance(DirectChannelTypeInfoType)!;
+                DirectChannelTypeInfoType.GetField("VoiceSpawner")?.SetValue(
+                    channelInfo,
+                    MimicVoiceSpawnerField?.GetValue(voiceman));
+                DirectChannelTypeInfoType.GetField("Forwarder")?.SetValue(channelInfo, forwarder);
+                DirectChannelTypeInfoType.GetField("Receiver")?.SetValue(channelInfo, phone.Receiver);
+                DirectChannelTypeInfoType.GetField("Actor")?.SetValue(channelInfo, targetActor);
+                DirectChannelTypeInfoType.GetField("Phone")?.SetValue(channelInfo, phone);
+                directChannels[PhoneChannelType] = channelInfo;
+                _modRelayConnected = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Connect relay failed — uid={targetPlayerUid}, {ex.Message}");
                 return false;
             }
-
-            if (directChannels.Contains(PhoneChannelType))
-            {
-                ModLog.Debug(Feature, "Replacing existing phone relay before reconnecting answerer relay");
-                DisconnectVoiceRelayFromPhoneMethod?.Invoke(voiceman, [PhoneChannelType]);
-            }
-
-            setReceiverMethod.Invoke(forwarder, [phone.Receiver]);
-            phone.Receiver.StartVoiceRelay();
-
-            object channelInfo = Activator.CreateInstance(DirectChannelTypeInfoType)!;
-            DirectChannelTypeInfoType.GetField("VoiceSpawner")?.SetValue(channelInfo, MimicVoiceSpawnerField?.GetValue(voiceman));
-            DirectChannelTypeInfoType.GetField("Forwarder")?.SetValue(channelInfo, forwarder);
-            DirectChannelTypeInfoType.GetField("Receiver")?.SetValue(channelInfo, phone.Receiver);
-            DirectChannelTypeInfoType.GetField("Actor")?.SetValue(channelInfo, actor);
-            DirectChannelTypeInfoType.GetField("Phone")?.SetValue(channelInfo, phone);
-            directChannels.Add(PhoneChannelType, channelInfo);
-            return true;
         }
 
-        private static bool TryResolveDissonancePlayerId(
+        internal static void DisconnectModRelayIfActive()
+        {
+            if (!_modRelayConnected)
+            {
+                return;
+            }
+
+            VoiceManager? voiceman = DeadPlayerPhoneGameAccess.TryGetVoiceManager();
+            try
+            {
+                DisconnectVoiceRelayFromPhoneMethod?.Invoke(voiceman, [PhoneChannelType]);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Disconnect mod relay failed — {ex.Message}");
+            }
+            finally
+            {
+                _modRelayConnected = false;
+            }
+        }
+
+        internal static bool TryGetPlayerVolume(VoiceManager voiceman, string playerId, out float volume)
+        {
+            volume = 1f;
+            if (GetPlayerVolumeMethod == null)
+            {
+                return false;
+            }
+
+            object? result = GetPlayerVolumeMethod.Invoke(voiceman, [playerId]);
+            if (result is float value)
+            {
+                volume = value;
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static void SetPlayerVolume(VoiceManager voiceman, string playerId, float volume)
+        {
+            SetPlayerVolumeMethod?.Invoke(voiceman, [playerId, volume]);
+        }
+
+        internal static bool TryResolveDissonancePlayerId(
             VoiceManager voiceman,
             long playerUid,
             out string playerId)
@@ -346,6 +255,12 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
             }
 
             return false;
+        }
+
+        internal static void ResetAll()
+        {
+            EndDeadCallerChannels();
+            DisconnectModRelayIfActive();
         }
 
         private static object? TryFindVoicePlayback(string playerId)

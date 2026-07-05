@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.DeadPlayerPhone
         {
             if (endVoice && DeadPlayerPhoneLocalState.Phase == DeadPlayerPhoneSessionPhase.Talking)
             {
-                DeadPlayerPhoneVoice.EndTalk();
+                DeadPlayerPhoneVoiceSession.End();
             }
 
             DeadPlayerPhoneCamera.Exit();

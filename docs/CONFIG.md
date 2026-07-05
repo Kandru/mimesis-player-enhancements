@@ -281,7 +281,7 @@ When enabled, dead spectators with the mod installed can cycle prev/next spectat
 
 When enabled, dead spectators with the mod installed can press **E** to ring a nearby **idle** phone while spectating a living player near that phone. Off by default — set `EnableDeadPlayerPhoneRing = true` to opt in. Only **one** dead-player ring/talk session can be active globally at a time. Look-direction UI shows mimic and phone hints together; the hint for whichever target the camera faces more is shown in bold.
 
-On pickup, the initiating dead player speaks through the phone for a rolled talk duration (same circular fill UI as mimic possession). While ringing or talking, the death camera **follows the phone** (like mimic possession follows the mimic) and **spectator target switching is disabled** until **E** ends the interaction early or the ring/talk timer expires. Host config is authoritative; dead clients only need the DLL installed.
+On pickup, the initiating dead player speaks through the phone for a rolled talk duration (same circular fill UI as mimic possession). **Voice is private:** only the answering living player hears the dead caller (via the phone receiver), and only the dead caller hears the answerer — nearby living bystanders hear nothing. While ringing or talking, the death camera **follows the phone** (like mimic possession follows the mimic) and **spectator target switching is disabled** until **E** ends the interaction early or the ring/talk timer expires. Host config is authoritative; dead clients only need the DLL installed.
 
 | Key | Type | Default | What it does |
 |-----|------|---------|--------------|
@@ -300,9 +300,12 @@ On pickup, the initiating dead player speaks through the phone for a rolled talk
 2. **Unmodded dead client** — cannot see phone hint or ring; vanilla mimic E-possession still works.
 3. Press **E** with phone focused — phone rings; circle counts down; only one dead player can ring at a time (global lock); death camera follows the phone and spectator switching is blocked.
 4. Press **E** again during ring/talk — interaction ends early; camera returns to the previous spectated player.
-5. Living player answers — initiating dead player can speak through phone; talk circle matches rolled duration.
-6. Ring timeout with no answer — phone returns to idle; vanilla phones/mimics still work.
-7. Disable feature on host mid-session — voice/ring state reverts cleanly; dead clients stop offering phone ring.
+5. Living player answers — initiating dead player and answerer have **two-way** voice through the phone; talk circle matches rolled duration.
+6. **Third living player nearby** — hears **nothing** from the dead caller during the call (no proximity leak, no phone speaker for bystanders).
+7. **After call ends** — all living players' proximity voice works normally (no sticky mute).
+8. **Vanilla paired-phone call** between two living players works normally with this feature enabled.
+9. Ring timeout with no answer — phone returns to idle; vanilla phones/mimics still work.
+10. Disable feature on host mid-session — voice/ring state reverts cleanly; dead clients stop offering phone ring.
 
 ### Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
