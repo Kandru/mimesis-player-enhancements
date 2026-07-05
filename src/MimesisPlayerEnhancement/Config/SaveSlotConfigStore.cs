@@ -60,19 +60,19 @@ namespace MimesisPlayerEnhancement
 
             if (!ModConfig.IsInitialized)
             {
-                error = "Configuration is not initialized.";
+                error = ModL10n.Get("api.config_not_initialized");
                 return false;
             }
 
             if (slotId != _activeSlotId)
             {
-                error = "Save slot not loaded.";
+                error = ModL10n.Get("api.save_slot_not_loaded");
                 return false;
             }
 
             if (!ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key))
             {
-                error = "This setting cannot be overridden per save slot.";
+                error = ModL10n.Get("api.save_override_not_allowed");
                 return false;
             }
 
@@ -83,13 +83,13 @@ namespace MimesisPlayerEnhancement
 
             if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string globalRaw))
             {
-                error = "Unknown setting.";
+                error = ModL10n.Get("api.unknown_setting");
                 return false;
             }
 
             if (GetOverrideFilePath(slotId) == null)
             {
-                error = "Save slot path unavailable.";
+                error = ModL10n.Get("api.save_slot_path_unavailable");
                 return false;
             }
 

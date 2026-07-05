@@ -103,7 +103,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildGlobalSettings()));
+                WriteJson(context, 200, ModJson.Serialize(WebDashboardConfigBridge.BuildGlobalSettings()));
                 return;
             }
 
@@ -143,8 +143,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                int saveSlotId = snapshot.Status.SaveSlotId;
-                WriteJson(context, 200, WebDashboardJson.SerializeSettings(WebDashboardConfigBridge.BuildSaveSettings(saveSlotId)));
+                int saveSlotId = WebDashboardGameState.GetSaveSlotId();
+                try
+                {
+                    WebDashboardSettingsDto saveSettings = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardConfigBridge.BuildSaveSettings(saveSlotId));
+                    WriteJson(context, 200, ModJson.Serialize(saveSettings));
+                }
+                catch (TimeoutException)
+                {
+                    WriteJson(context, 504, WebDashboardJson.SerializeError(504, L("timed_out")));
+                }
+                catch (Exception ex)
+                {
+                    WriteJson(context, 500, WebDashboardJson.SerializeError(500, ex.Message));
+                }
                 return;
             }
 
@@ -167,7 +180,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 WebDashboardConfigUpdateResult saveResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
                     WebDashboardConfigScope.Save,
-                    snapshot.Status.SaveSlotId,
+                    WebDashboardGameState.GetSaveSlotId(),
                     saveRequest.SectionId,
                     saveRequest.Key,
                     saveRequest.Value ?? "");

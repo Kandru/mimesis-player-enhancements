@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0d1117">
   <title>Mimesis Player Enhancement</title>
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/settings.css">
 </head>
 
 <body class="waiting" x-data="dashboard()" x-init="init()">
@@ -404,21 +405,25 @@
             </div>
           </template>
 
-          <!-- Global settings -->
-          <div x-show="route === 'global-settings'" x-cloak>
-            <div class="settings-page">
-              <h2 class="page-heading" x-text="t('dashboard.settings_global_heading')"></h2>
+          <!-- Settings (global or per-save) -->
+          <div x-show="showSettingsPage()" x-cloak>
+            <div class="empty-state" x-show="!canEditCurrentSettings()">
+              <p x-text="t('dashboard.settings_host_only')"></p>
+            </div>
 
-              <div class="settings-search-panel surface-card">
+            <div class="settings-page" x-show="canEditCurrentSettings()">
+              <h2 class="page-heading" x-text="settingsPageHeading()"></h2>
+
+              <div class="settings-search-panel surface-card" x-show="settingsDataReady()">
                 <label class="settings-search-wrap">
                   <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
                   <input type="search" class="settings-search"
                     :placeholder="t('dashboard.settings_search_by_placeholder')" x-model="settingsQuery"
                     autocomplete="off" spellcheck="false" role="combobox" :aria-expanded="settingsSearchOpen"
-                    aria-controls="global-settings-suggestions" @input="settingsSearchOpen = true"
+                    :aria-controls="settingsSearchSuggestionsId()" @input="settingsSearchOpen = true"
                     @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
                     @keydown.escape.prevent="settingsSearchOpen = false">
-                  <ul id="global-settings-suggestions" class="settings-suggestions"
+                  <ul class="settings-suggestions" :id="settingsSearchSuggestionsId()"
                     x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
                     <template x-for="item in settingsSearchSuggestions" :key="item.id">
                       <li>
@@ -435,11 +440,11 @@
 
               <p class="settings-intro" x-text="settingsIntro()"></p>
 
-              <template x-if="settingsGlobal">
+              <template x-if="settingsDataReady()">
                 <div class="settings-toolbar surface-card">
                   <div class="settings-path">
-                    <span class="settings-path-label" x-text="t('dashboard.settings_config_file_label')"></span>
-                    <code class="settings-path-value" x-text="settingsGlobal.configPath || '—'"></code>
+                    <span class="settings-path-label" x-text="settingsPathLabel()"></span>
+                    <code class="settings-path-value" x-text="settingsPathValue()"></code>
                   </div>
                 </div>
               </template>
@@ -452,7 +457,7 @@
               </div>
 
               <div class="empty-state"
-                x-show="!loadingSettings && !pageError && settingsGlobal && filteredSections.length === 0">
+                x-show="!loadingSettings && !pageError && settingsDataReady() && filteredSections.length === 0">
                 <p x-text="settingsQuery ? t('dashboard.settings_no_results') : t('dashboard.settings_no_entries')"></p>
               </div>
 
@@ -495,11 +500,13 @@
                       <template x-for="entry in sectionEntries(section.id)"
                         :key="entry.key + ':' + settingDraftValue(entry)">
                         <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
-                          :class="{ 'is-hidden-entry': entry.isHidden }">
+                          :class="settingEntryClass(entry)">
                           <div class="settings-entry-main">
                             <div class="settings-entry-head">
                               <strong class="settings-entry-title" x-text="entry.title"></strong>
                               <span class="settings-type-pill" x-text="entry.type"></span>
+                              <span class="badge settings-override-badge" x-show="showOverrideBadge() && entry.isOverridden"
+                                x-text="t('dashboard.settings_overridden_badge')"></span>
                               <span class="badge settings-hidden-badge" x-show="entry.isHidden"
                                 x-text="t('dashboard.settings_hidden')"></span>
                             </div>
@@ -551,8 +558,8 @@
                                 x-text="t('dashboard.settings_reset')">
                               </button>
                             </div>
-                            <small class="settings-default-hint" x-show="settingDiffersFromDefault(entry)"
-                              x-text="formatDefaultHint(entry)"></small>
+                            <small class="settings-default-hint" x-show="settingHintVisible(entry)"
+                              x-text="settingHintText(entry)"></small>
                           </div>
                         </article>
                       </template>
@@ -562,178 +569,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Save slot settings -->
-          <template x-if="status.isConnected && route === 'settings'">
-            <div>
-              <template x-if="!status.isHost">
-                <div class="empty-state">
-                  <p x-text="t('dashboard.settings_host_only')"></p>
-                </div>
-              </template>
-              <template x-if="status.isHost">
-                <div class="settings-page">
-                  <h2 class="page-heading" x-text="t('dashboard.settings_heading')"></h2>
-
-                  <div class="settings-search-panel surface-card" x-show="settingsSave" x-cloak>
-                    <label class="settings-search-wrap">
-                      <span class="settings-search-label" x-text="t('dashboard.settings_search_label')"></span>
-                      <input type="search" class="settings-search"
-                        :placeholder="t('dashboard.settings_search_by_placeholder')" x-model="settingsQuery"
-                        autocomplete="off" spellcheck="false" role="combobox" :aria-expanded="settingsSearchOpen"
-                        aria-controls="save-settings-suggestions" @input="settingsSearchOpen = true"
-                        @focus="settingsSearchOpen = true" @blur="onSettingsSearchBlur()"
-                        @keydown.escape.prevent="settingsSearchOpen = false">
-                      <ul id="save-settings-suggestions" class="settings-suggestions"
-                        x-show="settingsSearchOpen && settingsSearchSuggestions.length > 0" x-cloak @mousedown.prevent>
-                        <template x-for="item in settingsSearchSuggestions" :key="item.id">
-                          <li>
-                            <button type="button" class="settings-suggestion" @click="selectSettingsSuggestion(item)">
-                              <span class="settings-suggestion-section" x-text="item.sectionTitle"></span>
-                              <span x-text="item.title"></span>
-                              <span class="settings-suggestion-key" x-text="item.key"></span>
-                            </button>
-                          </li>
-                        </template>
-                      </ul>
-                    </label>
-                  </div>
-
-                  <p class="settings-intro" x-text="settingsIntro()"></p>
-
-                  <template x-if="settingsSave">
-                    <div class="settings-toolbar surface-card">
-                      <div class="settings-path">
-                        <span class="settings-path-label" x-text="t('dashboard.settings_override_file_label')"></span>
-                        <code class="settings-path-value" x-text="settingsSave.configPath || '—'"></code>
-                      </div>
-                    </div>
-                  </template>
-
-                  <div class="empty-state" x-show="pageError">
-                    <p x-text="pageError"></p>
-                  </div>
-                  <div class="loading-panel" x-show="loadingSettings && !pageError">
-                    <div class="spinner" role="progressbar" :aria-label="t('dashboard.settings_loading_aria')"></div>
-                  </div>
-
-                  <div class="empty-state"
-                    x-show="!loadingSettings && !pageError && settingsSave && filteredSections.length === 0">
-                    <p x-text="settingsQuery ? t('dashboard.settings_no_results') : t('dashboard.settings_no_entries')">
-                    </p>
-                  </div>
-
-                  <div class="settings-sections" x-show="!loadingSettings && !pageError && filteredSections.length > 0">
-                    <template x-for="section in filteredSections" :key="section.id">
-                      <section class="settings-section surface-card"
-                        :class="{ 'is-feature-disabled': section.featureToggle && !featureEnabled(section.id) }">
-                        <header class="settings-section-header"
-                          :id="section.featureToggle ? settingsDomId(section.id) : null">
-                          <div class="settings-section-header-main">
-                            <h3 class="settings-section-title" x-text="section.title"></h3>
-                            <template x-if="section.featureToggle?.description">
-                              <p class="settings-section-desc" x-text="section.featureToggle.description"></p>
-                            </template>
-                          </div>
-                          <div class="settings-section-header-actions">
-                            <template x-if="section.featureToggle">
-                              <button type="button" class="feature-toggle" role="switch" x-cloak
-                                :class="{ 'is-on': featureEnabled(section.id), 'is-saving': isSavingFeatureToggle(section.id) }"
-                                :title="section.featureToggle.title" :aria-label="section.featureToggle.title"
-                                :aria-checked="featureEnabled(section.id)" :disabled="isSavingFeatureToggle(section.id)"
-                                @click.stop="toggleFeature(section.id)">
-                                <span class="feature-toggle-track" aria-hidden="true">
-                                  <span class="feature-toggle-thumb"></span>
-                                </span>
-                                <span class="feature-toggle-label"
-                                  x-text="featureEnabled(section.id) ? t('dashboard.on') : t('dashboard.off')"></span>
-                              </button>
-                            </template>
-                            <button type="button" class="btn btn-outlined btn-compact settings-section-reset-btn"
-                              x-show="sectionHasResettableEntries(section.id)"
-                              :disabled="isResettingSection(section.id)" :title="settingsSectionResetTitle()"
-                              @click="resetSectionSettings(section.id)" x-text="t('dashboard.settings_reset_all')">
-                            </button>
-                            <span class="settings-section-count" x-show="sectionEntryCount(section.id) > 0"
-                              x-text="settingsKeysLabel(sectionEntryCount(section.id))"></span>
-                          </div>
-                        </header>
-                        <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                          <template x-for="entry in sectionEntries(section.id)"
-                            :key="entry.key + ':' + settingDraftValue(entry)">
-                            <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
-                              :class="{ 'is-hidden-entry': entry.isHidden, 'is-global-default': !entry.isOverridden }">
-                              <div class="settings-entry-main">
-                                <div class="settings-entry-head">
-                                  <strong class="settings-entry-title" x-text="entry.title"></strong>
-                                  <span class="settings-type-pill" x-text="entry.type"></span>
-                                  <span class="badge settings-override-badge" x-show="entry.isOverridden"
-                                    x-text="t('dashboard.settings_overridden_badge')"></span>
-                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden"
-                                    x-text="t('dashboard.settings_hidden')"></span>
-                                </div>
-                                <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description">
-                                </p>
-                                <code class="settings-key" x-text="entry.key"></code>
-                              </div>
-                              <div class="settings-entry-value-wrap">
-                                <div class="settings-entry-input-row">
-                                  <template x-if="entry.type === 'Boolean'">
-                                    <select class="settings-input settings-select"
-                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                      @change="onBooleanSettingChange(section.id, entry, $event)">
-                                      <option value="true" x-text="t('dashboard.on')"></option>
-                                      <option value="false" x-text="t('dashboard.off')"></option>
-                                    </select>
-                                  </template>
-                                  <template x-if="entry.type === 'Int32'">
-                                    <input type="number" class="settings-input"
-                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
-                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
-                                      :value="settingDraftValue(entry)"
-                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                      @change="onTextSettingCommit(section.id, entry, $event)">
-                                  </template>
-                                  <template x-if="entry.type === 'Single'">
-                                    <input type="number" class="settings-input"
-                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
-                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
-                                      :value="settingDraftValue(entry)"
-                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                      @change="onTextSettingCommit(section.id, entry, $event)">
-                                  </template>
-                                  <template
-                                    x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                                    <input type="text" class="settings-input"
-                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                      @change="onTextSettingCommit(section.id, entry, $event)">
-                                  </template>
-                                  <button type="button" class="btn btn-text btn-compact settings-reset-btn"
-                                    x-show="settingCanReset(entry)"
-                                    :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                    :title="settingsEntryResetTitle()" @click="resetSetting(section.id, entry)"
-                                    x-text="t('dashboard.settings_reset')">
-                                  </button>
-                                </div>
-                                <small class="settings-default-hint" x-show="settingDiffersFromGlobal(entry)"
-                                  x-text="formatGlobalHint(entry)"></small>
-                              </div>
-                            </article>
-                          </template>
-                        </div>
-                      </section>
-                    </template>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </template>
 
         </section>
       </div>
@@ -747,6 +582,8 @@
   <script defer src="/js/api.js"></script>
   <script defer src="/js/sse.js"></script>
   <script defer src="/js/minimap.js"></script>
+  <script defer src="/js/settings-format.js"></script>
+  <script defer src="/js/settings.js"></script>
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/alpine.min.js"></script>
 </body>

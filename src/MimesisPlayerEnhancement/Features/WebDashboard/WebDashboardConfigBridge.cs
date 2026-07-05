@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ConfigPath = ModConfig.FilePath,
                 ConfigVersion = ModConfig.Version,
                 Scope = "global",
-                Sections = BuildSections(includeGlobalOnly: true, saveSlotId: -1, saveScope: false),
+                Sections = BuildSections(WebDashboardConfigScope.Global, saveSlotId: -1),
             };
         }
 
@@ -62,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ConfigVersion = ModConfig.Version,
                 SaveSlotId = slotId,
                 Scope = "save",
-                Sections = BuildSections(includeGlobalOnly: false, saveSlotId: slotId, saveScope: true),
+                Sections = BuildSections(WebDashboardConfigScope.Save, saveSlotId: slotId),
             };
         }
 
@@ -256,10 +256,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         }
 
         private static List<WebDashboardConfigSectionDto> BuildSections(
-            bool includeGlobalOnly,
-            int saveSlotId,
-            bool saveScope)
+            WebDashboardConfigScope scope,
+            int saveSlotId)
         {
+            bool saveScope = scope == WebDashboardConfigScope.Save;
             List<WebDashboardConfigSectionDto> sections = [];
 
             foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
@@ -291,13 +291,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         continue;
                     }
 
-                    bool allowSaveOverride = ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key);
-                    if (saveScope && !allowSaveOverride)
-                    {
-                        continue;
-                    }
-
-                    if (!includeGlobalOnly && !allowSaveOverride)
+                    if (saveScope && !ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key))
                     {
                         continue;
                     }

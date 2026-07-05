@@ -302,8 +302,8 @@ Host-only. Serves a local HTTP dashboard from the game process. Open `http://<Li
 
 | View | Who can see it | What it shows |
 |------|----------------|---------------|
-| **Global Settings** | Host (or idle before session) | Edit `UserData/MimesisPlayerEnhancement.cfg` defaults from the header menu |
-| **Settings** | Host in an active save | Per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`); applied live in memory, written on vanilla save; keys matching global are omitted automatically |
+| **Global Settings** | Host or idle (no session) | Global defaults (`MimesisPlayerEnhancement.cfg`); written to disk immediately |
+| **Settings** | Host in an active save | Per-save-slot overrides (`MMGameData{N}.mpe-overrides.sav`); applied live in memory immediately; written to disk only via the in-game save button; keys matching global are omitted automatically |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
 | **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs; focus player and area selectors |
 | **Leaderboard** | Host only | Per-save-slot stats leaderboard (requires **Statistics** enabled) |

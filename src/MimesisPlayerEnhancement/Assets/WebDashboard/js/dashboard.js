@@ -57,78 +57,6 @@ function formatVitalPercent(value) {
   return n.toFixed(2).replace(/\.?0+$/, '') + '%';
 }
 
-function parseBool(value) {
-  if (value === true) return true;
-  if (value === false) return false;
-  const text = String(value ?? '').trim().toLowerCase();
-  return text === 'true' || text === '1' || text === 'yes' || text === 'on';
-}
-
-function formatFloatSettingValue(raw) {
-  const n = Math.round(parseFloat(raw) * 100) / 100;
-  if (!Number.isFinite(n)) return String(raw ?? '');
-  const fixed = n.toFixed(2);
-  if (fixed.endsWith('00')) return n.toFixed(1);
-  if (fixed.endsWith('0')) return fixed.slice(0, -1);
-  return fixed;
-}
-
-function clampSettingValue(entry, rawValue) {
-  let nextValue = String(rawValue ?? '');
-  if (entry.type !== 'Int32' && entry.type !== 'Single') {
-    return nextValue;
-  }
-
-  const n = entry.type === 'Int32'
-    ? parseInt(nextValue, 10)
-    : parseFloat(nextValue);
-  if (!Number.isFinite(n)) {
-    return nextValue;
-  }
-
-  let clamped = n;
-  if (entry.minValue != null && entry.minValue !== '') {
-    const min = entry.type === 'Int32'
-      ? parseInt(entry.minValue, 10)
-      : parseFloat(entry.minValue);
-    if (Number.isFinite(min)) {
-      clamped = Math.max(clamped, min);
-    }
-  }
-  if (entry.maxValue != null && entry.maxValue !== '') {
-    const max = entry.type === 'Int32'
-      ? parseInt(entry.maxValue, 10)
-      : parseFloat(entry.maxValue);
-    if (Number.isFinite(max)) {
-      clamped = Math.min(clamped, max);
-    }
-  }
-
-  if (entry.type === 'Single') {
-    return formatFloatSettingValue(String(clamped));
-  }
-
-  return String(Math.trunc(clamped));
-}
-
-function settingsHaystack(entry, sectionTitle) {
-  return [
-    entry.key,
-    entry.title,
-    entry.description,
-    entry.value,
-    entry.type,
-    entry.defaultValue,
-    entry.globalValue,
-    sectionTitle,
-  ].map((value) => String(value ?? '').toLowerCase());
-}
-
-function matchesSettingsQuery(entry, sectionTitle, query) {
-  if (!query) return true;
-  return settingsHaystack(entry, sectionTitle).some((value) => value.includes(query));
-}
-
 const OFFLINE_ROUTES = ['donation', 'global-settings'];
 
 function isOfflineRoute(route) {
@@ -137,6 +65,7 @@ function isOfflineRoute(route) {
 
 document.addEventListener('alpine:init', () => {
   Alpine.data('dashboard', () => ({
+    ...createSettingsMixin(),
     status: {
       isConnected: false,
       isHost: false,
@@ -151,11 +80,6 @@ document.addEventListener('alpine:init', () => {
     players: [],
     leaderboard: null,
     playerStats: null,
-    settingsGlobal: null,
-    settingsSave: null,
-    settingsQuery: '',
-    settingsSearchOpen: false,
-    settingsSearchBlurTimer: null,
     route: 'waiting',
     steamId: null,
     toastMessage: '',
@@ -165,8 +89,6 @@ document.addEventListener('alpine:init', () => {
     pageError: '',
     apiError: false,
     lastSnapshotVersion: -1,
-    savingSettingKey: '',
-    resettingSectionId: '',
     lastRoute: '',
     lastSteamId: null,
     eventSource: null,
@@ -203,14 +125,6 @@ document.addEventListener('alpine:init', () => {
 
     isOfflineRoute() {
       return isOfflineRoute(this.route);
-    },
-
-    get activeSettings() {
-      return this.route === 'global-settings' ? this.settingsGlobal : this.settingsSave;
-    },
-
-    get activeSettingsScope() {
-      return this.route === 'global-settings' ? 'global' : 'save';
     },
 
     get pageTitle() {
@@ -364,10 +278,7 @@ document.addEventListener('alpine:init', () => {
       this.setConnectedMode();
       const wasOnSettings = prevRoute === 'global-settings' || prevRoute === 'settings';
       const isOnSettings = this.route === 'global-settings' || this.route === 'settings';
-      if (wasOnSettings && (!isOnSettings || prevRoute !== this.route)) {
-        this.settingsQuery = '';
-        this.settingsSearchOpen = false;
-      }
+      this.clearSettingsOnRouteChange(wasOnSettings, isOnSettings, prevRoute);
       if (this.route !== prevRoute || this.steamId !== prevSteam) {
         this.loadPageData(true);
       }
@@ -419,7 +330,7 @@ document.addEventListener('alpine:init', () => {
         this.players = [];
         this.leaderboard = null;
         this.playerStats = null;
-        this.settingsSave = null;
+        this.handleSettingsOnDisconnect();
         this.minimapRaw = null;
         this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
         this._localPlayerWasAlive = null;
@@ -429,6 +340,7 @@ document.addEventListener('alpine:init', () => {
 
       this.ensureDefaultRoute();
       this.syncDocumentTitle();
+      this.handleSettingsOnSnapshot();
       return wasConnected !== this.status.isConnected;
     },
 
@@ -498,33 +410,7 @@ document.addEventListener('alpine:init', () => {
           this.playerStats = null;
         }
 
-        if (onGlobalSettings) {
-          const initialLoad = this.settingsGlobal === null;
-          if (initialLoad) this.loadingSettings = true;
-          try {
-            this.settingsGlobal = await Api.getGlobalSettings();
-          } finally {
-            if (initialLoad) this.loadingSettings = false;
-          }
-        } else if (this.route !== 'global-settings') {
-          this.settingsGlobal = null;
-        }
-
-        if (onSaveSettings) {
-          const initialLoad = this.settingsSave === null;
-          if (initialLoad) this.loadingSettings = true;
-          try {
-            this.settingsSave = await Api.getSaveSettings();
-          } finally {
-            if (initialLoad) this.loadingSettings = false;
-          }
-        } else if (this.route !== 'settings') {
-          this.settingsSave = null;
-          if (this.route !== 'global-settings') {
-            this.settingsQuery = '';
-            this.settingsSearchOpen = false;
-          }
-        }
+        await this.loadSettingsInPageData(onGlobalSettings, onSaveSettings);
 
         if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
           this.applyMinimapFilter(force);
@@ -541,42 +427,6 @@ document.addEventListener('alpine:init', () => {
       this.lastSteamId = this.steamId;
       this.lastSnapshotVersion = this.status.snapshotVersion;
       this.restoreScroll(scrollY);
-    },
-
-    settingsIntro() {
-      if (this.route === 'global-settings') {
-        return this.t('dashboard.settings_intro_global');
-      }
-      const slot = this.status.saveSlotId >= 0 ? this.status.saveSlotId : (this.settingsSave?.saveSlotId ?? '—');
-      return this.t('dashboard.settings_intro_save', { slot });
-    },
-
-    settingsSectionResetTitle() {
-      return this.activeSettingsScope === 'save'
-        ? this.t('dashboard.settings_reset_all_global_title')
-        : this.t('dashboard.settings_reset_all_defaults_title');
-    },
-
-    settingsEntryResetTitle() {
-      return this.activeSettingsScope === 'save'
-        ? this.t('dashboard.settings_reset_global')
-        : this.t('dashboard.settings_reset_default');
-    },
-
-    settingsKeysLabel(count) {
-      return this.t('dashboard.settings_keys_count', { count });
-    },
-
-    formatDefaultHint(entry) {
-      return this.t('dashboard.settings_default_hint', {
-        value: formatSettingValue({ type: entry.type, value: entry.defaultValue }),
-      });
-    },
-
-    formatGlobalHint(entry) {
-      return this.t('dashboard.settings_global_hint', {
-        value: formatSettingValue({ type: entry.type, value: entry.globalValue }),
-      });
     },
 
     resolveDisplayName(steamId) {
@@ -931,283 +781,6 @@ document.addEventListener('alpine:init', () => {
 
     isValidSteamId(steamId) {
       return isValidSteamId(steamId);
-    },
-
-    onSettingsSearchBlur() {
-      if (this.settingsSearchBlurTimer) clearTimeout(this.settingsSearchBlurTimer);
-      this.settingsSearchBlurTimer = setTimeout(() => {
-        this.settingsSearchOpen = false;
-      }, 150);
-    },
-
-    findSettingsSection(sectionId) {
-      return this.activeSettings?.sections?.find((section) => section.id === sectionId) ?? null;
-    },
-
-    featureEnabled(sectionId) {
-      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
-      if (!toggle) return true;
-      return parseBool(toggle.value);
-    },
-
-    sectionEntries(sectionId) {
-      const section = this.findSettingsSection(sectionId);
-      if (!section?.entries?.length || !this.featureEnabled(sectionId)) return [];
-      const query = this.settingsQuery.trim().toLowerCase();
-      return section.entries.filter((entry) => matchesSettingsQuery(entry, section.title, query));
-    },
-
-    sectionEntryCount(sectionId) {
-      return this.sectionEntries(sectionId).length;
-    },
-
-    buildSettingsSuggestion(section, entry, isFeatureToggle = false) {
-      const title = String(entry.title || entry.key || '');
-      const key = String(entry.key || '');
-      const query = this.settingsQuery.trim().toLowerCase();
-      const startsWith = title.toLowerCase().startsWith(query) || key.toLowerCase().startsWith(query);
-      return {
-        id: section.id + '/' + key,
-        sectionId: section.id,
-        sectionTitle: section.title,
-        key,
-        title,
-        priority: startsWith ? 0 : 1,
-        isFeatureToggle,
-      };
-    },
-
-    get settingsSearchSuggestions() {
-      const query = this.settingsQuery.trim().toLowerCase();
-      if (!query) return [];
-
-      const results = [];
-      for (const section of this.activeSettings?.sections ?? []) {
-        if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query)) {
-          results.push(this.buildSettingsSuggestion(section, section.featureToggle, true));
-        }
-        if (!this.featureEnabled(section.id)) continue;
-        for (const entry of section.entries ?? []) {
-          if (matchesSettingsQuery(entry, section.title, query)) {
-            results.push(this.buildSettingsSuggestion(section, entry));
-          }
-        }
-      }
-
-      return results
-        .sort((a, b) => (a.priority - b.priority) || a.title.localeCompare(b.title))
-        .slice(0, 8);
-    },
-
-    get filteredSections() {
-      const query = this.settingsQuery.trim().toLowerCase();
-      return (this.activeSettings?.sections ?? []).filter((section) => {
-        if (this.sectionEntryCount(section.id) > 0) return true;
-        if (!section.featureToggle) return false;
-        if (!query) return true;
-        return matchesSettingsQuery(section.featureToggle, section.title, query);
-      });
-    },
-
-    selectSettingsSuggestion(item) {
-      this.settingsQuery = item.key;
-      this.settingsSearchOpen = false;
-      this.$nextTick(() => {
-        const domId = this.settingsDomId(
-          item.sectionId,
-          item.isFeatureToggle ? null : item.key
-        );
-        const el = document.getElementById(domId);
-        if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('settings-entry-highlight');
-        setTimeout(() => el.classList.remove('settings-entry-highlight'), 1600);
-      });
-    },
-
-    settingsDomId(sectionId, entryKey = null) {
-      const prefix = this.activeSettingsScope + '-' + sectionId;
-      return entryKey
-        ? 'setting-entry-' + prefix + '--' + entryKey
-        : 'feature-toggle-' + prefix;
-    },
-
-    async toggleFeature(sectionId) {
-      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
-      if (!toggle || this.isSavingSetting(sectionId, toggle)) return;
-      await this.saveSetting(sectionId, toggle, parseBool(toggle.value) ? 'false' : 'true');
-    },
-
-    formatSettingValue(entry) {
-      const value = entry.value;
-      if (entry.type === 'Boolean') {
-        return parseBool(value) ? t('dashboard.on') : t('dashboard.off');
-      }
-      if (value == null || value === '') return '—';
-      return String(value);
-    },
-
-    settingValueClass(entry) {
-      if (entry.type !== 'Boolean') return '';
-      return parseBool(entry.value) ? 'settings-bool-on' : 'settings-bool-off';
-    },
-
-    settingValuesEqual(entry, a, b) {
-      if (entry.type === 'Single') {
-        return formatFloatSettingValue(a) === formatFloatSettingValue(b);
-      }
-      if (entry.type === 'Boolean') {
-        return parseBool(a) === parseBool(b);
-      }
-      return String(a ?? '') === String(b ?? '');
-    },
-
-    settingDiffersFromDefault(entry) {
-      if (this.activeSettingsScope === 'save') {
-        return this.settingDiffersFromGlobal(entry);
-      }
-      return !this.settingValuesEqual(entry, entry.value, entry.defaultValue);
-    },
-
-    settingDiffersFromGlobal(entry) {
-      return !this.settingValuesEqual(entry, entry.value, entry.globalValue);
-    },
-
-    settingResetTarget(entry) {
-      return this.activeSettingsScope === 'save'
-        ? entry.globalValue
-        : entry.defaultValue;
-    },
-
-    settingCanReset(entry) {
-      return !this.settingValuesEqual(entry, entry.value, this.settingResetTarget(entry));
-    },
-
-    sectionResettableEntries(sectionId) {
-      const section = this.findSettingsSection(sectionId);
-      if (!section?.entries?.length) return [];
-      return section.entries.filter((entry) => this.settingCanReset(entry));
-    },
-
-    sectionHasResettableEntries(sectionId) {
-      return this.sectionResettableEntries(sectionId).length > 0;
-    },
-
-    isResettingSection(sectionId) {
-      return this.resettingSectionId === sectionId;
-    },
-
-    async resetSetting(sectionId, entry) {
-      if (!this.settingCanReset(entry) || this.isSavingSetting(sectionId, entry)) return;
-      await this.saveSetting(sectionId, entry, this.settingResetTarget(entry));
-    },
-
-    async resetSectionSettings(sectionId) {
-      if (this.isResettingSection(sectionId)) return;
-      const entries = this.sectionResettableEntries(sectionId);
-      if (!entries.length) return;
-
-      this.resettingSectionId = sectionId;
-      let resetCount = 0;
-      try {
-        for (const entry of entries) {
-          if (!this.settingCanReset(entry)) continue;
-          await this.saveSetting(sectionId, entry, this.settingResetTarget(entry), true);
-          resetCount++;
-        }
-        if (resetCount > 0) {
-          const target = this.activeSettingsScope === 'save'
-            ? t('dashboard.reset_target_global')
-            : t('dashboard.reset_target_defaults');
-          this.showToast(t('dashboard.reset_settings_toast', { count: resetCount, target }));
-        }
-      } catch (e) {
-        this.showToast(e.message || t('dashboard.failed_reset'));
-        await this.loadPageData(true);
-      } finally {
-        if (this.resettingSectionId === sectionId) {
-          this.resettingSectionId = '';
-        }
-      }
-    },
-
-    settingInputId(sectionId, entry) {
-      return this.activeSettingsScope + '--' + sectionId + '--' + entry.key;
-    },
-
-    isSavingSetting(sectionId, entry) {
-      if (!entry?.key) return false;
-      return this.savingSettingKey === this.activeSettingsScope + '/' + sectionId + '/' + entry.key;
-    },
-
-    isSavingFeatureToggle(sectionId) {
-      const toggle = this.findSettingsSection(sectionId)?.featureToggle;
-      return toggle ? this.isSavingSetting(sectionId, toggle) : false;
-    },
-
-    settingDraftValue(entry) {
-      if (entry.type === 'Boolean') {
-        return parseBool(entry.value) ? 'true' : 'false';
-      }
-      return entry.value == null ? '' : String(entry.value);
-    },
-
-    async saveSetting(sectionId, entry, rawValue, quiet = false) {
-      const scope = this.activeSettingsScope;
-      const saveKey = scope + '/' + sectionId + '/' + entry.key;
-      if (this.savingSettingKey === saveKey) return;
-
-      const previousValue = entry.value;
-      const wasOverridden = entry.isOverridden;
-      const nextValue = String(rawValue);
-      entry.value = nextValue;
-      this.savingSettingKey = saveKey;
-
-      try {
-        const res = scope === 'global'
-          ? await Api.updateGlobalSetting(sectionId, entry.key, nextValue)
-          : await Api.updateSaveSetting(sectionId, entry.key, nextValue);
-        if (res.value != null && res.value !== '') {
-          entry.value = res.value;
-        }
-        if (scope === 'global') {
-          this.settingsSave = null;
-        } else {
-          entry.isOverridden = res.isOverridden ?? this.settingDiffersFromGlobal(entry);
-        }
-        if (!quiet) {
-          this.showToast(res.message || t('dashboard.saved'));
-        }
-      } catch (e) {
-        entry.value = previousValue;
-        entry.isOverridden = wasOverridden;
-        if (!quiet) {
-          this.showToast(e.message || t('dashboard.failed_save'));
-        }
-        await this.loadPageData(true);
-        throw e;
-      } finally {
-        if (this.savingSettingKey === saveKey) {
-          this.savingSettingKey = '';
-        }
-      }
-    },
-
-    onBooleanSettingChange(sectionId, entry, event) {
-      this.saveSetting(sectionId, entry, event.target.value);
-    },
-
-    onTextSettingCommit(sectionId, entry, event) {
-      let nextValue = clampSettingValue(entry, event.target.value);
-      if (entry.type === 'Single') {
-        event.target.value = nextValue;
-      } else if (entry.type === 'Int32') {
-        event.target.value = nextValue;
-      }
-      if (this.settingValuesEqual(entry, nextValue, entry.value)) {
-        return;
-      }
-      this.saveSetting(sectionId, entry, nextValue);
     },
 
     minimapFocusOptions() {

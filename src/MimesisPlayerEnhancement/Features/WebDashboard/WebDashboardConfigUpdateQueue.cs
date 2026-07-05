@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
@@ -10,9 +11,32 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static string L(string key) => ModL10n.Get($"api.{key}");
 
-        private static readonly ConcurrentQueue<PendingUpdate> Pending = new();
+        private static readonly ConcurrentQueue<PendingWork> Pending = new();
 
         internal static bool IsProcessing { get; private set; }
+
+        internal static T EnqueueAndWait<T>(Func<T> work)
+        {
+            PendingWork pending = new()
+            {
+                Work = () => work(),
+                Done = new ManualResetEventSlim(false),
+            };
+
+            Pending.Enqueue(pending);
+
+            if (!pending.Done.Wait(WaitTimeoutMs))
+            {
+                throw new TimeoutException(L("timed_out"));
+            }
+
+            if (pending.Error != null)
+            {
+                throw pending.Error;
+            }
+
+            return pending.Result is T typed ? typed : default!;
+        }
 
         internal static WebDashboardConfigUpdateResult EnqueueAndWait(
             WebDashboardConfigScope scope,
@@ -21,29 +45,42 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string key,
             string value)
         {
-            PendingUpdate pending = new()
+            try
             {
-                Scope = scope,
-                SaveSlotId = saveSlotId,
-                SectionId = sectionId,
-                Key = key,
-                Value = value,
-                Done = new ManualResetEventSlim(false),
-            };
-
-            Pending.Enqueue(pending);
-
-            return !pending.Done.Wait(WaitTimeoutMs)
-                ? new WebDashboardConfigUpdateResult
+                return EnqueueAndWait(() => scope switch
+                {
+                    WebDashboardConfigScope.Global => WebDashboardConfigBridge.ApplyGlobalUpdate(
+                        sectionId,
+                        key,
+                        value),
+                    WebDashboardConfigScope.Save => WebDashboardConfigBridge.ApplySaveUpdate(
+                        saveSlotId,
+                        sectionId,
+                        key,
+                        value),
+                    _ => new WebDashboardConfigUpdateResult
+                    {
+                        Success = false,
+                        Message = L("unknown_scope"),
+                    },
+                });
+            }
+            catch (TimeoutException ex)
+            {
+                return new WebDashboardConfigUpdateResult
                 {
                     Success = false,
-                    Message = L("timed_out"),
-                }
-                : pending.Result ?? new WebDashboardConfigUpdateResult
-                {
-                    Success = false,
-                    Message = L("setting_not_complete"),
+                    Message = ex.Message,
                 };
+            }
+            catch (Exception ex)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = ex.Message,
+                };
+            }
         }
 
         internal static void Process()
@@ -53,36 +90,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            while (Pending.TryDequeue(out PendingUpdate? pending))
+            while (Pending.TryDequeue(out PendingWork? pending))
             {
                 IsProcessing = true;
                 try
                 {
-                    pending.Result = pending.Scope switch
-                    {
-                        WebDashboardConfigScope.Global => WebDashboardConfigBridge.ApplyGlobalUpdate(
-                            pending.SectionId,
-                            pending.Key,
-                            pending.Value),
-                        WebDashboardConfigScope.Save => WebDashboardConfigBridge.ApplySaveUpdate(
-                            pending.SaveSlotId,
-                            pending.SectionId,
-                            pending.Key,
-                            pending.Value),
-                        _ => new WebDashboardConfigUpdateResult
-                        {
-                            Success = false,
-                            Message = L("unknown_scope"),
-                        },
-                    };
+                    pending.Result = pending.Work();
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
-                    pending.Result = new WebDashboardConfigUpdateResult
-                    {
-                        Success = false,
-                        Message = ex.Message,
-                    };
+                    pending.Error = ex;
                 }
                 finally
                 {
@@ -92,15 +109,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        private sealed class PendingUpdate
+        private sealed class PendingWork
         {
-            internal WebDashboardConfigScope Scope;
-            internal int SaveSlotId;
-            internal string SectionId = "";
-            internal string Key = "";
-            internal string Value = "";
+            internal Func<object?> Work = null!;
             internal ManualResetEventSlim Done = null!;
-            internal WebDashboardConfigUpdateResult? Result;
+            internal object? Result;
+            internal Exception? Error;
         }
     }
 }
