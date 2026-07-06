@@ -63,6 +63,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 SaveSlotId = slotId,
                 Scope = "save",
                 Sections = BuildSections(WebDashboardConfigScope.Save, saveSlotId: slotId),
+                Profile = WebDashboardQuickSettingsBridge.ToProfileDto(
+                    slotId == SaveSlotConfigStore.ActiveSlotId
+                        ? SaveSlotConfigStore.ActiveProfile
+                        : SaveSlotConfigProfile.TryReadFromDisk(slotId)),
             };
         }
 

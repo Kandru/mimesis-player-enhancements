@@ -19,6 +19,17 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 **Per-save overrides:** The web dashboard can edit global defaults (written to `MimesisPlayerEnhancement.cfg` immediately) and per-save-game overrides (`MMGameData{N}.mpe-overrides.sav`, loaded at save load, applied live in memory, written on vanilla save).
 
+**Quick settings:** Each save slot can use global defaults, a built-in/user quick preset, or fully custom overrides.
+
+### Global-only vs save-scoped keys
+
+| Scope | Sections / keys |
+|-------|-----------------|
+| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (toast duration, debug logging), `[MimesisPlayerEnhancement_WebDashboard]`, `[MimesisPlayerEnhancement_ExtendedSaveSlots]` |
+| **Save-scoped** | All other feature sections |
+
+User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav` beside vanilla saves (Steam Auto-Cloud).
+
 ## Quick reference
 
 | Section | Feature | Scope |

@@ -592,7 +592,43 @@
     "player_delete_success": "Player data deleted.",
     "player_delete_not_found": "No stored player data found for this Steam ID.",
     "player_delete_connected": "Cannot delete player data while they are connected.",
-    "cannot_delete_host": "Cannot delete the local host player."
+    "cannot_delete_host": "Cannot delete the local host player.",
+    "quick_preset_not_found": "Quick preset not found.",
+    "quick_preset_builtin_readonly": "Built-in quick presets cannot be modified.",
+    "quick_preset_exists": "A user preset with this ID already exists.",
+    "quick_preset_invalid_id": "Invalid user preset ID.",
+    "quick_preset_imported": "Quick preset imported.",
+    "quick_preset_deleted": "Quick preset deleted.",
+    "quick_share_invalid": "Invalid share string.",
+    "quick_share_unsupported_version": "Unsupported share string version.",
+    "quick_share_empty": "Share string contains no settings.",
+    "quick_profile_global_applied": "Save now uses global settings.",
+    "quick_profile_preset_applied": "Quick preset applied to this save.",
+    "quick_profile_custom_applied": "Save switched to custom settings."
+  },
+  "quicksettings": {
+    "profile": {
+      "global": "Global settings",
+      "custom": "Custom settings"
+    },
+    "presets": {
+      "loot_picnic": {
+        "name": "Loot Picnic",
+        "description": "High loot, low spawns — explore and hoard without much danger."
+      },
+      "as_intended": {
+        "name": "As Intended™",
+        "description": "Vanilla gameplay with More Players and Join Anytime enabled."
+      },
+      "full_house": {
+        "name": "Full House",
+        "description": "Most features on with +10% scaling per player above 4."
+      },
+      "abandon_hope": {
+        "name": "Abandon All Hope",
+        "description": "Brutal spawns, higher money targets, and heavy player-count scaling."
+      }
+    }
   },
   "dashboard": {
     "title_default": "Mimesis Player Enhancement",
@@ -687,6 +723,38 @@
     "minimap_you_suffix": " (you)",
     "leaderboard_heading": "Leaderboard",
     "settings_heading": "Settings",
+    "settings_customize_heading": "Customize Save Settings",
+    "settings_profile_heading": "Save Settings Profile",
+    "settings_profile_intro": "Pick a quick preset for this save slot, use your global defaults, or customize every value.",
+    "settings_profile_current": "Active profile",
+    "settings_profile_global_title": "Use global settings",
+    "settings_profile_global_desc": "Follow global defaults from Global Settings with no per-save overrides.",
+    "settings_profile_customize": "Customize settings",
+    "settings_profile_back": "Back to profiles",
+    "quick_profile_applied": "Save profile updated.",
+    "quick_customize_banner": "Using preset: {label} — editing any value switches this save to custom settings.",
+    "quick_preset_load_placeholder": "Load a preset…",
+    "quick_preset_load": "Load preset",
+    "quick_preset_save_new": "Save as new preset",
+    "quick_preset_overwrite": "Overwrite selected preset",
+    "quick_preset_delete": "Delete selected preset",
+    "quick_preset_builtin_readonly": "Built-in presets cannot be changed or deleted.",
+    "quick_preset_name_prompt": "Preset name",
+    "quick_preset_overwrite_prompt": "Name for preset (overwrite selected)",
+    "quick_preset_saved": "Saved preset \"{name}\".",
+    "quick_preset_deleted": "Preset deleted.",
+    "quick_preset_delete_confirm": "Delete preset \"{name}\"?",
+    "quick_preset_imported": "Preset imported.",
+    "quick_share_export": "Export share string",
+    "quick_share_import": "Import share string",
+    "quick_share_export_heading": "Export settings",
+    "quick_share_import_heading": "Import settings",
+    "quick_share_placeholder": "Paste an MPE1:… share string here",
+    "quick_share_copy": "Copy to clipboard",
+    "quick_share_copied": "Share string copied.",
+    "quick_share_copy_failed": "Could not copy to clipboard.",
+    "quick_share_close": "Close",
+    "cancel": "Cancel",
     "settings_global_heading": "Global Settings",
     "settings_search_label": "Search settings",
     "settings_search_placeholder": "Search settings…",

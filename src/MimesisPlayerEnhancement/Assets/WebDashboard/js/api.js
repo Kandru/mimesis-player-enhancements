@@ -42,6 +42,48 @@ const Api = {
     });
   },
 
+  async getSaveProfile() {
+    return Api.fetchJson('/api/settings/save/profile');
+  },
+
+  async updateSaveProfile(body) {
+    return Api.fetchJson('/api/settings/save/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
+
+  async getQuickPresets() {
+    return Api.fetchJson('/api/quick-presets');
+  },
+
+  async saveQuickPreset(body) {
+    return Api.fetchJson('/api/quick-presets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
+
+  async deleteQuickPreset(presetId) {
+    return Api.fetchJson('/api/quick-presets/' + encodeURIComponent(presetId), {
+      method: 'DELETE',
+    });
+  },
+
+  async exportQuickPreset(presetId) {
+    return Api.fetchJson('/api/quick-presets/' + encodeURIComponent(presetId) + '/export');
+  },
+
+  async importQuickPreset(body) {
+    return Api.fetchJson('/api/quick-presets/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  },
+
   async getPlayerStats(steamId) {
     return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/stats');
   },

@@ -80,6 +80,7 @@ document.addEventListener('alpine:init', () => {
     leaderboard: null,
     playerStats: null,
     route: 'waiting',
+    settingsSubRoute: '',
     steamId: null,
     toastMessage: '',
     toastVisible: false,
@@ -220,7 +221,7 @@ document.addEventListener('alpine:init', () => {
       this.eventSource = Sse.connect(
         (payload) => {
           this.applySnapshot(payload);
-          if (this.route !== 'global-settings' && this.route !== 'settings') {
+          if (this.route !== 'global-settings' && !(this.route === 'settings' && (this.settingsSubRoute === 'customize' || this.settingsSubRoute === ''))) {
             this.loadPageData(false);
           }
         },
@@ -239,7 +240,14 @@ document.addEventListener('alpine:init', () => {
       const hash = location.hash || '#/waiting';
       const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);
       this.route = parts[0] || 'waiting';
-      this.steamId = parts[1] ? String(parts[1]) : null;
+      this.settingsSubRoute = '';
+      this.steamId = null;
+
+      if (this.route === 'settings') {
+        this.settingsSubRoute = parts[1] || '';
+      } else if (this.route === 'player') {
+        this.steamId = parts[1] ? String(parts[1]) : null;
+      }
     },
 
     ensureDefaultRoute() {
@@ -364,7 +372,7 @@ document.addEventListener('alpine:init', () => {
     needsPageRefresh(force) {
       if (force) return true;
       if (this.savingSettingKey) return false;
-      if (this.route === 'global-settings' || this.route === 'settings') return false;
+      if (this.route === 'global-settings' || (this.route === 'settings' && this.settingsSubRoute === 'customize')) return false;
       if (this.route !== this.lastRoute) return true;
       if (this.route === 'player' && this.steamId !== this.lastSteamId) return true;
       if (this.route === 'player' && this.status.isHost) {
@@ -382,7 +390,8 @@ document.addEventListener('alpine:init', () => {
 
     async loadPageData(force) {
       const onGlobalSettings = this.route === 'global-settings';
-      const onSaveSettings = this.route === 'settings' && this.status.isHost;
+      const onSaveSettings = this.route === 'settings' && this.settingsSubRoute === 'customize' && this.status.isHost;
+      const onSaveProfile = this.route === 'settings' && this.settingsSubRoute !== 'customize' && this.status.isHost;
 
       if (!this.status.isConnected && !isOfflineRoute(this.route)) {
         this.pageError = '';
@@ -412,6 +421,9 @@ document.addEventListener('alpine:init', () => {
         }
 
         await this.loadSettingsInPageData(onGlobalSettings, onSaveSettings);
+        if (onSaveProfile) {
+          await this.loadSaveProfileData(force);
+        }
 
         if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
           this.applyMinimapFilter(force);

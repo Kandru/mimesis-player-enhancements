@@ -310,6 +310,26 @@ namespace MimesisPlayerEnhancement
             return string.Equals(sectionId, WebDashboardSectionId, StringComparison.OrdinalIgnoreCase);
         }
 
+        internal static bool IsGlobalOnlySection(string sectionId)
+        {
+            if (string.IsNullOrWhiteSpace(sectionId))
+            {
+                return true;
+            }
+
+            if (string.Equals(sectionId, MainSectionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (IsWebDashboardSection(sectionId))
+            {
+                return true;
+            }
+
+            return string.Equals(sectionId, "MimesisPlayerEnhancement_ExtendedSaveSlots", StringComparison.OrdinalIgnoreCase);
+        }
+
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)
         {
             if (string.IsNullOrWhiteSpace(sectionId) || string.IsNullOrWhiteSpace(key))
@@ -317,17 +337,31 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
-            if (IsWebDashboardSection(sectionId))
+            if (SaveSlotConfigProfile.IsProfileSection(sectionId))
             {
                 return false;
             }
 
-            if (string.Equals(sectionId, "MimesisPlayerEnhancement_ExtendedSaveSlots", StringComparison.OrdinalIgnoreCase))
+            if (IsGlobalOnlySection(sectionId))
             {
                 return false;
             }
 
             return TryGetEntry(sectionId, key, out _);
+        }
+
+        internal static IEnumerable<(string SectionId, string Key)> EnumerateSaveOverrideableKeys()
+        {
+            foreach (string sectionId in GetSectionOrder())
+            {
+                foreach (string key in GetEntryOrder(sectionId))
+                {
+                    if (IsSaveOverrideAllowed(sectionId, key))
+                    {
+                        yield return (sectionId, key);
+                    }
+                }
+            }
         }
 
         internal static bool TryNormalizeRawValue(

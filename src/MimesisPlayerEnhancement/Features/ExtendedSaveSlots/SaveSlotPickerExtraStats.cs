@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
@@ -7,6 +8,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         internal static string FormatLine3(int slotId)
         {
             List<string> parts = [];
+
+            SaveConfigProfileState profile = SaveSlotConfigProfile.TryReadFromDisk(slotId);
+            parts.Add(SaveSlotConfigProfile.GetDisplayLabel(profile));
 
             LeaderboardDocument? leaderboard = LoadLeaderboard(slotId);
             if (leaderboard?.Entries is { Count: > 0 } entries)

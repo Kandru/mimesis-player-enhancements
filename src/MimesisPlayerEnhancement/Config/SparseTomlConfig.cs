@@ -127,9 +127,14 @@ namespace MimesisPlayerEnhancement
 
         internal static bool IsEmpty(Document doc)
         {
-            foreach (Dictionary<string, string> keys in doc.Sections.Values)
+            foreach (KeyValuePair<string, Dictionary<string, string>> section in doc.Sections)
             {
-                if (keys.Count > 0)
+                if (SaveSlotConfigProfile.IsProfileSection(section.Key) && section.Value.Count > 0)
+                {
+                    return false;
+                }
+
+                if (section.Value.Count > 0 && !SaveSlotConfigProfile.IsProfileSection(section.Key))
                 {
                     return false;
                 }

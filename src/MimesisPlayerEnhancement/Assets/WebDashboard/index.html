@@ -8,6 +8,7 @@
   <title>Mimesis Player Enhancement</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/settings.css">
+  <link rel="stylesheet" href="/css/settings-profile.css">
 </head>
 
 <body class="waiting" x-data="dashboard()" x-init="init()">
@@ -427,13 +428,96 @@
             </div>
           </template>
 
-          <!-- Settings (global or per-save) -->
+          <!-- Save settings profile picker -->
+          <div x-show="showSettingsProfilePage()" x-cloak>
+            <div class="empty-state" x-show="!canEditCurrentSettings()">
+              <p x-text="t('dashboard.settings_host_only')"></p>
+            </div>
+
+            <div class="settings-profile-page" x-show="canEditCurrentSettings()">
+              <h2 class="page-heading" x-text="t('dashboard.settings_profile_heading')"></h2>
+              <p class="settings-profile-intro" x-text="t('dashboard.settings_profile_intro')"></p>
+
+              <div class="loading-panel" x-show="loadingSaveProfile && !pageError">
+                <div class="spinner" role="progressbar" :aria-label="t('dashboard.settings_loading_aria')"></div>
+              </div>
+
+              <div class="settings-profile-grid" x-show="!loadingSaveProfile">
+                <button type="button" class="settings-preset-card is-global surface-card"
+                  :class="presetCardClass({ mode: 'global' })"
+                  :disabled="applyingProfile"
+                  @click="applySaveProfileMode('global')">
+                  <span class="settings-preset-card-title" x-text="t('dashboard.settings_profile_global_title')"></span>
+                  <span class="settings-preset-card-desc" x-text="t('dashboard.settings_profile_global_desc')"></span>
+                </button>
+
+                <template x-for="preset in builtinPresets()" :key="preset.id">
+                  <button type="button" class="settings-preset-card surface-card"
+                    :class="presetCardClass(preset)"
+                    :disabled="applyingProfile"
+                    @click="applySaveProfileMode('quick', preset.id)">
+                    <span class="settings-preset-card-title" x-text="preset.name"></span>
+                    <span class="settings-preset-card-desc" x-show="preset.description" x-text="preset.description"></span>
+                  </button>
+                </template>
+
+                <template x-for="preset in userPresets()" :key="preset.id">
+                  <button type="button" class="settings-preset-card surface-card"
+                    :class="presetCardClass(preset)"
+                    :disabled="applyingProfile"
+                    @click="applySaveProfileMode('quick', preset.id)">
+                    <span class="settings-preset-card-title" x-text="preset.name"></span>
+                    <span class="settings-preset-card-meta" x-text="preset.id"></span>
+                  </button>
+                </template>
+              </div>
+
+              <div class="settings-profile-actions">
+                <button type="button" class="btn btn-primary" @click="goToCustomizeSettings()"
+                  x-text="t('dashboard.settings_profile_customize')"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings customize (global or per-save) -->
           <div x-show="showSettingsPage()" x-cloak>
             <div class="empty-state" x-show="!canEditCurrentSettings()">
               <p x-text="t('dashboard.settings_host_only')"></p>
             </div>
 
             <div class="settings-page" x-show="canEditCurrentSettings()">
+              <div class="settings-profile-actions" x-show="route === 'settings' && settingsSubRoute === 'customize'">
+                <button type="button" class="btn btn-outlined" @click="backToProfilePicker()"
+                  x-text="t('dashboard.settings_profile_back')"></button>
+              </div>
+
+              <div class="settings-profile-banner surface-card" x-show="customizeBannerText()"
+                x-text="customizeBannerText()"></div>
+
+              <div class="settings-customize-toolbar surface-card"
+                x-show="route === 'settings' && settingsSubRoute === 'customize'">
+                <select class="settings-input settings-select" x-model="selectedLoadPresetId">
+                  <option value="" x-text="t('dashboard.quick_preset_load_placeholder')"></option>
+                  <template x-for="preset in loadablePresets()" :key="preset.id">
+                    <option :value="preset.id" x-text="preset.name"></option>
+                  </template>
+                </select>
+                <button type="button" class="btn btn-outlined" :disabled="!selectedLoadPresetId || applyingProfile"
+                  @click="loadSelectedPreset()" x-text="t('dashboard.quick_preset_load')"></button>
+                <button type="button" class="btn btn-outlined" :disabled="savingQuickPreset"
+                  @click="saveCurrentAsPreset(false)" x-text="t('dashboard.quick_preset_save_new')"></button>
+                <button type="button" class="btn btn-outlined" :disabled="savingQuickPreset || !canOverwriteSelectedPreset()"
+                  :title="selectedPresetIsBuiltin() ? t('dashboard.quick_preset_builtin_readonly') : ''"
+                  @click="saveCurrentAsPreset(true)" x-text="t('dashboard.quick_preset_overwrite')"></button>
+                <button type="button" class="btn btn-outlined" @click="openExportShareModal()"
+                  x-text="t('dashboard.quick_share_export')"></button>
+                <button type="button" class="btn btn-outlined" @click="openImportShareModal()"
+                  x-text="t('dashboard.quick_share_import')"></button>
+                <button type="button" class="btn btn-text" :disabled="!canDeleteSelectedPreset()"
+                  :title="selectedPresetIsBuiltin() ? t('dashboard.quick_preset_builtin_readonly') : ''"
+                  @click="deleteSelectedUserPreset()" x-text="t('dashboard.quick_preset_delete')"></button>
+              </div>
+
               <h2 class="page-heading" x-text="settingsPageHeading()"></h2>
 
               <div class="settings-search-panel surface-card" x-show="settingsDataReady()">
@@ -671,6 +755,26 @@
             </div>
           </div>
 
+          <div class="settings-share-modal surface-card" x-show="shareModalOpen" x-cloak>
+            <h3 class="page-heading" x-text="shareModalMode === 'export'
+              ? t('dashboard.quick_share_export_heading')
+              : t('dashboard.quick_share_import_heading')"></h3>
+            <label x-show="shareModalMode === 'import'">
+              <span x-text="t('dashboard.quick_preset_name_prompt')"></span>
+              <input type="text" class="settings-input" x-model="shareModalName">
+            </label>
+            <textarea class="settings-input" x-model="shareModalText"
+              :placeholder="t('dashboard.quick_share_placeholder')"></textarea>
+            <div class="settings-profile-actions">
+              <button type="button" class="btn btn-outlined" @click="closeShareModal()"
+                x-text="t('dashboard.quick_share_close')"></button>
+              <button type="button" class="btn btn-outlined" x-show="shareModalMode === 'export'" @click="copyShareString()"
+                x-text="t('dashboard.quick_share_copy')"></button>
+              <button type="button" class="btn btn-primary" x-show="shareModalMode === 'import'" @click="importShareString()"
+                x-text="t('dashboard.quick_share_import')"></button>
+            </div>
+          </div>
+
         </section>
       </div>
     </main>
@@ -686,6 +790,7 @@
   <script defer src="/js/settings-format.js"></script>
   <script defer src="/js/settings-token-input.js"></script>
   <script defer src="/js/settings.js"></script>
+  <script defer src="/js/settings-profile.js"></script>
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/alpine.min.js"></script>
 </body>

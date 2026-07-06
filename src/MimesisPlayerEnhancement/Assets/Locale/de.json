@@ -592,7 +592,43 @@
     "player_delete_success": "Spielerdaten gelöscht.",
     "player_delete_not_found": "Keine gespeicherten Spielerdaten für diese Steam-ID gefunden.",
     "player_delete_connected": "Spielerdaten können nicht gelöscht werden, solange der Spieler verbunden ist.",
-    "cannot_delete_host": "Lokale Host-Spielerdaten können nicht gelöscht werden."
+    "cannot_delete_host": "Lokale Host-Spielerdaten können nicht gelöscht werden.",
+    "quick_preset_not_found": "Schnelleinstellung nicht gefunden.",
+    "quick_preset_builtin_readonly": "Integrierte Schnelleinstellungen können nicht geändert werden.",
+    "quick_preset_exists": "Eine Benutzer-Schnelleinstellung mit dieser ID existiert bereits.",
+    "quick_preset_invalid_id": "Ungültige Schnelleinstellungs-ID.",
+    "quick_preset_imported": "Schnelleinstellung importiert.",
+    "quick_preset_deleted": "Schnelleinstellung gelöscht.",
+    "quick_share_invalid": "Ungültiger Freigabe-String.",
+    "quick_share_unsupported_version": "Nicht unterstützte Freigabe-String-Version.",
+    "quick_share_empty": "Freigabe-String enthält keine Einstellungen.",
+    "quick_profile_global_applied": "Spielstand nutzt jetzt globale Einstellungen.",
+    "quick_profile_preset_applied": "Schnelleinstellung auf diesen Spielstand angewendet.",
+    "quick_profile_custom_applied": "Spielstand auf benutzerdefinierte Einstellungen umgestellt."
+  },
+  "quicksettings": {
+    "profile": {
+      "global": "Globale Einstellungen",
+      "custom": "Benutzerdefinierte Einstellungen"
+    },
+    "presets": {
+      "loot_picnic": {
+        "name": "Beute-Picknick",
+        "description": "Viel Beute, wenig Gegner — entspannt erkunden und sammeln."
+      },
+      "as_intended": {
+        "name": "Wie Gedacht™",
+        "description": "Vanilla-Gameplay mit Mehr Spieler und Jederzeit Beitreten."
+      },
+      "full_house": {
+        "name": "Volles Haus",
+        "description": "Die meisten Features an, +10 % Skalierung pro Spieler über 4."
+      },
+      "abandon_hope": {
+        "name": "Gebt die Hoffnung auf",
+        "description": "Brutale Spawns, höhere Geldkosten und starke Spieleranzahl-Skalierung."
+      }
+    }
   },
   "dashboard": {
     "title_default": "Mimesis Player Enhancement",
@@ -687,6 +723,38 @@
     "minimap_you_suffix": " (du)",
     "leaderboard_heading": "Bestenliste",
     "settings_heading": "Einstellungen",
+    "settings_customize_heading": "Spielstand-Einstellungen anpassen",
+    "settings_profile_heading": "Spielstand-Einstellungsprofil",
+    "settings_profile_intro": "Wähle eine Schnelleinstellung für diesen Spielstand, nutze globale Defaults oder passe jeden Wert an.",
+    "settings_profile_current": "Aktives Profil",
+    "settings_profile_global_title": "Globale Einstellungen verwenden",
+    "settings_profile_global_desc": "Globale Defaults aus den Globalen Einstellungen ohne spielstandsbezogene Overrides.",
+    "settings_profile_customize": "Einstellungen anpassen",
+    "settings_profile_back": "Zurück zu Profilen",
+    "quick_profile_applied": "Spielstandsprofil aktualisiert.",
+    "quick_customize_banner": "Aktives Preset: {label} — Änderungen schalten diesen Spielstand auf benutzerdefinierte Einstellungen um.",
+    "quick_preset_load_placeholder": "Preset laden…",
+    "quick_preset_load": "Preset laden",
+    "quick_preset_save_new": "Als neues Preset speichern",
+    "quick_preset_overwrite": "Ausgewähltes Preset überschreiben",
+    "quick_preset_delete": "Ausgewähltes Preset löschen",
+    "quick_preset_builtin_readonly": "Integrierte Presets können nicht geändert oder gelöscht werden.",
+    "quick_preset_name_prompt": "Preset-Name",
+    "quick_preset_overwrite_prompt": "Name für Preset (Ausgewähltes überschreiben)",
+    "quick_preset_saved": "Preset \"{name}\" gespeichert.",
+    "quick_preset_deleted": "Preset gelöscht.",
+    "quick_preset_delete_confirm": "Preset \"{name}\" löschen?",
+    "quick_preset_imported": "Preset importiert.",
+    "quick_share_export": "Freigabe-String exportieren",
+    "quick_share_import": "Freigabe-String importieren",
+    "quick_share_export_heading": "Einstellungen exportieren",
+    "quick_share_import_heading": "Einstellungen importieren",
+    "quick_share_placeholder": "MPE1:… Freigabe-String hier einfügen",
+    "quick_share_copy": "In Zwischenablage kopieren",
+    "quick_share_copied": "Freigabe-String kopiert.",
+    "quick_share_copy_failed": "Kopieren in die Zwischenablage fehlgeschlagen.",
+    "quick_share_close": "Schließen",
+    "cancel": "Abbrechen",
     "settings_global_heading": "Globale Einstellungen",
     "settings_search_label": "Einstellungen suchen",
     "settings_search_placeholder": "Einstellungen suchen…",

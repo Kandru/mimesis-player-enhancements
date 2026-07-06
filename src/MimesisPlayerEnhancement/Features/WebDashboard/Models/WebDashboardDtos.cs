@@ -178,6 +178,76 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int SaveSlotId = -1;
         public string Scope = "";
         public List<WebDashboardConfigSectionDto> Sections = [];
+        public WebDashboardSaveProfileDto? Profile;
+    }
+
+    internal sealed class WebDashboardSaveProfileDto
+    {
+        public string Mode = "global";
+        public string PresetId = "";
+        public string Label = "";
+    }
+
+    internal sealed class WebDashboardQuickPresetDto
+    {
+        public string Id = "";
+        public string Name = "";
+        public string? Description;
+        public bool IsBuiltin;
+        public int Revision;
+        public string? CreatedUtc;
+        public string? UpdatedUtc;
+    }
+
+    internal sealed class WebDashboardQuickPresetsListDto
+    {
+        public List<WebDashboardQuickPresetDto> Presets = [];
+    }
+
+    internal sealed class WebDashboardSaveProfileRequest
+    {
+        public string Mode = "";
+        public string PresetId = "";
+    }
+
+    internal sealed class WebDashboardSaveProfileResponseDto
+    {
+        public bool Success = true;
+        public WebDashboardSaveProfileDto Profile = new();
+        public int ConfigVersion;
+        public string Message = "";
+    }
+
+    internal sealed class WebDashboardQuickPresetSaveRequest
+    {
+        public string PresetId = "";
+        public string Name = "";
+        public bool OverwriteExisting = false;
+        public bool FromCurrentSave = true;
+        public Dictionary<string, Dictionary<string, string>>? Values = null;
+    }
+
+    internal sealed class WebDashboardQuickPresetImportRequest
+    {
+        public string ShareString = "";
+        public string? Name = null;
+        public string PresetId = "";
+        public bool OverwriteExisting = false;
+        public bool SaveOnly = true;
+    }
+
+    internal sealed class WebDashboardQuickPresetShareDto
+    {
+        public string ShareString = "";
+        public string Name = "";
+    }
+
+    internal sealed class WebDashboardQuickPresetImportResultDto
+    {
+        public bool Success;
+        public string Message = "";
+        public WebDashboardQuickPresetDto? Preset;
+        public string ShareString = "";
     }
 
     internal sealed class WebDashboardConfigSectionDto

@@ -67,6 +67,20 @@ namespace MimesisPlayerEnhancement
 
         internal static string? GetOverridesPath(int slotId) => GetSidecarPath(slotId, "overrides");
 
+        /// <summary>
+        /// Account-level user quick presets (not tied to a save slot). Uses MMGameData*.sav for Steam Auto-Cloud.
+        /// </summary>
+        internal static string? GetUserQuickPresetsPath()
+        {
+            string? saveFolder = GetSaveFolderPath();
+            if (string.IsNullOrEmpty(saveFolder))
+            {
+                return null;
+            }
+
+            return Path.Combine(saveFolder, "MMGameData.mpe-quick-presets.sav");
+        }
+
         internal static string? GetStatisticsPath(int slotId) => GetSidecarPath(slotId, "stats");
 
         internal static string? GetPlayerNamesPath(int slotId) => GetSidecarPath(slotId, "names");

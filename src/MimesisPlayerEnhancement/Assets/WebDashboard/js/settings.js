@@ -69,7 +69,7 @@ function createSettingsMixin() {
 
     showSettingsPage() {
       if (this.route === 'global-settings') return true;
-      return this.route === 'settings' && this.status.isConnected;
+      return this.route === 'settings' && this.settingsSubRoute === 'customize' && this.status.isConnected;
     },
 
     canEditCurrentSettings() {
@@ -80,9 +80,13 @@ function createSettingsMixin() {
     },
 
     settingsPageHeading() {
-      return this.route === 'global-settings'
-        ? this.t('dashboard.settings_global_heading')
-        : this.t('dashboard.settings_heading');
+      if (this.route === 'global-settings') {
+        return this.t('dashboard.settings_global_heading');
+      }
+      if (this.route === 'settings' && this.settingsSubRoute === 'customize') {
+        return this.t('dashboard.settings_customize_heading');
+      }
+      return this.t('dashboard.settings_heading');
     },
 
     settingsPathLabel() {
@@ -141,7 +145,7 @@ function createSettingsMixin() {
     },
 
     handleSettingsOnSnapshot() {
-      if (this.route !== 'settings' || !this.status.isHost) return;
+      if (this.route !== 'settings' || this.settingsSubRoute !== 'customize' || !this.status.isHost) return;
       const slotId = this.status.saveSlotId;
       if (this.lastLoadedSaveSlotId >= 0 && slotId !== this.lastLoadedSaveSlotId) {
         this.settingsSave = null;
@@ -175,10 +179,13 @@ function createSettingsMixin() {
         try {
           this.settingsSave = await Api.getSaveSettings();
           this.lastLoadedSaveSlotId = this.status.saveSlotId;
+          if (this.saveProfile == null) {
+            this.saveProfile = { profile: this.settingsSave.profile || { mode: 'global', label: '' } };
+          }
         } finally {
           if (initialLoad) this.loadingSettings = false;
         }
-      } else if (this.route !== 'settings') {
+      } else if (this.route !== 'settings' || this.settingsSubRoute !== 'customize') {
         this.settingsSave = null;
         if (this.route !== 'global-settings') {
           this.settingsQuery = '';
@@ -509,6 +516,7 @@ function createSettingsMixin() {
 
 function applySettingsMixin(target) {
   applyTokenInputMixin(target);
+  applySettingsProfileMixin(target);
   Object.defineProperties(target, Object.getOwnPropertyDescriptors(createSettingsMixin()));
   return target;
 }

@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -186,6 +187,159 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     saveRequest.Value ?? "");
 
                 WriteJson(context, saveResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(saveResult));
+                return;
+            }
+
+            if (path == "/api/settings/save/profile" && method == "GET")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                int profileSlotId = WebDashboardGameState.GetSaveSlotId();
+                WebDashboardSaveProfileResponseDto profileResponse = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardQuickSettingsBridge.BuildSaveProfile(profileSlotId));
+                WriteJson(context, 200, ModJson.Serialize(profileResponse));
+                return;
+            }
+
+            if (path == "/api/settings/save/profile" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardSaveProfileRequest? profileRequest = ModJson.Deserialize<WebDashboardSaveProfileRequest>(ReadRequestBody(context.Request));
+                if (profileRequest == null || string.IsNullOrWhiteSpace(profileRequest.Mode))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                int profileSlotId = WebDashboardGameState.GetSaveSlotId();
+                WebDashboardSaveProfileResponseDto profileResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardQuickSettingsBridge.ApplySaveProfile(profileSlotId, profileRequest));
+                WriteJson(context, profileResult.Success ? 200 : 400, ModJson.Serialize(profileResult));
+                return;
+            }
+
+            if (path == "/api/quick-presets" && method == "GET")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardQuickPresetsListDto presetList = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    WebDashboardQuickSettingsBridge.BuildPresetList);
+                WriteJson(context, 200, ModJson.Serialize(presetList));
+                return;
+            }
+
+            if (path == "/api/quick-presets" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardQuickPresetSaveRequest? savePresetRequest = ModJson.Deserialize<WebDashboardQuickPresetSaveRequest>(ReadRequestBody(context.Request));
+                if (savePresetRequest == null || string.IsNullOrWhiteSpace(savePresetRequest.Name))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                WebDashboardQuickPresetDto? savedPreset = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardQuickSettingsBridge.SaveUserPreset(savePresetRequest));
+                if (savedPreset == null)
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("failed_apply")));
+                    return;
+                }
+
+                WriteJson(context, 200, ModJson.Serialize(savedPreset));
+                return;
+            }
+
+            if (path == "/api/quick-presets/import" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardQuickPresetImportRequest? importRequest = ModJson.Deserialize<WebDashboardQuickPresetImportRequest>(ReadRequestBody(context.Request));
+                if (importRequest == null || string.IsNullOrWhiteSpace(importRequest.ShareString))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("quick_share_invalid")));
+                    return;
+                }
+
+                int importSlotId = WebDashboardGameState.GetSaveSlotId();
+                WebDashboardQuickPresetImportResultDto importResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardQuickSettingsBridge.ImportShareString(importSlotId, importRequest));
+                WriteJson(context, importResult.Success ? 200 : 400, ModJson.Serialize(importResult));
+                return;
+            }
+
+            if (path.StartsWith("/api/quick-presets/", StringComparison.Ordinal) && method == "DELETE")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                string deleteId = Uri.UnescapeDataString(path["/api/quick-presets/".Length..]);
+                string? deleteErrorMsg = null;
+                bool deleted = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardQuickSettingsBridge.DeleteUserPreset(deleteId, out deleteErrorMsg));
+                if (!deleted)
+                {
+                    WriteJson(context, BuiltinQuickSettings.IsBuiltin(deleteId) ? 403 : 404, WebDashboardJson.SerializeError(404, !string.IsNullOrEmpty(deleteErrorMsg) ? deleteErrorMsg : L("quick_preset_not_found")));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardJson.SerializeActionResult(new WebDashboardActionResult
+                {
+                    Success = true,
+                    Message = L("quick_preset_deleted"),
+                }));
+                return;
+            }
+
+            if (path.StartsWith("/api/quick-presets/", StringComparison.Ordinal) && path.EndsWith("/export", StringComparison.Ordinal) && method == "GET")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                string exportPath = path["/api/quick-presets/".Length..];
+                exportPath = exportPath[..^"/export".Length];
+                string exportId = Uri.UnescapeDataString(exportPath);
+                WebDashboardQuickPresetShareDto exportDto;
+                if (string.Equals(exportId, "current", StringComparison.OrdinalIgnoreCase))
+                {
+                    int exportSlotId = WebDashboardGameState.GetSaveSlotId();
+                    exportDto = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardQuickSettingsBridge.ExportCurrentSave(exportSlotId));
+                }
+                else
+                {
+                    exportDto = WebDashboardQuickSettingsBridge.ExportPreset(exportId);
+                }
+
+                WriteJson(context, 200, ModJson.Serialize(exportDto));
                 return;
             }
 

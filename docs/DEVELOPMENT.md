@@ -14,6 +14,7 @@ Architecture and conventions for working on Mimesis Player Enhancement. For AI a
 | `src/MimesisInspectionTool/`, `src/MimesisReflectionTool/` | Dev-time metadata / MelonLoader reflection |
 | `deps/reference/` | Bootstrap game assemblies; `deps/decompiled/` for patch design (gitignored) |
 | `dist/debug/`, `dist/prod/` | Build output (not committed) |
+| [CUSTOM_GAME_MODELS.md](CUSTOM_GAME_MODELS.md) | Runtime OBJ meshes, materials, spawn patterns for mod world geometry |
 
 ## Architecture
 
