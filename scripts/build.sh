@@ -4,7 +4,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-"$ROOT/scripts/bootstrap-deps.sh"
+REF="$ROOT/deps/reference"
+if [[ ! -f "$REF/Managed/Assembly-CSharp.dll" || ! -f "$REF/MelonLoader/net35/MelonLoader.dll" ]]; then
+  "$ROOT/scripts/bootstrap-deps.sh"
+fi
 
 CONFIG="${1:-Debug}"
 shift || true

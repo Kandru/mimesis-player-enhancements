@@ -8,14 +8,18 @@ REF_DIR="$DEPS_DIR/reference"
 REFERENCE_LIBS_VERSION="${REFERENCE_LIBS_VERSION:-1.0.0}"
 REFERENCE_LIBS_ZIP="mimesis-reference-libs-${REFERENCE_LIBS_VERSION}.zip"
 
+reference_libs_present() {
+  [[ -f "$REF_DIR/Managed/Assembly-CSharp.dll" && -f "$REF_DIR/MelonLoader/net35/MelonLoader.dll" ]]
+}
+
+if reference_libs_present; then
+  exit 0
+fi
+
 mkdir -p "$REF_DIR/Managed" "$REF_DIR/MelonLoader/net35"
 
 # --- Reference assemblies (compile-only; no game install required on CI) ---
 ensure_reference_libs() {
-  if [[ -f "$REF_DIR/Managed/Assembly-CSharp.dll" && -f "$REF_DIR/MelonLoader/net35/MelonLoader.dll" ]]; then
-    echo "Reference libs already present in deps/reference/"
-    return 0
-  fi
 
   local zip_path="$DEPS_DIR/$REFERENCE_LIBS_ZIP"
   if [[ -f "$zip_path" ]]; then

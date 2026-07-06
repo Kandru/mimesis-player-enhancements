@@ -68,7 +68,10 @@ ZIP_NAME="mpe${VERSION}.zip"
 ZIP_PATH="$OUT_DIR/$ZIP_NAME"
 
 echo "==> Building release (v${VERSION})"
-"$ROOT/scripts/bootstrap-deps.sh"
+REF="$ROOT/deps/reference"
+if [[ ! -f "$REF/Managed/Assembly-CSharp.dll" || ! -f "$REF/MelonLoader/net35/MelonLoader.dll" ]]; then
+  "$ROOT/scripts/bootstrap-deps.sh"
+fi
 dotnet build "$ROOT/src/MimesisPlayerEnhancement/MimesisPlayerEnhancement.csproj" -c Release
 
 if [[ ! -f "$BUILD_OUT/MimesisPlayerEnhancement.dll" ]]; then
