@@ -126,9 +126,11 @@
                   <div class="player-entry-meta">
                     <div class="player-entry-name">
                       <span class="player-entry-display-name" x-text="p.displayName"></span>
-                      <span class="badge ping" :class="pingClass(p)" :title="'Connection: ' + pingLabel(p)"
+                      <span class="badge ping" :class="pingClass(p)"
+                        :title="t('dashboard.connection_label', { label: pingLabel(p) })"
                         x-text="pingLabel(p)"></span>
-                      <a class="badge badge-link" x-show="status.isHost" :href="'#/player/' + p.steamId">Stats</a>
+                      <a class="badge badge-link" x-show="status.isHost" :href="'#/player/' + p.steamId"
+                        x-text="t('dashboard.badge_stats')"></a>
                       <span class="badge host" x-show="p.isHost" x-text="t('dashboard.badge_host')"></span>
                       <span class="badge local" x-show="p.isLocal" x-text="t('dashboard.badge_you')"></span>
                       <span class="badge alive" x-show="showPlayerAliveState(p) && p.isAlive"
@@ -165,7 +167,7 @@
                       x-show="playerDetailLines(p).stats || showPlayerVitals(p)">
                       <span x-show="playerDetailLines(p).stats" x-text="playerDetailLines(p).stats"></span>
                       <span class="player-entry-vitals" x-show="showPlayerVitals(p)">
-                        <span class="vital-bar" title="Health">
+                        <span class="vital-bar" :title="t('dashboard.vital_health')">
                           <span class="vital-bar-label">HP</span>
                           <span class="vital-bar-track">
                             <span class="vital-bar-fill health"
@@ -173,7 +175,7 @@
                             <span class="vital-bar-value" x-text="formatVitalPercent(vitalsPercent(p).health)"></span>
                           </span>
                         </span>
-                        <span class="vital-bar" title="Toxicity">
+                        <span class="vital-bar" :title="t('dashboard.vital_toxic')">
                           <span class="vital-bar-label">Tox</span>
                           <span class="vital-bar-track">
                             <span class="vital-bar-fill toxic"
@@ -183,21 +185,29 @@
                         </span>
                       </span>
                     </small>
-                    <div class="player-entry-spawn" x-show="canGiveItem(p) && itemCatalog.length > 0">
+                    <div class="player-entry-spawn" x-show="canGiveItem(p) && itemCatalog.length > 0"
+                      :key="'spawn-ui-' + p.steamId + '-' + (canGiveItem(p) ? 1 : 0)"
+                      x-init="syncSpawnSelection(p.steamId)">
                       <label class="spawn-item-label" x-text="t('dashboard.spawn_item')"></label>
                       <select class="spawn-item-select" :value="getSpawnItemId(p.steamId)"
                         @change="setSpawnItemId(p.steamId, $event.target.value)">
-                        <template x-for="item in itemCatalog" :key="item.id">
-                          <option :value="item.id" x-text="item.label"></option>
+                        <template x-for="group in getItemCatalogGroups()" :key="group.id">
+                          <optgroup :label="group.label">
+                            <template x-for="item in group.items" :key="item.id">
+                              <option :value="item.id" x-text="item.label"></option>
+                            </template>
+                          </optgroup>
                         </template>
                       </select>
-                      <select class="spawn-item-select" x-show="hasItemVariants(p.steamId)"
-                        :value="getSpawnPercent(p.steamId)"
-                        @change="setSpawnPercent(p.steamId, $event.target.value)">
-                        <template x-for="variant in getItemVariants(p.steamId)" :key="variant.percent">
-                          <option :value="variant.percent" x-text="formatSpawnPercent(variant.percent)"></option>
-                        </template>
-                      </select>
+                      <template x-if="hasItemVariants(p.steamId)">
+                        <select class="spawn-item-select"
+                          :key="'spawn-pct-' + p.steamId + '-' + getSpawnItemId(p.steamId)"
+                          x-model.number="spawnSelections[String(p.steamId)].percent">
+                          <template x-for="variant in getItemVariants(p.steamId)" :key="variant.percent">
+                            <option :value="variant.percent" x-text="formatSpawnPercent(variant.percent)"></option>
+                          </template>
+                        </select>
+                      </template>
                       <button class="btn btn-outlined btn-compact" type="button" @click="giveItem(p)"
                         x-text="t('dashboard.spawn_item_give')"></button>
                     </div>
@@ -207,7 +217,7 @@
             </div>
             <section class="players-stored-section" x-show="storedOverviewPlayers().length > 0">
               <h3 class="players-stored-title">
-                Previously connected
+                <span x-text="t('dashboard.previously_connected')"></span>
                 <span class="players-stored-count" x-text="'(' + storedOverviewPlayers().length + ')'"></span>
               </h3>
               <div class="player-chips">
@@ -216,7 +226,7 @@
                     <a class="player-chip" :class="{ banned: p.isBanned }" :href="'#/player/' + p.steamId"
                       x-text="p.displayName"></a>
                     <button type="button" class="btn btn-text btn-compact player-chip-unban" x-show="p.isBanned"
-                      @click="moderate(p.steamId, 'unban')">Unban</button>
+                      @click="moderate(p.steamId, 'unban')" x-text="t('dashboard.unban')"></button>
                   </span>
                 </template>
               </div>
@@ -225,19 +235,20 @@
 
           <!-- Minimap -->
           <div x-show="status.isConnected && route === 'minimap'" x-cloak>
-            <h2 class="page-heading">Minimap</h2>
+            <h2 class="page-heading" x-text="t('dashboard.minimap_heading')"></h2>
             <div class="minimap-toolbar surface-card">
               <div class="minimap-toolbar-group">
-                <label class="minimap-label" for="minimap-focus">Focus player</label>
+                <label class="minimap-label" for="minimap-focus" x-text="t('dashboard.minimap_focus')"></label>
                 <select id="minimap-focus" class="settings-input settings-select minimap-select"
                   :value="resolveMinimapFocus()" @change="onMinimapFocusChange($event)">
                   <template x-for="p in minimapFocusOptions()" :key="p.steamId">
-                    <option :value="String(p.steamId)" x-text="p.displayName + (p.isLocal ? ' (you)' : '')"></option>
+                    <option :value="String(p.steamId)"
+                      x-text="p.displayName + (p.isLocal ? t('dashboard.minimap_you_suffix') : '')"></option>
                   </template>
                 </select>
               </div>
               <div class="minimap-toolbar-group" x-show="!isMinimapUserCentric() && minimapAreaOptions().length > 1">
-                <label class="minimap-label" for="minimap-area">Area</label>
+                <label class="minimap-label" for="minimap-area" x-text="t('dashboard.minimap_area')"></label>
                 <select id="minimap-area" class="settings-input settings-select minimap-select"
                   :value="minimap.activeAreaId || minimapAreaId" @change="onMinimapAreaChange($event)">
                   <template x-for="area in minimapAreaOptions()" :key="area.id">
@@ -247,7 +258,7 @@
               </div>
               <label class="minimap-toggle" x-show="status.isHost">
                 <input type="checkbox" :checked="minimapShowAll" @change="onMinimapShowAllChange($event)">
-                <span>Show all alive players</span>
+                <span x-text="t('dashboard.minimap_show_all')"></span>
               </label>
             </div>
             <div class="empty-state" x-show="pageError">
@@ -255,14 +266,14 @@
             </div>
             <div class="minimap-panel surface-card" x-show="!pageError">
               <div class="minimap-meta" x-show="minimap">
-                <span class="minimap-scene" x-text="minimap?.sceneLabel || 'Session'"></span>
+                <span class="minimap-scene" x-text="minimap?.sceneLabel || t('dashboard.minimap_session')"></span>
                 <span class="minimap-area" x-show="minimap?.activeAreaLabel" x-text="minimap?.activeAreaLabel"></span>
-                <span class="minimap-mode" x-show="isMinimapUserCentric()">Following player</span>
+                <span class="minimap-mode" x-show="isMinimapUserCentric()" x-text="t('dashboard.minimap_following')"></span>
               </div>
               <div class="empty-state minimap-unavailable" x-show="!minimapShowsMap()">
                 <p x-text="isMinimapUserCentric() && minimap?.layoutKind === 'dungeon'
-                  ? 'Focused player is in the tram — no map available.'
-                  : 'No map available for this scene.'"></p>
+                  ? t('dashboard.minimap_no_map_tram')
+                  : t('dashboard.minimap_no_map')"></p>
               </div>
               <div class="minimap-canvas-wrap" x-show="minimapShowsMap()">
                 <svg class="minimap-canvas" data-minimap-svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"
@@ -278,9 +289,8 @@
                 </div>
               </template>
               <p class="minimap-hint"
-                x-show="minimapShowsMap() && minimap?.layoutKind === 'dungeon' && !minimapHasTileLayout()">
-                Dungeon layout is still generating or unavailable. Player markers will appear once positions are known.
-              </p>
+                x-show="minimapShowsMap() && minimap?.layoutKind === 'dungeon' && !minimapHasTileLayout()"
+                x-text="t('dashboard.minimap_layout_hint')"></p>
             </div>
           </div>
 
@@ -288,32 +298,33 @@
           <div x-show="status.isConnected && route === 'leaderboard'" x-cloak>
             <template x-if="!status.isHost">
               <div class="empty-state">
-                <p>Leaderboard is only available to the host.</p>
+                <p x-text="t('dashboard.leaderboard_host_only')"></p>
               </div>
             </template>
             <template x-if="status.isHost">
               <div>
-                <h2 class="page-heading">Leaderboard</h2>
+                <h2 class="page-heading" x-text="t('dashboard.leaderboard_heading')"></h2>
                 <div class="empty-state" x-show="pageError">
                   <p x-text="pageError"></p>
                 </div>
                 <div class="empty-state"
                   x-show="!pageError && (!leaderboard || !leaderboard.entries || leaderboard.entries.length === 0)">
-                  <p>No leaderboard data for this save slot yet.</p>
+                  <p x-text="t('dashboard.leaderboard_no_data')"></p>
                 </div>
                 <template x-if="leaderboard && leaderboard.entries && leaderboard.entries.length > 0">
                   <div>
-                    <p class="table-meta" x-text="'Updated ' + (leaderboard.updatedAtUtc || '—')"></p>
+                    <p class="table-meta"
+                      x-text="t('dashboard.leaderboard_updated', { time: leaderboard.updatedAtUtc || '—' })"></p>
                     <div class="table-wrap">
                       <table>
                         <thead>
                           <tr>
-                            <th>Player</th>
-                            <th>Currency</th>
-                            <th>Mimics</th>
-                            <th>Items</th>
-                            <th>D/R</th>
-                            <th>Time</th>
+                            <th x-text="t('dashboard.leaderboard_col_player')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_currency')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_mimics')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_items')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_deaths_revives')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_time')"></th>
                           </tr>
                         </thead>
                         <tbody>

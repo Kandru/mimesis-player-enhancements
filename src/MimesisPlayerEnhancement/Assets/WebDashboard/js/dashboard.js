@@ -487,7 +487,7 @@ document.addEventListener('alpine:init', () => {
         parts.push(Math.round(p.lateJoinStuckSeconds) + 's');
       }
       if (p.lateJoinAttemptCount > 1) {
-        parts.push(p.lateJoinAttemptCount + ' attempts');
+        parts.push(t('dashboard.late_join_attempts', { count: p.lateJoinAttemptCount }));
       }
       return parts.join(' · ');
     },
@@ -500,21 +500,32 @@ document.addEventListener('alpine:init', () => {
       const s = p.currentSession;
       if (!s) return '';
       const parts = [];
-      if (s.currencyEarned) parts.push(s.currencyEarned + ' currency');
-      parts.push(
-        (s.survivalWins ?? 0) + 'W/' +
-        (s.survivalDeaths ?? 0) + 'D/' +
-        (s.survivalLeftBehind ?? 0) + 'L'
-      );
-      if (s.deathmatchWins || s.deathmatchDeaths) {
-        parts.push((s.deathmatchWins ?? 0) + '/' + (s.deathmatchDeaths ?? 0) + ' DM W/D');
+      if (s.currencyEarned) {
+        parts.push(t('dashboard.session_line_currency', { count: s.currencyEarned }));
       }
-      if (s.revives) parts.push(s.revives + ' revives');
+      parts.push(t('dashboard.session_line_survival', {
+        wins: s.survivalWins ?? 0,
+        deaths: s.survivalDeaths ?? 0,
+        left: s.survivalLeftBehind ?? 0,
+      }));
+      if (s.deathmatchWins || s.deathmatchDeaths) {
+        parts.push(t('dashboard.session_line_deathmatch', {
+          wins: s.deathmatchWins ?? 0,
+          deaths: s.deathmatchDeaths ?? 0,
+        }));
+      }
+      if (s.revives) parts.push(t('dashboard.session_line_revives', { count: s.revives }));
       if (s.totalConnectedSeconds) parts.push(formatDuration(s.totalConnectedSeconds));
-      if (s.mimicEncounterCount) parts.push(s.mimicEncounterCount + ' mimics');
-      if (s.itemCarryCount) parts.push(s.itemCarryCount + ' items');
-      if (s.damageToFriend) parts.push(s.damageToFriend + ' friend dmg');
-      if (s.friendsKilled) parts.push(s.friendsKilled + ' friends killed');
+      if (s.mimicEncounterCount) {
+        parts.push(t('dashboard.session_line_mimics', { count: s.mimicEncounterCount }));
+      }
+      if (s.itemCarryCount) parts.push(t('dashboard.session_line_items', { count: s.itemCarryCount }));
+      if (s.damageToFriend) {
+        parts.push(t('dashboard.session_line_friend_damage', { count: s.damageToFriend }));
+      }
+      if (s.friendsKilled) {
+        parts.push(t('dashboard.session_line_friends_killed', { count: s.friendsKilled }));
+      }
       return parts.join(' · ');
     },
 
@@ -624,9 +635,51 @@ document.addEventListener('alpine:init', () => {
         const res = await Api.getItems();
         this.itemCatalog = res.items || [];
         this.itemCatalogLocale = locale;
+        this.syncSpawnSelectionsFromCatalog();
       } catch (_) {
         /* catalog optional — spawn controls stay hidden if empty */
       }
+    },
+
+    syncSpawnSelectionsFromCatalog() {
+      for (const key of Object.keys(this.spawnSelections)) {
+        this.syncSpawnSelection(key);
+      }
+    },
+
+    syncSpawnSelection(steamId) {
+      this.ensureSpawnSelection(steamId);
+      const key = String(steamId);
+      const sel = this.spawnSelections[key];
+      if (!sel.itemId && this.itemCatalog.length > 0) {
+        sel.itemId = this.itemCatalog[0].id;
+      }
+      const option = this.itemCatalog.find((item) => item.id === sel.itemId);
+      if (option?.variants?.length) {
+        const percents = option.variants.map((variant) => variant.percent);
+        if (!percents.includes(sel.percent)) {
+          sel.percent = option.variants[0].percent;
+        }
+      }
+    },
+
+    getItemCatalogGroups() {
+      const order = ['Consumable', 'Equipment', 'Miscellany', 'Developer'];
+      const labelKeys = {
+        Consumable: 'dashboard.spawn_item_category_consumable',
+        Equipment: 'dashboard.spawn_item_category_equipment',
+        Miscellany: 'dashboard.spawn_item_category_miscellany',
+        Developer: 'dashboard.spawn_item_category_developer',
+      };
+      const buckets = {};
+      for (const item of this.itemCatalog) {
+        const type = item.type || 'Miscellany';
+        if (!buckets[type]) buckets[type] = [];
+        buckets[type].push(item);
+      }
+      return order
+        .filter((id) => buckets[id]?.length)
+        .map((id) => ({ id, label: t(labelKeys[id] || id), items: buckets[id] }));
     },
 
     ensureSpawnSelection(steamId) {
@@ -647,10 +700,14 @@ document.addEventListener('alpine:init', () => {
     setSpawnItemId(steamId, itemId) {
       this.ensureSpawnSelection(steamId);
       const sel = this.spawnSelections[String(steamId)];
+      const previousId = sel.itemId;
       sel.itemId = itemId;
       const option = this.itemCatalog.find((item) => item.id === itemId);
       if (option?.variants?.length) {
-        sel.percent = option.variants[0].percent;
+        const percents = option.variants.map((variant) => variant.percent);
+        if (previousId !== itemId || !percents.includes(sel.percent)) {
+          sel.percent = option.variants[0].percent;
+        }
       }
     },
 
@@ -703,6 +760,15 @@ document.addEventListener('alpine:init', () => {
       const next = this.playerBlindModeUserEnabled && !this.playerBlindModeAutoSuspended;
       const changed = this.playerBlindMode !== next;
       this.playerBlindMode = next;
+      if (changed && !next) {
+        this.$nextTick(() => {
+          for (const p of this.connectedOverviewPlayers()) {
+            if (this.canGiveItem(p)) {
+              this.syncSpawnSelection(p.steamId);
+            }
+          }
+        });
+      }
       return changed;
     },
 
