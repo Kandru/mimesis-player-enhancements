@@ -33,8 +33,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             ModConfig.EnableExtendedSpectatorPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedSpectatorPlayerList",
                 false,
-                "Extended Spectator Player List",
-                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires EnableMorePlayers. Living players are shown first when space is limited; among dead players, speakers are prioritized.");
+                "Enable Extended Spectator Player List",
+                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires Enable More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized.");
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>

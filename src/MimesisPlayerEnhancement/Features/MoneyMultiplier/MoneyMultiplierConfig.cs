@@ -27,14 +27,14 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModConfig.MoneyMultiplierPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "MoneyMultiplierPlayerCountScaleRate",
                 ScalingMath.DefaultPlayerCountScaleRate,
-                "Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0.");
+                "Money Player Count Scale Rate",
+                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0.");
 
             ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleStartupMoneyByPlayerCount",
                 true,
-                "Auto Scale Startup Money By Player Count",
-                "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with StartupMoneyMultiplier).");
+                "Auto Scale Startup Money by Player Count",
+                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier).");
 
             ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StartupMoneyMultiplier",
@@ -45,8 +45,8 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModConfig.AutoScaleRoundGoalMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleRoundGoalMoneyByPlayerCount",
                 true,
-                "Auto Scale Round Goal Money By Player Count",
-                "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with RoundGoalMoneyMultiplier).");
+                "Auto Scale Round Goal Money by Player Count",
+                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier).");
 
             ModConfig.RoundGoalMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalMoneyMultiplier",
@@ -57,8 +57,8 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleScrapSellValueByPlayerCount",
                 true,
-                "Auto Scale Scrap Sell Value By Player Count",
-                "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ScrapSellValueMultiplier).");
+                "Auto Scale Scrap Sell Value by Player Count",
+                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier).");
 
             ModConfig.ScrapSellValueMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ScrapSellValueMultiplier",
@@ -69,8 +69,8 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModConfig.AutoScaleShopBuyPriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleShopBuyPriceByPlayerCount",
                 true,
-                "Auto Scale Shop Buy Price By Player Count",
-                "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ShopBuyPriceMultiplier).");
+                "Auto Scale Shop Buy Price by Player Count",
+                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier).");
 
             ModConfig.ShopBuyPriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ShopBuyPriceMultiplier",
@@ -81,26 +81,26 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModConfig.ShopDiscountMinPercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountMinPercent",
                 0,
-                "Shop Discount Min Percent",
-                "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0.");
+                "Shop Discount Min (percent)",
+                "Minimum shop discount percentage when a discount is rolled (0–100). Only used when Shop Discount Chance (percent) is above 0.");
 
             ModConfig.ShopDiscountMaxPercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountMaxPercent",
                 100,
-                "Shop Discount Max Percent",
-                "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent.");
+                "Shop Discount Max (percent)",
+                "Maximum shop discount percentage when a discount is rolled (0–100). Must be ≥ Shop Discount Min (percent).");
 
             ModConfig.ShopDiscountChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountChancePercent",
                 0,
-                "Shop Discount Chance Percent",
+                "Shop Discount Chance (percent)",
                 "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted).");
 
             ModConfig.AutoScaleReinforcePriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleReinforcePriceByPlayerCount",
                 true,
-                "Auto Scale Reinforce Price By Player Count",
-                "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ReinforcePriceMultiplier).");
+                "Auto Scale Reinforce Price by Player Count",
+                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier).");
 
             ModConfig.ReinforcePriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ReinforcePriceMultiplier",

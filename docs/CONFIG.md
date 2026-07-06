@@ -28,7 +28,7 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
 | [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
 | [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host |
-| [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death toasts | Host |
+| [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host |
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host |
 | [Extended Save games](#extended-save-games--mimesisplayerenhancement_extendedsavegames) | Unified save picker (99 games) | Local UI |
 | [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host |
@@ -48,7 +48,7 @@ Mod-wide settings that are not owned by a single feature.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long `[PlayerEnhancements]` toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally. |
+| `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableDebugLogging` | bool | `false` | — | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
@@ -59,7 +59,7 @@ Mod-wide settings that are not owned by a single feature.
 |-----|------|---------|-------|-------------|
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
-| `EnableExtendedSpectatorPlayerList` | bool | `false` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires `EnableMorePlayers`. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
+| `EnableExtendedSpectatorPlayerList` | bool | `false` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires Enable More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
@@ -68,9 +68,9 @@ Mod-wide settings that are not owned by a single feature.
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMoreVoices` | bool | `true` | — | Turn higher voice recording limits on or off. |
-| `MaxIndoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in indoor dungeon runs. |
-| `MaxDeathMatchVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in deathmatch. |
-| `MaxOutdoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player outdoors. |
+| `MaxIndoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in indoor dungeon runs (default game limit is much lower). |
+| `MaxDeathMatchVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in deathmatch (default game limit is much lower). |
+| `MaxOutdoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player outdoors (default game limit is much lower). |
 
 ## Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
@@ -88,15 +88,15 @@ Mod-wide settings that are not owned by a single feature.
 |-----|------|---------|-------|-------------|
 | `EnableStatistics` | bool | `true` | — | Track player stats per save game. |
 | `SessionReconnectGraceMinutes` | int | `5` | ≥ `1` | If someone disconnects and rejoins within this many minutes, their stats session continues instead of starting fresh. |
-| `ShowStatisticsToasts` | bool | `true` | — | Show small join/leave/cycle messages in the bottom-left corner when statistics are enabled. Does not replace the game's own connect messages. |
+| `ShowStatisticsToasts` | bool | `true` | — | Show statistics messages in the bottom-left corner (session intro for you, global stats on join/leave). Does not replace the game's own connect messages. |
 
 ## Player Announcements — `[MimesisPlayerEnhancement_PlayerAnnouncements]`
 
-**Host-only.** In-game toasts for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
+**Host-only.** Bottom-left messages for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `ShowPlayerAnnouncements` | bool | `true` | — | Show dungeon settings, boss spawn, and death-stat toasts. Does not replace the game's own messages. |
+| `ShowPlayerAnnouncements` | bool | `true` | — | Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages. |
 
 ## Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
@@ -130,8 +130,8 @@ Each **Auto Scale … By Player Count** toggle stacks with its per-type multipli
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableSpawnScaling` | bool | `false` | — | Master toggle for all spawn scaling below. |
-| `SpawnScalingPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale toggle is on. |
+| `EnableSpawnScaling` | bool | `false` | — | Scale dungeon monster and trap spawn budgets by type. Host only. |
+| `SpawnScalingPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0. |
 | `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
 | `MimicSpawnMultiplier` | float | `1.0` | ≥ `0` | Total mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). |
 | `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for boss spawns (stacks with `BossSpawnMultiplier`). |
@@ -163,8 +163,8 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableLootMultiplicator` | bool | `false` | — | Master toggle for all loot scaling below. |
-| `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale toggle is on. |
+| `EnableLootMultiplicator` | bool | `false` | — | Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only. |
+| `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0. |
 | `AutoScaleMapLootByPlayerCount` | bool | `true` | — | Player-count scaling for map loot. |
 | `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for all map-placed pickup loot. |
 | `AutoScaleDropLootByPlayerCount` | bool | `true` | — | Player-count scaling for enemy death drops. |
@@ -192,8 +192,8 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableMoneyMultiplier` | bool | `false` | — | Master toggle for all money scaling below. |
-| `MoneyMultiplierPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale toggle is on. |
+| `EnableMoneyMultiplier` | bool | `false` | — | Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only. |
+| `MoneyMultiplierPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Startup money multiplier on new save or session reset. Does not apply when loading a save. |
 | `AutoScaleRoundGoalMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for stage target currency. |
@@ -214,9 +214,9 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDungeonTime` | bool | `false` | — | Master toggle for shift extension. |
-| `DungeonTimeBaselinePlayerCount` | int | `4` | ≥ `1` | No extra shift time at or below this player count. |
-| `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | ≥ `0` | Real seconds added to the shift deadline per player above the baseline. |
+| `EnableDungeonTime` | bool | `false` | — | Extend dungeon shift length when player count exceeds the baseline. Host only. |
+| `DungeonTimeBaselinePlayerCount` | int | `4` | ≥ `1` | No extra shift time at or below this player count (vanilla is 4). Minimum is 1. |
+| `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | ≥ `0` | Real seconds added to the shift deadline for each player above the baseline. Minimum is 0. |
 
 ## Dead Player Features — `[MimesisPlayerEnhancement_DeadPlayerFeatures]`
 
@@ -226,7 +226,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDeadPlayerFeatures` | bool | `false` | — | Master toggle for mimic possession tuning in this section. |
+| `EnableDeadPlayerFeatures` | bool | `false` | — | Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown). Host only. |
 | `EnableMimicPossessionTuning` | bool | `false` | — | Sub-toggle for mimic possession timing tweaks. |
 | `RandomizeMimicPossessionDuration` | bool | `false` | — | Roll a random speak duration per E-possession between the min and max seconds below. |
 | `MimicPossessionMinTimeSeconds` | float | `12.0` | `0.1`–`120` | Minimum rolled speak duration in seconds (vanilla is 12). |
@@ -239,7 +239,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnablePlayerTuning` | bool | `false` | — | Master toggle for all player tuning below. |
+| `EnablePlayerTuning` | bool | `false` | — | Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only. |
 | `MoveSpeedMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales walk and run base speed (`1` = vanilla, `2` = double). |
 | `MaxStaminaMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales maximum stamina. |
 | `StaminaDrainMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales sprint stamina cost per tick (`0.5` = half drain). |
@@ -271,7 +271,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDungeonRandomizer` | bool | `false` | — | Master toggle for all dungeon randomization below. |
+| `EnableDungeonRandomizer` | bool | `false` | — | Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only. |
 | `RandomizeDungeonPick` | bool | `true` | — | Override tram dungeon master ID selection. |
 | `DungeonPickPoolMode` | string | `WidenVanilla` | `WidenVanilla`, `AllActiveUniform` | How the tram dungeon pool is built (see table above). |
 | `DungeonAllowlist` | string | `""` | — | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |

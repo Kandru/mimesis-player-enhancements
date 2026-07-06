@@ -23,7 +23,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 "EnableDungeonRandomizer",
                 false,
                 "Enable Dungeon Randomizer",
-                "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
+                "Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
 
             ModConfig.RandomizeDungeonPick = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeDungeonPick",

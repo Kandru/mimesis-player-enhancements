@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures
                 "EnableDeadPlayerFeatures",
                 false,
                 "Enable Dead Player Features",
-                "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown).");
+                "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown). Host only.");
 
             ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicPossessionTuning",

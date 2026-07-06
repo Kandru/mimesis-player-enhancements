@@ -28,14 +28,14 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             ModConfig.LootMultiplicatorPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "LootMultiplicatorPlayerCountScaleRate",
                 ScalingMath.DefaultPlayerCountScaleRate,
-                "Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0.");
+                "Loot Player Count Scale Rate",
+                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0.");
 
             ModConfig.AutoScaleMapLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMapLootByPlayerCount",
                 true,
-                "Auto Scale Map Loot By Player Count",
-                "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with MapLootMultiplier).");
+                "Auto Scale Map Loot by Player Count",
+                "Map loot is items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Map Loot Multiplier).");
 
             ModConfig.MapLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MapLootMultiplier",
@@ -46,8 +46,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             ModConfig.AutoScaleDropLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleDropLootByPlayerCount",
                 true,
-                "Auto Scale Drop Loot By Player Count",
-                "Drop loot = items from enemy death tables when killed. When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with DropLootMultiplier).");
+                "Auto Scale Drop Loot by Player Count",
+                "Drop loot is items from enemy death tables when killed. When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Drop Loot Multiplier).");
 
             ModConfig.DropLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "DropLootMultiplier",
@@ -76,8 +76,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             ModConfig.ConvertFakeActorDyingDropChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ConvertFakeActorDyingDropChancePercent",
                 30,
-                "Convert Fake Death Drops To Real Chance",
-                "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real.");
+                "Fake Death Drop Chance (percent)",
+                "Chance (0–100) that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

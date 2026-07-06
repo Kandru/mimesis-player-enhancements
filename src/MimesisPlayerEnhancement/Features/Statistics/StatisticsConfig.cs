@@ -33,8 +33,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             ModConfig.ShowStatisticsToasts = ModConfig.CreateTrackedEntry(_category,
                 "ShowStatisticsToasts",
                 true,
-                "Show Statistics Toasts",
-                "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
+                "Show Statistics Messages",
+                "Show statistics messages in the bottom-left corner (session intro for you, global stats on join/leave). Does not replace the game's own connect messages.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

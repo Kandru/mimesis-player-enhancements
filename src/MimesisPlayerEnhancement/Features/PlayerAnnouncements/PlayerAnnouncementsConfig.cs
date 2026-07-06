@@ -21,8 +21,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             ModConfig.ShowPlayerAnnouncements = ModConfig.CreateTrackedEntry(_category,
                 "ShowPlayerAnnouncements",
                 true,
-                "Show Player Announcements",
-                "Show in-game toasts for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
+                "Show Player Messages",
+                "Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
         }
 
         internal static void WireValidation()

@@ -3,19 +3,19 @@
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
       "ModToastDurationSeconds": {
-        "title": "Mod Toast Duration (seconds)",
-        "description": "How long [PlayerEnhancements] toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally."
+        "title": "Mod Message Duration (seconds)",
+        "description": "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally."
       },
       "EnableDebugLogging": {
         "title": "Enable Debug Logging",
-        "description": "Emit verbose diagnostic lines to the MelonLoader console."
+        "description": "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
       "EnableDungeonRandomizer": {
         "title": "Enable Dungeon Randomizer",
-        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed."
+        "description": "Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only."
       },
       "RandomizeDungeonPick": {
         "title": "Randomize Dungeon Pick",
@@ -54,14 +54,14 @@
       "_section": "Dungeon Time",
       "EnableDungeonTime": {
         "title": "Enable Dungeon Time",
-        "description": "Extend dungeon shift length on the host when player count exceeds the baseline."
+        "description": "Extend dungeon shift length when player count exceeds the baseline. Host only."
       },
       "DungeonTimeBaselinePlayerCount": {
-        "title": "Dungeon Time Baseline Player Count",
+        "title": "Baseline Player Count",
         "description": "No extra shift time at or below this player count (vanilla is 4). Minimum is 1."
       },
       "ExtraShiftSecondsPerPlayerAboveBaseline": {
-        "title": "Extra Shift Seconds Per Player Above Baseline",
+        "title": "Extra Shift Time per Player (seconds)",
         "description": "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0."
       }
     },
@@ -79,31 +79,31 @@
         "description": "Allow players to join a session after it has already started."
       },
       "JoinConnectionGraceSeconds": {
-        "title": "Join Connection Grace Seconds",
-        "description": "When a player connects, block tram departure for this many seconds. Players who fail to finish loading are kicked (host is never kicked)."
+        "title": "Join Connection Grace (seconds)",
+        "description": "When a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked)."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot Multiplicator",
       "EnableLootMultiplicator": {
         "title": "Enable Loot Multiplicator",
-        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot."
+        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only."
       },
       "LootMultiplicatorPlayerCountScaleRate": {
-        "title": "Player Count Scale Rate",
-        "description": "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0."
+        "title": "Loot Player Count Scale Rate",
+        "description": "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0."
       },
       "AutoScaleMapLootByPlayerCount": {
-        "title": "Auto Scale Map Loot By Player Count",
-        "description": "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with MapLootMultiplier)."
+        "title": "Auto Scale Map Loot by Player Count",
+        "description": "Map loot is items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Map Loot Multiplier)."
       },
       "MapLootMultiplier": {
         "title": "Map Loot Multiplier",
         "description": "Multiplier for all map-placed pickup loot: fixed markers, respawn counts, and random pool budgets. 1 = vanilla, 2 = double."
       },
       "AutoScaleDropLootByPlayerCount": {
-        "title": "Auto Scale Drop Loot By Player Count",
-        "description": "Drop loot = items from enemy death tables when killed. When enabled, apply LootMultiplicatorPlayerCountScaleRate per player above 4 (stacks with DropLootMultiplier)."
+        "title": "Auto Scale Drop Loot by Player Count",
+        "description": "Drop loot is items from enemy death tables when killed. When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Drop Loot Multiplier)."
       },
       "DropLootMultiplier": {
         "title": "Drop Loot Multiplier",
@@ -122,15 +122,15 @@
         "description": "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
       },
       "ConvertFakeActorDyingDropChancePercent": {
-        "title": "Convert Fake Death Drops To Real Chance",
-        "description": "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
+        "title": "Fake Death Drop Chance (percent)",
+        "description": "Chance (0–100) that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
       }
     },
     "MimesisPlayerEnhancement_DeadPlayerFeatures": {
       "_section": "Dead Player Features",
       "EnableDeadPlayerFeatures": {
         "title": "Enable Dead Player Features",
-        "description": "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown)."
+        "description": "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown). Host only."
       },
       "EnableMimicPossessionTuning": {
         "title": "Enable Mimic Possession Tuning",
@@ -157,59 +157,59 @@
       "_section": "Money Multiplier",
       "EnableMoneyMultiplier": {
         "title": "Enable Money Multiplier",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs."
+        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only."
       },
       "MoneyMultiplierPlayerCountScaleRate": {
-        "title": "Player Count Scale Rate",
-        "description": "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0."
+        "title": "Money Player Count Scale Rate",
+        "description": "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0."
       },
       "AutoScaleStartupMoneyByPlayerCount": {
-        "title": "Auto Scale Startup Money By Player Count",
-        "description": "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with StartupMoneyMultiplier)."
+        "title": "Auto Scale Startup Money by Player Count",
+        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier)."
       },
       "StartupMoneyMultiplier": {
         "title": "Startup Money Multiplier",
         "description": "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game."
       },
       "AutoScaleRoundGoalMoneyByPlayerCount": {
-        "title": "Auto Scale Round Goal Money By Player Count",
-        "description": "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with RoundGoalMoneyMultiplier)."
+        "title": "Auto Scale Round Goal Money by Player Count",
+        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier)."
       },
       "RoundGoalMoneyMultiplier": {
         "title": "Round Goal Money Multiplier",
         "description": "Target currency required to finish a stage (1 = vanilla, 2 = double)."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
-        "title": "Auto Scale Scrap Sell Value By Player Count",
-        "description": "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ScrapSellValueMultiplier)."
+        "title": "Auto Scale Scrap Sell Value by Player Count",
+        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier)."
       },
       "ScrapSellValueMultiplier": {
         "title": "Scrap Sell Value Multiplier",
         "description": "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double)."
       },
       "AutoScaleShopBuyPriceByPlayerCount": {
-        "title": "Auto Scale Shop Buy Price By Player Count",
-        "description": "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ShopBuyPriceMultiplier)."
+        "title": "Auto Scale Shop Buy Price by Player Count",
+        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier)."
       },
       "ShopBuyPriceMultiplier": {
         "title": "Shop Buy Price Multiplier",
         "description": "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round."
       },
       "ShopDiscountMinPercent": {
-        "title": "Shop Discount Min Percent",
-        "description": "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0."
+        "title": "Shop Discount Min (percent)",
+        "description": "Minimum shop discount percentage when a discount is rolled (0–100). Only used when Shop Discount Chance (percent) is above 0."
       },
       "ShopDiscountMaxPercent": {
-        "title": "Shop Discount Max Percent",
-        "description": "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent."
+        "title": "Shop Discount Max (percent)",
+        "description": "Maximum shop discount percentage when a discount is rolled (0–100). Must be ≥ Shop Discount Min (percent)."
       },
       "ShopDiscountChancePercent": {
-        "title": "Shop Discount Chance Percent",
+        "title": "Shop Discount Chance (percent)",
         "description": "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted)."
       },
       "AutoScaleReinforcePriceByPlayerCount": {
-        "title": "Auto Scale Reinforce Price By Player Count",
-        "description": "When enabled, apply MoneyMultiplierPlayerCountScaleRate per player above 4 (stacks with ReinforcePriceMultiplier)."
+        "title": "Auto Scale Reinforce Price by Player Count",
+        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier)."
       },
       "ReinforcePriceMultiplier": {
         "title": "Reinforce Price Multiplier",
@@ -227,7 +227,7 @@
         "description": "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.)."
       },
       "EnableExtendedSpectatorPlayerList": {
-        "title": "Extended Spectator Player List",
+        "title": "Enable Extended Spectator Player List",
         "description": "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires Enable More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized."
       }
     },
@@ -260,15 +260,15 @@
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
       "_section": "Player Announcements",
       "ShowPlayerAnnouncements": {
-        "title": "Show Player Announcements",
-        "description": "Show in-game toasts for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages."
+        "title": "Show Player Messages",
+        "description": "Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages."
       }
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Player Tuning",
       "EnablePlayerTuning": {
         "title": "Enable Player Tuning",
-        "description": "Scale player move speed, stamina, and carry weight on the host. Joining clients do not need the mod."
+        "description": "Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only."
       },
       "MoveSpeedMultiplier": {
         "title": "Move Speed Multiplier",
@@ -299,47 +299,47 @@
       "_section": "Spawn Scaling",
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
-        "description": "Scale dungeon monster spawn budgets by type."
+        "description": "Scale dungeon monster and trap spawn budgets by type. Host only."
       },
       "SpawnScalingPlayerCountScaleRate": {
-        "title": "Player Count Scale Rate",
-        "description": "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0."
+        "title": "Spawn Player Count Scale Rate",
+        "description": "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0."
       },
       "AutoScaleMimicSpawnsByPlayerCount": {
-        "title": "Auto Scale Mimic Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with MimicSpawnMultiplier)."
+        "title": "Auto Scale Mimic Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Mimic Spawn Multiplier)."
       },
       "MimicSpawnMultiplier": {
         "title": "Mimic Spawn Multiplier",
         "description": "Total mimic spawn budget across the run, including periodic spawns (1 = vanilla, 2 = double)."
       },
       "AutoScaleBossSpawnsByPlayerCount": {
-        "title": "Auto Scale Boss Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with BossSpawnMultiplier)."
+        "title": "Auto Scale Boss Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Boss Spawn Multiplier)."
       },
       "BossSpawnMultiplier": {
         "title": "Boss Spawn Multiplier",
         "description": "Map-placed bosses: activates unused alternate markers and schedules bonus encounters after kill (1 = vanilla, 2 = double)."
       },
       "AutoScaleJakoSpawnsByPlayerCount": {
-        "title": "Auto Scale Jako Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with JakoSpawnMultiplier)."
+        "title": "Auto Scale Jako Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Jako Spawn Multiplier)."
       },
       "JakoSpawnMultiplier": {
         "title": "Jako Spawn Multiplier",
         "description": "Total normal-monster threat budget for ambient dungeon spawns (1 = vanilla, 2 = double)."
       },
       "AutoScaleSpecialSpawnsByPlayerCount": {
-        "title": "Auto Scale Special Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with SpecialSpawnMultiplier)."
+        "title": "Auto Scale Special Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Special Spawn Multiplier)."
       },
       "SpecialSpawnMultiplier": {
         "title": "Special Spawn Multiplier",
         "description": "Special monster budget for periodic spawns and map-placed specials (1 = vanilla, 2 = double)."
       },
       "AutoScaleTrapSpawnsByPlayerCount": {
-        "title": "Auto Scale Trap Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with TrapSpawnMultiplier)."
+        "title": "Auto Scale Trap Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Trap Spawn Multiplier)."
       },
       "TrapSpawnMultiplier": {
         "title": "Trap Spawn Multiplier",
@@ -358,8 +358,8 @@
         "description": "After the delay, hold the spawn until no living players are within this radius of the marker. 0 = spawn as soon as the delay elapses."
       },
       "AutoScaleOtherSpawnsByPlayerCount": {
-        "title": "Auto Scale Other Spawns By Player Count",
-        "description": "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with OtherSpawnMultiplier)."
+        "title": "Auto Scale Other Spawns by Player Count",
+        "description": "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Other Spawn Multiplier)."
       },
       "OtherSpawnMultiplier": {
         "title": "Other Spawn Multiplier",
@@ -377,8 +377,8 @@
         "description": "Reuse the previous session when a player reconnects within this many minutes."
       },
       "ShowStatisticsToasts": {
-        "title": "Show Statistics Toasts",
-        "description": "Show mod stats toasts in plain English (session intro for you, global stats on join/leave). Does not replace the game's own connect messages."
+        "title": "Show Statistics Messages",
+        "description": "Show statistics messages in the bottom-left corner (session intro for you, global stats on join/leave). Does not replace the game's own connect messages."
       }
     },
     "MimesisPlayerEnhancement_WebDashboard": {

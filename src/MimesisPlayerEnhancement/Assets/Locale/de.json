@@ -3,73 +3,73 @@
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
       "ModToastDurationSeconds": {
-        "title": "Mod-Toast-Dauer (Sekunden)",
-        "description": "Wie lange [PlayerEnhancements]-Toasts sichtbar bleiben, bevor sie ausblenden. Vanilla Join/Leave-Toasts bleiben unverändert (~2 Sekunden). Jeder Spieler steuert dies lokal."
+        "title": "Mod-Nachrichtendauer (Sekunden)",
+        "description": "Wie lange Mod-Nachrichten unten links sichtbar bleiben, bevor sie ausblenden. Vanilla-Join/Leave-Verbindungsnachrichten bleiben unverändert (~2 Sekunden). Jeder Spieler steuert dies lokal."
       },
       "EnableDebugLogging": {
         "title": "Debug-Logging aktivieren",
-        "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben."
+        "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
       "EnableDungeonRandomizer": {
-        "title": "Dungeon Randomizer aktivieren",
-        "description": "Randomize dungeon selection on the host: tram dungeon pick, layout flow, map variant, and procedural seed. "
+        "title": "Dungeon-Randomizer aktivieren",
+        "description": "Randomisiert die Dungeon-Auswahl: Tram-Dungeon-Pick, Layout-Flow, Map-Variante und prozeduralen Seed. Nur Host."
       },
       "RandomizeDungeonPick": {
-        "title": "Dungeon Pick randomisieren",
-        "description": "Override which dungeon master ID is rolled on the tram."
+        "title": "Dungeon-Pick randomisieren",
+        "description": "Überschreibt, welche Dungeon-Master-ID auf der Tram gewürfelt wird."
       },
       "DungeonPickPoolMode": {
-        "title": "Dungeon-Auswahl-Pool-Modus",
-        "description": "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table)."
+        "title": "Dungeon-Pick-Pool-Modus",
+        "description": "WidenVanilla = Zyklusgewichte beibehalten, Wiederholungen früher erlauben; AllActiveUniform = gleichmäßig aus allen aktiven Dungeons wählen (ignoriert Zyklustabelle)."
       },
       "DungeonAllowlist": {
         "title": "Dungeon-Allowlist",
-        "description": "Kommagetrennte dungeon master IDs. When non-empty, only these IDs are eligible."
+        "description": "Kommagetrennte Dungeon-Master-IDs. Wenn nicht leer, sind nur diese IDs zulässig."
       },
       "DungeonBlocklist": {
         "title": "Dungeon-Blocklist",
-        "description": "Kommagetrennte dungeon master IDs to exclude from the pool."
+        "description": "Kommagetrennte Dungeon-Master-IDs, die aus dem Pool ausgeschlossen werden."
       },
       "IgnoreDungeonExcludeList": {
-        "title": "Ignore Dungeon Exclude List",
-        "description": "When using WidenVanilla, do not exclude recently played dungeons from the tram roll."
+        "title": "Dungeon-Ausschlussliste ignorieren",
+        "description": "Bei WidenVanilla kürzlich gespielte Dungeons nicht vom Tram-Wurf ausschließen."
       },
       "RandomizeLayoutFlow": {
-        "title": "Layout Flow randomisieren",
-        "description": "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls."
+        "title": "Layout-Flow randomisieren",
+        "description": "DunGen-Layout-Flows gleichmäßig aus den Kandidaten jedes Dungeons wählen statt gewichteter Vanilla-Würfe."
       },
       "RandomizeMapVariant": {
-        "title": "Map Variant randomisieren",
-        "description": "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection."
+        "title": "Map-Variante randomisieren",
+        "description": "Map-Varianten gleichmäßig aus den MapIDs jedes Dungeons wählen statt Vanilla-Auswahl."
       },
       "RandomizeDungeonSeed": {
-        "title": "Dungeon Seed randomisieren",
-        "description": "Replace the procedural dungeon seed with a new random value when a dungeon is chosen."
+        "title": "Dungeon-Seed randomisieren",
+        "description": "Ersetzt den prozeduralen Dungeon-Seed durch einen neuen Zufallswert, wenn ein Dungeon gewählt wird."
       }
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon-Zeit",
       "EnableDungeonTime": {
-        "title": "Dungeon Time aktivieren",
-        "description": "Extend dungeon shift length on the host when player count exceeds the baseline."
+        "title": "Dungeon-Zeit aktivieren",
+        "description": "Verlängert die Dungeon-Schichtdauer, wenn die Spieleranzahl über der Baseline liegt. Nur Host."
       },
       "DungeonTimeBaselinePlayerCount": {
-        "title": "Dungeon Time Baseline Player Count",
-        "description": "No extra shift time at or below this player count (vanilla is 4). Minimum ist 1."
+        "title": "Baseline-Spieleranzahl",
+        "description": "Keine extra Schichtzeit bei dieser Spieleranzahl oder darunter (Vanilla ist 4). Minimum ist 1."
       },
       "ExtraShiftSecondsPerPlayerAboveBaseline": {
-        "title": "Extra Shift Seconds Per Player Above Baseline",
-        "description": "Real seconds added to the shift deadline for each player above the baseline. Minimum ist 0."
+        "title": "Extra-Schichtzeit pro Spieler (Sekunden)",
+        "description": "Echte Sekunden, die zur Schichtfrist pro Spieler über der Baseline addiert werden. Minimum ist 0."
       }
     },
     "MimesisPlayerEnhancement_ExtendedSaveSlots": {
       "_section": "Erweiterte Save-Slots",
       "EnableExtendedSaveSlots": {
         "title": "Erweiterte Save-Slots aktivieren",
-        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen einheitlichen Save-Picker (bis 99 manuelle Slots)."
+        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen einheitlichen Save-Picker (bis 99 manuelle Slots). Wenn deaktiviert, gilt wieder das Vanilla-New/Load-Tram-Verhalten."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
@@ -80,140 +80,140 @@
       },
       "JoinConnectionGraceSeconds": {
         "title": "Beitritts-Verbindungs-Gnadenzeit (Sekunden)",
-        "description": "Blockiert die Tram-Abfahrt für diese Sekunden, wenn ein Spieler verbindet. Spieler, die nicht fertig laden, werden gekickt (Host nie)."
+        "description": "Blockiert die Tram-Abfahrt für diese Sekunden, während ein verbundener Spieler fertig lädt. Spieler, die nicht rechtzeitig bereit sind, werden gekickt (Host nie)."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot-Multiplikator",
       "EnableLootMultiplicator": {
-        "title": "Loot Multiplicator aktivieren",
-        "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. "
+        "title": "Loot-Multiplikator aktivieren",
+        "description": "Skaliert Karten-Loot und Gegner-Tod-Drops und kann Mimic-Fake-Drops optional in echten Loot umwandeln. Nur Host."
       },
       "LootMultiplicatorPlayerCountScaleRate": {
-        "title": "Spieleranzahl-Skalierungsrate",
-        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum ist 0."
+        "title": "Loot-Spieleranzahl-Skalierungsrate",
+        "description": "Extra-Multiplikator pro Spieler über 4, wenn ein Auto Scale … by Player Count-Schalter aktiv ist (0,10 = +10 % pro Extra-Spieler, stapelt sich mit Loot-Multiplikatoren). Minimum ist 0."
       },
       "AutoScaleMapLootByPlayerCount": {
-        "title": "Map Loot automatisch nach Spieleranzahl skalieren",
-        "description": "Map loot = items placed on the dungeon map (spawn markers, shelves, floors). Wenn aktiviert, apply LootMultiplicatorPlayerCountScaleRate pro Spieler über 4 (stacks with MapLootMultiplier)."
+        "title": "Karten-Loot automatisch nach Spieleranzahl skalieren",
+        "description": "Karten-Loot sind Items auf der Dungeon-Karte (Spawn-Marker, Regale, Böden). Wenn aktiviert, Loot-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Karten-Loot-Multiplikator)."
       },
       "MapLootMultiplier": {
         "title": "Karten-Loot-Multiplikator",
-        "description": "Multiplier for all map-placed pickup loot: fixed markers, respawn counts, and random pool budgets. 1 = Vanilla, 2 = doppelt."
+        "description": "Multiplikator für allen auf der Karte platzierten Pickup-Loot: feste Marker, Respawn-Anzahlen und Zufallspool-Budgets. 1 = Vanilla, 2 = doppelt."
       },
       "AutoScaleDropLootByPlayerCount": {
-        "title": "Drop Loot automatisch nach Spieleranzahl skalieren",
-        "description": "Drop loot = items from enemy death tables when killed. Wenn aktiviert, apply LootMultiplicatorPlayerCountScaleRate pro Spieler über 4 (stacks with DropLootMultiplier)."
+        "title": "Drop-Loot automatisch nach Spieleranzahl skalieren",
+        "description": "Drop-Loot sind Items aus Gegner-Tod-Tabellen beim Töten. Wenn aktiviert, Loot-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Drop-Loot-Multiplikator)."
       },
       "DropLootMultiplier": {
         "title": "Drop-Loot-Multiplikator",
-        "description": "Multiplier for enemy death drops: extra weighted re-rolls from drop tables and consumable stack count on spawn. 1 = Vanilla, 2 = doppelt."
+        "description": "Multiplikator für Gegner-Tod-Drops: extra gewichtete Re-Rolls aus Drop-Tabellen und Verbrauchs-Stackgröße beim Spawn. 1 = Vanilla, 2 = doppelt."
       },
       "LootItemFilterMode": {
         "title": "Loot-Item-Filtermodus",
-        "description": "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist."
+        "description": "All = jedes Item kann skaliert werden; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist; BlocklistOnly = alle Items außer Loot-Blocklist."
       },
       "LootAllowlist": {
         "title": "Loot-Allowlist",
-        "description": "Kommagetrennte item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+        "description": "Kommagetrennte Item-Master-IDs (z. B. 12345,67890). Verwendet, wenn Loot-Item-Filtermodus AllowlistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
       },
       "LootBlocklist": {
         "title": "Loot-Blocklist",
-        "description": "Kommagetrennte item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+        "description": "Kommagetrennte Item-Master-IDs, die von der Skalierung ausgeschlossen werden. Verwendet, wenn Loot-Item-Filtermodus BlocklistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
       },
       "ConvertFakeActorDyingDropChancePercent": {
-        "title": "Convert Fake Death Drops To Real Chance",
-        "description": "Chance (0-100) that fake items dropped on enemy death (ActorDying, e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
+        "title": "Fake-Tod-Drop-Chance (Prozent)",
+        "description": "Chance (0–100), dass Fake-Items beim Gegner-Tod (z. B. Mimic-Inventar-Decoys) zu echtem Pickup-Loot werden. 0 = Vanilla (Fake-Items verschwinden beim Aufheben), 100 = immer echt. Monster-Drop-Tabellen-Loot ist bereits echt."
       }
     },
     "MimesisPlayerEnhancement_DeadPlayerFeatures": {
       "_section": "Features für tote Spieler",
       "EnableDeadPlayerFeatures": {
         "title": "Features für tote Spieler aktivieren",
-        "description": "Master-Schalter für Mimic-Besitz-Tuning (Sprechdauer und Abklingzeit) für tote Spieler. "
+        "description": "Master-Schalter für Mimic-Besitz-Tuning (Sprechdauer und Abklingzeit) für tote Spieler. Nur Host."
       },
       "EnableMimicPossessionTuning": {
         "title": "Mimic-Besitz-Tuning aktivieren",
-        "description": "Sprechdauer und Abklingzeit beim Mimic-Besitz für tote Spieler auf dem Host anpassen."
+        "description": "Sprechdauer und Abklingzeit beim Mimic-Besitz für tote Spieler anpassen."
       },
       "RandomizeMimicPossessionDuration": {
         "title": "Mimic-Besitz-Dauer randomisieren",
-        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden. "
+        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden unten."
       },
       "MimicPossessionMinTimeSeconds": {
         "title": "Mimic-Besitz Mindestzeit (Sekunden)",
-        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). "
+        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
       },
       "MimicPossessionMaxTimeSeconds": {
         "title": "Mimic-Besitz Höchstzeit (Sekunden)",
-        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla: 12). "
+        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
       },
       "MimicPossessionCooltimeMultiplier": {
         "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
-        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla). "
+        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
       }
     },
     "MimesisPlayerEnhancement_MoneyMultiplier": {
       "_section": "Geld-Multiplikator",
       "EnableMoneyMultiplier": {
-        "title": "Money Multiplier aktivieren",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. "
+        "title": "Geld-Multiplikator aktivieren",
+        "description": "Skaliert Startgeld, Runden-Ziel-Quote, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Nur Host."
       },
       "MoneyMultiplierPlayerCountScaleRate": {
-        "title": "Spieleranzahl-Skalierungsrate",
-        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum ist 0."
+        "title": "Geld-Spieleranzahl-Skalierungsrate",
+        "description": "Extra-Multiplikator pro Spieler über 4, wenn ein Auto Scale … by Player Count-Schalter aktiv ist (0,10 = +10 % pro Extra-Spieler, stapelt sich mit Geld-Multiplikatoren). Minimum ist 0."
       },
       "AutoScaleStartupMoneyByPlayerCount": {
-        "title": "Startup Money automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with StartupMoneyMultiplier)."
+        "title": "Startgeld automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Startgeld-Multiplikator)."
       },
       "StartupMoneyMultiplier": {
         "title": "Startgeld-Multiplikator",
-        "description": "Starting maintenance-room currency on a new Save-Slot or session reset to vanilla initial money (1 = Vanilla, 2 = double). Does not apply when loading a save game."
+        "description": "Startwährung im Maintenance-Raum bei neuem Save-Slot oder Sitzungs-Reset auf Vanilla-Anfangsgeld (1 = Vanilla, 2 = doppelt). Gilt nicht beim Laden eines Savegames."
       },
       "AutoScaleRoundGoalMoneyByPlayerCount": {
-        "title": "Round Goal Money automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with RoundGoalMoneyMultiplier)."
+        "title": "Runden-Ziel-Geld automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Runden-Ziel-Geld-Multiplikator)."
       },
       "RoundGoalMoneyMultiplier": {
-        "title": "Runden-Ziel-Multiplikator",
-        "description": "Target currency required to finish a stage (1 = Vanilla, 2 = double)."
+        "title": "Runden-Ziel-Geld-Multiplikator",
+        "description": "Zielwährung, die zum Abschließen einer Stage nötig ist (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
-        "title": "Scrap Sell Value automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ScrapSellValueMultiplier)."
+        "title": "Schrott-Verkaufswert automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Schrott-Verkaufswert-Multiplikator)."
       },
       "ScrapSellValueMultiplier": {
         "title": "Schrott-Verkaufswert-Multiplikator",
-        "description": "Currency earned when scrapping items and item value counted toward the tram quota (1 = Vanilla, 2 = double)."
+        "description": "Währung beim Verschrotten von Items und Item-Wert für die Tram-Quote (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleShopBuyPriceByPlayerCount": {
-        "title": "Shop Buy Price automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ShopBuyPriceMultiplier)."
+        "title": "Shop-Kaufpreis automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Shop-Kaufpreis-Multiplikator)."
       },
       "ShopBuyPriceMultiplier": {
         "title": "Shop-Kaufpreis-Multiplikator",
-        "description": "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = Vanilla, 2 = double). Applied when shop items are initialized each maintenance round."
+        "description": "Kaufpreis-Multiplikator für Maintenance-Shop und Automaten-Kiosk (1 = Vanilla, 2 = doppelt). Wird angewendet, wenn Shop-Items jede Maintenance-Runde initialisiert werden."
       },
       "ShopDiscountMinPercent": {
-        "title": "Shop Discount Min Percent",
-        "description": "Minimum shop discount percentage when a discount is rolled (0-100). Only used when ShopDiscountChancePercent is above 0."
+        "title": "Shop-Rabatt Min (Prozent)",
+        "description": "Minimaler Shop-Rabatt in Prozent bei gewürfeltem Rabatt (0–100). Nur verwendet, wenn Shop-Rabatt-Chance (Prozent) über 0 liegt."
       },
       "ShopDiscountMaxPercent": {
-        "title": "Shop Discount Max Percent",
-        "description": "Maximum shop discount percentage when a discount is rolled (0-100). Must be >= ShopDiscountMinPercent."
+        "title": "Shop-Rabatt Max (Prozent)",
+        "description": "Maximaler Shop-Rabatt in Prozent bei gewürfeltem Rabatt (0–100). Muss ≥ Shop-Rabatt Min (Prozent) sein."
       },
       "ShopDiscountChancePercent": {
-        "title": "Shop Discount Chance Percent",
-        "description": "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted)."
+        "title": "Shop-Rabatt-Chance (Prozent)",
+        "description": "Chance pro Shop-Item auf einen Rabatt zwischen Min und Max (0 = Vanilla-Shop-Rabatte, 100 = jedes Item rabattiert)."
       },
       "AutoScaleReinforcePriceByPlayerCount": {
-        "title": "Reinforce Price automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply MoneyMultiplierPlayerCountScaleRate pro Spieler über 4 (stacks with ReinforcePriceMultiplier)."
+        "title": "Verstärkungspreis automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Verstärkungspreis-Multiplikator)."
       },
       "ReinforcePriceMultiplier": {
-        "title": "Verstärkungs-Preis-Multiplikator",
-        "description": "Maintenance item reinforcement cost multiplier (1 = Vanilla, 2 = double)."
+        "title": "Verstärkungspreis-Multiplikator",
+        "description": "Multiplikator für Maintenance-Item-Verstärkungskosten (1 = Vanilla, 2 = doppelt)."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {
@@ -227,8 +227,8 @@
         "description": "Maximale Spieler in einer Sitzung inklusive Host (1 = Solo, 2 = Host + 1 Client usw.)."
       },
       "EnableExtendedSpectatorPlayerList": {
-        "title": "Erweiterte Zuschauer-Spielerliste",
-        "description": "Ersetzt die 4-Spieler-Todesliste durch ein zweispaltiges Layout, das sich an die Bildschirmhöhe anpasst. Erfordert „Mehr Spieler aktivieren“. Lebende Spieler werden bei begrenztem Platz zuerst angezeigt; unter den Toten haben Sprecher Vorrang."
+        "title": "Erweiterte Zuschauer-Spielerliste aktivieren",
+        "description": "Ersetzt die 4-Spieler-Todesliste durch ein zweispaltiges Layout, das sich an die Bildschirmhöhe anpasst. Erfordert Mehr Spieler aktivieren. Lebende Spieler werden bei begrenztem Platz zuerst angezeigt; unter den Toten haben Sprecher Vorrang."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {
@@ -239,15 +239,15 @@
       },
       "MaxIndoorVoiceEvents": {
         "title": "Max. Indoor-Stimmereignisse",
-        "description": "Maximal gespeicherte Stimmereignisse pro Spieler in Indoor-Dungeon-Läufen."
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler in Indoor-Dungeon-Läufen (Vanilla-Limit ist deutlich niedriger)."
       },
       "MaxDeathMatchVoiceEvents": {
         "title": "Max. Deathmatch-Stimmereignisse",
-        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Deathmatch."
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Deathmatch (Vanilla-Limit ist deutlich niedriger)."
       },
       "MaxOutdoorVoiceEvents": {
         "title": "Max. Outdoor-Stimmereignisse",
-        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Freien."
+        "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Freien (Vanilla-Limit ist deutlich niedriger)."
       }
     },
     "MimesisPlayerEnhancement_Persistence": {
@@ -258,112 +258,112 @@
       }
     },
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
-      "_section": "Spieler-Ankündigungen",
+      "_section": "Spieler-Nachrichten",
       "ShowPlayerAnnouncements": {
-        "title": "Spieler-Ankündigungen anzeigen",
-        "description": "Zeigt In-Game-Toasts für Dungeon-Einstellungen, Boss-Spawns und deine Karten-Stats beim Tod."
+        "title": "Spieler-Nachrichten anzeigen",
+        "description": "Zeigt Spieler-Nachrichten unten links für Dungeon-Einstellungen, Boss-Spawns und deine Karten-Stats beim Tod. Ersetzt nicht die eigenen Nachrichten des Spiels."
       }
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Spieler-Tuning",
       "EnablePlayerTuning": {
-        "title": "Player Tuning aktivieren",
-        "description": "Scale player move speed, stamina, and carry weight on the host. Joining clients do not need the mod."
+        "title": "Spieler-Tuning aktivieren",
+        "description": "Skaliert Bewegungsgeschwindigkeit, Ausdauer und Tragegewicht. Beitretende Clients brauchen den Mod nicht. Nur Host."
       },
       "MoveSpeedMultiplier": {
         "title": "Bewegungsgeschwindigkeits-Multiplikator",
-        "description": "Scales walk and run base speed (1 = Vanilla, 2 = double). "
+        "description": "Skaliert Geh- und Lauf-Basisgeschwindigkeit (1 = Vanilla, 2 = doppelt)."
       },
       "MaxStaminaMultiplier": {
         "title": "Max.-Ausdauer-Multiplikator",
-        "description": "Scales maximum stamina (1 = Vanilla, 2 = double). "
+        "description": "Skaliert maximale Ausdauer (1 = Vanilla, 2 = doppelt)."
       },
       "StaminaDrainMultiplier": {
         "title": "Ausdauer-Verbrauchs-Multiplikator",
-        "description": "Scales sprint stamina cost per tick (1 = Vanilla, 0.5 = half drain). "
+        "description": "Skaliert Sprint-Ausdauerkosten pro Tick (1 = Vanilla, 0,5 = halber Verbrauch)."
       },
       "StaminaRegenMultiplier": {
         "title": "Ausdauer-Regenerations-Multiplikator",
-        "description": "Scales stamina recovered per regen tick (1 = Vanilla, 2 = double). "
+        "description": "Skaliert pro Regenerations-Tick wiederhergestellte Ausdauer (1 = Vanilla, 2 = doppelt)."
       },
       "StaminaRegenDelayMultiplier": {
         "title": "Ausdauer-Regenerations-Verzögerungs-Multiplikator",
-        "description": "Scales wait time before stamina regen starts after sprinting (1 = Vanilla, 0.5 = regen starts sooner). "
+        "description": "Skaliert Wartezeit, bis Regeneration nach Sprinten startet (1 = Vanilla, 0,5 = Regeneration startet früher)."
       },
       "MaxCarryWeightMultiplier": {
         "title": "Max.-Tragegewichts-Multiplikator",
-        "description": "Scales carry capacity before encumbrance slows movement (1 = Vanilla, 2 = double capacity). "
+        "description": "Skaliert Tragekapazität, bevor Überladung die Bewegung verlangsamt (1 = Vanilla, 2 = doppelte Kapazität)."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn-Skalierung",
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
-        "description": "Skaliert Dungeon-Monster-Spawn-Budgets nach Typ. "
+        "description": "Skaliert Dungeon-Monster- und Fallen-Spawn-Budgets nach Typ. Nur Host."
       },
       "SpawnScalingPlayerCountScaleRate": {
-        "title": "Spieleranzahl-Skalierungsrate",
-        "description": "Extra multiplier pro Spieler über 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum ist 0."
+        "title": "Spawn-Spieleranzahl-Skalierungsrate",
+        "description": "Extra-Multiplikator pro Spieler über 4, wenn ein Auto Scale … by Player Count-Schalter aktiv ist (0,10 = +10 % pro Extra-Spieler, stapelt sich mit Typ-Multiplikatoren). Minimum ist 0."
       },
       "AutoScaleMimicSpawnsByPlayerCount": {
-        "title": "Mimic Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with MimicSpawnMultiplier)."
+        "title": "Mimic-Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Mimic-Spawn-Multiplikator)."
       },
       "MimicSpawnMultiplier": {
         "title": "Mimic-Spawn-Multiplikator",
-        "description": "Total mimic spawn budget across the run, including periodic spawns (1 = Vanilla, 2 = double)."
+        "description": "Gesamtes Mimic-Spawn-Budget über den Lauf, inklusive periodischer Spawns (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleBossSpawnsByPlayerCount": {
-        "title": "Boss Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with BossSpawnMultiplier)."
+        "title": "Boss-Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Boss-Spawn-Multiplikator)."
       },
       "BossSpawnMultiplier": {
         "title": "Boss-Spawn-Multiplikator",
-        "description": "Map-placed bosses: activates unused alternate markers and schedules bonus encounters after kill (1 = Vanilla, 2 = double)."
+        "description": "Auf der Karte platzierte Bosse: aktiviert ungenutzte Alternativ-Marker und plant Bonus-Begegnungen nach dem Kill (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleJakoSpawnsByPlayerCount": {
-        "title": "Jako Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with JakoSpawnMultiplier)."
+        "title": "Jako-Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Jako-Spawn-Multiplikator)."
       },
       "JakoSpawnMultiplier": {
         "title": "Jako-Spawn-Multiplikator",
-        "description": "Total normal-monster threat budget for ambient dungeon spawns (1 = Vanilla, 2 = double)."
+        "description": "Gesamtes Normal-Monster-Bedrohungsbudget für ambient Dungeon-Spawns (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleSpecialSpawnsByPlayerCount": {
-        "title": "Special Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with SpecialSpawnMultiplier)."
+        "title": "Spezial-Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Spezial-Spawn-Multiplikator)."
       },
       "SpecialSpawnMultiplier": {
         "title": "Spezial-Spawn-Multiplikator",
-        "description": "Special monster budget for periodic spawns and map-placed specials (1 = Vanilla, 2 = double)."
+        "description": "Spezial-Monster-Budget für periodische Spawns und auf der Karte platzierte Spezial-Gegner (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleTrapSpawnsByPlayerCount": {
-        "title": "Trap Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with TrapSpawnMultiplier)."
+        "title": "Fallen-Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Fallen-Spawn-Multiplikator)."
       },
       "TrapSpawnMultiplier": {
         "title": "Fallen-Spawn-Multiplikator",
-        "description": "Map-placed traps: activates unused alternate markers and schedules bonus encounters after trigger/kill (1 = Vanilla, 2 = double)."
+        "description": "Auf der Karte platzierte Fallen: aktiviert ungenutzte Alternativ-Marker und plant Bonus-Begegnungen nach Auslösung/Kill (1 = Vanilla, 2 = doppelt)."
       },
       "MapPlacedEncounterDelayMinSeconds": {
-        "title": "Map-Placed Encounter Delay Min (seconds)",
-        "description": "Shortest wait after a map-placed enemy, trap, or loot marker is cleared before the next bonus encounter from scaling can appear there."
+        "title": "Karten-Begegnung Verzögerung Min (Sekunden)",
+        "description": "Kürzeste Wartezeit, nachdem ein auf der Karte platzierter Gegner, eine Falle oder ein Loot-Marker geräumt wurde, bevor dort die nächste Bonus-Begegnung durch Skalierung erscheinen kann."
       },
       "MapPlacedEncounterDelayMaxSeconds": {
-        "title": "Map-Placed Encounter Delay Max (seconds)",
-        "description": "Longest wait for that random delay. Actual delay is picked between min and max."
+        "title": "Karten-Begegnung Verzögerung Max (Sekunden)",
+        "description": "Längste Wartezeit für diese Zufallsverzögerung. Die tatsächliche Verzögerung liegt zwischen Min und Max."
       },
       "MapPlacedEncounterMinPlayerDistanceMeters": {
-        "title": "Map-Placed Encounter Min Player Distance (m)",
-        "description": "After the delay, hold the spawn until no living players are within this radius of the marker. 0 = spawn as soon as the delay elapses."
+        "title": "Karten-Begegnung Min-Spielerabstand (m)",
+        "description": "Nach der Verzögerung Spawn zurückhalten, bis keine lebenden Spieler in diesem Radius um den Marker sind. 0 = Spawn sobald die Verzögerung abläuft."
       },
       "AutoScaleOtherSpawnsByPlayerCount": {
-        "title": "Other Spawns automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, apply SpawnScalingPlayerCountScaleRate pro Spieler über 4 (stacks with OtherSpawnMultiplier)."
+        "title": "Sonstige Spawns automatisch nach Spieleranzahl skalieren",
+        "description": "Wenn aktiviert, Spawn-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Sonstige-Spawn-Multiplikator)."
       },
       "OtherSpawnMultiplier": {
         "title": "Sonstige-Spawn-Multiplikator",
-        "description": "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps."
+        "description": "Spawn-Multiplikator für Entitäten, die keine Mimics, Bosse, Jakos, Spezial-Gegner oder Fallen sind."
       }
     },
     "MimesisPlayerEnhancement_Statistics": {
@@ -377,8 +377,8 @@
         "description": "Verwendet die vorherige Sitzung erneut, wenn ein Spieler innerhalb dieser Minuten wiederverbindet."
       },
       "ShowStatisticsToasts": {
-        "title": "Statistik-Toasts anzeigen",
-        "description": "Zeigt Mod-Statistik-Toasts (Sitzungsintro für dich, globale Stats bei Join/Leave). Ersetzt nicht die eigenen Verbindungsnachrichten des Spiels."
+        "title": "Statistik-Nachrichten anzeigen",
+        "description": "Zeigt Statistik-Nachrichten unten links (Sitzungsintro für dich, globale Stats bei Join/Leave). Ersetzt nicht die eigenen Verbindungsnachrichten des Spiels."
       }
     },
     "MimesisPlayerEnhancement_WebDashboard": {

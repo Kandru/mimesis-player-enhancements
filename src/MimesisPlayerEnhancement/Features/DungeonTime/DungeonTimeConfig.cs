@@ -22,18 +22,18 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 "EnableDungeonTime",
                 false,
                 "Enable Dungeon Time",
-                "Extend dungeon shift length on the host when player count exceeds the baseline.");
+                "Extend dungeon shift length when player count exceeds the baseline. Host only.");
 
             ModConfig.DungeonTimeBaselinePlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "DungeonTimeBaselinePlayerCount",
                 4,
-                "Dungeon Time Baseline Player Count",
+                "Baseline Player Count",
                 "No extra shift time at or below this player count (vanilla is 4). Minimum is 1.");
 
             ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline = ModConfig.CreateTrackedEntry(_category,
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
                 10f,
-                "Extra Shift Seconds Per Player Above Baseline",
+                "Extra Shift Time per Player (seconds)",
                 "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
         }
 

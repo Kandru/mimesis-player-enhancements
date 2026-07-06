@@ -27,8 +27,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             ModConfig.JoinConnectionGraceSeconds = ModConfig.CreateTrackedEntry(_category,
                 "JoinConnectionGraceSeconds",
                 30,
-                "Join Connection Grace Seconds",
-                "When a player connects, block tram departure for this many seconds. Players who fail to finish loading are kicked (host is never kicked).");
+                "Join Connection Grace (seconds)",
+                "When a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked).");
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>

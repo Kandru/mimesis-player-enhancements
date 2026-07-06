@@ -23,19 +23,19 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "EnableSpawnScaling",
                 false,
                 "Enable Spawn Scaling",
-                "Scale dungeon monster spawn budgets by type. Host only.");
+                "Scale dungeon monster and trap spawn budgets by type. Host only.");
 
             ModConfig.SpawnScalingPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "SpawnScalingPlayerCountScaleRate",
                 ScalingMath.DefaultPlayerCountScaleRate,
-                "Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … By Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0.");
+                "Spawn Player Count Scale Rate",
+                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0.");
 
             ModConfig.AutoScaleMimicSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMimicSpawnsByPlayerCount",
                 true,
-                "Auto Scale Mimic Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with MimicSpawnMultiplier).");
+                "Auto Scale Mimic Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Mimic Spawn Multiplier).");
 
             ModConfig.MimicSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicSpawnMultiplier",
@@ -46,8 +46,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleBossSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleBossSpawnsByPlayerCount",
                 true,
-                "Auto Scale Boss Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with BossSpawnMultiplier).");
+                "Auto Scale Boss Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Boss Spawn Multiplier).");
 
             ModConfig.BossSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "BossSpawnMultiplier",
@@ -58,8 +58,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleJakoSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleJakoSpawnsByPlayerCount",
                 true,
-                "Auto Scale Jako Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with JakoSpawnMultiplier).");
+                "Auto Scale Jako Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Jako Spawn Multiplier).");
 
             ModConfig.JakoSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "JakoSpawnMultiplier",
@@ -70,8 +70,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleSpecialSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleSpecialSpawnsByPlayerCount",
                 true,
-                "Auto Scale Special Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with SpecialSpawnMultiplier).");
+                "Auto Scale Special Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Special Spawn Multiplier).");
 
             ModConfig.SpecialSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "SpecialSpawnMultiplier",
@@ -82,8 +82,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleTrapSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleTrapSpawnsByPlayerCount",
                 true,
-                "Auto Scale Trap Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with TrapSpawnMultiplier).");
+                "Auto Scale Trap Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Trap Spawn Multiplier).");
 
             ModConfig.TrapSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "TrapSpawnMultiplier",
@@ -112,8 +112,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleOtherSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleOtherSpawnsByPlayerCount",
                 true,
-                "Auto Scale Other Spawns By Player Count",
-                "When enabled, apply SpawnScalingPlayerCountScaleRate per player above 4 (stacks with OtherSpawnMultiplier).");
+                "Auto Scale Other Spawns by Player Count",
+                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Other Spawn Multiplier).");
 
             ModConfig.OtherSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "OtherSpawnMultiplier",

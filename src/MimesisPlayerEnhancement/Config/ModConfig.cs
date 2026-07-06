@@ -180,14 +180,14 @@ namespace MimesisPlayerEnhancement
             ModToastDurationSeconds = CreateTrackedEntry(MainCategory,
                 "ModToastDurationSeconds",
                 5f,
-                "Mod Toast Duration (seconds)",
-                "How long [PlayerEnhancements] toasts stay visible before fading. Vanilla join/leave toasts are unchanged (~2 seconds). Each player controls this locally.");
+                "Mod Message Duration (seconds)",
+                "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally.");
 
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",
                 false,
                 "Enable Debug Logging",
-                "Emit verbose diagnostic lines to the MelonLoader console.");
+                "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting.");
 
             MorePlayersConfig.CreateEntries();
             MoreVoicesConfig.CreateEntries();
