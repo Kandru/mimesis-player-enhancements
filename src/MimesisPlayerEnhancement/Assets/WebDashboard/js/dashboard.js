@@ -585,7 +585,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     vitalsPercent(p) {
-      if (p.health == null) return null;
+      if (!p || p.health == null) {
+        return { health: null, toxic: null };
+      }
       const healthPercent = p.maxHealth > 0
         ? (Number(p.health) / Number(p.maxHealth)) * 100
         : null;

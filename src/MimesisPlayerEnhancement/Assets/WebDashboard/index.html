@@ -164,7 +164,7 @@
                     <small class="player-entry-detail player-entry-stats-line"
                       x-show="playerDetailLines(p).stats || showPlayerVitals(p)">
                       <span x-show="playerDetailLines(p).stats" x-text="playerDetailLines(p).stats"></span>
-                      <span class="player-entry-vitals" x-show="showPlayerVitals(p) && vitalsPercent(p)">
+                      <span class="player-entry-vitals" x-show="showPlayerVitals(p)">
                         <span class="vital-bar" title="Health">
                           <span class="vital-bar-label">HP</span>
                           <span class="vital-bar-track">
