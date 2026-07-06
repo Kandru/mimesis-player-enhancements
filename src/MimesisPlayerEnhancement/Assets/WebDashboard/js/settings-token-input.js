@@ -86,6 +86,14 @@ function createTokenInputMixin() {
     getTokenCatalog(entry) {
       if (entry.inputKind === 'ItemIdList') return this.itemCatalog;
       if (entry.inputKind === 'DungeonIdList') return this.dungeonCatalog;
+      if (entry.inputKind === 'WeatherPresetList') {
+        return [
+          { id: 'Sunny', label: 'Sunny' },
+          { id: 'Rain', label: 'Rain' },
+          { id: 'HeavyRain', label: 'Heavy Rain' },
+          { id: 'Squall', label: 'Squall' },
+        ];
+      }
       return [];
     },
 
@@ -215,6 +223,17 @@ function createTokenInputMixin() {
         return match ? resolveCatalogMasterId(match) : '';
       }
 
+      if (entry.inputKind === 'WeatherPresetList') {
+        const catalog = this.getTokenCatalog(entry);
+        const match = catalog.find((option) => {
+          const label = String(option.label || '').toLowerCase();
+          const id = String(option.id || '').toLowerCase();
+          const needle = text.toLowerCase();
+          return label === needle || id === needle;
+        });
+        return match ? String(match.id) : '';
+      }
+
       return text;
     },
 
@@ -310,7 +329,9 @@ function createTokenInputMixin() {
     },
 
     isTokenInputKind(entry) {
-      return entry.inputKind === 'ItemIdList' || entry.inputKind === 'DungeonIdList';
+      return entry.inputKind === 'ItemIdList'
+        || entry.inputKind === 'DungeonIdList'
+        || entry.inputKind === 'WeatherPresetList';
     },
   };
 }

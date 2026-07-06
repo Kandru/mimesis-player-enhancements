@@ -2,6 +2,7 @@ using Bifrost.ConstEnum;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Features.Weather;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 {
@@ -22,6 +23,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             AppendMoneySummary(parts, playerCount);
             AppendDungeonTime(parts, playerCount);
             AppendDungeonRandomizer(parts);
+            AppendWeather(parts);
 
             return parts.Count == 0
                 ? null
@@ -102,6 +104,36 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             }
 
             parts.Add(ModL10n.Get("announce.dungeon_randomizer_on"));
+        }
+
+        private static void AppendWeather(List<string> parts)
+        {
+            if (!ModConfig.EnableWeather.Value)
+            {
+                return;
+            }
+
+            WeatherMode mode = WeatherResolver.GetMode();
+            if (mode == WeatherMode.Fixed)
+            {
+                parts.Add(ModL10n.Get("announce.weather_fixed", new Dictionary<string, object>
+                {
+                    ["preset"] = ModConfig.FixedWeatherPreset.Value ?? "Sunny",
+                }));
+            }
+            else if (mode == WeatherMode.Cycle)
+            {
+                parts.Add(ModL10n.Get("announce.weather_cycle"));
+            }
+
+            StartTimePreset startTime = WeatherTimeResolver.ParseStartTimePreset(ModConfig.StartTimePreset.Value);
+            if (startTime != StartTimePreset.Vanilla)
+            {
+                parts.Add(ModL10n.Get("announce.start_time_preset", new Dictionary<string, object>
+                {
+                    ["preset"] = startTime.ToString(),
+                }));
+            }
         }
 
         private static void AppendMultiplier(List<string> parts, string label, float multiplier)

@@ -13,7 +13,8 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - renaming MoneyMultiplier feature to Economy
 - adding the ability to retain unspend currency between maintenance visits
 - draft: add quick-presets to the configuration (still needs tuning and extensive testing!)
-- Spawn Scaling: configurable periodic spawn wait (Vanilla / Fixed / Random seconds) for initial delay and wave interval; spawn multipliers no longer shorten wave periods
+- draft: configurable periodic spawn wait (Vanilla / Fixed / Random seconds) for initial delay and wave interval; spawn multipliers no longer shorten wave periods (still needs tuning and extensive testing!)
+- draft: host-only Weather feature — fixed/cycle presets, random-roll stripping, start-time presets, real-time config apply (still needs tuning and extensive testing!)
 
 ## 26.7.6
 - added translations

@@ -49,6 +49,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Dead Player Features](#dead-player-features--mimesisplayerenhancement_deadplayerfeatures) | Mimic possession timing for dead players | Host |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host |
 | [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host |
+| [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host |
 | [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard | Host process |
 
 ---
@@ -315,6 +316,44 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | `RandomizeLayoutFlow` | bool | `true` | — | Pick DunGen layout flows uniformly instead of weighted vanilla rolls. |
 | `RandomizeMapVariant` | bool | `true` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
 | `RandomizeDungeonSeed` | bool | `true` | — | Replace the procedural dungeon seed when a dungeon is chosen. |
+
+## Weather — `[MimesisPlayerEnhancement_Weather]`
+
+**Host-only.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Clients without the mod stay in sync via vanilla network messages.
+
+**Weather modes** (`WeatherMode`):
+
+| Value | Behavior |
+|-------|----------|
+| `Vanilla` | Game schedule; optional `DisableRandomWeather` removes procedural random blocks |
+| `Fixed` | One preset for the entire run (`FixedWeatherPreset`) |
+| `Cycle` | Rotate through `WeatherCyclePresets` on random real-time delays |
+
+**Start time presets** (`StartTimePreset`) set the **synced in-game clock** when a dungeon starts (tram alarm clock and outdoor lighting). The clock still advances during the shift until **~24:00** at time-over. **Real shift deadline is unchanged** (still based on dungeon duration in real time).
+
+Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
+
+| Preset | In-game clock at start | Runs until | At dungeon start |
+|--------|------------------------|------------|------------------|
+| `Vanilla` | **~10:00** (from dungeon data) | ~24:00 | Bright daytime (default) |
+| `Morning` | **08:00** | ~24:00 | Bright morning |
+| `Noon` | **12:00** | ~24:00 | Bright midday |
+| `Dusk` | **18:00** | ~24:00 | Sunset / dim |
+| `Night` | **21:00** | ~24:00 | Dark (moonlit) |
+| `Midnight` | **00:00** | ~24:00 | Darkest at start |
+
+A continuous brightness slider is not available host-only; pick a preset above for darker or brighter runs.
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `EnableWeather` | bool | `false` | — | Master toggle. Host only. |
+| `WeatherMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Cycle` | Weather control mode. |
+| `FixedWeatherPreset` | string | `Sunny` | `Sunny`, `Rain`, `HeavyRain`, `Squall` | Preset when mode is Fixed. |
+| `DisableRandomWeather` | bool | `false` | — | Vanilla mode — strip random weather rolls. |
+| `WeatherCyclePresets` | string | `Sunny,Rain` | — | Cycle mode — ordered comma-separated presets. |
+| `WeatherCycleMinDelaySeconds` | float | `300` | ≥ `0` | Cycle min real seconds between steps. |
+| `WeatherCycleMaxDelaySeconds` | float | `600` | ≥ min | Cycle max real seconds between steps. |
+| `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). |
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 

@@ -69,6 +69,60 @@
         "description": "Echte Sekunden, die zur Schichtfrist pro Spieler über der Baseline addiert werden. Minimum ist 0."
       }
     },
+    "MimesisPlayerEnhancement_Weather": {
+      "_section": "Wetter",
+      "EnableWeather": {
+        "title": "Wetter aktivieren",
+        "description": "Dungeon-Wetter, Zyklus-Presets und synchronisierte Startzeit steuern. Nur Host."
+      },
+      "WeatherMode": {
+        "title": "Wetter-Modus",
+        "description": "Vanilla = Spielplan; Fixed = ein Preset für den Lauf; Cycle = Presets im Timer wechseln. Nur Host.",
+        "options": {
+          "Vanilla": "Vanilla (Spielplan)",
+          "Fixed": "Fixed (ein Preset)",
+          "Cycle": "Cycle (Liste rotieren)"
+        }
+      },
+      "FixedWeatherPreset": {
+        "title": "Festes Wetter-Preset",
+        "description": "Gilt wenn Wetter-Modus Fixed ist.",
+        "options": {
+          "Sunny": "Sonnig",
+          "Rain": "Regen",
+          "HeavyRain": "Starkregen",
+          "Squall": "Squall"
+        }
+      },
+      "DisableRandomWeather": {
+        "title": "Zufallswetter deaktivieren",
+        "description": "Nur Vanilla-Modus — prozedurale Zufallswetter entfernen, geplante Wechsel behalten. Nur Host."
+      },
+      "WeatherCyclePresets": {
+        "title": "Wetter-Zyklus-Presets",
+        "description": "Nur Cycle-Modus — kommagetrennte Preset-Namen in Reihenfolge (Sunny, Rain, HeavyRain, Squall). Nur Host."
+      },
+      "WeatherCycleMinDelaySeconds": {
+        "title": "Zyklus Mindestverzögerung (Sekunden)",
+        "description": "Mindestens so viele echte Sekunden bis zum nächsten Zyklus-Schritt. Nur Host."
+      },
+      "WeatherCycleMaxDelaySeconds": {
+        "title": "Zyklus Höchstverzögerung (Sekunden)",
+        "description": "Höchstens so viele echte Sekunden bis zum nächsten Zyklus-Schritt. Nur Host."
+      },
+      "StartTimePreset": {
+        "title": "Startzeit-Preset",
+        "description": "Synchronisierte Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; echte Schichtfrist unverändert). Sonnenaufgang ~06:00, Sonnenuntergang ~18:00. Vanilla nutzt Dungeon-Daten (~10:00).",
+        "options": {
+          "Vanilla": "Vanilla (~10:00 → 24:00, Standard)",
+          "Morning": "Morgen (08:00 → 24:00, hell)",
+          "Noon": "Mittag (12:00 → 24:00, hell)",
+          "Dusk": "Dämmerung (18:00 → 24:00, Sonnenuntergang)",
+          "Night": "Nacht (21:00 → 24:00, dunkel)",
+          "Midnight": "Mitternacht (00:00 → 24:00, am dunkelsten)"
+        }
+      }
+    },
     "MimesisPlayerEnhancement_ExtendedSaveSlots": {
       "_section": "Erweiterte Save-Slots",
       "EnableExtendedSaveSlots": {
@@ -501,6 +555,9 @@
     "scrap_value": "Schrott-Wert",
     "shift_time_bonus": "+{seconds}s Schichtzeit",
     "dungeon_randomizer_on": "Dungeon-Randomizer an",
+    "weather_fixed": "Wetter: {preset}",
+    "weather_cycle": "wechselndes Wetter",
+    "start_time_preset": "Startzeit: {preset}",
     "multiplier_prefix": "{label} {multiplier}",
     "spawn_appeared": "{entities} erschienen. Vorsicht!",
     "spawn_join_two": "{first} und {second}",

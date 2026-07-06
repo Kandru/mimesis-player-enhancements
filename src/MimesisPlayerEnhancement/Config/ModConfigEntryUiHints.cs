@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement
     {
         private const string LootSectionId = "MimesisPlayerEnhancement_LootMultiplicator";
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
+        private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
@@ -18,6 +19,9 @@ namespace MimesisPlayerEnhancement
             {
                 [(LootSectionId, "LootItemFilterMode")] = ["All", "AllowlistOnly", "BlocklistOnly"],
                 [(DungeonSectionId, "DungeonPickPoolMode")] = ["WidenVanilla", "AllActiveUniform"],
+                [(WeatherSectionId, "WeatherMode")] = ["Vanilla", "Fixed", "Cycle"],
+                [(WeatherSectionId, "FixedWeatherPreset")] = ["Sunny", "Rain", "HeavyRain", "Squall"],
+                [(WeatherSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
                 [(SpawnScalingSectionId, "PeriodicSpawnWaitMode")] = ["Vanilla", "Fixed", "Random"],
             };
 
@@ -35,6 +39,12 @@ namespace MimesisPlayerEnhancement
                     || string.Equals(key, "DungeonBlocklist", StringComparison.Ordinal)))
             {
                 return "DungeonIdList";
+            }
+
+            if (sectionId == WeatherSectionId
+                && string.Equals(key, "WeatherCyclePresets", StringComparison.Ordinal))
+            {
+                return "WeatherPresetList";
             }
 
             if (SelectValuesByEntry.ContainsKey((sectionId, key)))
@@ -182,6 +192,20 @@ namespace MimesisPlayerEnhancement
                     ["PeriodicSpawnIntervalSeconds"] = "periodicSpawnWait",
                     ["PeriodicSpawnIntervalMinSeconds"] = "periodicSpawnWait",
                     ["PeriodicSpawnIntervalMaxSeconds"] = "periodicSpawnWait",
+                };
+            }
+
+            if (sectionId == WeatherSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["WeatherMode"] = "weatherMode",
+                    ["FixedWeatherPreset"] = "weatherMode",
+                    ["DisableRandomWeather"] = "weatherMode",
+                    ["WeatherCyclePresets"] = "weatherCycle",
+                    ["WeatherCycleMinDelaySeconds"] = "weatherCycle",
+                    ["WeatherCycleMaxDelaySeconds"] = "weatherCycle",
+                    ["StartTimePreset"] = "startTime",
                 };
             }
 

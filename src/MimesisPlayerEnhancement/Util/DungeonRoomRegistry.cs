@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement.Util
         LootScaling = 1 << 2,
         FixedLootCoordination = 1 << 3,
         DungeonTime = 1 << 4,
+        Weather = 1 << 5,
         SpawnScalingSkippedOnce = 1 << 8,
         LootScalingSkippedOnce = 1 << 9,
     }

@@ -69,6 +69,60 @@
         "description": "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0."
       }
     },
+    "MimesisPlayerEnhancement_Weather": {
+      "_section": "Weather",
+      "EnableWeather": {
+        "title": "Enable Weather",
+        "description": "Control dungeon weather, cyclic presets, and synced start time. Host only."
+      },
+      "WeatherMode": {
+        "title": "Weather Mode",
+        "description": "Vanilla = game schedule; Fixed = one preset for the run; Cycle = rotate presets on a timer. Host only.",
+        "options": {
+          "Vanilla": "Vanilla (game schedule)",
+          "Fixed": "Fixed (one preset)",
+          "Cycle": "Cycle (rotate list)"
+        }
+      },
+      "FixedWeatherPreset": {
+        "title": "Fixed Weather Preset",
+        "description": "Used when Weather Mode is Fixed.",
+        "options": {
+          "Sunny": "Sunny",
+          "Rain": "Rain",
+          "HeavyRain": "Heavy rain",
+          "Squall": "Squall"
+        }
+      },
+      "DisableRandomWeather": {
+        "title": "Disable Random Weather",
+        "description": "Vanilla mode only — remove procedural random weather while keeping scheduled changes. Host only."
+      },
+      "WeatherCyclePresets": {
+        "title": "Weather Cycle Presets",
+        "description": "Cycle mode only — comma-separated preset names in order (Sunny, Rain, HeavyRain, Squall). Host only."
+      },
+      "WeatherCycleMinDelaySeconds": {
+        "title": "Cycle Min Delay (seconds)",
+        "description": "Minimum real seconds before the next cycle step. Host only."
+      },
+      "WeatherCycleMaxDelaySeconds": {
+        "title": "Cycle Max Delay (seconds)",
+        "description": "Maximum real seconds before the next cycle step. Host only."
+      },
+      "StartTimePreset": {
+        "title": "Start Time Preset",
+        "description": "Synced in-game clock at dungeon start (lighting only; real shift deadline unchanged). Sunrise ~06:00, sunset ~18:00. Vanilla uses dungeon data (~10:00).",
+        "options": {
+          "Vanilla": "Vanilla (~10:00 → 24:00, default)",
+          "Morning": "Morning (08:00 → 24:00, bright)",
+          "Noon": "Noon (12:00 → 24:00, bright midday)",
+          "Dusk": "Dusk (18:00 → 24:00, sunset)",
+          "Night": "Night (21:00 → 24:00, dark)",
+          "Midnight": "Midnight (00:00 → 24:00, darkest)"
+        }
+      }
+    },
     "MimesisPlayerEnhancement_ExtendedSaveSlots": {
       "_section": "Extended Save Slots",
       "EnableExtendedSaveSlots": {
@@ -501,6 +555,9 @@
     "scrap_value": "scrap value",
     "shift_time_bonus": "+{seconds}s shift time",
     "dungeon_randomizer_on": "dungeon randomizer on",
+    "weather_fixed": "weather: {preset}",
+    "weather_cycle": "cycling weather",
+    "start_time_preset": "start time: {preset}",
     "multiplier_prefix": "{label} {multiplier}",
     "spawn_appeared": "{entities} appeared. Be careful!",
     "spawn_join_two": "{first} and {second}",

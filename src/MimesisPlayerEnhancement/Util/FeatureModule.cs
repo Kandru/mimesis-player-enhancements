@@ -9,6 +9,7 @@ using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Features.Weather;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Util
@@ -123,6 +124,10 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),
             new FeatureModule("DungeonRandomizer", DungeonRandomizerPatches.Apply),
+            new FeatureModule("Weather", WeatherPatches.Apply,
+                syncFromConfig: WeatherPatches.RefreshFromConfig,
+                onUpdate: WeatherCycleScheduler.ProcessPendingTransitions,
+                throttledUpdate: true),
             new FeatureModule("WebDashboard", WebDashboardServer.Apply,
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
                 onUpdate: WebDashboardServer.OnUpdate,

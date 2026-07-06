@@ -11,6 +11,7 @@ using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Features.Weather;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement
@@ -146,6 +147,15 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> RandomizeMapVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeDungeonSeed { get; internal set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnableWeather { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> WeatherMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> FixedWeatherPreset { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> DisableRandomWeather { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> WeatherCyclePresets { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> WeatherCycleMinDelaySeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> WeatherCycleMaxDelaySeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> StartTimePreset { get; internal set; } = null!;
+
         public static MelonPreferences_Entry<bool> EnableWebDashboard { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> WebDashboardListenAddress { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> WebDashboardListenPort { get; internal set; } = null!;
@@ -182,6 +192,7 @@ namespace MimesisPlayerEnhancement
             DeadPlayerFeaturesConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
             DungeonRandomizerConfig.CreateCategory();
+            WeatherConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
             ExtendedSaveSlotsConfig.CreateCategory();
 
@@ -211,12 +222,14 @@ namespace MimesisPlayerEnhancement
             DeadPlayerFeaturesConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
             DungeonRandomizerConfig.CreateEntries();
+            WeatherConfig.CreateEntries();
             WebDashboardConfig.CreateEntries();
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);
             EconomyConfig.SanitizeInitialValues(logger);
             DungeonRandomizerConfig.SanitizeInitialValues(logger);
+            WeatherConfig.SanitizeInitialValues(logger);
 
             MorePlayersConfig.WireValidation(logger);
             MoreVoicesConfig.WireValidation(logger);
@@ -243,6 +256,7 @@ namespace MimesisPlayerEnhancement
             DeadPlayerFeaturesConfig.WireValidation(logger);
             PlayerTuningConfig.WireValidation(logger);
             DungeonRandomizerConfig.WireValidation(logger);
+            WeatherConfig.WireValidation(logger);
             WebDashboardConfig.WireValidation(logger);
             EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(EnableDebugLogging));
 
@@ -304,6 +318,7 @@ namespace MimesisPlayerEnhancement
             DungeonTimeConfig.RegisterFloatEntries();
             DeadPlayerFeaturesConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();
+            WeatherConfig.RegisterFloatEntries();
         }
 
         internal static void OnSpawnMultiplierChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)

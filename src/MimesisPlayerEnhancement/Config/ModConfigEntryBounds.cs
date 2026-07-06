@@ -36,6 +36,7 @@ namespace MimesisPlayerEnhancement
             const string SpawnScaling = "MimesisPlayerEnhancement_SpawnScaling";
             const string JoinAnytime = "MimesisPlayerEnhancement_JoinAnytime";
             const string DungeonTime = "MimesisPlayerEnhancement_DungeonTime";
+            const string Weather = "MimesisPlayerEnhancement_Weather";
             const string DeadPlayerFeatures = "MimesisPlayerEnhancement_DeadPlayerFeatures";
 
             Float(Main, "ModToastDurationSeconds", 1f);
@@ -86,6 +87,9 @@ namespace MimesisPlayerEnhancement
 
             Int(DungeonTime, "DungeonTimeBaselinePlayerCount", 1);
             Float(DungeonTime, "ExtraShiftSecondsPerPlayerAboveBaseline", 0f);
+
+            Float(Weather, "WeatherCycleMinDelaySeconds", 0f);
+            Float(Weather, "WeatherCycleMaxDelaySeconds", 0f);
 
             FloatRange(DeadPlayerFeatures, "MimicPossessionMinTimeSeconds",
                 MimicPossessionResolver.MinDurationSeconds,
