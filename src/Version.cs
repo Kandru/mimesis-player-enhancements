@@ -6,6 +6,6 @@ namespace MimesisPlayerEnhancement
     /// </summary>
     public static class VersionInfo
     {
-        public const string ModuleVersion = "26.7.5";
+        public const string ModuleVersion = "26.7.6";
     }
 }
