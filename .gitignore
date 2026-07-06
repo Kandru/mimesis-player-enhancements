@@ -11,6 +11,7 @@ deps/reference/Managed/
 deps/reference/MelonLoader/
 deps/decompiled/
 deps/mimesis-reference-libs*.zip
+deps/other_mods/
 
 # IDE / OS
 .vs/
