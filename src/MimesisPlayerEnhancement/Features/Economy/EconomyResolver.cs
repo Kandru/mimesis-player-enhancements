@@ -1,6 +1,6 @@
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
-    internal static class MoneyMultiplierResolver
+    internal static class EconomyResolver
     {
         internal static bool IsAutoScaleEnabled(MoneyType type)
         {
@@ -33,12 +33,12 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             return ScalingMath.GetPlayerScale(
                 playerCount,
                 IsAutoScaleEnabled(type),
-                ModConfig.MoneyMultiplierPlayerCountScaleRate.Value);
+                ModConfig.EconomyPlayerCountScaleRate.Value);
         }
 
         internal static float GetEffectiveMultiplier(MoneyType type, int playerCount)
         {
-            if (!ModConfig.EnableMoneyMultiplier.Value)
+            if (!ModConfig.EnableEconomy.Value)
             {
                 return FeatureToggleGate.NeutralMultiplier;
             }

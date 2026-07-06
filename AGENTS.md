@@ -163,14 +163,14 @@ Good candidates: multi-parameter message builders, hot-path debug helpers with e
 
 **Do not log:** every frame/hot path when unchanged, when feature is off and vanilla runs unchanged, duplicate unchanged state.
 
-For hot paths (scrap prices, per-spawn rolls), use debug helpers that early-return when `EnableDebugLogging` is false or values are unchanged. Reserve **Info** for run-level events (`MoneyMultiplierLog.InfoApplied` vs inline debug in patches).
+For hot paths (scrap prices, per-spawn rolls), use debug helpers that early-return when `EnableDebugLogging` is false or values are unchanged. Reserve **Info** for run-level events (`EconomyLog.InfoApplied` vs inline debug in patches).
 
 #### Reference implementations
 
 | Style | Examples |
 |-------|----------|
 | Inline `ModLog` | JoinAnytime, Persistence, Statistics, MorePlayers, WebDashboard |
-| `{Feature}Log` with semantic methods | SpawnScaling, LootMultiplicator, MoneyMultiplier, DungeonRandomizer, PlayerTuning, DungeonTime, DeadPlayerFeatures (MimicPossession) |
+| `{Feature}Log` with semantic methods | SpawnScaling, LootMultiplicator, Economy, DungeonRandomizer, PlayerTuning, DungeonTime, DeadPlayerFeatures (MimicPossession) |
 
 `HarmonyPatchHelper` may call `ModLog` directly (infrastructure).
 

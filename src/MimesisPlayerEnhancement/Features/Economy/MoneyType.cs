@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal enum MoneyType
     {

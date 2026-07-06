@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootItemIdListParser

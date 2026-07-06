@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Models
 {
     public sealed class StatCounters

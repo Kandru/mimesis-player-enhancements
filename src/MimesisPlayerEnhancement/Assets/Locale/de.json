@@ -166,19 +166,19 @@
         "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
       }
     },
-    "MimesisPlayerEnhancement_MoneyMultiplier": {
-      "_section": "Geld-Multiplikator",
-      "EnableMoneyMultiplier": {
-        "title": "Geld-Multiplikator aktivieren",
-        "description": "Skaliert Startgeld, Runden-Ziel-Quote, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Nur Host."
+    "MimesisPlayerEnhancement_Economy": {
+      "_section": "Wirtschaft",
+      "EnableEconomy": {
+        "title": "Wirtschaft aktivieren",
+        "description": "Skaliert Startgeld, Runden-Ziel-Quote, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Optional ungenutztes Geld zwischen Maintenance-Zyklen behalten. Nur Host."
       },
-      "MoneyMultiplierPlayerCountScaleRate": {
-        "title": "Geld-Spieleranzahl-Skalierungsrate",
+      "EconomyPlayerCountScaleRate": {
+        "title": "Wirtschaft-Spieleranzahl-Skalierungsrate",
         "description": "Extra-Multiplikator pro Spieler über 4, wenn ein Auto Scale … by Player Count-Schalter aktiv ist (0,10 = +10 % pro Extra-Spieler, stapelt sich mit Geld-Multiplikatoren). Minimum ist 0."
       },
       "AutoScaleStartupMoneyByPlayerCount": {
         "title": "Startgeld automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Startgeld-Multiplikator)."
+        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Startgeld-Multiplikator)."
       },
       "StartupMoneyMultiplier": {
         "title": "Startgeld-Multiplikator",
@@ -186,7 +186,7 @@
       },
       "AutoScaleRoundGoalMoneyByPlayerCount": {
         "title": "Runden-Ziel-Geld automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Runden-Ziel-Geld-Multiplikator)."
+        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Runden-Ziel-Geld-Multiplikator)."
       },
       "RoundGoalMoneyMultiplier": {
         "title": "Runden-Ziel-Geld-Multiplikator",
@@ -194,7 +194,7 @@
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Schrott-Verkaufswert automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Schrott-Verkaufswert-Multiplikator)."
+        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Schrott-Verkaufswert-Multiplikator)."
       },
       "ScrapSellValueMultiplier": {
         "title": "Schrott-Verkaufswert-Multiplikator",
@@ -202,7 +202,7 @@
       },
       "AutoScaleShopBuyPriceByPlayerCount": {
         "title": "Shop-Kaufpreis automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Shop-Kaufpreis-Multiplikator)."
+        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Shop-Kaufpreis-Multiplikator)."
       },
       "ShopBuyPriceMultiplier": {
         "title": "Shop-Kaufpreis-Multiplikator",
@@ -222,11 +222,15 @@
       },
       "AutoScaleReinforcePriceByPlayerCount": {
         "title": "Verstärkungspreis automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Geld-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Verstärkungspreis-Multiplikator)."
+        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Verstärkungspreis-Multiplikator)."
       },
       "ReinforcePriceMultiplier": {
         "title": "Verstärkungspreis-Multiplikator",
         "description": "Multiplikator für Maintenance-Item-Verstärkungskosten (1 = Vanilla, 2 = doppelt)."
+      },
+      "RetainUnspentCurrencyBetweenCycles": {
+        "title": "Ungenutztes Geld zwischen Zyklen behalten",
+        "description": "Ungenutztes Maintenance-Geld beim Abfahren zur nächsten Dungeon-Runde behalten statt auf null zu setzen. Beeinflusst nicht die Tram-Reparaturkosten. Nur Host."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {

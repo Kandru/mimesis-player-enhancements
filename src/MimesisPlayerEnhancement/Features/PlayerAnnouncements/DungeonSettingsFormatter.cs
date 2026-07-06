@@ -1,7 +1,6 @@
 using Bifrost.ConstEnum;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
-using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
@@ -64,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendMoneySummary(List<string> parts, int playerCount)
         {
-            if (!ModConfig.EnableMoneyMultiplier.Value)
+            if (!ModConfig.EnableEconomy.Value)
             {
                 return;
             }
@@ -72,11 +71,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             AppendMultiplier(
                 parts,
                 ModL10n.Get("announce.quota"),
-                MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.RoundGoal, playerCount));
+                EconomyResolver.GetEffectiveMultiplier(MoneyType.RoundGoal, playerCount));
             AppendMultiplier(
                 parts,
                 ModL10n.Get("announce.scrap_value"),
-                MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount));
+                EconomyResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount));
         }
 
         private static void AppendDungeonTime(List<string> parts, int playerCount)

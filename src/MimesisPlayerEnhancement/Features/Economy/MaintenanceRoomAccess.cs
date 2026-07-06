@@ -3,7 +3,7 @@ using System.Collections;
 using System.Reflection;
 using ReluProtocol;
 
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class MaintenanceRoomAccess
     {
@@ -14,6 +14,14 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
         private static readonly FieldInfo LevelObjectsField =
             AccessTools.Field(typeof(IVroom), "_levelObjects")
             ?? throw new InvalidOperationException("IVroom._levelObjects not found");
+
+        private static readonly MethodInfo? CurrencySetter =
+            AccessTools.PropertySetter(typeof(IVroom), nameof(IVroom.Currency));
+
+        internal static void SetCurrency(IVroom room, int value)
+        {
+            CurrencySetter?.Invoke(room, [value]);
+        }
 
         internal static Dictionary<int, ShopItemPriceInfo>? GetPriceForItems(MaintenanceRoom room)
         {

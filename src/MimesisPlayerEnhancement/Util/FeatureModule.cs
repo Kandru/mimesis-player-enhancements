@@ -4,7 +4,6 @@ using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
-using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
@@ -114,8 +113,8 @@ namespace MimesisPlayerEnhancement.Util
                 onUpdate: () =>
             {
                 if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); } }, throttledUpdate: true),
-            new FeatureModule("MoneyMultiplier", MoneyMultiplierPatches.Apply,
-                syncFromConfig: MoneyMultiplierPatches.RefreshFromConfig),
+            new FeatureModule("Economy", EconomyPatches.Apply,
+                syncFromConfig: EconomyPatches.RefreshFromConfig),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
             new FeatureModule(
                 "DeadPlayerFeatures",

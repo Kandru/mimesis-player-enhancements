@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
 {
     [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))]

@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Config.QuickSettings
 {
     internal static class BuiltinQuickSettings
@@ -98,7 +97,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             [
                 "MimesisPlayerEnhancement_SpawnScaling",
                 "MimesisPlayerEnhancement_LootMultiplicator",
-                "MimesisPlayerEnhancement_MoneyMultiplier",
+                "MimesisPlayerEnhancement_Economy",
                 "MimesisPlayerEnhancement_DungeonTime",
                 "MimesisPlayerEnhancement_PlayerTuning",
                 "MimesisPlayerEnhancement_Statistics",
@@ -120,7 +119,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.25f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.25f, dropLoot: 1.25f);
-            QuickSettingsValuesBuilder.SetMoneyMultipliers(values, startup: 1.25f, roundGoal: 1.25f, scrap: 1.25f, shop: 1.25f, reinforce: 1.25f);
+            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.25f, roundGoal: 1.25f, scrap: 1.25f, shop: 1.25f, reinforce: 1.25f);
 
             return new QuickSettingPreset
             {
@@ -140,7 +139,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             [
                 "MimesisPlayerEnhancement_SpawnScaling",
                 "MimesisPlayerEnhancement_LootMultiplicator",
-                "MimesisPlayerEnhancement_MoneyMultiplier",
+                "MimesisPlayerEnhancement_Economy",
                 "MimesisPlayerEnhancement_DungeonTime",
                 "MimesisPlayerEnhancement_PlayerTuning",
                 "MimesisPlayerEnhancement_Statistics",
@@ -163,7 +162,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.9f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.8f, dropLoot: 1.8f);
-            QuickSettingsValuesBuilder.SetMoneyMultipliers(values, startup: 1.5f, roundGoal: 2f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
+            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.5f, roundGoal: 2f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
 
             return new QuickSettingPreset
             {

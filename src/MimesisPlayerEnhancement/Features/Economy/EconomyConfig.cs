@@ -1,40 +1,40 @@
 using MelonLoader;
 
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
     /// <summary>
-    /// Registers the [MimesisPlayerEnhancement_MoneyMultiplier] section. Entries are still
+    /// Registers the [MimesisPlayerEnhancement_Economy] section. Entries are still
     /// exposed via <see cref="ModConfig"/> properties; only registration lives here.
     /// Call order is driven by <see cref="ModConfig.Initialize"/> to keep TOML layout unchanged.
     /// </summary>
-    internal static class MoneyMultiplierConfig
+    internal static class EconomyConfig
     {
         private static MelonPreferences_Category _category = null!;
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MoneyMultiplier", "Money Multiplier");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_Economy", "Economy");
         }
 
         internal static void CreateEntries()
         {
-            ModConfig.EnableMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "EnableMoneyMultiplier",
+            ModConfig.EnableEconomy = ModConfig.CreateTrackedEntry(_category,
+                "EnableEconomy",
                 false,
-                "Enable Money Multiplier",
-                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only.");
+                "Enable Economy",
+                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only.");
 
-            ModConfig.MoneyMultiplierPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
-                "MoneyMultiplierPlayerCountScaleRate",
+            ModConfig.EconomyPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
+                "EconomyPlayerCountScaleRate",
                 ScalingMath.DefaultPlayerCountScaleRate,
-                "Money Player Count Scale Rate",
+                "Economy Player Count Scale Rate",
                 "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0.");
 
             ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleStartupMoneyByPlayerCount",
                 true,
                 "Auto Scale Startup Money by Player Count",
-                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier).");
+                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier).");
 
             ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StartupMoneyMultiplier",
@@ -46,7 +46,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 "AutoScaleRoundGoalMoneyByPlayerCount",
                 true,
                 "Auto Scale Round Goal Money by Player Count",
-                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier).");
+                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier).");
 
             ModConfig.RoundGoalMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalMoneyMultiplier",
@@ -58,7 +58,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 "AutoScaleScrapSellValueByPlayerCount",
                 true,
                 "Auto Scale Scrap Sell Value by Player Count",
-                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier).");
+                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier).");
 
             ModConfig.ScrapSellValueMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ScrapSellValueMultiplier",
@@ -70,7 +70,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 "AutoScaleShopBuyPriceByPlayerCount",
                 true,
                 "Auto Scale Shop Buy Price by Player Count",
-                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier).");
+                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier).");
 
             ModConfig.ShopBuyPriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ShopBuyPriceMultiplier",
@@ -100,13 +100,19 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                 "AutoScaleReinforcePriceByPlayerCount",
                 true,
                 "Auto Scale Reinforce Price by Player Count",
-                "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier).");
+                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier).");
 
             ModConfig.ReinforcePriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ReinforcePriceMultiplier",
                 1f,
                 "Reinforce Price Multiplier",
                 "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
+
+            ModConfig.RetainUnspentCurrencyBetweenCycles = ModConfig.CreateTrackedEntry(_category,
+                "RetainUnspentCurrencyBetweenCycles",
+                false,
+                "Retain Unspent Currency Between Cycles",
+                "Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. Host only.");
         }
 
         /// <summary>Clamps persisted shop discount percents once at startup, before change handlers are wired.</summary>
@@ -119,14 +125,16 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
-            ModConfig.EnableMoneyMultiplier.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableMoneyMultiplier));
-            ModConfig.MoneyMultiplierPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
-                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MoneyMultiplierPlayerCountScaleRate));
+            ModConfig.EnableEconomy.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableEconomy));
+            ModConfig.EconomyPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.EconomyPlayerCountScaleRate));
             ModConfig.AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleStartupMoneyByPlayerCount));
             ModConfig.AutoScaleRoundGoalMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleRoundGoalMoneyByPlayerCount));
             ModConfig.AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleScrapSellValueByPlayerCount));
             ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
             ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
+            ModConfig.RetainUnspentCurrencyBetweenCycles.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.RetainUnspentCurrencyBetweenCycles));
 
             ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
             ModConfig.RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.RoundGoalMoneyMultiplier));
@@ -140,7 +148,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         internal static void RegisterFloatEntries()
         {
-            ModConfig.TrackFloatEntry(ModConfig.MoneyMultiplierPlayerCountScaleRate);
+            ModConfig.TrackFloatEntry(ModConfig.EconomyPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.StartupMoneyMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.RoundGoalMoneyMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ScrapSellValueMultiplier);

@@ -6,7 +6,6 @@ using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
-using MimesisPlayerEnhancement.Features.MoneyMultiplier;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
@@ -94,8 +93,8 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> AutoScaleMapLootBudgetForFilter { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> ConvertFakeActorDyingDropChancePercent { get; internal set; } = null!;
 
-        public static MelonPreferences_Entry<bool> EnableMoneyMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> MoneyMultiplierPlayerCountScaleRate { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableEconomy { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleRoundGoalMoneyByPlayerCount { get; internal set; } = null!;
@@ -109,6 +108,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> ShopDiscountChancePercent { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleReinforcePriceByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ReinforcePriceMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> RetainUnspentCurrencyBetweenCycles { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableDungeonTime { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; internal set; } = null!;
@@ -170,7 +170,7 @@ namespace MimesisPlayerEnhancement
             JoinAnytimeConfig.CreateCategory();
             SpawnScalingConfig.CreateCategory();
             LootMultiplicatorConfig.CreateCategory();
-            MoneyMultiplierConfig.CreateCategory();
+            EconomyConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
             DeadPlayerFeaturesConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
@@ -199,7 +199,7 @@ namespace MimesisPlayerEnhancement
             ExtendedSaveSlotsConfig.CreateEntries();
             SpawnScalingConfig.CreateEntries();
             LootMultiplicatorConfig.CreateEntries();
-            MoneyMultiplierConfig.CreateEntries();
+            EconomyConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
             DeadPlayerFeaturesConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
@@ -208,7 +208,7 @@ namespace MimesisPlayerEnhancement
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);
-            MoneyMultiplierConfig.SanitizeInitialValues(logger);
+            EconomyConfig.SanitizeInitialValues(logger);
             DungeonRandomizerConfig.SanitizeInitialValues(logger);
 
             MorePlayersConfig.WireValidation(logger);
@@ -231,7 +231,7 @@ namespace MimesisPlayerEnhancement
             ExtendedSaveSlotsConfig.WireValidation();
             SpawnScalingConfig.WireValidation(logger);
             LootMultiplicatorConfig.WireValidation(logger);
-            MoneyMultiplierConfig.WireValidation(logger);
+            EconomyConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
             DeadPlayerFeaturesConfig.WireValidation(logger);
             PlayerTuningConfig.WireValidation(logger);
@@ -293,7 +293,7 @@ namespace MimesisPlayerEnhancement
         {
             SpawnScalingConfig.RegisterFloatEntries();
             LootMultiplicatorConfig.RegisterFloatEntries();
-            MoneyMultiplierConfig.RegisterFloatEntries();
+            EconomyConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
             DeadPlayerFeaturesConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();

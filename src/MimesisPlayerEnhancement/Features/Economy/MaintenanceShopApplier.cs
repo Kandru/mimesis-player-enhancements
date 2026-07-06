@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using ReluProtocol;
 
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class MaintenanceShopApplier
     {
-        private const string Feature = "MoneyMultiplier";
+        private const string Feature = "Economy";
 
         private sealed class RoomState
         {
@@ -177,7 +177,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         private static void ApplyBuyPrices(MaintenanceRoom room)
         {
-            if (!MoneyMultiplierApplier.IsEnabled())
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }
@@ -189,7 +189,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
+            float effective = EconomyResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
             bool modDiscountsEnabled = ModConfig.ShopDiscountChancePercent.Value > 0;
 
             Dictionary<int, int> basePrices = BasePricesByRoom.GetOrCreateValue(room);
@@ -210,7 +210,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
                     basePrices[entry.Key] = basePrice;
                 }
 
-                int scaledBase = effective == 1f ? basePrice : MoneyMultiplierResolver.ScaleAmount(basePrice, effective);
+                int scaledBase = effective == 1f ? basePrice : EconomyResolver.ScaleAmount(basePrice, effective);
                 int newPrice;
                 if (modDiscountsEnabled)
                 {
@@ -247,7 +247,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         private static void ApplyDiscounts(MaintenanceRoom room)
         {
-            if (!MoneyMultiplierApplier.IsEnabled())
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }

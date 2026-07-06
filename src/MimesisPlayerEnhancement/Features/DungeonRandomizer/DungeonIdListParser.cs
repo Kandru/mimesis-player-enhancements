@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonIdListParser

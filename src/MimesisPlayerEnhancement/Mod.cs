@@ -156,7 +156,7 @@ namespace MimesisPlayerEnhancement
                 $"JoinAnytime={ModConfig.EnableJoinAnytime.Value}, " +
                 $"SpawnScaling={ModConfig.EnableSpawnScaling.Value}, " +
                 $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
-                $"MoneyMultiplier={ModConfig.EnableMoneyMultiplier.Value}, " +
+                $"Economy={ModConfig.EnableEconomy.Value}, " +
                 $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
                 $"DeadPlayerFeatures={ModConfig.EnableDeadPlayerFeatures.Value}" +
                 (ModConfig.EnableDeadPlayerFeatures.Value

@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnTimingOverrideApplier

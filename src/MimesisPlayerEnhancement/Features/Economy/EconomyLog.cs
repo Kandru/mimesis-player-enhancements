@@ -1,8 +1,8 @@
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
-    internal static class MoneyMultiplierLog
+    internal static class EconomyLog
     {
-        private const string Feature = "MoneyMultiplier";
+        private const string Feature = "Economy";
 
         internal static void InfoApplied(MoneyType type, int vanilla, int scaled, int playerCount, float effectiveMultiplier)
         {
@@ -26,6 +26,11 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             ModLog.Debug(
                 Feature,
                 $"{FormatType(type)} scaled {vanilla} -> {scaled} (players={playerCount}, effective={effectiveMultiplier:0.##}×)");
+        }
+
+        internal static void InfoRetainedCurrency(int amount, int stage)
+        {
+            ModLog.Info(Feature, $"Retained unspent currency — amount={amount}, stage={stage}");
         }
 
         internal static string FormatType(MoneyType type)

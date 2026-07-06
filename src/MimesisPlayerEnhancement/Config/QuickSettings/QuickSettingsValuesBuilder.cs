@@ -121,7 +121,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             Set(map, "MimesisPlayerEnhancement_LootMultiplicator", "DropLootMultiplier", ModConfigFloatHelper.Format(dropLoot));
         }
 
-        internal static void SetMoneyMultipliers(
+        internal static void SetEconomyMultipliers(
             Dictionary<string, Dictionary<string, string>> map,
             float startup,
             float roundGoal,
@@ -129,11 +129,11 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             float shop,
             float reinforce)
         {
-            Set(map, "MimesisPlayerEnhancement_MoneyMultiplier", "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
-            Set(map, "MimesisPlayerEnhancement_MoneyMultiplier", "RoundGoalMoneyMultiplier", ModConfigFloatHelper.Format(roundGoal));
-            Set(map, "MimesisPlayerEnhancement_MoneyMultiplier", "ScrapSellValueMultiplier", ModConfigFloatHelper.Format(scrap));
-            Set(map, "MimesisPlayerEnhancement_MoneyMultiplier", "ShopBuyPriceMultiplier", ModConfigFloatHelper.Format(shop));
-            Set(map, "MimesisPlayerEnhancement_MoneyMultiplier", "ReinforcePriceMultiplier", ModConfigFloatHelper.Format(reinforce));
+            Set(map, "MimesisPlayerEnhancement_Economy", "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
+            Set(map, "MimesisPlayerEnhancement_Economy", "RoundGoalMoneyMultiplier", ModConfigFloatHelper.Format(roundGoal));
+            Set(map, "MimesisPlayerEnhancement_Economy", "ScrapSellValueMultiplier", ModConfigFloatHelper.Format(scrap));
+            Set(map, "MimesisPlayerEnhancement_Economy", "ShopBuyPriceMultiplier", ModConfigFloatHelper.Format(shop));
+            Set(map, "MimesisPlayerEnhancement_Economy", "ReinforcePriceMultiplier", ModConfigFloatHelper.Format(reinforce));
         }
 
         internal static Dictionary<string, Dictionary<string, string>> CloneValues(

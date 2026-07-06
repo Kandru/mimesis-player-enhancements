@@ -10,6 +10,8 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - better debug messages
 - removed a testing-value for RouteRetryInterval and set it to a fixed value
 - webinterface now uses the browsers language instead of the game language
+- renaming MoneyMultiplier feature to Economy
+- adding the ability to retain unspend currency between maintenance visits
 - draft: add quick-presets to the configuration (still needs tuning and extensive testing!)
 
 ## 26.7.6
@@ -24,7 +26,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - optimized savegame lifecycle (saves mod-data only when auto-save or manual save button is being pressed)
 - possible fix for late joiner who are not always being transported to the train scene between dungeons.
 - exclude crow shop detox from loot duplication
-- player-count auto scaling (Spawn Scaling, Loot Multiplicator, Money Multiplier) now uses a configurable rate per extra player above 4 (default +10% instead of the old +25% / `players / 4` curve); set `SpawnScalingPlayerCountScaleRate`, `LootMultiplicatorPlayerCountScaleRate`, or `MoneyMultiplierPlayerCountScaleRate` to `0.25` to restore the previous curve
+- player-count auto scaling (Spawn Scaling, Loot Multiplicator, Economy) now uses a configurable rate per extra player above 4 (default +10% instead of the old +25% / `players / 4` curve); set `SpawnScalingPlayerCountScaleRate`, `LootMultiplicatorPlayerCountScaleRate`, or `EconomyPlayerCountScaleRate` to `0.25` to restore the previous curve
 - draft: properly rename lobby when saved via the save button (and properly load when savegame is being loaded). Same for the lobby public type
 - draft: extended spectator death player list (just for testing currently. May gets removed).
 

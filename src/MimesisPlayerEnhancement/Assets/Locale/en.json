@@ -166,19 +166,19 @@
         "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla)."
       }
     },
-    "MimesisPlayerEnhancement_MoneyMultiplier": {
-      "_section": "Money Multiplier",
-      "EnableMoneyMultiplier": {
-        "title": "Enable Money Multiplier",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only."
+    "MimesisPlayerEnhancement_Economy": {
+      "_section": "Economy",
+      "EnableEconomy": {
+        "title": "Enable Economy",
+        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only."
       },
-      "MoneyMultiplierPlayerCountScaleRate": {
-        "title": "Money Player Count Scale Rate",
+      "EconomyPlayerCountScaleRate": {
+        "title": "Economy Player Count Scale Rate",
         "description": "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0."
       },
       "AutoScaleStartupMoneyByPlayerCount": {
         "title": "Auto Scale Startup Money by Player Count",
-        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier)."
+        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier)."
       },
       "StartupMoneyMultiplier": {
         "title": "Startup Money Multiplier",
@@ -186,7 +186,7 @@
       },
       "AutoScaleRoundGoalMoneyByPlayerCount": {
         "title": "Auto Scale Round Goal Money by Player Count",
-        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier)."
+        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier)."
       },
       "RoundGoalMoneyMultiplier": {
         "title": "Round Goal Money Multiplier",
@@ -194,7 +194,7 @@
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Auto Scale Scrap Sell Value by Player Count",
-        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier)."
+        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier)."
       },
       "ScrapSellValueMultiplier": {
         "title": "Scrap Sell Value Multiplier",
@@ -202,7 +202,7 @@
       },
       "AutoScaleShopBuyPriceByPlayerCount": {
         "title": "Auto Scale Shop Buy Price by Player Count",
-        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier)."
+        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier)."
       },
       "ShopBuyPriceMultiplier": {
         "title": "Shop Buy Price Multiplier",
@@ -222,11 +222,15 @@
       },
       "AutoScaleReinforcePriceByPlayerCount": {
         "title": "Auto Scale Reinforce Price by Player Count",
-        "description": "When enabled, apply Money Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier)."
+        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier)."
       },
       "ReinforcePriceMultiplier": {
         "title": "Reinforce Price Multiplier",
         "description": "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double)."
+      },
+      "RetainUnspentCurrencyBetweenCycles": {
+        "title": "Retain Unspent Currency Between Cycles",
+        "description": "Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. Host only."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {

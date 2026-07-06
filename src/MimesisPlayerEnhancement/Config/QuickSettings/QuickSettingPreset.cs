@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Config.QuickSettings
 {
     internal enum SaveConfigProfileMode

@@ -26,7 +26,7 @@ Most features only need to be installed on the **host** — friends can join wit
 | **Player Announcements** | On-screen tips for dungeon settings, bosses, and death stats | Host only |
 | **Spawn Scaling** | More or fewer enemies and traps in dungeons | Host only |
 | **Loot Multiplicator** | More or less loot on the map and from enemy drops | Host only |
-| **Money Multiplier** | Adjust starting cash, quotas, scrap value, and shop prices | Host only |
+| **Economy** | Adjust starting cash, quotas, scrap value, shop prices, and optional currency retention | Host only |
 | **Dungeon Time** | Extra shift time when you have more players | Host only |
 | **Dead Player Features** | Tune how long dead players can speak through mimics | Host only |
 | **Player Tuning** | Change movement speed, stamina, and carry weight | Host only |
@@ -72,9 +72,9 @@ Lets you control how busy dungeons feel by changing how many enemies and traps a
 
 Adjusts how much loot you find on the map and what enemies drop when defeated. You can increase or decrease quantities, scale with player count, and optionally limit which item types are affected. Can also turn some mimic decoy drops into real pickup loot.
 
-### Money Multiplier
+### Economy
 
-Changes money-related values for your run: starting cash, the quota you need to hit each round, how much scrapped items are worth, and prices in the maintenance shop. Like other scaling features, amounts can grow automatically when more players join.
+Changes money-related values for your run: starting cash, the quota you need to hit each round, how much scrapped items are worth, and prices in the maintenance shop. Like other scaling features, amounts can grow automatically when more players join. Optionally keep unspent maintenance currency when departing for the next dungeon instead of losing it.
 
 ### Dungeon Time
 

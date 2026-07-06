@@ -1,12 +1,10 @@
 using System;
 using System.Reflection;
 
-namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
+namespace MimesisPlayerEnhancement.Features.Economy
 {
-    internal static class MoneyMultiplierApplier
+    internal static class EconomyApplier
     {
-        private const string Feature = "MoneyMultiplier";
-
         private static readonly FieldInfo TargetCurrencyField =
             AccessTools.Field(typeof(GameSessionInfo), "_targetCurrency")
             ?? throw new InvalidOperationException("GameSessionInfo._targetCurrency not found");
@@ -16,7 +14,14 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         internal static bool IsEnabled()
         {
-            return ModConfig.EnableMoneyMultiplier.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
+            return ModConfig.EnableEconomy.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
+        }
+
+        internal static bool ShouldRetainUnspentCurrency()
+        {
+            return ModConfig.EnableEconomy.Value
+                && ModConfig.RetainUnspentCurrencyBetweenCycles.Value
+                && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
 
         internal static bool TryGetVanillaInitialMoney(out int value)
@@ -41,15 +46,15 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
 
         internal static int ScaleForType(MoneyType type, int vanilla, int playerCount, bool logAsInfo = false)
         {
-            float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(type, playerCount);
-            int scaled = MoneyMultiplierResolver.ScaleAmount(vanilla, effective);
+            float effective = EconomyResolver.GetEffectiveMultiplier(type, playerCount);
+            int scaled = EconomyResolver.ScaleAmount(vanilla, effective);
             if (logAsInfo)
             {
-                MoneyMultiplierLog.InfoApplied(type, vanilla, scaled, playerCount, effective);
+                EconomyLog.InfoApplied(type, vanilla, scaled, playerCount, effective);
             }
             else
             {
-                MoneyMultiplierLog.DebugScaled(type, vanilla, scaled, playerCount, effective);
+                EconomyLog.DebugScaled(type, vanilla, scaled, playerCount, effective);
             }
 
             return scaled;
@@ -97,7 +102,7 @@ namespace MimesisPlayerEnhancement.Features.MoneyMultiplier
             }
 
             int playerCount = ResolvePlayerCountForScrap();
-            float effective = MoneyMultiplierResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount);
+            float effective = EconomyResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount);
             if (effective == 1f)
             {
                 return vanilla;

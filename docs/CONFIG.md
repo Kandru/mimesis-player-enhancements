@@ -44,7 +44,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Extended Save games](#extended-save-games--mimesisplayerenhancement_extendedsavegames) | Unified save picker (99 games) | Local UI |
 | [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host |
 | [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host |
-| [Money Multiplier](#money-multiplier--mimesisplayerenhancement_moneymultiplier) | Scale currency and shop prices | Host |
+| [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host |
 | [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host |
 | [Dead Player Features](#dead-player-features--mimesisplayerenhancement_deadplayerfeatures) | Mimic possession timing for dead players | Host |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host |
@@ -200,26 +200,27 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | `AutoScaleMapLootBudgetForFilter` | bool | `true` | — | When filter mode is not `All`, multiply the random-pool scrap budget by the filtered/vanilla weighted mean item sell value (on top of `MapLootMultiplier`) so expensive allowlists still get proportionally more spawns. |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | `0`–`100` | Chance that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. Monster drop-table loot is already real. |
 
-## Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`
+## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-**Host-only.** Scales five separate money values. Each has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `MoneyMultiplierPlayerCountScaleRate` per player above 4.
+**Host-only.** Scales five separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4.
 
-| Money type | What it affects |
-|------------|-----------------|
+| Setting | What it affects |
+|---------|-----------------|
 | **Startup** | Starting currency on a new save game or session reset (not when loading a save) |
 | **Round goal** | Target currency (quota) required to finish a stage |
 | **Scrap / sell value** | Currency from scrapping items and item value counted in the tram toward the quota |
 | **Shop buy price** | Maintenance shop and vending-machine kiosk purchase cost |
 | **Reinforce price** | Maintenance item reinforcement cost |
+| **Currency retention** | Unspent liquid currency kept when departing maintenance for the next dungeon (vanilla zeros it) |
 
-Does **not** change saved player balances or shop prices on save load. Shop price multipliers and discount rolls apply on fresh `InitShopItems` rounds (e.g. returning from a dungeon). Complements **Loot Multiplicator** (item quantity) — this feature scales currency amounts and prices, not how many items spawn.
+Does **not** change saved player balances or shop prices on save load. Shop price multipliers and discount rolls apply on fresh `InitShopItems` rounds (e.g. returning from a dungeon). Currency retention does **not** affect tram repair cost (`RepairTrain` still deducts `TargetCurrency`). Complements **Loot Multiplicator** (item quantity) — this feature scales currency amounts and prices, not how many items spawn.
 
 **Shop discounts:** When `ShopDiscountChancePercent` is above `0`, each shop item independently rolls for a discount. Successful rolls pick a random percentage between `ShopDiscountMinPercent` and `ShopDiscountMaxPercent`. At `0` chance, vanilla shop discount tables are used unchanged.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableMoneyMultiplier` | bool | `false` | — | Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Host only. |
-| `MoneyMultiplierPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
+| `EnableEconomy` | bool | `false` | — | Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only. |
+| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Startup money multiplier on new save or session reset. Does not apply when loading a save. |
 | `AutoScaleRoundGoalMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for stage target currency. |
@@ -233,6 +234,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | `ShopDiscountChancePercent` | int | `0` | `0`–`100` | Chance per shop item to receive a discount in the min–max range (`0` = vanilla shop discounts, `100` = every item discounted). |
 | `AutoScaleReinforcePriceByPlayerCount` | bool | `true` | — | Player-count scaling for reinforce costs. |
 | `ReinforcePriceMultiplier` | float | `1.0` | ≥ `0` | Reinforce price multiplier. |
+| `RetainUnspentCurrencyBetweenCycles` | bool | `false` | — | Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. Host only. |
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 
@@ -398,10 +400,11 @@ MapLootMultiplier = 1.0
 DropLootMultiplier = 1.0
 ConvertFakeActorDyingDropChancePercent = 30
 
-[MimesisPlayerEnhancement_MoneyMultiplier]
-EnableMoneyMultiplier = false
-MoneyMultiplierPlayerCountScaleRate = 0.10
+[MimesisPlayerEnhancement_Economy]
+EnableEconomy = false
+EconomyPlayerCountScaleRate = 0.10
 StartupMoneyMultiplier = 1.0
+RetainUnspentCurrencyBetweenCycles = false
 
 [MimesisPlayerEnhancement_DungeonTime]
 EnableDungeonTime = false

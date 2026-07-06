@@ -1,5 +1,4 @@
 using System;
-
 namespace MimesisPlayerEnhancement.Features.MorePlayers
 {
     internal static class VActorDictCapacityPatches

@@ -31,7 +31,7 @@ namespace MimesisPlayerEnhancement
             const string MoreVoices = "MimesisPlayerEnhancement_MoreVoices";
             const string Statistics = "MimesisPlayerEnhancement_Statistics";
             const string PlayerTuning = "MimesisPlayerEnhancement_PlayerTuning";
-            const string MoneyMultiplier = "MimesisPlayerEnhancement_MoneyMultiplier";
+            const string Economy = "MimesisPlayerEnhancement_Economy";
             const string LootMultiplicator = "MimesisPlayerEnhancement_LootMultiplicator";
             const string SpawnScaling = "MimesisPlayerEnhancement_SpawnScaling";
             const string JoinAnytime = "MimesisPlayerEnhancement_JoinAnytime";
@@ -53,16 +53,16 @@ namespace MimesisPlayerEnhancement
             FloatRange(PlayerTuning, "StaminaRegenDelayMultiplier");
             FloatRange(PlayerTuning, "MaxCarryWeightMultiplier");
 
-            MinZeroFloat(MoneyMultiplier,
-                "MoneyMultiplierPlayerCountScaleRate",
+            MinZeroFloat(Economy,
+                "EconomyPlayerCountScaleRate",
                 "StartupMoneyMultiplier",
                 "RoundGoalMoneyMultiplier",
                 "ScrapSellValueMultiplier",
                 "ShopBuyPriceMultiplier",
                 "ReinforcePriceMultiplier");
-            IntRange(MoneyMultiplier, "ShopDiscountMinPercent", 0, 100);
-            IntRange(MoneyMultiplier, "ShopDiscountMaxPercent", 0, 100);
-            IntRange(MoneyMultiplier, "ShopDiscountChancePercent", 0, 100);
+            IntRange(Economy, "ShopDiscountMinPercent", 0, 100);
+            IntRange(Economy, "ShopDiscountMaxPercent", 0, 100);
+            IntRange(Economy, "ShopDiscountChancePercent", 0, 100);
 
             MinZeroFloat(LootMultiplicator,
                 "LootMultiplicatorPlayerCountScaleRate",
