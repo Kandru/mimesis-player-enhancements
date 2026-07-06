@@ -152,11 +152,25 @@ Each **Auto Scale … By Player Count** toggle stacks with its per-type multipli
 
 **Host-only.** Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle using `LootMultiplicatorPlayerCountScaleRate` per player above 4.
 
-**Loot sources:**
+### Map loot types
+
+Map-placed pickup loot uses three separate paths:
+
+| Path | Map markers | What controls quantity | What `MapLootMultiplier` affects |
+|------|-------------|------------------------|----------------------------------|
+| **Fixed loot** | Marker has a preset item (`masterID != 0`) | Per-marker respawn count; bonus copies on unused markers | Stack size (consumables), `MaxRespawnCount`, duplicate markers |
+| **Random pool loot** | Empty marker (`masterID == 0`), filled at dungeon start | **Dungeon scrap-value budget** + number of empty markers | Scales the rolled budget (more budget → more markers filled) |
+| **Trigger / event loot** | Script-spawned | Event logic | **Not scaled** (vanilla) |
+
+**Random pool loot** rolls one total scrap budget per dungeon (`misc_value_min` … `misc_value_max` in dungeon data). Each item placed subtracts its average sell value (`GetMeanPrice()`). When the budget reaches zero, no more random markers fill — even if empty markers remain.
+
+> **Example:** budget 400, `MapLootMultiplier` 2× → budget 800. Vanilla random-pool items (~35 avg sell) → ~23 spawns. Allowlist of high-value items (~180 avg) → ~4 spawns **without** filter budget compensation. With `AutoScaleMapLootBudgetForFilter` (default on, ratio ~5×) → budget ~4000 → ~22 spawns again.
+
+**Loot sources (summary):**
 
 | Source | What it affects |
 |--------|-----------------|
-| **Map** | Loot placed when a dungeon room loads. **Fixed** loot: activates unused loot markers of the same item, scales consumable stack size and `MaxRespawnCount`, and may respawn at the same marker when picked up (uses `MapPlacedEncounterDelay*` and `MapPlacedEncounterMinPlayerDistanceMeters` from Spawn Scaling). **Random** loot pools: scales the dungeon misc budget so more markers fill with weighted random picks. |
+| **Map** | Loot placed when a dungeon room loads — fixed markers and random pool markers (see table above). |
 | **Drop** | Items from enemy death tables when a monster is killed, plus inventory items dropped on death. Adds extra weighted re-rolls from the same drop table. Consumable stack count is also scaled when the item spawns. Mimics often drop **fake** decoy items from inventory — see `ConvertFakeActorDyingDropChancePercent`. |
 
 Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: shop purchases, Crow Shop scrap exchange, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`).
@@ -166,12 +180,13 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | `EnableLootMultiplicator` | bool | `false` | — | Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only. |
 | `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0. |
 | `AutoScaleMapLootByPlayerCount` | bool | `true` | — | Player-count scaling for map loot. |
-| `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for all map-placed pickup loot. |
+| `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for map-placed pickup loot: fixed-marker copies/respawns/stacks, random-pool spawn count (via scrap budget), and consumable stacks. With allowlist/blocklist, pair with `AutoScaleMapLootBudgetForFilter` (default on) so this still targets spawn count. |
 | `AutoScaleDropLootByPlayerCount` | bool | `true` | — | Player-count scaling for enemy death drops. |
 | `DropLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for enemy death drops. |
-| `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, `BlocklistOnly` | Restrict which item master IDs can spawn (map loot and enemy drops). Does not affect loot multipliers. |
-| `LootAllowlist` | string | `""` | — | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. Off-rotation IDs are injected into random map pools. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
+| `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, `BlocklistOnly` | Restrict which item master IDs can spawn (map loot and enemy drops). Changes random-pool item prices; use `AutoScaleMapLootBudgetForFilter` so `MapLootMultiplier` still scales spawn count. |
+| `LootAllowlist` | string | `""` | — | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. Off-rotation IDs are injected into random pool markers. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
 | `LootBlocklist` | string | `""` | — | Comma-separated item master IDs to exclude from spawning. Used when `LootItemFilterMode` is `BlocklistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
+| `AutoScaleMapLootBudgetForFilter` | bool | `true` | — | When filter mode is not `All`, multiply the random-pool scrap budget by the filtered/vanilla weighted mean item sell value (on top of `MapLootMultiplier`) so expensive allowlists still get proportionally more spawns. |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | `0`–`100` | Chance that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. Monster drop-table loot is already real. |
 
 ## Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`

@@ -91,6 +91,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> LootItemFilterMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> LootAllowlist { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> LootBlocklist { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> AutoScaleMapLootBudgetForFilter { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> ConvertFakeActorDyingDropChancePercent { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoneyMultiplier { get; internal set; } = null!;

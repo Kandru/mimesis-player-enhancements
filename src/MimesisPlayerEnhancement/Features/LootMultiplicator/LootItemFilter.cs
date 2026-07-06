@@ -37,7 +37,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static bool ShouldApply()
         {
-            return LootScalingGate.ShouldScale() && _cachedMode != LootItemFilterMode.All;
+            return LootScalingGate.ShouldScale() && IsFilterActive();
+        }
+
+        internal static bool IsFilterActive()
+        {
+            return _cachedMode != LootItemFilterMode.All;
         }
 
         internal static bool IsSpawnAllowed(int masterId)

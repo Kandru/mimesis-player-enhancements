@@ -154,6 +154,31 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 $"multiplier={multiplier:0.##}×, budgetsScaled={scalingApplied}, pos={SpawnScalingLog.FormatLocation(room, spawnData.PosVector)}");
         }
 
+        internal static void DebugRandomPoolBudget(
+            int vanillaBudget,
+            int finalBudget,
+            float mapMultiplier,
+            float filterRatio,
+            int playerCount)
+        {
+            if (!ModConfig.EnableDebugLogging.Value)
+            {
+                return;
+            }
+
+            if (filterRatio > 1f)
+            {
+                ModLog.Debug(
+                    Feature,
+                    $"Random pool budget — vanilla={vanillaBudget}, map={mapMultiplier:0.##}×, filterPrice={filterRatio:0.##}× → final={finalBudget} (players={playerCount})");
+                return;
+            }
+
+            ModLog.Debug(
+                Feature,
+                $"Random pool budget — vanilla={vanillaBudget}, map={mapMultiplier:0.##}× → final={finalBudget} (players={playerCount})");
+        }
+
         private static int ExtractMasterId(SpawnedActorData spawnData)
         {
             return spawnData switch

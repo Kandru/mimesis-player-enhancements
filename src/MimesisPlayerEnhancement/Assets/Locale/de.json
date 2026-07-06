@@ -103,7 +103,7 @@
       },
       "MapLootMultiplier": {
         "title": "Karten-Loot-Multiplikator",
-        "description": "Multiplikator für allen auf der Karte platzierten Pickup-Loot: feste Marker, Respawn-Anzahlen und Zufallspool-Budgets. 1 = Vanilla, 2 = doppelt."
+        "description": "Multiplikator für auf der Karte platzierten Pickup-Loot: (1) feste Marker — Extra-Kopien, Verbrauchs-Stackgröße und Respawn-Anzahl; (2) Zufallspool-Marker — Spawn-Anzahl über das Dungeon-Schrottwert-Budget; (3) gilt nicht für Trigger/Event-Spawns. 1 = Vanilla, 2 = doppelt. Mit Allowlist/Blocklist passt „Karten-Loot-Budget für Filter automatisch skalieren“ (Standard an) das Zufallspool-Budget an den Verkaufswert an, damit dieser Multiplikator weiter Spawn-Anzahl meint."
       },
       "AutoScaleDropLootByPlayerCount": {
         "title": "Drop-Loot automatisch nach Spieleranzahl skalieren",
@@ -115,7 +115,7 @@
       },
       "LootItemFilterMode": {
         "title": "Loot-Item-Filtermodus",
-        "description": "All = jedes Item kann spawnen; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist können spawnen; BlocklistOnly = alle Items außer Loot-Blocklist können spawnen.",
+        "description": "All = jedes Item kann spawnen; AllowlistOnly = nur kommagetrennte Master-IDs in der Loot-Allowlist; BlocklistOnly = alle Items außer Loot-Blocklist. Filtert, welche Items Zufallspool-Marker würfeln können. Teure Allowlists verbrauchen mehr Schrottwert-Budget pro Spawn, sofern „Karten-Loot-Budget für Filter automatisch skalieren“ nicht aktiv ist.",
         "options": {
           "All": "Alle Items",
           "AllowlistOnly": "Nur Allowlist",
@@ -124,11 +124,15 @@
       },
       "LootAllowlist": {
         "title": "Loot-Allowlist",
-        "description": "Kommagetrennte Item-Master-IDs (z. B. 12345,67890). Verwendet, wenn Loot-Item-Filtermodus AllowlistOnly ist. IDs außerhalb der Rotation werden in Zufallspools eingefügt. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
+        "description": "Kommagetrennte Item-Master-IDs (z. B. 12345,67890). Verwendet bei Loot-Item-Filtermodus AllowlistOnly. IDs außerhalb der Dungeon-Tabelle werden in Zufallspool-Marker eingefügt. Hochwertige Items verbrauchen mehr Schrottwert-Budget pro Spawn. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
       },
       "LootBlocklist": {
         "title": "Loot-Blocklist",
-        "description": "Kommagetrennte Item-Master-IDs, die vom Spawnen ausgeschlossen werden. Verwendet, wenn Loot-Item-Filtermodus BlocklistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
+        "description": "Kommagetrennte Item-Master-IDs, die vom Spawnen ausgeschlossen werden. Verwendet bei Loot-Item-Filtermodus BlocklistOnly. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
+      },
+      "AutoScaleMapLootBudgetForFilter": {
+        "title": "Karten-Loot-Budget für Filter automatisch skalieren",
+        "description": "Wenn der Loot-Item-Filtermodus AllowlistOnly oder BlocklistOnly ist, wird das Zufallspool-Schrottwert-Budget mit dem Verhältnis gefilterter/vanilla gewichteter mittlerer Verkaufswerte multipliziert (zusätzlich zum Karten-Loot-Multiplikator), damit der Karten-Loot-Multiplikator weiter mehr Spawns bedeutet und nicht nur höheren Gesamt-Schrottwert. Kein Effekt bei Filtermodus All."
       },
       "ConvertFakeActorDyingDropChancePercent": {
         "title": "Fake-Tod-Drop-Chance (Prozent)",
@@ -693,6 +697,8 @@
     "settings_intro_save": "Einstellungen für Save-Slot {slot} bearbeiten. Werte, die globalen Standardwerten entsprechen, werden nicht in der Save-Override-Datei gespeichert.",
     "settings_save_persist_hint": "Änderungen gelten sofort; zum Schreiben auf die Festplatte im Spiel speichern.",
     "settings_no_results": "Keine Einstellungen entsprechen der Suche.",
+    "settings_loot_filter_budget_hint_on": "Zufallspool-Marker nutzen ein dungeonweites Schrottwert-Budget (keine Spawn-Anzahl). Mit aktivem Filter vergrößert „Karten-Loot-Budget für Filter automatisch skalieren“ dieses Budget bei teureren erlaubten Items, damit der Karten-Loot-Multiplikator weiter die Spawn-Anzahl erhöht.",
+    "settings_loot_filter_budget_hint_off": "Zufallspool-Marker nutzen ein dungeonweites Schrottwert-Budget. Mit aktivem Filter und ausgeschalteter Auto-Budget-Skalierung spawnen teure Allowlists weniger Items — erhöhe ggf. den Karten-Loot-Multiplikator stärker.",
     "settings_no_entries": "Keine Konfigurationseinträge gefunden.",
     "settings_reset": "Zurücksetzen",
     "settings_reset_all": "Alle zurücksetzen",

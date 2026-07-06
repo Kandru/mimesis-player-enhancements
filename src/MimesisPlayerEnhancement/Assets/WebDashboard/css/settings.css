@@ -219,6 +219,19 @@
   border-bottom: none;
 }
 
+.settings-group-hint {
+  margin: 0;
+  padding: 0.75rem 1rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-muted, #9aa3b2);
+  border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.settings-filter-budget-hint {
+  color: var(--text-secondary, #b8c0cc);
+}
+
 .settings-entry {
   display: grid;
   grid-template-columns: 1fr;

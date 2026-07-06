@@ -269,6 +269,22 @@ function createSettingsMixin() {
       return groups;
     },
 
+    showLootFilterBudgetHint(section, group) {
+      if (section.id !== 'MimesisPlayerEnhancement_LootMultiplicator') return false;
+      if (!group.groupId || !String(group.groupId).endsWith('::lootFilter')) return false;
+      const modeEntry = group.entries.find((entry) => entry.key === 'LootItemFilterMode');
+      if (!modeEntry) return false;
+      return !/^all$/i.test(String(modeEntry.value || 'All'));
+    },
+
+    lootFilterBudgetHintText(_section, group) {
+      const autoEntry = group.entries.find((entry) => entry.key === 'AutoScaleMapLootBudgetForFilter');
+      const autoOn = autoEntry ? parseBool(autoEntry.value) : true;
+      return autoOn
+        ? this.t('dashboard.settings_loot_filter_budget_hint_on')
+        : this.t('dashboard.settings_loot_filter_budget_hint_off');
+    },
+
     sectionEntryCount(sectionId) {
       return this.sectionEntries(sectionId).length;
     },

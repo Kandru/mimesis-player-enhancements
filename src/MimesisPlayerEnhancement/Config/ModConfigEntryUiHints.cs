@@ -152,6 +152,7 @@ namespace MimesisPlayerEnhancement
                     ["LootItemFilterMode"] = "lootFilter",
                     ["LootAllowlist"] = "lootFilter",
                     ["LootBlocklist"] = "lootFilter",
+                    ["AutoScaleMapLootBudgetForFilter"] = "lootFilter",
                 };
             }
 

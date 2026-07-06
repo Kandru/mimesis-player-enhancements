@@ -41,7 +41,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "MapLootMultiplier",
                 1f,
                 "Map Loot Multiplier",
-                "Multiplier for all map-placed pickup loot: fixed markers, respawn counts, and random pool budgets. 1 = vanilla, 2 = double.");
+                "Multiplier for map-placed pickup loot: (1) fixed markers — extra copies, consumable stack size, and respawn count; (2) random pool markers — spawn count via the dungeon scrap-value budget; (3) not applied to trigger/event spawns. 1 = vanilla, 2 = double. With allowlist/blocklist, Auto Scale Map Loot Budget for Filter (default on) adjusts the random-pool budget for item sell value so this multiplier still targets spawn count.");
 
             ModConfig.AutoScaleDropLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleDropLootByPlayerCount",
@@ -59,19 +59,25 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "LootItemFilterMode",
                 "All",
                 "Loot Item Filter Mode",
-                "All = every item can spawn; AllowlistOnly = only comma-separated master IDs in LootAllowlist can spawn; BlocklistOnly = all items except LootBlocklist can spawn.");
+                "All = every item can spawn; AllowlistOnly = only comma-separated master IDs in Loot Allowlist; BlocklistOnly = all items except Loot Blocklist. Filtering changes which items random pool markers can roll. Expensive allowlists consume more of the dungeon scrap-value budget per spawn unless Auto Scale Map Loot Budget for Filter is enabled.");
 
             ModConfig.LootAllowlist = ModConfig.CreateTrackedEntry(_category,
                 "LootAllowlist",
                 "",
                 "Loot Allowlist",
-                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. Off-rotation IDs are injected into random pools. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "Comma-separated item master IDs (e.g. 12345,67890). Used when Loot Item Filter Mode is AllowlistOnly. IDs not in the dungeon table are injected into random pool markers. High-value items use more scrap budget per spawn. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
 
             ModConfig.LootBlocklist = ModConfig.CreateTrackedEntry(_category,
                 "LootBlocklist",
                 "",
                 "Loot Blocklist",
-                "Comma-separated item master IDs to exclude from spawning. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "Comma-separated item master IDs to exclude from spawning. Used when Loot Item Filter Mode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+
+            ModConfig.AutoScaleMapLootBudgetForFilter = ModConfig.CreateTrackedEntry(_category,
+                "AutoScaleMapLootBudgetForFilter",
+                true,
+                "Auto Scale Map Loot Budget for Filter",
+                "When Loot Item Filter Mode is AllowlistOnly or BlocklistOnly, multiply the random-pool scrap budget by the filtered/vanilla weighted mean item sell value (on top of Map Loot Multiplier) so Map Loot Multiplier still means more spawns, not just higher total scrap value. No effect when filter mode is All.");
 
             ModConfig.ConvertFakeActorDyingDropChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ConvertFakeActorDyingDropChancePercent",
@@ -93,6 +99,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             ModConfig.LootItemFilterMode.OnEntryValueChanged.Subscribe((_, value) => OnLootItemFilterModeChanged(logger, value));
             ModConfig.LootAllowlist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.LootAllowlist));
             ModConfig.LootBlocklist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.LootBlocklist));
+            ModConfig.AutoScaleMapLootBudgetForFilter.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.AutoScaleMapLootBudgetForFilter));
             ModConfig.ConvertFakeActorDyingDropChancePercent.OnEntryValueChanged.Subscribe((_, value) =>
                 OnFakeActorDyingDropChancePercentChanged(logger, value));
         }
