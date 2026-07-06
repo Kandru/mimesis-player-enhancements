@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const int WaitTimeoutMs = 5000;
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         private static readonly ConcurrentQueue<PendingWork> Pending = new();
 
@@ -17,9 +17,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static T EnqueueAndWait<T>(Func<T> work)
         {
+            string locale = WebDashboardRequestLocale.Current;
             PendingWork pending = new()
             {
-                Work = () => work(),
+                Work = () => WebDashboardRequestLocale.RunWithLocale(locale, work),
                 Done = new ManualResetEventSlim(false),
             };
 

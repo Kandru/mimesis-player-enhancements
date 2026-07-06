@@ -1,4 +1,5 @@
 using System;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement
@@ -58,7 +59,7 @@ namespace MimesisPlayerEnhancement
             List<WebDashboardConfigSelectOptionDto> options = [];
             foreach (string value in values)
             {
-                string? label = ModL10n.GetConfigSelectOptionLabel(sectionId, key, value);
+                string? label = WebDashboardL10n.GetConfigSelectOptionLabel(sectionId, key, value);
                 options.Add(new WebDashboardConfigSelectOptionDto
                 {
                     Value = value,

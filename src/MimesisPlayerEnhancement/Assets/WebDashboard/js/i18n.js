@@ -1,6 +1,25 @@
 (function () {
   let messages = {};
   let locale = 'en';
+  const supportedLocales = ['en', 'de'];
+
+  function normalizeLocale(lang) {
+    const normalized = String(lang || 'en').split('-')[0].toLowerCase();
+    return supportedLocales.includes(normalized) ? normalized : 'en';
+  }
+
+  function resolveBrowserLocale() {
+    const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+      ? navigator.languages
+      : [navigator.language || 'en'];
+    for (const candidate of candidates) {
+      const normalized = normalizeLocale(candidate);
+      if (supportedLocales.includes(normalized)) {
+        return normalized;
+      }
+    }
+    return 'en';
+  }
 
   function lookup(key) {
     const parts = String(key || '').split('.');
@@ -39,7 +58,7 @@
   }
 
   async function loadLocale(lang) {
-    const normalized = String(lang || 'en').split('-')[0].toLowerCase();
+    const normalized = normalizeLocale(lang);
     try {
       const res = await fetch('/api/locale/' + encodeURIComponent(normalized));
       if (res.ok) {
@@ -63,7 +82,7 @@
     return locale;
   }
 
-  window.DashboardI18n = { t, loadLocale, getLocale };
+  window.DashboardI18n = { t, loadLocale, getLocale, resolveBrowserLocale };
 
   document.addEventListener('alpine:init', () => {
     if (!window.Alpine) {

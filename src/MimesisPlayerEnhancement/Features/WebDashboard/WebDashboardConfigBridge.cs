@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         internal static WebDashboardSettingsDto BuildGlobalSettings()
         {
@@ -278,7 +278,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     title = sectionId;
                 }
 
-                title = ModL10n.GetConfigSectionTitle(sectionId) ?? title;
+                title = WebDashboardL10n.GetConfigSectionTitle(sectionId) ?? title;
 
                 WebDashboardConfigSectionDto section = new()
                 {
@@ -310,8 +310,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardConfigEntryDto entryDto = new()
                     {
                         Key = entry.Identifier,
-                        Title = ModL10n.GetConfigEntryTitle(sectionId, key) ?? entry.DisplayName ?? entry.Identifier,
-                        Description = ModL10n.GetConfigEntryDescription(sectionId, key) ?? entry.Description ?? "",
+                        Title = WebDashboardL10n.GetConfigEntryTitle(sectionId, key) ?? entry.DisplayName ?? entry.Identifier,
+                        Description = WebDashboardL10n.GetConfigEntryDescription(sectionId, key) ?? entry.Description ?? "",
                         Type = entry.GetReflectedType()?.Name ?? "Unknown",
                         Value = ModConfigRegistry.FormatEntryValue(entry),
                         DefaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry),

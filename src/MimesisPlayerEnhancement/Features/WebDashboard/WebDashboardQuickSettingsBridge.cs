@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         internal static WebDashboardSaveProfileResponseDto BuildSaveProfile(int slotId)
         {
@@ -125,7 +125,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return new WebDashboardQuickPresetShareDto();
             }
 
-            string name = QuickSettingsCatalog.GetDisplayName(presetId);
+            string name = QuickSettingsCatalog.GetDisplayName(presetId, WebDashboardRequestLocale.Current);
             return new WebDashboardQuickPresetShareDto
             {
                 Name = name,
@@ -143,8 +143,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Dictionary<string, Dictionary<string, string>> values = QuickSettingsValuesBuilder.CollectEffectiveValues();
             SaveConfigProfileState profile = SaveSlotConfigStore.ActiveProfile;
             string name = profile.Mode == SaveConfigProfileMode.Quick
-                ? QuickSettingsCatalog.GetDisplayName(profile.PresetId)
-                : ModL10n.Get("quicksettings.profile.custom");
+                ? QuickSettingsCatalog.GetDisplayName(profile.PresetId, WebDashboardRequestLocale.Current)
+                : WebDashboardL10n.Get("quicksettings.profile.custom");
 
             return new WebDashboardQuickPresetShareDto
             {
@@ -227,9 +227,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 Id = preset.Id,
                 Name = preset.IsBuiltin
-                    ? QuickSettingsCatalog.GetDisplayName(preset.Id)
+                    ? QuickSettingsCatalog.GetDisplayName(preset.Id, WebDashboardRequestLocale.Current)
                     : (preset.Name ?? preset.Id),
-                Description = QuickSettingsCatalog.GetDescription(preset.Id),
+                Description = QuickSettingsCatalog.GetDescription(preset.Id, WebDashboardRequestLocale.Current),
                 IsBuiltin = preset.IsBuiltin,
                 Revision = preset.Revision,
                 CreatedUtc = preset.CreatedUtc,

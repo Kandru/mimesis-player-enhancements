@@ -209,10 +209,10 @@ document.addEventListener('alpine:init', () => {
       this.setConnectedMode();
       try {
         const status = await Api.getStatus();
-        await this.reloadLocale(status.locale || 'en');
+        await this.reloadLocale(status.locale || DashboardI18n.resolveBrowserLocale());
         this.applySnapshot({ status, players: [], leaderboard: null });
       } catch {
-        await this.reloadLocale('en');
+        await this.reloadLocale(DashboardI18n.resolveBrowserLocale());
       }
       this.syncDocumentTitle();
       if (this.route === 'global-settings') {
@@ -315,11 +315,9 @@ document.addEventListener('alpine:init', () => {
 
     async applySnapshot(payload) {
       const wasConnected = this.status.isConnected;
-      const previousLocale = this.status.locale || 'en';
+      const uiLocale = DashboardI18n.getLocale();
       this.status = payload.status || this.status;
-      if (payload.status?.locale && payload.status.locale !== previousLocale && window.DashboardI18n) {
-        await this.reloadLocale(payload.status.locale);
-      }
+      this.status.locale = uiLocale;
       if (payload.playersLiveOnly) {
         this.mergeLivePlayers(payload.players || []);
       } else {
@@ -642,7 +640,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadItemCatalog() {
-      const locale = this.status.locale || 'en';
+      const locale = DashboardI18n.getLocale();
       if (this.itemCatalog.length > 0 && this.itemCatalogLocale === locale) return;
       try {
         const res = await Api.getItems();
@@ -655,7 +653,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadDungeonCatalog() {
-      const locale = this.status.locale || 'en';
+      const locale = DashboardI18n.getLocale();
       if (this.dungeonCatalog.length > 0 && this.dungeonCatalogLocale === locale) return;
       try {
         const res = await Api.getDungeons();

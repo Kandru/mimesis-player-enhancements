@@ -43,22 +43,42 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static string? GetConfigSectionTitle(string sectionId)
         {
-            return GetOptional($"config.{sectionId}._section");
+            return GetConfigSectionTitle(sectionId, null);
+        }
+
+        internal static string? GetConfigSectionTitle(string sectionId, string? locale)
+        {
+            return GetOptional($"config.{sectionId}._section", locale);
         }
 
         internal static string? GetConfigEntryTitle(string sectionId, string key)
         {
-            return GetOptional($"config.{sectionId}.{key}.title");
+            return GetConfigEntryTitle(sectionId, key, null);
+        }
+
+        internal static string? GetConfigEntryTitle(string sectionId, string key, string? locale)
+        {
+            return GetOptional($"config.{sectionId}.{key}.title", locale);
         }
 
         internal static string? GetConfigEntryDescription(string sectionId, string key)
         {
-            return GetOptional($"config.{sectionId}.{key}.description");
+            return GetConfigEntryDescription(sectionId, key, null);
+        }
+
+        internal static string? GetConfigEntryDescription(string sectionId, string key, string? locale)
+        {
+            return GetOptional($"config.{sectionId}.{key}.description", locale);
         }
 
         internal static string? GetConfigSelectOptionLabel(string sectionId, string key, string value)
         {
-            return GetOptional($"config.{sectionId}.{key}.options.{value}");
+            return GetConfigSelectOptionLabel(sectionId, key, value, null);
+        }
+
+        internal static string? GetConfigSelectOptionLabel(string sectionId, string key, string value, string? locale)
+        {
+            return GetOptional($"config.{sectionId}.{key}.options.{value}", locale);
         }
 
         internal static bool TryGetLocaleJson(string locale, out string json)
@@ -120,9 +140,16 @@ namespace MimesisPlayerEnhancement.Util
 
         private static string? GetOptional(string key)
         {
+            return GetOptional(key, null);
+        }
+
+        private static string? GetOptional(string key, string? locale)
+        {
             EnsureInitialized();
-            string locale = GameLocaleAccess.GetCurrentLanguage();
-            return Lookup(locale, key) ?? Lookup(DefaultLocale, key);
+            string resolvedLocale = string.IsNullOrWhiteSpace(locale)
+                ? GameLocaleAccess.GetCurrentLanguage()
+                : GameLocaleAccess.NormalizeLanguageCode(locale);
+            return Lookup(resolvedLocale, key) ?? Lookup(DefaultLocale, key);
         }
 
         private static string? Lookup(string locale, string key)

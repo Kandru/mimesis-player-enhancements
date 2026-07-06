@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const int WaitTimeoutMs = 5000;
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         private static readonly ConcurrentQueue<PendingSpawn> Pending = new();
 
@@ -21,12 +21,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string itemId,
             int? percent)
         {
+            string locale = WebDashboardRequestLocale.Current;
             PendingSpawn pending = new()
             {
                 SteamId = steamId,
                 PlayerUid = playerUid,
                 ItemId = itemId,
                 Percent = percent,
+                Locale = locale,
                 Done = new ManualResetEventSlim(false),
             };
 
@@ -57,11 +59,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 IsProcessing = true;
                 try
                 {
-                    pending.Result = WebDashboardItemSpawnService.Execute(
-                        pending.SteamId,
-                        pending.PlayerUid,
-                        pending.ItemId,
-                        pending.Percent);
+                    pending.Result = WebDashboardRequestLocale.RunWithLocale(
+                        pending.Locale,
+                        () => WebDashboardItemSpawnService.Execute(
+                            pending.SteamId,
+                            pending.PlayerUid,
+                            pending.ItemId,
+                            pending.Percent));
                 }
                 catch (Exception ex)
                 {
@@ -85,6 +89,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             internal long PlayerUid;
             internal string ItemId = "";
             internal int? Percent;
+            internal string Locale = "en";
             internal ManualResetEventSlim Done = null!;
             internal WebDashboardSpawnItemResult? Result;
         }

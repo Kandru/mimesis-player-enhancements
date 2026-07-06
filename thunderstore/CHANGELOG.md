@@ -9,6 +9,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - better translations to point the player into the right direction
 - better debug messages
 - removed a testing-value for RouteRetryInterval and set it to a fixed value
+- webinterface now uses the browsers language instead of the game language
 - draft: add quick-presets to the configuration (still needs tuning and extensive testing!)
 
 ## 26.7.6

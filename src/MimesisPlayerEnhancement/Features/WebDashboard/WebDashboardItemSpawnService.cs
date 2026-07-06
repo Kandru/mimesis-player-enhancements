@@ -11,7 +11,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         private static readonly Type[] SpawnLootingObjectParameterTypes =
         [

@@ -215,7 +215,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             int masterId = info.MasterID;
             string modKey = $"dashboard.item_label_{masterId}";
-            string modLabel = ModL10n.Get(modKey);
+            string modLabel = WebDashboardL10n.Get(modKey);
             if (!string.Equals(modLabel, modKey, StringComparison.Ordinal))
             {
                 return modLabel;

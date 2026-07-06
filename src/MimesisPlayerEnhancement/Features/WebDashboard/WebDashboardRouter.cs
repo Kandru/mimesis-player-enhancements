@@ -13,10 +13,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private static string L(string key) => ModL10n.Get($"api.{key}");
+        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
 
         internal static void Handle(HttpListenerContext context)
         {
+            WebDashboardRequestLocale.Set(context.Request);
             try
             {
                 string method = context.Request.HttpMethod.ToUpperInvariant();
@@ -34,6 +35,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 ModLog.Warn(Feature, $"Request failed: {ex.Message}");
                 TryWriteError(context, 500, L("internal_error"));
+            }
+            finally
+            {
+                WebDashboardRequestLocale.Clear();
             }
         }
 
@@ -62,7 +67,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/status" && method == "GET")
             {
-                WriteJson(context, 200, WebDashboardJson.SerializeStatus(snapshot.Status));
+                WebDashboardStatusDto status = new()
+                {
+                    IsConnected = snapshot.Status.IsConnected,
+                    IsHost = snapshot.Status.IsHost,
+                    SaveSlotId = snapshot.Status.SaveSlotId,
+                    LobbyName = snapshot.Status.LobbyName,
+                    ModVersion = snapshot.Status.ModVersion,
+                    ListenUrl = snapshot.Status.ListenUrl,
+                    SnapshotVersion = snapshot.Status.SnapshotVersion,
+                    ConfigVersion = snapshot.Status.ConfigVersion,
+                    JoinAnytimeRoutingCount = snapshot.Status.JoinAnytimeRoutingCount,
+                    Locale = WebDashboardRequestLocale.Current,
+                };
+                WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
                 return;
             }
 

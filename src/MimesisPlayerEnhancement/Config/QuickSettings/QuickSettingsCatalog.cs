@@ -5,17 +5,21 @@ namespace MimesisPlayerEnhancement
 {
     internal static class QuickSettingsCatalog
     {
-        internal static string GetDisplayName(string presetId)
+        internal static string GetDisplayName(string presetId, string? locale = null)
         {
             if (string.IsNullOrWhiteSpace(presetId))
             {
-                return ModL10n.Get("quicksettings.profile.custom");
+                return locale == null
+                    ? ModL10n.Get("quicksettings.profile.custom")
+                    : ModL10n.GetForLocale(locale, "quicksettings.profile.custom");
             }
 
             string localeKey = GetLocaleKeyForPreset(presetId);
             if (!string.IsNullOrEmpty(localeKey))
             {
-                string localized = ModL10n.Get(localeKey);
+                string localized = locale == null
+                    ? ModL10n.Get(localeKey)
+                    : ModL10n.GetForLocale(locale, localeKey);
                 if (!string.Equals(localized, localeKey, StringComparison.Ordinal))
                 {
                     return localized;
@@ -30,7 +34,7 @@ namespace MimesisPlayerEnhancement
             return presetId;
         }
 
-        internal static string? GetDescription(string presetId)
+        internal static string? GetDescription(string presetId, string? locale = null)
         {
             string? localeKey = GetLocaleDescriptionKeyForPreset(presetId);
             if (string.IsNullOrEmpty(localeKey))
@@ -38,7 +42,9 @@ namespace MimesisPlayerEnhancement
                 return null;
             }
 
-            string localized = ModL10n.Get(localeKey);
+            string localized = locale == null
+                ? ModL10n.Get(localeKey)
+                : ModL10n.GetForLocale(locale, localeKey);
             return string.Equals(localized, localeKey, StringComparison.Ordinal) ? null : localized;
         }
 
