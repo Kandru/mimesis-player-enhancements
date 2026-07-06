@@ -64,8 +64,7 @@ function isOfflineRoute(route) {
 }
 
 document.addEventListener('alpine:init', () => {
-  Alpine.data('dashboard', () => ({
-    ...createSettingsMixin(),
+  Alpine.data('dashboard', () => applySettingsMixin({
     status: {
       isConnected: false,
       isHost: false,

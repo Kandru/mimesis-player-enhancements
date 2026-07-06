@@ -448,3 +448,8 @@ function createSettingsMixin() {
     },
   };
 }
+
+function applySettingsMixin(target) {
+  Object.defineProperties(target, Object.getOwnPropertyDescriptors(createSettingsMixin()));
+  return target;
+}
