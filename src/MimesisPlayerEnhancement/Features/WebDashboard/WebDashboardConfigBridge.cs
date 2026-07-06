@@ -322,6 +322,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         entryDto.MaxValue = bounds.MaxValue;
                     }
 
+                    ModConfigEntryUiHints.ApplyToEntry(entryDto, sectionId, key);
+
                     if (!string.IsNullOrEmpty(featureToggleKey)
                         && string.Equals(key, featureToggleKey, StringComparison.Ordinal))
                     {
@@ -331,6 +333,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                     section.Entries.Add(entryDto);
                 }
+
+                ModConfigEntryUiHints.AssignEntryGroups(section);
 
                 if (section.FeatureToggle != null || section.Entries.Count > 0)
                 {

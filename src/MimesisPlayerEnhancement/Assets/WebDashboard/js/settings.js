@@ -150,6 +150,13 @@ function createSettingsMixin() {
     },
 
     async loadSettingsInPageData(onGlobalSettings, onSaveSettings) {
+      if (onGlobalSettings || onSaveSettings) {
+        await Promise.all([
+          this.loadItemCatalog(),
+          this.loadDungeonCatalog(),
+        ]);
+      }
+
       if (onGlobalSettings) {
         const initialLoad = this.settingsGlobal === null;
         if (initialLoad) this.loadingSettings = true;
@@ -240,6 +247,26 @@ function createSettingsMixin() {
       if (!section?.entries?.length || !this.featureEnabled(sectionId)) return [];
       const query = this.settingsQuery.trim().toLowerCase();
       return section.entries.filter((entry) => matchesSettingsQuery(entry, section.title, query));
+    },
+
+    sectionEntryGroups(sectionId) {
+      const entries = this.sectionEntries(sectionId);
+      const groups = [];
+
+      for (const entry of entries) {
+        const groupId = entry.entryGroup || '';
+        const last = groups[groups.length - 1];
+        if (groupId && last?.groupId === groupId) {
+          last.entries.push(entry);
+          continue;
+        }
+        groups.push({
+          groupId: groupId || null,
+          entries: [entry],
+        });
+      }
+
+      return groups;
     },
 
     sectionEntryCount(sectionId) {
@@ -450,6 +477,7 @@ function createSettingsMixin() {
 }
 
 function applySettingsMixin(target) {
+  applyTokenInputMixin(target);
   Object.defineProperties(target, Object.getOwnPropertyDescriptors(createSettingsMixin()));
   return target;
 }

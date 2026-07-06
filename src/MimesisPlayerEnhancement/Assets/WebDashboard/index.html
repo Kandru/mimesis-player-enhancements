@@ -508,71 +508,127 @@
                       </div>
                     </header>
                     <div class="settings-entries" x-show="sectionEntryCount(section.id) > 0">
-                      <template x-for="entry in sectionEntries(section.id)"
-                        :key="entry.key + ':' + settingDraftValue(entry)">
-                        <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
-                          :class="settingEntryClass(entry)">
-                          <div class="settings-entry-main">
-                            <div class="settings-entry-head">
-                              <strong class="settings-entry-title" x-text="entry.title"></strong>
-                              <span class="settings-type-pill" x-text="entry.type"></span>
-                              <span class="badge settings-override-badge" x-show="showOverrideBadge() && entry.isOverridden"
-                                x-text="t('dashboard.settings_overridden_badge')"></span>
-                              <span class="badge settings-hidden-badge" x-show="entry.isHidden"
-                                x-text="t('dashboard.settings_hidden')"></span>
-                            </div>
-                            <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
-                            <code class="settings-key" x-text="entry.key"></code>
-                          </div>
-                          <div class="settings-entry-value-wrap">
-                            <div class="settings-entry-input-row">
-                              <template x-if="entry.type === 'Boolean'">
-                                <select class="settings-input settings-select"
-                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                  :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                  @change="onBooleanSettingChange(section.id, entry, $event)">
-                                  <option value="true" x-text="t('dashboard.on')"></option>
-                                  <option value="false" x-text="t('dashboard.off')"></option>
-                                </select>
-                              </template>
-                              <template x-if="entry.type === 'Int32'">
-                                <input type="number" class="settings-input"
-                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                  :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
-                                  :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
-                                  :value="settingDraftValue(entry)"
-                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                  @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <template x-if="entry.type === 'Single'">
-                                <input type="number" class="settings-input"
-                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                  :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
-                                  :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
-                                  :value="settingDraftValue(entry)"
-                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                  @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <template
-                                x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single'">
-                                <input type="text" class="settings-input"
-                                  :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                  :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
-                                  :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                  @change="onTextSettingCommit(section.id, entry, $event)">
-                              </template>
-                              <button type="button" class="btn btn-text btn-compact settings-reset-btn"
-                                x-show="settingCanReset(entry)"
-                                :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
-                                :title="settingsEntryResetTitle()" @click="resetSetting(section.id, entry)"
-                                x-text="t('dashboard.settings_reset')">
-                              </button>
-                            </div>
-                            <small class="settings-default-hint" x-show="settingHintVisible(entry)"
-                              x-text="settingHintText(entry)"></small>
-                          </div>
-                        </article>
+                      <template x-for="group in sectionEntryGroups(section.id)"
+                        :key="(group.groupId || 'solo') + ':' + group.entries.map((e) => e.key).join('|')">
+                        <div class="settings-entry-group" :class="{ 'has-group': group.groupId }">
+                          <template x-for="entry in group.entries" :key="entry.key + ':' + settingDraftValue(entry)">
+                            <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
+                              :class="[settingEntryClass(entry), { 'is-token-entry': isTokenInputKind(entry) }]">
+                              <div class="settings-entry-main">
+                                <div class="settings-entry-head">
+                                  <strong class="settings-entry-title" x-text="entry.title"></strong>
+                                  <span class="settings-type-pill" x-text="entry.type"></span>
+                                  <span class="badge settings-override-badge" x-show="showOverrideBadge() && entry.isOverridden"
+                                    x-text="t('dashboard.settings_overridden_badge')"></span>
+                                  <span class="badge settings-hidden-badge" x-show="entry.isHidden"
+                                    x-text="t('dashboard.settings_hidden')"></span>
+                                </div>
+                                <p class="settings-entry-desc" x-show="entry.description" x-text="entry.description"></p>
+                                <code class="settings-key" x-text="entry.key"></code>
+                              </div>
+                              <div class="settings-entry-value-wrap">
+                                <div class="settings-entry-input-row"
+                                  :class="{ 'settings-entry-input-row--token': isTokenInputKind(entry) }">
+                                  <template x-if="entry.type === 'Boolean'">
+                                    <select class="settings-input settings-select"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onBooleanSettingChange(section.id, entry, $event)">
+                                      <option value="true" x-text="t('dashboard.on')"></option>
+                                      <option value="false" x-text="t('dashboard.off')"></option>
+                                    </select>
+                                  </template>
+                                  <template x-if="entry.type === 'Int32'">
+                                    <input type="number" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" step="1" inputmode="numeric"
+                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
+                                      :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <template x-if="entry.type === 'Single'">
+                                    <input type="number" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" step="any" inputmode="decimal"
+                                      :min="entry.minValue || undefined" :max="entry.maxValue || undefined"
+                                      :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <template x-if="isTokenInputKind(entry)">
+                                    <div class="token-input-wrap">
+                                      <div class="token-input"
+                                        :class="{
+                                          'is-saving': isSavingSetting(section.id, entry),
+                                          'is-focused': tokenInputFocusedFor(section.id, entry),
+                                          'is-disabled': isSavingSetting(section.id, entry) || isResettingSection(section.id)
+                                        }">
+                                        <template x-for="id in parseIdList(settingDraftValue(entry))" :key="id">
+                                          <span class="token-chip">
+                                            <span class="token-chip-label"
+                                              x-text="resolveTokenLabel(id, getTokenCatalog(entry))"></span>
+                                            <span class="token-chip-id" x-text="id"></span>
+                                            <button type="button" class="token-chip-remove"
+                                              :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                              :aria-label="t('dashboard.settings_token_remove', { label: resolveTokenLabel(id, getTokenCatalog(entry)) })"
+                                              @click="removeToken(section.id, entry, id)">
+                                              <span aria-hidden="true">×</span>
+                                            </button>
+                                          </span>
+                                        </template>
+                                        <input type="text" class="token-input-field"
+                                          :id="settingInputId(section.id, entry)"
+                                          :value="tokenInputQueryFor(section.id, entry)"
+                                          :placeholder="t('dashboard.settings_token_placeholder')"
+                                          :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                          autocomplete="off" spellcheck="false" role="combobox"
+                                          :aria-expanded="tokenInputOpenFor(section.id, entry)"
+                                          :aria-controls="tokenSuggestionsId(section.id, entry)"
+                                          @input="onTokenInputInput(section.id, entry, $event)"
+                                          @focus="onTokenInputFocus(section.id, entry)"
+                                          @blur="onTokenInputBlur(section.id, entry)"
+                                          @keydown="onTokenInputKeydown(section.id, entry, $event)"
+                                          @paste="onTokenInputPaste(section.id, entry, $event)">
+                                        <ul class="token-suggestions" :id="tokenSuggestionsId(section.id, entry)"
+                                          x-show="tokenInputOpenFor(section.id, entry) && tokenInputSuggestions(section.id, entry).length > 0"
+                                          x-cloak @mousedown.prevent>
+                                          <template x-for="suggestion in tokenInputSuggestions(section.id, entry)"
+                                            :key="suggestion.id">
+                                            <li>
+                                              <button type="button" class="token-suggestion"
+                                                @click="onTokenSuggestionPick(section.id, entry, suggestion)">
+                                                <span class="token-suggestion-label" x-text="suggestion.label"></span>
+                                                <span class="token-suggestion-id" x-text="suggestion.id"></span>
+                                              </button>
+                                            </li>
+                                          </template>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </template>
+                                  <template
+                                    x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single' && !isTokenInputKind(entry)">
+                                    <input type="text" class="settings-input"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onTextSettingCommit(section.id, entry, $event)">
+                                  </template>
+                                  <button type="button" class="btn btn-text btn-compact settings-reset-btn"
+                                    x-show="settingCanReset(entry)"
+                                    :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                    :title="settingsEntryResetTitle()" @click="resetSetting(section.id, entry)"
+                                    x-text="t('dashboard.settings_reset')">
+                                  </button>
+                                </div>
+                                <small class="settings-default-hint" x-show="settingHintVisible(entry)"
+                                  x-text="settingHintText(entry)"></small>
+                              </div>
+                            </article>
+                          </template>
+                        </div>
                       </template>
                     </div>
                   </section>
@@ -594,6 +650,7 @@
   <script defer src="/js/sse.js"></script>
   <script defer src="/js/minimap.js"></script>
   <script defer src="/js/settings-format.js"></script>
+  <script defer src="/js/settings-token-input.js"></script>
   <script defer src="/js/settings.js"></script>
   <script defer src="/js/dashboard.js"></script>
   <script defer src="/js/alpine.min.js"></script>

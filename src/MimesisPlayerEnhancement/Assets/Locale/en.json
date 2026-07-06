@@ -693,6 +693,8 @@
     "settings_keys_count": "{count} keys",
     "settings_host_only": "Settings are only available to the host.",
     "settings_loading_aria": "Loading settings",
+    "settings_token_placeholder": "Search by name or ID…",
+    "settings_token_remove": "Remove {label}",
     "failed_load": "Failed to load data",
     "confirm_moderation": "Confirm {action} for player {steamId}?",
     "late_join_prefix": "Late join: {label}",

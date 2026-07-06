@@ -106,6 +106,8 @@ document.addEventListener('alpine:init', () => {
     localeVersion: 0,
     itemCatalog: [],
     itemCatalogLocale: '',
+    dungeonCatalog: [],
+    dungeonCatalogLocale: '',
     spawnSelections: {},
 
     t(key, params) {
@@ -628,7 +630,6 @@ document.addEventListener('alpine:init', () => {
     },
 
     async loadItemCatalog() {
-      if (!this.status.isHost) return;
       const locale = this.status.locale || 'en';
       if (this.itemCatalog.length > 0 && this.itemCatalogLocale === locale) return;
       try {
@@ -638,6 +639,18 @@ document.addEventListener('alpine:init', () => {
         this.syncSpawnSelectionsFromCatalog();
       } catch (_) {
         /* catalog optional — spawn controls stay hidden if empty */
+      }
+    },
+
+    async loadDungeonCatalog() {
+      const locale = this.status.locale || 'en';
+      if (this.dungeonCatalog.length > 0 && this.dungeonCatalogLocale === locale) return;
+      try {
+        const res = await Api.getDungeons();
+        this.dungeonCatalog = res.dungeons || [];
+        this.dungeonCatalogLocale = locale;
+      } catch (_) {
+        /* catalog optional — token inputs still accept manual IDs */
       }
     },
 

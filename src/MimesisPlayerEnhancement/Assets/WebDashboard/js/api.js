@@ -62,6 +62,10 @@ const Api = {
     return Api.fetchJson('/api/items');
   },
 
+  async getDungeons() {
+    return Api.fetchJson('/api/dungeons');
+  },
+
   async spawnItem(steamId, itemId, percent) {
     const body = { itemId };
     if (percent != null) body.percent = percent;

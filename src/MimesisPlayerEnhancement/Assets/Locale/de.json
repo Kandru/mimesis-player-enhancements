@@ -693,6 +693,8 @@
     "settings_keys_count": "{count} Schlüssel",
     "settings_host_only": "Einstellungen sind nur für den Host verfügbar.",
     "settings_loading_aria": "Einstellungen werden geladen",
+    "settings_token_placeholder": "Nach Name oder ID suchen…",
+    "settings_token_remove": "{label} entfernen",
     "failed_load": "Daten konnten nicht geladen werden",
     "confirm_moderation": "{action} für Spieler {steamId} bestätigen?",
     "late_join_prefix": "Spätbeitritt: {label}",

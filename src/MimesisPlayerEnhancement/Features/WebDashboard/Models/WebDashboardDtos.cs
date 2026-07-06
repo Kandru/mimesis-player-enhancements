@@ -201,6 +201,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool IsHidden;
         public string? MinValue;
         public string? MaxValue;
+        public string InputKind = "Default";
+        public string EntryGroup = "";
+    }
+
+    internal sealed class WebDashboardDungeonOptionDto
+    {
+        public string Id = "";
+        public string Label = "";
+    }
+
+    internal sealed class WebDashboardDungeonsApiResponse
+    {
+        public List<WebDashboardDungeonOptionDto> Dungeons = [];
     }
 
     internal sealed class WebDashboardConfigUpdateRequest

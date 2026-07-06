@@ -201,6 +201,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/dungeons" && method == "GET")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardJson.SerializeDungeons(WebDashboardDungeonCatalogService.BuildCatalog()));
+                return;
+            }
+
             if (path.StartsWith("/api/players/", StringComparison.Ordinal))
             {
                 HandlePlayerApi(context, method, path, snapshot);
