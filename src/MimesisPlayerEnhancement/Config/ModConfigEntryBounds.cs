@@ -83,7 +83,6 @@ namespace MimesisPlayerEnhancement
                 "MapPlacedEncounterMinPlayerDistanceMeters");
 
             Int(JoinAnytime, "JoinConnectionGraceSeconds", 1);
-            Float(JoinAnytime, "JoinTramRouteRetrySeconds", 0.1f);
 
             Int(DungeonTime, "DungeonTimeBaselinePlayerCount", 1);
             Float(DungeonTime, "ExtraShiftSecondsPerPlayerAboveBaseline", 0f);

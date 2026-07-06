@@ -81,10 +81,6 @@
       "JoinConnectionGraceSeconds": {
         "title": "Beitritts-Verbindungs-Gnadenzeit (Sekunden)",
         "description": "Blockiert die Tram-Abfahrt für diese Sekunden, wenn ein Spieler verbindet. Spieler, die nicht fertig laden, werden gekickt (Host nie)."
-      },
-      "JoinTramRouteRetrySeconds": {
-        "title": "Tram-Routen-Wiederholung (Sekunden)",
-        "description": "Wie oft der Host einen Late-Joiner von Maintenance zur Tram weiterleitet, solange er noch verbindet. Minimum 0,1."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {

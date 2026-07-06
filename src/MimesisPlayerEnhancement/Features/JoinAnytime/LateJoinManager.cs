@@ -18,8 +18,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static bool IsEnabled => ModConfig.EnableJoinAnytime.Value;
 
-        internal static float RouteRetryIntervalSeconds =>
-            Mathf.Max(0.1f, ModConfig.JoinTramRouteRetrySeconds.Value);
+        private const float RouteRetryIntervalSeconds = 0.5f;
 
         /// <summary>Clears routing state so stale UIDs cannot leak across sessions or feature toggles.</summary>
         internal static void Reset()

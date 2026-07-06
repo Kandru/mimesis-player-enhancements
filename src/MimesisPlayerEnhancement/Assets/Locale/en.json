@@ -81,10 +81,6 @@
       "JoinConnectionGraceSeconds": {
         "title": "Join Connection Grace Seconds",
         "description": "When a player connects, block tram departure for this many seconds. Players who fail to finish loading are kicked (host is never kicked)."
-      },
-      "JoinTramRouteRetrySeconds": {
-        "title": "Join Tram Route Retry Seconds",
-        "description": "How often the host retries routing a late joiner from maintenance to the tram while they are still connecting. Minimum is 0.1."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
