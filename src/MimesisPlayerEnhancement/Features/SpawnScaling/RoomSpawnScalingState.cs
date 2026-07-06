@@ -16,6 +16,10 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal SpawnTimingOverrides? TimingOverrides { get; set; }
 
+        internal int NextJakoWavePeriodMs { get; set; }
+
+        internal int NextMimicWavePeriodMs { get; set; }
+
         internal int SlotCount => _slots.Count;
 
         internal bool HasCredits

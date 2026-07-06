@@ -362,6 +362,39 @@
         "title": "Fallen-Spawn-Multiplikator",
         "description": "Auf der Karte platzierte Fallen: aktiviert ungenutzte Alternativ-Marker und plant Bonus-Begegnungen nach Auslösung/Kill (1 = Vanilla, 2 = doppelt)."
       },
+      "PeriodicSpawnWaitMode": {
+        "title": "Periodische Spawn-Wartezeit Modus",
+        "description": "Steuert die anfängliche Verzögerung vor der ersten Jako/Mimic-Welle und das Intervall zwischen Wellen. Vanilla nutzt Dungeon-Daten; Fixed und Random nutzen die Sekunden-Keys unten. Spawn-Multiplikatoren verkürzen Wellenintervalle nicht mehr.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Feste Sekunden",
+          "Random": "Zufällige Sekunden"
+        }
+      },
+      "InitialPeriodicSpawnWaitSeconds": {
+        "title": "Anfängliche periodische Spawn-Wartezeit (Sekunden)",
+        "description": "Fixed-Modus: Sekunden nach Dungeon-Start, bis die erste Jako/Mimic-Welle starten kann."
+      },
+      "InitialPeriodicSpawnWaitMinSeconds": {
+        "title": "Anfängliche Spawn-Wartezeit Min (Sekunden)",
+        "description": "Random-Modus: kürzeste anfängliche Wartezeit vor der ersten Welle."
+      },
+      "InitialPeriodicSpawnWaitMaxSeconds": {
+        "title": "Anfängliche Spawn-Wartezeit Max (Sekunden)",
+        "description": "Random-Modus: längste anfängliche Wartezeit. Tatsächliche Wartezeit liegt zwischen Min und Max."
+      },
+      "PeriodicSpawnIntervalSeconds": {
+        "title": "Periodisches Spawn-Intervall (Sekunden)",
+        "description": "Fixed-Modus: Sekunden zwischen aufeinanderfolgenden Jako/Mimic-Wellen."
+      },
+      "PeriodicSpawnIntervalMinSeconds": {
+        "title": "Periodisches Spawn-Intervall Min (Sekunden)",
+        "description": "Random-Modus: kürzestes Intervall zwischen Spawn-Wellen."
+      },
+      "PeriodicSpawnIntervalMaxSeconds": {
+        "title": "Periodisches Spawn-Intervall Max (Sekunden)",
+        "description": "Random-Modus: längstes Intervall zwischen Wellen. Wird nach jeder Welle neu gewürfelt."
+      },
       "MapPlacedEncounterDelayMinSeconds": {
         "title": "Karten-Begegnung Verzögerung Min (Sekunden)",
         "description": "Kürzeste Wartezeit, nachdem ein auf der Karte platzierter Gegner, eine Falle oder ein Loot-Marker geräumt wurde, bevor dort die nächste Bonus-Begegnung durch Skalierung erscheinen kann."

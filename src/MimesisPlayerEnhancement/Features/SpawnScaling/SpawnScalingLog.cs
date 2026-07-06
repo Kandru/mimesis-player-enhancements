@@ -85,5 +85,20 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 $"Entity spawn failed — category={SpawnCategoryLookup.Format(category)}, name={entityName}, " +
                 $"master={masterId}, budgetsScaled={scalingApplied}, source={spawnSource}");
         }
+
+        internal static void InfoPeriodicSpawnWaitApplied(
+            PeriodicSpawnWaitMode mode,
+            float initialSeconds,
+            float intervalSeconds)
+        {
+            ModLog.Info(
+                Feature,
+                $"Periodic spawn wait applied — mode={mode}, initial={initialSeconds:0.#}s, interval={intervalSeconds:0.#}s");
+        }
+
+        internal static void DebugPeriodicSpawnIntervalRerolled(string waveKind, float intervalSeconds)
+        {
+            ModLog.Debug(Feature, $"Periodic spawn interval re-rolled — wave={waveKind}, interval={intervalSeconds:0.#}s");
+        }
     }
 }

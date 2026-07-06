@@ -1,4 +1,5 @@
 using System;
+
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnTimingOverrideApplier
@@ -61,20 +62,38 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             float jakoMultiplier,
             float mimicMultiplier)
         {
-            if (jakoMultiplier <= 1f && mimicMultiplier <= 1f)
+            bool needsTryRateOverride = jakoMultiplier > 1f || mimicMultiplier > 1f;
+            bool needsPeriodOverride = PeriodicSpawnWaitResolver.IsWaitModeActive();
+
+            if (!needsTryRateOverride && !needsPeriodOverride)
             {
                 state.TimingOverrides = null;
                 return;
             }
 
+            int jakoPeriod = needsPeriodOverride
+                ? state.NextJakoWavePeriodMs
+                : info.NormalMonsterSpawnPeriod;
+            int mimicPeriod = needsPeriodOverride
+                ? state.NextMimicWavePeriodMs
+                : info.MimicSpawnPeriod;
+
             SpawnTimingOverrides overrides = new()
             {
-                NormalMonsterSpawnTryCount = ScaleTimingCount(info.NormalMonsterSpawnTryCount, jakoMultiplier),
-                NormalMonsterSpawnRate = ScaleTimingRate(info.NormalMonsterSpawnRate, jakoMultiplier),
-                NormalMonsterSpawnPeriod = ScaleTimingPeriod(info.NormalMonsterSpawnPeriod, jakoMultiplier),
-                MimicSpawnTryCount = ScaleTimingCount(info.MimicSpawnTryCount, mimicMultiplier),
-                MimicSpawnRate = ScaleTimingRate(info.MimicSpawnRate, mimicMultiplier),
-                MimicSpawnPeriod = ScaleTimingPeriod(info.MimicSpawnPeriod, mimicMultiplier),
+                NormalMonsterSpawnTryCount = needsTryRateOverride && jakoMultiplier > 1f
+                    ? ScaleTimingCount(info.NormalMonsterSpawnTryCount, jakoMultiplier)
+                    : info.NormalMonsterSpawnTryCount,
+                NormalMonsterSpawnRate = needsTryRateOverride && jakoMultiplier > 1f
+                    ? ScaleTimingRate(info.NormalMonsterSpawnRate, jakoMultiplier)
+                    : info.NormalMonsterSpawnRate,
+                NormalMonsterSpawnPeriod = jakoPeriod,
+                MimicSpawnTryCount = needsTryRateOverride && mimicMultiplier > 1f
+                    ? ScaleTimingCount(info.MimicSpawnTryCount, mimicMultiplier)
+                    : info.MimicSpawnTryCount,
+                MimicSpawnRate = needsTryRateOverride && mimicMultiplier > 1f
+                    ? ScaleTimingRate(info.MimicSpawnRate, mimicMultiplier)
+                    : info.MimicSpawnRate,
+                MimicSpawnPeriod = mimicPeriod,
             };
 
             state.TimingOverrides = overrides;
@@ -94,16 +113,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             return Math.Min(10000, (int)Math.Round(vanilla * multiplier));
-        }
-
-        private static int ScaleTimingPeriod(int vanilla, float multiplier)
-        {
-            if (vanilla <= 0 || multiplier <= 1f)
-            {
-                return vanilla;
-            }
-
-            return Math.Max(1, (int)Math.Round(vanilla / multiplier));
         }
     }
 }

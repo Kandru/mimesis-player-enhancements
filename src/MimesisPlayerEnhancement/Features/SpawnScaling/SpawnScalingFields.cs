@@ -39,6 +39,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static readonly FieldInfo DungeonMasterInfoField =
             Field(typeof(DungeonRoom), "_dungeonMasterInfo");
 
+        internal static readonly FieldInfo LastNormalMonsterSpawnTimeField =
+            Field(typeof(DungeonRoom), "_lastNormalMonsterSpawnTime");
+
+        internal static readonly FieldInfo LastMimicSpawnTimeField =
+            Field(typeof(DungeonRoom), "_lastMimicSpawnTime");
+
         internal static readonly FieldInfo SpecialGroupInfoField =
             Field(SpecialMonsterSpawnGroupType, "Info");
 

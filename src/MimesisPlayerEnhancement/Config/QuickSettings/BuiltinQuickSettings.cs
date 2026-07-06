@@ -161,13 +161,19 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.SetAllAutoScaleByPlayerCount(values, true);
             QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.9f);
+            QuickSettingsValuesBuilder.SetPeriodicSpawnWaitRandom(
+                values,
+                initialMinSeconds: 10f,
+                initialMaxSeconds: 30f,
+                intervalMinSeconds: 10f,
+                intervalMaxSeconds: 30f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.8f, dropLoot: 1.8f);
             QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.5f, roundGoal: 2f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
 
             return new QuickSettingPreset
             {
                 Id = AbandonHopeId,
-                Revision = 1,
+                Revision = 3,
                 IsBuiltin = true,
                 Values = values,
             };

@@ -135,7 +135,7 @@ Late joiners cannot be dropped straight into an active dungeon. Instead, they wa
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
-**Host-only.** Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets plus faster spawn windows. Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent games, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
+**Host-only.** Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets; wave timing can be overridden in seconds (see Periodic Spawn Wait Mode). Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent spawns, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
 
 Each **Auto Scale … By Player Count** toggle stacks with its per-type multiplier using `SpawnScalingPlayerCountScaleRate` per player above 4 (`0.10` = +10% per extra player). Set `0.25` to approximate the old `players / 4` curve.
 
@@ -153,6 +153,13 @@ Each **Auto Scale … By Player Count** toggle stacks with its per-type multipli
 | `SpecialSpawnMultiplier` | float | `1.0` | ≥ `0` | Special monster budget for periodic spawns and map-placed specials. |
 | `AutoScaleTrapSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for trap spawns (stacks with `TrapSpawnMultiplier`). |
 | `TrapSpawnMultiplier` | float | `1.0` | ≥ `0` | Map-placed traps: unused alternate markers plus bonus encounters after trigger/kill. |
+| `PeriodicSpawnWaitMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | Initial delay before the first ambient jako/mimic wave and interval between waves. `Vanilla` uses dungeon data; `Fixed`/`Random` use the second keys below. Spawn multipliers no longer shorten wave intervals. |
+| `InitialPeriodicSpawnWaitSeconds` | float | `60.0` | ≥ `0` | Fixed mode: seconds after dungeon start before the first ambient spawn wave. |
+| `InitialPeriodicSpawnWaitMinSeconds` | float | `30.0` | ≥ `0` | Random mode: shortest initial wait before the first ambient spawn wave. |
+| `InitialPeriodicSpawnWaitMaxSeconds` | float | `90.0` | ≥ `0` | Random mode: longest initial wait. Must be ≥ min. |
+| `PeriodicSpawnIntervalSeconds` | float | `30.0` | ≥ `0` | Fixed mode: seconds between subsequent ambient jako/mimic spawn waves. |
+| `PeriodicSpawnIntervalMinSeconds` | float | `20.0` | ≥ `0` | Random mode: shortest interval between ambient spawn waves. |
+| `PeriodicSpawnIntervalMaxSeconds` | float | `45.0` | ≥ `0` | Random mode: longest interval between waves. Must be ≥ min. |
 | `MapPlacedEncounterDelayMinSeconds` | float | `5.0` | ≥ `0` | Shortest wait (seconds) after a map-placed enemy/trap is cleared before the next bonus encounter can spawn at that marker. |
 | `MapPlacedEncounterDelayMaxSeconds` | float | `30.0` | ≥ `0` | Longest wait for that random delay. Actual delay is picked between min and max. Must be ≥ `MapPlacedEncounterDelayMinSeconds`. |
 | `MapPlacedEncounterMinPlayerDistanceMeters` | float | `10.0` | ≥ `0` | After the delay, hold the spawn until no living players are within this radius (meters) of the marker. Set to `0` to spawn as soon as the delay elapses. |

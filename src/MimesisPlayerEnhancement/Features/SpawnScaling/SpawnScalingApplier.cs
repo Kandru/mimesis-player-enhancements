@@ -70,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
             if (SpawnScalingFields.DungeonMasterInfoField.GetValue(room) is DungeonMasterInfo dungeonInfo)
             {
+                PeriodicSpawnWaitApplier.ApplyInitialWait(room, state);
                 SpawnTimingOverrideApplier.ConfigureTimingOverrides(room, state, dungeonInfo, jakoMultiplier, mimicMultiplier);
             }
 

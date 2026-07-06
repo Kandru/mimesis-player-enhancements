@@ -75,6 +75,13 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> SpecialSpawnMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleTrapSpawnsByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> TrapSpawnMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> PeriodicSpawnWaitMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> InitialPeriodicSpawnWaitSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> InitialPeriodicSpawnWaitMinSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> InitialPeriodicSpawnWaitMaxSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PeriodicSpawnIntervalSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PeriodicSpawnIntervalMinSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PeriodicSpawnIntervalMaxSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MapPlacedEncounterDelayMinSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MapPlacedEncounterDelayMaxSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MapPlacedEncounterMinPlayerDistanceMeters { get; internal set; } = null!;

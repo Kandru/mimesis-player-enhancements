@@ -112,6 +112,21 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "OtherSpawnMultiplier", formatted);
         }
 
+        internal static void SetPeriodicSpawnWaitRandom(
+            Dictionary<string, Dictionary<string, string>> map,
+            float initialMinSeconds,
+            float initialMaxSeconds,
+            float intervalMinSeconds,
+            float intervalMaxSeconds)
+        {
+            const string sectionId = "MimesisPlayerEnhancement_SpawnScaling";
+            Set(map, sectionId, "PeriodicSpawnWaitMode", "Random");
+            Set(map, sectionId, "InitialPeriodicSpawnWaitMinSeconds", ModConfigFloatHelper.Format(initialMinSeconds));
+            Set(map, sectionId, "InitialPeriodicSpawnWaitMaxSeconds", ModConfigFloatHelper.Format(initialMaxSeconds));
+            Set(map, sectionId, "PeriodicSpawnIntervalMinSeconds", ModConfigFloatHelper.Format(intervalMinSeconds));
+            Set(map, sectionId, "PeriodicSpawnIntervalMaxSeconds", ModConfigFloatHelper.Format(intervalMaxSeconds));
+        }
+
         internal static void SetLootMultipliers(
             Dictionary<string, Dictionary<string, string>> map,
             float mapLoot,

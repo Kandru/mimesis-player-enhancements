@@ -11,12 +11,14 @@ namespace MimesisPlayerEnhancement
     {
         private const string LootSectionId = "MimesisPlayerEnhancement_LootMultiplicator";
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
+        private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
             new(EntryKeyComparer.Instance)
             {
                 [(LootSectionId, "LootItemFilterMode")] = ["All", "AllowlistOnly", "BlocklistOnly"],
                 [(DungeonSectionId, "DungeonPickPoolMode")] = ["WidenVanilla", "AllActiveUniform"],
+                [(SpawnScalingSectionId, "PeriodicSpawnWaitMode")] = ["Vanilla", "Fixed", "Random"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)
@@ -166,6 +168,20 @@ namespace MimesisPlayerEnhancement
                     ["DungeonAllowlist"] = "dungeonPick",
                     ["DungeonBlocklist"] = "dungeonPick",
                     ["IgnoreDungeonExcludeList"] = "dungeonPick",
+                };
+            }
+
+            if (sectionId == SpawnScalingSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["PeriodicSpawnWaitMode"] = "periodicSpawnWait",
+                    ["InitialPeriodicSpawnWaitSeconds"] = "periodicSpawnWait",
+                    ["InitialPeriodicSpawnWaitMinSeconds"] = "periodicSpawnWait",
+                    ["InitialPeriodicSpawnWaitMaxSeconds"] = "periodicSpawnWait",
+                    ["PeriodicSpawnIntervalSeconds"] = "periodicSpawnWait",
+                    ["PeriodicSpawnIntervalMinSeconds"] = "periodicSpawnWait",
+                    ["PeriodicSpawnIntervalMaxSeconds"] = "periodicSpawnWait",
                 };
             }
 

@@ -362,6 +362,39 @@
         "title": "Trap Spawn Multiplier",
         "description": "Map-placed traps: activates unused alternate markers and schedules bonus encounters after trigger/kill (1 = vanilla, 2 = double)."
       },
+      "PeriodicSpawnWaitMode": {
+        "title": "Periodic Spawn Wait Mode",
+        "description": "Controls initial delay before the first ambient jako/mimic wave and the interval between waves. Vanilla uses dungeon data; Fixed and Random use the second-based keys below. Spawn multipliers no longer shorten wave intervals.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed seconds",
+          "Random": "Random seconds"
+        }
+      },
+      "InitialPeriodicSpawnWaitSeconds": {
+        "title": "Initial Periodic Spawn Wait (seconds)",
+        "description": "Fixed mode: seconds after dungeon start before the first ambient jako/mimic spawn wave can fire."
+      },
+      "InitialPeriodicSpawnWaitMinSeconds": {
+        "title": "Initial Periodic Spawn Wait Min (seconds)",
+        "description": "Random mode: shortest initial wait before the first ambient spawn wave."
+      },
+      "InitialPeriodicSpawnWaitMaxSeconds": {
+        "title": "Initial Periodic Spawn Wait Max (seconds)",
+        "description": "Random mode: longest initial wait. Actual wait is picked between min and max."
+      },
+      "PeriodicSpawnIntervalSeconds": {
+        "title": "Periodic Spawn Interval (seconds)",
+        "description": "Fixed mode: seconds between subsequent ambient jako/mimic spawn waves."
+      },
+      "PeriodicSpawnIntervalMinSeconds": {
+        "title": "Periodic Spawn Interval Min (seconds)",
+        "description": "Random mode: shortest interval between ambient spawn waves."
+      },
+      "PeriodicSpawnIntervalMaxSeconds": {
+        "title": "Periodic Spawn Interval Max (seconds)",
+        "description": "Random mode: longest interval between waves. Actual interval is picked between min and max after each wave."
+      },
       "MapPlacedEncounterDelayMinSeconds": {
         "title": "Map-Placed Encounter Delay Min (seconds)",
         "description": "Shortest wait after a map-placed enemy, trap, or loot marker is cleared before the next bonus encounter from scaling can appear there."

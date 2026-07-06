@@ -83,16 +83,36 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         [HarmonyPatch(typeof(DungeonRoom), "ManageSpawnData")]
         public static class DungeonRoomManageSpawnDataPatch
         {
+            [ThreadStatic]
+            private static ManageSpawnDataSnapshot? _snapshot;
+
             [HarmonyPrefix]
             public static void Prefix(DungeonRoom __instance)
             {
                 try
                 {
+                    _snapshot = PeriodicSpawnWaitApplier.CaptureSnapshot(__instance);
                     SpawnTimingOverrideApplier.BeginManageSpawnData(__instance);
                 }
                 catch (Exception ex)
                 {
                     ModLog.Warn(Feature, $"ManageSpawnData prefix failed — {ex.Message}");
+                }
+            }
+
+            [HarmonyPostfix]
+            public static void Postfix(DungeonRoom __instance)
+            {
+                try
+                {
+                    if (_snapshot != null)
+                    {
+                        PeriodicSpawnWaitApplier.OnManageSpawnDataPostfix(__instance, _snapshot.Value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"ManageSpawnData postfix failed — {ex.Message}");
                 }
             }
 
@@ -102,6 +122,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 try
                 {
                     SpawnTimingOverrideApplier.EndManageSpawnData(__instance);
+                    _snapshot = null;
                 }
                 catch (Exception ex)
                 {
