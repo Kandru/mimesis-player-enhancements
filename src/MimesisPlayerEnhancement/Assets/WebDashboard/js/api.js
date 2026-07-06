@@ -66,6 +66,12 @@ const Api = {
     return Api.fetchJson('/api/dungeons');
   },
 
+  async deletePlayer(steamId) {
+    return Api.fetchJson('/api/players/' + encodeURIComponent(steamId) + '/delete', {
+      method: 'POST',
+    });
+  },
+
   async spawnItem(steamId, itemId, percent) {
     const body = { itemId };
     if (percent != null) body.percent = percent;

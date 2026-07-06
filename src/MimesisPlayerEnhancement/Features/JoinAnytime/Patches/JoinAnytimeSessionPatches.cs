@@ -64,6 +64,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 long uid = context.GetPlayerUID();
                 if (uid != 0)
                 {
+                    if (JoinAnytimePlayerRegistration.ShouldDeferRegistration(uid))
+                    {
+                        ulong steamId = context.PlayerInfoSnapshot?.SteamID ?? 0;
+                        JoinAnytimePlayerRegistration.AbandonIncomplete(uid, steamId);
+                    }
+
                     LateJoinManager.OnPlayerDisconnected(uid);
                 }
             }

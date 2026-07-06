@@ -584,7 +584,11 @@
     "invalid_item_percent": "Ungültige Stärke.",
     "item_spawn_failed": "Gegenstand konnte nicht erstellt werden.",
     "item_spawned_inventory": "Gegenstand zum Inventar hinzugefügt.",
-    "item_spawned_world": "Inventar voll — Gegenstand vor dem Spieler abgelegt."
+    "item_spawned_world": "Inventar voll — Gegenstand vor dem Spieler abgelegt.",
+    "player_delete_success": "Spielerdaten gelöscht.",
+    "player_delete_not_found": "Keine gespeicherten Spielerdaten für diese Steam-ID gefunden.",
+    "player_delete_connected": "Spielerdaten können nicht gelöscht werden, solange der Spieler verbunden ist.",
+    "cannot_delete_host": "Lokale Host-Spielerdaten können nicht gelöscht werden."
   },
   "dashboard": {
     "title_default": "Mimesis Player Enhancement",
@@ -664,6 +668,7 @@
     "leaderboard_col_items": "Gegenstände",
     "leaderboard_col_deaths_revives": "T/W",
     "leaderboard_col_time": "Zeit",
+    "leaderboard_col_actions": "Aktionen",
     "minimap_layout_hint": "Dungeon-Layout wird noch generiert oder ist nicht verfügbar. Spielermarkierungen erscheinen, sobald Positionen bekannt sind.",
     "previously_connected": "Zuvor verbunden",
     "connection_label": "Verbindung: {label}",
@@ -706,6 +711,8 @@
     "settings_token_remove": "{label} entfernen",
     "failed_load": "Daten konnten nicht geladen werden",
     "confirm_moderation": "{action} für Spieler {steamId} bestätigen?",
+    "delete_player": "Spielerdaten löschen",
+    "confirm_delete_player": "Alle gespeicherten Daten für {name} ({steamId}) dauerhaft löschen? Statistiken, Sprachaufnahmen und Anzeigenamen werden entfernt.",
     "late_join_prefix": "Spätbeitritt: {label}",
     "late_join_attempts": "{count} Versuche",
     "ping_unknown": "Unbekannt",

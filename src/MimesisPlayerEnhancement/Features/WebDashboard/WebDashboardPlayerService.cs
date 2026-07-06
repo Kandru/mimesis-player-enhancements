@@ -579,6 +579,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistration(dto.PlayerUid))
+            {
+                return;
+            }
+
             WebDashboardPlayerNameStore.RememberName(
                 WebDashboardGameState.GetSaveSlotId(),
                 dto.SteamId,

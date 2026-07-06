@@ -839,6 +839,21 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    async deletePlayerData(steamId, displayName) {
+      const name = displayName || steamId;
+      if (!confirm(t('dashboard.confirm_delete_player', { name, steamId }))) return;
+      try {
+        const res = await Api.deletePlayer(steamId);
+        this.showToast(res.message || t('api.done'));
+        if (this.route === 'player' && String(this.steamId) === String(steamId)) {
+          this.playerStats = null;
+          window.location.hash = '#/leaderboard';
+        }
+      } catch (e) {
+        this.showToast(e.message);
+      }
+    },
+
     onAvatarError(event) {
       event.target.src = '/img/default-avatar.svg';
     },

@@ -584,7 +584,11 @@
     "invalid_item_percent": "Invalid item strength.",
     "item_spawn_failed": "Failed to spawn item.",
     "item_spawned_inventory": "Item added to inventory.",
-    "item_spawned_world": "Inventory full — item spawned in front of player."
+    "item_spawned_world": "Inventory full — item spawned in front of player.",
+    "player_delete_success": "Player data deleted.",
+    "player_delete_not_found": "No stored player data found for this Steam ID.",
+    "player_delete_connected": "Cannot delete player data while they are connected.",
+    "cannot_delete_host": "Cannot delete the local host player."
   },
   "dashboard": {
     "title_default": "Mimesis Player Enhancement",
@@ -664,6 +668,7 @@
     "leaderboard_col_items": "Items",
     "leaderboard_col_deaths_revives": "D/R",
     "leaderboard_col_time": "Time",
+    "leaderboard_col_actions": "Actions",
     "minimap_layout_hint": "Dungeon layout is still generating or unavailable. Player markers will appear once positions are known.",
     "previously_connected": "Previously connected",
     "connection_label": "Connection: {label}",
@@ -706,6 +711,8 @@
     "settings_token_remove": "Remove {label}",
     "failed_load": "Failed to load data",
     "confirm_moderation": "Confirm {action} for player {steamId}?",
+    "delete_player": "Delete player data",
+    "confirm_delete_player": "Permanently delete all stored data for {name} ({steamId})? This removes statistics, voice recordings, and display names.",
     "late_join_prefix": "Late join: {label}",
     "late_join_attempts": "{count} attempts",
     "ping_unknown": "Unknown",

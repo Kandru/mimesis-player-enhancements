@@ -43,7 +43,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                     HandlePersistence(__instance, slotId);
                 }
 
-                if (ModConfig.EnableStatistics.Value)
+                if (ModConfig.EnableStatistics.Value
+                    && !JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistration(__instance.PlayerUID))
                 {
                     StatisticsTracker.HandleArchiveStarted(__instance, slotId);
                 }

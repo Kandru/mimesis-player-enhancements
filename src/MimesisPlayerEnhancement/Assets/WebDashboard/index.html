@@ -325,6 +325,7 @@
                             <th x-text="t('dashboard.leaderboard_col_items')"></th>
                             <th x-text="t('dashboard.leaderboard_col_deaths_revives')"></th>
                             <th x-text="t('dashboard.leaderboard_col_time')"></th>
+                            <th x-text="t('dashboard.leaderboard_col_actions')"></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -336,6 +337,12 @@
                               <td x-text="e.itemCarryCount"></td>
                               <td x-text="(e.survivalDeaths + e.deathmatchDeaths) + '/' + e.revives"></td>
                               <td x-text="formatDuration(e.totalConnectedSeconds)"></td>
+                              <td>
+                                <button type="button" class="btn btn-text btn-danger btn-compact"
+                                  x-show="!connectedSet.has(String(e.steamId))"
+                                  @click="deletePlayerData(e.steamId, e.displayName)"
+                                  x-text="t('dashboard.delete_player')"></button>
+                              </td>
                             </tr>
                           </template>
                         </tbody>
@@ -386,6 +393,10 @@
                           <a class="external-link" :href="steamProfileUrl(steamId)" target="_blank"
                             rel="noopener noreferrer">Steam profile</a>
                         </div>
+                        <button type="button" class="btn btn-text btn-danger"
+                          x-show="!connectedSet.has(String(steamId))"
+                          @click="deletePlayerData(steamId, resolveDisplayName(steamId))"
+                          x-text="t('dashboard.delete_player')"></button>
                       </div>
                     </div>
                     <h3 class="section-title">Global</h3>

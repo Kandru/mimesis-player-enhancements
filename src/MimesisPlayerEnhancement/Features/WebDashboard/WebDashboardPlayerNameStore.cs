@@ -90,6 +90,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        internal static void ForgetName(int slotId, ulong steamId, bool waitForCompletion = false)
+        {
+            if (slotId < 0 || steamId == 0 || slotId != _loadedSlotId)
+            {
+                return;
+            }
+
+            lock (Gate)
+            {
+                if (!_names.Remove(steamId))
+                {
+                    return;
+                }
+
+                _dirty = true;
+            }
+
+            FlushToDisk(slotId, waitForCompletion);
+        }
+
         internal static void FlushToDisk(int slotId, bool waitForCompletion = false)
         {
             if (slotId < 0 || slotId != _loadedSlotId)

@@ -304,6 +304,40 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (action == "delete" && method == "POST")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                int slotId = snapshot.Status.SaveSlotId;
+                if (slotId < 0)
+                {
+                    WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("no_active_save_slot")));
+                    return;
+                }
+
+                WebDashboardActionResult deleteResult;
+                try
+                {
+                    deleteResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => SaveSlotPlayerDataService.RemovePlayer(slotId, steamId));
+                }
+                catch (TimeoutException)
+                {
+                    WriteJson(context, 504, WebDashboardJson.SerializeError(504, L("timed_out")));
+                    return;
+                }
+
+                WriteJson(
+                    context,
+                    deleteResult.Success ? 200 : 400,
+                    WebDashboardJson.SerializeActionResult(deleteResult));
+                return;
+            }
+
             if (action == "spawn-item" && method == "POST")
             {
                 if (!snapshot.Status.IsHost)

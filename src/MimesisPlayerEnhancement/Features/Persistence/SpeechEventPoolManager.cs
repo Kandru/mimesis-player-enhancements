@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.Persistence.Patches;
 using Mimic.Voice.SpeechSystem;
@@ -666,6 +667,106 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 ModLog.Error(Feature, $"TryBuildPlayerMappingJson FAILED: {ex}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Removes all voice pool, disconnected-cache, and mapping entries for one Steam ID.
+        /// </summary>
+        internal static int RemovePlayer(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return 0;
+            }
+
+            HashSet<string> playerNames = ResolvePlayerNamesForSteam(steamId);
+            int removed = 0;
+
+            foreach (string playerName in playerNames)
+            {
+                removed += RemovePoolEventsForPlayerName(playerName);
+            }
+
+            if (_disconnectedCacheBySteam.TryGetValue(steamId, out HashSet<long>? disconnectedIds))
+            {
+                foreach (long eventId in disconnectedIds.ToList())
+                {
+                    RemoveDisconnectedEvent(eventId, steamId);
+                    removed++;
+                }
+            }
+
+            _ = _disconnectedPlayerMappings.Remove(steamId);
+            _ = _steamToDissonance.Remove(steamId);
+            _ = _restoreGiveUpWarnedSteamIds.Remove(steamId);
+
+            if (removed > 0)
+            {
+                ModLog.Info(Feature, $"Removed voice data — steamId={steamId}, events={removed}");
+            }
+
+            return removed;
+        }
+
+        private static HashSet<string> ResolvePlayerNamesForSteam(ulong steamId)
+        {
+            HashSet<string> playerNames = [];
+
+            if (_steamToDissonance.TryGetValue(steamId, out string? mapped) && !string.IsNullOrEmpty(mapped))
+            {
+                _ = playerNames.Add(mapped);
+            }
+
+            if (_disconnectedPlayerMappings.TryGetValue(steamId, out string? disconnectedMapped)
+                && !string.IsNullOrEmpty(disconnectedMapped))
+            {
+                _ = playerNames.Add(disconnectedMapped);
+            }
+
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                try
+                {
+                    if (archive.IsLocal)
+                    {
+                        continue;
+                    }
+
+                    ulong archiveSteamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, false);
+                    if (archiveSteamId == steamId && !string.IsNullOrEmpty(archive.PlayerId))
+                    {
+                        _ = playerNames.Add(archive.PlayerId);
+                    }
+                }
+                catch
+                {
+                    /* archive may be partially destroyed */
+                }
+            }
+
+            return playerNames;
+        }
+
+        private static int RemovePoolEventsForPlayerName(string playerName)
+        {
+            if (string.IsNullOrEmpty(playerName) || !_byPlayerName.TryGetValue(playerName, out List<long>? ids))
+            {
+                return 0;
+            }
+
+            int removed = 0;
+            foreach (long id in ids.ToList())
+            {
+                if (_pool.Remove(id))
+                {
+                    removed++;
+                }
+
+                _ = _disconnectedCache.Remove(id);
+            }
+
+            _ = _byPlayerName.Remove(playerName);
+            return removed;
         }
 
         private static void TryRestoreToLiveArchiveAfterCache(

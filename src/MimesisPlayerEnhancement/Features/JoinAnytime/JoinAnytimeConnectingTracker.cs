@@ -17,6 +17,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         {
             PendingByUid.Clear();
             _blockingPendingCount = 0;
+            JoinAnytimePlayerRegistration.Reset();
         }
 
         internal static void OnServerLogin(SessionContext context)
@@ -43,6 +44,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             RegisterPending(uid, context.GetSessionID());
+            JoinAnytimePlayerRegistration.NoteDeferredConnect(uid, context.PlayerInfoSnapshot?.SteamID ?? 0);
             LateJoinManager.OnPlayerRegistered(uid);
             ModLog.Debug(Feature, $"Connecting tracker — registered uid={uid}, deadline={GraceSeconds}s");
         }
@@ -117,6 +119,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 if (IsPlayerFullyReady(player))
                 {
                     toRemove.Add(entry.Key);
+                    JoinAnytimePlayerRegistration.MarkFullyReady(player);
                     ModLog.Debug(Feature, $"Connecting tracker — uid={entry.Key} ready");
                     continue;
                 }
@@ -203,6 +206,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (IsPlayerFullyReady(player!))
             {
+                JoinAnytimePlayerRegistration.MarkFullyReady(player!);
                 RemovePending(uid);
                 ModLog.Debug(Feature, $"Connecting tracker — uid={uid} marked ready");
             }
@@ -242,6 +246,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 ModLog.Warn(Feature, $"Connecting tracker — kick skipped, no SessionManager (uid={pending.Uid})");
                 return;
+            }
+
+            if (WebDashboardSessionAccess.TryGetPlayerByUid(pending.Uid, out VPlayer? kickPlayer))
+            {
+                JoinAnytimePlayerRegistration.AbandonIncomplete(
+                    pending.Uid,
+                    GameSessionAccess.ResolveSteamId(pending.Uid, kickPlayer!.IsHost));
+            }
+            else
+            {
+                JoinAnytimePlayerRegistration.AbandonIncomplete(pending.Uid);
             }
 
             WebDashboardSessionAccess.DisconnectSession(

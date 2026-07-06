@@ -13,6 +13,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
                     return;
                 }
 
+                if (JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistrationBySteamId(steamID))
+                {
+                    return;
+                }
+
                 int slotId = GameSessionAccess.GetSaveSlotId();
                 if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
                     && !StatisticsTracker.TryGetLoadedSlotId(out slotId))

@@ -45,6 +45,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 long playerUID = 0;
                 _ = VoiceEventStats.TryCaptureArchiveIdentity(__instance, out playerUID, out _, out steamId);
 
+                if (JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistration(playerUID))
+                {
+                    return;
+                }
+
                 int cached = SpeechEventPoolManager.CacheEventsFromArchive(__instance, steamId, playerUID);
                 PlayerLifecycleCoordinator.OnArchiveDisconnecting(
                     __instance,

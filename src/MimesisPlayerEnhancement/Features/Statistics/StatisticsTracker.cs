@@ -186,9 +186,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
+            if (!_connectedSince.ContainsKey(steamId))
+            {
+                return;
+            }
+
             if (!_players.TryGetValue(steamId, out PlayerStatisticsDocument? doc))
             {
-                doc = GetOrCreatePlayer(steamId);
+                return;
             }
 
             PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
@@ -758,6 +763,53 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static IReadOnlyCollection<ulong> GetConnectedSteamIds()
         {
             return [.. _connectedSince.Keys];
+        }
+
+        /// <summary>
+        /// Removes a player from in-memory statistics and rewrites the stats sidecar for the loaded slot.
+        /// </summary>
+        internal static bool RemovePlayer(ulong steamId, bool waitForCompletion = true)
+        {
+            if (steamId == 0 || !TryGetLoadedSlotId(out int slotId))
+            {
+                return false;
+            }
+
+            if (!_players.Remove(steamId))
+            {
+                return false;
+            }
+
+            _ = _connectedSince.Remove(steamId);
+            StatisticsVoiceCounter.RemoveBaseline(steamId);
+            StatisticsMessages.ClearPlayerRuntimeState(steamId);
+            BumpRevision();
+            PersistSlot(slotId, waitForCompletion);
+            WebDashboardSnapshotCache.MarkDirty();
+            ModLog.Info(Feature, $"Removed player statistics — steamId={steamId}, slot={slotId}");
+            return true;
+        }
+
+        /// <summary>
+        /// Drops an in-memory statistics document that was never fully connected this session.
+        /// </summary>
+        internal static void RemovePlayerIfNeverConnected(ulong steamId)
+        {
+            if (steamId == 0 || _connectedSince.ContainsKey(steamId))
+            {
+                return;
+            }
+
+            if (!_players.Remove(steamId))
+            {
+                return;
+            }
+
+            StatisticsVoiceCounter.RemoveBaseline(steamId);
+            StatisticsMessages.ClearPlayerRuntimeState(steamId);
+            BumpRevision();
+            WebDashboardSnapshotCache.MarkDirty();
+            ModLog.Debug(Feature, $"Removed incomplete-connect statistics — steamId={steamId}");
         }
 
         internal static bool TryGetLoadedSlotId(out int slotId)

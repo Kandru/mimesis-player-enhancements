@@ -32,6 +32,30 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             GlobalStatsShownAt.Clear();
         }
 
+        internal static void ClearPlayerRuntimeState(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return;
+            }
+
+            _ = PendingJoinStats.Remove(steamId);
+
+            List<(ulong SteamId, bool IsJoin)> keysToRemove = [];
+            foreach ((ulong id, bool isJoin) in GlobalStatsShownAt.Keys)
+            {
+                if (id == steamId)
+                {
+                    keysToRemove.Add((id, isJoin));
+                }
+            }
+
+            foreach ((ulong id, bool isJoin) in keysToRemove)
+            {
+                _ = GlobalStatsShownAt.Remove((id, isJoin));
+            }
+        }
+
         internal static void OnLocalPlayerArchiveStarted()
         {
             if (!ShouldShow())
