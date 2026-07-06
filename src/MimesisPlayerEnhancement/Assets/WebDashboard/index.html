@@ -539,7 +539,10 @@
                               </div>
                               <div class="settings-entry-value-wrap">
                                 <div class="settings-entry-input-row"
-                                  :class="{ 'settings-entry-input-row--token': isTokenInputKind(entry) }">
+                                  :class="{
+                                    'settings-entry-input-row--token': isTokenInputKind(entry),
+                                    'settings-entry-input-row--stacked': isTokenInputKind(entry) || isSelectInputKind(entry)
+                                  }">
                                   <template x-if="entry.type === 'Boolean'">
                                     <select class="settings-input settings-select"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
@@ -580,6 +583,8 @@
                                           <span class="token-chip">
                                             <span class="token-chip-label"
                                               x-text="resolveTokenLabel(id, getTokenCatalog(entry))"></span>
+                                            <span class="token-chip-price" x-show="resolveTokenPriceText(id, entry)"
+                                              x-text="resolveTokenPriceText(id, entry)"></span>
                                             <span class="token-chip-id" x-text="id"></span>
                                             <button type="button" class="token-chip-remove"
                                               :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
@@ -611,7 +616,11 @@
                                               <button type="button" class="token-suggestion"
                                                 @click="onTokenSuggestionPick(section.id, entry, suggestion)">
                                                 <span class="token-suggestion-label" x-text="suggestion.label"></span>
-                                                <span class="token-suggestion-id" x-text="suggestion.id"></span>
+                                                <span class="token-suggestion-meta">
+                                                  <span class="token-suggestion-price" x-show="suggestion.priceText"
+                                                    x-text="suggestion.priceText"></span>
+                                                  <span class="token-suggestion-id" x-text="suggestion.id"></span>
+                                                </span>
                                               </button>
                                             </li>
                                           </template>

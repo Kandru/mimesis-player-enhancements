@@ -29,6 +29,51 @@ function resolveCatalogMasterId(option) {
   return String(option.id ?? '').trim();
 }
 
+function formatSellPriceRange(min, max) {
+  if (min == null && max == null) return '';
+  const lo = min ?? max;
+  const hi = max ?? min;
+  if (lo == null || hi == null) return '';
+  if (lo === hi) return '$' + lo;
+  return '$' + lo + '–$' + hi;
+}
+
+function resolveCatalogEntry(id, catalog) {
+  const textId = String(id ?? '').trim();
+  if (!textId || !catalog?.length) return null;
+
+  for (const option of catalog) {
+    if (String(option.id) === textId || String(option.masterId) === textId) {
+      return option;
+    }
+
+    for (const variant of option.variants || []) {
+      if (String(variant.masterId) === textId) {
+        return {
+          label: option.label,
+          sellPriceMin: variant.sellPriceMin,
+          sellPriceMax: variant.sellPriceMax,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function resolveOptionSellPrice(option, masterId) {
+  if (!option) return '';
+  const variants = option.variants || [];
+  if (variants.length > 0) {
+    const variant = variants.find((v) => String(v.masterId) === String(masterId));
+    if (variant) {
+      return formatSellPriceRange(variant.sellPriceMin, variant.sellPriceMax);
+    }
+  }
+
+  return formatSellPriceRange(option.sellPriceMin, option.sellPriceMax);
+}
+
 function createTokenInputMixin() {
   return {
     tokenInputState: {},
@@ -49,9 +94,26 @@ function createTokenInputMixin() {
       if (!textId) return '';
       const option = (catalog || []).find((item) => String(item.id) === textId
         || String(item.masterId) === textId);
-      if (!option) return textId;
-      const label = String(option.label || '').trim();
-      return label || textId;
+      if (option) {
+        const label = String(option.label || '').trim();
+        return label || textId;
+      }
+
+      for (const item of catalog || []) {
+        const variant = (item.variants || []).find((v) => String(v.masterId) === textId);
+        if (variant) {
+          const label = String(item.label || '').trim();
+          return label || textId;
+        }
+      }
+
+      return textId;
+    },
+
+    resolveTokenPriceText(id, entry) {
+      if (entry.inputKind !== 'ItemIdList') return '';
+      const match = resolveCatalogEntry(id, this.getTokenCatalog(entry));
+      return formatSellPriceRange(match?.sellPriceMin, match?.sellPriceMax);
     },
 
     tokenInputQueryFor(sectionId, entry) {
@@ -95,6 +157,9 @@ function createTokenInputMixin() {
         results.push({
           id,
           label: option.label || id,
+          priceText: entry.inputKind === 'ItemIdList'
+            ? resolveOptionSellPrice(option, id)
+            : '',
           priority: idText.startsWith(query) || label.startsWith(query) ? 0 : 1,
         });
       }

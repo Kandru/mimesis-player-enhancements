@@ -44,7 +44,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             for (int i = 0; i < extraNeeded; i++)
             {
                 int masterId = LootTableRollHelper.PickWeightedItemMasterId(dropInfo.ItemDropCandidates);
-                if (masterId <= 0 || !LootItemFilter.IsEligible(masterId))
+                if (masterId <= 0)
                 {
                     continue;
                 }

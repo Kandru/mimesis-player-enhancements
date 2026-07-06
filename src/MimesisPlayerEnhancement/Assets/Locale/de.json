@@ -115,7 +115,7 @@
       },
       "LootItemFilterMode": {
         "title": "Loot-Item-Filtermodus",
-        "description": "All = jedes Item kann skaliert werden; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist; BlocklistOnly = alle Items außer Loot-Blocklist.",
+        "description": "All = jedes Item kann spawnen; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist können spawnen; BlocklistOnly = alle Items außer Loot-Blocklist können spawnen.",
         "options": {
           "All": "Alle Items",
           "AllowlistOnly": "Nur Allowlist",
@@ -124,11 +124,11 @@
       },
       "LootAllowlist": {
         "title": "Loot-Allowlist",
-        "description": "Kommagetrennte Item-Master-IDs (z. B. 12345,67890). Verwendet, wenn Loot-Item-Filtermodus AllowlistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
+        "description": "Kommagetrennte Item-Master-IDs (z. B. 12345,67890). Verwendet, wenn Loot-Item-Filtermodus AllowlistOnly ist. IDs außerhalb der Rotation werden in Zufallspools eingefügt. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
       },
       "LootBlocklist": {
         "title": "Loot-Blocklist",
-        "description": "Kommagetrennte Item-Master-IDs, die von der Skalierung ausgeschlossen werden. Verwendet, wenn Loot-Item-Filtermodus BlocklistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
+        "description": "Kommagetrennte Item-Master-IDs, die vom Spawnen ausgeschlossen werden. Verwendet, wenn Loot-Item-Filtermodus BlocklistOnly ist. Vollständige Liste siehe docs/LOOT_ITEM_IDS.md im Repo."
       },
       "ConvertFakeActorDyingDropChancePercent": {
         "title": "Fake-Tod-Drop-Chance (Prozent)",

@@ -55,11 +55,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return FeatureToggleGate.NeutralMultiplier;
             }
 
-            if (masterId > 0 && !LootItemFilter.IsEligible(masterId))
-            {
-                return 0f;
-            }
-
             return GetBaseMultiplier(source, itemType) * GetPlayerScale(source, itemType, playerCount);
         }
 

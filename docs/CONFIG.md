@@ -169,9 +169,9 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for all map-placed pickup loot. |
 | `AutoScaleDropLootByPlayerCount` | bool | `true` | — | Player-count scaling for enemy death drops. |
 | `DropLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for enemy death drops. |
-| `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, `BlocklistOnly` | Restrict which item master IDs are scaled. |
-| `LootAllowlist` | string | `""` | — | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
-| `LootBlocklist` | string | `""` | — | Comma-separated item master IDs to exclude. Used when `LootItemFilterMode` is `BlocklistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
+| `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, `BlocklistOnly` | Restrict which item master IDs can spawn (map loot and enemy drops). Does not affect loot multipliers. |
+| `LootAllowlist` | string | `""` | — | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. Off-rotation IDs are injected into random map pools. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
+| `LootBlocklist` | string | `""` | — | Comma-separated item master IDs to exclude from spawning. Used when `LootItemFilterMode` is `BlocklistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | `0`–`100` | Chance that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. Monster drop-table loot is already real. |
 
 ## Money Multiplier — `[MimesisPlayerEnhancement_MoneyMultiplier]`

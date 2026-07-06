@@ -248,6 +248,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Label = "";
         public string Type = "";
         public int? MasterId;
+        public int? SellPriceMin;
+        public int? SellPriceMax;
         public List<WebDashboardItemVariantDto>? Variants;
     }
 
@@ -255,6 +257,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public int Percent;
         public int MasterId;
+        public int? SellPriceMin;
+        public int? SellPriceMax;
     }
 
     internal sealed class WebDashboardItemsApiResponse

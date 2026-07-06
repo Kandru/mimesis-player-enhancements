@@ -81,7 +81,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             foreach (KeyValuePair<int, int> entry in rateByMasterId)
             {
-                if (entry.Key <= 0 || entry.Value <= 0 || !LootItemFilter.IsEligible(entry.Key))
+                if (entry.Key <= 0 || entry.Value <= 0)
                 {
                     continue;
                 }

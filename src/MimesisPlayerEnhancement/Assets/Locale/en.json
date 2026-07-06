@@ -115,7 +115,7 @@
       },
       "LootItemFilterMode": {
         "title": "Loot Item Filter Mode",
-        "description": "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist.",
+        "description": "All = every item can spawn; AllowlistOnly = only comma-separated master IDs in LootAllowlist can spawn; BlocklistOnly = all items except LootBlocklist can spawn.",
         "options": {
           "All": "All items",
           "AllowlistOnly": "Allowlist only",
@@ -124,11 +124,11 @@
       },
       "LootAllowlist": {
         "title": "Loot Allowlist",
-        "description": "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+        "description": "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. Off-rotation IDs are injected into random pools. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
       },
       "LootBlocklist": {
         "title": "Loot Blocklist",
-        "description": "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
+        "description": "Comma-separated item master IDs to exclude from spawning. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list."
       },
       "ConvertFakeActorDyingDropChancePercent": {
         "title": "Fake Death Drop Chance (percent)",

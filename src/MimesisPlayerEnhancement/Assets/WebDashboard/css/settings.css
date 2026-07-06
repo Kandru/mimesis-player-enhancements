@@ -365,8 +365,17 @@
   gap: 0.4rem;
 }
 
+.settings-entry-input-row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.settings-entry-input-row--stacked .settings-reset-btn {
+  align-self: flex-end;
+}
+
 .settings-entry-input-row--token .settings-reset-btn {
-  order: -1;
   align-self: flex-end;
 }
 
@@ -519,6 +528,10 @@
   .settings-entry.is-token-entry .settings-entry-input-row--token .settings-reset-btn {
     align-self: flex-end;
   }
+
+  .settings-entry-input-row--stacked .settings-reset-btn {
+    align-self: flex-end;
+  }
 }
 
 /* ── Token / chip ID lists ── */
@@ -578,6 +591,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 10rem;
+}
+
+.token-chip-price {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--md-success);
+  font-variant-numeric: tabular-nums;
 }
 
 .token-chip-id {
@@ -677,6 +698,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.token-suggestion-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.token-suggestion-price {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--md-success);
+  font-variant-numeric: tabular-nums;
 }
 
 .token-suggestion-id {

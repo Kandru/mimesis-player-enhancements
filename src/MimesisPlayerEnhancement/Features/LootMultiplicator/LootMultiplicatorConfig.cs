@@ -59,19 +59,19 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "LootItemFilterMode",
                 "All",
                 "Loot Item Filter Mode",
-                "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist.");
+                "All = every item can spawn; AllowlistOnly = only comma-separated master IDs in LootAllowlist can spawn; BlocklistOnly = all items except LootBlocklist can spawn.");
 
             ModConfig.LootAllowlist = ModConfig.CreateTrackedEntry(_category,
                 "LootAllowlist",
                 "",
                 "Loot Allowlist",
-                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "Comma-separated item master IDs (e.g. 12345,67890). Used when LootItemFilterMode is AllowlistOnly. Off-rotation IDs are injected into random pools. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
 
             ModConfig.LootBlocklist = ModConfig.CreateTrackedEntry(_category,
                 "LootBlocklist",
                 "",
                 "Loot Blocklist",
-                "Comma-separated item master IDs to exclude from scaling. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "Comma-separated item master IDs to exclude from spawning. Used when LootItemFilterMode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
 
             ModConfig.ConvertFakeActorDyingDropChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ConvertFakeActorDyingDropChancePercent",

@@ -80,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 try
                 {
                     LootMultiplicatorApplier.EnsureApplied(__instance);
+                    LootItemFilter.ApplyToRandomSpawnDatas(__instance);
                 }
                 catch (Exception ex)
                 {
@@ -199,6 +200,10 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 try
                 {
                     DropLootTableScaler.ScaleDropList(__instance, __result);
+                    if (!BarterDropTableContext.IsActive)
+                    {
+                        LootItemFilter.ApplyToDropList(__result, __instance);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -318,18 +323,38 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 bool isRestored,
                 ref int __result)
             {
-                if (!LootScalingGate.ShouldScale())
-                {
-                    return true;
-                }
-
                 try
                 {
-                    FakeLootDropConverter.TryConvertActorDyingDrop(__instance, ref element, reasonOfSpawn);
+                    if (LootScalingGate.ShouldScale())
+                    {
+                        FakeLootDropConverter.TryConvertActorDyingDrop(__instance, ref element, reasonOfSpawn);
+                    }
+
                     if (element == null)
                     {
                         __result = 0;
                         return false;
+                    }
+
+                    if (LootItemFilter.ShouldApply()
+                        && !isRestored
+                        && LootSourceResolver.TryResolveLootSource(reasonOfSpawn, spawnPointIndex, out LootSource filterSource)
+                        && !filterSource.Equals(LootSource.Trigger)
+                        && !LootItemFilter.TryPrepareSpawn(__instance, ref element))
+                    {
+                        __result = 0;
+                        return false;
+                    }
+
+                    if (element == null)
+                    {
+                        __result = 0;
+                        return false;
+                    }
+
+                    if (!LootScalingGate.ShouldScale())
+                    {
+                        return true;
                     }
 
                     if (__instance is DungeonRoom dungeonRoom

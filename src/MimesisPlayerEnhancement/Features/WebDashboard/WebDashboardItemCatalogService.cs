@@ -113,6 +113,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Label = ResolveLabel(info),
                     Type = ResolveCategory(info),
                     MasterId = masterId,
+                    SellPriceMin = info.PriceForSellMin,
+                    SellPriceMax = info.PriceForSellMax,
                 };
                 options.Add(option);
                 CatalogById[id] = option;
@@ -177,7 +179,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             List<WebDashboardItemVariantDto> variantDtos = [];
             foreach ((string _, int percent, int masterId) in variants)
             {
-                if (!itemDict.ContainsKey(masterId))
+                if (!itemDict.TryGetValue(masterId, out ItemMasterInfo? variantInfo))
                 {
                     continue;
                 }
@@ -186,6 +188,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Percent = percent,
                     MasterId = masterId,
+                    SellPriceMin = variantInfo.PriceForSellMin,
+                    SellPriceMax = variantInfo.PriceForSellMax,
                 });
             }
 
