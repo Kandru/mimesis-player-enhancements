@@ -12,23 +12,85 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 
 ## Features
 
-| Feature | What it does | Everyone needs the mod? |
-|---------|--------------|-------------------------|
-| **More Players** | Raise the 4-player limit (default: 32) | No — host only |
-| **More Voices** | Record more player voice lines per context (default: 3000 instead of ~150) | No — host only |
-| **Persistence** | Save player voice lines to disk per savegame | No — host only |
-| **Join Anytime** | Let friends join an active lobby (whenever you're not inside a dungeon)| No — host only |
-| **Extended Save Slots** | Re-designed savegame page with up to 99 save games (vanilla: 3) | No — local UI only |
-| **Statistics** | Session statistics and leaderboards per save game | No — host only |
-| **Web Dashboard** | Browser-based UI for players, statistics, and moderation | No — host only |
-| **Player Announcements** | In-game notifications for dungeon settings, boss spawns, and statistics | No — host only |
-| **Spawn Scaling** | Scale mimic/monster/trap spawns by multiplier and/or player count | No — host only |
-| **Loot Multiplicator** | Scale loot quantity by multiplier and/or player count and limit item types | No — host only |
-| **Money Multiplier** | Scale startup money, round goal, and shop buy prices by multiplier and/or player count | No — host only |
-| **Dungeon Time** | Extend dungeon shift length by X seconds per player above Y (default: +10s per player above 4) | No — host only |
-| **Dead Player Features** | Mimic possession tuning — randomize speak duration and scale cooldown for player possessions | No — host only |
-| **Player Tuning** | Scale player movement speed, stamina (max/drain/regen/delay), and max carry weight | No — host only |
-| **Dungeon Randomizer** | Randomize tram dungeon pick, layout flow, map variant, and procedural seed | No — host only |
+| Feature | What it does | Who needs the mod? |
+|---------|--------------|-------------------|
+| **More Players** | Play with larger groups beyond the four-player limit | Host only |
+| **More Voices** | Let mimics remember many more player voice lines | Host only |
+| **Persistence** | Keep mimic voice recordings when you save and load | Host only |
+| **Join Anytime** | Let friends join after you've already started | Host only |
+| **Extended Save Slots** | Scrollable save screen with up to 99 save games | Your game only |
+| **Statistics** | Track deaths, kills, play time, and more per save | Host only |
+| **Web Dashboard** | Browser view for players, stats, settings, and moderation | Host only |
+| **Player Announcements** | On-screen tips for dungeon settings, bosses, and death stats | Host only |
+| **Spawn Scaling** | More or fewer enemies and traps in dungeons | Host only |
+| **Loot Multiplicator** | More or less loot on the map and from enemy drops | Host only |
+| **Money Multiplier** | Adjust starting cash, quotas, scrap value, and shop prices | Host only |
+| **Dungeon Time** | Extra shift time when you have more players | Host only |
+| **Dead Player Features** | Tune how long dead players can speak through mimics | Host only |
+| **Player Tuning** | Change movement speed, stamina, and carry weight | Host only |
+| **Dungeon Randomizer** | Randomize which dungeons appear and how they are laid out | Host only |
+
+Most features only need to be installed on the **host** — friends can join without the mod. **Extended Save Slots** is the exception: it changes the save menu on your own game only.
+
+### More Players
+
+The base game limits sessions to four players. This feature raises that cap so larger groups can play together — for example, up to 32 people in one lobby. Only the host needs the mod; everyone else joins as usual.
+
+### More Voices
+
+Mimics copy things players say and replay them later. The base game only keeps a small number of these voice lines in memory. This feature stores many more recordings so mimics can build a richer library of player voices over a long session.
+
+### Persistence
+
+Without persistence, mimic voice recordings are lost when you quit or load a different save. This feature writes those recordings to disk when you save the game and brings them back the next time you load that save — so your mimics remember voices across play sessions.
+
+### Join Anytime
+
+Normally, friends have to be in the lobby before a run starts. Join Anytime lets people connect after you've already begun. They can join whenever you're not inside a dungeon, then play the next run with the group.
+
+### Extended Save Slots
+
+The base game gives you three manual save slots. This feature replaces the old New/Load menus with a scrollable save screen that supports up to 99 save games.
+
+### Statistics
+
+Keeps track of how each player is doing over time: deaths, kills, mimic voice events, play time, and more. Stats are stored per save game and can be viewed on leaderboards. Useful for friendly competition or just seeing who survived the longest.
+
+### Web Dashboard
+
+While the game is running, open a page in your web browser to see who is connected, watch player positions on a live minimap during dungeon runs, browse leaderboards, and use moderation tools like kick or ban. You can also change mod settings from the browser instead of editing the config file by hand.
+
+### Player Announcements
+
+Shows small on-screen messages to keep everyone informed: a summary of dungeon settings when a shift starts, an alert when a boss spawns, and a recap of your personal stats when you die. These are extra hints on top of the game's own messages.
+
+### Spawn Scaling
+
+Lets you control how busy dungeons feel by changing how many enemies and traps appear. You can set a fixed multiplier for the whole run, scale up automatically when more players are in the session, or mix both. Handy for making large groups feel appropriately challenging.
+
+### Loot Multiplicator
+
+Adjusts how much loot you find on the map and what enemies drop when defeated. You can increase or decrease quantities, scale with player count, and optionally limit which item types are affected. Can also turn some mimic decoy drops into real pickup loot.
+
+### Money Multiplier
+
+Changes money-related values for your run: starting cash, the quota you need to hit each round, how much scrapped items are worth, and prices in the maintenance shop. Like other scaling features, amounts can grow automatically when more players join.
+
+### Dungeon Time
+
+Adds extra time to each dungeon shift when you have more players than a baseline count. For example, with the default settings, every player above four adds ten seconds to the clock. Gives bigger groups a fairer window to finish a run.
+
+### Dead Player Features
+
+When you are dead, you can press **E** to speak through a nearby mimic for a short time. This feature lets you change how long each possession lasts and how long you wait before you can possess again — including random speak durations if you want less predictable ghost play.
+
+### Player Tuning
+
+Tweak how players move and survive: walk/run speed, stamina pool, sprint drain, stamina recovery, and carry weight. Changes apply to everyone in the session from the host side, so joining players pick up the tuned stats automatically.
+
+### Dungeon Randomizer
+
+Shakes up repeat runs by randomizing which dungeon the tram picks, the layout inside that dungeon, which map variant loads, and the procedural seed that shapes rooms. Turn on only the layers you want if you prefer partial randomization over full chaos.
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
 
