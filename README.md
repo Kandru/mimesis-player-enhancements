@@ -112,10 +112,9 @@ Install through [Thunderstore](https://thunderstore.io/c/mimesis/p/Kandru/Mimesi
 
 1. Install the latest [MelonLoader](https://melonwiki.xyz/) on your MIMESIS Steam copy.
 2. Download the [latest release](https://github.com/Kandru/mimesis-player-enhancements/releases).
-3. Copy the file(s) and folder into your game folder:  
+3. Copy the file into your game folder:  
    `<Mimesis Steam folder>/Mods/MimesisPlayerEnhancement.dll`  
-   `<Mimesis Steam folder>/Mods/MimesisPlayerEnhancement/*`
-4. Start the game once.
+4. Start the game and open http://127.0.0.1:8001
 
 If you used the old separate mods (MorePlayers, More Voices, MimesisPersistence, JoinAnytime, MoreMimics), remove them so they do not fight with this one or disable the feature inside this modification.
 
