@@ -12,6 +12,8 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 
 ## Features
 
+Most features only need to be installed on the **host** — friends can join without the mod.
+
 | Feature | What it does | Who needs the mod? |
 |---------|--------------|-------------------|
 | **More Players** | Play with larger groups beyond the four-player limit | Host only |
@@ -29,8 +31,6 @@ Additionally, there is also a webinterface listening on http://127.0.0.1:8001 pe
 | **Dead Player Features** | Tune how long dead players can speak through mimics | Host only |
 | **Player Tuning** | Change movement speed, stamina, and carry weight | Host only |
 | **Dungeon Randomizer** | Randomize which dungeons appear and how they are laid out | Host only |
-
-Most features only need to be installed on the **host** — friends can join without the mod. **Extended Save Slots** is the exception: it changes the save menu on your own game only.
 
 ### More Players
 
