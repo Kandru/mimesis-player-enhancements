@@ -608,8 +608,19 @@
                                       </div>
                                     </div>
                                   </template>
+                                  <template x-if="isSelectInputKind(entry)">
+                                    <select class="settings-input settings-select"
+                                      :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
+                                      :id="settingInputId(section.id, entry)" :value="normalizedSelectValue(entry)"
+                                      :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
+                                      @change="onSelectSettingChange(section.id, entry, $event)">
+                                      <template x-for="option in entry.selectOptions" :key="option.value">
+                                        <option :value="option.value" x-text="option.label"></option>
+                                      </template>
+                                    </select>
+                                  </template>
                                   <template
-                                    x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single' && !isTokenInputKind(entry)">
+                                    x-if="entry.type !== 'Boolean' && entry.type !== 'Int32' && entry.type !== 'Single' && !isTokenInputKind(entry) && !isSelectInputKind(entry)">
                                     <input type="text" class="settings-input"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
                                       :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"

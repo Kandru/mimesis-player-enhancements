@@ -23,7 +23,11 @@
       },
       "DungeonPickPoolMode": {
         "title": "Dungeon-Pick-Pool-Modus",
-        "description": "WidenVanilla = Zyklusgewichte beibehalten, Wiederholungen früher erlauben; AllActiveUniform = gleichmäßig aus allen aktiven Dungeons wählen (ignoriert Zyklustabelle)."
+        "description": "WidenVanilla = Zyklusgewichte beibehalten, Wiederholungen früher erlauben; AllActiveUniform = gleichmäßig aus allen aktiven Dungeons wählen (ignoriert Zyklustabelle).",
+        "options": {
+          "WidenVanilla": "Vanilla-Zyklus erweitern",
+          "AllActiveUniform": "Alle aktiven (gleichmäßig)"
+        }
       },
       "DungeonAllowlist": {
         "title": "Dungeon-Allowlist",
@@ -111,7 +115,12 @@
       },
       "LootItemFilterMode": {
         "title": "Loot-Item-Filtermodus",
-        "description": "All = jedes Item kann skaliert werden; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist; BlocklistOnly = alle Items außer Loot-Blocklist."
+        "description": "All = jedes Item kann skaliert werden; AllowlistOnly = nur kommagetrennte Master-IDs in Loot-Allowlist; BlocklistOnly = alle Items außer Loot-Blocklist.",
+        "options": {
+          "All": "Alle Items",
+          "AllowlistOnly": "Nur Allowlist",
+          "BlocklistOnly": "Nur Blocklist"
+        }
       },
       "LootAllowlist": {
         "title": "Loot-Allowlist",

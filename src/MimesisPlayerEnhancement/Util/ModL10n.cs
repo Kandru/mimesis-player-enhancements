@@ -56,6 +56,11 @@ namespace MimesisPlayerEnhancement.Util
             return GetOptional($"config.{sectionId}.{key}.description");
         }
 
+        internal static string? GetConfigSelectOptionLabel(string sectionId, string key, string value)
+        {
+            return GetOptional($"config.{sectionId}.{key}.options.{value}");
+        }
+
         internal static bool TryGetLocaleJson(string locale, out string json)
         {
             EnsureInitialized();

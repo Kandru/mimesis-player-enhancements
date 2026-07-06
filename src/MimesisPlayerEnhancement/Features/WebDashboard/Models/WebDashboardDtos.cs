@@ -203,6 +203,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string? MaxValue;
         public string InputKind = "Default";
         public string EntryGroup = "";
+        public List<WebDashboardConfigSelectOptionDto> SelectOptions = [];
+    }
+
+    internal sealed class WebDashboardConfigSelectOptionDto
+    {
+        public string Value = "";
+        public string Label = "";
     }
 
     internal sealed class WebDashboardDungeonOptionDto

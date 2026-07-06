@@ -463,6 +463,21 @@ function createSettingsMixin() {
       this.saveSetting(sectionId, entry, event.target.value);
     },
 
+    isSelectInputKind(entry) {
+      return entry.inputKind === 'Select' && (entry.selectOptions?.length ?? 0) > 0;
+    },
+
+    normalizedSelectValue(entry) {
+      const current = String(this.settingDraftValue(entry) ?? '');
+      const options = entry.selectOptions || [];
+      const match = options.find((option) => String(option.value).toLowerCase() === current.toLowerCase());
+      return match ? match.value : current;
+    },
+
+    onSelectSettingChange(sectionId, entry, event) {
+      this.saveSetting(sectionId, entry, event.target.value);
+    },
+
     onTextSettingCommit(sectionId, entry, event) {
       let nextValue = clampSettingValue(entry, event.target.value);
       if (entry.type === 'Single' || entry.type === 'Int32') {

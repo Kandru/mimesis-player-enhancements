@@ -11,6 +11,13 @@ namespace MimesisPlayerEnhancement
         private const string LootSectionId = "MimesisPlayerEnhancement_LootMultiplicator";
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
 
+        private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
+            new(EntryKeyComparer.Instance)
+            {
+                [(LootSectionId, "LootItemFilterMode")] = ["All", "AllowlistOnly", "BlocklistOnly"],
+                [(DungeonSectionId, "DungeonPickPoolMode")] = ["WidenVanilla", "AllActiveUniform"],
+            };
+
         internal static string ResolveInputKind(string sectionId, string key)
         {
             if (sectionId == LootSectionId
@@ -27,12 +34,39 @@ namespace MimesisPlayerEnhancement
                 return "DungeonIdList";
             }
 
+            if (SelectValuesByEntry.ContainsKey((sectionId, key)))
+            {
+                return "Select";
+            }
+
             return "Default";
         }
 
         internal static void ApplyToEntry(WebDashboardConfigEntryDto entry, string sectionId, string key)
         {
             entry.InputKind = ResolveInputKind(sectionId, key);
+            if (!string.Equals(entry.InputKind, "Select", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!SelectValuesByEntry.TryGetValue((sectionId, key), out string[]? values))
+            {
+                return;
+            }
+
+            List<WebDashboardConfigSelectOptionDto> options = [];
+            foreach (string value in values)
+            {
+                string? label = ModL10n.GetConfigSelectOptionLabel(sectionId, key, value);
+                options.Add(new WebDashboardConfigSelectOptionDto
+                {
+                    Value = value,
+                    Label = string.IsNullOrWhiteSpace(label) ? value : label,
+                });
+            }
+
+            entry.SelectOptions = options;
         }
 
         internal static void AssignEntryGroups(WebDashboardConfigSectionDto section)
@@ -134,6 +168,24 @@ namespace MimesisPlayerEnhancement
             }
 
             return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        private sealed class EntryKeyComparer : IEqualityComparer<(string SectionId, string Key)>
+        {
+            internal static readonly EntryKeyComparer Instance = new();
+
+            public bool Equals((string SectionId, string Key) x, (string SectionId, string Key) y)
+            {
+                return string.Equals(x.SectionId, y.SectionId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(x.Key, y.Key, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public int GetHashCode((string SectionId, string Key) obj)
+            {
+                return HashCode.Combine(
+                    StringComparer.OrdinalIgnoreCase.GetHashCode(obj.SectionId),
+                    StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Key));
+            }
         }
     }
 }

@@ -23,7 +23,11 @@
       },
       "DungeonPickPoolMode": {
         "title": "Dungeon Pick Pool Mode",
-        "description": "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table)."
+        "description": "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table).",
+        "options": {
+          "WidenVanilla": "Widen vanilla cycle",
+          "AllActiveUniform": "All active (uniform)"
+        }
       },
       "DungeonAllowlist": {
         "title": "Dungeon Allowlist",
@@ -111,7 +115,12 @@
       },
       "LootItemFilterMode": {
         "title": "Loot Item Filter Mode",
-        "description": "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist."
+        "description": "All = every item can be scaled; AllowlistOnly = only comma-separated master IDs in LootAllowlist; BlocklistOnly = all items except LootBlocklist.",
+        "options": {
+          "All": "All items",
+          "AllowlistOnly": "Allowlist only",
+          "BlocklistOnly": "Blocklist only"
+        }
       },
       "LootAllowlist": {
         "title": "Loot Allowlist",
