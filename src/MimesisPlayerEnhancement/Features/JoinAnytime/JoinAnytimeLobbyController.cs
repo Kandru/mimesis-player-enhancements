@@ -79,8 +79,21 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             SetHostWantsPublicMatchmaking(wantsPublic);
+            if (wantsPublic)
+            {
+                JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: true);
+                JoinAnytimeHub.SyncIsPublicLobby(isPublic: true);
+                WritePublicRoomSteamData(dispatcher, isPublic: true);
+            }
+            else
+            {
+                JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: false);
+                JoinAnytimeHub.SyncIsPublicLobby(isPublic: false);
+                WritePublicRoomSteamData(dispatcher, isPublic: false);
+            }
+
             LogPublicLobbyMessage(
-                $"Public room toggle — visibility={(wantsPublic ? "public" : "private")}",
+                $"Public room toggle — {FormatLobbyVisibilityStatus(dispatcher)}",
                 dispatcher);
             PersistLobbyRuntimeState(isPublicLobby: wantsPublic);
             dispatcher.SetLobbyPublic(wantsPublic);
@@ -129,7 +142,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             EnsureBaseLobbyName(dispatcher);
             LogPublicLobbyMessage(
-                $"Lobby created — visibility={(JoinAnytimeHub.IsHostLobbyPublic(dispatcher) ? "public" : "private")}, publicMatch={isOpenForRandomMatch}",
+                $"Lobby created — {FormatLobbyVisibilityStatus(dispatcher)}, publicMatch={isOpenForRandomMatch}",
                 dispatcher);
 
             RestorePublicLobbyIfNeeded();
@@ -155,11 +168,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (!requestedPublic)
             {
                 SetHostWantsPublicMatchmaking(false);
+                JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: false);
+                JoinAnytimeHub.SyncIsPublicLobby(isPublic: false);
+                WritePublicRoomSteamData(dispatcher, isPublic: false);
                 PersistLobbyRuntimeState(isPublicLobby: false);
             }
 
             LogPublicLobbyMessage(
-                $"SetLobbyPublic completed — visibility={(_hostWantsPublicMatchmaking ? "public" : "private")}",
+                $"SetLobbyPublic completed — {FormatLobbyVisibilityStatus(dispatcher)}",
                 dispatcher);
 
             RefreshLobbyState(force: true);
@@ -453,20 +469,44 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             LogPublicLobbyMessage(
-                $"Lobby updated — visibility={(JoinAnytimeHub.IsHostLobbyPublic(dispatcher) ? "public" : "private")}, phase={phase}",
+                $"Lobby updated — {FormatLobbyVisibilityStatus(dispatcher, joinsOpen)}, phase={phase}",
                 dispatcher);
+        }
+
+        private static string FormatLobbyVisibilityStatus(SteamInviteDispatcher? dispatcher, bool? joinsOpen = null)
+        {
+            if (dispatcher == null)
+            {
+                return "intent=unknown";
+            }
+
+            string joins = joinsOpen.HasValue
+                ? $", joinsOpen={joinsOpen.Value.ToString().ToLowerInvariant()}"
+                : string.Empty;
+
+            return $"intent={(_hostWantsPublicMatchmaking ? "public" : "private")}, "
+                + $"steamPublic={JoinAnytimeHub.ReadPublicRoomFromSteam(dispatcher).ToString().ToLowerInvariant()}"
+                + joins;
         }
 
         private static void LogPublicLobbyMessage(string message, SteamInviteDispatcher? dispatcher)
         {
-            if (dispatcher != null
-                && JoinAnytimeHub.IsHostLobbyPublic(dispatcher)
-                && TryReadLobbySnapshot(dispatcher, out LobbySnapshot data)
-                && data.SlotsFree <= 0)
+            if (dispatcher != null)
             {
-                ModLog.Warn(
-                    Feature,
-                    $"Public lobby may be hidden from browse — {data.Format()}");
+                if (!_hostWantsPublicMatchmaking && JoinAnytimeHub.ReadPublicRoomFromSteam(dispatcher))
+                {
+                    ModLog.Warn(
+                        Feature,
+                        "Lobby intent is private but Steam PublicRoom is still true — public browse may still list this lobby");
+                }
+                else if (_hostWantsPublicMatchmaking
+                    && TryReadLobbySnapshot(dispatcher, out LobbySnapshot data)
+                    && data.SlotsFree <= 0)
+                {
+                    ModLog.Warn(
+                        Feature,
+                        $"Public lobby may be hidden from browse — {data.Format()}");
+                }
             }
 
             if (!ModConfig.EnableDebugLogging.Value)
