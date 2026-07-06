@@ -366,7 +366,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             int advertisedCount = GetAdvertisedPlayerCount();
-            string displayName = BuildDisplayLobbyName(phase, waitMinutes, advertisedCount);
+            string displayName = BuildDisplayLobbyName(phase, waitMinutes);
             bool joinsOpen = JoinAnytimeRoomTools.AreJoinsOpen();
             if (!force && string.Equals(displayName, _lastPublishedName, StringComparison.Ordinal))
             {
@@ -378,15 +378,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         }
 
         /// <summary>
-        /// Player count advertised to Steam. Never reports the lobby as full: with a full session
-        /// the count is clamped to maxPlayers - 1 (e.g. "3/4") so the lobby stays visible in the
-        /// public room list; below that the real count is reported.
+        /// Player count advertised to Steam via <see cref="SteamInviteDispatcher.UpdatePlayerGroupSize"/>.
+        /// Uses the vanilla browse scale from <see cref="JoinAnytimeLobbyDisplay"/> (e.g. 3/4) so
+        /// the lobby stays visible in the public room list even when MorePlayers raises the real cap.
         /// </summary>
         private static int GetAdvertisedPlayerCount()
         {
             int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            int maxPlayers = MorePlayersPatches.GetMaxPlayers();
-            return Math.Min(sessionCount, Math.Max(1, maxPlayers - 1));
+            return JoinAnytimeLobbyDisplay.GetBrowsePlayerCount(sessionCount);
         }
 
         /// <summary>
@@ -578,14 +577,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             internal int SlotsFree { get; }
 
             internal string Format() =>
-                $"steam={Steam}, advertised={Advertised}/{MaxPlayers}, limit={Limit}, slotsFree={SlotsFree}";
+                $"steam={Steam}, advertised={Advertised}/{JoinAnytimeLobbyDisplay.VanillaBrowseDenominator}, limit={Limit}, slotsFree={SlotsFree}";
         }
 
         private static string BuildDisplayLobbyName(
             JoinAnytimeSessionPhase phase,
-            int waitMinutes,
-            int sessionCount)
+            int waitMinutes)
         {
+            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
             string baseName = string.IsNullOrEmpty(_baseLobbyName) ? "Train" : _baseLobbyName;
             string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
                 ? $" [join in {waitMinutes} min]"

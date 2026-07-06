@@ -88,6 +88,22 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdatePlayerGroupSize))]
+    internal static class SteamInviteDispatcherUpdatePlayerGroupSizePatch
+    {
+        [HarmonyPrefix]
+        private static void Prefix(ref int playerCount)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost())
+            {
+                return;
+            }
+
+            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
+            playerCount = JoinAnytimeLobbyDisplay.GetBrowsePlayerCount(sessionCount);
+        }
+    }
+
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdateLobbyData))]
     internal static class SteamInviteDispatcherUpdateLobbyDataPatch
     {
