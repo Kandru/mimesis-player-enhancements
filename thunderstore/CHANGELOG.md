@@ -1,5 +1,15 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.7
+- improved the loot allow/deny list to be searchable
+- properly scale the max scrap value in case of high-value loot due to allow/deny list
+- allow the host to delete (offline) users from a savegame
+- only add fully connected players to the savegame
+- webinterface now uses dropdown for settings which only allow a few possible values instead of text boxes
+- better translations to point the player into the right direction
+- better debug messages
+- removed a testing-value for RouteRetryInterval and set it to a fixed value
+
 ## 26.7.6
 - added translations
 - proper lobby name updates in any case
