@@ -80,7 +80,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             SetHostWantsPublicMatchmaking(wantsPublic);
             LogPublicLobbyMessage(
-                $"Public room toggle — host requested {(wantsPublic ? "public" : "private")} lobby",
+                $"Public room toggle — visibility={(wantsPublic ? "public" : "private")}",
                 dispatcher);
             PersistLobbyRuntimeState(isPublicLobby: wantsPublic);
             dispatcher.SetLobbyPublic(wantsPublic);
@@ -129,7 +129,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             EnsureBaseLobbyName(dispatcher);
             LogPublicLobbyMessage(
-                $"Lobby created — publicMatch={isOpenForRandomMatch}, baseName=\"{_baseLobbyName}\", wantsPublic={_hostWantsPublicMatchmaking}",
+                $"Lobby created — visibility={(JoinAnytimeHub.IsHostLobbyPublic(dispatcher) ? "public" : "private")}, publicMatch={isOpenForRandomMatch}",
                 dispatcher);
 
             RestorePublicLobbyIfNeeded();
@@ -159,7 +159,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             LogPublicLobbyMessage(
-                $"SetLobbyPublic completed — lobby is now {(_hostWantsPublicMatchmaking ? "public" : "private")}, requestedPublic={requestedPublic}",
+                $"SetLobbyPublic completed — visibility={(_hostWantsPublicMatchmaking ? "public" : "private")}",
                 dispatcher);
 
             RefreshLobbyState(force: true);
@@ -178,7 +178,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            LogPublicLobbyMessage("Applying host public lobby intent", dispatcher);
+            LogPublicLobbyMessage("Applying public lobby intent", dispatcher);
             RestoreToggleDisplay();
             JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: true);
             JoinAnytimeHub.SyncIsPublicLobby(isPublic: true);
@@ -358,7 +358,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             _lastPhase = phase;
-            PublishLobbyState(dispatcher, phase, displayName, joinsOpen, advertisedCount, force);
+            PublishLobbyState(dispatcher, phase, displayName, joinsOpen, advertisedCount);
         }
 
         /// <summary>
@@ -407,8 +407,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             JoinAnytimeSessionPhase phase,
             string displayName,
             bool joinsOpen,
-            int advertisedCount,
-            bool force)
+            int advertisedCount)
         {
             string phaseKey = phase switch
             {
@@ -454,32 +453,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             LogPublicLobbyMessage(
-                BuildPublishedLobbyMessage(phase, displayName, joinsOpen, force),
+                $"Lobby updated — visibility={(JoinAnytimeHub.IsHostLobbyPublic(dispatcher) ? "public" : "private")}, phase={phase}",
                 dispatcher);
-        }
-
-        private static string BuildPublishedLobbyMessage(
-            JoinAnytimeSessionPhase phase,
-            string displayName,
-            bool joinsOpen,
-            bool force)
-        {
-            return $"Public lobby published — phase={phase}, force={force}, displayName=\"{displayName}\", "
-                + $"joinsOpen={joinsOpen.ToString().ToLowerInvariant()}";
         }
 
         private static void LogPublicLobbyMessage(string message, SteamInviteDispatcher? dispatcher)
         {
             if (dispatcher != null
                 && JoinAnytimeHub.IsHostLobbyPublic(dispatcher)
-                && TryReadLobbySnapshot(dispatcher, out LobbyPublicSnapshot data)
-                && !data.DiscoverableInBrowse)
+                && TryReadLobbySnapshot(dispatcher, out LobbySnapshot data)
+                && data.SlotsFree <= 0)
             {
                 ModLog.Warn(
                     Feature,
-                    $"Public lobby may be hidden from browse — steamMembers={data.SteamMembers}, "
-                    + $"memberLimit={data.MemberLimit}, slotsFree={data.SlotsFree}, "
-                    + $"session={data.SessionCount}, advertised={data.AdvertisedCount}/{data.MaxPlayers}");
+                    $"Public lobby may be hidden from browse — {data.Format()}");
             }
 
             if (!ModConfig.EnableDebugLogging.Value)
@@ -493,12 +480,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static string TryFormatLobbySnapshot(SteamInviteDispatcher? dispatcher)
         {
-            return dispatcher != null && TryReadLobbySnapshot(dispatcher, out LobbyPublicSnapshot data)
+            return dispatcher != null && TryReadLobbySnapshot(dispatcher, out LobbySnapshot data)
                 ? data.Format()
                 : string.Empty;
         }
 
-        private static bool TryReadLobbySnapshot(SteamInviteDispatcher dispatcher, out LobbyPublicSnapshot snapshot)
+        private static bool TryReadLobbySnapshot(SteamInviteDispatcher dispatcher, out LobbySnapshot snapshot)
         {
             snapshot = default;
             try
@@ -509,24 +496,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     return false;
                 }
 
-                int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
                 int maxPlayers = MorePlayersPatches.GetMaxPlayers();
+                int steam = JoinAnytimeRoomTools.GetSessionPlayerCount();
                 int steamMembers = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
                 int memberLimit = SteamMatchmaking.GetLobbyMemberLimit(lobbyId);
-                int slotsFree = memberLimit > 0 ? memberLimit - steamMembers : 0;
-                int advertisedCount = GetAdvertisedPlayerCount();
-                bool isPublic = JoinAnytimeHub.IsHostLobbyPublic(dispatcher);
 
-                snapshot = new LobbyPublicSnapshot(
-                    sessionCount,
-                    steamMembers,
-                    advertisedCount,
+                snapshot = new LobbySnapshot(
+                    steam,
+                    GetAdvertisedPlayerCount(),
                     maxPlayers,
                     memberLimit,
-                    slotsFree,
-                    isPublic,
-                    _hostWantsPublicMatchmaking,
-                    slotsFree > 0);
+                    memberLimit > 0 ? memberLimit - steamMembers : 0);
                 return true;
             }
             catch
@@ -535,51 +515,30 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private readonly struct LobbyPublicSnapshot
+        private readonly struct LobbySnapshot
         {
-            internal LobbyPublicSnapshot(
-                int sessionCount,
-                int steamMembers,
-                int advertisedCount,
+            internal LobbySnapshot(
+                int steam,
+                int advertised,
                 int maxPlayers,
-                int memberLimit,
-                int slotsFree,
-                bool isPublic,
-                bool hostWantsPublic,
-                bool discoverableInBrowse)
+                int limit,
+                int slotsFree)
             {
-                SessionCount = sessionCount;
-                SteamMembers = steamMembers;
-                AdvertisedCount = advertisedCount;
+                Steam = steam;
+                Advertised = advertised;
                 MaxPlayers = maxPlayers;
-                MemberLimit = memberLimit;
+                Limit = limit;
                 SlotsFree = slotsFree;
-                IsPublic = isPublic;
-                HostWantsPublic = hostWantsPublic;
-                DiscoverableInBrowse = discoverableInBrowse;
             }
 
-            internal int SessionCount { get; }
-            internal int SteamMembers { get; }
-            internal int AdvertisedCount { get; }
+            internal int Steam { get; }
+            internal int Advertised { get; }
             internal int MaxPlayers { get; }
-            internal int MemberLimit { get; }
+            internal int Limit { get; }
             internal int SlotsFree { get; }
-            internal bool IsPublic { get; }
-            internal bool HostWantsPublic { get; }
-            internal bool DiscoverableInBrowse { get; }
 
-            internal string Format()
-            {
-                string mismatch = SteamMembers != SessionCount
-                    ? $", steamSessionMismatch={SteamMembers - SessionCount:+0;-0;0}"
-                    : string.Empty;
-
-                return $"session={SessionCount}, steam={SteamMembers}, advertised={AdvertisedCount}/{MaxPlayers}, "
-                    + $"limit={MemberLimit}, slotsFree={SlotsFree}, discoverable={DiscoverableInBrowse.ToString().ToLowerInvariant()}, "
-                    + $"public={IsPublic.ToString().ToLowerInvariant()}, hostWantsPublic={HostWantsPublic.ToString().ToLowerInvariant()}"
-                    + mismatch;
-            }
+            internal string Format() =>
+                $"steam={Steam}, advertised={Advertised}/{MaxPlayers}, limit={Limit}, slotsFree={SlotsFree}";
         }
 
         private static string BuildDisplayLobbyName(
