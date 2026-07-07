@@ -44,6 +44,30 @@
                   x-text="playerBlindModeUserEnabled ? t('dashboard.on') : t('dashboard.off')"></span>
               </button>
             </div>
+            <div class="app-header-blind" x-show="showHostCheats()" x-cloak>
+              <span class="app-header-blind-label" x-text="t('dashboard.god_mode')"></span>
+              <button type="button" class="feature-toggle" role="switch"
+                :class="{ 'is-on': hostGodMode }" :title="t('dashboard.god_mode_title')"
+                :aria-label="t('dashboard.god_mode')" @click="toggleHostGodMode">
+                <span class="feature-toggle-track" aria-hidden="true">
+                  <span class="feature-toggle-thumb"></span>
+                </span>
+                <span class="feature-toggle-label"
+                  x-text="hostGodMode ? t('dashboard.on') : t('dashboard.off')"></span>
+              </button>
+            </div>
+            <div class="app-header-blind" x-show="showHostCheats()" x-cloak>
+              <span class="app-header-blind-label" x-text="t('dashboard.noclip')"></span>
+              <button type="button" class="feature-toggle" role="switch"
+                :class="{ 'is-on': hostNoClip }" :title="t('dashboard.noclip_title')"
+                :aria-label="t('dashboard.noclip')" @click="toggleHostNoClip">
+                <span class="feature-toggle-track" aria-hidden="true">
+                  <span class="feature-toggle-thumb"></span>
+                </span>
+                <span class="feature-toggle-label"
+                  x-text="hostNoClip ? t('dashboard.on') : t('dashboard.off')"></span>
+              </button>
+            </div>
           </nav>
         </div>
       </header>

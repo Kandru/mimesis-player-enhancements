@@ -217,6 +217,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         ? LateJoinRouteTracker.GetActiveRoutingCount()
                         : 0,
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
+                    HostGodMode = WebDashboardHostCheatsRuntime.GodModeEnabled,
+                    HostNoClip = WebDashboardHostCheatsRuntime.NoClipEnabled,
+                    HostCheatsAvailable = WebDashboardHostCheatsRuntime.IsAvailable,
                 },
             };
 
@@ -239,9 +242,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardOfflinePlayerCache.Clear();
                 WebDashboardSnapshotEventCache.Clear();
                 WebDashboardPlayerNameStore.Clear();
+                WebDashboardHostCheatsRuntime.DisableAll("disconnected");
             }
             else
             {
+                WebDashboardHostCheatsRuntime.SyncFromSession();
+
                 if (isHost && saveSlotId >= 0 && ModConfig.EnableStatistics.Value)
                 {
                     WebDashboardOfflinePlayerCache.EnsureFresh(StatisticsTracker.Revision);

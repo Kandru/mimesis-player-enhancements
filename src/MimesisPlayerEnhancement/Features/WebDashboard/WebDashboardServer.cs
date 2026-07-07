@@ -81,6 +81,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             FlushDeferredSync();
             WebDashboardConfigUpdateQueue.Process();
             WebDashboardItemSpawnQueue.Process();
+            WebDashboardHostCheatsQueue.Process();
             FlushDeferredSync();
 
             if (!_running)
@@ -104,6 +105,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static void StopOnDeinit()
         {
             ModConfig.Changed -= OnConfigChanged;
+            WebDashboardHostCheatsRuntime.OnDeinitialize();
             Stop();
         }
 

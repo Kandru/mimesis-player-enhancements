@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static void Apply(HarmonyLib.Harmony harmony)
         {
             _ = HarmonyPatchHelper.ApplyPatchTypes(harmony, "WebDashboard", HarmonyPatchHelper.GetNestedPatchTypes(typeof(WebDashboardPatches)));
+            WebDashboardHostCheatsPatches.Apply(harmony);
         }
 
         private static readonly ConcurrentDictionary<long, int> GradeByPlayerUid = new();
@@ -88,6 +89,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             private static void Postfix()
             {
+                WebDashboardHostCheatsRuntime.DisableAll("host died");
                 WebDashboardSnapshotCache.MarkDirty();
             }
         }

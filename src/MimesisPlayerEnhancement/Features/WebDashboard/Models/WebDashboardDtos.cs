@@ -12,6 +12,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int ConfigVersion;
         public int JoinAnytimeRoutingCount;
         public string Locale = "en";
+        public bool HostGodMode;
+        public bool HostNoClip;
+        public bool HostCheatsAvailable;
     }
 
     internal sealed class WebDashboardSessionStatsDto
@@ -347,5 +350,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool Success;
         public string Message = "";
         public string Location = "";
+    }
+
+    internal sealed class WebDashboardHostCheatsDto
+    {
+        public bool Success = true;
+        public string Message = "";
+        public bool GodMode;
+        public bool NoClip;
+        public bool Available;
+    }
+
+    internal sealed class WebDashboardHostCheatsUpdateRequest
+    {
+        public bool? GodMode { get; set; }
+
+        public bool? NoClip { get; set; }
     }
 }

@@ -79,8 +79,39 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ConfigVersion = snapshot.Status.ConfigVersion,
                     JoinAnytimeRoutingCount = snapshot.Status.JoinAnytimeRoutingCount,
                     Locale = WebDashboardRequestLocale.Current,
+                    HostGodMode = snapshot.Status.HostGodMode,
+                    HostNoClip = snapshot.Status.HostNoClip,
+                    HostCheatsAvailable = snapshot.Status.HostCheatsAvailable,
                 };
                 WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
+                return;
+            }
+
+            if (path == "/api/host-cheats" && method == "GET")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WriteJson(context, 200, ModJson.Serialize(WebDashboardHostCheatsService.BuildState()));
+                return;
+            }
+
+            if (path == "/api/host-cheats" && method == "POST")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardHostCheatsUpdateRequest? request =
+                    ModJson.Deserialize<WebDashboardHostCheatsUpdateRequest>(ReadRequestBody(context.Request));
+                WebDashboardHostCheatsDto result = WebDashboardHostCheatsQueue.EnqueueAndWait(
+                    () => WebDashboardHostCheatsService.Apply(request));
+                WriteJson(context, result.Success ? 200 : 400, ModJson.Serialize(result));
                 return;
             }
 

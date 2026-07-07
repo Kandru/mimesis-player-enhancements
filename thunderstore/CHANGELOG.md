@@ -15,6 +15,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: add quick-presets to the configuration (still needs tuning and extensive testing!)
 - draft: configurable periodic spawn wait (Vanilla / Fixed / Random seconds) for initial delay and wave interval; spawn multipliers no longer shorten wave periods (still needs tuning and extensive testing!)
 - draft: host-only Weather feature — fixed/cycle presets, random-roll stripping, start-time presets, real-time config apply (still needs tuning and extensive testing!)
+- draft: added godmode and noclip (still needs proper testing!)
 
 ## 26.7.6
 - added translations

@@ -18,6 +18,18 @@ const Api = {
     return Api.fetchJson('/api/status');
   },
 
+  async getHostCheats() {
+    return Api.fetchJson('/api/host-cheats');
+  },
+
+  async setHostCheats(body) {
+    return Api.fetchJson('/api/host-cheats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+  },
+
   async getGlobalSettings() {
     return Api.fetchJson('/api/settings/global');
   },
