@@ -243,6 +243,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 LateJoinLabel = player.LateJoinLabel,
                 LateJoinStuckSeconds = player.LateJoinStuckSeconds,
                 LateJoinAttemptCount = player.LateJoinAttemptCount,
+                GodMode = player.GodMode,
+                NoClip = player.NoClip,
             };
         }
 
@@ -345,6 +347,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public string LateJoinLabel = "";
             public float? LateJoinStuckSeconds;
             public int LateJoinAttemptCount;
+            public bool GodMode;
+            public bool NoClip;
         }
 
         private sealed class SessionStatsApiDto

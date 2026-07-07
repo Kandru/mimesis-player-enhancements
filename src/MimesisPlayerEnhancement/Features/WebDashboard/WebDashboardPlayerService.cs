@@ -622,6 +622,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 LateJoinRouteTracker.ApplyDashboardFields(dto, context);
             }
+
+            if (WebDashboardGameState.IsHost() && dto.PlayerUid != 0)
+            {
+                dto.GodMode = WebDashboardHostCheatsRuntime.IsGodModeEnabled(dto.PlayerUid);
+                dto.NoClip = WebDashboardHostCheatsRuntime.IsNoClipEnabled(dto.PlayerUid);
+            }
         }
 
         private static void ApplyConnectionInfo(WebDashboardPlayerDto dto, SessionContext? context)

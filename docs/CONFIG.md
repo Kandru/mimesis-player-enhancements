@@ -413,7 +413,7 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 **Blind mode** (header toggle, host only): on by default for fairness. Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers. While you are dead, blind mode is temporarily lifted so you can review others' stats; it restores automatically on revive unless you turned it off manually.
 
-**Host cheats** (header toggles, host only): **Godmode** prevents the host player from dying; **Noclip** lets the host fly with normal movement controls. Both are hidden and automatically turned off while you are dead or while blind mode is active.
+**Player cheats** (per-player buttons on the Players page, host only): **Godmode** prevents the selected player from dying; **Noclip** lets that player fly with normal movement controls. Both appear next to Heal/Respawn for alive in-game players and are automatically turned off when blind mode is active or when the player dies.
 
 **Security:** Default bind is `127.0.0.1` (loopback) so only your machine can connect. Binding to another address (e.g. `0.0.0.0` or your LAN IP) exposes the dashboard to anyone on that network — there is no login.
 

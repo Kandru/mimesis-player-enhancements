@@ -78,9 +78,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ConfigVersion = snapshot.Status.ConfigVersion,
                     JoinAnytimeRoutingCount = snapshot.Status.JoinAnytimeRoutingCount,
                     Locale = WebDashboardRequestLocale.Current,
-                    HostGodMode = snapshot.Status.HostGodMode,
-                    HostNoClip = snapshot.Status.HostNoClip,
-                    HostCheatsAvailable = snapshot.Status.HostCheatsAvailable,
                 };
                 WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
                 return;
@@ -590,6 +587,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 "unban" => WebDashboardActionType.Unban,
                 "respawn" => WebDashboardActionType.Respawn,
                 "heal" => WebDashboardActionType.Heal,
+                "godmode" => WebDashboardActionType.ToggleGodMode,
+                "noclip" => WebDashboardActionType.ToggleNoClip,
                 _ => null,
             };
 

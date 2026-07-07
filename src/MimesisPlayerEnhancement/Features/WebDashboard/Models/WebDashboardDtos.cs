@@ -12,9 +12,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int ConfigVersion;
         public int JoinAnytimeRoutingCount;
         public string Locale = "en";
-        public bool HostGodMode;
-        public bool HostNoClip;
-        public bool HostCheatsAvailable;
     }
 
     internal sealed class WebDashboardSessionStatsDto
@@ -57,6 +54,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string LateJoinLabel = "";
         public float? LateJoinStuckSeconds;
         public int LateJoinAttemptCount;
+        public bool GodMode;
+        public bool NoClip;
     }
 
     internal sealed class WebDashboardMinimapBoundsDto
@@ -159,6 +158,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         Unban,
         Respawn,
         Heal,
+        ToggleGodMode,
+        ToggleNoClip,
     }
 
     internal sealed class WebDashboardPendingAction
@@ -358,15 +359,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public bool Success = true;
         public string Message = "";
-        public bool GodMode;
-        public bool NoClip;
-        public bool Available;
     }
 
     internal sealed class WebDashboardHostCheatsUpdateRequest
     {
-        public bool? GodMode { get; set; }
-
-        public bool? NoClip { get; set; }
+        public bool? DisableAll { get; set; }
     }
 }

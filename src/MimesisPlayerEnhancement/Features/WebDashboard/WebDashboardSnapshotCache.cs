@@ -216,9 +216,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         ? LateJoinRouteTracker.GetActiveRoutingCount()
                         : 0,
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
-                    HostGodMode = WebDashboardHostCheatsRuntime.GodModeEnabled,
-                    HostNoClip = WebDashboardHostCheatsRuntime.NoClipEnabled,
-                    HostCheatsAvailable = WebDashboardHostCheatsRuntime.IsAvailable,
                 },
             };
 

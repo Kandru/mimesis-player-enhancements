@@ -8,9 +8,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             return new WebDashboardHostCheatsDto
             {
-                GodMode = WebDashboardHostCheatsRuntime.GodModeEnabled,
-                NoClip = WebDashboardHostCheatsRuntime.NoClipEnabled,
-                Available = WebDashboardHostCheatsRuntime.IsAvailable,
+                Success = true,
             };
         }
 
@@ -21,19 +19,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return Fail(WebDashboardL10n.Get("api.invalid_host_cheats_request"));
             }
 
-            if (request.GodMode.HasValue
-                && !WebDashboardHostCheatsRuntime.TrySetGodMode(request.GodMode.Value, out string? godModeError))
+            if (request.DisableAll == true)
             {
-                return Fail(godModeError ?? WebDashboardL10n.Get("api.failed_apply"));
+                WebDashboardHostCheatsRuntime.DisableAll("web request");
+                return BuildState();
             }
 
-            if (request.NoClip.HasValue
-                && !WebDashboardHostCheatsRuntime.TrySetNoClip(request.NoClip.Value, out string? noClipError))
-            {
-                return Fail(noClipError ?? WebDashboardL10n.Get("api.failed_apply"));
-            }
-
-            return BuildState();
+            return Fail(WebDashboardL10n.Get("api.invalid_host_cheats_request"));
         }
 
         internal static WebDashboardHostCheatsDto DisableAll()

@@ -18,15 +18,11 @@ const Api = {
     return Api.fetchJson('/api/status');
   },
 
-  async getHostCheats() {
-    return Api.fetchJson('/api/host-cheats');
-  },
-
-  async setHostCheats(body) {
+  async disableAllPlayerCheats() {
     return Api.fetchJson('/api/host-cheats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {}),
+      body: JSON.stringify({ disableAll: true }),
     });
   },
 

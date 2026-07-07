@@ -55,6 +55,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardActionType.Unban => Unban(sessionManager, action),
                     WebDashboardActionType.Respawn => Respawn(action),
                     WebDashboardActionType.Heal => Heal(action),
+                    WebDashboardActionType.ToggleGodMode => ToggleGodMode(action),
+                    WebDashboardActionType.ToggleNoClip => ToggleNoClip(action),
                     _ => Fail(L("unknown_action")),
                 };
         }
@@ -265,6 +267,48 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ModLog.Warn(Feature, $"Heal failed: {ex.Message}");
                 return Fail(L("heal_failed"));
             }
+        }
+
+        private static WebDashboardActionResult ToggleGodMode(WebDashboardPendingAction action)
+        {
+            if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
+            {
+                return Fail(L("player_not_found"));
+            }
+
+            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
+            if (vPlayer == null)
+            {
+                return Fail(L("player_not_in_game"));
+            }
+
+            if (!WebDashboardHostCheatsRuntime.TryToggleGodMode(vPlayer, out bool enabled, out string? errorMessage))
+            {
+                return Fail(errorMessage ?? L("failed_apply"));
+            }
+
+            return Ok(enabled ? L("player_godmode_enabled") : L("player_godmode_disabled"));
+        }
+
+        private static WebDashboardActionResult ToggleNoClip(WebDashboardPendingAction action)
+        {
+            if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
+            {
+                return Fail(L("player_not_found"));
+            }
+
+            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
+            if (vPlayer == null)
+            {
+                return Fail(L("player_not_in_game"));
+            }
+
+            if (!WebDashboardHostCheatsRuntime.TryToggleNoClip(vPlayer, out bool enabled, out string? errorMessage))
+            {
+                return Fail(errorMessage ?? L("failed_apply"));
+            }
+
+            return Ok(enabled ? L("player_noclip_enabled") : L("player_noclip_disabled"));
         }
 
         private static void ApplyFullHealthAndClearConta(VPlayer vPlayer)

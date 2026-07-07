@@ -29,9 +29,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Success = false,
                     Message = L("timed_out"),
-                    GodMode = WebDashboardHostCheatsRuntime.GodModeEnabled,
-                    NoClip = WebDashboardHostCheatsRuntime.NoClipEnabled,
-                    Available = WebDashboardHostCheatsRuntime.IsAvailable,
                 };
             }
 
@@ -41,9 +38,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Success = false,
                     Message = pending.Error.Message,
-                    GodMode = WebDashboardHostCheatsRuntime.GodModeEnabled,
-                    NoClip = WebDashboardHostCheatsRuntime.NoClipEnabled,
-                    Available = WebDashboardHostCheatsRuntime.IsAvailable,
                 };
             }
 

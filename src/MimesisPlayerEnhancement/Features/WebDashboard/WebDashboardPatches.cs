@@ -88,7 +88,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             private static void Postfix()
             {
-                WebDashboardHostCheatsRuntime.DisableAll("host died");
+                WebDashboardHostCheatsRuntime.SyncFromSession();
                 WebDashboardSnapshotCache.MarkDirty();
             }
         }

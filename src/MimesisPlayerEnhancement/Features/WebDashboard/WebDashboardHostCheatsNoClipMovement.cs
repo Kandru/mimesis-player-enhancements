@@ -51,7 +51,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool ShouldReplaceControl(ProtoActor actor)
         {
-            if (!WebDashboardHostCheatsRuntime.NoClipEnabled
+            if (!WebDashboardHostCheatsRuntime.IsLocalAvatarNoClipActive()
                 || !actor.AmIAvatar()
                 || actor.controlMode != ProtoActor.ControlMode.Manual
                 || actor.dead

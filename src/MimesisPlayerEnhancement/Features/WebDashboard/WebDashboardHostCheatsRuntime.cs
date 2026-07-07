@@ -4,120 +4,122 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        internal static bool GodModeEnabled { get; private set; }
+        private static readonly HashSet<long> GodModePlayerUids = [];
+        private static readonly HashSet<long> NoClipPlayerUids = [];
 
-        internal static bool NoClipEnabled { get; private set; }
+        internal static bool IsGodModeEnabled(long playerUid) =>
+            playerUid != 0 && GodModePlayerUids.Contains(playerUid);
 
-        internal static bool IsAvailable =>
-            ModConfig.EnableWebDashboard.Value
-            && WebDashboardGameState.IsHost()
-            && HostApplyGate.ShouldApplyHostOnlyFeature()
-            && TryGetHostVPlayer(out VPlayer? player)
-            && player!.IsAliveStatus();
+        internal static bool IsNoClipEnabled(long playerUid) =>
+            playerUid != 0 && NoClipPlayerUids.Contains(playerUid);
 
         internal static bool IsGodModeActive(VPlayer? player) =>
-            GodModeEnabled && IsHostPlayer(player);
+            player != null && GodModePlayerUids.Contains(player.UID);
 
         internal static bool IsNoClipActive(VPlayer? player) =>
-            NoClipEnabled && IsHostPlayer(player);
+            player != null && NoClipPlayerUids.Contains(player.UID);
 
         internal static bool IsNoClipActive(VCreature? creature) =>
             creature is VPlayer player && IsNoClipActive(player);
 
-        internal static bool TryGetHostVPlayer(out VPlayer? player)
+        internal static bool IsLocalAvatarNoClipActive()
         {
-            player = null;
-            if (!WebDashboardGameState.IsHost())
+            if (!TryGetLocalVPlayer(out VPlayer? player))
             {
                 return false;
             }
 
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager == null)
-            {
-                return false;
-            }
-
-            SessionContext? hostContext = WebDashboardSessionAccess.FindHostSessionContext(sessionManager);
-            if (hostContext == null)
-            {
-                return false;
-            }
-
-            player = WebDashboardSessionAccess.GetVPlayer(hostContext);
-            return player != null;
+            return IsNoClipActive(player);
         }
 
-        internal static bool TrySetGodMode(bool enabled, out string? errorMessage)
+        internal static bool TryToggleGodMode(VPlayer player, out bool enabled, out string? errorMessage)
+        {
+            enabled = IsGodModeActive(player);
+            return TrySetGodMode(player, !enabled, out errorMessage);
+        }
+
+        internal static bool TryToggleNoClip(VPlayer player, out bool enabled, out string? errorMessage)
+        {
+            enabled = IsNoClipActive(player);
+            return TrySetNoClip(player, !enabled, out errorMessage);
+        }
+
+        internal static bool TrySetGodMode(VPlayer player, bool enabled, out string? errorMessage)
         {
             errorMessage = null;
-            if (!CanApplyCheats(out errorMessage))
+            if (!CanApplyCheatsForPlayer(player, out errorMessage))
             {
                 return false;
             }
 
-            if (!TryGetHostVPlayer(out VPlayer? player) || player == null)
+            if (enabled)
             {
-                errorMessage = WebDashboardL10n.Get("api.host_player_unavailable");
-                return false;
+                GodModePlayerUids.Add(player.UID);
+            }
+            else
+            {
+                GodModePlayerUids.Remove(player.UID);
             }
 
             ApplyGodMode(player, enabled);
-            GodModeEnabled = enabled;
             WebDashboardSnapshotCache.MarkDirty();
-            ModLog.Info(Feature, $"Host godmode {(enabled ? "enabled" : "disabled")}.");
+            ModLog.Info(Feature, $"Godmode {(enabled ? "enabled" : "disabled")} — uid={player.UID}.");
             return true;
         }
 
-        internal static bool TrySetNoClip(bool enabled, out string? errorMessage)
+        internal static bool TrySetNoClip(VPlayer player, bool enabled, out string? errorMessage)
         {
             errorMessage = null;
-            if (!CanApplyCheats(out errorMessage))
+            if (!CanApplyCheatsForPlayer(player, out errorMessage))
             {
                 return false;
             }
 
-            if (!TryGetHostVPlayer(out VPlayer? player) || player == null)
+            if (enabled)
             {
-                errorMessage = WebDashboardL10n.Get("api.host_player_unavailable");
-                return false;
+                NoClipPlayerUids.Add(player.UID);
             }
-
-            NoClipEnabled = enabled;
-            if (!enabled)
+            else
             {
-                WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                NoClipPlayerUids.Remove(player.UID);
+                if (IsLocalPlayer(player))
+                {
+                    WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                }
             }
 
             WebDashboardSnapshotCache.MarkDirty();
-            ModLog.Info(Feature, $"Host noclip {(enabled ? "enabled" : "disabled")}.");
+            ModLog.Info(Feature, $"Noclip {(enabled ? "enabled" : "disabled")} — uid={player.UID}.");
             return true;
         }
 
         internal static void DisableAll(string reason)
         {
-            if (!GodModeEnabled && !NoClipEnabled)
+            if (GodModePlayerUids.Count == 0 && NoClipPlayerUids.Count == 0)
             {
                 return;
             }
 
-            if (TryGetHostVPlayer(out VPlayer? player) && player != null)
+            foreach (long playerUid in new List<long>(GodModePlayerUids))
             {
-                if (GodModeEnabled)
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    || player == null)
                 {
-                    ApplyGodMode(player, enabled: false);
+                    continue;
                 }
+
+                ApplyGodMode(player, enabled: false);
             }
 
-            if (NoClipEnabled)
+            if (NoClipPlayerUids.Count > 0)
             {
                 WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
             }
 
-            GodModeEnabled = false;
-            NoClipEnabled = false;
+            GodModePlayerUids.Clear();
+            NoClipPlayerUids.Clear();
             WebDashboardSnapshotCache.MarkDirty();
-            ModLog.Debug(Feature, $"Host cheats disabled — {reason}.");
+            ModLog.Debug(Feature, $"Player cheats disabled — {reason}.");
         }
 
         internal static void SyncFromSession()
@@ -128,12 +130,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            if (!TryGetHostVPlayer(out VPlayer? player)
-                || player == null
-                || !player.IsAliveStatus())
-            {
-                DisableAll("host not alive");
-            }
+            PruneInactivePlayers();
         }
 
         internal static void OnDeinitialize()
@@ -141,7 +138,60 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             DisableAll("mod deinit");
         }
 
-        private static bool CanApplyCheats(out string? errorMessage)
+        internal static bool IsNoClipActiveInRoom(IVroom room)
+        {
+            foreach (long playerUid in NoClipPlayerUids)
+            {
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    || player == null
+                    || player.VRoom != room)
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void PruneInactivePlayers()
+        {
+            foreach (long playerUid in new List<long>(GodModePlayerUids))
+            {
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    || player == null
+                    || !player.IsAliveStatus())
+                {
+                    GodModePlayerUids.Remove(playerUid);
+                    if (player != null)
+                    {
+                        ApplyGodMode(player, enabled: false);
+                    }
+                }
+            }
+
+            foreach (long playerUid in new List<long>(NoClipPlayerUids))
+            {
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    || player == null
+                    || !player.IsAliveStatus())
+                {
+                    NoClipPlayerUids.Remove(playerUid);
+                    if (player != null && IsLocalPlayer(player))
+                    {
+                        WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                    }
+                }
+            }
+
+            if (GodModePlayerUids.Count > 0 || NoClipPlayerUids.Count > 0)
+            {
+                WebDashboardSnapshotCache.MarkDirty();
+            }
+        }
+
+        private static bool CanApplyCheatsForPlayer(VPlayer player, out string? errorMessage)
         {
             errorMessage = null;
             if (!ModConfig.EnableWebDashboard.Value)
@@ -168,15 +218,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
-            if (!TryGetHostVPlayer(out VPlayer? player) || player == null)
-            {
-                errorMessage = WebDashboardL10n.Get("api.host_player_unavailable");
-                return false;
-            }
-
             if (!player.IsAliveStatus())
             {
-                errorMessage = WebDashboardL10n.Get("api.host_cheats_require_alive");
+                errorMessage = WebDashboardL10n.Get("api.player_cheats_require_alive");
                 return false;
             }
 
@@ -194,14 +238,38 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             player.SetHarmBlocked(enabled);
         }
 
-        private static bool IsHostPlayer(VPlayer? player)
+        private static bool TryGetLocalVPlayer(out VPlayer? player)
         {
-            if (player == null || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            player = null;
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
             {
                 return false;
             }
 
-            return TryGetHostVPlayer(out VPlayer? host) && host != null && host.UID == player.UID;
+            ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
+            if (localSteamId == 0)
+            {
+                return false;
+            }
+
+            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            {
+                if (context.SteamID != localSteamId)
+                {
+                    continue;
+                }
+
+                player = WebDashboardSessionAccess.GetVPlayer(context);
+                return player != null;
+            }
+
+            return false;
+        }
+
+        private static bool IsLocalPlayer(VPlayer player)
+        {
+            return TryGetLocalVPlayer(out VPlayer? local) && local != null && local.UID == player.UID;
         }
     }
 }

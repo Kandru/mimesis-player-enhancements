@@ -120,10 +120,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             private static bool Prefix(IVroom __instance, ref bool __result)
             {
-                if (!WebDashboardHostCheatsRuntime.NoClipEnabled
-                    || !WebDashboardHostCheatsRuntime.TryGetHostVPlayer(out VPlayer? player)
-                    || player == null
-                    || player.VRoom != __instance)
+                if (!WebDashboardHostCheatsRuntime.IsNoClipActiveInRoom(__instance))
                 {
                     return true;
                 }

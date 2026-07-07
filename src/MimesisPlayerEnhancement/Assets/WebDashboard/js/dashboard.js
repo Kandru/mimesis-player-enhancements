@@ -103,8 +103,6 @@ document.addEventListener('alpine:init', () => {
     playerBlindMode: true,
     playerBlindModeUserEnabled: true,
     playerBlindModeAutoSuspended: false,
-    hostGodMode: false,
-    hostNoClip: false,
     _localPlayerWasAlive: null,
     localeVersion: 0,
     itemCatalog: [],
@@ -331,8 +329,7 @@ document.addEventListener('alpine:init', () => {
       }
       if (this.status.isConnected) {
         this.syncBlindModeForLocalPlayer();
-        this.syncHostCheatsFromStatus();
-        this.syncHostCheatsForLocalPlayer();
+        this.syncPlayerCheatsForBlindMode();
       }
       this.apiError = false;
       this.setConnectedMode();
@@ -345,8 +342,6 @@ document.addEventListener('alpine:init', () => {
         this.minimapRaw = null;
         this.minimap = { markers: [], tiles: [], connectionPoints: [], displayMode: 'hidden' };
         this._localPlayerWasAlive = null;
-        this.hostGodMode = false;
-        this.hostNoClip = false;
       } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
         this.applyMinimapFilter();
       }
@@ -641,6 +636,10 @@ document.addEventListener('alpine:init', () => {
       return this.status.isHost && !this.playerBlindMode && p.playerUid && p.isAlive;
     },
 
+    canPlayerCheats(p) {
+      return this.canHeal(p);
+    },
+
     canGiveItem(p) {
       return this.canHeal(p);
     },
@@ -840,86 +839,42 @@ document.addEventListener('alpine:init', () => {
       this.syncEffectiveBlindMode();
       this.applyMinimapFilter(true);
       if (this.playerBlindMode) {
-        this.disableHostCheats('blind mode');
+        this.disableAllPlayerCheats('blind mode');
       }
     },
 
-    showHostCheats() {
-      const local = this.getLocalPlayer();
-      return this.status.isHost
-        && this.status.isConnected
-        && !this.playerBlindMode
-        && !!local?.isAlive;
+    hasActivePlayerCheats() {
+      return (this.players || []).some((p) => p.godMode || p.noClip);
     },
 
-    syncHostCheatsFromStatus() {
-      if (!this.status.isHost) {
-        this.hostGodMode = false;
-        this.hostNoClip = false;
-        return;
-      }
-
-      if (typeof this.status.hostGodMode === 'boolean') {
-        this.hostGodMode = this.status.hostGodMode;
-      }
-      if (typeof this.status.hostNoClip === 'boolean') {
-        this.hostNoClip = this.status.hostNoClip;
-      }
-    },
-
-    syncHostCheatsForLocalPlayer() {
+    syncPlayerCheatsForBlindMode() {
       if (!this.status.isHost || !this.status.isConnected) {
         return;
       }
 
-      const local = this.getLocalPlayer();
-      const shouldDisable = !local?.isAlive || this.playerBlindMode;
-      if (shouldDisable && (this.hostGodMode || this.hostNoClip)) {
-        this.disableHostCheats(local && !local.isAlive ? 'host dead' : 'blind mode');
+      if (this.playerBlindMode && this.hasActivePlayerCheats()) {
+        this.disableAllPlayerCheats('blind mode');
       }
     },
 
-    async disableHostCheats(reason) {
-      if (!this.hostGodMode && !this.hostNoClip) {
+    async disableAllPlayerCheats(reason) {
+      if (!this.hasActivePlayerCheats()) {
         return;
       }
 
       try {
-        const res = await Api.setHostCheats({ godMode: false, noClip: false });
-        this.hostGodMode = !!res.godMode;
-        this.hostNoClip = !!res.noClip;
+        await Api.disableAllPlayerCheats();
       } catch (e) {
-        this.hostGodMode = false;
-        this.hostNoClip = false;
         if (reason) {
           this.showToast(e.message);
         }
       }
     },
 
-    async toggleHostGodMode() {
-      const next = !this.hostGodMode;
+    async togglePlayerCheat(steamId, action) {
       try {
-        const res = await Api.setHostCheats({ godMode: next });
-        this.hostGodMode = !!res.godMode;
-        this.hostNoClip = !!res.noClip;
-        if (res.message) {
-          this.showToast(res.message);
-        }
-      } catch (e) {
-        this.showToast(e.message);
-      }
-    },
-
-    async toggleHostNoClip() {
-      const next = !this.hostNoClip;
-      try {
-        const res = await Api.setHostCheats({ noClip: next });
-        this.hostGodMode = !!res.godMode;
-        this.hostNoClip = !!res.noClip;
-        if (res.message) {
-          this.showToast(res.message);
-        }
+        const res = await Api.postAction(steamId, action);
+        this.showToast(res.message || t('api.done'));
       } catch (e) {
         this.showToast(e.message);
       }
