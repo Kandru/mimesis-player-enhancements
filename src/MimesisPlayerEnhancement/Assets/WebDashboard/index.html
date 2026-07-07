@@ -606,7 +606,7 @@
                       <template x-for="group in sectionEntryGroups(section.id)"
                         :key="(group.groupId || 'solo') + ':' + group.entries.map((e) => e.key).join('|')">
                         <div class="settings-entry-group" :class="{ 'has-group': group.groupId }">
-                          <template x-for="entry in group.entries" :key="entry.key + ':' + settingDraftValue(entry)">
+                          <template x-for="entry in group.entries" :key="section.id + ':' + entry.key">
                             <article class="settings-entry" :id="settingsDomId(section.id, entry.key)"
                               :class="[settingEntryClass(entry), { 'is-token-entry': isTokenInputKind(entry) }]">
                               <div class="settings-entry-main">
@@ -630,7 +630,7 @@
                                   <template x-if="entry.type === 'Boolean'">
                                     <select class="settings-input settings-select"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" :value="settingDraftValue(entry)"
+                                      :id="settingInputId(section.id, entry)" x-model="entry.value"
                                       :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                       @change="onBooleanSettingChange(section.id, entry, $event)">
                                       <option value="true" x-text="t('dashboard.on')"></option>
@@ -715,7 +715,7 @@
                                   <template x-if="isSelectInputKind(entry)">
                                     <select class="settings-input settings-select"
                                       :class="{ 'is-saving': isSavingSetting(section.id, entry) }"
-                                      :id="settingInputId(section.id, entry)" :value="normalizedSelectValue(entry)"
+                                      :id="settingInputId(section.id, entry)" x-model="entry.value"
                                       :disabled="isSavingSetting(section.id, entry) || isResettingSection(section.id)"
                                       @change="onSelectSettingChange(section.id, entry, $event)">
                                       <template x-for="option in entry.selectOptions" :key="option.value">

@@ -498,7 +498,11 @@ function createSettingsMixin() {
     },
 
     onSelectSettingChange(sectionId, entry, event) {
-      this.saveSetting(sectionId, entry, event.target.value);
+      const normalized = this.normalizedSelectValue(entry);
+      if (normalized !== entry.value) {
+        entry.value = normalized;
+      }
+      this.saveSetting(sectionId, entry, normalized);
     },
 
     onTextSettingCommit(sectionId, entry, event) {
