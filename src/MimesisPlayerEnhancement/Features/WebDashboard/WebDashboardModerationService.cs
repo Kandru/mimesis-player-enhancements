@@ -40,7 +40,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             if (action.SteamId != 0 && LocalPlayerHelper.IsLocalSteamId(action.SteamId)
-                && action.Type is not WebDashboardActionType.Respawn and not WebDashboardActionType.Heal)
+                && action.Type is not WebDashboardActionType.Respawn
+                    and not WebDashboardActionType.Heal
+                    and not WebDashboardActionType.ToggleGodMode
+                    and not WebDashboardActionType.ToggleNoClip)
             {
                 return Fail(L("cannot_moderate_host"));
             }

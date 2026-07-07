@@ -875,6 +875,15 @@ document.addEventListener('alpine:init', () => {
       try {
         const res = await Api.postAction(steamId, action);
         this.showToast(res.message || t('api.done'));
+        const player = (this.players || []).find((p) => String(p.steamId) === String(steamId));
+        if (player) {
+          if (typeof res.godMode === 'boolean') {
+            player.godMode = res.godMode;
+          }
+          if (typeof res.noClip === 'boolean') {
+            player.noClip = res.noClip;
+          }
+        }
       } catch (e) {
         this.showToast(e.message);
       }

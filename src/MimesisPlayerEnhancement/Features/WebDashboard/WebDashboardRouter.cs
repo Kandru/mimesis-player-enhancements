@@ -580,6 +580,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (action is "godmode" or "noclip")
+            {
+                long cheatPlayerUid = ResolvePlayerUid(snapshot, steamId);
+                bool toggleGodMode = action == "godmode";
+                WebDashboardHostCheatsDto cheatResult = WebDashboardHostCheatsQueue.EnqueueAndWait(
+                    () => WebDashboardHostCheatsService.TogglePlayerCheat(steamId, cheatPlayerUid, toggleGodMode));
+                WriteJson(context, cheatResult.Success ? 200 : 400, ModJson.Serialize(cheatResult));
+                return;
+            }
+
             WebDashboardActionType? actionType = action switch
             {
                 "kick" => WebDashboardActionType.Kick,
@@ -587,8 +597,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 "unban" => WebDashboardActionType.Unban,
                 "respawn" => WebDashboardActionType.Respawn,
                 "heal" => WebDashboardActionType.Heal,
-                "godmode" => WebDashboardActionType.ToggleGodMode,
-                "noclip" => WebDashboardActionType.ToggleNoClip,
                 _ => null,
             };
 

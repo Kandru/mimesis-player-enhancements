@@ -359,6 +359,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public bool Success = true;
         public string Message = "";
+        public bool GodMode;
+        public bool NoClip;
     }
 
     internal sealed class WebDashboardHostCheatsUpdateRequest
