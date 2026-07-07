@@ -19,6 +19,8 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal int CycleIndex;
         internal long NextTransitionTickMs;
         internal bool CycleActive;
+        internal int LastTramClockSyncHour = -1;
+        internal int LastTramClockSyncMinute = -1;
     }
 
     internal static class WeatherRoomAccess

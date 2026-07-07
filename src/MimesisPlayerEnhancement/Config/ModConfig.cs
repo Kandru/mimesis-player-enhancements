@@ -164,6 +164,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> WeatherCycleMinDelaySeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> WeatherCycleMaxDelaySeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> StartTimePreset { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableRealtimeTramClock { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableWebDashboard { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> WebDashboardListenAddress { get; internal set; } = null!;

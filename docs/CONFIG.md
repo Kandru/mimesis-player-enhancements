@@ -370,6 +370,8 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 **Start time presets** (`StartTimePreset`) set the **synced in-game clock** when a dungeon starts (tram alarm clock and outdoor lighting). The clock still advances during the shift until **~24:00** at time-over. **Real shift deadline is unchanged** (still based on dungeon duration in real time).
 
+**Tram clock display:** Vanilla only pushes clock updates when the in-game **hour** changes (~once per real minute at default time scale), so the tram console shows `HH:00` until the next hour. `EnableRealtimeTramClock` (requires `EnableWeather`) syncs every in-game **minute** instead (~once per real second at default scale) via vanilla `TimeSyncSig` — clients without the mod still receive updates. Weather and lighting still change on hour boundaries only.
+
 Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
 
 | Preset | In-game clock at start | Runs until | At dungeon start |
@@ -393,6 +395,7 @@ A continuous brightness slider is not available host-only; pick a preset above f
 | `WeatherCycleMinDelaySeconds` | float | `300` | ≥ `0` | Cycle min real seconds between steps. |
 | `WeatherCycleMaxDelaySeconds` | float | `600` | ≥ min | Cycle max real seconds between steps. |
 | `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). |
+| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableWeather`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Host only. |
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 

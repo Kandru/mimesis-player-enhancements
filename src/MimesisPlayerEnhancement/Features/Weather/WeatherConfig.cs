@@ -68,6 +68,14 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 + "Sunrise ~06:00, sunset ~18:00. Vanilla uses dungeon data (~10:00). "
                 + "Vanilla ~10:00→24:00; Morning 08:00→24:00; Noon 12:00→24:00; Dusk 18:00→24:00 (sunset); "
                 + "Night 21:00→24:00 (dark); Midnight 00:00→24:00 (darkest). Host only.");
+
+            ModConfig.EnableRealtimeTramClock = ModConfig.CreateTrackedEntry(_category,
+                "EnableRealtimeTramClock",
+                false,
+                "Realtime Tram Clock",
+                "Requires Enable Weather. During a dungeon run, sync the tram console clock every in-game minute "
+                + "instead of only on hour changes (~once per real minute at default time scale). Uses vanilla "
+                + "TimeSyncSig so clients without the mod stay in sync. Host only.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -82,6 +90,8 @@ namespace MimesisPlayerEnhancement.Features.Weather
             ModConfig.WeatherCycleMaxDelaySeconds.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCycleMaxDelayChanged(logger, value));
             ModConfig.StartTimePreset.OnEntryValueChanged.Subscribe((_, value) => OnStartTimePresetChanged(logger, value));
+            ModConfig.EnableRealtimeTramClock.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableRealtimeTramClock));
         }
 
         internal static void RegisterFloatEntries()

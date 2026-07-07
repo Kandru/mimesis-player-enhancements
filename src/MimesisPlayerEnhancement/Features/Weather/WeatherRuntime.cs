@@ -4,6 +4,8 @@ namespace MimesisPlayerEnhancement.Features.Weather
     {
         internal static void RefreshFromConfig()
         {
+            WeatherTramClockSync.InvalidateAll();
+
             if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;

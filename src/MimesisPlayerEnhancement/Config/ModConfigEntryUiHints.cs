@@ -221,6 +221,7 @@ namespace MimesisPlayerEnhancement
                     ["WeatherCycleMinDelaySeconds"] = "weatherCycle",
                     ["WeatherCycleMaxDelaySeconds"] = "weatherCycle",
                     ["StartTimePreset"] = "startTime",
+                    ["EnableRealtimeTramClock"] = "startTime",
                 };
             }
 

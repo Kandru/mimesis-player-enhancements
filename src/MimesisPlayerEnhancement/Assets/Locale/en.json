@@ -132,6 +132,10 @@
           "Night": "Night (21:00 → 24:00, dark)",
           "Midnight": "Midnight (00:00 → 24:00, darkest)"
         }
+      },
+      "EnableRealtimeTramClock": {
+        "title": "Realtime Tram Clock",
+        "description": "Requires Enable Weather. During a dungeon run, update the tram console clock every in-game minute instead of only on hour changes (~once per real minute at default time scale). Host only; uses vanilla network sync."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {

@@ -132,6 +132,10 @@
           "Night": "Nacht (21:00 → 24:00, dunkel)",
           "Midnight": "Mitternacht (00:00 → 24:00, am dunkelsten)"
         }
+      },
+      "EnableRealtimeTramClock": {
+        "title": "Tram-Uhr in Echtzeit",
+        "description": "Erfordert Wetter aktivieren. Aktualisiert die Tram-Konsolen-Uhr während eines Dungeon-Laufs jede Ingame-Minute statt nur bei Stundenwechsel (~einmal pro echte Minute bei Standard-Zeitskala). Nur Host; nutzt Vanilla-Netzwerk-Sync."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {

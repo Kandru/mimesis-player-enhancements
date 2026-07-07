@@ -142,6 +142,12 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 WeatherTimeContext.Exit();
                 return __exception;
             }
+
+            [HarmonyPostfix]
+            public static void Postfix(DungeonRoom __instance)
+            {
+                WeatherTramClockSync.TrySyncFromUpdate(__instance);
+            }
         }
 
         [HarmonyPatch(typeof(VWorldUtil), nameof(VWorldUtil.ConvertTimeToSeconds), [typeof(string)])]
