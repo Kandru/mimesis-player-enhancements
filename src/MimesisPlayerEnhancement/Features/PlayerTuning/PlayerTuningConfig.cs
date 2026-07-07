@@ -30,6 +30,12 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 "Move Speed Multiplier",
                 "Scales walk and run base speed (1 = vanilla, 2 = double).");
 
+            ModConfig.NoClipSpeedMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "NoClipSpeedMultiplier",
+                3f,
+                "Noclip Speed Multiplier",
+                "Scales dashboard noclip fly speed relative to the player's current walk/run speed (3 = triple). Only applies while noclip is active.");
+
             ModConfig.MaxStaminaMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MaxStaminaMultiplier",
                 1f,
@@ -66,6 +72,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             ModConfig.EnablePlayerTuning.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnablePlayerTuning));
             ModConfig.MoveSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnPlayerTuningMultiplierChanged(logger, value, ModConfig.MoveSpeedMultiplier));
+            ModConfig.NoClipSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnPlayerTuningMultiplierChanged(logger, value, ModConfig.NoClipSpeedMultiplier));
             ModConfig.MaxStaminaMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnPlayerTuningMultiplierChanged(logger, value, ModConfig.MaxStaminaMultiplier));
             ModConfig.StaminaDrainMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
@@ -81,6 +89,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.MoveSpeedMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.NoClipSpeedMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.MaxStaminaMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.StaminaDrainMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.StaminaRegenMultiplier);

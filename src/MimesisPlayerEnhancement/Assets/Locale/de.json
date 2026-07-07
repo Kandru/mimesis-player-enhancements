@@ -394,6 +394,10 @@
         "title": "Bewegungsgeschwindigkeits-Multiplikator",
         "description": "Skaliert Geh- und Lauf-Basisgeschwindigkeit (1 = Vanilla, 2 = doppelt)."
       },
+      "NoClipSpeedMultiplier": {
+        "title": "Noclip-Geschwindigkeits-Multiplikator",
+        "description": "Skaliert die Noclip-Fluggeschwindigkeit im Dashboard relativ zur aktuellen Geh-/Laufgeschwindigkeit des Spielers (3 = dreifach). Gilt nur, solange Noclip aktiv ist."
+      },
       "MaxStaminaMultiplier": {
         "title": "Max.-Ausdauer-Multiplikator",
         "description": "Skaliert maximale Ausdauer (1 = Vanilla, 2 = doppelt)."

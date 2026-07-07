@@ -394,6 +394,10 @@
         "title": "Move Speed Multiplier",
         "description": "Scales walk and run base speed (1 = vanilla, 2 = double)."
       },
+      "NoClipSpeedMultiplier": {
+        "title": "Noclip Speed Multiplier",
+        "description": "Scales dashboard noclip fly speed relative to the player's current walk/run speed (3 = triple). Only applies while noclip is active."
+      },
       "MaxStaminaMultiplier": {
         "title": "Max Stamina Multiplier",
         "description": "Scales maximum stamina (1 = vanilla, 2 = double)."

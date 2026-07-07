@@ -34,14 +34,30 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool TryToggleGodMode(VPlayer player, out bool enabled, out string? errorMessage)
         {
-            enabled = IsGodModeActive(player);
-            return TrySetGodMode(player, !enabled, out errorMessage);
+            errorMessage = null;
+            bool currentlyEnabled = IsGodModeActive(player);
+            if (!TrySetGodMode(player, !currentlyEnabled, out errorMessage))
+            {
+                enabled = currentlyEnabled;
+                return false;
+            }
+
+            enabled = !currentlyEnabled;
+            return true;
         }
 
         internal static bool TryToggleNoClip(VPlayer player, out bool enabled, out string? errorMessage)
         {
-            enabled = IsNoClipActive(player);
-            return TrySetNoClip(player, !enabled, out errorMessage);
+            errorMessage = null;
+            bool currentlyEnabled = IsNoClipActive(player);
+            if (!TrySetNoClip(player, !currentlyEnabled, out errorMessage))
+            {
+                enabled = currentlyEnabled;
+                return false;
+            }
+
+            enabled = !currentlyEnabled;
+            return true;
         }
 
         internal static bool TrySetGodMode(VPlayer player, bool enabled, out string? errorMessage)

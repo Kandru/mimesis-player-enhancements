@@ -47,6 +47,7 @@ namespace MimesisPlayerEnhancement
             Int(Statistics, "SessionReconnectGraceMinutes", 1);
 
             FloatRange(PlayerTuning, "MoveSpeedMultiplier");
+            FloatRange(PlayerTuning, "NoClipSpeedMultiplier");
             FloatRange(PlayerTuning, "MaxStaminaMultiplier");
             FloatRange(PlayerTuning, "StaminaDrainMultiplier");
             FloatRange(PlayerTuning, "StaminaRegenMultiplier");

@@ -315,6 +315,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 |-----|------|---------|-------|-------------|
 | `EnablePlayerTuning` | bool | `false` | — | Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only. |
 | `MoveSpeedMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales walk and run base speed (`1` = vanilla, `2` = double). |
+| `NoClipSpeedMultiplier` | float | `3.0` | `0.1`–`5.0` | Scales dashboard noclip fly speed relative to the player's current walk/run speed (`3` = triple). Only applies while noclip is active. |
 | `MaxStaminaMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales maximum stamina. |
 | `StaminaDrainMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales sprint stamina cost per tick (`0.5` = half drain). |
 | `StaminaRegenMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales stamina recovered per regen tick. |
@@ -503,6 +504,7 @@ MimicPossessionCooltimeMultiplier = 1.0
 [MimesisPlayerEnhancement_PlayerTuning]
 EnablePlayerTuning = false
 MoveSpeedMultiplier = 1.0
+NoClipSpeedMultiplier = 3.0
 MaxStaminaMultiplier = 1.0
 StaminaDrainMultiplier = 1.0
 StaminaRegenMultiplier = 1.0

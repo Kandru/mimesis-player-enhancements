@@ -1,4 +1,5 @@
 using System.Reflection;
+using MimesisPlayerEnhancement.Features.PlayerTuning;
 using Mimic.Animation;
 using Mimic.InputSystem;
 using UnityEngine;
@@ -79,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Vector2 movementInput = (Vector2)(GetMovementInputMethod.Invoke(actor, null) ?? Vector2.zero);
             _ = (bool)(ProcessSprintKeyMethod.Invoke(actor, [actor.isSprinting]) ?? false);
             float speed = (float)(CalculateSpeedMethod.Invoke(actor, null) ?? 0f);
+            speed *= PlayerTuningResolver.NoClipSpeedMultiplier;
 
             SetCharacterControllerEnabled(actor, enabled: false);
 

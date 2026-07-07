@@ -139,6 +139,7 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> NoClipSpeedMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MaxStaminaMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StaminaDrainMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StaminaRegenMultiplier { get; internal set; } = null!;

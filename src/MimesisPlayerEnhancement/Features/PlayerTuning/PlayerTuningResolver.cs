@@ -10,6 +10,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         internal static float MoveSpeedMultiplier =>
             IsFeatureEnabled ? ModConfig.MoveSpeedMultiplier.Value : 1f;
 
+        internal static float NoClipSpeedMultiplier => ModConfig.NoClipSpeedMultiplier.Value;
+
         internal static float MaxStaminaMultiplier =>
             IsFeatureEnabled ? ModConfig.MaxStaminaMultiplier.Value : 1f;
 
