@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement
     {
         internal static readonly ColorARGB SuccessGreen = ColorARGB.Green;
         internal static readonly ColorARGB FailureRed = ColorARGB.Red;
+        internal static readonly ColorARGB PartialYellow = ColorARGB.Yellow;
         internal static readonly ColorARGB Neutral = MelonLogger.DefaultTextColor;
 
         private static readonly MethodInfo? PassLogMsgMethod = typeof(MelonLogger).GetMethod(
@@ -76,12 +77,17 @@ namespace MimesisPlayerEnhancement
         private static ColorARGB PickMessageColor((ColorARGB? color, string text)[] segments)
         {
             bool hasFailure = segments.Any(s => s.color.HasValue && s.color.Value.Equals(FailureRed));
+            bool hasSuccess = segments.Any(s => s.color.HasValue && s.color.Value.Equals(SuccessGreen));
+            if (hasFailure && hasSuccess)
+            {
+                return PartialYellow;
+            }
+
             if (hasFailure)
             {
                 return FailureRed;
             }
 
-            bool hasSuccess = segments.Any(s => s.color.HasValue && s.color.Value.Equals(SuccessGreen));
             if (hasSuccess)
             {
                 return SuccessGreen;

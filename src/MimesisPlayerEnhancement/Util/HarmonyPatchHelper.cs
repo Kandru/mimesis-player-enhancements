@@ -83,13 +83,12 @@ namespace MimesisPlayerEnhancement.Util
                 return;
             }
 
-            List<MethodBase> patched = [.. harmony.GetPatchedMethods()];
             List<(string text, bool ok)> entries = [];
 
             foreach ((string? label, MethodBase? method) in checks)
             {
                 string text = method == null ? $"{label} (type/method not found)" : label;
-                bool ok = method != null && IsPatched(patched, method);
+                bool ok = IsPatched(harmony, method);
                 entries.Add((text, ok));
             }
 
@@ -147,54 +146,15 @@ namespace MimesisPlayerEnhancement.Util
             return null;
         }
 
-        public static bool IsPatched(IReadOnlyCollection<MethodBase> patched, MethodBase? expected)
+        public static bool IsPatched(HarmonyLib.Harmony harmony, MethodBase? expected)
         {
             if (expected == null)
             {
                 return false;
             }
 
-            foreach (MethodBase candidate in patched)
-            {
-                if (candidate.MetadataToken == expected.MetadataToken && ReferenceEquals(candidate.Module, expected.Module))
-                {
-                    return true;
-                }
-
-                if (candidate.Name != expected.Name)
-                {
-                    continue;
-                }
-
-                if (candidate.DeclaringType != expected.DeclaringType)
-                {
-                    continue;
-                }
-
-                ParameterInfo[] candidateParams = candidate.GetParameters();
-                ParameterInfo[] expectedParams = expected.GetParameters();
-                if (candidateParams.Length != expectedParams.Length)
-                {
-                    continue;
-                }
-
-                bool paramsMatch = true;
-                for (int i = 0; i < candidateParams.Length; i++)
-                {
-                    if (candidateParams[i].ParameterType != expectedParams[i].ParameterType)
-                    {
-                        paramsMatch = false;
-                        break;
-                    }
-                }
-
-                if (paramsMatch)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            HarmonyLib.Patches? info = HarmonyLib.Harmony.GetPatchInfo(expected);
+            return info != null && info.Owners.Contains(harmony.Id);
         }
     }
 }

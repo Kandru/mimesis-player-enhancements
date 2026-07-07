@@ -23,7 +23,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 Feature,
                 patchTypes);
 
+            LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
+        }
+
+        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
+        {
+            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
+            [
+                ("Start/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), "Start")),
+                ("UpdatePlayerListView/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), nameof(UIPrefab_Spectator_PlayerListView.UpdatePlayerListView))),
+                ("Hide/UIPrefabScript (spectator list)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
+            ]);
         }
     }
 
