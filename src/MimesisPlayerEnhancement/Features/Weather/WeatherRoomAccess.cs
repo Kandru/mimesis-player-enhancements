@@ -90,25 +90,51 @@ namespace MimesisPlayerEnhancement.Features.Weather
 
         internal static long GetVanillaStartSeconds(DungeonRoom room)
         {
+            WeatherRoomState state = GetOrCreateState(room);
+            if (state.VanillaSnapshot != null)
+            {
+                return state.VanillaSnapshot.VanillaStartSeconds;
+            }
+
             DungeonMasterInfo? info = GetDungeonMasterInfo(room);
             if (info == null || string.IsNullOrEmpty(info.StartDisplayTime))
             {
                 return 0;
             }
 
-            return VWorldUtil.ConvertTimeToSeconds(info.StartDisplayTime);
+            return ParseDisplayTimeToSeconds(info.StartDisplayTime);
+        }
+
+        /// <summary>
+        /// Parses dungeon display times without calling <see cref="VWorldUtil.ConvertTimeToSeconds"/>,
+        /// which is Harmony-patched and must not be invoked reentrantly from that patch.
+        /// </summary>
+        internal static long ParseDisplayTimeToSeconds(string displayTime)
+        {
+            if (string.IsNullOrWhiteSpace(displayTime))
+            {
+                return 0;
+            }
+
+            return TimeSpan.TryParse(displayTime, out TimeSpan parsed)
+                ? (long)parsed.TotalSeconds
+                : 0;
         }
 
         internal static WeatherVanillaSnapshot CaptureWeatherSnapshot(DungeonRoom room, DungeonWeather weather)
         {
             List<int> hours = weather.GetAllWeather();
             List<bool> forecast = (List<bool>)WeatherForecastByHourField.GetValue(weather)!;
+            DungeonMasterInfo? info = GetDungeonMasterInfo(room);
+            string? startDisplayTime = info?.StartDisplayTime;
             return new WeatherVanillaSnapshot
             {
                 WeatherByHour = [.. hours],
                 WeatherForecastByHour = [.. forecast],
                 IsRandomOccured = (bool)IsRandomOccuredField.GetValue(weather)!,
-                VanillaStartSeconds = GetVanillaStartSeconds(room),
+                VanillaStartSeconds = string.IsNullOrEmpty(startDisplayTime)
+                    ? 0
+                    : ParseDisplayTimeToSeconds(startDisplayTime),
             };
         }
 

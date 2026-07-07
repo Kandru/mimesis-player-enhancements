@@ -23,5 +23,16 @@ namespace MimesisPlayerEnhancement.Features.Weather
             room = null!;
             return false;
         }
+
+        internal static bool ShouldOverrideConvertResult(long vanillaSeconds)
+        {
+            if (!TryGetActiveRoom(out DungeonRoom room))
+            {
+                return false;
+            }
+
+            long roomVanillaStart = WeatherRoomAccess.GetVanillaStartSeconds(room);
+            return roomVanillaStart > 0 && vanillaSeconds == roomVanillaStart;
+        }
     }
 }

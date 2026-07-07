@@ -162,6 +162,12 @@ namespace MimesisPlayerEnhancement.Features.Weather
                         return;
                     }
 
+                    // Only override dungeon start-display lookups (e.g. "10:00:00"), not arbitrary times.
+                    if (!WeatherTimeContext.ShouldOverrideConvertResult(__result))
+                    {
+                        return;
+                    }
+
                     __result = WeatherTimeResolver.GetEffectiveStartSeconds(room);
                 }
                 catch (Exception ex)
