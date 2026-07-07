@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using MelonLoader;
 using MelonLoader.Utils;
@@ -6,6 +5,7 @@ using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
+using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
@@ -129,6 +129,17 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> MimicPossessionMaxTimeSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionCooltimeMultiplier { get; internal set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnableMimicTuning { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> MimicVoiceTuningMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PeriodicVoiceIntervalMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> PlayerVoiceResponseChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PlayerVoiceResponseCooldownSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PlayerVoiceResponseDelayMinSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PlayerVoiceResponseDelayMaxSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PlayerVoiceResponseMaxDistance { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> MimicInventoryCopyMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> MimicInventoryCopyPickRule { get; internal set; } = null!;
+
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MaxStaminaMultiplier { get; internal set; } = null!;
@@ -190,6 +201,7 @@ namespace MimesisPlayerEnhancement
             EconomyConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
             DeadPlayerFeaturesConfig.CreateCategory();
+            MimicTuningConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
             DungeonRandomizerConfig.CreateCategory();
             WeatherConfig.CreateCategory();
@@ -220,6 +232,7 @@ namespace MimesisPlayerEnhancement
             EconomyConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
             DeadPlayerFeaturesConfig.CreateEntries();
+            MimicTuningConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
             DungeonRandomizerConfig.CreateEntries();
             WeatherConfig.CreateEntries();
@@ -254,6 +267,7 @@ namespace MimesisPlayerEnhancement
             EconomyConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
             DeadPlayerFeaturesConfig.WireValidation(logger);
+            MimicTuningConfig.WireValidation(logger);
             PlayerTuningConfig.WireValidation(logger);
             DungeonRandomizerConfig.WireValidation(logger);
             WeatherConfig.WireValidation(logger);
@@ -317,6 +331,7 @@ namespace MimesisPlayerEnhancement
             EconomyConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
             DeadPlayerFeaturesConfig.RegisterFloatEntries();
+            MimicTuningConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();
             WeatherConfig.RegisterFloatEntries();
         }

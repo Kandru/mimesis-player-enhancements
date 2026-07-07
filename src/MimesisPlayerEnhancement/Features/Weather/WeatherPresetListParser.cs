@@ -1,5 +1,3 @@
-using System;
-
 namespace MimesisPlayerEnhancement.Features.Weather
 {
     internal static class WeatherPresetListParser

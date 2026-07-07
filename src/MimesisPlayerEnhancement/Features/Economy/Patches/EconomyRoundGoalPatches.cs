@@ -1,5 +1,3 @@
-using System;
-
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))]

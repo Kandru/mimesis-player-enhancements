@@ -1,4 +1,3 @@
-using System;
 using ReluProtocol;
 using ReluProtocol.C2S;
 

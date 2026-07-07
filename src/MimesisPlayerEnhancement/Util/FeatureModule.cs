@@ -1,8 +1,8 @@
-using System;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
+using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
@@ -120,6 +120,8 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule(
                 "DeadPlayerFeatures",
                 DeadPlayerFeaturesPatches.Apply),
+            new FeatureModule("MimicTuning", MimicTuningPatches.Apply,
+                syncFromConfig: MimicTuningRuntime.RefreshFromConfig),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),

@@ -1,7 +1,5 @@
-using System;
 using System.Net;
 using System.Reflection;
-using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement
 {

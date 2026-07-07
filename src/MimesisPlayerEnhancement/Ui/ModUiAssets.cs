@@ -153,7 +153,7 @@ namespace MimesisPlayerEnhancement.Ui
 #pragma warning disable CS0618
         private static UiPrefab_RoomCard? FindRoomCardTemplate()
         {
-            foreach (Object obj in Resources.FindObjectsOfTypeAll(typeof(UiPrefab_RoomCard)))
+            foreach (UnityEngine.Object obj in Resources.FindObjectsOfTypeAll(typeof(UiPrefab_RoomCard)))
             {
                 if (obj is UiPrefab_RoomCard card)
                 {

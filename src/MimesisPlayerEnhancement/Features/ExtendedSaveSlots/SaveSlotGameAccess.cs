@@ -1,6 +1,5 @@
 using System.Reflection;
 using ReluProtocol;
-using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
@@ -58,13 +57,13 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
 #pragma warning disable CS0618
         internal static UIPrefab_LoadTram? TryFindHiddenLoadTram() =>
-            Object.FindObjectOfType<UIPrefab_LoadTram>(true);
+            UnityEngine.Object.FindObjectOfType<UIPrefab_LoadTram>(true);
 
         internal static UIPrefab_NewTram? TryFindHiddenNewTram() =>
-            Object.FindObjectOfType<UIPrefab_NewTram>(true);
+            UnityEngine.Object.FindObjectOfType<UIPrefab_NewTram>(true);
 
         internal static UIPrefab_NewTramPopUp? TryFindHiddenNewTramPopUp() =>
-            Object.FindObjectOfType<UIPrefab_NewTramPopUp>(true);
+            UnityEngine.Object.FindObjectOfType<UIPrefab_NewTramPopUp>(true);
 #pragma warning restore CS0618
     }
 }

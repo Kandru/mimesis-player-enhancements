@@ -1,5 +1,3 @@
-using System;
-
 namespace MimesisPlayerEnhancement.Features.Weather
 {
     public static class WeatherPatches

@@ -1,4 +1,3 @@
-using System;
 namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
 {
     internal static class MimicPossessionResolver

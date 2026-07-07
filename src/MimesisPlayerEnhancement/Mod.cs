@@ -1,4 +1,3 @@
-using System;
 using MelonLoader;
 using UnityEngine;
 
@@ -168,6 +167,10 @@ namespace MimesisPlayerEnhancement
                           ? $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value}"
                           : "") +
                       ")"
+                    : "") +
+                $", MimicTuning={ModConfig.EnableMimicTuning.Value}" +
+                (ModConfig.EnableMimicTuning.Value
+                    ? $" (voice={ModConfig.MimicVoiceTuningMode.Value}, inventory={ModConfig.MimicInventoryCopyMode.Value})"
                     : "") +
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +

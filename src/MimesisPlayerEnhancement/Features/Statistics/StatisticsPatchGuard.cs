@@ -1,4 +1,3 @@
-using System;
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     internal static class StatisticsPatchGuard

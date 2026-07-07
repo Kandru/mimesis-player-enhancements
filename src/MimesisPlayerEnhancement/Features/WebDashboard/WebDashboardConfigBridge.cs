@@ -1,4 +1,3 @@
-using System;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 

@@ -220,6 +220,49 @@
         "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
       }
     },
+    "MimesisPlayerEnhancement_MimicTuning": {
+      "_section": "Mimic-Tuning",
+      "EnableMimicTuning": {
+        "title": "Mimic-Tuning aktivieren",
+        "description": "Host-only: Mimic-Sprachhäufigkeit und Inventar-Kopie. Unterfeatures mit Vanilla- oder Custom-Modus."
+      },
+      "MimicVoiceTuningMode": {
+        "title": "Mimic-Sprach-Tuning-Modus",
+        "description": "Vanilla = Spiel-Timing. Custom = Antwort-Chance, Abklingzeit, Verzögerung, Distanz und Intervall."
+      },
+      "PeriodicVoiceIntervalMultiplier": {
+        "title": "Periodisches Sprach-Intervall-Multiplikator",
+        "description": "Nur Custom: Skaliert die Abklingzeit zwischen ambienten Mimic-Stimmen (1 = Vanilla, 0,5 ≈ doppelt so gesprächig)."
+      },
+      "PlayerVoiceResponseChancePercent": {
+        "title": "Spieler-Sprach-Antwort-Chance (%)",
+        "description": "Nur Custom: Chance, dass ein naher Mimic nach Spielersprache eine archivierte Zeile abspielt (0–100)."
+      },
+      "PlayerVoiceResponseCooldownSeconds": {
+        "title": "Spieler-Sprach-Antwort-Abklingzeit (Sekunden)",
+        "description": "Nur Custom: Mindestsekunden zwischen Mimic-Reaktionen auf Spielersprache (Vanilla ist 3)."
+      },
+      "PlayerVoiceResponseDelayMinSeconds": {
+        "title": "Spieler-Sprach-Antwort-Verzögerung Min (Sekunden)",
+        "description": "Nur Custom: Kürzeste zufällige Pause vor Mimic-Antwort auf Spielersprache."
+      },
+      "PlayerVoiceResponseDelayMaxSeconds": {
+        "title": "Spieler-Sprach-Antwort-Verzögerung Max (Sekunden)",
+        "description": "Nur Custom: Längste zufällige Pause vor Mimic-Antwort. Muss ≥ Min sein."
+      },
+      "PlayerVoiceResponseMaxDistance": {
+        "title": "Spieler-Sprach-Antwort-Maximaldistanz (m)",
+        "description": "Nur Custom: Maximale Reichweite für Mimic-Reaktionen auf Spielersprache (Vanilla ist 20)."
+      },
+      "MimicInventoryCopyMode": {
+        "title": "Mimic-Inventar-Kopie-Modus",
+        "description": "Vanilla = Verhaltensbaum-Regeln. Custom = erzwingt die Auswahlregel unten bei CopyInventory."
+      },
+      "MimicInventoryCopyPickRule": {
+        "title": "Mimic-Inventar-Kopie-Auswahlregel",
+        "description": "Nur Custom: Welches Spieler-Inventar Mimics kopieren (MinDistance, MaxDistance oder Random)."
+      }
+    },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Wirtschaft",
       "EnableEconomy": {

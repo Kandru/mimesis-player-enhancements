@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 
@@ -38,6 +37,7 @@ namespace MimesisPlayerEnhancement
             const string DungeonTime = "MimesisPlayerEnhancement_DungeonTime";
             const string Weather = "MimesisPlayerEnhancement_Weather";
             const string DeadPlayerFeatures = "MimesisPlayerEnhancement_DeadPlayerFeatures";
+            const string MimicTuning = "MimesisPlayerEnhancement_MimicTuning";
 
             Float(Main, "ModToastDurationSeconds", 1f);
 
@@ -100,6 +100,14 @@ namespace MimesisPlayerEnhancement
             FloatRange(DeadPlayerFeatures, "MimicPossessionCooltimeMultiplier",
                 MimicPossessionResolver.MinCooltimeMultiplier,
                 MimicPossessionResolver.MaxCooltimeMultiplier);
+
+            MinZeroFloat(MimicTuning,
+                "PeriodicVoiceIntervalMultiplier",
+                "PlayerVoiceResponseCooldownSeconds",
+                "PlayerVoiceResponseDelayMinSeconds",
+                "PlayerVoiceResponseDelayMaxSeconds");
+            Float(MimicTuning, "PlayerVoiceResponseMaxDistance", 1f);
+            IntRange(MimicTuning, "PlayerVoiceResponseChancePercent", 0, 100);
         }
 
         internal static bool TryGet(string sectionId, string key, out ModConfigEntryBound bound)

@@ -1,5 +1,4 @@
 using FishNet.Object.Synchronizing;
-using Mimic.Voice.SpeechSystem;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {

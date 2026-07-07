@@ -220,6 +220,49 @@
         "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla)."
       }
     },
+    "MimesisPlayerEnhancement_MimicTuning": {
+      "_section": "Mimic Tuning",
+      "EnableMimicTuning": {
+        "title": "Enable Mimic Tuning",
+        "description": "Host-only mimic voice frequency and inventory-copy tuning. Subfeatures use Vanilla or Custom modes."
+      },
+      "MimicVoiceTuningMode": {
+        "title": "Mimic Voice Tuning Mode",
+        "description": "Vanilla keeps game voice timing. Custom applies response chance, cooldown, delay, distance, and interval keys."
+      },
+      "PeriodicVoiceIntervalMultiplier": {
+        "title": "Periodic Voice Interval Multiplier",
+        "description": "Custom only: scales ambient mimic voice cooldown between lines (1 = vanilla, 0.5 = about twice as chatty)."
+      },
+      "PlayerVoiceResponseChancePercent": {
+        "title": "Player Voice Response Chance (%)",
+        "description": "Custom only: chance a nearby mimic replays an archived line after a player speaks (0–100)."
+      },
+      "PlayerVoiceResponseCooldownSeconds": {
+        "title": "Player Voice Response Cooldown (seconds)",
+        "description": "Custom only: minimum seconds between mimic reactions to player speech (vanilla is 3)."
+      },
+      "PlayerVoiceResponseDelayMinSeconds": {
+        "title": "Player Voice Response Delay Min (seconds)",
+        "description": "Custom only: shortest random pause before a mimic replies to player speech."
+      },
+      "PlayerVoiceResponseDelayMaxSeconds": {
+        "title": "Player Voice Response Delay Max (seconds)",
+        "description": "Custom only: longest random pause before a mimic replies. Must be ≥ min."
+      },
+      "PlayerVoiceResponseMaxDistance": {
+        "title": "Player Voice Response Max Distance (m)",
+        "description": "Custom only: max range for mimics to react when a player speaks (vanilla is 20)."
+      },
+      "MimicInventoryCopyMode": {
+        "title": "Mimic Inventory Copy Mode",
+        "description": "Vanilla uses behavior-tree pick rules. Custom forces the pick rule below for mimic CopyInventory."
+      },
+      "MimicInventoryCopyPickRule": {
+        "title": "Mimic Inventory Copy Pick Rule",
+        "description": "Custom only: which player inventory mimics copy (MinDistance, MaxDistance, or Random)."
+      }
+    },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Economy",
       "EnableEconomy": {

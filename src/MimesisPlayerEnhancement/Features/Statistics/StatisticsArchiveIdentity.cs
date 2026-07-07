@@ -1,5 +1,3 @@
-using Mimic.Voice.SpeechSystem;
-
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     /// <summary>

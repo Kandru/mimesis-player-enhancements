@@ -94,7 +94,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             if (_ui != null)
             {
-                Object.Destroy(_ui.gameObject);
+                UnityEngine.Object.Destroy(_ui.gameObject);
                 _ui = null;
             }
 

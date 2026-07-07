@@ -16,6 +16,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: configurable periodic spawn wait (Vanilla / Fixed / Random seconds) for initial delay and wave interval; spawn multipliers no longer shorten wave periods (still needs tuning and extensive testing!)
 - draft: host-only Weather feature — fixed/cycle presets, random-roll stripping, start-time presets, real-time config apply (still needs tuning and extensive testing!)
 - draft: added godmode and noclip (still needs proper testing!)
+- draft: add the ability to change the mimic voice behaviour
 
 ## 26.7.6
 - added translations

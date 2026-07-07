@@ -47,6 +47,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host |
 | [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host |
 | [Dead Player Features](#dead-player-features--mimesisplayerenhancement_deadplayerfeatures) | Mimic possession timing for dead players | Host |
+| [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice frequency and inventory-copy bias | Host |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host |
 | [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host |
 | [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host |
@@ -268,6 +269,36 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | `MimicPossessionMinTimeSeconds` | float | `12.0` | `0.1`–`120` | Minimum rolled speak duration in seconds (vanilla is 12). |
 | `MimicPossessionMaxTimeSeconds` | float | `12.0` | `0.1`–`120` | Maximum rolled speak duration in seconds (vanilla is 12). Must be ≥ `MimicPossessionMinTimeSeconds`. |
 | `MimicPossessionCooltimeMultiplier` | float | `1.0` | `0.1`–`10.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Independent of the random duration toggle. |
+
+## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
+
+**Host-only.** Tune how often mimics replay archived player voice lines and which player inventory mimics copy for decoy loadouts. Off by default. Each subfeature uses a **Vanilla / Custom** mode dropdown (default **Vanilla**). Custom keys apply only when that subfeature is set to Custom.
+
+**Live apply:** Changes take effect on the next mimic voice attempt or `CopyInventory` call — no restart required. Already-playing audio and already-cloned inventories are not reverted.
+
+### Voice tuning (`MimicVoiceTuningMode`)
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `EnableMimicTuning` | bool | `false` | — | Master toggle for mimic voice and inventory-copy tuning. Host only. |
+| `MimicVoiceTuningMode` | string | `Vanilla` | `Vanilla`, `Custom` | Vanilla uses game voice timing. Custom applies the response keys below. |
+| `PeriodicVoiceIntervalMultiplier` | float | `1.0` | ≥ `0.05` | Custom only: scales ambient mimic voice cooldown between lines (`0.5` ≈ twice as chatty). |
+| `PlayerVoiceResponseChancePercent` | int | `100` | `0`–`100` | Custom only: chance a nearby mimic replays a line after a player speaks. |
+| `PlayerVoiceResponseCooldownSeconds` | float | `3.0` | ≥ `0` | Custom only: minimum seconds between mimic reactions to player speech (vanilla is 3). |
+| `PlayerVoiceResponseDelayMinSeconds` | float | `0.2` | ≥ `0` | Custom only: shortest random pause before a mimic replies. |
+| `PlayerVoiceResponseDelayMaxSeconds` | float | `0.2` | ≥ `0` | Custom only: longest random pause before a mimic replies. Must be ≥ min. |
+| `PlayerVoiceResponseMaxDistance` | float | `20.0` | ≥ `1` | Custom only: max range for mimics to react when a player speaks (vanilla is 20 m). |
+
+Voice debug lines (source player name, pick reason, clip metadata — no transcript; mimic voice is replayed audio) require `EnableDebugLogging = true` in the global section and `MimicVoiceTuningMode = Custom`.
+
+**Example — more natural responses:** `PlayerVoiceResponseChancePercent = 60`, `PlayerVoiceResponseDelayMinSeconds = 0.4`, `PlayerVoiceResponseDelayMaxSeconds = 1.2`, `PlayerVoiceResponseCooldownSeconds = 4`.
+
+### Inventory copy (`MimicInventoryCopyMode`)
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `MimicInventoryCopyMode` | string | `Vanilla` | `Vanilla`, `Custom` | Vanilla uses behavior-tree pick rules. Custom forces the pick rule below. |
+| `MimicInventoryCopyPickRule` | string | `MinDistance` | `MinDistance`, `MaxDistance`, `Random` | Custom only: which player inventory mimics copy. |
 
 ## Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 

@@ -17,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         {
             for (int i = list.Count - 1; i > 0; i--)
             {
-                int j = Random.Range(0, i + 1);
+                int j = UnityEngine.Random.Range(0, i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
             }
         }
@@ -65,7 +65,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static MapMarker_LootingObjectSpawnPoint[] CollectLootMarkers()
         {
-            return Object.FindObjectsByType<MapMarker_LootingObjectSpawnPoint>(FindObjectsSortMode.None);
+            return UnityEngine.Object.FindObjectsByType<MapMarker_LootingObjectSpawnPoint>(FindObjectsSortMode.None);
         }
     }
 }

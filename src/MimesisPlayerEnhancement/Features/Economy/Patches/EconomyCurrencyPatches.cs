@@ -1,5 +1,3 @@
-using System;
-
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.Currency), MethodType.Setter)]

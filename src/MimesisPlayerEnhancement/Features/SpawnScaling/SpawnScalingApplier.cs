@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 
 namespace MimesisPlayerEnhancement.Features.SpawnScaling

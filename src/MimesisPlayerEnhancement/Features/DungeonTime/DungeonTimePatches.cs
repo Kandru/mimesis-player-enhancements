@@ -1,4 +1,3 @@
-using System;
 namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     public static class DungeonTimePatches

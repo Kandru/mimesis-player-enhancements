@@ -1,4 +1,3 @@
-using System;
 namespace MimesisPlayerEnhancement.Util
 {
     internal static class ModLocaleAssets

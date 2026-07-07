@@ -1,4 +1,3 @@
-using System;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -13,6 +12,7 @@ namespace MimesisPlayerEnhancement
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
         private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
+        private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
             new(EntryKeyComparer.Instance)
@@ -23,6 +23,9 @@ namespace MimesisPlayerEnhancement
                 [(WeatherSectionId, "FixedWeatherPreset")] = ["Sunny", "Rain", "HeavyRain", "Squall"],
                 [(WeatherSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
                 [(SpawnScalingSectionId, "PeriodicSpawnWaitMode")] = ["Vanilla", "Fixed", "Random"],
+                [(MimicTuningSectionId, "MimicVoiceTuningMode")] = ["Vanilla", "Custom"],
+                [(MimicTuningSectionId, "MimicInventoryCopyMode")] = ["Vanilla", "Custom"],
+                [(MimicTuningSectionId, "MimicInventoryCopyPickRule")] = ["MinDistance", "MaxDistance", "Random"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)

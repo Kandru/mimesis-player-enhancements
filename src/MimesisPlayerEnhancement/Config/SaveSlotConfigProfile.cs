@@ -1,4 +1,3 @@
-using System;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 
 namespace MimesisPlayerEnhancement

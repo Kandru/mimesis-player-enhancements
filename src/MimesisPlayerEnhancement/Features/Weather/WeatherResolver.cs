@@ -1,4 +1,3 @@
-using System;
 using Bifrost.Cooked;
 
 namespace MimesisPlayerEnhancement.Features.Weather

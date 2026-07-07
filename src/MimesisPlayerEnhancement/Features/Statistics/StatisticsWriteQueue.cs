@@ -1,4 +1,3 @@
-using System;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
