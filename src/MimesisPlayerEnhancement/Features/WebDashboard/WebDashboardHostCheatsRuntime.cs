@@ -6,6 +6,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly HashSet<long> GodModePlayerUids = [];
         private static readonly HashSet<long> NoClipPlayerUids = [];
+        private static bool _roomTransitionSuspend;
+
+        internal static bool IsRoomTransitionSuspended => _roomTransitionSuspend;
 
         internal static bool IsGodModeEnabled(long playerUid) =>
             playerUid != 0 && GodModePlayerUids.Contains(playerUid);
@@ -14,22 +17,47 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             playerUid != 0 && NoClipPlayerUids.Contains(playerUid);
 
         internal static bool IsGodModeActive(VPlayer? player) =>
-            player != null && GodModePlayerUids.Contains(player.UID);
+            !_roomTransitionSuspend && player != null && GodModePlayerUids.Contains(player.UID);
 
         internal static bool IsNoClipActive(VPlayer? player) =>
-            player != null && NoClipPlayerUids.Contains(player.UID);
+            !_roomTransitionSuspend && player != null && NoClipPlayerUids.Contains(player.UID);
 
         internal static bool IsNoClipActive(VCreature? creature) =>
             creature is VPlayer player && IsNoClipActive(player);
 
         internal static bool IsLocalAvatarNoClipActive()
         {
-            if (!TryGetLocalVPlayer(out VPlayer? player))
+            if (_roomTransitionSuspend || !TryGetLocalVPlayer(out VPlayer? player))
             {
                 return false;
             }
 
             return IsNoClipActive(player);
+        }
+
+        internal static void BeginRoomTransition(string reason)
+        {
+            if (_roomTransitionSuspend || (GodModePlayerUids.Count == 0 && NoClipPlayerUids.Count == 0))
+            {
+                return;
+            }
+
+            _roomTransitionSuspend = true;
+            RevertAppliedCheats();
+            ModLog.Debug(Feature, $"Player cheats suspended — {reason}.");
+        }
+
+        internal static void EndRoomTransition(string reason)
+        {
+            if (!_roomTransitionSuspend)
+            {
+                return;
+            }
+
+            _roomTransitionSuspend = false;
+            ReapplyConfiguredCheats();
+            WebDashboardSnapshotCache.MarkDirty();
+            ModLog.Debug(Feature, $"Player cheats resumed — {reason}.");
         }
 
         internal static bool TryToggleGodMode(VPlayer player, out bool enabled, out string? errorMessage)
@@ -94,6 +122,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (enabled)
             {
                 NoClipPlayerUids.Add(player.UID);
+                if (IsLocalPlayer(player))
+                {
+                    WebDashboardHostCheatsNoClipMovement.PrepareLocalAvatar();
+                }
             }
             else
             {
@@ -111,6 +143,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void DisableAll(string reason)
         {
+            _roomTransitionSuspend = false;
+
             if (GodModePlayerUids.Count == 0 && NoClipPlayerUids.Count == 0)
             {
                 return;
@@ -156,6 +190,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool IsNoClipActiveInRoom(IVroom room)
         {
+            if (_roomTransitionSuspend)
+            {
+                return false;
+            }
+
             foreach (long playerUid in NoClipPlayerUids)
             {
                 if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
@@ -204,6 +243,51 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (GodModePlayerUids.Count > 0 || NoClipPlayerUids.Count > 0)
             {
                 WebDashboardSnapshotCache.MarkDirty();
+            }
+        }
+
+        private static void RevertAppliedCheats()
+        {
+            foreach (long playerUid in new List<long>(GodModePlayerUids))
+            {
+                if (WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    && player != null)
+                {
+                    ApplyGodMode(player, enabled: false);
+                }
+            }
+
+            if (NoClipPlayerUids.Count > 0)
+            {
+                WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+            }
+        }
+
+        private static void ReapplyConfiguredCheats()
+        {
+            foreach (long playerUid in new List<long>(GodModePlayerUids))
+            {
+                if (WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    && player != null
+                    && player.IsAliveStatus())
+                {
+                    ApplyGodMode(player, enabled: true);
+                }
+            }
+
+            foreach (long playerUid in new List<long>(NoClipPlayerUids))
+            {
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    || player == null
+                    || !player.IsAliveStatus())
+                {
+                    continue;
+                }
+
+                if (IsLocalPlayer(player))
+                {
+                    WebDashboardHostCheatsNoClipMovement.PrepareLocalAvatar();
+                }
             }
         }
 

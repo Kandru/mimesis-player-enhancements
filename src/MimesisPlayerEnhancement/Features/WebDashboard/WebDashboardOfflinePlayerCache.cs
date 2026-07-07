@@ -41,7 +41,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             int rebuildRevision = revision;
-            _ = Task.Run(() => RebuildBackground(rebuildRevision));
+            WebDashboardPlayerService.OfflinePlayerBuildContext context =
+                WebDashboardPlayerService.OfflinePlayerBuildContext.Capture();
+            _ = Task.Run(() => RebuildBackground(rebuildRevision, context));
         }
 
         internal static void Clear()
@@ -51,11 +53,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _pendingRevision = 0;
         }
 
-        private static void RebuildBackground(int revision)
+        private static void RebuildBackground(
+            int revision,
+            WebDashboardPlayerService.OfflinePlayerBuildContext context)
         {
             try
             {
-                List<WebDashboardPlayerDto> built = WebDashboardPlayerService.BuildOfflineStatisticsPlayers();
+                List<WebDashboardPlayerDto> built = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(context);
                 _cached = built;
                 _cachedRevision = revision;
                 WebDashboardSnapshotCache.MarkDirty();

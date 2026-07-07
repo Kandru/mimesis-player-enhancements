@@ -52,7 +52,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool ShouldReplaceControl(ProtoActor actor)
         {
-            if (!WebDashboardHostCheatsRuntime.IsLocalAvatarNoClipActive()
+            if (WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
+                || !WebDashboardHostCheatsRuntime.IsLocalAvatarNoClipActive()
                 || !actor.AmIAvatar()
                 || actor.controlMode != ProtoActor.ControlMode.Manual
                 || actor.dead
@@ -73,6 +74,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return true;
         }
 
+        internal static void PrepareLocalAvatar()
+        {
+            try
+            {
+                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+                if (pdata?.main == null || pdata.MyActorID == 0)
+                {
+                    return;
+                }
+
+                if (pdata.main.GetActorByActorID(pdata.MyActorID) is ProtoActor actor)
+                {
+                    SetCharacterControllerEnabled(actor, enabled: false);
+                }
+            }
+            catch
+            {
+                /* avatar may not exist yet */
+            }
+        }
+
         internal static void Apply(ProtoActor actor)
         {
             RotateByInputMethod.Invoke(actor, null);
@@ -81,8 +103,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _ = (bool)(ProcessSprintKeyMethod.Invoke(actor, [actor.isSprinting]) ?? false);
             float speed = (float)(CalculateSpeedMethod.Invoke(actor, null) ?? 0f);
             speed *= PlayerTuningResolver.NoClipSpeedMultiplier;
-
-            SetCharacterControllerEnabled(actor, enabled: false);
 
             Transform? camRoot = CamRootField.GetValue(actor) as Transform;
             if (camRoot == null)
@@ -104,14 +124,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             FallingField.SetValue(actor, 0f);
 
-            if (PuppetField.GetValue(actor) is PuppetScript puppet)
+            try
             {
-                Vector3 velocity = moveDirection.sqrMagnitude > 0.0001f
-                    ? moveDirection.normalized * speed
-                    : Vector3.zero;
-                float walkSpeed = WalkSpeedProperty.GetValue(actor) is float walk ? walk : speed;
-                float runSpeed = RunSpeedProperty.GetValue(actor) is float run ? run : speed;
-                puppet.Move(velocity, walkSpeed, runSpeed);
+                if (PuppetField.GetValue(actor) is PuppetScript puppet)
+                {
+                    Vector3 velocity = moveDirection.sqrMagnitude > 0.0001f
+                        ? moveDirection.normalized * speed
+                        : Vector3.zero;
+                    float walkSpeed = WalkSpeedProperty.GetValue(actor) is float walk ? walk : speed;
+                    float runSpeed = RunSpeedProperty.GetValue(actor) is float run ? run : speed;
+                    puppet.Move(velocity, walkSpeed, runSpeed);
+                }
+            }
+            catch
+            {
+                /* puppet may be mid-reset while CC is disabled */
             }
         }
 

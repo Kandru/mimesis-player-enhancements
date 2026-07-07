@@ -135,14 +135,83 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             private static bool Prefix(ProtoActor __instance)
             {
-                if (!WebDashboardHostCheatsNoClipMovement.ShouldReplaceControl(__instance))
+                if (WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
+                    || !WebDashboardHostCheatsNoClipMovement.ShouldReplaceControl(__instance))
                 {
                     return true;
                 }
 
-                WebDashboardHostCheatsNoClipMovement.Apply(__instance);
+                try
+                {
+                    WebDashboardHostCheatsNoClipMovement.Apply(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Noclip movement failed — {ex.Message}");
+                }
+
                 return false;
             }
+        }
+
+        [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
+        internal static class PendMoveToDungeonCheatsPatch
+        {
+            private static void Prefix() =>
+                WebDashboardHostCheatsRuntime.BeginRoomTransition("tram to dungeon");
+        }
+
+        [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToWaitingRoom))]
+        internal static class PendMoveToWaitingRoomCheatsPatch
+        {
+            private static void Prefix() =>
+                WebDashboardHostCheatsRuntime.BeginRoomTransition("maintenance to tram");
+        }
+
+        [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToMaintenance))]
+        internal static class PendMoveToMaintenanceCheatsPatch
+        {
+            private static void Prefix() =>
+                WebDashboardHostCheatsRuntime.BeginRoomTransition("dungeon to maintenance");
+        }
+
+        [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDeathMatch))]
+        internal static class PendMoveToDeathMatchCheatsPatch
+        {
+            private static void Prefix() =>
+                WebDashboardHostCheatsRuntime.BeginRoomTransition("dungeon to deathmatch");
+        }
+
+        [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))]
+        internal static class OnEnterDungeonCheatsPatch
+        {
+            private static void Postfix() =>
+                WebDashboardHostCheatsRuntime.EndRoomTransition("dungeon entered");
+        }
+
+        [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEndDungeon))]
+        internal static class OnEndDungeonCheatsPatch
+        {
+            private static void Prefix() =>
+                WebDashboardHostCheatsRuntime.BeginRoomTransition("leaving dungeon");
+        }
+
+        [HarmonyPatch]
+        internal static class InTramWaitingSceneReadyCheatsPatch
+        {
+            private static MethodBase TargetMethod() =>
+                AccessTools.Method(typeof(InTramWaitingScene), "Start")
+                    ?? throw new InvalidOperationException("InTramWaitingScene.Start not found");
+
+            private static void Postfix() =>
+                WebDashboardHostCheatsRuntime.EndRoomTransition("tram entered");
+        }
+
+        [HarmonyPatch(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")]
+        internal static class MaintenanceSceneReadyCheatsPatch
+        {
+            private static void Postfix() =>
+                WebDashboardHostCheatsRuntime.EndRoomTransition("maintenance entered");
         }
     }
 }
