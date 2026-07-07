@@ -26,7 +26,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNestedPatchTypes(typeof(MorePlayersPatches))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SurvivalResultPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(VActorDictCapacityPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
@@ -72,8 +71,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         /// <summary>Re-applies player-cap limits to live networking state after config changes.</summary>
         public static void RefreshFromConfig()
         {
-            SpectatorPlayerGrid.RefreshFromConfig();
-
             if (!ModConfig.EnableMorePlayers.Value)
             {
                 // Revert an elevated live socket cap to vanilla so a disabled feature does not

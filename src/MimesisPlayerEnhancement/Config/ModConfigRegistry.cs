@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.UserInterface;
 
 namespace MimesisPlayerEnhancement
 {
@@ -139,6 +140,23 @@ namespace MimesisPlayerEnhancement
 
                 Register(entry);
             }
+        }
+
+        internal static void PurgeObsoleteFromFile(string filePath, bool allowProfileSection = false)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return;
+            }
+
+            string? text = AtomicFileIO.ReadText(filePath, "ModConfigRegistry");
+            SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
+            if (!SparseTomlConfig.PurgeUnregisteredEntries(doc, allowProfileSection))
+            {
+                return;
+            }
+
+            AtomicFileIO.WriteText(filePath, SparseTomlConfig.SerializeRaw(doc), "ModConfigRegistry");
         }
 
         internal static bool TryGetEntry(string sectionId, string key, out MelonPreferences_Entry? entry)
@@ -281,6 +299,11 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
+            if (string.Equals(sectionId, UiConfig.SectionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             foreach (string entryKey in GetEntryOrder(sectionId))
             {
                 if (!TryGetEntry(sectionId, entryKey, out MelonPreferences_Entry? entry) || entry == null)
@@ -326,7 +349,7 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
-            return string.Equals(sectionId, "MimesisPlayerEnhancement_ExtendedSaveSlots", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(sectionId, UiConfig.SectionId, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)

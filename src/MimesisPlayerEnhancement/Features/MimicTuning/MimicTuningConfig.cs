@@ -75,8 +75,39 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 "Mimic Inventory Copy Pick Rule",
                 "Custom only: which player inventory mimics copy (MinDistance, MaxDistance, or Random).");
 
-            MimicVoiceTuningResolver.RefreshFromConfigRegistration();
-            MimicInventoryCopyResolver.RefreshFromConfigRegistration();
+            ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
+                "EnableMimicPossessionTuning",
+                false,
+                "Enable Mimic Possession Tuning",
+                "Tune dead-player mimic possession speak duration and cooldown on the host.");
+
+            ModConfig.RandomizeMimicPossessionDuration = ModConfig.CreateTrackedEntry(_category,
+                "RandomizeMimicPossessionDuration",
+                false,
+                "Randomize Mimic Possession Duration",
+                "Roll a random speak window per E-possession between min and max seconds below.");
+
+            ModConfig.MimicPossessionMinTimeSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicPossessionMinTimeSeconds",
+                MimicPossessionResolver.VanillaPossessionDurationSeconds,
+                "Mimic Possession Min Time (seconds)",
+                "Minimum rolled speak duration in seconds (vanilla is 12).");
+
+            ModConfig.MimicPossessionMaxTimeSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicPossessionMaxTimeSeconds",
+                MimicPossessionResolver.VanillaPossessionDurationSeconds,
+                "Mimic Possession Max Time (seconds)",
+                "Maximum rolled speak duration in seconds (vanilla is 12).");
+
+            ModConfig.MimicPossessionCooltimeMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "MimicPossessionCooltimeMultiplier",
+                1f,
+                "Mimic Possession Cooltime Multiplier",
+                "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla).");
+
+            MimicVoiceTuningResolver.RefreshConfigCache();
+            MimicInventoryCopyResolver.RefreshConfigCache();
+            MimicPossessionResolver.RefreshConfigCache();
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -101,6 +132,16 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 OnInventoryModeChanged(logger, value));
             ModConfig.MimicInventoryCopyPickRule.OnEntryValueChanged.Subscribe((_, value) =>
                 OnInventoryPickRuleChanged(logger, value));
+            ModConfig.EnableMimicPossessionTuning.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableMimicPossessionTuning));
+            ModConfig.RandomizeMimicPossessionDuration.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.RandomizeMimicPossessionDuration));
+            ModConfig.MimicPossessionMinTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
+                OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMinTimeSeconds));
+            ModConfig.MimicPossessionMaxTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
+                OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMaxTimeSeconds));
+            ModConfig.MimicPossessionCooltimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnMimicPossessionCooltimeMultiplierChanged(logger, value));
         }
 
         internal static void RegisterFloatEntries()
@@ -110,6 +151,9 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             ModConfig.TrackFloatEntry(ModConfig.PlayerVoiceResponseDelayMinSeconds);
             ModConfig.TrackFloatEntry(ModConfig.PlayerVoiceResponseDelayMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.PlayerVoiceResponseMaxDistance);
+            ModConfig.TrackFloatEntry(ModConfig.MimicPossessionMinTimeSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicPossessionMaxTimeSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicPossessionCooltimeMultiplier);
         }
 
         private static void OnVoiceModeChanged(MelonLogger.Instance logger, string value)
@@ -229,5 +273,61 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             string.Equals(value, nameof(BTTargetPickRule.MinDistance), StringComparison.OrdinalIgnoreCase)
             || string.Equals(value, nameof(BTTargetPickRule.MaxDistance), StringComparison.OrdinalIgnoreCase)
             || string.Equals(value, nameof(BTTargetPickRule.Random), StringComparison.OrdinalIgnoreCase);
+
+        private static void OnMimicPossessionDurationSecondsChanged(
+            MelonLogger.Instance logger,
+            float value,
+            MelonPreferences_Entry<float> entry)
+        {
+            if (value < MimicPossessionResolver.MinDurationSeconds)
+            {
+                logger.Warning(
+                    $"{entry.Identifier} must be at least {MimicPossessionResolver.MinDurationSeconds}; resetting.");
+                entry.Value = MimicPossessionResolver.MinDurationSeconds;
+                return;
+            }
+
+            if (value > MimicPossessionResolver.MaxDurationSeconds)
+            {
+                logger.Warning(
+                    $"{entry.Identifier} must be at most {MimicPossessionResolver.MaxDurationSeconds}; resetting.");
+                entry.Value = MimicPossessionResolver.MaxDurationSeconds;
+                return;
+            }
+
+            float min = ModConfig.MimicPossessionMinTimeSeconds.Value;
+            float max = ModConfig.MimicPossessionMaxTimeSeconds.Value;
+            if (max < min)
+            {
+                logger.Warning(
+                    "MimicPossessionMaxTimeSeconds must be >= MimicPossessionMinTimeSeconds; syncing max to min.");
+                ModConfig.MimicPossessionMaxTimeSeconds.Value = min;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(entry);
+            ModConfig.NotifyChanged(entry);
+        }
+
+        private static void OnMimicPossessionCooltimeMultiplierChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MimicPossessionResolver.MinCooltimeMultiplier)
+            {
+                logger.Warning(
+                    $"MimicPossessionCooltimeMultiplier must be at least {MimicPossessionResolver.MinCooltimeMultiplier}; resetting.");
+                ModConfig.MimicPossessionCooltimeMultiplier.Value = MimicPossessionResolver.MinCooltimeMultiplier;
+                return;
+            }
+
+            if (value > MimicPossessionResolver.MaxCooltimeMultiplier)
+            {
+                logger.Warning(
+                    $"MimicPossessionCooltimeMultiplier must be at most {MimicPossessionResolver.MaxCooltimeMultiplier}; resetting.");
+                ModConfig.MimicPossessionCooltimeMultiplier.Value = MimicPossessionResolver.MaxCooltimeMultiplier;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(ModConfig.MimicPossessionCooltimeMultiplier);
+            ModConfig.NotifyChanged(ModConfig.MimicPossessionCooltimeMultiplier);
+        }
     }
 }

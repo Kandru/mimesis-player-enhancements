@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
+namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
 {
     internal static class MimicPossessionSessions
     {

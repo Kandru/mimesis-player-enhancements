@@ -1,5 +1,3 @@
-using ReluProtocol;
-
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))]

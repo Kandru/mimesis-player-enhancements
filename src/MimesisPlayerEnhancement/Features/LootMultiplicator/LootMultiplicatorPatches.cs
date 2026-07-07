@@ -3,7 +3,6 @@ using System.Reflection.Emit;
 using Bifrost.ConstEnum;
 using Bifrost.Cooked;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
-using ReluProtocol;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator

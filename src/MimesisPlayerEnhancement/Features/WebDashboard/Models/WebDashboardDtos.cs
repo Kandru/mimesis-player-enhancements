@@ -276,6 +276,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string? MaxValue;
         public string InputKind = "Default";
         public string EntryGroup = "";
+        public string? DependsOnKey;
+        public string? DependsOnValue;
         public List<WebDashboardConfigSelectOptionDto> SelectOptions = [];
     }
 

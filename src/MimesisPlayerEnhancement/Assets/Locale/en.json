@@ -2,13 +2,24 @@
   "config": {
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
+      "EnableDebugLogging": {
+        "title": "Enable Debug Logging",
+        "description": "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting."
+      }
+    },
+    "MimesisPlayerEnhancement_Ui": {
+      "_section": "User Interface",
       "ModToastDurationSeconds": {
         "title": "Mod Message Duration (seconds)",
         "description": "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally."
       },
-      "EnableDebugLogging": {
-        "title": "Enable Debug Logging",
-        "description": "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting."
+      "EnableExtendedSaveSlots": {
+        "title": "Enable Extended Save Slots",
+        "description": "When enabled, replaces the separate New/Load Tram menus with a unified save picker (up to 99 manual slots). When disabled, vanilla New/Load Tram behavior is used."
+      },
+      "EnableExtendedSpectatorPlayerList": {
+        "title": "Enable Extended Spectator Player List",
+        "description": "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first when space is limited; among dead players, speakers are prioritized."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
@@ -123,13 +134,6 @@
         }
       }
     },
-    "MimesisPlayerEnhancement_ExtendedSaveSlots": {
-      "_section": "Extended Save Slots",
-      "EnableExtendedSaveSlots": {
-        "title": "Enable Extended Save Slots",
-        "description": "When enabled, replaces the separate New/Load Tram menus with a unified save picker (up to 99 manual slots). When disabled, vanilla New/Load Tram behavior is used."
-      }
-    },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Join Anytime",
       "EnableJoinAnytime": {
@@ -193,33 +197,6 @@
         "description": "Chance (0–100) that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real."
       }
     },
-    "MimesisPlayerEnhancement_DeadPlayerFeatures": {
-      "_section": "Dead Player Features",
-      "EnableDeadPlayerFeatures": {
-        "title": "Enable Dead Player Features",
-        "description": "Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown). Host only."
-      },
-      "EnableMimicPossessionTuning": {
-        "title": "Enable Mimic Possession Tuning",
-        "description": "Tune dead-player mimic possession speak duration and cooldown on the host."
-      },
-      "RandomizeMimicPossessionDuration": {
-        "title": "Randomize Mimic Possession Duration",
-        "description": "Roll a random speak window per E-possession between min and max seconds below."
-      },
-      "MimicPossessionMinTimeSeconds": {
-        "title": "Mimic Possession Min Time (seconds)",
-        "description": "Minimum rolled speak duration in seconds (vanilla is 12)."
-      },
-      "MimicPossessionMaxTimeSeconds": {
-        "title": "Mimic Possession Max Time (seconds)",
-        "description": "Maximum rolled speak duration in seconds (vanilla is 12)."
-      },
-      "MimicPossessionCooltimeMultiplier": {
-        "title": "Mimic Possession Cooltime Multiplier",
-        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla)."
-      }
-    },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic Tuning",
       "EnableMimicTuning": {
@@ -228,7 +205,11 @@
       },
       "MimicVoiceTuningMode": {
         "title": "Mimic Voice Tuning Mode",
-        "description": "Vanilla keeps game voice timing. Custom applies response chance, cooldown, delay, distance, and interval keys."
+        "description": "Vanilla keeps game voice timing. Custom applies response chance, cooldown, delay, distance, and interval keys.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
       },
       "PeriodicVoiceIntervalMultiplier": {
         "title": "Periodic Voice Interval Multiplier",
@@ -256,11 +237,40 @@
       },
       "MimicInventoryCopyMode": {
         "title": "Mimic Inventory Copy Mode",
-        "description": "Vanilla uses behavior-tree pick rules. Custom forces the pick rule below for mimic CopyInventory."
+        "description": "Vanilla uses behavior-tree pick rules. Custom forces the pick rule below for mimic CopyInventory.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
       },
       "MimicInventoryCopyPickRule": {
         "title": "Mimic Inventory Copy Pick Rule",
-        "description": "Custom only: which player inventory mimics copy (MinDistance, MaxDistance, or Random)."
+        "description": "Custom only: which player inventory mimics copy (MinDistance, MaxDistance, or Random).",
+        "options": {
+          "MinDistance": "Nearest player",
+          "MaxDistance": "Farthest player",
+          "Random": "Random player"
+        }
+      },
+      "EnableMimicPossessionTuning": {
+        "title": "Enable Mimic Possession Tuning",
+        "description": "Tune dead-player mimic possession speak duration and cooldown on the host."
+      },
+      "RandomizeMimicPossessionDuration": {
+        "title": "Randomize Mimic Possession Duration",
+        "description": "Roll a random speak window per E-possession between min and max seconds below."
+      },
+      "MimicPossessionMinTimeSeconds": {
+        "title": "Mimic Possession Min Time (seconds)",
+        "description": "Minimum rolled speak duration in seconds (vanilla is 12)."
+      },
+      "MimicPossessionMaxTimeSeconds": {
+        "title": "Mimic Possession Max Time (seconds)",
+        "description": "Maximum rolled speak duration in seconds (vanilla is 12)."
+      },
+      "MimicPossessionCooltimeMultiplier": {
+        "title": "Mimic Possession Cooltime Multiplier",
+        "description": "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla)."
       }
     },
     "MimesisPlayerEnhancement_Economy": {
@@ -339,10 +349,6 @@
       "MaxPlayers": {
         "title": "Max Players",
         "description": "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.)."
-      },
-      "EnableExtendedSpectatorPlayerList": {
-        "title": "Enable Extended Spectator Player List",
-        "description": "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires Enable More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {

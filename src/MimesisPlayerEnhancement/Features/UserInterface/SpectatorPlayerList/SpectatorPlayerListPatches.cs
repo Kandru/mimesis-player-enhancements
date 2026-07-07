@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Threading;
 
-namespace MimesisPlayerEnhancement.Features.MorePlayers
+namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 {
     internal static class SpectatorPlayerListPatches
     {
-        private const string Feature = "MorePlayers";
+        private const string Feature = "Ui";
 
         [HarmonyPatch(typeof(UIPrefab_Spectator_PlayerListView), "Start")]
         internal static class PlayerListViewStartPostfix

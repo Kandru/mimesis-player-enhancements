@@ -6,7 +6,7 @@ Mimesis Player Enhancement stores settings in a TOML file separate from MelonLoa
 <Mimesis Steam folder>/UserData/MimesisPlayerEnhancement.cfg
 ```
 
-The game reloads this file while running, but **most changes only fully apply after a restart**.
+The game reloads this file while running. Most settings apply immediately or on the next relevant game event; see **Apply timing** below. Mid-dungeon changes to spawn budgets, loot pools, and dungeon-time bonuses do not revert an already-started run.
 
 ## Section layout
 
@@ -25,7 +25,7 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 | Scope | Sections / keys |
 |-------|-----------------|
-| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (toast duration, debug logging), `[MimesisPlayerEnhancement_WebDashboard]`, `[MimesisPlayerEnhancement_ExtendedSaveSlots]` |
+| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (debug logging only), `[MimesisPlayerEnhancement_Ui]`, `[MimesisPlayerEnhancement_WebDashboard]` |
 | **Save-scoped** | All other feature sections |
 
 User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav` beside vanilla saves (Steam Auto-Cloud).
@@ -34,24 +34,32 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 
 | Section | Feature | Scope |
 |---------|---------|-------|
-| [Global](#global--mimesisplayerenhancement) | Mod-wide settings | Local / all players |
+| [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
+| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list | Local UI |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
 | [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
 | [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host |
 | [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host |
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host |
-| [Extended Save games](#extended-save-games--mimesisplayerenhancement_extendedsavegames) | Unified save picker (99 games) | Local UI |
 | [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host |
 | [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host |
 | [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host |
 | [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host |
-| [Dead Player Features](#dead-player-features--mimesisplayerenhancement_deadplayerfeatures) | Mimic possession timing for dead players | Host |
-| [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice frequency and inventory-copy bias | Host |
+| [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host |
 | [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host |
 | [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host |
-| [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard | Host process |
+| [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host process |
+
+### Apply timing
+
+| Timing | Features |
+|--------|----------|
+| **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap, Economy scrap/round-goal on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
+| **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls |
+| **Event-triggered** | Economy shop prices (maintenance room visit; also refreshed when Economy config changes while a maintenance room is active) |
+| **Global UI** | Extended save picker, spectator list layout, toast duration |
 
 ---
 
@@ -61,18 +69,28 @@ Mod-wide settings that are not owned by a single feature.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableDebugLogging` | bool | `false` | — | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
+
+## User Interface — `[MimesisPlayerEnhancement_Ui]`
+
+**Local UI.** Global-only preferences for mod presentation. Not available in per-save override UI or quick presets.
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
+| `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
+| `EnableExtendedSpectatorPlayerList` | bool | `false` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
+
+The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
-**Host-only.** Raise the vanilla 4-player multiplayer session cap and optionally expand the spectator death list UI.
+**Host-only.** Raise the vanilla 4-player multiplayer session cap.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
-| `EnableExtendedSpectatorPlayerList` | bool | `false` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Requires Enable More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
@@ -109,7 +127,7 @@ Mod-wide settings that are not owned by a single feature.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `ShowPlayerAnnouncements` | bool | `true` | — | Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages. |
+| `ShowPlayerAnnouncements` | bool | `true` | — | Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages. Per-map death stats also require **Statistics** enabled. |
 
 ## Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
@@ -126,14 +144,6 @@ Late joiners cannot be dropped straight into an active dungeon. Instead, they wa
 |-----|------|---------|-------|-------------|
 | `EnableJoinAnytime` | bool | `true` | — | Let players join after a session has already started. |
 | `JoinConnectionGraceSeconds` | int | `30` | ≥ `1` | After a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked). |
-
-## Extended Save games — `[MimesisPlayerEnhancement_ExtendedSavegames]`
-
-**Local UI.** Replaces the separate New/Load Tram menus with a unified scrollable save picker on the main menu. game 0 remains autosave; manual games 1–99 are available when enabled (vanilla allows 1–3). The Host button opens the picker instead of the vanilla flow; press ESC to close. Existing saves in games 1–3 remain compatible. Other players in a session do not need the mod.
-
-| Key | Type | Default | Range | Description |
-|-----|------|---------|-------|-------------|
-| `EnableExtendedSavegames` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker and 99-game limit. When `false`, vanilla Tram menus and the 3-game limit return. |
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
@@ -255,26 +265,11 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | `DungeonTimeBaselinePlayerCount` | int | `4` | ≥ `1` | No extra shift time at or below this player count (vanilla is 4). Minimum is 1. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | ≥ `0` | Real seconds added to the shift deadline for each player above the baseline. Minimum is 0. |
 
-## Dead Player Features — `[MimesisPlayerEnhancement_DeadPlayerFeatures]`
-
-**Host-only.** Tune mimic possession for dead players. Off by default — set `EnableDeadPlayerFeatures = true` to turn it on.
-
-When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (12 seconds) and a fixed cooldown before the next possession. This feature can randomize the speak window per possession and/or scale the cooldown.
-
-| Key | Type | Default | Range | Description |
-|-----|------|---------|-------|-------------|
-| `EnableDeadPlayerFeatures` | bool | `false` | — | Master toggle for dead-spectator mimic possession tuning (speak duration and cooldown). Host only. |
-| `EnableMimicPossessionTuning` | bool | `false` | — | Sub-toggle for mimic possession timing tweaks. |
-| `RandomizeMimicPossessionDuration` | bool | `false` | — | Roll a random speak duration per E-possession between the min and max seconds below. |
-| `MimicPossessionMinTimeSeconds` | float | `12.0` | `0.1`–`120` | Minimum rolled speak duration in seconds (vanilla is 12). |
-| `MimicPossessionMaxTimeSeconds` | float | `12.0` | `0.1`–`120` | Maximum rolled speak duration in seconds (vanilla is 12). Must be ≥ `MimicPossessionMinTimeSeconds`. |
-| `MimicPossessionCooltimeMultiplier` | float | `1.0` | `0.1`–`10.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Independent of the random duration toggle. |
-
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
-**Host-only.** Tune how often mimics replay archived player voice lines and which player inventory mimics copy for decoy loadouts. Off by default. Each subfeature uses a **Vanilla / Custom** mode dropdown (default **Vanilla**). Custom keys apply only when that subfeature is set to Custom.
+**Host-only.** Tune how often mimics replay archived player voice lines, which player inventory mimics copy for decoy loadouts, and dead-player mimic possession timing. Off by default. Voice and inventory subfeatures use a **Vanilla / Custom** mode dropdown (default **Vanilla**). Custom keys apply only when that subfeature is set to Custom.
 
-**Live apply:** Changes take effect on the next mimic voice attempt or `CopyInventory` call — no restart required. Already-playing audio and already-cloned inventories are not reverted.
+**Live apply:** Changes take effect on the next mimic voice attempt, `CopyInventory` call, or E-possession — no restart required. Already-playing audio, already-cloned inventories, and active possession sessions are not reverted.
 
 ### Voice tuning (`MimicVoiceTuningMode`)
 
@@ -299,6 +294,18 @@ Voice debug lines (source player name, pick reason, clip metadata — no transcr
 |-----|------|---------|-------|-------------|
 | `MimicInventoryCopyMode` | string | `Vanilla` | `Vanilla`, `Custom` | Vanilla uses behavior-tree pick rules. Custom forces the pick rule below. |
 | `MimicInventoryCopyPickRule` | string | `MinDistance` | `MinDistance`, `MaxDistance`, `Random` | Custom only: which player inventory mimics copy. |
+
+### Possession tuning (`EnableMimicPossessionTuning`)
+
+When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (12 seconds) and a fixed cooldown before the next possession. Enable this sub-toggle to randomize the speak window per possession and/or scale the cooldown. Requires `EnableMimicTuning = true`.
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `EnableMimicPossessionTuning` | bool | `false` | — | Sub-toggle for mimic possession timing tweaks. |
+| `RandomizeMimicPossessionDuration` | bool | `false` | — | Roll a random speak duration per E-possession between the min and max seconds below. |
+| `MimicPossessionMinTimeSeconds` | float | `12.0` | `0.1`–`120` | Minimum rolled speak duration in seconds (vanilla is 12). |
+| `MimicPossessionMaxTimeSeconds` | float | `12.0` | `0.1`–`120` | Maximum rolled speak duration in seconds (vanilla is 12). Must be ≥ `MimicPossessionMinTimeSeconds`. |
+| `MimicPossessionCooltimeMultiplier` | float | `1.0` | `0.1`–`10.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Independent of the random duration toggle. |
 
 ## Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
@@ -388,7 +395,9 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
-**Host process.** Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). On by default — set `EnableWebDashboard = false` to turn it off. Available whenever the game is running with the web dashboard enabled (not only during an active session).
+**Host process.** Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). On by default — set `EnableWebDashboard = false` in the cfg file to turn it off. Available whenever the game is running with the web dashboard enabled (not only during an active session).
+
+**Dashboard UI:** The Web Dashboard section is **not shown** in the dashboard settings UI, and the dashboard API rejects writes to `EnableWebDashboard`, listen address, and port. Edit those keys in `MimesisPlayerEnhancement.cfg` only — this prevents disabling the dashboard from inside the dashboard itself.
 
 **Views:**
 
@@ -416,16 +425,9 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 ---
 
-## Legacy key migration
+## Obsolete config cleanup
 
-On first load after an upgrade, the mod automatically migrates these obsolete keys into their replacements. **Do not set legacy keys in new configs** — they are ignored or copied once and superseded.
-
-| Legacy key / section | Migrated to |
-|----------------------|-------------|
-| `[MimesisPlayerEnhancement_MimicTuning]` / `EnableMimicTuning` | `[MimesisPlayerEnhancement_DeadPlayerFeatures]` |
-| `MimicPossessionMinTimeMultiplier` / `MimicPossessionMaxTimeMultiplier` | `MimicPossessionMinTimeSeconds` / `MimicPossessionMaxTimeSeconds` (`multiplier × 12`) |
-| `FixedSpawnRespawnDelayMinSeconds` / `FixedSpawnRespawnDelayMaxSeconds` / `FixedSpawnRespawnMinPlayerDistanceMeters` | `MapPlacedEncounterDelayMinSeconds` / `MapPlacedEncounterDelayMaxSeconds` / `MapPlacedEncounterMinPlayerDistanceMeters` |
-| Per-item loot keys (`MapConsumableLootMultiplier`, `Trigger*`, etc.) | `MapLootMultiplier` and `DropLootMultiplier` (old keys are ignored) |
+On mod load, unknown sections and keys are removed from `MimesisPlayerEnhancement.cfg` and per-save override sidecars. Settings that were renamed or moved are **not** migrated — they are deleted and the registered default applies until you set the new key.
 
 ---
 
@@ -435,13 +437,16 @@ Abbreviated example showing section layout (not every key is listed):
 
 ```toml
 [MimesisPlayerEnhancement]
-ModToastDurationSeconds = 5.0
 EnableDebugLogging = false
+
+[MimesisPlayerEnhancement_Ui]
+ModToastDurationSeconds = 5.0
+EnableExtendedSaveSlots = true
+EnableExtendedSpectatorPlayerList = false
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false
 MaxPlayers = 32
-EnableExtendedSpectatorPlayerList = false
 
 [MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true
@@ -463,9 +468,6 @@ ShowPlayerAnnouncements = true
 [MimesisPlayerEnhancement_JoinAnytime]
 EnableJoinAnytime = true
 JoinConnectionGraceSeconds = 30
-
-[MimesisPlayerEnhancement_ExtendedSavegames]
-EnableExtendedSavegames = true
 
 [MimesisPlayerEnhancement_SpawnScaling]
 EnableSpawnScaling = false
@@ -490,8 +492,8 @@ EnableDungeonTime = false
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
 
-[MimesisPlayerEnhancement_DeadPlayerFeatures]
-EnableDeadPlayerFeatures = false
+[MimesisPlayerEnhancement_MimicTuning]
+EnableMimicTuning = false
 EnableMimicPossessionTuning = false
 RandomizeMimicPossessionDuration = false
 MimicPossessionMinTimeSeconds = 12.0

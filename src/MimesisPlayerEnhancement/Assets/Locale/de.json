@@ -2,13 +2,24 @@
   "config": {
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
+      "EnableDebugLogging": {
+        "title": "Debug-Logging aktivieren",
+        "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
+      }
+    },
+    "MimesisPlayerEnhancement_Ui": {
+      "_section": "Benutzeroberfläche",
       "ModToastDurationSeconds": {
         "title": "Mod-Nachrichtendauer (Sekunden)",
         "description": "Wie lange Mod-Nachrichten unten links sichtbar bleiben, bevor sie ausblenden. Vanilla-Join/Leave-Verbindungsnachrichten bleiben unverändert (~2 Sekunden). Jeder Spieler steuert dies lokal."
       },
-      "EnableDebugLogging": {
-        "title": "Debug-Logging aktivieren",
-        "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
+      "EnableExtendedSaveSlots": {
+        "title": "Erweiterte Save-Slots aktivieren",
+        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen einheitlichen Save-Picker (bis 99 manuelle Slots). Wenn deaktiviert, gilt wieder das Vanilla-New/Load-Tram-Verhalten."
+      },
+      "EnableExtendedSpectatorPlayerList": {
+        "title": "Erweiterte Spectator-Spielerliste aktivieren",
+        "description": "Ersetzt die 4-Spieler-Spectator-Todesliste durch ein zweispaltiges Layout, das mit der Bildschirmhöhe skaliert. Lebende Spieler werden bei begrenztem Platz zuerst gezeigt; unter Toten haben Sprecher Priorität."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
@@ -123,13 +134,6 @@
         }
       }
     },
-    "MimesisPlayerEnhancement_ExtendedSaveSlots": {
-      "_section": "Erweiterte Save-Slots",
-      "EnableExtendedSaveSlots": {
-        "title": "Erweiterte Save-Slots aktivieren",
-        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen einheitlichen Save-Picker (bis 99 manuelle Slots). Wenn deaktiviert, gilt wieder das Vanilla-New/Load-Tram-Verhalten."
-      }
-    },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Jederzeit beitreten",
       "EnableJoinAnytime": {
@@ -193,33 +197,6 @@
         "description": "Chance (0–100), dass Fake-Items beim Gegner-Tod (z. B. Mimic-Inventar-Decoys) zu echtem Pickup-Loot werden. 0 = Vanilla (Fake-Items verschwinden beim Aufheben), 100 = immer echt. Monster-Drop-Tabellen-Loot ist bereits echt."
       }
     },
-    "MimesisPlayerEnhancement_DeadPlayerFeatures": {
-      "_section": "Features für tote Spieler",
-      "EnableDeadPlayerFeatures": {
-        "title": "Features für tote Spieler aktivieren",
-        "description": "Master-Schalter für Mimic-Besitz-Tuning (Sprechdauer und Abklingzeit) für tote Spieler. Nur Host."
-      },
-      "EnableMimicPossessionTuning": {
-        "title": "Mimic-Besitz-Tuning aktivieren",
-        "description": "Sprechdauer und Abklingzeit beim Mimic-Besitz für tote Spieler anpassen."
-      },
-      "RandomizeMimicPossessionDuration": {
-        "title": "Mimic-Besitz-Dauer randomisieren",
-        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden unten."
-      },
-      "MimicPossessionMinTimeSeconds": {
-        "title": "Mimic-Besitz Mindestzeit (Sekunden)",
-        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
-      },
-      "MimicPossessionMaxTimeSeconds": {
-        "title": "Mimic-Besitz Höchstzeit (Sekunden)",
-        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
-      },
-      "MimicPossessionCooltimeMultiplier": {
-        "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
-        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
-      }
-    },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic-Tuning",
       "EnableMimicTuning": {
@@ -228,7 +205,11 @@
       },
       "MimicVoiceTuningMode": {
         "title": "Mimic-Sprach-Tuning-Modus",
-        "description": "Vanilla = Spiel-Timing. Custom = Antwort-Chance, Abklingzeit, Verzögerung, Distanz und Intervall."
+        "description": "Vanilla = Spiel-Timing. Custom = Antwort-Chance, Abklingzeit, Verzögerung, Distanz und Intervall.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
       },
       "PeriodicVoiceIntervalMultiplier": {
         "title": "Periodisches Sprach-Intervall-Multiplikator",
@@ -256,11 +237,40 @@
       },
       "MimicInventoryCopyMode": {
         "title": "Mimic-Inventar-Kopie-Modus",
-        "description": "Vanilla = Verhaltensbaum-Regeln. Custom = erzwingt die Auswahlregel unten bei CopyInventory."
+        "description": "Vanilla = Verhaltensbaum-Regeln. Custom = erzwingt die Auswahlregel unten bei CopyInventory.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
       },
       "MimicInventoryCopyPickRule": {
         "title": "Mimic-Inventar-Kopie-Auswahlregel",
-        "description": "Nur Custom: Welches Spieler-Inventar Mimics kopieren (MinDistance, MaxDistance oder Random)."
+        "description": "Nur Custom: Welches Spieler-Inventar Mimics kopieren (MinDistance, MaxDistance oder Random).",
+        "options": {
+          "MinDistance": "Nächster Spieler",
+          "MaxDistance": "Entferntester Spieler",
+          "Random": "Zufälliger Spieler"
+        }
+      },
+      "EnableMimicPossessionTuning": {
+        "title": "Mimic-Besitz-Tuning aktivieren",
+        "description": "Sprechdauer und Abklingzeit beim Mimic-Besitz für tote Spieler anpassen."
+      },
+      "RandomizeMimicPossessionDuration": {
+        "title": "Mimic-Besitz-Dauer randomisieren",
+        "description": "Zufälliges Sprechfenster pro E-Besitz zwischen Min- und Max-Sekunden unten."
+      },
+      "MimicPossessionMinTimeSeconds": {
+        "title": "Mimic-Besitz Mindestzeit (Sekunden)",
+        "description": "Minimale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
+      },
+      "MimicPossessionMaxTimeSeconds": {
+        "title": "Mimic-Besitz Höchstzeit (Sekunden)",
+        "description": "Maximale gewürfelte Sprechdauer in Sekunden (Vanilla ist 12)."
+      },
+      "MimicPossessionCooltimeMultiplier": {
+        "title": "Mimic-Besitz-Abklingzeit-Multiplikator",
+        "description": "Multiplikator für die Wartezeit nach Mimic-Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
       }
     },
     "MimesisPlayerEnhancement_Economy": {
@@ -339,10 +349,6 @@
       "MaxPlayers": {
         "title": "Max. Spieler",
         "description": "Maximale Spieler in einer Sitzung inklusive Host (1 = Solo, 2 = Host + 1 Client usw.)."
-      },
-      "EnableExtendedSpectatorPlayerList": {
-        "title": "Erweiterte Zuschauer-Spielerliste aktivieren",
-        "description": "Ersetzt die 4-Spieler-Todesliste durch ein zweispaltiges Layout, das sich an die Bildschirmhöhe anpasst. Erfordert Mehr Spieler aktivieren. Lebende Spieler werden bei begrenztem Platz zuerst angezeigt; unter den Toten haben Sprecher Vorrang."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {

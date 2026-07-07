@@ -1,8 +1,8 @@
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
+namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
 {
     internal static class MimicPossessionResolver
     {
-        private const string Feature = "DeadPlayerFeatures";
+        private const string Feature = "MimicTuning";
 
         internal const float VanillaPossessionDurationSeconds = 12f;
         internal const float MinDurationSeconds = 0.1f;
@@ -14,11 +14,6 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
         private static bool _cachedEnable;
         private static bool _cachedRandomizeDuration;
         private static float _cachedCooltimeMultiplier;
-
-        static MimicPossessionResolver()
-        {
-            ModConfig.Changed += OnConfigChanged;
-        }
 
         internal static bool IsEnabled => _cachedEnable;
 
@@ -127,18 +122,9 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
             return ScalePossessionCooltimeMs(vanillaMs) * 0.001f;
         }
 
-        private static void OnConfigChanged(ModConfigChangeInfo change)
+        internal static void RefreshConfigCache()
         {
-            if (change.IsFullReload
-                || change.AffectsSection("MimesisPlayerEnhancement_DeadPlayerFeatures"))
-            {
-                RefreshConfigCache();
-            }
-        }
-
-        private static void RefreshConfigCache()
-        {
-            if (ModConfig.EnableDeadPlayerFeatures == null
+            if (ModConfig.EnableMimicTuning == null
                 || ModConfig.EnableMimicPossessionTuning == null
                 || ModConfig.RandomizeMimicPossessionDuration == null
                 || ModConfig.MimicPossessionCooltimeMultiplier == null)
@@ -146,14 +132,10 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
                 return;
             }
 
-            _cachedEnable = ModConfig.EnableDeadPlayerFeatures.Value
+            _cachedEnable = ModConfig.EnableMimicTuning.Value
                 && ModConfig.EnableMimicPossessionTuning.Value;
             _cachedRandomizeDuration = ModConfig.RandomizeMimicPossessionDuration.Value;
             _cachedCooltimeMultiplier = ModConfig.MimicPossessionCooltimeMultiplier.Value;
         }
-
-        internal static void RefreshFromDungeonLifecycle() => RefreshConfigCache();
-
-        internal static void RefreshFromConfigRegistration() => RefreshConfigCache();
     }
 }

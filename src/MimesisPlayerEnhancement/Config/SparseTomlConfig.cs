@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace MimesisPlayerEnhancement
@@ -84,6 +85,11 @@ namespace MimesisPlayerEnhancement
 
         internal static string Serialize(Document doc)
         {
+            if (ModConfig.IsInitialized)
+            {
+                _ = PurgeUnregisteredEntries(doc, allowProfileSection: true);
+            }
+
             StringBuilder sb = new();
             for (int s = 0; s < doc.SectionOrder.Count; s++)
             {
@@ -110,18 +116,138 @@ namespace MimesisPlayerEnhancement
                     _ = sb.Append(key).Append(" = ").AppendLine(FormatValue(value));
                 }
 
-                foreach (KeyValuePair<string, string> pair in keys)
+                if (SaveSlotConfigProfile.IsProfileSection(sectionId))
                 {
-                    if (ModConfigRegistry.TryGetEntry(sectionId, pair.Key, out _))
-                    {
-                        continue;
-                    }
-
-                    _ = sb.Append(pair.Key).Append(" = ").AppendLine(FormatValue(pair.Value));
+                    WriteProfileKeys(sb, keys);
                 }
             }
 
             return sb.ToString();
+        }
+
+        private static void WriteProfileKeys(StringBuilder sb, Dictionary<string, string> keys)
+        {
+            WriteProfileKeyIfPresent(sb, keys, SaveSlotConfigProfile.KeyMode);
+            WriteProfileKeyIfPresent(sb, keys, SaveSlotConfigProfile.KeyPresetId);
+            WriteProfileKeyIfPresent(sb, keys, SaveSlotConfigProfile.KeyPresetRevision);
+        }
+
+        private static void WriteProfileKeyIfPresent(
+            StringBuilder sb,
+            Dictionary<string, string> keys,
+            string key)
+        {
+            if (keys.TryGetValue(key, out string? value))
+            {
+                _ = sb.Append(key).Append(" = ").AppendLine(FormatValue(value));
+            }
+        }
+
+        /// <summary>Writes all sections/keys in document order (used after obsolete-entry cleanup).</summary>
+        internal static string SerializeRaw(Document doc)
+        {
+            StringBuilder sb = new();
+            foreach (string sectionId in doc.SectionOrder)
+            {
+                if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys) || keys.Count == 0)
+                {
+                    continue;
+                }
+
+                if (sb.Length > 0)
+                {
+                    _ = sb.AppendLine();
+                }
+
+                _ = sb.Append('[').Append(sectionId).AppendLine("]");
+
+                foreach (KeyValuePair<string, string> pair in keys.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+                {
+                    _ = sb.Append(pair.Key).Append(" = ").AppendLine(FormatValue(pair.Value));
+                }
+            }
+
+            string text = sb.ToString();
+            return text.Length == 0 ? text : text + Environment.NewLine;
+        }
+
+        /// <summary>
+        /// Removes sections and keys that are not registered in <see cref="ModConfigRegistry"/>.
+        /// Profile sidecar metadata is kept when <paramref name="allowProfileSection"/> is true.
+        /// </summary>
+        internal static bool PurgeUnregisteredEntries(Document doc, bool allowProfileSection = false)
+        {
+            bool changed = false;
+            HashSet<string> registeredSections = new(ModConfigRegistry.GetSectionOrder(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (string sectionId in doc.SectionOrder.ToList())
+            {
+                if (allowProfileSection && SaveSlotConfigProfile.IsProfileSection(sectionId))
+                {
+                    if (doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? profileKeys))
+                    {
+                        changed |= PurgeProfileSectionKeys(profileKeys);
+                        if (profileKeys.Count == 0)
+                        {
+                            _ = doc.Sections.Remove(sectionId);
+                            doc.SectionOrder.Remove(sectionId);
+                            changed = true;
+                        }
+                    }
+
+                    continue;
+                }
+
+                if (!registeredSections.Contains(sectionId))
+                {
+                    _ = doc.Sections.Remove(sectionId);
+                    _ = doc.SectionOrder.Remove(sectionId);
+                    changed = true;
+                    continue;
+                }
+
+                if (!doc.Sections.TryGetValue(sectionId, out Dictionary<string, string>? keys))
+                {
+                    continue;
+                }
+
+                foreach (string key in keys.Keys.ToList())
+                {
+                    if (!ModConfigRegistry.TryGetEntry(sectionId, key, out _))
+                    {
+                        _ = keys.Remove(key);
+                        changed = true;
+                    }
+                }
+
+                if (keys.Count == 0)
+                {
+                    _ = doc.Sections.Remove(sectionId);
+                    _ = doc.SectionOrder.Remove(sectionId);
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        private static bool PurgeProfileSectionKeys(Dictionary<string, string> keys)
+        {
+            bool changed = false;
+            foreach (string key in keys.Keys.ToList())
+            {
+                if (string.Equals(key, SaveSlotConfigProfile.KeyMode, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(key, SaveSlotConfigProfile.KeyPresetId, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(key, SaveSlotConfigProfile.KeyPresetRevision, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                _ = keys.Remove(key);
+                changed = true;
+            }
+
+            return changed;
         }
 
         internal static bool IsEmpty(Document doc)

@@ -26,11 +26,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
         private static float _cachedResponseDelayMaxSeconds = VanillaResponseDelaySeconds;
         private static float _cachedResponseMaxDistance = VanillaResponseMaxDistance;
 
-        static MimicVoiceTuningResolver()
-        {
-            ModConfig.Changed += OnConfigChanged;
-        }
-
         internal static bool IsMasterEnabled => _cachedMasterEnabled;
 
         internal static MimicVoiceTuningMode Mode => _cachedMode;
@@ -97,8 +92,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
             return MimicVoiceTuningMode.Vanilla;
         }
 
-        internal static void RefreshFromConfigRegistration() => RefreshConfigCache();
-
         internal static void RefreshConfigCache()
         {
             if (ModConfig.EnableMimicTuning == null
@@ -142,14 +135,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
                 ModConfig.PlayerVoiceResponseMaxDistance.Value,
                 MinDistanceMeters,
                 MaxDistanceMeters);
-        }
-
-        private static void OnConfigChanged(ModConfigChangeInfo change)
-        {
-            if (change.IsFullReload || change.AffectsSection(SectionId))
-            {
-                RefreshConfigCache();
-            }
         }
     }
 }

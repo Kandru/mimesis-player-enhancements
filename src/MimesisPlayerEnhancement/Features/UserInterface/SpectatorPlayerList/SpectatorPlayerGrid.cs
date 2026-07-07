@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Threading;
 using UnityEngine;
 
-namespace MimesisPlayerEnhancement.Features.MorePlayers
+namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 {
     internal static class SpectatorPlayerGrid
     {
@@ -47,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         private static readonly Dictionary<int, SpectatorListState> States = [];
 
         internal static bool IsEnabled() =>
-            ModConfig.EnableMorePlayers.Value && ModConfig.EnableExtendedSpectatorPlayerList.Value;
+            ModConfig.EnableExtendedSpectatorPlayerList.Value;
 
         internal static void Initialize(UIPrefab_Spectator_PlayerListView listView)
         {

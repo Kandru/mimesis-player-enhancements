@@ -198,6 +198,18 @@ namespace MimesisPlayerEnhancement
                 };
             }
 
+            if (sectionId == MimicTuningSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["EnableMimicPossessionTuning"] = "mimicPossession",
+                    ["RandomizeMimicPossessionDuration"] = "mimicPossession",
+                    ["MimicPossessionMinTimeSeconds"] = "mimicPossession",
+                    ["MimicPossessionMaxTimeSeconds"] = "mimicPossession",
+                    ["MimicPossessionCooltimeMultiplier"] = "mimicPossession",
+                };
+            }
+
             if (sectionId == WeatherSectionId)
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)

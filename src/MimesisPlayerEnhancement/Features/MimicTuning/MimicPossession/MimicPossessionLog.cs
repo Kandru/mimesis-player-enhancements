@@ -1,8 +1,8 @@
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.MimicPossession
+namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
 {
     internal static class MimicPossessionLog
     {
-        private const string Feature = "DeadPlayerFeatures";
+        private const string Feature = "MimicTuning";
 
         internal static void DebugPossessionDurationRolled(int mimicActorId, long vanillaMs, long rolledMs)
         {

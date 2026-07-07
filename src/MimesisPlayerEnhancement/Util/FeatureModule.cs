@@ -1,14 +1,13 @@
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
-using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
 using MimesisPlayerEnhancement.Features.MimicTuning;
-using MimesisPlayerEnhancement.Features.ModVersionDisplay;
 using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.Weather;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 
@@ -117,11 +116,10 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("Economy", EconomyPatches.Apply,
                 syncFromConfig: EconomyPatches.RefreshFromConfig),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
-            new FeatureModule(
-                "DeadPlayerFeatures",
-                DeadPlayerFeaturesPatches.Apply),
             new FeatureModule("MimicTuning", MimicTuningPatches.Apply,
                 syncFromConfig: MimicTuningRuntime.RefreshFromConfig),
+            new FeatureModule("Ui", UiPatches.Apply,
+                syncFromConfig: UiRuntime.RefreshFromConfig),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),
@@ -134,11 +132,6 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
                 onUpdate: WebDashboardServer.OnUpdate,
                 onDeinitialize: WebDashboardServer.StopOnDeinit),
-            new FeatureModule("ModVersionDisplay", ModVersionDisplayPatches.Apply),
-            new FeatureModule(
-                "ExtendedSaveSlots",
-                ExtendedSaveSlotsPatches.Apply,
-                syncFromConfig: ExtendedSaveSlotsRuntime.RefreshFromConfig),
         ];
     }
 }

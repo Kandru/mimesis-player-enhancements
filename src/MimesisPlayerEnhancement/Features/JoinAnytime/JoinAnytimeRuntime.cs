@@ -28,10 +28,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             _wasEnabled = enabled;
 
-            if (enabled)
-            {
-                JoinAnytimeLobbyController.RefreshLobbyState(force: true);
-            }
+            JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
     }
 }

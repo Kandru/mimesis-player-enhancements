@@ -214,33 +214,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.TrackFloatEntry(ModConfig.OtherSpawnMultiplier);
         }
 
-        internal static void MigrateLegacyKeys(MelonLogger.Instance logger)
-        {
-            bool migrated = false;
-            migrated |= TryMigrateLegacyFloatKey("FixedSpawnRespawnDelayMinSeconds", ModConfig.MapPlacedEncounterDelayMinSeconds);
-            migrated |= TryMigrateLegacyFloatKey("FixedSpawnRespawnDelayMaxSeconds", ModConfig.MapPlacedEncounterDelayMaxSeconds);
-            migrated |= TryMigrateLegacyFloatKey("FixedSpawnRespawnMinPlayerDistanceMeters", ModConfig.MapPlacedEncounterMinPlayerDistanceMeters);
-
-            if (migrated)
-            {
-                logger.Msg(
-                    "Spawn Scaling config migrated — FixedSpawnRespawn* keys copied to MapPlacedEncounter* keys.");
-            }
-        }
-
-        private static bool TryMigrateLegacyFloatKey(
-            string legacyKey,
-            MelonPreferences_Entry<float> targetEntry)
-        {
-            if (_category.GetEntry<float>(legacyKey) is not MelonPreferences_Entry<float> legacyEntry)
-            {
-                return false;
-            }
-
-            targetEntry.Value = legacyEntry.Value;
-            return true;
-        }
-
         private static void OnMapPlacedEncounterDelayChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)
         {
             if (value < 0f)

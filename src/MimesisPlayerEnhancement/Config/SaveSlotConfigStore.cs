@@ -374,7 +374,14 @@ namespace MimesisPlayerEnhancement
             }
 
             string? text = AtomicFileIO.ReadText(filePath, Feature);
-            return SparseTomlConfig.Load(text);
+            SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
+            if (ModConfig.IsInitialized
+                && SparseTomlConfig.PurgeUnregisteredEntries(doc, allowProfileSection: true))
+            {
+                _ = SaveDocument(slotId, filePath, doc, waitForCompletion: true);
+            }
+
+            return doc;
         }
 
         private static void ApplyGameplayDoc(SparseTomlConfig.Document doc, int slotId)

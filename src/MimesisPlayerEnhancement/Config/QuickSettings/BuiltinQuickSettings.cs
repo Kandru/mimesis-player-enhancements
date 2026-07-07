@@ -145,7 +145,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
                 "MimesisPlayerEnhancement_Persistence",
                 "MimesisPlayerEnhancement_JoinAnytime",
                 "MimesisPlayerEnhancement_MorePlayers",
-                "MimesisPlayerEnhancement_DeadPlayerFeatures",
+                "MimesisPlayerEnhancement_MimicTuning",
             ];
 
             foreach (string sectionId in enabledSections)
@@ -168,11 +168,12 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
                 intervalMaxSeconds: 30f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.8f, dropLoot: 1.8f);
             QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.5f, roundGoal: 2f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
+            QuickSettingsValuesBuilder.SetBool(values, "MimesisPlayerEnhancement_MimicTuning", "EnableMimicPossessionTuning", true);
 
             return new QuickSettingPreset
             {
                 Id = AbandonHopeId,
-                Revision = 3,
+                Revision = 4,
                 IsBuiltin = true,
                 Values = values,
             };

@@ -157,24 +157,21 @@ namespace MimesisPlayerEnhancement
                 $"LootMultiplicator={ModConfig.EnableLootMultiplicator.Value}, " +
                 $"Economy={ModConfig.EnableEconomy.Value}, " +
                 $"DungeonTime={ModConfig.EnableDungeonTime.Value}, " +
-                $"DeadPlayerFeatures={ModConfig.EnableDeadPlayerFeatures.Value}" +
-                (ModConfig.EnableDeadPlayerFeatures.Value
-                    ? $" (mimicTuning={ModConfig.EnableMimicPossessionTuning.Value}" +
-                      (ModConfig.EnableMimicPossessionTuning.Value && ModConfig.RandomizeMimicPossessionDuration.Value
-                          ? $", duration={ModConfig.MimicPossessionMinTimeSeconds.Value}-{ModConfig.MimicPossessionMaxTimeSeconds.Value}s"
-                          : "") +
+                $"MimicTuning={ModConfig.EnableMimicTuning.Value}" +
+                (ModConfig.EnableMimicTuning.Value
+                    ? $" (voice={ModConfig.MimicVoiceTuningMode.Value}, inventory={ModConfig.MimicInventoryCopyMode.Value}" +
                       (ModConfig.EnableMimicPossessionTuning.Value
-                          ? $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value}"
+                          ? $", possession" +
+                            (ModConfig.RandomizeMimicPossessionDuration.Value
+                                ? $", duration={ModConfig.MimicPossessionMinTimeSeconds.Value}-{ModConfig.MimicPossessionMaxTimeSeconds.Value}s"
+                                : "") +
+                            $", cooltime×{ModConfig.MimicPossessionCooltimeMultiplier.Value}"
                           : "") +
                       ")"
                     : "") +
-                $", MimicTuning={ModConfig.EnableMimicTuning.Value}" +
-                (ModConfig.EnableMimicTuning.Value
-                    ? $" (voice={ModConfig.MimicVoiceTuningMode.Value}, inventory={ModConfig.MimicInventoryCopyMode.Value})"
-                    : "") +
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
-                $"ExtendedSaveSlots={ModConfig.EnableExtendedSaveSlots.Value}" +
+                $"Ui=(saveSlots={ModConfig.EnableExtendedSaveSlots.Value}, spectatorList={ModConfig.EnableExtendedSpectatorPlayerList.Value})" +
                 $", WebDashboard={ModConfig.EnableWebDashboard.Value}" +
                 (ModConfig.EnableWebDashboard.Value
                     ? $" ({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})"

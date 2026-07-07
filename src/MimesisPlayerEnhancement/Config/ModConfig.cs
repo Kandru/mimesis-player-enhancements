@@ -3,7 +3,6 @@ using MelonLoader;
 using MelonLoader.Utils;
 using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using MimesisPlayerEnhancement.Features.DungeonTime;
-using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
 using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.MorePlayers;
@@ -11,6 +10,7 @@ using MimesisPlayerEnhancement.Features.MoreVoices;
 using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
+using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.Weather;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 
@@ -46,7 +46,6 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableMorePlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxPlayers { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoreVoices { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxIndoorVoiceEvents { get; internal set; } = null!;
@@ -59,7 +58,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> SessionReconnectGraceMinutes { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> ShowStatisticsToasts { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> ShowPlayerAnnouncements { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; private set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableJoinAnytime { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> JoinConnectionGraceSeconds { get; internal set; } = null!;
@@ -122,7 +120,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; internal set; } = null!;
 
-        public static MelonPreferences_Entry<bool> EnableDeadPlayerFeatures { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableMimicPossessionTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeMimicPossessionDuration { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicPossessionMinTimeSeconds { get; internal set; } = null!;
@@ -173,7 +170,9 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
+        public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSaveSlots { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
 
         private static readonly List<MelonPreferences_Entry<float>> FloatEntries = [];
 
@@ -200,19 +199,12 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.CreateCategory();
             EconomyConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
-            DeadPlayerFeaturesConfig.CreateCategory();
             MimicTuningConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
             DungeonRandomizerConfig.CreateCategory();
             WeatherConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
-            ExtendedSaveSlotsConfig.CreateCategory();
-
-            ModToastDurationSeconds = CreateTrackedEntry(MainCategory,
-                "ModToastDurationSeconds",
-                5f,
-                "Mod Message Duration (seconds)",
-                "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally.");
+            UiConfig.CreateCategory();
 
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",
@@ -226,17 +218,16 @@ namespace MimesisPlayerEnhancement
             StatisticsConfig.CreateEntries();
             PlayerAnnouncementsConfig.CreateEntries();
             JoinAnytimeConfig.CreateEntries();
-            ExtendedSaveSlotsConfig.CreateEntries();
             SpawnScalingConfig.CreateEntries();
             LootMultiplicatorConfig.CreateEntries();
             EconomyConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
-            DeadPlayerFeaturesConfig.CreateEntries();
             MimicTuningConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
             DungeonRandomizerConfig.CreateEntries();
             WeatherConfig.CreateEntries();
             WebDashboardConfig.CreateEntries();
+            UiConfig.CreateEntries();
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);
@@ -249,37 +240,26 @@ namespace MimesisPlayerEnhancement
             PersistenceConfig.WireValidation();
             StatisticsConfig.WireValidation(logger);
             PlayerAnnouncementsConfig.WireValidation();
-            ModToastDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-            {
-                if (value < 1f)
-                {
-                    logger.Warning("ModToastDurationSeconds must be at least 1; resetting to 1.");
-                    ModToastDurationSeconds.Value = 1f;
-                    return;
-                }
-
-                NotifyChanged(ModToastDurationSeconds);
-            });
             JoinAnytimeConfig.WireValidation(logger);
-            ExtendedSaveSlotsConfig.WireValidation();
             SpawnScalingConfig.WireValidation(logger);
             LootMultiplicatorConfig.WireValidation(logger);
             EconomyConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
-            DeadPlayerFeaturesConfig.WireValidation(logger);
             MimicTuningConfig.WireValidation(logger);
             PlayerTuningConfig.WireValidation(logger);
             DungeonRandomizerConfig.WireValidation(logger);
             WeatherConfig.WireValidation(logger);
             WebDashboardConfig.WireValidation(logger);
+            UiConfig.WireValidation(logger);
             EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(EnableDebugLogging));
 
             RegisterFloatEntries();
-            SpawnScalingConfig.MigrateLegacyKeys(logger);
-            DeadPlayerFeaturesConfig.MigrateLegacyKeys(logger);
             ModConfigFloatHelper.SanitizeAll(FloatEntries);
             NormalizeSavedFloats();
             ModConfigRegistry.Rebuild();
+            ModConfigRegistry.PurgeObsoleteFromFile(FilePath);
+            MainCategory.LoadFromFile(false);
+            SanitizeFloatEntries();
 
             IsInitialized = true;
         }
@@ -330,10 +310,10 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.RegisterFloatEntries();
             EconomyConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
-            DeadPlayerFeaturesConfig.RegisterFloatEntries();
             MimicTuningConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();
             WeatherConfig.RegisterFloatEntries();
+            UiConfig.RegisterFloatEntries();
         }
 
         internal static void OnSpawnMultiplierChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)

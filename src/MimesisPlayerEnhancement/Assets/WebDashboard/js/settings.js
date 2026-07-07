@@ -46,6 +46,7 @@ function createSettingsMixin() {
         }
         if (!this.featureEnabled(section.id)) continue;
         for (const entry of section.entries ?? []) {
+          if (!this.entryVisible(section, entry)) continue;
           if (matchesSettingsQuery(entry, section.title, query)) {
             results.push(this.buildSettingsSuggestion(section, entry));
           }
@@ -249,11 +250,60 @@ function createSettingsMixin() {
       return parseBool(toggle.value);
     },
 
+    findSectionEntry(section, key) {
+      if (!section || !key) return null;
+      if (section.featureToggle?.key === key) return section.featureToggle;
+      return section.entries?.find((entry) => entry.key === key) ?? null;
+    },
+
+    entryMatchesDependency(parentEntry, expectedValue) {
+      if (!parentEntry) return true;
+      if (!expectedValue) return parseBool(parentEntry.value);
+      if (expectedValue === '>0') {
+        const numeric = Number(parentEntry.value);
+        return Number.isFinite(numeric) && numeric > 0;
+      }
+      return String(parentEntry.value || '').toLowerCase() === String(expectedValue).toLowerCase();
+    },
+
+    entryVisible(section, entry) {
+      if (!section || !entry) return false;
+      if (section.featureToggle
+        && entry.key !== section.featureToggle.key
+        && !this.featureEnabled(section.id)) {
+        return false;
+      }
+
+      if (section.id === 'MimesisPlayerEnhancement_LootMultiplicator'
+        && entry.key === 'AutoScaleMapLootBudgetForFilter') {
+        const modeEntry = this.findSectionEntry(section, 'LootItemFilterMode');
+        if (modeEntry && /^all$/i.test(String(modeEntry.value || 'All'))) {
+          return false;
+        }
+      }
+
+      const visited = new Set();
+      let current = entry;
+      while (current?.dependsOnKey) {
+        if (visited.has(current.key)) break;
+        visited.add(current.key);
+        const parent = this.findSectionEntry(section, current.dependsOnKey);
+        if (!this.entryMatchesDependency(parent, current.dependsOnValue || null)) {
+          return false;
+        }
+        current = parent;
+      }
+
+      return true;
+    },
+
     sectionEntries(sectionId) {
       const section = this.findSettingsSection(sectionId);
-      if (!section?.entries?.length || !this.featureEnabled(sectionId)) return [];
+      if (!section?.entries?.length) return [];
       const query = this.settingsQuery.trim().toLowerCase();
-      return section.entries.filter((entry) => matchesSettingsQuery(entry, section.title, query));
+      return section.entries.filter(
+        (entry) => this.entryVisible(section, entry) && matchesSettingsQuery(entry, section.title, query)
+      );
     },
 
     sectionEntryGroups(sectionId) {

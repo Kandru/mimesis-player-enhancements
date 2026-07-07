@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         {
             MimicVoiceTuningResolver.RefreshConfigCache();
             MimicInventoryCopyResolver.RefreshConfigCache();
+            MimicPossessionResolver.RefreshConfigCache();
 
             bool masterEnabled = MimicVoiceTuningResolver.IsMasterEnabled;
             MimicVoiceTuningMode voiceMode = MimicVoiceTuningResolver.Mode;
@@ -44,6 +45,19 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                 ModLog.Info(Feature, $"Mimic inventory copy mode — {inventoryMode}");
                 _lastInventoryMode = inventoryMode;
             }
+        }
+
+        internal static void OnDungeonEnter()
+        {
+            MimicPossessionSessions.ClearAll();
+            MimicPossessionResolver.RefreshConfigCache();
+            ModLog.Debug(Feature, "Dungeon entered — mimic possession state initialized");
+        }
+
+        internal static void OnDungeonEnd()
+        {
+            MimicPossessionSessions.ClearAll();
+            ModLog.Debug(Feature, "Dungeon ended — mimic possession state reset");
         }
     }
 }

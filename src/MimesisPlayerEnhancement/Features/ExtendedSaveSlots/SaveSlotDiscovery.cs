@@ -1,5 +1,4 @@
 using System.Linq;
-using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {

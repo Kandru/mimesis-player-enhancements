@@ -8,11 +8,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicInventoryCopy
         private static MimicInventoryCopyMode _cachedMode = MimicInventoryCopyMode.Vanilla;
         private static BTTargetPickRule _cachedPickRule = BTTargetPickRule.MinDistance;
 
-        static MimicInventoryCopyResolver()
-        {
-            ModConfig.Changed += OnConfigChanged;
-        }
-
         internal static bool IsMasterEnabled => _cachedMasterEnabled;
 
         internal static MimicInventoryCopyMode Mode => _cachedMode;
@@ -48,8 +43,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicInventoryCopy
             return BTTargetPickRule.MinDistance;
         }
 
-        internal static void RefreshFromConfigRegistration() => RefreshConfigCache();
-
         internal static void RefreshConfigCache()
         {
             if (ModConfig.EnableMimicTuning == null
@@ -62,14 +55,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicInventoryCopy
             _cachedMasterEnabled = ModConfig.EnableMimicTuning.Value;
             _cachedMode = ParseMode(ModConfig.MimicInventoryCopyMode.Value);
             _cachedPickRule = ParsePickRule(ModConfig.MimicInventoryCopyPickRule.Value);
-        }
-
-        private static void OnConfigChanged(ModConfigChangeInfo change)
-        {
-            if (change.IsFullReload || change.AffectsSection(SectionId))
-            {
-                RefreshConfigCache();
-            }
         }
     }
 }

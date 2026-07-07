@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
-using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.Economy
 {
@@ -22,6 +21,22 @@ namespace MimesisPlayerEnhancement.Features.Economy
         internal static void NotifyConfigChanged()
         {
             _ = Interlocked.Increment(ref _configGeneration);
+            RefreshTouchedRooms();
+        }
+
+        internal static void RefreshTouchedRooms()
+        {
+            for (int i = TouchedRooms.Count - 1; i >= 0; i--)
+            {
+                if (!TouchedRooms[i].TryGetTarget(out MaintenanceRoom? room) || room == null)
+                {
+                    TouchedRooms.RemoveAt(i);
+                    continue;
+                }
+
+                GetState(room).LoadedFromSave = false;
+                EnsureApplied(room);
+            }
         }
 
         /// <summary>

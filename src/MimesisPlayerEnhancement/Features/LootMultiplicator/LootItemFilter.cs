@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
 using Bifrost.Cooked;
-using ReluProtocol;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {

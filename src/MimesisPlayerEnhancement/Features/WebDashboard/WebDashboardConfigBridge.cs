@@ -326,6 +326,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
 
                     ModConfigEntryUiHints.ApplyToEntry(entryDto, sectionId, key);
+                    ModConfigEntryDependencies.ApplyToEntry(section, entryDto);
 
                     if (!string.IsNullOrEmpty(featureToggleKey)
                         && string.Equals(key, featureToggleKey, StringComparison.Ordinal))

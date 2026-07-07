@@ -4,11 +4,11 @@ using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
+namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     internal static class MimicPossessionPatchSupport
     {
-        internal const string Feature = "DeadPlayerFeatures";
+        internal const string Feature = "MimicTuning";
         internal const float CooltimeFillCompleteThreshold = 0.99f;
 
         internal static readonly FieldInfo? PossessionDurationField =

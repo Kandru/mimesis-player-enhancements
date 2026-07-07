@@ -25,21 +25,20 @@ namespace MimesisPlayerEnhancement
 
         static ModConfigEntryBounds()
         {
-            const string Main = ModConfigRegistry.MainSectionId;
             const string MorePlayers = "MimesisPlayerEnhancement_MorePlayers";
+            const string JoinAnytime = "MimesisPlayerEnhancement_JoinAnytime";
             const string MoreVoices = "MimesisPlayerEnhancement_MoreVoices";
             const string Statistics = "MimesisPlayerEnhancement_Statistics";
             const string PlayerTuning = "MimesisPlayerEnhancement_PlayerTuning";
             const string Economy = "MimesisPlayerEnhancement_Economy";
             const string LootMultiplicator = "MimesisPlayerEnhancement_LootMultiplicator";
             const string SpawnScaling = "MimesisPlayerEnhancement_SpawnScaling";
-            const string JoinAnytime = "MimesisPlayerEnhancement_JoinAnytime";
             const string DungeonTime = "MimesisPlayerEnhancement_DungeonTime";
             const string Weather = "MimesisPlayerEnhancement_Weather";
-            const string DeadPlayerFeatures = "MimesisPlayerEnhancement_DeadPlayerFeatures";
             const string MimicTuning = "MimesisPlayerEnhancement_MimicTuning";
+            const string Ui = "MimesisPlayerEnhancement_Ui";
 
-            Float(Main, "ModToastDurationSeconds", 1f);
+            Float(Ui, "ModToastDurationSeconds", 1f);
 
             Int(MorePlayers, "MaxPlayers", 1);
             Int(MoreVoices, "MaxIndoorVoiceEvents", 1);
@@ -91,13 +90,13 @@ namespace MimesisPlayerEnhancement
             Float(Weather, "WeatherCycleMinDelaySeconds", 0f);
             Float(Weather, "WeatherCycleMaxDelaySeconds", 0f);
 
-            FloatRange(DeadPlayerFeatures, "MimicPossessionMinTimeSeconds",
+            FloatRange(MimicTuning, "MimicPossessionMinTimeSeconds",
                 MimicPossessionResolver.MinDurationSeconds,
                 MimicPossessionResolver.MaxDurationSeconds);
-            FloatRange(DeadPlayerFeatures, "MimicPossessionMaxTimeSeconds",
+            FloatRange(MimicTuning, "MimicPossessionMaxTimeSeconds",
                 MimicPossessionResolver.MinDurationSeconds,
                 MimicPossessionResolver.MaxDurationSeconds);
-            FloatRange(DeadPlayerFeatures, "MimicPossessionCooltimeMultiplier",
+            FloatRange(MimicTuning, "MimicPossessionCooltimeMultiplier",
                 MimicPossessionResolver.MinCooltimeMultiplier,
                 MimicPossessionResolver.MaxCooltimeMultiplier);
 

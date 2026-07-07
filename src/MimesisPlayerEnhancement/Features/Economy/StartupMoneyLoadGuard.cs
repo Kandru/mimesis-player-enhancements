@@ -1,5 +1,3 @@
-using ReluProtocol;
-
 namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class StartupMoneyLoadGuard

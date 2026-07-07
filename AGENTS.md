@@ -170,7 +170,7 @@ For hot paths (scrap prices, per-spawn rolls), use debug helpers that early-retu
 | Style | Examples |
 |-------|----------|
 | Inline `ModLog` | JoinAnytime, Persistence, Statistics, MorePlayers, WebDashboard |
-| `{Feature}Log` with semantic methods | SpawnScaling, LootMultiplicator, Economy, DungeonRandomizer, PlayerTuning, DungeonTime, DeadPlayerFeatures (MimicPossession) |
+| `{Feature}Log` with semantic methods | SpawnScaling, LootMultiplicator, Economy, DungeonRandomizer, PlayerTuning, DungeonTime, MimicTuning (MimicPossession) |
 
 `HarmonyPatchHelper` may call `ModLog` directly (infrastructure).
 

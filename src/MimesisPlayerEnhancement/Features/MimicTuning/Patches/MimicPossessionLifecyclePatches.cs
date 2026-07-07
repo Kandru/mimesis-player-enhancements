@@ -1,16 +1,16 @@
-namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
+namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))]
     internal static class CameraManagerOnEnterDungeonPostfix
     {
-        private const string Feature = "DeadPlayerFeatures";
+        private const string Feature = "MimicTuning";
 
         [HarmonyPostfix]
         internal static void Postfix()
         {
             try
             {
-                DeadPlayerFeaturesRuntime.OnDungeonEnter();
+                MimicTuningRuntime.OnDungeonEnter();
             }
             catch (Exception ex)
             {
@@ -22,14 +22,14 @@ namespace MimesisPlayerEnhancement.Features.DeadPlayerFeatures.Patches
     [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEndDungeon))]
     internal static class CameraManagerOnEndDungeonPrefix
     {
-        private const string Feature = "DeadPlayerFeatures";
+        private const string Feature = "MimicTuning";
 
         [HarmonyPrefix]
         internal static void Prefix()
         {
             try
             {
-                DeadPlayerFeaturesRuntime.OnDungeonEnd();
+                MimicTuningRuntime.OnDungeonEnd();
             }
             catch (Exception ex)
             {
