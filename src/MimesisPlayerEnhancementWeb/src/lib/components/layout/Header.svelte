@@ -2,6 +2,25 @@
   import Toggle from '$lib/components/Toggle.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
+  import { getHeaderSearchPlaceholder, isHeaderSearchVisible } from '$lib/headerSearch';
+  import { getPageTitle } from '$lib/pageTitles';
+  import { navigate } from '$lib/utils';
+
+  const pageTitle = $derived.by(() =>
+    getPageTitle(
+      dashboard.route,
+      dashboard.settingsSubRoute,
+      dashboard.playerStats?.displayName || dashboard.playerStats?.steamId,
+    ),
+  );
+
+  const showSearch = $derived(
+    isHeaderSearchVisible(dashboard.route, dashboard.settingsSubRoute),
+  );
+
+  const searchPlaceholder = $derived(
+    getHeaderSearchPlaceholder(dashboard.route, dashboard.settingsSubRoute),
+  );
 
   const subtitle = $derived.by(() => {
     if (dashboard.apiError) return t('dashboard.subtitle_api_error');
@@ -23,22 +42,48 @@
 </script>
 
 <header class="app-header">
-  <div class="flex min-w-0 items-center gap-3">
+  <div class="header-start">
+    <button
+      type="button"
+      class="header-brand-btn lg:hidden"
+      title={t('dashboard.home_title')}
+      onclick={() => navigate('home')}
+    >
+      <img class="header-brand-logo" src="/img/logo.png" alt="" width="28" height="28" />
+    </button>
     <button
       type="button"
       class="header-icon-btn lg:hidden"
-      aria-label="Open menu"
-      onclick={() => (dashboard.mobileSidebarOpen = true)}
+      aria-label={dashboard.mobileSidebarOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={dashboard.mobileSidebarOpen}
+      onclick={() => (dashboard.mobileSidebarOpen = !dashboard.mobileSidebarOpen)}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      {#if dashboard.mobileSidebarOpen}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      {:else}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      {/if}
     </button>
-    <div class="min-w-0">
-      <h1 class="header-title">
-        {dashboard.status.lobbyName?.trim() || t('dashboard.title_default')}
-      </h1>
+    <div class="header-title-block">
+      <h1 class="header-title">{pageTitle}</h1>
       <p class="header-subtitle">{subtitle}</p>
     </div>
   </div>
+
+  {#if showSearch}
+    <label class="header-search">
+      <span class="header-search-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input
+        class="header-search-input"
+        type="search"
+        placeholder={searchPlaceholder}
+        bind:value={dashboard.headerSearchQuery}
+        aria-label={searchPlaceholder}
+      />
+    </label>
+  {/if}
 
   <div class="header-actions">
     {#if dashboard.status.isConnected}

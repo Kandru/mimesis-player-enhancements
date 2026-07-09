@@ -22,30 +22,27 @@
 </script>
 
 <div class="card p-4">
-  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-    <h2 class="text-lg font-semibold">{t('dashboard.nav_minimap')}</h2>
-    <div class="flex flex-wrap items-center gap-2">
-      {#if dashboard.status.isHost}
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" bind:checked={dashboard.minimapShowAll} onchange={() => dashboard.applyMinimapFilter(true)} />
-          {t('dashboard.minimap_show_all')}
-        </label>
-      {/if}
-      <select
-        class="input max-w-xs"
-        value={dashboard.minimapFocusSteamId}
-        onchange={(e) => {
-          const v = (e.currentTarget as HTMLSelectElement).value;
-          if (v) setFocus(v);
-          else clearFocus();
-        }}
-      >
-        <option value="">{t('dashboard.minimap_follow_local')}</option>
-        {#each focusOptions as p}
-          <option value={String(p.steamId)}>{p.displayName || p.steamId}</option>
-        {/each}
-      </select>
-    </div>
+  <div class="mb-4 flex flex-wrap items-center justify-end gap-3">
+    {#if dashboard.status.isHost}
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" bind:checked={dashboard.minimapShowAll} onchange={() => dashboard.applyMinimapFilter(true)} />
+        {t('dashboard.minimap_show_all')}
+      </label>
+    {/if}
+    <select
+      class="input max-w-xs"
+      value={dashboard.minimapFocusSteamId}
+      onchange={(e) => {
+        const v = (e.currentTarget as HTMLSelectElement).value;
+        if (v) setFocus(v);
+        else clearFocus();
+      }}
+    >
+      <option value="">{t('dashboard.minimap_follow_local')}</option>
+      {#each focusOptions as p}
+        <option value={String(p.steamId)}>{p.displayName || p.steamId}</option>
+      {/each}
+    </select>
   </div>
   <div class="h-[min(70vh,720px)]">
     <MinimapView data={dashboard.minimap} />

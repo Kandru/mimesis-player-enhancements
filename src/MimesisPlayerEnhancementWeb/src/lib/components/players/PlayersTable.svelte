@@ -30,7 +30,6 @@
     stored?: boolean;
   } = $props();
 
-  let search = $state('');
   let pageSize = $state(10);
   let page = $state(0);
 
@@ -38,7 +37,7 @@
   const blindMode = $derived(dashboard.playerBlindMode);
 
   const filtered = $derived.by(() => {
-    const q = search.trim().toLowerCase();
+    const q = dashboard.headerSearchQuery.trim().toLowerCase();
     let list = stored ? sortPlayersByName(players) : sortConnectedPlayers(players);
     if (!q) return list;
     return list.filter((p) => {
@@ -61,6 +60,11 @@
 
   $effect(() => {
     if (page >= pageCount) page = Math.max(0, pageCount - 1);
+  });
+
+  $effect(() => {
+    void dashboard.headerSearchQuery;
+    page = 0;
   });
 
   function showAlive(player: PlayerDto) {
@@ -220,12 +224,6 @@
       </select>
       <span>{t('dashboard.table_entries')}</span>
     </label>
-    <input
-      class="input data-table-search"
-      placeholder={t('dashboard.table_search')}
-      bind:value={search}
-      oninput={() => (page = 0)}
-    />
   </div>
 
   <div class="data-table-wrap">

@@ -52,10 +52,24 @@ export function sectionHasVisibleEntries(
   settings: SettingsDto | null,
   query: string,
 ) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const titleMatches = normalizedQuery.length > 0 && section.title.toLowerCase().includes(normalizedQuery);
+
   if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query)) {
     return true;
   }
-  if (!featureEnabled(section, settings)) return !!section.featureToggle;
+
+  if (!featureEnabled(section, settings)) {
+    if (!section.featureToggle) return false;
+    return normalizedQuery.length === 0
+      || matchesSettingsQuery(section.featureToggle, section.title, query)
+      || titleMatches;
+  }
+
+  if (titleMatches) {
+    return section.entries.some((e) => entryVisible(section, e, settings));
+  }
+
   return section.entries.some(
     (e) => entryVisible(section, e, settings) && matchesSettingsQuery(e, section.title, query),
   );

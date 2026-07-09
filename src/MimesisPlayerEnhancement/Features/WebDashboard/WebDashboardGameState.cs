@@ -32,6 +32,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return true;
         }
 
+        internal static bool CanViewCatalogs()
+        {
+            // Read-only item/dungeon labels for settings UI (including offline global settings).
+            return CanViewGlobalSettings();
+        }
+
         internal static bool CanEditGlobalSettings()
         {
             return !IsConnected() || IsHost();

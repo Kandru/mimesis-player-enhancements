@@ -16,16 +16,14 @@
   let {
     settings,
     scope,
-    heading,
     intro,
   }: {
     settings: SettingsDto | null;
     scope: 'global' | 'save';
-    heading: string;
     intro: string;
   } = $props();
 
-  const query = $derived(dashboard.settingsQuery.trim().toLowerCase());
+  const query = $derived(dashboard.headerSearchQuery.trim().toLowerCase());
   const isGuest = $derived(!dashboard.status.isHost && dashboard.status.isConnected);
 
   const sections = $derived.by(() => {
@@ -92,7 +90,6 @@
 
 <div class="settings-page">
   <div class="settings-panel-header">
-    <h2 class="settings-panel-title">{heading}</h2>
     <p class="settings-panel-intro">{intro}</p>
     {#if settings?.configPath}
       <p class="settings-panel-path">{settings.configPath}</p>
@@ -102,14 +99,6 @@
   {#if isGuest}
     <div class="settings-guest-banner">{t('dashboard.settings_guest_readonly')}</div>
   {/if}
-
-  <div class="settings-toolbar">
-    <input
-      class="input max-w-md"
-      placeholder={t('dashboard.settings_search_placeholder')}
-      bind:value={dashboard.settingsQuery}
-    />
-  </div>
 
   {#if dashboard.loadingSettings}
     <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>

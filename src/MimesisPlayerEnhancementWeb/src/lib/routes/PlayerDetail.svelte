@@ -24,7 +24,6 @@
   <p class="text-sm text-gray-500">{t('dashboard.player_stats_not_found')}</p>
 {:else}
   <div class="card p-6">
-    <h2 class="mb-4 text-xl font-semibold">{stats.displayName || stats.steamId}</h2>
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {#each globalCards as [label, value]}
         <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">

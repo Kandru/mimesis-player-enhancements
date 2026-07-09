@@ -410,7 +410,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/items" && method == "GET")
             {
-                if (!snapshot.Status.IsHost)
+                if (!WebDashboardGameState.CanViewCatalogs())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
@@ -422,7 +422,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/dungeons" && method == "GET")
             {
-                if (!snapshot.Status.IsHost)
+                if (!WebDashboardGameState.CanViewCatalogs())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;

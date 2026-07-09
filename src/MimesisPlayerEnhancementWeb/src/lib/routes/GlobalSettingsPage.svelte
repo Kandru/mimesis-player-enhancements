@@ -7,6 +7,5 @@
 <SettingsPanel
   settings={dashboard.settingsGlobal}
   scope="global"
-  heading={t('dashboard.settings_global_heading')}
   intro={t('dashboard.settings_intro_global')}
 />

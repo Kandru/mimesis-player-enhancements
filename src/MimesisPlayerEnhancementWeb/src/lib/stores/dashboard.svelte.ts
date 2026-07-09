@@ -11,6 +11,7 @@ import type {
   SnapshotPayload,
   StatusDto,
 } from '../types';
+import { isLobbyRoute } from '../playerHelpers';
 import { OFFLINE_ROUTES, parseHash } from '../utils';
 
 function createInitialStatus(): StatusDto {
@@ -36,7 +37,7 @@ class DashboardStore {
   minimap = $state<MinimapPayload | null>(null);
   playerStats = $state<PlayerStatsDto | null>(null);
 
-  route = $state('waiting');
+  route = $state('home');
   settingsSubRoute = $state('');
   steamId = $state<string | null>(null);
 
@@ -49,7 +50,7 @@ class DashboardStore {
 
   settingsGlobal = $state<SettingsDto | null>(null);
   settingsSave = $state<SettingsDto | null>(null);
-  settingsQuery = $state('');
+  headerSearchQuery = $state('');
   selectedSettingsSectionId = $state('');
   savingSettingKey = $state('');
   mobileSidebarOpen = $state(false);
@@ -153,9 +154,9 @@ class DashboardStore {
     this.settingsSubRoute = parsed.settingsSubRoute;
     this.steamId = parsed.steamId;
     this.mobileSidebarOpen = false;
+    this.headerSearchQuery = '';
     if (parsed.route !== 'global-settings' && !(parsed.route === 'settings' && parsed.settingsSubRoute === 'customize')) {
       this.selectedSettingsSectionId = '';
-      this.settingsQuery = '';
     }
     this.setConnectedMode();
     if (this.route !== prevRoute || this.steamId !== prevSteam) {
@@ -170,14 +171,11 @@ class DashboardStore {
   }
 
   ensureDefaultRoute() {
-    if (!this.status.isConnected && this.route !== 'waiting' && !OFFLINE_ROUTES.includes(this.route)) {
-      location.hash = '#/waiting';
+    if (!this.status.isConnected && isLobbyRoute(this.route)) {
+      location.hash = '#/home';
       const p = parseHash();
       this.route = p.route;
-    } else if (
-      this.status.isConnected &&
-      (this.route === 'waiting' || !location.hash || location.hash === '#')
-    ) {
+    } else if (this.status.isConnected && (!location.hash || location.hash === '#')) {
       location.hash = '#/players';
       this.route = 'players';
     }

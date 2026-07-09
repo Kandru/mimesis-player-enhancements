@@ -15,7 +15,6 @@
 {/if}
 
 <div class="page-heading">
-  <h2 class="page-title">{t('dashboard.players_heading')}</h2>
   <p class="page-subtitle">
     {t('dashboard.connected_count', { count: connected.length })}
     {#if dashboard.status.isHost && routingCount > 0}

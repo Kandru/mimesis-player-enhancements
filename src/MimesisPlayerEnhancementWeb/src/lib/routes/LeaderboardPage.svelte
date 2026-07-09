@@ -7,9 +7,6 @@
 </script>
 
 <div class="card overflow-hidden">
-  <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-    <h2 class="text-lg font-semibold">{t('dashboard.nav_leaderboard')}</h2>
-  </div>
   <div class="overflow-x-auto">
     <table class="min-w-full text-sm">
       <thead class="bg-gray-50 text-left dark:bg-gray-800">

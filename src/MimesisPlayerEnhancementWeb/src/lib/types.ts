@@ -223,7 +223,7 @@ export interface PlayerStatsDto {
 }
 
 export type RouteName =
-  | 'waiting'
+  | 'home'
   | 'donation'
   | 'global-settings'
   | 'players'

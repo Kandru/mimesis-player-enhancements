@@ -3,7 +3,7 @@
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import AppShell from '$lib/components/layout/AppShell.svelte';
   import LobbyShell from '$lib/components/layout/LobbyShell.svelte';
-  import WaitingPage from '$lib/routes/Waiting.svelte';
+  import HomePage from '$lib/routes/HomePage.svelte';
   import DonationPage from '$lib/routes/Donation.svelte';
   import PlayersPage from '$lib/routes/Players.svelte';
   import MinimapPage from '$lib/routes/MinimapPage.svelte';
@@ -14,18 +14,26 @@
   import PlayerDetailPage from '$lib/routes/PlayerDetail.svelte';
   import Toast from '$lib/components/Toast.svelte';
   import { isLobbyRoute } from '$lib/playerHelpers';
-  import { t } from '$lib/i18n';
+  import { getPageTitle } from '$lib/pageTitles';
+
+  const pageTitle = $derived.by(() =>
+    getPageTitle(
+      dashboard.route,
+      dashboard.settingsSubRoute,
+      dashboard.playerStats?.displayName || dashboard.playerStats?.steamId,
+    ),
+  );
 
   onMount(() => dashboard.init());
 </script>
 
 <svelte:head>
-  <title>{dashboard.status.lobbyName?.trim() || t('dashboard.title_default')}</title>
+  <title>{pageTitle}</title>
 </svelte:head>
 
 <AppShell>
-  {#if dashboard.route === 'waiting'}
-    <WaitingPage />
+  {#if dashboard.route === 'home'}
+    <HomePage />
   {:else if dashboard.route === 'donation'}
     <DonationPage />
   {:else if dashboard.route === 'global-settings'}
@@ -47,7 +55,7 @@
       {/if}
     </LobbyShell>
   {:else}
-    <WaitingPage />
+    <HomePage />
   {/if}
 </AppShell>
 

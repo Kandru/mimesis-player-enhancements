@@ -4,7 +4,6 @@
 
 <article class="donation-page">
   <div class="donation-card">
-    <h2 class="mb-1 text-xl font-semibold">{t('dashboard.donation_heading')}</h2>
     <p class="donation-lead">{t('dashboard.donation_lead')}</p>
 
     <div class="donation-body">

@@ -25,7 +25,6 @@
 
 <div class="space-y-4">
   <div>
-    <h2 class="text-lg font-semibold">{t('dashboard.settings_heading')}</h2>
     <p class="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.settings_intro_profile')}</p>
     {#if profile}
       <p class="mt-2 text-sm">{t('dashboard.quick_active_profile', { label: profile.label || profile.mode })}</p>

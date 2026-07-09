@@ -40,16 +40,17 @@ export function formatCountMap(
     .map(([key, count]) => [labelFn ? labelFn(key) : key, count ?? 0] as [string, number]);
 }
 
-export const OFFLINE_ROUTES = ['donation', 'global-settings'];
+export const OFFLINE_ROUTES = ['home', 'donation', 'global-settings'];
 
 export function parseHash(): {
   route: string;
   settingsSubRoute: string;
   steamId: string | null;
 } {
-  const hash = location.hash || '#/waiting';
+  const hash = location.hash || '#/home';
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  const route = parts[0] || 'waiting';
+  let route = parts[0] || 'home';
+  if (route === 'waiting') route = 'home';
   let settingsSubRoute = '';
   let steamId: string | null = null;
   if (route === 'settings') settingsSubRoute = parts[1] || '';

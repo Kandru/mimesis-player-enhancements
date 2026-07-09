@@ -7,6 +7,5 @@
 <SettingsPanel
   settings={dashboard.settingsSave}
   scope="save"
-  heading={t('dashboard.settings_customize_heading')}
   intro={t('dashboard.settings_intro_save')}
 />
