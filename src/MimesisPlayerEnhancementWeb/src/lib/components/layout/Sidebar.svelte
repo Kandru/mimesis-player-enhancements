@@ -3,14 +3,6 @@
   import { t } from '$lib/i18n';
   import { navigate } from '$lib/utils';
 
-  let {
-    mobileOpen = false,
-    onclose,
-  }: {
-    mobileOpen?: boolean;
-    onclose?: () => void;
-  } = $props();
-
   const lobbyLinks = $derived([
     { route: 'players', label: t('dashboard.nav_players'), icon: 'users', host: true },
     { route: 'leaderboard', label: t('dashboard.nav_statistics'), icon: 'chart', host: true },
@@ -18,8 +10,8 @@
     { route: 'settings', label: t('dashboard.nav_settings'), icon: 'settings', host: true },
   ]);
 
-  const offlineLinks = $derived([
-    { route: 'global-settings', label: t('dashboard.nav_global_settings'), icon: 'globe' },
+  const globalLinks = $derived([
+    { route: 'global-settings', label: t('dashboard.nav_settings_global'), icon: 'globe' },
     { route: 'donation', label: t('dashboard.nav_donation'), icon: 'heart' },
   ]);
 
@@ -44,7 +36,6 @@
 
   function go(route: string) {
     navigate(route);
-    onclose?.();
   }
 
   function goHome() {
@@ -52,7 +43,7 @@
   }
 </script>
 
-<aside class="sidebar {mobileOpen ? 'sidebar-open' : ''}">
+<aside class="sidebar">
   <button type="button" class="sidebar-brand" onclick={goHome} title={t('dashboard.home_title')}>
     <img class="sidebar-logo" src="/img/logo.png" alt="" width="32" height="32" />
     <div class="sidebar-brand-text">
@@ -87,10 +78,11 @@
       </button>
     {/each}
 
-    {#each offlineLinks as link, index}
+    <p class="sidebar-section-label sidebar-section-label-spaced">{t('dashboard.nav_section_global')}</p>
+    {#each globalLinks as link}
       <button
         type="button"
-        class="sidebar-link {dashboard.route === link.route ? 'sidebar-link-active' : ''} {index === 0 ? 'mt-4' : ''}"
+        class="sidebar-link {dashboard.route === link.route ? 'sidebar-link-active' : ''}"
         onclick={() => go(link.route)}
       >
         <span class="sidebar-link-icon" aria-hidden="true">

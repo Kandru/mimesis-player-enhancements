@@ -53,7 +53,6 @@ class DashboardStore {
   headerSearchQuery = $state('');
   selectedSettingsSectionId = $state('');
   savingSettingKey = $state('');
-  mobileSidebarOpen = $state(false);
 
   saveProfile = $state<{ profile: { mode: string; presetId: string; label: string } } | null>(null);
   quickPresets = $state<QuickPresetDto[]>([]);
@@ -153,7 +152,6 @@ class DashboardStore {
     this.route = parsed.route;
     this.settingsSubRoute = parsed.settingsSubRoute;
     this.steamId = parsed.steamId;
-    this.mobileSidebarOpen = false;
     this.headerSearchQuery = '';
     if (parsed.route !== 'global-settings' && !(parsed.route === 'settings' && parsed.settingsSubRoute === 'customize')) {
       this.selectedSettingsSectionId = '';

@@ -39,12 +39,7 @@ body {
   flex: 1;
   flex-direction: column;
   min-width: 0;
-}
-
-@media (min-width: 1024px) {
-  .app-main {
-    margin-left: var(--sidebar-width);
-  }
+  margin-left: var(--sidebar-width);
 }
 
 .page-content {
@@ -69,26 +64,6 @@ body {
   flex-direction: column;
   border-right: 1px solid var(--border);
   background: var(--surface);
-  transform: translateX(-100%);
-  transition: transform 0.2s ease;
-}
-
-.sidebar-open {
-  transform: translateX(0);
-}
-
-@media (min-width: 1024px) {
-  .sidebar {
-    transform: translateX(0);
-  }
-}
-
-.sidebar-backdrop {
-  position: fixed;
-  inset: var(--header-height) 0 0 0;
-  z-index: 40;
-  border: 0;
-  background: rgba(16, 24, 40, 0.45);
 }
 
 .sidebar-brand {
@@ -147,6 +122,10 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #98a2b3;
+}
+
+.sidebar-section-label-spaced {
+  margin-top: 1rem;
 }
 
 .sidebar-link {
@@ -246,10 +225,13 @@ body {
 }
 
 .header-subtitle {
+  margin: 0.125rem 0 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.75rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   color: #667085;
 }
 
@@ -266,35 +248,6 @@ body {
   min-width: 0;
   align-items: center;
   gap: 0.75rem;
-}
-
-.header-brand-btn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0.5rem;
-  border: 0;
-  border-radius: 0.5rem;
-  padding: 0.25rem;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.header-brand-btn:hover {
-  background: #f2f4f7;
-}
-
-.dark .header-brand-btn:hover {
-  background: #1d2939;
-}
-
-.header-brand-logo {
-  display: block;
-  height: 1.75rem;
-  width: 1.75rem;
-  border-radius: 0.375rem;
-  object-fit: contain;
 }
 
 .header-title-block {
@@ -721,39 +674,59 @@ body {
 }
 
 .donation-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: var(--surface);
   padding: 1.5rem;
 }
 
+.donation-disclosure {
+  margin: 0;
+  border-left: 3px solid var(--brand);
+  padding: 0.75rem 0 0.75rem 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #667085;
+  background: rgba(70, 95, 255, 0.06);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.dark .donation-disclosure {
+  color: #98a2b3;
+  background: rgba(70, 95, 255, 0.1);
+}
+
 .donation-lead {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-  font-weight: 500;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
   line-height: 1.5;
-  color: #344054;
+  color: #101828;
 }
 
 .dark .donation-lead {
-  color: #e4e7ec;
+  color: #ffffff;
 }
 
 .donation-body {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
-  margin-bottom: 1.25rem;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: #475467;
+  gap: 1rem;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: #344054;
 }
 
-.donation-note {
-  border-left: 3px solid var(--brand);
-  padding-left: 0.875rem;
-  font-size: 0.8125rem;
-  color: #667085;
+.dark .donation-body {
+  color: #ffffff;
+}
+
+.donation-body p {
+  margin: 0;
 }
 
 .donation-action {
@@ -761,12 +734,19 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+  padding-top: 0.25rem;
 }
 
 .donation-footnote {
-  margin: 1rem 0 0;
-  font-size: 0.75rem;
-  color: #98a2b3;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #475467;
+}
+
+.dark .donation-footnote {
+  color: #ffffff;
+  opacity: 0.85;
 }
 
 /* ── Home ── */
@@ -805,53 +785,6 @@ body {
 
 .dark .home-lead {
   color: #98a2b3;
-}
-
-.home-status-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1rem 1.125rem;
-  background: var(--surface);
-}
-
-.home-status-connected {
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.06);
-}
-
-.home-status-waiting {
-  border-color: rgba(245, 158, 11, 0.35);
-  background: rgba(245, 158, 11, 0.06);
-}
-
-.home-status-dot {
-  flex-shrink: 0;
-  height: 0.625rem;
-  width: 0.625rem;
-  margin-top: 0.35rem;
-  border-radius: 999px;
-  background: #f59e0b;
-}
-
-.home-status-connected .home-status-dot {
-  background: #10b981;
-}
-
-.home-status-title {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.home-status-hint {
-  margin: 0.25rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: #667085;
 }
 
 .home-section {
@@ -1077,10 +1010,78 @@ body {
   flex: 1;
 }
 
-/* ── Header blind toggle ── */
+/* ── Header status & blind toggle ── */
+
+.header-status-btn {
+  display: inline-flex;
+  max-width: 14rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.header-status-dot {
+  flex-shrink: 0;
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 999px;
+}
+
+.header-status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-status-connected {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+}
+
+.dark .header-status-connected {
+  color: #6ee7b7;
+}
+
+.header-status-connected .header-status-dot {
+  background: #10b981;
+}
+
+.header-status-waiting {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+.dark .header-status-waiting {
+  color: #fcd34d;
+}
+
+.header-status-waiting .header-status-dot {
+  background: #f59e0b;
+}
+
+.header-status-error {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+}
+
+.dark .header-status-error {
+  color: #fca5a5;
+}
+
+.header-status-error .header-status-dot {
+  background: #ef4444;
+}
 
 .header-blind-toggle {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem;
@@ -1089,10 +1090,9 @@ body {
   background: var(--surface);
 }
 
-@media (min-width: 640px) {
-  .header-blind-toggle {
-    display: flex;
-  }
+.header-blind-toggle-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .header-blind-label {

@@ -4,11 +4,12 @@
 
 <article class="donation-page">
   <div class="donation-card">
+    <p class="donation-disclosure">{t('dashboard.donation_ai_note')}</p>
+
     <p class="donation-lead">{t('dashboard.donation_lead')}</p>
 
     <div class="donation-body">
       <p>{t('dashboard.donation_body1')}</p>
-      <p class="donation-note">{t('dashboard.donation_ai_note')}</p>
       <p>{t('dashboard.donation_body2')}</p>
     </div>
 

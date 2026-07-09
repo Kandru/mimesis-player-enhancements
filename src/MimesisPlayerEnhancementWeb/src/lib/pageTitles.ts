@@ -28,3 +28,28 @@ export function getPageTitle(
       return t('dashboard.title_default');
   }
 }
+
+export function getPageDescription(route: string, settingsSubRoute = ''): string {
+  switch (route) {
+    case 'home':
+      return t('dashboard.page_desc_home');
+    case 'donation':
+      return t('dashboard.page_desc_donation');
+    case 'global-settings':
+      return t('dashboard.page_desc_global_settings');
+    case 'players':
+      return t('dashboard.page_desc_players');
+    case 'minimap':
+      return t('dashboard.page_desc_minimap');
+    case 'leaderboard':
+      return t('dashboard.page_desc_leaderboard');
+    case 'settings':
+      return settingsSubRoute === 'customize'
+        ? t('dashboard.page_desc_settings_customize')
+        : t('dashboard.page_desc_settings');
+    case 'player':
+      return t('dashboard.page_desc_player');
+    default:
+      return '';
+  }
+}

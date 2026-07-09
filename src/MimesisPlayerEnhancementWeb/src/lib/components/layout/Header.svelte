@@ -3,8 +3,7 @@
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
   import { getHeaderSearchPlaceholder, isHeaderSearchVisible } from '$lib/headerSearch';
-  import { getPageTitle } from '$lib/pageTitles';
-  import { navigate } from '$lib/utils';
+  import { getPageDescription, getPageTitle } from '$lib/pageTitles';
 
   const pageTitle = $derived.by(() =>
     getPageTitle(
@@ -12,6 +11,10 @@
       dashboard.settingsSubRoute,
       dashboard.playerStats?.displayName || dashboard.playerStats?.steamId,
     ),
+  );
+
+  const pageDescription = $derived.by(() =>
+    getPageDescription(dashboard.route, dashboard.settingsSubRoute),
   );
 
   const showSearch = $derived(
@@ -22,15 +25,16 @@
     getHeaderSearchPlaceholder(dashboard.route, dashboard.settingsSubRoute),
   );
 
-  const subtitle = $derived.by(() => {
+  const statusVariant = $derived.by(() => {
+    if (dashboard.apiError) return 'error';
+    if (!dashboard.status.isConnected) return 'waiting';
+    return 'connected';
+  });
+
+  const statusText = $derived.by(() => {
     if (dashboard.apiError) return t('dashboard.subtitle_api_error');
-    if (!dashboard.status.isConnected) {
-      return dashboard.status.modVersion
-        ? `v${dashboard.status.modVersion} · ${t('dashboard.subtitle_waiting')}`
-        : t('dashboard.subtitle_waiting');
-    }
-    const parts: string[] = [];
-    if (dashboard.status.modVersion) parts.push(`v${dashboard.status.modVersion}`);
+    if (!dashboard.status.isConnected) return t('dashboard.home_status_waiting');
+    const parts = [t('dashboard.home_status_connected')];
     parts.push(
       dashboard.status.isHost ? t('dashboard.subtitle_host') : t('dashboard.subtitle_client'),
     );
@@ -39,34 +43,17 @@
     }
     return parts.join(' · ');
   });
+
+  const blindModeDisabled = $derived(!dashboard.status.isConnected);
 </script>
 
 <header class="app-header">
   <div class="header-start">
-    <button
-      type="button"
-      class="header-brand-btn lg:hidden"
-      title={t('dashboard.home_title')}
-      onclick={() => navigate('home')}
-    >
-      <img class="header-brand-logo" src="/img/logo.png" alt="" width="28" height="28" />
-    </button>
-    <button
-      type="button"
-      class="header-icon-btn lg:hidden"
-      aria-label={dashboard.mobileSidebarOpen ? 'Close menu' : 'Open menu'}
-      aria-expanded={dashboard.mobileSidebarOpen}
-      onclick={() => (dashboard.mobileSidebarOpen = !dashboard.mobileSidebarOpen)}
-    >
-      {#if dashboard.mobileSidebarOpen}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      {:else}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      {/if}
-    </button>
     <div class="header-title-block">
       <h1 class="header-title">{pageTitle}</h1>
-      <p class="header-subtitle">{subtitle}</p>
+      {#if pageDescription}
+        <p class="header-subtitle">{pageDescription}</p>
+      {/if}
     </div>
   </div>
 
@@ -86,22 +73,27 @@
   {/if}
 
   <div class="header-actions">
-    {#if dashboard.status.isConnected}
-      <span class="badge {dashboard.status.isHost ? 'badge-host' : 'badge-guest'}">
-        {dashboard.status.isHost ? t('dashboard.role_host') : t('dashboard.role_guest')}
-      </span>
-    {/if}
+    <div
+      class="header-status-btn header-status-{statusVariant}"
+      role="status"
+      title={statusText}
+    >
+      <span class="header-status-dot" aria-hidden="true"></span>
+      <span class="header-status-text">{statusText}</span>
+    </div>
 
-    {#if dashboard.status.isHost && dashboard.status.isConnected}
-      <div class="header-blind-toggle" title={t('dashboard.blind_mode_title')}>
-        <span class="header-blind-label">{t('dashboard.blind_mode')}</span>
-        <Toggle
-          checked={dashboard.playerBlindModeUserEnabled}
-          label={t('dashboard.blind_mode')}
-          onchange={() => dashboard.togglePlayerBlindMode()}
-        />
-      </div>
-    {/if}
+    <div
+      class="header-blind-toggle {blindModeDisabled ? 'header-blind-toggle-disabled' : ''}"
+      title={blindModeDisabled ? t('dashboard.nav_lobby_disabled_hint') : t('dashboard.blind_mode_title')}
+    >
+      <span class="header-blind-label">{t('dashboard.blind_mode')}</span>
+      <Toggle
+        checked={dashboard.playerBlindModeUserEnabled}
+        disabled={blindModeDisabled}
+        label={t('dashboard.blind_mode')}
+        onchange={() => dashboard.togglePlayerBlindMode()}
+      />
+    </div>
 
     <button
       type="button"

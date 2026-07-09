@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
 
   const webFeatures = [
@@ -36,30 +35,6 @@
       <p class="home-lead">{t('dashboard.home_lead')}</p>
     </div>
   </header>
-
-  <div
-    class="home-status-banner {dashboard.status.isConnected ? 'home-status-connected' : 'home-status-waiting'}"
-    role="status"
-  >
-    <span class="home-status-dot" aria-hidden="true"></span>
-    <div>
-      <p class="home-status-title">
-        {dashboard.status.isConnected
-          ? t('dashboard.home_status_connected')
-          : t('dashboard.home_status_waiting')}
-      </p>
-      {#if !dashboard.status.isConnected}
-        <p class="home-status-hint">{t('dashboard.home_status_hint')}</p>
-      {:else}
-        <p class="home-status-hint">
-          {dashboard.status.isHost ? t('dashboard.subtitle_host') : t('dashboard.subtitle_client')}
-          {#if dashboard.status.saveSlotId >= 0}
-            · {t('dashboard.subtitle_savegame', { slot: dashboard.status.saveSlotId })}
-          {/if}
-        </p>
-      {/if}
-    </div>
-  </div>
 
   <section class="home-section">
     <div class="home-section-header">
