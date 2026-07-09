@@ -33,6 +33,13 @@ namespace MimesisPlayerEnhancement.Features.Economy
             ModLog.Info(Feature, $"Retained unspent currency — amount={amount}, stage={stage}");
         }
 
+        internal static void InfoScrapScalingActive(int playerCount, float effectiveMultiplier)
+        {
+            ModLog.Info(
+                Feature,
+                $"Scrap/sell value scaling active — players={playerCount}, effective={effectiveMultiplier:0.##}×");
+        }
+
         internal static string FormatType(MoneyType type)
         {
             return type switch

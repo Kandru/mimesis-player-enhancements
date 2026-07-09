@@ -22,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
         /// <summary>Called via FeatureModule.SyncFromConfig when the Economy section changes.</summary>
         public static void RefreshFromConfig()
         {
+            EconomyApplier.InvalidateScrapScaling();
             MaintenanceShopApplier.NotifyConfigChanged();
 
             if (!ModConfig.EnableEconomy.Value)
@@ -42,6 +43,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 ("toItemInfo/ConsumableItemElement", AccessTools.Method(typeof(ConsumableItemElement), nameof(ConsumableItemElement.toItemInfo))),
                 ("toItemInfo/MiscellanyItemElement", AccessTools.Method(typeof(MiscellanyItemElement), nameof(MiscellanyItemElement.toItemInfo))),
                 ("GetMeanPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetMeanPrice))),
+                ("GetNewItemElement/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.GetNewItemElement))),
                 ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
                 ("InitShopItems/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))),
                 ("ApplyLoadedGameData/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ApplyLoadedGameData))),
