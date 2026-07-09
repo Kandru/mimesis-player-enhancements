@@ -512,7 +512,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 string? displayName;
-                PlayerStatisticsDocument doc;
+                PlayerStatisticsDocument? doc;
                 try
                 {
                     (doc, displayName) = WebDashboardConfigUpdateQueue.EnqueueAndWait(

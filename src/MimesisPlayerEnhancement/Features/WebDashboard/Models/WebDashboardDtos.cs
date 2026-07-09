@@ -77,7 +77,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool IsMainPath;
         public int FloorIndex;
         public float CenterY;
-        public bool MultiFloor;
+        public bool MultiFloor = false;
     }
 
     internal sealed class WebDashboardMinimapConnectionDto
@@ -98,8 +98,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool CrossArea;
         public bool CrossFloor;
         public float Width;
-        public float DestX;
-        public float DestZ;
+        public float? DestX = null;
+        public float? DestZ = null;
         public string DestAreaId = "";
         public string TeleporterId = "";
     }
@@ -127,7 +127,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool IsAlive = true;
         public bool IsHost;
         public bool IsLocal;
-        public int FloorIndex;
+        public int FloorIndex = 0;
     }
 
     internal sealed class WebDashboardMinimapTrainDto
