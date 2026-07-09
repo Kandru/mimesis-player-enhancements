@@ -79,7 +79,7 @@ Mod-wide settings that are not owned by a single feature.
 |-----|------|---------|-------|-------------|
 | `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
-| `EnableExtendedSpectatorPlayerList` | bool | `false` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first when space is limited; among dead players, speakers are prioritized. |
+| `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 
@@ -446,7 +446,7 @@ EnableDebugLogging = false
 [MimesisPlayerEnhancement_Ui]
 ModToastDurationSeconds = 5.0
 EnableExtendedSaveSlots = true
-EnableExtendedSpectatorPlayerList = false
+EnableExtendedSpectatorPlayerList = true
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false

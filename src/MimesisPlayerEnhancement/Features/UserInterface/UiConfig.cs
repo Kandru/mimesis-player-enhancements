@@ -29,9 +29,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.EnableExtendedSpectatorPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedSpectatorPlayerList",
-                false,
+                true,
                 "Enable Extended Spectator Player List",
-                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first when space is limited; among dead players, speakers are prioritized.");
+                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

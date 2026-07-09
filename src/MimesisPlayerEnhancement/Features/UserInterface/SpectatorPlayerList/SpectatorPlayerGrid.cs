@@ -334,13 +334,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             List<Tuple<int, bool, bool, bool>> actorsInfo,
             int maxVisible)
         {
-            if (actorsInfo.Count <= maxVisible)
-            {
-                return actorsInfo;
-            }
-
-            List<(Tuple<int, bool, bool, bool> Actor, int Index)> indexed = actorsInfo
-                .Select((actor, index) => (actor, index))
+            List<(Tuple<int, bool, bool, bool> Actor, int Index, string Name)> indexed = actorsInfo
+                .Select((actor, index) => (actor, index, ResolveActorDisplayName(actor.Item1)))
                 .ToList();
 
             indexed.Sort(static (left, right) =>
@@ -351,19 +346,38 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                     return deadCompare;
                 }
 
-                if (left.Actor.Item2)
+                int nameCompare = string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+                if (nameCompare != 0)
                 {
-                    int speakCompare = right.Actor.Item3.CompareTo(left.Actor.Item3);
-                    if (speakCompare != 0)
-                    {
-                        return speakCompare;
-                    }
+                    return nameCompare;
                 }
 
                 return left.Index.CompareTo(right.Index);
             });
 
             return indexed.Take(maxVisible).Select(entry => entry.Actor).ToList();
+        }
+
+        private static string ResolveActorDisplayName(int actorId) =>
+            TryResolveActorDisplayName(actorId, out string name) ? name : string.Empty;
+
+        private static bool TryResolveActorDisplayName(int actorId, out string name)
+        {
+            name = string.Empty;
+            GameMainBase? main = Hub.Main;
+            if (main == null || GetActorByActorIdMethod == null || ResolveNickNameMethod == null)
+            {
+                return false;
+            }
+
+            if (GetActorByActorIdMethod.Invoke(main, [actorId]) is not ProtoActor actor)
+            {
+                return false;
+            }
+
+            string actorName = actor.netSyncActorData.actorName;
+            name = ResolveNickNameMethod.Invoke(main, [actor, actorName]) as string ?? actorName;
+            return true;
         }
 
         private static void EnsureCloneRows(SpectatorListState state, int requiredSlots)
@@ -462,7 +476,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             bool speaking = actorInfo.Item3;
             bool possessor = actorInfo.Item4;
 
-            if (GetActorByActorIdMethod.Invoke(main, [actorId]) is not ProtoActor actor)
+            if (!TryResolveActorDisplayName(actorId, out string name))
             {
                 SetRowName(row, string.Empty);
                 TurnOffSpeakAnimation(row);
@@ -470,8 +484,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 return;
             }
 
-            string actorName = actor.netSyncActorData.actorName;
-            string name = ResolveNickNameMethod.Invoke(main, [actor, actorName]) as string ?? actorName;
             SetRowName(row, name);
             row.SetColor(dead ? state.DeadColor : state.LiveColor);
 

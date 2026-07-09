@@ -19,7 +19,7 @@
       },
       "EnableExtendedSpectatorPlayerList": {
         "title": "Erweiterte Spectator-Spielerliste aktivieren",
-        "description": "Ersetzt die 4-Spieler-Spectator-Todesliste durch ein zweispaltiges Layout, das mit der Bildschirmhöhe skaliert. Lebende Spieler werden bei begrenztem Platz zuerst gezeigt; unter Toten haben Sprecher Priorität."
+        "description": "Ersetzt die 4-Spieler-Spectator-Todesliste durch ein zweispaltiges Layout, das mit der Bildschirmhöhe skaliert. Lebende Spieler zuerst, dann Tote; jede Gruppe alphabetisch sortiert."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
