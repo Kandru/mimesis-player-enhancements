@@ -50,7 +50,9 @@ class DashboardStore {
   settingsGlobal = $state<SettingsDto | null>(null);
   settingsSave = $state<SettingsDto | null>(null);
   settingsQuery = $state('');
+  selectedSettingsSectionId = $state('');
   savingSettingKey = $state('');
+  mobileSidebarOpen = $state(false);
 
   saveProfile = $state<{ profile: { mode: string; presetId: string; label: string } } | null>(null);
   quickPresets = $state<QuickPresetDto[]>([]);
@@ -72,7 +74,7 @@ class DashboardStore {
 
   playerBlindModeUserEnabled = $state(true);
   playerBlindModeAutoSuspended = $state(false);
-  darkMode = $state(localStorage.getItem('darkMode') === 'true');
+  darkMode = $state(localStorage.getItem('darkMode') !== 'false');
 
   private eventSource: EventSource | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -150,6 +152,11 @@ class DashboardStore {
     this.route = parsed.route;
     this.settingsSubRoute = parsed.settingsSubRoute;
     this.steamId = parsed.steamId;
+    this.mobileSidebarOpen = false;
+    if (parsed.route !== 'global-settings' && !(parsed.route === 'settings' && parsed.settingsSubRoute === 'customize')) {
+      this.selectedSettingsSectionId = '';
+      this.settingsQuery = '';
+    }
     this.setConnectedMode();
     if (this.route !== prevRoute || this.steamId !== prevSteam) {
       this.loadPageData(true);
@@ -400,6 +407,12 @@ class DashboardStore {
     try {
       const res = await Api.getItems();
       this.itemCatalog = res.items || [];
+      for (const key of Object.keys(this.spawnSelections)) {
+        const sel = this.spawnSelections[key];
+        if (!sel.itemId && this.itemCatalog.length > 0) {
+          sel.itemId = this.itemCatalog[0].id;
+        }
+      }
     } catch {
       /* optional */
     }

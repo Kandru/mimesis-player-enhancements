@@ -23,10 +23,10 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-4">
   <div>
-    <h2 class="text-xl font-semibold">{t('dashboard.settings_heading')}</h2>
-    <p class="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.settings_intro_profile')}</p>
+    <h2 class="text-lg font-semibold">{t('dashboard.settings_heading')}</h2>
+    <p class="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.settings_intro_profile')}</p>
     {#if profile}
       <p class="mt-2 text-sm">{t('dashboard.quick_active_profile', { label: profile.label || profile.mode })}</p>
     {/if}
@@ -35,22 +35,22 @@
   {#if dashboard.loadingSaveProfile}
     <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>
   {:else}
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <button type="button" class="card p-4 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('global')}>
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('global')}>
         <div class="font-semibold">{t('quicksettings.profile.global')}</div>
       </button>
       {#each builtins as preset}
-        <button type="button" class="card p-4 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
+        <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
           <div class="font-semibold">{preset.name}</div>
         </button>
       {/each}
       {#each userPresets as preset}
-        <button type="button" class="card p-4 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
+        <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
           <div class="font-semibold">{preset.name}</div>
           <div class="text-xs text-gray-500">{t('dashboard.quick_preset_user')}</div>
         </button>
       {/each}
-      <button type="button" class="card p-4 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('custom')}>
+      <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('custom')}>
         <div class="font-semibold">{t('quicksettings.profile.custom')}</div>
       </button>
     </div>

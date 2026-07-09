@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ConfigEntryDto, ConfigSectionDto } from '$lib/types';
+  import Toggle from '$lib/components/Toggle.svelte';
   import { t } from '$lib/i18n';
   import { formatDefaultHint, formatGlobalHint, settingDiffersFromDefault, settingDiffersFromGlobal } from '$lib/settings';
 
@@ -35,53 +36,58 @@
         ? formatDefaultHint(entry)
         : '',
   );
+
+  const boolChecked = $derived(entry.value === 'true' || entry.value === 'True');
 </script>
 
-<div class="rounded-lg border border-gray-100 p-3 dark:border-gray-700 {editable ? '' : 'settings-entry-host-only'}">
-  <div class="mb-1 flex flex-wrap items-center gap-2">
-    <label class="font-medium" for="{section.id}-{entry.key}">{entry.title}</label>
+<div class="settings-entry {editable ? '' : 'settings-entry-readonly'}">
+  <div class="settings-entry-header">
+    <label class="settings-entry-title" for="{section.id}-{entry.key}">{entry.title}</label>
     {#if entry.hasLocalEffect}
       <span class="badge badge-local" title={t('dashboard.settings_local_hint')}>{t('dashboard.settings_local_badge')}</span>
     {/if}
     {#if scope === 'save' && entry.isOverridden}
-      <span class="badge bg-violet-100 text-violet-800">{t('dashboard.settings_overridden')}</span>
+      <span class="badge bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">{t('dashboard.settings_overridden')}</span>
     {/if}
     {#if !editable}
-      <span class="text-xs text-gray-500" title={t('dashboard.settings_host_only_hint')}>{t('dashboard.settings_host_only')}</span>
+      <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" title={t('dashboard.settings_host_only_hint')}>
+        {t('dashboard.settings_host_only')}
+      </span>
     {/if}
   </div>
   {#if entry.description}
-    <p class="mb-2 text-xs text-gray-500">{entry.description}</p>
+    <p class="settings-entry-desc">{entry.description}</p>
   {/if}
 
-  {#if entry.type === 'Boolean'}
-    <input
-      id="{section.id}-{entry.key}"
-      type="checkbox"
-      checked={entry.value === 'true' || entry.value === 'True'}
-      disabled={!editable}
-      onchange={onChange}
-    />
-  {:else if entry.inputKind === 'Select'}
-    <select id="{section.id}-{entry.key}" class="input" value={entry.value} disabled={!editable} onchange={onChange}>
-      {#each entry.selectOptions as opt}
-        <option value={opt.value}>{opt.label}</option>
-      {/each}
-    </select>
-  {:else}
-    <input
-      id="{section.id}-{entry.key}"
-      class="input"
-      type={entry.type === 'Int32' || entry.type === 'Single' || entry.type === 'Double' ? 'number' : 'text'}
-      value={entry.value}
-      min={entry.minValue}
-      max={entry.maxValue}
-      disabled={!editable}
-      onchange={onChange}
-    />
-  {/if}
+  <div class="settings-entry-control">
+    {#if entry.type === 'Boolean'}
+      <Toggle
+        checked={boolChecked}
+        disabled={!editable}
+        label={entry.title}
+        onchange={(checked) => onsave(checked ? 'true' : 'false')}
+      />
+    {:else if entry.inputKind === 'Select'}
+      <select id="{section.id}-{entry.key}" class="input max-w-md" value={entry.value} disabled={!editable} onchange={onChange}>
+        {#each entry.selectOptions as opt}
+          <option value={opt.value}>{opt.label}</option>
+        {/each}
+      </select>
+    {:else}
+      <input
+        id="{section.id}-{entry.key}"
+        class="input max-w-md"
+        type={entry.type === 'Int32' || entry.type === 'Single' || entry.type === 'Double' ? 'number' : 'text'}
+        value={entry.value}
+        min={entry.minValue}
+        max={entry.maxValue}
+        disabled={!editable}
+        onchange={onChange}
+      />
+    {/if}
+  </div>
 
   {#if hint}
-    <p class="mt-1 text-xs text-gray-500">{hint}</p>
+    <p class="settings-entry-hint">{hint}</p>
   {/if}
 </div>

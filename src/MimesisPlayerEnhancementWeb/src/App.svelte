@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import AppShell from '$lib/components/layout/AppShell.svelte';
+  import LobbyShell from '$lib/components/layout/LobbyShell.svelte';
   import WaitingPage from '$lib/routes/Waiting.svelte';
   import DonationPage from '$lib/routes/Donation.svelte';
   import PlayersPage from '$lib/routes/Players.svelte';
@@ -12,6 +13,7 @@
   import GlobalSettingsPage from '$lib/routes/GlobalSettingsPage.svelte';
   import PlayerDetailPage from '$lib/routes/PlayerDetail.svelte';
   import Toast from '$lib/components/Toast.svelte';
+  import { isLobbyRoute } from '$lib/playerHelpers';
   import { t } from '$lib/i18n';
 
   onMount(() => dashboard.init());
@@ -26,20 +28,24 @@
     <WaitingPage />
   {:else if dashboard.route === 'donation'}
     <DonationPage />
-  {:else if dashboard.route === 'players'}
-    <PlayersPage />
-  {:else if dashboard.route === 'minimap'}
-    <MinimapPage />
-  {:else if dashboard.route === 'leaderboard'}
-    <LeaderboardPage />
-  {:else if dashboard.route === 'settings' && dashboard.settingsSubRoute === 'customize'}
-    <SettingsCustomizePage />
-  {:else if dashboard.route === 'settings'}
-    <SettingsProfilePage />
   {:else if dashboard.route === 'global-settings'}
     <GlobalSettingsPage />
-  {:else if dashboard.route === 'player'}
-    <PlayerDetailPage />
+  {:else if isLobbyRoute(dashboard.route)}
+    <LobbyShell>
+      {#if dashboard.route === 'players'}
+        <PlayersPage />
+      {:else if dashboard.route === 'minimap'}
+        <MinimapPage />
+      {:else if dashboard.route === 'leaderboard'}
+        <LeaderboardPage />
+      {:else if dashboard.route === 'settings' && dashboard.settingsSubRoute === 'customize'}
+        <SettingsCustomizePage />
+      {:else if dashboard.route === 'settings'}
+        <SettingsProfilePage />
+      {:else if dashboard.route === 'player'}
+        <PlayerDetailPage />
+      {/if}
+    </LobbyShell>
   {:else}
     <WaitingPage />
   {/if}

@@ -103,7 +103,11 @@ const Api = {
       method: 'POST',
       cache: 'no-store',
     });
-    const body = await res.json().catch(() => ({}));
+    const body = (await res.json().catch(() => ({}))) as {
+      message?: string;
+      godMode?: boolean;
+      noClip?: boolean;
+    };
     if (!res.ok && res.status !== 202) {
       throw new Error(body.message || `${action} ${res.status}`);
     }

@@ -2,15 +2,24 @@
   import type { Snippet } from 'svelte';
   import Sidebar from './Sidebar.svelte';
   import Header from './Header.svelte';
+  import { dashboard } from '$lib/stores/dashboard.svelte';
 
   let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="flex min-h-full">
-  <Sidebar />
-  <div class="flex min-h-full flex-1 flex-col lg:pl-[var(--sidebar-width)]">
+<div class="app-shell min-h-full bg-gray-50 dark:bg-gray-950">
+  <Sidebar mobileOpen={dashboard.mobileSidebarOpen} onclose={() => (dashboard.mobileSidebarOpen = false)} />
+  {#if dashboard.mobileSidebarOpen}
+    <button
+      type="button"
+      class="sidebar-backdrop lg:hidden"
+      aria-label="Close menu"
+      onclick={() => (dashboard.mobileSidebarOpen = false)}
+    ></button>
+  {/if}
+  <div class="app-main">
     <Header />
-    <main class="flex-1 p-4 md:p-6">
+    <main class="page-content">
       {@render children()}
     </main>
   </div>
