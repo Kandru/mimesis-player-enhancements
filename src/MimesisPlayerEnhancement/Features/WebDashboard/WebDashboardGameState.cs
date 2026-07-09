@@ -27,9 +27,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 || MimesisSaveManager.IsHost();
         }
 
+        internal static bool CanViewGlobalSettings()
+        {
+            return true;
+        }
+
         internal static bool CanEditGlobalSettings()
         {
             return !IsConnected() || IsHost();
+        }
+
+        internal static bool CanEditGlobalSetting(string sectionId, string key)
+        {
+            if (!IsConnected())
+            {
+                return true;
+            }
+
+            if (IsHost())
+            {
+                return true;
+            }
+
+            return ModConfigEntryLocalEffect.HasLocalEffect(sectionId, key);
         }
 
         internal static bool CanEditSaveSettings()

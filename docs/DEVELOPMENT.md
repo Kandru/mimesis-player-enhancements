@@ -61,6 +61,17 @@ Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `s
 - Per-save overrides: `SaveSlotConfigStore` + sidecar `.mpe-overrides.sav` (web dashboard); loaded at save load, flushed on vanilla save.
 - Runtime edits: `GlobalConfigStore` (global) or `SaveSlotConfigStore` (per slot); `ModConfig.Changed` triggers selective `SyncFromConfig`.
 
+## Web dashboard (Svelte)
+
+Built via Docker — no local Node.js required:
+
+```bash
+./scripts/build-webdashboard.sh          # Docker → Assets/WebDashboard/
+SKIP_WEB_BUILD=true ./scripts/build.sh   # dotnet only when assets already built
+```
+
+See [src/MimesisPlayerEnhancementWeb/README.md](../src/MimesisPlayerEnhancementWeb/README.md).
+
 ## UI toolkit
 
 Shared primitives in `src/MimesisPlayerEnhancement/Ui/`. Features compose these; Harmony wiring stays in the feature.

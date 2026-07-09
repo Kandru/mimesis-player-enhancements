@@ -75,6 +75,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float W;
         public float H;
         public bool IsMainPath;
+        public int FloorIndex;
+        public float CenterY;
+        public bool MultiFloor;
     }
 
     internal sealed class WebDashboardMinimapConnectionDto
@@ -93,6 +96,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string ToTileId = "";
         public string TargetAreaId = "";
         public bool CrossArea;
+        public bool CrossFloor;
+        public float Width;
+        public float DestX;
+        public float DestZ;
+        public string DestAreaId = "";
+        public string TeleporterId = "";
     }
 
     internal sealed class WebDashboardMinimapAreaDto
@@ -118,6 +127,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public bool IsAlive = true;
         public bool IsHost;
         public bool IsLocal;
+        public int FloorIndex;
     }
 
     internal sealed class WebDashboardMinimapTrainDto
@@ -273,6 +283,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string GlobalValue = "";
         public bool IsOverridden;
         public bool IsHidden;
+        public bool HasLocalEffect;
         public string? MinValue;
         public string? MaxValue;
         public string InputKind = "Default";
@@ -366,5 +377,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     internal sealed class WebDashboardHostCheatsUpdateRequest
     {
         public bool? DisableAll { get; set; }
+    }
+
+    internal sealed class WebDashboardMinimapBlindRequest
+    {
+        public bool Enabled = true;
     }
 }

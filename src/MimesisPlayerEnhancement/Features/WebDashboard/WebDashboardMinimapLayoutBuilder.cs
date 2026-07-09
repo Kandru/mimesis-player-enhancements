@@ -167,6 +167,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
+            Dictionary<int, int> tileFloorById = [];
             for (int layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
                 WebDashboardMinimapDungeonGraph layerGraph =
@@ -178,17 +179,32 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 string areaId = WebDashboardMinimapHeightLayers.BuildIndoorLayerAreaId(layerIndex, layers.Count);
                 string label = WebDashboardMinimapHeightLayers.BuildIndoorLayerLabel(layerIndex, layers.Count);
-                WebDashboardMinimapAreaDto area = BuildAreaFromGraph(layerGraph, areaId, label, "indoor");
+                WebDashboardMinimapAreaDto area = BuildAreaFromGraph(layerGraph, areaId, label, "indoor", layerIndex);
+                foreach (KeyValuePair<Tile, int> entry in layerGraph.TileIds)
+                {
+                    tileFloorById[entry.Value] = layerIndex;
+                }
+
                 WebDashboardMinimapTileRegistry.RegisterGraph(layerGraph, areaId);
                 layout.Areas.Add(area);
             }
 
+            WebDashboardMinimapDoorwayBuilder.AppendCrossFloorConnections(layout, indoorGraph, tileFloorById);
             return layout.Areas.Exists(static area => area.Kind == "indoor");
         }
 
         private readonly struct RawMapTile
         {
-            internal RawMapTile(string id, string label, float centerX, float centerZ, float width, float height, bool isMainPath)
+            internal RawMapTile(
+                string id,
+                string label,
+                float centerX,
+                float centerZ,
+                float width,
+                float height,
+                bool isMainPath,
+                float centerY = 0f,
+                int floorIndex = 0)
             {
                 Id = id;
                 Label = label;
@@ -197,6 +213,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Width = width;
                 Height = height;
                 IsMainPath = isMainPath;
+                CenterY = centerY;
+                FloorIndex = floorIndex;
             }
 
             internal readonly string Id;
@@ -206,13 +224,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             internal readonly float Width;
             internal readonly float Height;
             internal readonly bool IsMainPath;
+            internal readonly float CenterY;
+            internal readonly int FloorIndex;
         }
 
         private static WebDashboardMinimapAreaDto BuildAreaFromGraph(
             WebDashboardMinimapDungeonGraph graph,
             string areaId,
             string label,
-            string kind)
+            string kind,
+            int floorIndex = 0)
         {
             List<RawMapTile> rawTiles = [];
             foreach (Tile tile in graph.Tiles)
@@ -233,7 +254,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     center.z,
                     halfW * 2f,
                     halfH * 2f,
-                    graph.MainPath.Contains(tile)));
+                    graph.MainPath.Contains(tile),
+                    center.y,
+                    floorIndex));
             }
 
             List<(string fromId, string toId)> connections = [];
@@ -242,7 +265,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 connections.Add(($"tile-{from}", $"tile-{to}"));
             }
 
-            return BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections);
+            WebDashboardMinimapAreaDto area = BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections);
+            Dictionary<string, WebDashboardMinimapTileDto> tilesById = [];
+            foreach (WebDashboardMinimapTileDto tileDto in area.Tiles)
+            {
+                tilesById[tileDto.Id] = tileDto;
+            }
+
+            area.ConnectionPoints.Clear();
+            WebDashboardMinimapDoorwayBuilder.AppendDoorwayConnections(area, graph, tilesById, area.Bounds);
+            return area;
         }
 
         private static WebDashboardMinimapAreaDto BuildAreaFromGridGraph(
@@ -339,12 +371,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     W = Mathf.Clamp01(tile.Width / spanX),
                     H = Mathf.Clamp01(tile.Height / spanZ),
                     IsMainPath = tile.IsMainPath,
+                    CenterY = tile.CenterY,
+                    FloorIndex = tile.FloorIndex,
                 };
                 area.Tiles.Add(tileDto);
                 tilesById[tileDto.Id] = tileDto;
             }
 
             HashSet<string> seenConnections = [];
+            // Doorway connections are added by BuildAreaFromGraph when a dungeon graph is available.
             foreach ((string fromId, string toId) in connections)
             {
                 if (fromId == toId)
@@ -378,6 +413,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         FromTileId = fromId,
                         ToTileId = toId,
                         CrossArea = false,
+                        Width = 0.04f,
                     });
                 }
             }

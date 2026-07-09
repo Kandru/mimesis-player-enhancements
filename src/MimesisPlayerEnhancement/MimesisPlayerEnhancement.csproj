@@ -20,6 +20,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Target Name="EnsureWebDashboardAssets" BeforeTargets="BeforeBuild" Condition="'$(SkipWebBuild)' != 'true'">
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Assets\WebDashboard\index.html')"
+           Text="Web dashboard assets missing. Run ./scripts/build-webdashboard.sh (requires Docker) or build with -p:SkipWebBuild=true." />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="HarmonyX">
       <PrivateAssets>all</PrivateAssets>

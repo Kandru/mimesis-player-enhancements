@@ -5,6 +5,9 @@ PathConfig.props
 dist/
 src/**/bin/
 src/**/obj/
+src/MimesisPlayerEnhancementWeb/node_modules/
+src/MimesisPlayerEnhancementWeb/dist/
+src/MimesisPlayerEnhancement/Assets/WebDashboard/assets/
 deps/MimicAPI/
 deps/nuget/
 deps/reference/Managed/
@@ -26,4 +29,5 @@ Directory.Build.user.props
 # custom
 references/
 .tmp-*/
+.tmp-webdashboard/
 .formatting.lock

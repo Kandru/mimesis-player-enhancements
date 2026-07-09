@@ -89,6 +89,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 };
             }
 
+            if (!WebDashboardGameState.CanEditGlobalSetting(sectionId, key))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = L("host_only"),
+                };
+            }
+
             if (!ModConfigRegistry.TryNormalizeRawValue(sectionId, key, value, out string normalized, out string? error))
             {
                 return new WebDashboardConfigUpdateResult
@@ -327,6 +336,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                     ModConfigEntryUiHints.ApplyToEntry(entryDto, sectionId, key);
                     ModConfigEntryDependencies.ApplyToEntry(section, entryDto);
+                    entryDto.HasLocalEffect = ModConfigEntryLocalEffect.HasLocalEffect(sectionId, key);
 
                     if (!string.IsNullOrEmpty(featureToggleKey)
                         && string.Equals(key, featureToggleKey, StringComparison.Ordinal))

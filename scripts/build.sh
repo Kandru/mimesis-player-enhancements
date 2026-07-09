@@ -26,6 +26,10 @@ if [[ "${COPY_TO_MODS:-false}" == "true" ]]; then
   fi
 fi
 
+if [[ "${SKIP_WEB_BUILD:-false}" != "true" ]]; then
+  "$ROOT/scripts/build-webdashboard.sh"
+fi
+
 if [[ "${SKIP_FORMAT:-false}" != "true" ]]; then
   "$ROOT/scripts/format-code.sh"
 fi

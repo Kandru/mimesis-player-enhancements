@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --brand: #3c50e0;
+  --brand-dark: #1c3fb7;
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.card {
+  @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition;
+}
+
+.btn-primary {
+  @apply bg-[var(--brand)] text-white hover:bg-[var(--brand-dark)];
+}
+
+.btn-secondary {
+  @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+}
+
+.badge-host {
+  @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300;
+}
+
+.badge-guest {
+  @apply bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300;
+}
+
+.badge-local {
+  @apply bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300;
+}
+
+.input {
+  @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900;
+}
+
+.input:disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.settings-entry-host-only {
+  @apply opacity-50;
+}
+
+.minimap-svg {
+  @apply h-full w-full rounded-xl border border-gray-200 bg-slate-950 dark:border-gray-700;
+}
+
+.minimap-tile {
+  fill: #1e293b;
+  stroke: #475569;
+  stroke-width: 2;
+}
+
+.minimap-tile.main-path {
+  fill: #0f172a;
+  stroke: #64748b;
+}
+
+.minimap-connection {
+  stroke: #fbbf24;
+  stroke-linecap: round;
+}
+
+.minimap-teleporter polygon {
+  fill: #ef4444;
+  stroke: #fecaca;
+  stroke-width: 1.5;
+}
+
+.minimap-stair circle {
+  fill: #38bdf8;
+  stroke: #e0f2fe;
+  stroke-width: 1.5;
+}
+
+.minimap-marker circle {
+  fill: #22c55e;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.minimap-marker.dead circle {
+  fill: #6b7280;
+}
+
+.minimap-marker.local circle {
+  fill: #3b82f6;
+}
+
+.minimap-marker.host circle {
+  stroke: #fbbf24;
+  stroke-width: 3;
+}
+
+.minimap-heading {
+  fill: #fff;
+}
+
+.minimap-tile-label,
+.minimap-marker-label {
+  fill: #cbd5e1;
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}

@@ -91,7 +91,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                WriteJson(context, 200, ModJson.Serialize(WebDashboardHostCheatsService.BuildState()));
+                WriteJson(context, 200, ModJson.Serialize(WebDashboardCatalogCache.GetHostCheats()));
                 return;
             }
 
@@ -114,6 +114,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (path == "/api/players" && method == "GET")
             {
                 WriteJson(context, 200, WebDashboardJson.SerializePlayers(snapshot.Players));
+                return;
+            }
+
+            if (path == "/api/minimap/blind" && method == "POST")
+            {
+                WebDashboardMinimapBlindRequest? blindRequest =
+                    ModJson.Deserialize<WebDashboardMinimapBlindRequest>(ReadRequestBody(context.Request));
+                if (blindRequest == null)
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                WebDashboardMinimapBlindMode.SetEnabled(blindRequest.Enabled);
+                WriteJson(context, 200, WebDashboardJson.SerializeActionResult(new WebDashboardActionResult
+                {
+                    Success = true,
+                    Message = L("done"),
+                }));
                 return;
             }
 
@@ -143,7 +162,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/settings/global" && method == "GET")
             {
-                if (!WebDashboardGameState.CanEditGlobalSettings())
+                if (!WebDashboardGameState.CanViewGlobalSettings())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
@@ -155,18 +174,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/settings/global" && method == "POST")
             {
-                if (!WebDashboardGameState.CanEditGlobalSettings())
-                {
-                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
-                    return;
-                }
-
                 WebDashboardConfigUpdateRequest? globalRequest = ModJson.Deserialize<WebDashboardConfigUpdateRequest>(ReadRequestBody(context.Request));
                 if (globalRequest == null
                     || string.IsNullOrWhiteSpace(globalRequest.SectionId)
                     || string.IsNullOrWhiteSpace(globalRequest.Key))
                 {
                     WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                if (!WebDashboardGameState.CanEditGlobalSetting(globalRequest.SectionId, globalRequest.Key))
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
                 }
 
@@ -381,7 +400,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
                 else
                 {
-                    exportDto = WebDashboardQuickSettingsBridge.ExportPreset(exportId);
+                    exportDto = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardQuickSettingsBridge.ExportPreset(exportId));
                 }
 
                 WriteJson(context, 200, ModJson.Serialize(exportDto));
@@ -396,7 +416,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                WriteJson(context, 200, WebDashboardJson.SerializeItems(WebDashboardItemCatalogService.BuildCatalog()));
+                WriteJson(context, 200, WebDashboardCatalogCache.GetItemsJson());
                 return;
             }
 
@@ -408,7 +428,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                WriteJson(context, 200, WebDashboardJson.SerializeDungeons(WebDashboardDungeonCatalogService.BuildCatalog()));
+                WriteJson(context, 200, WebDashboardCatalogCache.GetDungeonsJson());
                 return;
             }
 
@@ -491,13 +511,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+                string? displayName;
+                PlayerStatisticsDocument doc;
+                try
+                {
+                    (doc, displayName) = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardPlayerStatsService.TryGetStats(steamId, slotId));
+                }
+                catch (TimeoutException)
+                {
+                    WriteJson(context, 504, WebDashboardJson.SerializeError(504, L("timed_out")));
+                    return;
+                }
+
+                if (doc == null)
                 {
                     WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("player_stats_not_found")));
                     return;
                 }
 
-                string? displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(steamId, slotId);
                 string json = WebDashboardJson.SerializePlayerStatsSnapshot(doc, displayName);
                 WriteJson(context, 200, json);
                 return;

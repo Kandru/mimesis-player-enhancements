@@ -145,6 +145,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             bool showAll,
             bool isHost)
         {
+            if (WebDashboardMinimapBlindMode.ShouldHideOtherPlayers())
+            {
+                List<WebDashboardMinimapMarkerDto> localOnly = [];
+                foreach (WebDashboardMinimapMarkerDto marker in markers)
+                {
+                    if (marker.IsLocal)
+                    {
+                        localOnly.Add(marker);
+                    }
+                }
+
+                return localOnly;
+            }
+
             if (showAll)
             {
                 if (!isHost)

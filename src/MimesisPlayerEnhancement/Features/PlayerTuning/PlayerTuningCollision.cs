@@ -24,8 +24,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 : null;
 
         internal static bool ShouldDisable =>
-            HostApplyGate.ShouldApplyHostOnlyFeature(() =>
-                PlayerTuningResolver.IsFeatureEnabled && ModConfig.DisablePlayerCollision.Value);
+            PlayerTuningResolver.IsFeatureEnabled && ModConfig.DisablePlayerCollision.Value;
 
         internal static void RefreshFromConfig()
         {

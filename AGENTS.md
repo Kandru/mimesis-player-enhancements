@@ -60,11 +60,14 @@ Always verify changes compile before considering work complete:
 
 ```bash
 ./scripts/bootstrap-deps.sh   # first time only
-./scripts/build.sh              # Debug → dist/debug/
+./scripts/build-webdashboard.sh  # Svelte UI via Docker (first time / after web changes)
+./scripts/build.sh              # Debug → dist/debug/ (runs web build unless SKIP_WEB_BUILD=true)
 ./scripts/build.sh Release      # Release → dist/prod/
 ```
 
-Equivalent: `dotnet build src/MimesisPlayerEnhancement.sln -c Debug`.
+Equivalent: `dotnet build src/MimesisPlayerEnhancement.sln -c Debug` (use `-p:SkipWebBuild=true` if dashboard assets already built).
+
+Web dashboard sources: [src/MimesisPlayerEnhancementWeb/](src/MimesisPlayerEnhancementWeb/) — **Docker required** for `npm` (no local Node.js).
 
 Build runs `./scripts/format-code.sh` before compile (skip with `SKIP_FORMAT=true`). Verify only: `./scripts/format-code.sh --verify`
 
