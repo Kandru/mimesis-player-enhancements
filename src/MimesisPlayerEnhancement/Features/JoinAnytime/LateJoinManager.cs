@@ -65,6 +65,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 RetryPendingTramRoutes();
                 SweepMaintenanceLateJoiners();
+                SweepLimboLateJoiners();
                 ResendAwaitingClientRoutes();
             }
             else
@@ -291,16 +292,59 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static void ResendAwaitingClientRoutes()
         {
-            foreach (long uid in LateJoinRouteTracker.GetUidsNeedingResend())
+            foreach (long uid in LateJoinRouteTracker.GetUidsNeedingLimboResend())
             {
-                if (WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player)
-                    && player!.VRoom is VWaitingRoom)
+                if (LateJoinRouteTracker.GetPhase(uid) != LateJoinRoutePhase.AwaitingClient)
+                {
+                    continue;
+                }
+
+                if (!WebDashboardSessionAccess.TryGetPlayerByUid(uid, out VPlayer? player))
+                {
+                    continue;
+                }
+
+                if (player!.VRoom is VWaitingRoom)
                 {
                     MarkPreGameStateSent(uid);
                     continue;
                 }
 
                 AttemptTramRoute(uid, player, allowResend: true, TramRouteAttemptReason.AwaitingClientResend);
+            }
+        }
+
+        /// <summary>
+        /// Joiners released from maintenance have no live VPlayer until EnterWaitingRoomReq.
+        /// If the client missed LeaveRoomSig it stays in maintenance until we resend it.
+        /// </summary>
+        private static void SweepLimboLateJoiners()
+        {
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return;
+            }
+
+            foreach (long uid in LateJoinRouteTracker.GetUidsNeedingLimboResend())
+            {
+                if (!WebDashboardSessionAccess.TryGetSessionContextByUid(uid, out SessionContext? context)
+                    || context == null
+                    || context.ExistPlayer())
+                {
+                    continue;
+                }
+
+                if (!LateJoinRouteTracker.CanAttempt(uid, RouteRetryIntervalSeconds))
+                {
+                    continue;
+                }
+
+                LateJoinRouteTracker.RecordAttempt(uid);
+                if (JoinAnytimeNetworkTools.ResendPreGameTramStateToSession(context, allowResend: true))
+                {
+                    LateJoinRouteTracker.MarkAwaitingClient(uid);
+                }
             }
         }
 

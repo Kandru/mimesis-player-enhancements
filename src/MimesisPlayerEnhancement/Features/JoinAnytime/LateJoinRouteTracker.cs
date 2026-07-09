@@ -76,6 +76,28 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        internal static void RecordMaintenanceActorId(long uid, int actorId)
+        {
+            if (uid == 0 || actorId == 0)
+            {
+                return;
+            }
+
+            GetOrCreate(uid).MaintenanceActorId = actorId;
+        }
+
+        internal static bool TryGetMaintenanceActorId(long uid, out int actorId)
+        {
+            if (StatesByUid.TryGetValue(uid, out RouteState? state) && state.MaintenanceActorId != 0)
+            {
+                actorId = state.MaintenanceActorId;
+                return true;
+            }
+
+            actorId = 0;
+            return false;
+        }
+
         internal static void MarkInWaitingRoom(long uid)
         {
             RouteState state = GetOrCreate(uid);
@@ -145,11 +167,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return count;
         }
 
-        internal static IEnumerable<long> GetUidsNeedingResend()
+        internal static IEnumerable<long> GetUidsNeedingLimboResend()
         {
             foreach (RouteState state in StatesByUid.Values)
             {
-                if (state.Phase == LateJoinRoutePhase.AwaitingClient)
+                if (state.MaintenanceActorId == 0)
+                {
+                    continue;
+                }
+
+                if (state.Phase is LateJoinRoutePhase.InMaintenance or LateJoinRoutePhase.AwaitingClient)
                 {
                     yield return state.Uid;
                 }
@@ -263,8 +290,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     FirstAttemptTime = 0f;
                     LastAttemptTime = 0f;
                     AttemptCount = 0;
+                    MaintenanceActorId = 0;
                 }
             }
+
+            internal int MaintenanceActorId { get; set; }
 
             internal void RecordAttempt()
             {

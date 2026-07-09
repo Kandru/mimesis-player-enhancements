@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluProtocol.C2S;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -26,7 +27,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            return SendPreGameTramState(uid, msg => { _ = context.Send(msg); }, allowResend);
+            if (WebDashboardSessionAccess.GetVPlayer(context) is VPlayer livePlayer)
+            {
+                return SendPreGameTramStateToClient(livePlayer, allowResend);
+            }
+
+            if (!SendPreGameTramState(uid, msg => { _ = context.Send(msg); }, allowResend))
+            {
+                return false;
+            }
+
+            return TrySendMaintenanceLeaveRoomSig(context, uid, resend: true);
         }
 
         private static bool TryReleaseLateJoiner(VPlayer player)
@@ -42,7 +53,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            LateJoinRouteTracker.MarkAwaitingClient(player.UID);
+            return true;
+        }
+
+        private static bool TrySendMaintenanceLeaveRoomSig(SessionContext context, long uid, bool resend)
+        {
+            if (!LateJoinRouteTracker.TryGetMaintenanceActorId(uid, out int actorId))
+            {
+                return true;
+            }
+
+            if (resend)
+            {
+                ModLog.Debug(Feature, $"Resending maintenance LeaveRoomSig for uid={uid} — actorId={actorId}");
+            }
+
+            context.Send(new LeaveRoomSig
+            {
+                actorID = actorId,
+            });
             return true;
         }
 

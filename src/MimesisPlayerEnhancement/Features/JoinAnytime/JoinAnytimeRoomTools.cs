@@ -163,11 +163,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return true;
             }
 
+            LateJoinRouteTracker.RecordMaintenanceActorId(player.UID, player.ObjectID);
+
             ModLog.Info(Feature, $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
 
+            // Queue removal on the room executor; do not flush here. Vanilla maintenance→tram
+            // defers wipeout so MoveToWaitingRoomSig is handled before LeaveRoomSig.
             maintenanceRoom.PendRemovePlayer(player.ObjectID, backup: false, kill: false);
-            FlushMaintenanceRoomCommands(maintenanceRoom);
-            FlushVRoomManagerCommandsIfAvailable();
             return true;
         }
 
