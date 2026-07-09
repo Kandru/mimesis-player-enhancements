@@ -1,5 +1,11 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.8
+- switched the web-dashboard to Svelte for a single-page application (looks and feels way better)
+- draft: probably a fix for late-joiners not always joining the moving tram
+- draft: the dead player UI should sort the players by alphabet but living people first
+- draft: new feature to disable player collisions (each player needs the mod for it to work)
+
 ## 26.7.7
 - improved the loot allow/deny list to be searchable
 - properly scale the max scrap value in case of high-value loot due to allow/deny list
