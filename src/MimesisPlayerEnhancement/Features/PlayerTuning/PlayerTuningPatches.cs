@@ -25,6 +25,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             [
                 ("LoadBaseStats/MappedStats", AccessTools.Method(typeof(MappedStats), nameof(MappedStats.LoadBaseStats))),
                 ("OnChangeInventory/InventoryController", AccessTools.Method(typeof(InventoryController), nameof(InventoryController.OnChangeInventory))),
+                ("SetControlMode/ProtoActor", AccessTools.Method(typeof(ProtoActor), "SetControlMode")),
+                ("SetAsOtherPlayer/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.SetAsOtherPlayer))),
+                ("OnActorRevive/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.OnActorRevive))),
             ]);
         }
 
@@ -68,6 +71,57 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 catch (Exception ex)
                 {
                     ModLog.Warn(Feature, $"OnChangeInventory postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ProtoActor), "SetControlMode")]
+        public static class ProtoActorSetControlModePatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ProtoActor __instance)
+            {
+                try
+                {
+                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"SetControlMode postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsOtherPlayer))]
+        public static class ProtoActorSetAsOtherPlayerPatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ProtoActor __instance)
+            {
+                try
+                {
+                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"SetAsOtherPlayer postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.OnActorRevive))]
+        public static class ProtoActorOnActorRevivePatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ProtoActor __instance)
+            {
+                try
+                {
+                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"OnActorRevive postfix failed — {ex.Message}");
                 }
             }
         }

@@ -145,6 +145,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> StaminaRegenMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StaminaRegenDelayMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MaxCarryWeightMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> DisablePlayerCollision { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableDungeonRandomizer { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeDungeonPick { get; internal set; } = null!;

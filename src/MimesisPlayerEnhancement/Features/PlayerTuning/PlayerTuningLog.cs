@@ -30,5 +30,12 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         {
             ModLog.Debug(Feature, $"Skipped — {reason}");
         }
+
+        internal static void DebugUpdatedPlayerCollision(int actorCount, bool disabled)
+        {
+            ModLog.Debug(
+                Feature,
+                $"Player collision {(disabled ? "disabled" : "restored")} on {actorCount} remote proxy actor(s)");
+        }
     }
 }

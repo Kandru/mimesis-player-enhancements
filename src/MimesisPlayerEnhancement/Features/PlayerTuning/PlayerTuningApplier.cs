@@ -47,15 +47,15 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 ApplyRuntimeTuning();
                 RefreshAllPlayers();
                 _wasApplying = true;
-                return;
             }
-
-            if (_wasApplying || _runtimeTuningApplied)
+            else if (_wasApplying || _runtimeTuningApplied)
             {
                 RestoreRuntimeTuning("feature disabled");
                 RefreshAllPlayers();
                 _wasApplying = false;
             }
+
+            PlayerTuningCollision.RefreshFromConfig();
         }
 
         internal static void RestoreOnShutdown()

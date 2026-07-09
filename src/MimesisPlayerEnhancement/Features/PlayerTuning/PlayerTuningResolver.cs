@@ -26,5 +26,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
         internal static float MaxCarryWeightMultiplier =>
             IsFeatureEnabled ? ModConfig.MaxCarryWeightMultiplier.Value : 1f;
+
+        internal static bool DisablePlayerCollision =>
+            IsFeatureEnabled && ModConfig.DisablePlayerCollision.Value;
     }
 }

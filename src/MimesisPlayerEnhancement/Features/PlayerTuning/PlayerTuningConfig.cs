@@ -65,11 +65,19 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 1f,
                 "Max Carry Weight Multiplier",
                 "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity).");
+
+            ModConfig.DisablePlayerCollision = ModConfig.CreateTrackedEntry(_category,
+                "DisablePlayerCollision",
+                true,
+                "Disable Player Collision",
+                "On the host client, disable capsule colliders on other players so you can walk through them (e.g. crowded tram). Local effect only; requires Enable Player Tuning.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnablePlayerTuning.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnablePlayerTuning));
+            ModConfig.DisablePlayerCollision.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.DisablePlayerCollision));
             ModConfig.MoveSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
                 OnPlayerTuningMultiplierChanged(logger, value, ModConfig.MoveSpeedMultiplier));
             ModConfig.NoClipSpeedMultiplier.OnEntryValueChanged.Subscribe((_, value) =>

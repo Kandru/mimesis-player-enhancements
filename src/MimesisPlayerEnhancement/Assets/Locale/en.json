@@ -421,6 +421,10 @@
       "MaxCarryWeightMultiplier": {
         "title": "Max Carry Weight Multiplier",
         "description": "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity)."
+      },
+      "DisablePlayerCollision": {
+        "title": "Disable Player Collision",
+        "description": "On the host client, disable capsule colliders on other players so you can walk through them (e.g. crowded tram). Local effect only; requires Enable Player Tuning."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {

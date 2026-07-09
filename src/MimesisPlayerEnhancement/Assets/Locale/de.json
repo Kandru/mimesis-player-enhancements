@@ -421,6 +421,10 @@
       "MaxCarryWeightMultiplier": {
         "title": "Max.-Tragegewichts-Multiplikator",
         "description": "Skaliert Tragekapazität, bevor Überladung die Bewegung verlangsamt (1 = Vanilla, 2 = doppelte Kapazität)."
+      },
+      "DisablePlayerCollision": {
+        "title": "Spieler-Kollision deaktivieren",
+        "description": "Deaktiviert auf dem Host-Client die Kapsel-Kollider anderer Spieler, sodass du durch sie laufen kannst (z. B. voller Tram). Nur lokaler Effekt; erfordert Spieler-Tuning aktivieren."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
