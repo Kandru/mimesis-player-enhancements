@@ -1,18 +1,25 @@
 <script lang="ts">
   import Api from '$lib/api';
   import { dashboard } from '$lib/stores/dashboard.svelte';
-  import type { ItemOptionDto, PlayerDto } from '$lib/types';
+  import type { PlayerDto } from '$lib/types';
   import { t } from '$lib/i18n';
   import {
+    defaultItemSelectionKey,
+    getItemCatalogGroups,
+    parseItemSelection,
+  } from '$lib/itemCatalogHelpers';
+  import {
     connectionMeta,
-    lateJoinMeta,
     pingBars,
     pingClass,
     pingLabel,
-    sessionLine,
+    playerActivityLine,
     sortConnectedPlayers,
     sortPlayersByName,
+    statisticsSummaryShort,
+    storedDetailsLine,
     vitalsPercent,
+    voiceLinesShort,
   } from '$lib/playerHelpers';
   import {
     avatarUrl,
@@ -35,6 +42,13 @@
 
   const isHost = $derived(dashboard.status.isHost);
   const blindMode = $derived(dashboard.playerBlindMode);
+  const itemCatalogGroups = $derived(getItemCatalogGroups(dashboard.itemCatalog, t));
+
+  $effect(() => {
+    if (isHost && dashboard.status.isConnected && !stored) {
+      void dashboard.loadItemCatalog();
+    }
+  });
 
   const filtered = $derived.by(() => {
     const q = dashboard.headerSearchQuery.trim().toLowerCase();
@@ -48,6 +62,8 @@
         p.connectionRole,
         p.connectionAddress,
         p.lateJoinLabel,
+        p.activityState,
+        p.activityDetail,
       ]
         .map((v) => String(v ?? '').toLowerCase())
         .join(' ');
@@ -56,7 +72,16 @@
   });
 
   const pageCount = $derived(Math.max(1, Math.ceil(filtered.length / pageSize)));
-  const pageItems = $derived(filtered.slice(page * pageSize, page * pageSize + pageSize));
+  const pageItems = $derived(
+    stored ? filtered.slice(page * pageSize, page * pageSize + pageSize) : filtered,
+  );
+
+  const showingFrom = $derived(
+    filtered.length === 0 ? 0 : stored ? page * pageSize + 1 : 1,
+  );
+  const showingTo = $derived(
+    stored ? Math.min(filtered.length, (page + 1) * pageSize) : filtered.length,
+  );
 
   $effect(() => {
     if (page >= pageCount) page = Math.max(0, pageCount - 1);
@@ -71,15 +96,24 @@
     return !!player.playerUid && (!blindMode || player.isLocal);
   }
 
+  function showConnectionInfo(player: PlayerDto) {
+    return !blindMode || player.isLocal;
+  }
+
+  function showPingLabel(player: PlayerDto) {
+    const label = pingLabel(player, isHost, t);
+    return label && label !== '—';
+  }
+
   function showVitals(player: PlayerDto) {
     return isHost && !blindMode && player.playerUid && player.health != null;
   }
 
-  function showSession(player: PlayerDto) {
-    return !blindMode && !!player.currentSession;
+  function showStatistics(player: PlayerDto) {
+    return !stored && isHost && !blindMode;
   }
 
-  function canModerate(player: PlayerDto) {
+  function canKickBan(player: PlayerDto) {
     return isHost && !player.isLocal && !stored;
   }
 
@@ -92,58 +126,23 @@
   }
 
   function canGiveItem(player: PlayerDto) {
-    return canHeal(player);
+    return isHost && !blindMode && !!player.playerUid && player.isAlive && !stored;
   }
 
-  function ensureSpawnSelection(steamId: string | number) {
+  function ensureItemSelection(steamId: string | number) {
     const key = String(steamId);
     if (!dashboard.spawnSelections[key]) {
       dashboard.spawnSelections[key] = {
-        itemId: dashboard.itemCatalog[0]?.id || '',
-        percent: 100,
+        selectionKey: defaultItemSelectionKey(dashboard.itemCatalog),
       };
+    } else if (!dashboard.spawnSelections[key].selectionKey) {
+      dashboard.spawnSelections[key].selectionKey = defaultItemSelectionKey(dashboard.itemCatalog);
     }
     return dashboard.spawnSelections[key];
   }
 
-  function getItemCatalogGroups() {
-    const order = ['Consumable', 'Equipment', 'Miscellany', 'Developer'];
-    const labelKeys: Record<string, string> = {
-      Consumable: 'dashboard.spawn_item_category_consumable',
-      Equipment: 'dashboard.spawn_item_category_equipment',
-      Miscellany: 'dashboard.spawn_item_category_miscellany',
-      Developer: 'dashboard.spawn_item_category_developer',
-    };
-    const buckets: Record<string, ItemOptionDto[]> = {};
-    for (const item of dashboard.itemCatalog) {
-      const type = item.type || 'Miscellany';
-      (buckets[type] ??= []).push(item);
-    }
-    return order
-      .filter((id) => buckets[id]?.length)
-      .map((id) => ({ id, label: t(labelKeys[id] || id), items: buckets[id] }));
-  }
-
-  function getSelectedItemOption(steamId: string | number) {
-    const sel = ensureSpawnSelection(steamId);
-    return dashboard.itemCatalog.find((item) => item.id === sel.itemId);
-  }
-
-  function hasItemVariants(steamId: string | number) {
-    return !!getSelectedItemOption(steamId)?.variants?.length;
-  }
-
-  function setSpawnItemId(steamId: string | number, itemId: string) {
-    const sel = ensureSpawnSelection(steamId);
-    const previousId = sel.itemId;
-    sel.itemId = itemId;
-    const option = dashboard.itemCatalog.find((item) => item.id === itemId);
-    if (option?.variants?.length) {
-      const percents = option.variants.map((v) => v.percent);
-      if (previousId !== itemId || !percents.includes(sel.percent)) {
-        sel.percent = option.variants[0].percent;
-      }
-    }
+  function setItemSelection(steamId: string | number, selectionKey: string) {
+    ensureItemSelection(steamId).selectionKey = selectionKey;
   }
 
   async function moderate(player: PlayerDto, action: string) {
@@ -168,11 +167,12 @@
   }
 
   async function giveItem(player: PlayerDto) {
-    const sel = ensureSpawnSelection(player.steamId);
-    if (!sel.itemId) return;
-    const percent = hasItemVariants(player.steamId) ? sel.percent : undefined;
+    const sel = ensureItemSelection(player.steamId);
+    if (!sel.selectionKey) return;
+    const { itemId, percent } = parseItemSelection(sel.selectionKey);
+    if (!itemId) return;
     try {
-      const res = await Api.spawnItem(String(player.steamId), sel.itemId, percent);
+      const res = await Api.spawnItem(String(player.steamId), itemId, percent);
       dashboard.showToast(res.message || t('api.done'));
     } catch (e) {
       dashboard.showToast(e instanceof Error ? e.message : String(e));
@@ -193,37 +193,38 @@
     }
   }
 
-  function playerDetails(player: PlayerDto) {
-    const late = lateJoinMeta(
-      player,
-      isHost,
-      t('dashboard.late_join_prefix', { label: player.lateJoinLabel || '' }),
-      t('dashboard.late_join_attempts', { count: player.lateJoinAttemptCount ?? 0 }),
-    );
-    const session = showSession(player) ? sessionLine(player, t) : '';
-    const stats = [late, session].filter(Boolean).join(' · ');
+  function connectionDetails(player: PlayerDto) {
+    if (stored) {
+      return { primary: storedDetailsLine(player, t), secondary: '' };
+    }
     return {
-      connection: connectionMeta(
-        player,
-        t('dashboard.voice_lines', { count: player.voiceLineCount ?? 0 }),
-      ),
-      stats,
+      primary: showConnectionInfo(player)
+        ? connectionMeta(
+            player,
+            voiceLinesShort(player.voiceLineCount ?? 0, t),
+          )
+        : '',
+      secondary: showConnectionInfo(player) ? playerActivityLine(player, t) : '',
     };
   }
 </script>
 
 <div class="data-table-card">
   <div class="data-table-toolbar">
-    <label class="data-table-page-size">
-      <span>{t('dashboard.table_show')}</span>
-      <select class="input data-table-select" bind:value={pageSize} onchange={() => (page = 0)}>
-        <option value={5}>5</option>
-        <option value={10}>10</option>
-        <option value={25}>25</option>
-        <option value={50}>50</option>
-      </select>
-      <span>{t('dashboard.table_entries')}</span>
-    </label>
+    <span>
+      {t('dashboard.table_showing', {
+        from: showingFrom,
+        to: showingTo,
+        total: filtered.length,
+      })}
+    </span>
+    {#if stored && pageCount > 1}
+      <div class="data-table-pagination">
+        <button type="button" class="btn btn-secondary btn-xs" disabled={page === 0} onclick={() => page--}>{t('dashboard.table_prev')}</button>
+        <span class="data-table-page-num">{page + 1} / {pageCount}</span>
+        <button type="button" class="btn btn-secondary btn-xs" disabled={page >= pageCount - 1} onclick={() => page++}>{t('dashboard.table_next')}</button>
+      </div>
+    {/if}
   </div>
 
   <div class="data-table-wrap">
@@ -234,9 +235,9 @@
           {#if !stored}
             <th>{t('dashboard.table_ping')}</th>
           {/if}
-          <th>{t('dashboard.table_connection')}</th>
+          <th>{stored ? t('dashboard.table_details') : t('dashboard.table_connection')}</th>
           {#if !stored && isHost}
-            <th>{t('dashboard.table_session')}</th>
+            <th>{t('dashboard.table_statistics')}</th>
             <th>{t('dashboard.table_vitals')}</th>
           {/if}
           {#if isHost}
@@ -246,8 +247,9 @@
       </thead>
       <tbody>
         {#each pageItems as player (player.steamId)}
-          {@const details = playerDetails(player)}
+          {@const details = connectionDetails(player)}
           {@const vitals = vitalsPercent(player)}
+          {@const stats = statisticsSummaryShort(player, t)}
           <tr class="data-table-row {showAlive(player) ? (player.isAlive ? 'row-alive' : 'row-dead') : ''}">
             <td>
               <div class="data-table-player">
@@ -257,7 +259,7 @@
                   alt=""
                   onerror={(e) => ((e.currentTarget as HTMLImageElement).src = '/img/default-avatar.svg')}
                 />
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                   <div class="data-table-player-name">
                     <a
                       class="hover:text-[var(--brand)]"
@@ -275,7 +277,7 @@
                         {player.isAlive ? t('dashboard.badge_alive') : t('dashboard.badge_dead')}
                       </span>
                     {/if}
-                    {#if isHost && player.lateJoinLabel}
+                    {#if isHost && showConnectionInfo(player) && player.lateJoinLabel}
                       <span class="badge bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">{player.lateJoinLabel}</span>
                     {/if}
                   </div>
@@ -291,24 +293,45 @@
                       <span class="ping-bar {i < pingBars(player, isHost) ? 'active' : ''}"></span>
                     {/each}
                   </div>
-                  <span class="data-table-muted">{pingLabel(player, isHost, t)}</span>
+                  {#if showPingLabel(player)}
+                    <span class="data-table-muted">{pingLabel(player, isHost, t)}</span>
+                  {/if}
                 </div>
               </td>
             {/if}
             <td>
               <div class="data-table-cell-stack">
-                <span>{details.connection}</span>
-                {#if details.stats}
-                  <span class="data-table-stats">{details.stats}</span>
+                {#if details.primary}
+                  <span>{details.primary}</span>
+                {/if}
+                {#if details.secondary}
+                  <span class="data-table-stats">{details.secondary}</span>
+                {/if}
+                {#if !details.primary && !details.secondary && (stored || showConnectionInfo(player))}
+                  <span class="data-table-muted">—</span>
                 {/if}
               </div>
             </td>
             {#if !stored && isHost}
               <td>
-                {#if showSession(player)}
-                  <span class="data-table-stats">{sessionLine(player, t) || '—'}</span>
-                {:else}
-                  <span class="data-table-muted">—</span>
+                {#if showStatistics(player)}
+                  <div class="data-table-cell-stack data-table-cell-compact">
+                    {#if stats.total}
+                      <span class="data-table-stats" title={t('dashboard.statistics_total')}>
+                        <span class="data-table-stat-label">{t('dashboard.statistics_total')}</span>
+                        {stats.total}
+                      </span>
+                    {/if}
+                    {#if stats.session}
+                      <span class="data-table-stats" title={t('dashboard.statistics_session')}>
+                        <span class="data-table-stat-label">{t('dashboard.statistics_session')}</span>
+                        {stats.session}
+                      </span>
+                    {/if}
+                    {#if !stats.total && !stats.session}
+                      <span class="data-table-muted">—</span>
+                    {/if}
+                  </div>
                 {/if}
               </td>
               <td>
@@ -329,8 +352,6 @@
                       </div>
                     {/if}
                   </div>
-                {:else}
-                  <span class="data-table-muted">—</span>
                 {/if}
               </td>
             {/if}
@@ -342,69 +363,63 @@
                       {t('dashboard.badge_stats')}
                     </button>
                   {/if}
-                  {#if canModerate(player)}
+                  {#if canKickBan(player)}
                     <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'kick')}>{t('dashboard.kick')}</button>
                     <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, player.isBanned ? 'unban' : 'ban')}>
                       {player.isBanned ? t('dashboard.unban') : t('dashboard.ban')}
                     </button>
-                    {#if canHeal(player)}
-                      <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'heal')}>{t('dashboard.heal')}</button>
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-xs {player.godMode ? 'btn-active' : ''}"
-                        title={t('dashboard.god_mode_title')}
-                        onclick={() => toggleCheat(player, 'godmode')}
-                      >
-                        {t('dashboard.god_mode')} {player.godMode ? t('dashboard.on') : t('dashboard.off')}
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-secondary btn-xs {player.noClip ? 'btn-active' : ''}"
-                        title={t('dashboard.noclip_title')}
-                        onclick={() => toggleCheat(player, 'noclip')}
-                      >
-                        {t('dashboard.noclip')} {player.noClip ? t('dashboard.on') : t('dashboard.off')}
-                      </button>
-                    {:else if canRespawn(player)}
-                      <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'respawn')}>{t('dashboard.respawn')}</button>
-                    {/if}
-                  {:else if stored}
+                  {/if}
+                  {#if canHeal(player)}
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'heal')}>{t('dashboard.heal')}</button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-xs {player.godMode ? 'btn-active' : ''}"
+                      title={t('dashboard.god_mode_title')}
+                      onclick={() => toggleCheat(player, 'godmode')}
+                    >
+                      {t('dashboard.god_mode')} {player.godMode ? t('dashboard.on') : t('dashboard.off')}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-xs {player.noClip ? 'btn-active' : ''}"
+                      title={t('dashboard.noclip_title')}
+                      onclick={() => toggleCheat(player, 'noclip')}
+                    >
+                      {t('dashboard.noclip')} {player.noClip ? t('dashboard.on') : t('dashboard.off')}
+                    </button>
+                  {:else if canRespawn(player)}
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'respawn')}>{t('dashboard.respawn')}</button>
+                  {/if}
+                  {#if stored}
                     {#if player.isBanned}
                       <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'unban')}>{t('dashboard.unban')}</button>
                     {/if}
                     <button type="button" class="btn btn-danger btn-xs" onclick={() => deletePlayerData(player)}>{t('dashboard.delete_player')}</button>
                   {/if}
-                  {#if canGiveItem(player) && dashboard.itemCatalog.length > 0}
-                    <div class="spawn-item-controls">
-                      <label class="sr-only" for="spawn-{player.steamId}">{t('dashboard.spawn_item')}</label>
-                      <select
-                        id="spawn-{player.steamId}"
-                        class="input spawn-item-select"
-                        value={ensureSpawnSelection(player.steamId).itemId}
-                        onchange={(e) => setSpawnItemId(player.steamId, (e.currentTarget as HTMLSelectElement).value)}
-                      >
-                        {#each getItemCatalogGroups() as group}
-                          <optgroup label={group.label}>
-                            {#each group.items as item}
-                              <option value={item.id}>{item.label}</option>
-                            {/each}
-                          </optgroup>
-                        {/each}
-                      </select>
-                      {#if hasItemVariants(player.steamId)}
+                  {#if canGiveItem(player)}
+                    <div class="give-item-controls">
+                      <label class="give-item-label" for="give-item-{player.steamId}">{t('dashboard.spawn_item')}</label>
+                      {#if dashboard.itemCatalog.length > 0}
                         <select
-                          class="input spawn-item-select spawn-item-percent"
-                          value={ensureSpawnSelection(player.steamId).percent}
-                          onchange={(e) => {
-                            ensureSpawnSelection(player.steamId).percent = parseInt((e.currentTarget as HTMLSelectElement).value, 10);
-                          }}
+                          id="give-item-{player.steamId}"
+                          class="input give-item-select"
+                          value={ensureItemSelection(player.steamId).selectionKey}
+                          onchange={(e) => setItemSelection(player.steamId, (e.currentTarget as HTMLSelectElement).value)}
                         >
-                          {#each getSelectedItemOption(player.steamId)?.variants || [] as variant}
-                            <option value={variant.percent}>{t('dashboard.spawn_item_percent_option', { percent: variant.percent })}</option>
+                          {#each itemCatalogGroups as group (group.id)}
+                            <optgroup label={group.label}>
+                              {#each group.entries as entry (entry.key)}
+                                <option value={entry.key}>{entry.label}</option>
+                              {/each}
+                            </optgroup>
                           {/each}
                         </select>
+                        <button type="button" class="btn btn-primary btn-xs" onclick={() => giveItem(player)}>
+                          {t('dashboard.spawn_item_give')}
+                        </button>
+                      {:else}
+                        <span class="data-table-muted">{t('dashboard.loading')}</span>
                       {/if}
-                      <button type="button" class="btn btn-primary btn-xs" onclick={() => giveItem(player)}>{t('dashboard.spawn_item_give')}</button>
                     </div>
                   {/if}
                 </div>
@@ -416,23 +431,6 @@
     </table>
     {#if pageItems.length === 0}
       <p class="data-table-empty">{stored ? t('dashboard.players_stored_empty') : t('dashboard.no_players_connected')}</p>
-    {/if}
-  </div>
-
-  <div class="data-table-footer">
-    <span>
-      {t('dashboard.table_showing', {
-        from: filtered.length === 0 ? 0 : page * pageSize + 1,
-        to: Math.min(filtered.length, (page + 1) * pageSize),
-        total: filtered.length,
-      })}
-    </span>
-    {#if pageCount > 1}
-      <div class="data-table-pagination">
-        <button type="button" class="btn btn-secondary btn-xs" disabled={page === 0} onclick={() => page--}>{t('dashboard.table_prev')}</button>
-        <span class="data-table-page-num">{page + 1} / {pageCount}</span>
-        <button type="button" class="btn btn-secondary btn-xs" disabled={page >= pageCount - 1} onclick={() => page++}>{t('dashboard.table_next')}</button>
-      </div>
     {/if}
   </div>
 </div>

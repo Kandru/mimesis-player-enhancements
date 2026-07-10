@@ -49,6 +49,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        internal static string ResolveDisplayName(int slotId, ulong steamId, string? displayName)
+        {
+            if (steamId == 0)
+            {
+                return "";
+            }
+
+            if (!string.IsNullOrWhiteSpace(displayName) && displayName != steamId.ToString())
+            {
+                return displayName;
+            }
+
+            string? remembered = TryGetName(slotId, steamId);
+            if (!string.IsNullOrWhiteSpace(remembered) && remembered != steamId.ToString())
+            {
+                return remembered;
+            }
+
+            return steamId.ToString();
+        }
+
         internal static string? TryGetName(int slotId, ulong steamId)
         {
             if (slotId < 0 || steamId == 0 || slotId != _loadedSlotId)

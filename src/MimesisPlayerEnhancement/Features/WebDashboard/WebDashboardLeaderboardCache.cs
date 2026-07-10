@@ -87,7 +87,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             try
             {
                 List<PlayerStatisticsDocument> livePlayers = CloneForLeaderboard(
-                    StatisticsTracker.GetCachedPlayerDocuments());
+                    StatisticsTracker.GetCachedPlayerDocuments(),
+                    saveSlotId);
                 LeaderboardDocument doc = livePlayers.Count == 0
                     ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }
                     : LeaderboardBuilder.Build(saveSlotId, livePlayers);
@@ -137,7 +138,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         }
 
         private static List<PlayerStatisticsDocument> CloneForLeaderboard(
-            IReadOnlyList<PlayerStatisticsDocument> source)
+            IReadOnlyList<PlayerStatisticsDocument> source,
+            int saveSlotId)
         {
             List<PlayerStatisticsDocument> cloned = [];
             foreach (PlayerStatisticsDocument player in source)
@@ -151,7 +153,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 cloned.Add(new PlayerStatisticsDocument
                 {
                     SteamId = player.SteamId,
-                    DisplayName = player.DisplayName,
+                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                        saveSlotId,
+                        player.SteamId,
+                        player.DisplayName),
                     Global = new GlobalStats
                     {
                         SessionsCompleted = player.Global.SessionsCompleted,

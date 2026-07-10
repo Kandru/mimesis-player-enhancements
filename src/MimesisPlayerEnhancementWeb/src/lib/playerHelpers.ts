@@ -24,11 +24,24 @@ export function sortPlayersByName(list: PlayerDto[]) {
 }
 
 export function connectionMeta(player: PlayerDto, voiceLinesLabel: string) {
+  return connectionMetaShort(player, voiceLinesLabel);
+}
+
+export function connectionMetaShort(player: PlayerDto, voiceLinesLabel: string) {
   const parts: string[] = [];
   if (player.playerUid) parts.push(`#${player.playerUid}`);
-  if (player.connectionRole) parts.push(player.connectionRole);
-  if (player.connectionAddress) parts.push(player.connectionAddress);
-  parts.push(voiceLinesLabel);
+
+  const role = player.connectionRole?.trim().toLowerCase();
+  if (role && role !== 'host' && role !== 'client') {
+    parts.push(player.connectionRole);
+  }
+
+  const addr = player.connectionAddress?.trim();
+  if (addr && addr !== 'local' && addr !== '(unavailable)') {
+    parts.push(addr === 'steam-sdr' ? 'SDR' : addr);
+  }
+
+  if (voiceLinesLabel) parts.push(voiceLinesLabel);
   return parts.join(' · ');
 }
 
@@ -78,6 +91,102 @@ export function sessionLine(
   if (s.itemCarryCount) parts.push(t('dashboard.session_line_items', { count: s.itemCarryCount }));
   if (s.damageToFriend) parts.push(t('dashboard.session_line_friend_damage', { count: s.damageToFriend }));
   if (s.friendsKilled) parts.push(t('dashboard.session_line_friends_killed', { count: s.friendsKilled }));
+  return parts.join(' · ');
+}
+
+function compactStatsLine(
+  session: PlayerDto['currentSession'],
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  if (!session) return '';
+  const parts: string[] = [];
+  if (session.currencyEarned) {
+    parts.push(t('dashboard.stat_short_currency', { count: session.currencyEarned }));
+  }
+  if (session.survivalWins || session.survivalDeaths || session.survivalLeftBehind) {
+    parts.push(
+      t('dashboard.stat_short_survival', {
+        wins: session.survivalWins ?? 0,
+        deaths: session.survivalDeaths ?? 0,
+        left: session.survivalLeftBehind ?? 0,
+      }),
+    );
+  }
+  if (session.deathmatchWins || session.deathmatchDeaths) {
+    parts.push(
+      t('dashboard.stat_short_deathmatch', {
+        wins: session.deathmatchWins ?? 0,
+        deaths: session.deathmatchDeaths ?? 0,
+      }),
+    );
+  }
+  if (session.revives) parts.push(t('dashboard.stat_short_revives', { count: session.revives }));
+  if (session.totalConnectedSeconds) parts.push(formatDuration(session.totalConnectedSeconds));
+  return parts.join(' · ');
+}
+
+export function statisticsSummaryShort(
+  player: PlayerDto,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  return {
+    total: compactStatsLine(player.totalStats, t),
+    session: compactStatsLine(player.currentSession, t),
+  };
+}
+
+export function voiceLinesShort(
+  count: number,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  if (!count) return '';
+  return t('dashboard.voice_lines_short', { count });
+}
+
+export function playerActivityLine(
+  player: PlayerDto,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  const state = player.activityState?.trim();
+  if (!state) return '';
+  if (state === 'late_join' && player.activityDetail) {
+    return player.activityDetail;
+  }
+  const detail = player.activityDetail?.trim();
+  if (state === 'loading') {
+    const sceneKey = detail || 'session';
+    const scene = t(`dashboard.player_state_scene_${sceneKey}`, {});
+    return t('dashboard.player_state_loading', { scene });
+  }
+  if (state === 'dungeon' && detail) {
+    return t('dashboard.player_state_dungeon_room', { room: detail });
+  }
+  const key = `dashboard.player_state_${state}`;
+  const label = t(key, {});
+  return label === key ? state : label;
+}
+
+export function statisticsLines(
+  player: PlayerDto,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  const total = player.totalStats ? sessionLine({ ...player, currentSession: player.totalStats }, t) : '';
+  const session = player.currentSession ? sessionLine(player, t) : '';
+  return { total, session };
+}
+
+export function storedDetailsLine(
+  player: PlayerDto,
+  t: (key: string, params?: Record<string, string | number>) => string,
+) {
+  const parts: string[] = [t('dashboard.player_state_offline')];
+  if (player.isBanned) parts.push(t('dashboard.badge_banned'));
+  const { total, session } = statisticsSummaryShort(player, t);
+  if (total) parts.push(t('dashboard.statistics_total_prefix', { stats: total }));
+  if (session && session !== total) parts.push(t('dashboard.statistics_session_prefix', { stats: session }));
+  if (player.voiceLineCount) {
+    parts.push(voiceLinesShort(player.voiceLineCount, t));
+  }
   return parts.join(' · ');
 }
 

@@ -8,6 +8,26 @@
   const builtins = $derived(dashboard.quickPresets.filter((p) => p.isBuiltin));
   const userPresets = $derived(dashboard.quickPresets.filter((p) => !p.isBuiltin));
 
+  function isProfileActive(mode: string, presetId = ''): boolean {
+    if (!profile) return false;
+    if (mode === 'global') return profile.mode === 'global';
+    if (mode === 'custom') return profile.mode === 'custom';
+    if (mode === 'quick') return profile.mode === 'quick' && profile.presetId === presetId;
+    return false;
+  }
+
+  function profileCardClass(active: boolean): string {
+    const base = 'card p-3 text-left transition-shadow hover:ring-2 hover:ring-[var(--brand)]';
+    return active ? `${base} ring-2 ring-green-500 border-green-500` : base;
+  }
+
+  function openImportModal() {
+    dashboard.shareModalMode = 'import';
+    dashboard.shareModalText = '';
+    dashboard.shareModalName = '';
+    dashboard.shareModalOpen = true;
+  }
+
   async function applyMode(mode: string, presetId = '') {
     dashboard.applyingProfile = true;
     try {
@@ -24,32 +44,43 @@
 </script>
 
 <div class="space-y-4">
-  <div>
-    <p class="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.settings_intro_profile')}</p>
-    {#if profile}
-      <p class="mt-2 text-sm">{t('dashboard.quick_active_profile', { label: profile.label || profile.mode })}</p>
-    {/if}
-  </div>
+  <p class="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.settings_intro_profile')}</p>
 
   {#if dashboard.loadingSaveProfile}
     <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>
   {:else}
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('global')}>
+      <button
+        type="button"
+        class={profileCardClass(isProfileActive('global'))}
+        onclick={() => applyMode('global')}
+      >
         <div class="font-semibold">{t('quicksettings.profile.global')}</div>
       </button>
-      {#each builtins as preset}
-        <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
+      {#each builtins as preset (preset.id)}
+        <button
+          type="button"
+          class={profileCardClass(isProfileActive('quick', preset.id))}
+          onclick={() => applyMode('quick', preset.id)}
+        >
           <div class="font-semibold">{preset.name}</div>
         </button>
       {/each}
-      {#each userPresets as preset}
-        <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('quick', preset.id)}>
+      {#each userPresets as preset (preset.id)}
+        <button
+          type="button"
+          class={profileCardClass(isProfileActive('quick', preset.id))}
+          onclick={() => applyMode('quick', preset.id)}
+        >
           <div class="font-semibold">{preset.name}</div>
           <div class="text-xs text-gray-500">{t('dashboard.quick_preset_user')}</div>
         </button>
       {/each}
-      <button type="button" class="card p-3 text-left hover:ring-2 hover:ring-[var(--brand)]" onclick={() => applyMode('custom')}>
+      <button
+        type="button"
+        class={profileCardClass(isProfileActive('custom'))}
+        onclick={() => applyMode('custom')}
+      >
         <div class="font-semibold">{t('quicksettings.profile.custom')}</div>
       </button>
     </div>
@@ -70,11 +101,7 @@
           }
         }}
       >{t('dashboard.quick_export')}</button>
-      <button
-        type="button"
-        class="btn btn-secondary"
-        onclick={() => { dashboard.shareModalMode = 'import'; dashboard.shareModalOpen = true; }}
-      >{t('dashboard.quick_import')}</button>
+      <button type="button" class="btn btn-secondary" onclick={openImportModal}>{t('dashboard.quick_import')}</button>
     </div>
   {/if}
 </div>
@@ -82,10 +109,22 @@
 {#if dashboard.shareModalOpen}
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
     <div class="card max-w-lg w-full p-4">
-      <h3 class="mb-3 font-semibold">{dashboard.shareModalMode === 'export' ? t('dashboard.quick_export') : t('dashboard.quick_import')}</h3>
-      <textarea class="input min-h-32 font-mono text-xs" bind:value={dashboard.shareModalText}></textarea>
+      <h3 class="mb-2 font-semibold">
+        {dashboard.shareModalMode === 'export' ? t('dashboard.quick_export') : t('dashboard.quick_import')}
+      </h3>
+      <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+        {dashboard.shareModalMode === 'export' ? t('dashboard.quick_export_help') : t('dashboard.quick_import_help')}
+      </p>
+      <textarea
+        class="input min-h-32 font-mono text-xs"
+        bind:value={dashboard.shareModalText}
+        readonly={dashboard.shareModalMode === 'export'}
+        placeholder={dashboard.shareModalMode === 'import' ? t('dashboard.quick_share_placeholder') : undefined}
+      ></textarea>
       <div class="mt-3 flex justify-end gap-2">
-        <button type="button" class="btn btn-secondary" onclick={() => { dashboard.shareModalOpen = false; }}>Close</button>
+        <button type="button" class="btn btn-secondary" onclick={() => { dashboard.shareModalOpen = false; }}>
+          {t('dashboard.quick_share_close')}
+        </button>
         {#if dashboard.shareModalMode === 'import'}
           <button
             type="button"
@@ -100,7 +139,7 @@
                 dashboard.showToast(e instanceof Error ? e.message : String(e));
               }
             }}
-          >Import</button>
+          >{t('dashboard.quick_import')}</button>
         {/if}
       </div>
     </div>

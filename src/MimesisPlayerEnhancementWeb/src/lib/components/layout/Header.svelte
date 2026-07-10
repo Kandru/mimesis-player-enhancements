@@ -39,7 +39,7 @@
       dashboard.status.isHost ? t('dashboard.subtitle_host') : t('dashboard.subtitle_client'),
     );
     if (dashboard.status.saveSlotId >= 0) {
-      parts.push(t('dashboard.subtitle_savegame', { slot: dashboard.status.saveSlotId }));
+      parts.push(`#${dashboard.status.saveSlotId + 1}`);
     }
     return parts.join(' · ');
   });
@@ -49,6 +49,18 @@
 
 <header class="app-header">
   <div class="header-start">
+    <button
+      type="button"
+      class="header-menu-btn"
+      aria-label={t('dashboard.menu_open')}
+      onclick={() => (dashboard.sidebarOpen = !dashboard.sidebarOpen)}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
     <div class="header-title-block">
       <h1 class="header-title">{pageTitle}</h1>
       {#if pageDescription}

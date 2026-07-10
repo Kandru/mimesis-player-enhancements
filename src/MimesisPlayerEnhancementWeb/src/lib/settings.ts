@@ -35,7 +35,6 @@ export function entryVisible(
   settings: SettingsDto | null,
 ) {
   if (entry.isHidden) return false;
-  if (!featureEnabled(section, settings)) return false;
   if (!entry.dependsOnKey) return true;
   const all = [
     ...(section.featureToggle ? [section.featureToggle] : []),
@@ -45,6 +44,17 @@ export function entryVisible(
   if (!dep) return true;
   if (entry.dependsOnValue != null) return dep.value === entry.dependsOnValue;
   return dep.value === 'true' || dep.value === 'True';
+}
+
+export function entryEditable(
+  section: ConfigSectionDto,
+  entry: ConfigEntryDto,
+  settings: SettingsDto | null,
+  scope: 'global' | 'save',
+  isHost: boolean,
+  isConnected: boolean,
+) {
+  return featureEnabled(section, settings) && canEditEntry(entry, scope, isHost, isConnected);
 }
 
 export function sectionHasVisibleEntries(
@@ -60,10 +70,13 @@ export function sectionHasVisibleEntries(
   }
 
   if (!featureEnabled(section, settings)) {
-    if (!section.featureToggle) return false;
+    if (!section.featureToggle) {
+      return section.entries.some((e) => entryVisible(section, e, settings));
+    }
     return normalizedQuery.length === 0
       || matchesSettingsQuery(section.featureToggle, section.title, query)
-      || titleMatches;
+      || titleMatches
+      || section.entries.some((e) => entryVisible(section, e, settings));
   }
 
   if (titleMatches) {

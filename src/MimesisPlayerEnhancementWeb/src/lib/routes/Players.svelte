@@ -14,14 +14,13 @@
   </div>
 {/if}
 
-<div class="page-heading">
-  <p class="page-subtitle">
-    {t('dashboard.connected_count', { count: connected.length })}
-    {#if dashboard.status.isHost && routingCount > 0}
-      · {t('dashboard.late_join_routing', { count: routingCount })}
-    {/if}
-  </p>
-</div>
+{#if dashboard.status.isHost && routingCount > 0}
+  <div class="page-heading mb-3">
+    <p class="page-subtitle">
+      {t('dashboard.late_join_routing', { count: routingCount })}
+    </p>
+  </div>
+{/if}
 
 <PlayersTable players={connected} />
 
@@ -29,7 +28,6 @@
   <section class="mt-6">
     <div class="page-heading mb-3">
       <h3 class="page-title text-base">{t('dashboard.players_stored_heading')}</h3>
-      <p class="page-subtitle">{t('dashboard.players_stored_count', { count: stored.length })}</p>
     </div>
     <PlayersTable players={stored} stored />
   </section>

@@ -42,6 +42,9 @@ export interface PlayerDto {
   connectionAddress: string;
   voiceLineCount: number;
   currentSession?: SessionStatsDto;
+  totalStats?: SessionStatsDto;
+  activityState?: string;
+  activityDetail?: string;
   health?: number;
   maxHealth?: number;
   toxicPercent?: number;

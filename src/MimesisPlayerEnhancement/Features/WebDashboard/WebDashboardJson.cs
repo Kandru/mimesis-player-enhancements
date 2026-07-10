@@ -144,10 +144,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     .Append(snapshot.LeaderboardJson);
                 if (snapshot.Status.IsConnected)
                 {
+                    List<WebDashboardMinimapMarkerDto> filteredMarkers =
+                        WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
                     _ = payload.Append(",\"minimap\":")
                         .Append(SerializeMinimap(
                             snapshot.MinimapLayout,
-                            snapshot.MinimapMarkers,
+                            filteredMarkers,
                             snapshot.MinimapTrain));
                 }
 
@@ -163,9 +165,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (snapshot.Status.IsConnected)
             {
+                List<WebDashboardMinimapMarkerDto> filteredMarkers =
+                    WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
                 dto.Minimap = BuildMinimapResponse(
                     snapshot.MinimapLayout,
-                    snapshot.MinimapMarkers,
+                    filteredMarkers,
                     snapshot.MinimapTrain);
             }
 
@@ -222,6 +226,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
         {
+            bool hideOtherPlayerDetails =
+                WebDashboardMinimapBlindMode.ShouldHideOtherPlayers() && !player.IsLocal;
+
             return new PlayerApiDto
             {
                 SteamId = player.SteamId.ToString(),
@@ -230,21 +237,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 IsHost = player.IsHost,
                 IsLocal = player.IsLocal,
                 IsBanned = player.IsBanned,
-                IsAlive = player.IsAlive,
-                NetworkGrade = player.NetworkGrade,
-                ConnectionRole = player.ConnectionRole,
-                ConnectionAddress = player.ConnectionAddress,
-                VoiceLineCount = player.VoiceLineCount,
-                CurrentSession = player.CurrentSession == null ? null : MapSessionStats(player.CurrentSession),
-                Health = player.Health,
-                MaxHealth = player.MaxHealth,
-                ToxicPercent = player.ToxicPercent,
-                LateJoinPhase = player.LateJoinPhase,
-                LateJoinLabel = player.LateJoinLabel,
-                LateJoinStuckSeconds = player.LateJoinStuckSeconds,
-                LateJoinAttemptCount = player.LateJoinAttemptCount,
-                GodMode = player.GodMode,
-                NoClip = player.NoClip,
+                IsAlive = hideOtherPlayerDetails ? true : player.IsAlive,
+                NetworkGrade = hideOtherPlayerDetails ? -1 : player.NetworkGrade,
+                ConnectionRole = hideOtherPlayerDetails ? "" : player.ConnectionRole,
+                ConnectionAddress = hideOtherPlayerDetails ? "" : player.ConnectionAddress,
+                VoiceLineCount = hideOtherPlayerDetails ? 0 : player.VoiceLineCount,
+                CurrentSession = hideOtherPlayerDetails || player.CurrentSession == null
+                    ? null
+                    : MapSessionStats(player.CurrentSession),
+                TotalStats = hideOtherPlayerDetails || player.TotalStats == null
+                    ? null
+                    : MapSessionStats(player.TotalStats),
+                ActivityState = hideOtherPlayerDetails ? "" : player.ActivityState,
+                ActivityDetail = hideOtherPlayerDetails ? "" : player.ActivityDetail,
+                Health = hideOtherPlayerDetails ? null : player.Health,
+                MaxHealth = hideOtherPlayerDetails ? null : player.MaxHealth,
+                ToxicPercent = hideOtherPlayerDetails ? null : player.ToxicPercent,
+                LateJoinPhase = hideOtherPlayerDetails ? "" : player.LateJoinPhase,
+                LateJoinLabel = hideOtherPlayerDetails ? "" : player.LateJoinLabel,
+                LateJoinStuckSeconds = hideOtherPlayerDetails ? null : player.LateJoinStuckSeconds,
+                LateJoinAttemptCount = hideOtherPlayerDetails ? 0 : player.LateJoinAttemptCount,
+                GodMode = hideOtherPlayerDetails ? false : player.GodMode,
+                NoClip = hideOtherPlayerDetails ? false : player.NoClip,
             };
         }
 
@@ -340,6 +354,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public string ConnectionAddress = "";
             public int VoiceLineCount;
             public SessionStatsApiDto? CurrentSession;
+            public SessionStatsApiDto? TotalStats;
+            public string ActivityState = "";
+            public string ActivityDetail = "";
             public long? Health;
             public long? MaxHealth;
             public double? ToxicPercent;

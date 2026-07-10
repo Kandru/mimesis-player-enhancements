@@ -35,10 +35,12 @@
   }
 
   function go(route: string) {
+    dashboard.sidebarOpen = false;
     navigate(route);
   }
 
   function goHome() {
+    dashboard.sidebarOpen = false;
     go('home');
   }
 </script>

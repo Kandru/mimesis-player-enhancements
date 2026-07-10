@@ -202,9 +202,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string payload;
             try
             {
+                List<WebDashboardMinimapMarkerDto> filteredMarkers =
+                    WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
                 payload = WebDashboardJson.SerializeMinimap(
                     snapshot.MinimapLayout,
-                    snapshot.MinimapMarkers,
+                    filteredMarkers,
                     snapshot.MinimapTrain);
             }
             catch (Exception ex)

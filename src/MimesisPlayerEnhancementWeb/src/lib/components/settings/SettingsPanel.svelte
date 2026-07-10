@@ -7,6 +7,7 @@
   import { t } from '$lib/i18n';
   import {
     canEditEntry,
+    entryEditable,
     entryVisible,
     featureEnabled,
     matchesSettingsQuery,
@@ -142,9 +143,12 @@
                 <SettingsEntry
                   entry={activeSection.featureToggle}
                   section={activeSection}
+                  {settings}
                   {scope}
-                  editable={canEditEntry(
+                  editable={entryEditable(
+                    activeSection,
                     activeSection.featureToggle,
+                    settings,
                     scope,
                     dashboard.status.isHost,
                     dashboard.status.isConnected,
@@ -152,24 +156,25 @@
                   onsave={(value) => saveEntry(activeSection.id, activeSection.featureToggle!.key, value)}
                 />
               {/if}
-              {#if featureEnabled(activeSection, settings)}
-                {#each activeSection.entries as entry (entry.key)}
-                  {#if entryVisible(activeSection, entry, settings) && matchesSettingsQuery(entry, activeSection.title, query)}
-                    <SettingsEntry
-                      {entry}
-                      section={activeSection}
-                      {scope}
-                      editable={canEditEntry(
-                        entry,
-                        scope,
-                        dashboard.status.isHost,
-                        dashboard.status.isConnected,
-                      )}
-                      onsave={(value) => saveEntry(activeSection.id, entry.key, value)}
-                    />
-                  {/if}
-                {/each}
-              {/if}
+              {#each activeSection.entries as entry (entry.key)}
+                {#if entryVisible(activeSection, entry, settings) && matchesSettingsQuery(entry, activeSection.title, query)}
+                  <SettingsEntry
+                    {entry}
+                    section={activeSection}
+                    {settings}
+                    {scope}
+                    editable={entryEditable(
+                      activeSection,
+                      entry,
+                      settings,
+                      scope,
+                      dashboard.status.isHost,
+                      dashboard.status.isConnected,
+                    )}
+                    onsave={(value) => saveEntry(activeSection.id, entry.key, value)}
+                  />
+                {/if}
+              {/each}
             </div>
           </section>
         </div>

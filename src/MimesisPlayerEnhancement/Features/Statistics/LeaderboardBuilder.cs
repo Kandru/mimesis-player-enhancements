@@ -1,5 +1,6 @@
 using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
@@ -24,7 +25,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 leaderboard.Entries.Add(new LeaderboardEntry
                 {
                     SteamId = player.SteamId,
-                    DisplayName = player.DisplayName,
+                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                        slotId,
+                        player.SteamId,
+                        player.DisplayName),
                     ItemCarryCount = c.ItemCarryCount,
                     DamageToFriend = c.DamageToFriend,
                     FriendsKilled = c.FriendsKilled,

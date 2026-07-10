@@ -140,6 +140,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             PlayerStatisticsDocument doc = GetOrCreatePlayer(steamId);
             doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
+            WebDashboardPlayerNameStore.RememberName(slotId, steamId, doc.DisplayName);
+            WebDashboardPlayerNameStore.FlushToDisk(slotId);
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
 
@@ -195,6 +197,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
+
+            doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
+            if (_loadedSlotId >= 0)
+            {
+                WebDashboardPlayerNameStore.RememberName(_loadedSlotId, steamId, doc.DisplayName);
+                WebDashboardPlayerNameStore.FlushToDisk(_loadedSlotId);
+            }
 
             FlushConnectedTime(steamId, doc);
             _ = _connectedSince.Remove(steamId);

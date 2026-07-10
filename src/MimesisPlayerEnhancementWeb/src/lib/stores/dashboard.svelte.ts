@@ -1,4 +1,5 @@
 import Api from '../api';
+import { defaultItemSelectionKey } from '../itemCatalogHelpers';
 import { loadLocale, resolveBrowserLocale } from '../i18n';
 import type {
   ItemOptionDto,
@@ -66,11 +67,12 @@ class DashboardStore {
 
   itemCatalog = $state<ItemOptionDto[]>([]);
   dungeonCatalog = $state<Array<{ id: string; label: string }>>([]);
-  spawnSelections = $state<Record<string, { itemId: string; percent: number }>>({});
+  spawnSelections = $state<Record<string, { selectionKey: string }>>({});
 
-  minimapShowAll = $state(false);
   minimapFocusSteamId = $state(localStorage.getItem('minimapFocusSteamId') || '');
   minimapAreaId = $state(localStorage.getItem('minimapAreaId') || '');
+
+  sidebarOpen = $state(false);
 
   playerBlindModeUserEnabled = $state(true);
   playerBlindModeAutoSuspended = $state(false);
@@ -141,6 +143,7 @@ class DashboardStore {
       this.apiError = true;
       this.status.isConnected = false;
       this.setConnectedMode();
+      this.ensureDefaultRoute();
     };
     this.eventSource = source;
   }
@@ -290,7 +293,15 @@ class DashboardStore {
     const raw = this.minimapRaw;
     const layout = raw.layout;
     let activeAreaId = this.minimapAreaId;
-    const markers = raw.markers || [];
+    const markers = this.filterMinimapMarkers(raw.markers || []);
+
+    const connectedIds = new Set(
+      this.players.filter((p) => p.playerUid).map((p) => String(p.steamId)),
+    );
+    if (this.minimapFocusSteamId && !connectedIds.has(this.minimapFocusSteamId)) {
+      this.minimapFocusSteamId = '';
+      localStorage.removeItem('minimapFocusSteamId');
+    }
 
     const focusId = this.minimapFocusSteamId;
     const followLocal =
@@ -325,6 +336,17 @@ class DashboardStore {
       this.minimapAreaId = activeAreaId;
       localStorage.setItem('minimapAreaId', activeAreaId);
     }
+  }
+
+  private filterMinimapMarkers(markers: MinimapPayload['markers']) {
+    const connectedIds = new Set(
+      this.players.filter((p) => p.playerUid).map((p) => String(p.steamId)),
+    );
+    let filtered = (markers || []).filter((m) => connectedIds.has(String(m.steamId)));
+    if (this.playerBlindMode) {
+      filtered = filtered.filter((m) => m.isLocal);
+    }
+    return filtered;
   }
 
   async loadPageData(force = false) {
@@ -403,10 +425,11 @@ class DashboardStore {
     try {
       const res = await Api.getItems();
       this.itemCatalog = res.items || [];
+      const defaultKey = defaultItemSelectionKey(this.itemCatalog);
       for (const key of Object.keys(this.spawnSelections)) {
         const sel = this.spawnSelections[key];
-        if (!sel.itemId && this.itemCatalog.length > 0) {
-          sel.itemId = this.itemCatalog[0].id;
+        if (!sel.selectionKey && defaultKey) {
+          sel.selectionKey = defaultKey;
         }
       }
     } catch {

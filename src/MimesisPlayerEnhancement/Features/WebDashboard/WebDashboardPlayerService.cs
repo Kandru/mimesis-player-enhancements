@@ -482,13 +482,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardPlayerDto dto = new()
                 {
                     SteamId = player.SteamId,
-                    DisplayName = IsUsableName(player.DisplayName, player.SteamId)
-                        ? player.DisplayName
-                        : ResolveOfflineDisplayName(
-                            player.SteamId,
-                            nameCache,
-                            nickSnapshot,
-                            saveSlotId),
+                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                        saveSlotId,
+                        player.SteamId,
+                        IsUsableName(player.DisplayName, player.SteamId)
+                            ? player.DisplayName
+                            : ResolveOfflineDisplayName(
+                                player.SteamId,
+                                nameCache,
+                                nickSnapshot,
+                                saveSlotId)),
                     IsHost = isHost && isLocal,
                     IsLocal = isLocal,
                 };
@@ -543,6 +546,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             dto.CurrentSession = BuildSessionStatsFromDocument(doc);
+            dto.TotalStats = BuildTotalStatsFromDocument(doc);
+            dto.ActivityState = "offline";
+            dto.ActivityDetail = string.Empty;
+
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager != null)
+            {
+                dto.IsBanned = WebDashboardSessionAccess.IsBanned(sessionManager, dto.SteamId);
+            }
         }
 
         private static WebDashboardPlayerDto? TryBuildPlayerDto(
@@ -768,12 +780,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (WebDashboardGameState.IsHost() && ModConfig.EnableStatistics.Value)
             {
                 dto.CurrentSession = BuildSessionStats(dto.SteamId);
+                dto.TotalStats = BuildTotalStats(dto.SteamId);
             }
 
             if (WebDashboardGameState.IsHost() && ModConfig.EnableJoinAnytime.Value)
             {
                 LateJoinRouteTracker.ApplyDashboardFields(dto, context);
             }
+
+            WebDashboardPlayerStateResolver.ApplyActivityState(dto, context);
 
             if (WebDashboardGameState.IsHost() && dto.PlayerUid != 0)
             {
@@ -913,6 +928,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return BuildSessionStatsFromDocument(doc);
         }
 
+        private static WebDashboardSessionStatsDto? BuildTotalStats(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return null;
+            }
+
+            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            {
+                return null;
+            }
+
+            return BuildTotalStatsFromDocument(doc);
+        }
+
         private static WebDashboardSessionStatsDto? BuildSessionStatsFromDocument(PlayerStatisticsDocument doc)
         {
             if (doc.CurrentSession?.Counters == null)
@@ -920,7 +950,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return null;
             }
 
-            StatCounters c = doc.CurrentSession.Counters;
+            return MapCounters(doc.CurrentSession.Counters);
+        }
+
+        private static WebDashboardSessionStatsDto? BuildTotalStatsFromDocument(PlayerStatisticsDocument doc)
+        {
+            if (doc.Global?.Counters == null)
+            {
+                return null;
+            }
+
+            return MapCounters(doc.Global.Counters);
+        }
+
+        private static WebDashboardSessionStatsDto MapCounters(StatCounters c)
+        {
             return new WebDashboardSessionStatsDto
             {
                 CurrencyEarned = c.CurrencyEarned,

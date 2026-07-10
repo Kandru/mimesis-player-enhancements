@@ -1,18 +1,20 @@
 <script lang="ts">
-  import type { ConfigEntryDto, ConfigSectionDto } from '$lib/types';
+  import type { ConfigEntryDto, ConfigSectionDto, SettingsDto } from '$lib/types';
   import Toggle from '$lib/components/Toggle.svelte';
   import { t } from '$lib/i18n';
-  import { formatDefaultHint, formatGlobalHint, settingDiffersFromDefault, settingDiffersFromGlobal } from '$lib/settings';
+  import { featureEnabled, formatDefaultHint, formatGlobalHint, settingDiffersFromDefault, settingDiffersFromGlobal } from '$lib/settings';
 
   let {
     entry,
     section,
+    settings,
     scope,
     editable,
     onsave,
   }: {
     entry: ConfigEntryDto;
     section: ConfigSectionDto;
+    settings: SettingsDto | null;
     scope: 'global' | 'save';
     editable: boolean;
     onsave: (value: string) => void;
@@ -38,9 +40,10 @@
   );
 
   const boolChecked = $derived(entry.value === 'true' || entry.value === 'True');
+  const featureOff = $derived(!featureEnabled(section, settings));
 </script>
 
-<div class="settings-entry {editable ? '' : 'settings-entry-readonly'}">
+<div class="settings-entry {editable ? '' : 'settings-entry-readonly'} {featureOff ? 'settings-entry-disabled' : ''}">
   <div class="settings-entry-header">
     <label class="settings-entry-title" for="{section.id}-{entry.key}">{entry.title}</label>
     {#if entry.hasLocalEffect}
@@ -50,8 +53,8 @@
       <span class="badge bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">{t('dashboard.settings_overridden')}</span>
     {/if}
     {#if !editable}
-      <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" title={t('dashboard.settings_host_only_hint')}>
-        {t('dashboard.settings_host_only')}
+      <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" title={featureOff ? t('dashboard.settings_feature_disabled_hint') : t('dashboard.settings_host_only_hint')}>
+        {featureOff ? t('dashboard.settings_feature_disabled') : t('dashboard.settings_host_only')}
       </span>
     {/if}
   </div>

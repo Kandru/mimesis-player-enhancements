@@ -47,6 +47,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string ConnectionAddress = "";
         public int VoiceLineCount;
         public WebDashboardSessionStatsDto? CurrentSession;
+        public WebDashboardSessionStatsDto? TotalStats;
+        public string ActivityState = "";
+        public string ActivityDetail = "";
         public long? Health;
         public long? MaxHealth;
         public double? ToxicPercent;

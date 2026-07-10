@@ -528,7 +528,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append(':')
                 .Append(player.LateJoinStuckSeconds?.ToString("F1") ?? "-")
                 .Append(':')
-                .Append(player.LateJoinAttemptCount);
+                .Append(player.LateJoinAttemptCount)
+                .Append(':')
+                .Append(player.ActivityState)
+                .Append(':')
+                .Append(player.ActivityDetail);
 
             WebDashboardSessionStatsDto? session = player.CurrentSession;
             if (session != null)

@@ -29,7 +29,7 @@
 
 <article class="home-page">
   <header class="home-hero">
-    <img class="home-logo" src="/img/logo.png" alt="" width="64" height="64" />
+    <img class="home-logo" src="/img/logo.png" alt="" />
     <div class="home-hero-text">
       <h1 class="home-heading">{t('dashboard.home_heading')}</h1>
       <p class="home-lead">{t('dashboard.home_lead')}</p>

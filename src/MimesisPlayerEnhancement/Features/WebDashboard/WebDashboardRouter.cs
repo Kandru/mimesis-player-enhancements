@@ -450,13 +450,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             NameValueCollection query = context.Request.QueryString;
-            bool showAll = string.Equals(query["showAll"], "true", StringComparison.OrdinalIgnoreCase);
-            if (showAll && !snapshot.Status.IsHost)
-            {
-                WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
-                return;
-            }
-
             ulong focusSteamId = 0;
             string? focusParam = query["focusSteamId"];
             if (!string.IsNullOrWhiteSpace(focusParam) && !ulong.TryParse(focusParam, out focusSteamId))
@@ -467,9 +460,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             List<WebDashboardMinimapMarkerDto> markers = WebDashboardMinimapService.FilterMarkers(
                 snapshot.MinimapMarkers,
-                focusSteamId,
-                showAll,
-                snapshot.Status.IsHost);
+                focusSteamId);
 
             WriteJson(
                 context,

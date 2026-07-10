@@ -141,9 +141,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static List<WebDashboardMinimapMarkerDto> FilterMarkers(
             IReadOnlyList<WebDashboardMinimapMarkerDto> markers,
-            ulong focusSteamId,
-            bool showAll,
-            bool isHost)
+            ulong focusSteamId = 0)
         {
             if (WebDashboardMinimapBlindMode.ShouldHideOtherPlayers())
             {
@@ -159,47 +157,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return localOnly;
             }
 
-            if (showAll)
-            {
-                if (!isHost)
-                {
-                    return [];
-                }
-
-                List<WebDashboardMinimapMarkerDto> alive = [];
-                foreach (WebDashboardMinimapMarkerDto marker in markers)
-                {
-                    if (marker.IsAlive)
-                    {
-                        alive.Add(marker);
-                    }
-                }
-
-                return alive;
-            }
-
-            if (focusSteamId == 0)
+            if (focusSteamId != 0)
             {
                 foreach (WebDashboardMinimapMarkerDto marker in markers)
                 {
-                    if (marker.IsLocal)
+                    if (marker.SteamId == focusSteamId)
                     {
                         return [marker];
                     }
                 }
 
-                return markers.Count > 0 ? [markers[0]] : [];
+                return [];
             }
 
-            foreach (WebDashboardMinimapMarkerDto marker in markers)
-            {
-                if (marker.SteamId == focusSteamId)
-                {
-                    return [marker];
-                }
-            }
+            return [.. markers];
+        }
 
-            return [];
+        internal static List<WebDashboardMinimapMarkerDto> FilterMarkersForClient(
+            IReadOnlyList<WebDashboardMinimapMarkerDto> markers)
+        {
+            return FilterMarkers(markers);
         }
 
         internal static WebDashboardMinimapAreaDto? TryGetArea(
