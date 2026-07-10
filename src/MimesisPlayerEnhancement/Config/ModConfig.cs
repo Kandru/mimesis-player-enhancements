@@ -192,6 +192,7 @@ namespace MimesisPlayerEnhancement
             SparseTomlConfig.RepairTomletCompatibility(FilePath);
 
             MainCategory = CreateCategory(MainCategoryId, "Mimesis Player Enhancement");
+            UiConfig.CreateCategory();
             MorePlayersConfig.CreateCategory();
             MoreVoicesConfig.CreateCategory();
             PersistenceConfig.CreateCategory();
@@ -207,7 +208,6 @@ namespace MimesisPlayerEnhancement
             DungeonRandomizerConfig.CreateCategory();
             WeatherConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
-            UiConfig.CreateCategory();
 
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",

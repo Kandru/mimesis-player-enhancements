@@ -45,6 +45,13 @@ namespace MimesisPlayerEnhancement
 
         internal static void ApplyPresetValues(Dictionary<string, Dictionary<string, string>> values)
         {
+            if (ModConfig.IsInitialized)
+            {
+                // Refresh global-only settings (UI, dashboard, debug) from disk, then replace
+                // save-overrideable gameplay keys with preset values instead of global gameplay.
+                ModConfig.ReloadGlobalFromFile();
+            }
+
             ResetSaveOverrideableToDefaults();
             ApplyValues(values);
         }

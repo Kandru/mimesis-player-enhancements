@@ -22,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void OnConfigChanged(ModConfigChangeInfo change)
         {
+            WebDashboardSettingsCache.Invalidate();
             WebDashboardSnapshotCache.MarkDirty();
         }
 
@@ -135,6 +136,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Name = "MimesisWebDashboard",
                 };
                 _listenerThread.Start();
+
+                ThreadPool.QueueUserWorkItem(_ => WebDashboardSettingsCache.WarmGlobal());
 
                 ModLog.Info(Feature, $"Listening at {_listenUrl.TrimEnd('/')}");
             }

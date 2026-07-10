@@ -168,7 +168,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                WriteJson(context, 200, ModJson.Serialize(WebDashboardConfigBridge.BuildGlobalSettings()));
+                WriteJson(context, 200, WebDashboardSettingsCache.GetGlobalSettingsJson());
                 return;
             }
 

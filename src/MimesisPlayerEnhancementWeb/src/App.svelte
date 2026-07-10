@@ -9,7 +9,6 @@
   import MinimapPage from '$lib/routes/MinimapPage.svelte';
   import LeaderboardPage from '$lib/routes/LeaderboardPage.svelte';
   import SettingsProfilePage from '$lib/routes/SettingsProfile.svelte';
-  import SettingsCustomizePage from '$lib/routes/SettingsCustomize.svelte';
   import GlobalSettingsPage from '$lib/routes/GlobalSettingsPage.svelte';
   import PlayerDetailPage from '$lib/routes/PlayerDetail.svelte';
   import Toast from '$lib/components/Toast.svelte';
@@ -46,8 +45,6 @@
         <MinimapPage />
       {:else if dashboard.route === 'leaderboard'}
         <LeaderboardPage />
-      {:else if dashboard.route === 'settings' && dashboard.settingsSubRoute === 'customize'}
-        <SettingsCustomizePage />
       {:else if dashboard.route === 'settings'}
         <SettingsProfilePage />
       {:else if dashboard.route === 'player'}

@@ -18,11 +18,19 @@
   );
 
   const showSearch = $derived(
-    isHeaderSearchVisible(dashboard.route, dashboard.settingsSubRoute),
+    isHeaderSearchVisible(
+      dashboard.route,
+      dashboard.settingsSubRoute,
+      dashboard.saveProfile?.profile?.mode ?? '',
+    ),
   );
 
   const searchPlaceholder = $derived(
-    getHeaderSearchPlaceholder(dashboard.route, dashboard.settingsSubRoute),
+    getHeaderSearchPlaceholder(
+      dashboard.route,
+      dashboard.settingsSubRoute,
+      dashboard.saveProfile?.profile?.mode ?? '',
+    ),
   );
 
   const statusVariant = $derived.by(() => {

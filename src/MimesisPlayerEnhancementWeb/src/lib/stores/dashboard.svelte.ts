@@ -16,6 +16,7 @@ import type {
   StatusDto,
 } from '../types';
 import { isLobbyRoute } from '../playerHelpers';
+import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
 import { isValidSteamId, OFFLINE_ROUTES, parseHash } from '../utils';
 
 function createInitialStatus(): StatusDto {
@@ -85,8 +86,12 @@ class DashboardStore {
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private lastSnapshotVersion = -1;
   private lastRoute = '';
+  private lastSettingsSubRoute = '';
   private lastSteamId: string | null = null;
   private localPlayerWasAlive: boolean | null = null;
+  private globalSettingsPromise: Promise<void> | null = null;
+  private saveSettingsPromise: Promise<void> | null = null;
+  private saveProfilePromise: Promise<void> | null = null;
 
   get playerBlindMode() {
     return this.playerBlindModeUserEnabled && !this.playerBlindModeAutoSuspended;
@@ -98,6 +103,10 @@ class DashboardStore {
 
   init() {
     if (this.darkMode) document.documentElement.classList.add('dark');
+    const cachedGlobal = readCachedGlobalSettings();
+    if (cachedGlobal) this.settingsGlobal = cachedGlobal;
+    void this.loadGlobalSettings(true, false);
+
     const { route, settingsSubRoute, steamId } = parseHash();
     this.route = route;
     this.settingsSubRoute = settingsSubRoute;
@@ -114,7 +123,8 @@ class DashboardStore {
       })
       .finally(() => {
         this.setConnectedMode();
-        if (this.route === 'global-settings') this.loadPageData(true);
+        this.loadPageData(false);
+        void this.prefetchDashboardData();
         this.connectSse();
       });
   }
@@ -154,17 +164,25 @@ class DashboardStore {
   onHashChange() {
     const prevRoute = this.lastRoute;
     const prevSteam = this.lastSteamId;
+    const prevSubRoute = this.lastSettingsSubRoute;
     const parsed = parseHash();
     this.route = parsed.route;
     this.settingsSubRoute = parsed.settingsSubRoute;
     this.steamId = parsed.steamId;
     this.headerSearchQuery = '';
-    if (parsed.route !== 'global-settings' && !(parsed.route === 'settings' && parsed.settingsSubRoute === 'customize')) {
+    const onSaveCustomize =
+      parsed.route === 'settings'
+      && (parsed.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
+    if (parsed.route !== 'global-settings' && !onSaveCustomize) {
       this.selectedSettingsSectionId = '';
     }
     this.setConnectedMode();
-    if (this.route !== prevRoute || this.steamId !== prevSteam) {
-      this.loadPageData(true);
+    if (
+      this.route !== prevRoute
+      || this.steamId !== prevSteam
+      || this.settingsSubRoute !== prevSubRoute
+    ) {
+      this.loadPageData(false);
     }
   }
 
@@ -274,9 +292,13 @@ class DashboardStore {
       this.leaderboard = null;
       this.playerStats = null;
       this.settingsSave = null;
+      this.saveProfile = null;
+      this.quickPresets = [];
       this.minimapRaw = null;
       this.minimap = null;
       this.localPlayerWasAlive = null;
+    } else if (this.status.isConnected && !wasConnected) {
+      void this.prefetchDashboardData();
     } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
       this.applyMinimapFilter();
     }
@@ -392,25 +414,87 @@ class DashboardStore {
     return filtered;
   }
 
+  prefetchDashboardData(force = false) {
+    void this.loadGlobalSettings(true, force);
+    void this.loadItemCatalog();
+    void this.loadDungeonCatalog();
+    if (this.status.isConnected && this.status.isHost) {
+      void this.loadSaveProfileData(force);
+      void this.loadSaveSettings(true, force);
+    }
+  }
+
+  async loadGlobalSettings(background = false, force = false) {
+    if (!force && this.settingsGlobal) return;
+    if (this.globalSettingsPromise) return this.globalSettingsPromise;
+
+    const showSpinner = !background && this.route === 'global-settings';
+    if (showSpinner) this.loadingSettings = true;
+
+    this.globalSettingsPromise = (async () => {
+      try {
+        this.settingsGlobal = await Api.getGlobalSettings();
+        if (this.settingsGlobal) writeCachedGlobalSettings(this.settingsGlobal);
+      } catch {
+        /* optional during background prefetch */
+      } finally {
+        if (showSpinner) this.loadingSettings = false;
+        this.globalSettingsPromise = null;
+      }
+    })();
+
+    return this.globalSettingsPromise;
+  }
+
+  async loadSaveSettings(background = false, force = false) {
+    if (!this.status.isHost) return;
+    if (!force && this.settingsSave) return;
+    if (this.saveSettingsPromise) return this.saveSettingsPromise;
+
+    const showSpinner =
+      !background
+      && this.route === 'settings'
+      && (this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
+    if (showSpinner) this.loadingSettings = true;
+
+    this.saveSettingsPromise = (async () => {
+      try {
+        this.settingsSave = await Api.getSaveSettings();
+      } catch {
+        /* optional during background prefetch */
+      } finally {
+        if (showSpinner) this.loadingSettings = false;
+        this.saveSettingsPromise = null;
+      }
+    })();
+
+    return this.saveSettingsPromise;
+  }
+
   async loadPageData(force = false) {
     const onGlobal = this.route === 'global-settings';
-    const onSaveCustomize =
-      this.route === 'settings' && this.settingsSubRoute === 'customize' && this.status.isHost;
-    const onSaveProfile =
-      this.route === 'settings' && this.settingsSubRoute !== 'customize' && this.status.isHost;
+    const onSettings = this.route === 'settings' && this.status.isHost;
+    const settingsActivelyEditing =
+      onSettings
+      && (this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
 
     if (!this.status.isConnected && !OFFLINE_ROUTES.includes(this.route)) {
       this.lastRoute = this.route;
+      this.lastSettingsSubRoute = this.settingsSubRoute;
       this.lastSteamId = this.steamId;
       this.lastSnapshotVersion = this.status.snapshotVersion;
       return;
     }
 
     if (!force && this.savingSettingKey) return;
-    if (!force && this.route === this.lastRoute && this.route !== 'player') {
-      if (this.route !== 'global-settings' && !(this.route === 'settings' && this.settingsSubRoute === 'customize')) {
-        if (this.route !== 'player') return;
-      }
+    if (
+      !force
+      && this.route === this.lastRoute
+      && this.settingsSubRoute === this.lastSettingsSubRoute
+      && this.route !== 'player'
+      && !settingsActivelyEditing
+    ) {
+      return;
     }
     if (!force && this.route === 'player' && this.steamId === this.lastSteamId &&
         this.status.snapshotVersion === this.lastSnapshotVersion) return;
@@ -428,30 +512,19 @@ class DashboardStore {
         this.playerStats = null;
       }
 
-      if (onGlobal || onSaveCustomize) {
-        await Promise.all([this.loadItemCatalog(), this.loadDungeonCatalog()]);
-      }
       if (onGlobal) {
-        this.loadingSettings = true;
-        try {
-          this.settingsGlobal = await Api.getGlobalSettings();
-        } finally {
-          this.loadingSettings = false;
-        }
-      } else if (this.route !== 'global-settings') {
-        this.settingsGlobal = null;
+        await this.loadGlobalSettings(false, false);
+        void this.loadItemCatalog();
+        void this.loadDungeonCatalog();
       }
-      if (onSaveCustomize) {
-        this.loadingSettings = true;
-        try {
-          this.settingsSave = await Api.getSaveSettings();
-        } finally {
-          this.loadingSettings = false;
+      if (onSettings) {
+        await this.loadSaveProfileData(force);
+        const showSavePanel =
+          this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom';
+        if (showSavePanel) {
+          await this.loadSaveSettings(false, force);
         }
-      } else if (this.route !== 'settings' || this.settingsSubRoute !== 'customize') {
-        this.settingsSave = null;
       }
-      if (onSaveProfile) await this.loadSaveProfileData(force);
       if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
         this.applyMinimapFilter(force);
       }
@@ -460,6 +533,7 @@ class DashboardStore {
       this.pageError = e instanceof Error ? e.message : String(e);
     }
     this.lastRoute = this.route;
+    this.lastSettingsSubRoute = this.settingsSubRoute;
     this.lastSteamId = this.steamId;
     this.lastSnapshotVersion = this.status.snapshotVersion;
   }
@@ -491,17 +565,27 @@ class DashboardStore {
 
   async loadSaveProfileData(force = false) {
     if (!this.status.isHost) return;
+    if (!force && this.saveProfile) return;
+    if (this.saveProfilePromise) return this.saveProfilePromise;
+
     this.loadingSaveProfile = true;
-    try {
-      const [profile, presets] = await Promise.all([
-        Api.getSaveProfile(),
-        Api.getQuickPresets(),
-      ]);
-      this.saveProfile = profile as typeof this.saveProfile;
-      this.quickPresets = presets.presets || [];
-    } finally {
-      this.loadingSaveProfile = false;
-    }
+    this.saveProfilePromise = (async () => {
+      try {
+        const [profile, presets] = await Promise.all([
+          Api.getSaveProfile(),
+          Api.getQuickPresets(),
+        ]);
+        this.saveProfile = profile as typeof this.saveProfile;
+        this.quickPresets = presets.presets || [];
+      } catch {
+        /* optional during background prefetch */
+      } finally {
+        this.loadingSaveProfile = false;
+        this.saveProfilePromise = null;
+      }
+    })();
+
+    return this.saveProfilePromise;
   }
 }
 

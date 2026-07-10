@@ -60,8 +60,11 @@
       const api = scope === 'global' ? Api.updateGlobalSetting : Api.updateSaveSetting;
       const result = await api(sectionId, key, value);
       dashboard.showToast((result as { message?: string }).message || t('api.done'));
-      if (scope === 'global') dashboard.settingsGlobal = await Api.getGlobalSettings();
-      else dashboard.settingsSave = await Api.getSaveSettings();
+      if (scope === 'global') await dashboard.loadGlobalSettings(false, true);
+      else {
+        await dashboard.loadSaveSettings(false, true);
+        await dashboard.loadSaveProfileData(true);
+      }
     } catch (e) {
       dashboard.showToast(e instanceof Error ? e.message : String(e));
     } finally {
@@ -101,7 +104,7 @@
     <div class="settings-guest-banner">{t('dashboard.settings_guest_readonly')}</div>
   {/if}
 
-  {#if dashboard.loadingSettings}
+  {#if dashboard.loadingSettings && !settings}
     <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>
   {:else if !settings}
     <p class="text-sm text-gray-500">{t('dashboard.settings_unavailable')}</p>
