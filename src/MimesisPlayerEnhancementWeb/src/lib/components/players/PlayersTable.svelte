@@ -1,13 +1,10 @@
 <script lang="ts">
   import Api from '$lib/api';
+  import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+  import GiveItemDialog from '$lib/components/players/GiveItemDialog.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import type { PlayerDto } from '$lib/types';
   import { t } from '$lib/i18n';
-  import {
-    defaultItemSelectionKey,
-    getItemCatalogGroups,
-    parseItemSelection,
-  } from '$lib/itemCatalogHelpers';
   import {
     connectionMeta,
     pingBars,
@@ -39,28 +36,25 @@
 
   let pageSize = $state(10);
   let page = $state(0);
+  let confirmOpen = $state(false);
+  let confirmLoading = $state(false);
+  let confirmTitle = $state('');
+  let confirmMessage = $state('');
+  let confirmLabel = $state('');
+  let confirmAction = $state<(() => void | Promise<void>) | null>(null);
+  let giveItemOpen = $state(false);
+  let giveItemInitialRecipients = $state<string[]>([]);
+  let giveItemDialogKey = $state(0);
 
   const isHost = $derived(dashboard.status.isHost);
   const blindMode = $derived(dashboard.playerBlindMode);
-  const itemCatalogGroups = $derived(getItemCatalogGroups(dashboard.itemCatalog, t));
+  const eligibleGiveItemPlayers = $derived(
+    players.filter((player) => canGiveItem(player)),
+  );
 
   $effect(() => {
     if (isHost && dashboard.status.isConnected && !stored) {
       void dashboard.loadItemCatalog();
-    }
-  });
-
-  $effect(() => {
-    if (!isHost || stored) return;
-    const defaultKey = defaultItemSelectionKey(dashboard.itemCatalog);
-    for (const player of players) {
-      if (!player.playerUid || !player.isAlive) continue;
-      const key = String(player.steamId);
-      if (!dashboard.spawnSelections[key]) {
-        dashboard.spawnSelections[key] = { selectionKey: defaultKey };
-      } else if (!dashboard.spawnSelections[key].selectionKey && defaultKey) {
-        dashboard.spawnSelections[key].selectionKey = defaultKey;
-      }
     }
   });
 
@@ -143,37 +137,77 @@
     return isHost && !blindMode && !!player.playerUid && player.isAlive && !stored;
   }
 
-  function getItemSelectionKey(steamId: string | number) {
-    const key = String(steamId);
-    const existing = dashboard.spawnSelections[key]?.selectionKey;
-    if (existing) return existing;
-    return defaultItemSelectionKey(dashboard.itemCatalog);
-  }
-
-  function ensureItemSelection(steamId: string | number) {
-    const key = String(steamId);
-    if (!dashboard.spawnSelections[key]) {
-      dashboard.spawnSelections[key] = {
-        selectionKey: defaultItemSelectionKey(dashboard.itemCatalog),
-      };
-    } else if (!dashboard.spawnSelections[key].selectionKey) {
-      dashboard.spawnSelections[key].selectionKey = defaultItemSelectionKey(dashboard.itemCatalog);
+  function moderationActionLabel(action: string) {
+    switch (action) {
+      case 'kick':
+        return t('dashboard.kick');
+      case 'ban':
+        return t('dashboard.ban');
+      case 'unban':
+        return t('dashboard.unban');
+      case 'heal':
+        return t('dashboard.heal');
+      case 'respawn':
+        return t('dashboard.respawn');
+      default:
+        return action;
     }
-    return dashboard.spawnSelections[key];
   }
 
-  function setItemSelection(steamId: string | number, selectionKey: string) {
-    ensureItemSelection(steamId).selectionKey = selectionKey;
+  function openConfirm(options: {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void | Promise<void>;
+  }) {
+    confirmTitle = options.title;
+    confirmMessage = options.message;
+    confirmLabel = options.confirmLabel;
+    confirmAction = options.onConfirm;
+    confirmLoading = false;
+    confirmOpen = true;
   }
 
-  async function moderate(player: PlayerDto, action: string) {
-    if (!confirm(t('dashboard.confirm_moderation', { action, steamId: player.steamId }))) return;
+  function closeConfirm() {
+    if (confirmLoading) return;
+    confirmOpen = false;
+    confirmAction = null;
+  }
+
+  async function handleConfirm() {
+    if (!confirmAction || confirmLoading) return;
+    confirmLoading = true;
     try {
-      const res = await Api.postAction(String(player.steamId), action);
-      dashboard.showToast(res.message || t('api.done'));
-    } catch (e) {
-      dashboard.showToast(e instanceof Error ? e.message : String(e));
+      await confirmAction();
+      confirmOpen = false;
+      confirmAction = null;
+    } finally {
+      confirmLoading = false;
     }
+  }
+
+  function openGiveItem(player: PlayerDto) {
+    giveItemInitialRecipients = [String(player.steamId)];
+    giveItemDialogKey += 1;
+    giveItemOpen = true;
+  }
+
+  function requestModeration(player: PlayerDto, action: string) {
+    const actionLabel = moderationActionLabel(action);
+    const name = player.displayName || String(player.steamId);
+    openConfirm({
+      title: t('dashboard.confirm_action_title', { action: actionLabel }),
+      message: t('dashboard.confirm_action_message', { name, steamId: player.steamId }),
+      confirmLabel: actionLabel,
+      onConfirm: async () => {
+        try {
+          const res = await Api.postAction(String(player.steamId), action);
+          dashboard.showToast(res.message || t('api.done'));
+        } catch (e) {
+          dashboard.showToast(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
   }
 
   async function toggleCheat(player: PlayerDto, action: 'godmode' | 'noclip') {
@@ -187,31 +221,24 @@
     }
   }
 
-  async function giveItem(player: PlayerDto) {
-    const sel = ensureItemSelection(player.steamId);
-    if (!sel.selectionKey) return;
-    const { itemId, percent } = parseItemSelection(sel.selectionKey);
-    if (!itemId) return;
-    try {
-      const res = await Api.spawnItem(String(player.steamId), itemId, percent);
-      dashboard.showToast(res.message || t('api.done'));
-    } catch (e) {
-      dashboard.showToast(e instanceof Error ? e.message : String(e));
-    }
-  }
-
-  async function deletePlayerData(player: PlayerDto) {
+  function requestDeletePlayerData(player: PlayerDto) {
     const name = player.displayName || String(player.steamId);
-    if (!confirm(t('dashboard.confirm_delete_player', { name, steamId: player.steamId }))) return;
-    try {
-      const res = await Api.deletePlayer(String(player.steamId));
-      dashboard.showToast(res.message || t('api.done'));
-      if (dashboard.route === 'player' && String(dashboard.steamId) === String(player.steamId)) {
-        navigate('leaderboard');
-      }
-    } catch (e) {
-      dashboard.showToast(e instanceof Error ? e.message : String(e));
-    }
+    openConfirm({
+      title: t('dashboard.confirm_delete_title'),
+      message: t('dashboard.confirm_delete_player', { name, steamId: player.steamId }),
+      confirmLabel: t('dashboard.confirm_delete'),
+      onConfirm: async () => {
+        try {
+          const res = await Api.deletePlayer(String(player.steamId));
+          dashboard.showToast(res.message || t('api.done'));
+          if (dashboard.route === 'player' && String(dashboard.steamId) === String(player.steamId)) {
+            navigate('leaderboard');
+          }
+        } catch (e) {
+          dashboard.showToast(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
   }
 
   function connectionDetails(player: PlayerDto) {
@@ -385,13 +412,13 @@
                     </button>
                   {/if}
                   {#if canKickBan(player)}
-                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'kick')}>{t('dashboard.kick')}</button>
-                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, player.isBanned ? 'unban' : 'ban')}>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, 'kick')}>{t('dashboard.kick')}</button>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, player.isBanned ? 'unban' : 'ban')}>
                       {player.isBanned ? t('dashboard.unban') : t('dashboard.ban')}
                     </button>
                   {/if}
                   {#if canHeal(player)}
-                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'heal')}>{t('dashboard.heal')}</button>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, 'heal')}>{t('dashboard.heal')}</button>
                     <button
                       type="button"
                       class="btn btn-secondary btn-xs {player.godMode ? 'btn-active' : ''}"
@@ -409,39 +436,18 @@
                       {t('dashboard.noclip')} {player.noClip ? t('dashboard.on') : t('dashboard.off')}
                     </button>
                   {:else if canRespawn(player)}
-                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'respawn')}>{t('dashboard.respawn')}</button>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, 'respawn')}>{t('dashboard.respawn')}</button>
                   {/if}
                   {#if stored}
                     {#if player.isBanned}
-                      <button type="button" class="btn btn-secondary btn-xs" onclick={() => moderate(player, 'unban')}>{t('dashboard.unban')}</button>
+                      <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, 'unban')}>{t('dashboard.unban')}</button>
                     {/if}
-                    <button type="button" class="btn btn-danger btn-xs" onclick={() => deletePlayerData(player)}>{t('dashboard.delete_player')}</button>
+                    <button type="button" class="btn btn-danger btn-xs" onclick={() => requestDeletePlayerData(player)}>{t('dashboard.delete_player')}</button>
                   {/if}
                   {#if canGiveItem(player)}
-                    <div class="give-item-controls">
-                      <label class="give-item-label" for="give-item-{player.steamId}">{t('dashboard.spawn_item')}</label>
-                      {#if dashboard.itemCatalog.length > 0}
-                        <select
-                          id="give-item-{player.steamId}"
-                          class="input give-item-select"
-                          value={getItemSelectionKey(player.steamId)}
-                          onchange={(e) => setItemSelection(player.steamId, (e.currentTarget as HTMLSelectElement).value)}
-                        >
-                          {#each itemCatalogGroups as group (group.id)}
-                            <optgroup label={group.label}>
-                              {#each group.entries as entry (entry.key)}
-                                <option value={entry.key}>{entry.label}</option>
-                              {/each}
-                            </optgroup>
-                          {/each}
-                        </select>
-                        <button type="button" class="btn btn-primary btn-xs" onclick={() => giveItem(player)}>
-                          {t('dashboard.spawn_item_give')}
-                        </button>
-                      {:else}
-                        <span class="data-table-muted">{t('dashboard.loading')}</span>
-                      {/if}
-                    </div>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => openGiveItem(player)}>
+                      {t('dashboard.give_items')}
+                    </button>
                   {/if}
                 </div>
               </td>
@@ -455,3 +461,21 @@
     {/if}
   </div>
 </div>
+
+<ConfirmDialog
+  bind:open={confirmOpen}
+  title={confirmTitle}
+  message={confirmMessage}
+  confirmLabel={confirmLabel}
+  loading={confirmLoading}
+  onConfirm={handleConfirm}
+  onCancel={closeConfirm}
+/>
+
+{#key giveItemDialogKey}
+  <GiveItemDialog
+    bind:open={giveItemOpen}
+    eligiblePlayers={eligibleGiveItemPlayers}
+    initialRecipients={giveItemInitialRecipients}
+  />
+{/key}

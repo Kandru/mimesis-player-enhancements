@@ -1,5 +1,4 @@
 import Api from '../api';
-import { defaultItemSelectionKey } from '../itemCatalogHelpers';
 import { loadLocale, resolveBrowserLocale } from '../i18n';
 import type {
   ItemOptionDto,
@@ -71,7 +70,6 @@ class DashboardStore {
 
   itemCatalog = $state<ItemOptionDto[]>([]);
   dungeonCatalog = $state<Array<{ id: string; label: string }>>([]);
-  spawnSelections = $state<Record<string, { selectionKey: string }>>({});
 
   minimapFocusSteamId = $state(localStorage.getItem('minimapFocusSteamId') || '');
   minimapAreaId = $state(localStorage.getItem('minimapAreaId') || '');
@@ -542,13 +540,6 @@ class DashboardStore {
     try {
       const res = await Api.getItems();
       this.itemCatalog = res.items || [];
-      const defaultKey = defaultItemSelectionKey(this.itemCatalog);
-      for (const key of Object.keys(this.spawnSelections)) {
-        const sel = this.spawnSelections[key];
-        if (!sel.selectionKey && defaultKey) {
-          sel.selectionKey = defaultKey;
-        }
-      }
     } catch {
       /* optional */
     }
