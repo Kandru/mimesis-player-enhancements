@@ -820,7 +820,7 @@
     "home_title": "Start",
     "home_heading": "Mimesis Player Enhancement",
     "home_lead": "Ein gepflegter Mod für MIMESIS, der Community-Anpassungen bündelt und eigene Features ergänzt: größere Lobbys, Mimik-Stimmen-Persistenz, Join-Anytime, Spawn-/Loot-/Wirtschafts-Skalierung, Dungeon-Randomisierung, Wettersteuerung, Sitzungsstatistiken und dieses Web-Dashboard — alles an einem Ort konfigurierbar. Nur der Host benötigt den Mod.",
-    "home_status_connected": "Mit einer Lobby verbunden",
+    "home_status_connected": "Lobby verbunden",
     "home_status_waiting": "Nicht in einer Lobby",
     "home_status_hint": "Hoste oder tritt zuerst einem Spiel in Mimesis bei. Dieses Dashboard verbindet sich automatisch, sobald du in einer Lobby bist.",
     "home_section_web": "Web-Dashboard",

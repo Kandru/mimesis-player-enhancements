@@ -820,7 +820,7 @@
     "home_title": "Home",
     "home_heading": "Mimesis Player Enhancement",
     "home_lead": "A maintained mod for MIMESIS that consolidates community tweaks and adds original features: larger lobbies, mimic voice persistence, join-anytime, spawn/loot/economy scaling, dungeon randomization, weather control, session statistics, and this web dashboard — all configurable from one place. Only the host needs the mod installed.",
-    "home_status_connected": "Connected to a lobby",
+    "home_status_connected": "In lobby",
     "home_status_waiting": "Not in a lobby",
     "home_status_hint": "Host or join a game in Mimesis first. This dashboard connects automatically once you enter a lobby.",
     "home_section_web": "Web dashboard",
