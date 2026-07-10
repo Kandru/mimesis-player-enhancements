@@ -32,7 +32,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal static bool IsDetoxOverlayTarget(ProtoActor? actor)
         {
-            return actor != null && !actor.dead && actor.IsPlayer() && actor.netSyncActorData.maxConta > 0;
+            if (actor == null || actor.dead || actor.AmIAvatar())
+            {
+                return false;
+            }
+
+            return actor.IsPlayer() && actor.netSyncActorData.maxConta > 0;
         }
     }
 }

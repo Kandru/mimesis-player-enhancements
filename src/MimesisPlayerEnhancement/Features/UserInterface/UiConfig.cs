@@ -66,7 +66,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "EnableFloatingDetoxIndicators",
                 true,
                 "Enable Floating Detox Indicators",
-                "Show green floating toxicity reduction (e.g. -27%) when any player drinks detox juice, including yourself. Duration is configured under Floating damage numbers.");
+                "Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. Duration is configured under Floating damage numbers.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

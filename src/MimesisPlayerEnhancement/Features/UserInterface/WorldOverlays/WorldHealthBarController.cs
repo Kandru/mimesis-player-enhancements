@@ -8,8 +8,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     {
         private const float HitFlashDurationSeconds = 0.4f;
         private const float HitPulseScale = 1.12f;
-        private const float PlayerVerticalOffset = 2.1f;
-        private const float MonsterVerticalOffset = 2.5f;
 
         private readonly Dictionary<int, ActiveHealthBar> _activeBars = new();
         private readonly WorldOverlayFactory _factory = WorldOverlayFactory.Instance;
@@ -134,14 +132,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             if (!WorldOverlayHpTracker.TryGetDisplay(actor, out long hp, out long maxHp))
             {
-                active.Widget.FillImage.fillAmount = 0f;
+                active.Widget.SetFillPercent(0f);
                 ModUiText.SetText(active.Widget.TextComponent, "--");
                 return;
             }
 
             float percent = Mathf.Clamp01((float)hp / maxHp);
 
-            active.Widget.FillImage.fillAmount = percent;
+            active.Widget.SetFillPercent(percent);
             ModUiText.SetText(active.Widget.TextComponent, $"{hp}/{maxHp}");
         }
 
@@ -166,8 +164,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             ProtoActor actor,
             Camera? camera)
         {
-            float offset = actor.IsPlayer() ? PlayerVerticalOffset : MonsterVerticalOffset;
-            Vector3 worldPos = actor.transform.position + Vector3.up * offset;
+            Vector3 worldPos = WorldOverlayPlacement.ResolveHealthBarWorldPosition(actor);
             widget.Root.transform.position = worldPos;
 
             if (camera == null)

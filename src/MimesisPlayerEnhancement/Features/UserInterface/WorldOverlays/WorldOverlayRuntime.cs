@@ -127,7 +127,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return;
             }
 
-            DetoxFloaters.Spawn(actor, $"-{percent}%", DetoxTextColor);
+            DetoxFloaters.Spawn(
+                actor,
+                $"-{percent}%",
+                DetoxTextColor,
+                displayScale: WorldOverlayFactory.FloaterScale);
             RefreshActiveFlag();
         }
 
@@ -142,7 +146,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 && damage > 0
                 && WorldOverlayGate.IsDamageOverlayTarget(actor))
             {
-                DamageFloaters.Spawn(actor, $"-{damage}", DamageTextColor);
+                DamageFloaters.Spawn(
+                    actor,
+                    $"-{damage}",
+                    DamageTextColor,
+                    displayScale: WorldOverlayFactory.FloaterScale);
             }
 
             RefreshActiveFlag();

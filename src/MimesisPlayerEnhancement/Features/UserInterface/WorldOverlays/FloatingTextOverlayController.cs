@@ -9,7 +9,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private const float RiseSpeed = 0.75f;
         private const float DriftSpeed = 1.25f;
         private const float FadeInFraction = 0.15f;
-        private const float VerticalOffset = 1.6f;
         private const float DedupWindowSeconds = 0.15f;
 
         private readonly Func<bool> _isEnabled;
@@ -34,7 +33,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal bool HasActiveFloaters => _activeFloaters.Count > 0;
 
-        internal void Spawn(ProtoActor actor, string text, Color color)
+        internal void Spawn(
+            ProtoActor actor,
+            string text,
+            Color color,
+            float displayScale = WorldOverlayFactory.FloaterScale)
         {
             if (!_isEnabled() || !_isTarget(actor))
             {
@@ -65,10 +68,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             _lastSpawnTime = now;
 
             float duration = ModConfig.FloatingDamageDurationSeconds.Value;
-            Vector3 startPosition = actor.transform.position + Vector3.up * VerticalOffset;
+            Vector3 startPosition = WorldOverlayPlacement.ResolveFloaterWorldPosition(actor);
             Vector3 driftDirection = WorldOverlayViewer.ResolveDriftDirection(startPosition);
 
-            WorldOverlayFactory.FloaterWidget widget = _factory.RentFloater();
+            WorldOverlayFactory.FloaterWidget widget = _factory.RentFloater(displayScale);
             ModUiText.SetText(widget.TextComponent, text);
             widget.BaseColor = color;
             ModUiText.SetColor(widget.TextComponent, color);

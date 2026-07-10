@@ -84,7 +84,7 @@ Mod-wide settings that are not owned by a single feature.
 | `WorldHealthBarDurationSeconds` | float | `4.0` | `1`–`5` | How long the world health bar stays visible after an entity takes damage. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
 | `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage and detox indicators remain visible. |
-| `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when any player drinks detox juice, including yourself. |
+| `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 

@@ -11,9 +11,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private const float BarWidth = 84f;
         private const float BarHeight = 12f;
         private const float BarBorderInset = 1.5f;
+        internal const float FloaterScale = 0.65f;
 
         private static readonly Color HealthFill = new(0.82f, 0.18f, 0.18f, 1f);
         private static readonly Color HealthFillFlash = new(1f, 0.42f, 0.42f, 1f);
+        private static readonly Color HealthTrack = new(0.12f, 0.12f, 0.12f, 0.9f);
         private static readonly Color White = Color.white;
         private static readonly Color DamageTextColor = new(1f, 0.35f, 0.35f, 1f);
 
@@ -68,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             if (_healthBarPool.TryPop(out HealthBarWidget? widget))
             {
                 widget.Root.SetActive(true);
+                widget.SetFillPercent(1f);
                 return widget;
             }
 
@@ -81,20 +84,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             _healthBarPool.Push(widget);
         }
 
-        internal FloaterWidget RentFloater()
+        internal FloaterWidget RentFloater(float displayScale = 1f)
         {
-            if (_floaterPool.TryPop(out FloaterWidget? widget))
+            FloaterWidget widget;
+            if (_floaterPool.TryPop(out FloaterWidget? pooled))
             {
+                widget = pooled;
                 widget.Root.SetActive(true);
-                return widget;
+            }
+            else
+            {
+                widget = CreateFloater();
             }
 
-            return CreateFloater();
+            widget.RootTransform.localScale = new Vector3(displayScale, displayScale, displayScale);
+            return widget;
         }
 
         internal void ReturnFloater(FloaterWidget widget)
         {
             widget.Root.SetActive(false);
+            widget.RootTransform.localScale = Vector3.one;
             _floaterPool.Push(widget);
         }
 
@@ -139,11 +149,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             fillAreaRect.offsetMin = new Vector2(BarBorderInset, BarBorderInset);
             fillAreaRect.offsetMax = new Vector2(-BarBorderInset, -BarBorderInset);
 
-            Image fill = CreateStretchImage(fillArea.transform, "Fill", HealthFill);
-            fill.type = Image.Type.Filled;
-            fill.fillMethod = Image.FillMethod.Horizontal;
-            fill.fillOrigin = (int)Image.OriginHorizontal.Left;
-            fill.fillAmount = 1f;
+            CreateStretchImage(fillArea.transform, "Track", HealthTrack);
+
+            GameObject fillGo = new("Fill");
+            fillGo.transform.SetParent(fillArea.transform, false);
+            RectTransform fillRect = fillGo.AddComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            Image fill = fillGo.AddComponent<Image>();
+            fill.color = HealthFill;
+            fill.raycastTarget = false;
 
             GameObject textGo = new("HpText");
             textGo.transform.SetParent(root.transform, false);
@@ -166,10 +183,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 Root = root,
                 RootTransform = rootRect,
                 FillImage = fill,
+                FillRect = fillRect,
                 TextComponent = label,
                 BaseFillColor = HealthFill,
                 FlashFillColor = HealthFillFlash,
             };
+        }
+
+        private static void SetHorizontalFill(RectTransform fillRect, float percent)
+        {
+            float clamped = Mathf.Clamp01(percent);
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = new Vector2(clamped, 1f);
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
         }
 
         private FloaterWidget CreateFloater()
@@ -245,11 +272,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             internal GameObject Root = null!;
             internal RectTransform RootTransform = null!;
+            internal RectTransform FillRect = null!;
             internal Image FillImage = null!;
             internal Component TextComponent = null!;
             internal Color BaseFillColor;
             internal Color FlashFillColor;
             internal ProtoActor? Actor;
+
+            internal void SetFillPercent(float percent) =>
+                SetHorizontalFill(FillRect, percent);
         }
 
         internal sealed class FloaterWidget

@@ -47,7 +47,7 @@
       },
       "EnableFloatingDetoxIndicators": {
         "title": "Enable Floating Detox Indicators",
-        "description": "Show green floating toxicity reduction (e.g. -27%) when any player drinks detox juice, including yourself. Duration is configured under Floating damage numbers."
+        "description": "Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. Duration is configured under Floating damage numbers."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {

@@ -47,7 +47,7 @@
       },
       "EnableFloatingDetoxIndicators": {
         "title": "Schwebende Detox-Indikatoren aktivieren",
-        "description": "Zeigt grüne schwebende Toxizitätsreduktion (z. B. -27%), wenn ein Spieler Detox-Saft trinkt — auch bei dir selbst. Die Dauer wird unter Schwebende Schadenszahlen eingestellt."
+        "description": "Zeigt grüne schwebende Toxizitätsreduktion (z. B. -27%), wenn ein anderer Spieler Detox-Saft trinkt. Die Dauer wird unter Schwebende Schadenszahlen eingestellt."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
