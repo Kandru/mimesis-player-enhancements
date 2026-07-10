@@ -179,7 +179,7 @@ export function storedDetailsLine(
   player: PlayerDto,
   t: (key: string, params?: Record<string, string | number>) => string,
 ) {
-  const parts: string[] = [t('dashboard.player_state_offline')];
+  const parts: string[] = [];
   if (player.isBanned) parts.push(t('dashboard.badge_banned'));
   const { total, session } = statisticsSummaryShort(player, t);
   if (total) parts.push(t('dashboard.statistics_total_prefix', { stats: total }));
