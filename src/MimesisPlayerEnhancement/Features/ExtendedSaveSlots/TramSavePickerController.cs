@@ -90,13 +90,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             _hostButtonLabel = null;
 
+            // Restore layout first so vanilla tram buttons regain their prefab spacing
+            // before labels/handlers are rewired.
+            MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
+
             if (_mainMenu != null && _mainMenuUi != null)
             {
                 VanillaMainMenuWiring.Restore(_mainMenu, _mainMenuUi);
             }
-
-            // The mirror restores the Load button and collapses the column back to vanilla.
-            MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
         }
 
         internal static void TryHandleHostButtonClick(UIPrefab_MainMenu mainMenuUi)

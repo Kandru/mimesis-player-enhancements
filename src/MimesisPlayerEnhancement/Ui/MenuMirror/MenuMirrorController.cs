@@ -7,14 +7,15 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
     /// <summary>
     /// Rebuilds a vanilla menu's button column whenever features customize it.
     /// Buttons use fixed RectTransform anchors (uGUI, not UI Toolkit flex). The mirror
-    /// only adjusts anchored Y on the shared parent so hidden rows leave no gap.
+    /// only adjusts anchored Y so hidden rows leave no gap; anchors/pivots/sizes are
+    /// never touched.
     /// </summary>
     internal static class MenuMirrorController
     {
         private const string Feature = "MenuMirror";
 
         /// <summary>Empty vertical space between stacked menu button labels (screen pixels).</summary>
-        private const float ButtonVisualGapPx = 10f;
+        private const float ButtonVisualGapPx = 11f;
 
         private static readonly string[] MainMenuColumnIds =
         [
@@ -42,6 +43,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         };
 
         private static readonly HashSet<MenuKind> PendingRebuild = [];
+        private static readonly HashSet<MenuKind> PendingCapture = [];
 
         internal static void RefreshFor(MenuKind kind, UIPrefabScript menu, bool allowCapture)
         {
@@ -54,17 +56,20 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                     state.Menu = menu;
                 }
 
-                if (allowCapture && !state.Captured)
+                if (allowCapture)
                 {
-                    Capture(kind, state);
-                }
+                    // Capture one frame late: at Start time the game has not finished
+                    // positioning the buttons yet, and a snapshot taken now would
+                    // restore a broken (overlapping) layout later.
+                    if (PendingCapture.Add(kind))
+                    {
+                        _ = MelonCoroutines.Start(DeferredCapture(kind, menu));
+                    }
 
-                if (!state.Captured)
-                {
                     return;
                 }
 
-                Rebuild(kind, state);
+                RebuildIfReady(kind, "Rebuild");
             }
             catch (Exception ex)
             {
@@ -80,10 +85,43 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 return;
             }
 
+            // Restoring pure vanilla must happen immediately so tram buttons do not
+            // sit in a compacted layout with the wrong labels for a frame.
+            if (!MenuMirrorRegistry.HasAny(kind))
+            {
+                PendingRebuild.Remove(kind);
+                RebuildIfReady(kind, "Rebuild");
+                return;
+            }
+
             if (PendingRebuild.Add(kind))
             {
                 _ = MelonCoroutines.Start(DeferredRebuild(kind));
             }
+        }
+
+        private static System.Collections.IEnumerator DeferredCapture(MenuKind kind, UIPrefabScript menu)
+        {
+            yield return null;
+
+            PendingCapture.Remove(kind);
+
+            MenuState state = States[kind];
+            if (!ReferenceEquals(state.Menu, menu) || menu == null || menu.gameObject == null)
+            {
+                yield break;
+            }
+
+            try
+            {
+                Capture(kind, state);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Capture for {kind} failed — {ex.Message}");
+            }
+
+            RebuildIfReady(kind, "Post-capture rebuild");
         }
 
         private static System.Collections.IEnumerator DeferredRebuild(MenuKind kind)
@@ -91,34 +129,31 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             yield return null;
 
             PendingRebuild.Remove(kind);
+            RebuildIfReady(kind, "Deferred rebuild");
+        }
 
+        private static void RebuildIfReady(MenuKind kind, string context)
+        {
             MenuState state = States[kind];
-            if (state.Menu == null || state.Menu.gameObject == null)
+            if (state.Menu == null || state.Menu.gameObject == null || !state.Captured)
             {
-                yield break;
+                return;
             }
 
             try
             {
-                if (!state.Captured)
-                {
-                    Capture(kind, state);
-                }
-
-                if (state.Captured)
-                {
-                    Rebuild(kind, state);
-                }
+                Rebuild(kind, state);
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"Deferred rebuild for {kind} failed — {ex.Message}");
+                ModLog.Warn(Feature, $"{context} for {kind} failed — {ex.Message}");
             }
         }
 
         private static void Capture(MenuKind kind, MenuState state)
         {
             state.Entries.Clear();
+            state.EntriesById.Clear();
 
             string[] columnIds = kind == MenuKind.MainMenu ? MainMenuColumnIds : InGameMenuColumnIds;
             foreach (string ueid in columnIds)
@@ -131,7 +166,9 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                     continue;
                 }
 
-                state.Entries.Add(new VanillaEntry(ueid, button, rect));
+                VanillaEntry entry = new(ueid, button, rect);
+                state.Entries.Add(entry);
+                state.EntriesById[ueid] = entry;
             }
 
             if (state.Entries.Count == 0)
@@ -144,28 +181,16 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             ModLog.Debug(Feature, $"{kind} captured — {state.Entries.Count} buttons");
         }
 
-        private static VanillaEntry? FindEntry(MenuState state, string id)
-        {
-            foreach (VanillaEntry entry in state.Entries)
-            {
-                if (entry.Id == id)
-                {
-                    return entry;
-                }
-            }
-
-            return null;
-        }
-
         private static void Rebuild(MenuKind kind, MenuState state)
         {
             DestroyClones(state);
+            bool wasMirrored = state.Mirrored;
             RestoreVanilla(state);
 
             IReadOnlyCollection<MenuCustomization> specs = MenuMirrorRegistry.GetAll(kind);
             if (specs.Count == 0)
             {
-                if (state.Mirrored)
+                if (wasMirrored)
                 {
                     ModLog.Info(Feature, $"{kind} restored to vanilla layout.");
                 }
@@ -200,8 +225,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 
             foreach (string buttonId in columnIds)
             {
-                VanillaEntry? entry = FindEntry(state, buttonId);
-                if (entry == null)
+                if (!state.EntriesById.TryGetValue(buttonId, out VanillaEntry? entry))
                 {
                     continue;
                 }
@@ -226,69 +250,50 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 return;
             }
 
-            // Pin the top row at its captured vanilla anchor — never move the column origin.
-            rows[0].Rect.anchoredPosition = rows[0].CapturedAnchoredPosition;
-
-            for (int index = 1; index < rows.Count; index++)
-            {
-                PlaceBelow(rows[index - 1].Rect, rows[index].Rect, ButtonVisualGapPx);
-                rows[index].Rect.anchoredPosition = new Vector2(
-                    rows[index].CapturedAnchoredPosition.x,
-                    rows[index].Rect.anchoredPosition.y);
-            }
-        }
-
-        /// <summary>
-        /// Stack lower under upper using label bounds. Button roots are tall hit areas;
-        /// measuring them leaves roughly one extra button height of empty space per row.
-        /// </summary>
-        private static void PlaceBelow(RectTransform upper, RectTransform lower, float gapPx)
-        {
-            RectTransform? lowerParent = lower.parent as RectTransform;
-            if (lowerParent == null)
+            // Measure everything up front in one shared local space, then apply all
+            // positions. Measuring row N against the already-moved row N-1 (the old
+            // approach) made the result order-dependent and nonlinear in the gap.
+            RectTransform? measureSpace = rows[0].Rect.parent as RectTransform;
+            if (measureSpace == null)
             {
                 return;
             }
 
-            RectTransform upperLayout = ResolveLayoutRect(upper);
-            RectTransform lowerLayout = ResolveLayoutRect(lower);
-
-            Vector3[] upperCorners = new Vector3[4];
-            Vector3[] lowerCorners = new Vector3[4];
-            upperLayout.GetWorldCorners(upperCorners);
-            lowerLayout.GetWorldCorners(lowerCorners);
-
-            float upperBottomLocal = lowerParent.InverseTransformPoint(upperCorners[0]).y;
-            float lowerHalfLocal = Mathf.Abs(
-                lowerParent.InverseTransformPoint(lowerCorners[1]).y
-                - lowerParent.InverseTransformPoint(lowerCorners[0]).y) * 0.5f;
-            float gapLocal = GapLocalForScreenPixels(lowerParent, lower, gapPx);
-            float targetLabelCenterLocal = upperBottomLocal - gapLocal - lowerHalfLocal;
-            float currentLabelCenterLocal = lowerParent.InverseTransformPoint((lowerCorners[0] + lowerCorners[2]) * 0.5f).y;
-
-            Vector2 anchored = lower.anchoredPosition;
-            anchored.y += targetLabelCenterLocal - currentLabelCenterLocal;
-            lower.anchoredPosition = anchored;
-        }
-
-        private static RectTransform ResolveLayoutRect(RectTransform buttonRoot)
-        {
-            Component? label = ModUiText.FindTextComponent(buttonRoot.gameObject);
-            if (label != null && label.transform is RectTransform labelRect)
+            foreach (ColumnRow row in rows)
             {
-                return labelRect;
+                row.Measure(measureSpace);
             }
 
-            return buttonRoot;
+            float gapLocal = GapLocalForScreenPixels(measureSpace, ButtonVisualGapPx);
+
+            // Pin the top row at its captured vanilla anchor — never move the column origin.
+            rows[0].Rect.anchoredPosition = rows[0].CapturedAnchoredPosition;
+            float previousLabelBottomLocal = rows[0].LabelCenterLocalY - rows[0].LabelHalfHeightLocal;
+
+            for (int index = 1; index < rows.Count; index++)
+            {
+                ColumnRow row = rows[index];
+                float targetLabelCenterLocal = previousLabelBottomLocal - gapLocal - row.LabelHalfHeightLocal;
+                float deltaLocal = targetLabelCenterLocal - row.LabelCenterLocalY;
+                row.Rect.anchoredPosition = new Vector2(
+                    row.CapturedAnchoredPosition.x,
+                    row.MeasuredAnchoredY + deltaLocal);
+                previousLabelBottomLocal = targetLabelCenterLocal - row.LabelHalfHeightLocal;
+            }
         }
 
-        private static float GapLocalForScreenPixels(RectTransform parent, RectTransform reference, float screenPixels)
+        /// <summary>
+        /// Converts a screen-pixel gap into the measuring space's local units, computed
+        /// once for the whole column so every row uses the exact same gap.
+        /// </summary>
+        private static float GapLocalForScreenPixels(RectTransform measureSpace, float screenPixels)
         {
-            Vector3[] corners = new Vector3[4];
-            reference.GetWorldCorners(corners);
-            float before = parent.InverseTransformPoint(corners[0]).y;
-            float after = parent.InverseTransformPoint(corners[0] + new Vector3(0f, -screenPixels, 0f)).y;
-            return Mathf.Abs(before - after);
+            // Screen-space canvases render one world unit per screen pixel, so a
+            // world-space vector of the requested length converts directly into the
+            // measuring space via the inverse transform.
+            float gapLocal = Mathf.Abs(
+                measureSpace.InverseTransformVector(new Vector3(0f, screenPixels, 0f)).y);
+            return gapLocal > 0.0001f ? gapLocal : screenPixels;
         }
 
         private static void InsertCustomRow(MenuState state, List<ColumnRow> rows, CustomMenuButton custom)
@@ -305,7 +310,9 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 }
             }
 
-            RectTransform styleSource = ResolveStyleSource(state, anchorId) ?? state.Entries[0].Rect;
+            RectTransform styleSource =
+                (anchorId != null ? state.EntriesById.GetValueOrDefault(anchorId)?.Rect : null)
+                ?? state.Entries[0].Rect;
             GameObject? clone = MenuButtonClone.Create(styleSource.gameObject, custom);
             if (clone == null)
             {
@@ -314,18 +321,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 
             state.Clones.Add(clone);
             RectTransform cloneRect = clone.GetComponent<RectTransform>()!;
-            Vector2 capturedPos = styleSource.anchoredPosition;
-            rows.Insert(insertIndex, new ColumnRow(cloneRect, capturedPos, null));
-        }
-
-        private static RectTransform? ResolveStyleSource(MenuState state, string? anchorId)
-        {
-            if (anchorId == null)
-            {
-                return null;
-            }
-
-            return FindEntry(state, anchorId)?.Rect;
+            rows.Insert(insertIndex, new ColumnRow(cloneRect, styleSource.anchoredPosition, null));
         }
 
         private static void RestoreVanilla(MenuState state)
@@ -333,7 +329,9 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             state.Entries.RemoveAll(static entry => entry.Rect == null);
             foreach (VanillaEntry entry in state.Entries)
             {
-                entry.RestoreSnapshot();
+                entry.Rect.anchoredPosition = entry.CapturedAnchoredPosition;
+                // Hidden rows are re-applied by LayoutCompactColumn when specs are active.
+                entry.Button.gameObject.SetActive(true);
             }
         }
 
@@ -354,6 +352,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         {
             DestroyClones(state);
             state.Entries.Clear();
+            state.EntriesById.Clear();
             state.Menu = null;
             state.Captured = false;
             state.Mirrored = false;
@@ -365,6 +364,8 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 
             internal List<VanillaEntry> Entries { get; } = [];
 
+            internal Dictionary<string, VanillaEntry> EntriesById { get; } = new();
+
             internal List<GameObject> Clones { get; } = [];
 
             internal bool Captured;
@@ -372,27 +373,18 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             internal bool Mirrored;
         }
 
+        /// <summary>
+        /// A vanilla column button with its settled prefab position. The mirror only
+        /// ever changes anchored position and active state, so nothing else is stored.
+        /// </summary>
         private sealed class VanillaEntry
         {
-            private readonly Vector2 _anchorMin;
-            private readonly Vector2 _anchorMax;
-            private readonly Vector2 _pivot;
-            private readonly Vector2 _anchoredPosition;
-            private readonly Vector2 _sizeDelta;
-            private readonly bool _wasActive;
-
             internal VanillaEntry(string id, Button button, RectTransform rect)
             {
                 Id = id;
                 Button = button;
                 Rect = rect;
                 CapturedAnchoredPosition = rect.anchoredPosition;
-                _anchorMin = rect.anchorMin;
-                _anchorMax = rect.anchorMax;
-                _pivot = rect.pivot;
-                _anchoredPosition = rect.anchoredPosition;
-                _sizeDelta = rect.sizeDelta;
-                _wasActive = button.gameObject.activeSelf;
             }
 
             internal string Id { get; }
@@ -402,16 +394,6 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             internal RectTransform Rect { get; }
 
             internal Vector2 CapturedAnchoredPosition { get; }
-
-            internal void RestoreSnapshot()
-            {
-                Rect.anchorMin = _anchorMin;
-                Rect.anchorMax = _anchorMax;
-                Rect.pivot = _pivot;
-                Rect.anchoredPosition = _anchoredPosition;
-                Rect.sizeDelta = _sizeDelta;
-                Button.gameObject.SetActive(_wasActive);
-            }
         }
 
         private sealed class ColumnRow
@@ -428,6 +410,41 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             internal Vector2 CapturedAnchoredPosition { get; }
 
             internal string? VanillaId { get; }
+
+            internal float LabelCenterLocalY { get; private set; }
+
+            internal float LabelHalfHeightLocal { get; private set; }
+
+            internal float MeasuredAnchoredY { get; private set; }
+
+            /// <summary>
+            /// Records the label bounds in the shared measuring space at the row's
+            /// current (pre-layout) position. Button roots are tall hit areas, so the
+            /// label rect is measured instead of the root.
+            /// </summary>
+            internal void Measure(RectTransform measureSpace)
+            {
+                MeasuredAnchoredY = Rect.anchoredPosition.y;
+
+                RectTransform layoutRect = ResolveLayoutRect(Rect);
+                Vector3[] corners = new Vector3[4];
+                layoutRect.GetWorldCorners(corners);
+                float bottom = measureSpace.InverseTransformPoint(corners[0]).y;
+                float top = measureSpace.InverseTransformPoint(corners[1]).y;
+                LabelCenterLocalY = (top + bottom) * 0.5f;
+                LabelHalfHeightLocal = Mathf.Abs(top - bottom) * 0.5f;
+            }
+
+            private static RectTransform ResolveLayoutRect(RectTransform buttonRoot)
+            {
+                Component? label = ModUiText.FindTextComponent(buttonRoot.gameObject);
+                if (label != null && label.transform is RectTransform labelRect)
+                {
+                    return labelRect;
+                }
+
+                return buttonRoot;
+            }
         }
     }
 }
