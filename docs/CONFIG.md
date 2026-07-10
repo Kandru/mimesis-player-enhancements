@@ -423,7 +423,7 @@ A continuous brightness slider is not available host-only; pick a preset above f
 | **Player stats** | Host only | Per-player statistics for the active save game (requires **Statistics** enabled) |
 | **Moderation** | Host only | Kick, ban, unban, respawn, and heal actions |
 
-**Blind mode** (header toggle, host only): on by default for fairness. Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers. While you are dead, blind mode is temporarily lifted so you can review others' stats; it restores automatically on revive unless you turned it off manually.
+**Blind mode** (header toggle, host only): on by default for fairness. Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers during **dungeon and deathmatch runs** while you are alive. It is automatically inactive in the maintenance bay and tram scene. While you are dead, blind mode is temporarily lifted so you can review others' stats; it restores automatically on revive unless you turned it off manually.
 
 **Player cheats** (per-player buttons on the Players page, host only): **Godmode** prevents the selected player from dying; **Noclip** lets that player fly with normal movement controls. Both appear next to Heal/Respawn for alive in-game players and are automatically turned off when blind mode is active or when the player dies.
 

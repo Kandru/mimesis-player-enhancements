@@ -30,7 +30,12 @@ function createInitialStatus(): StatusDto {
     configVersion: 0,
     joinAnytimeRoutingCount: 0,
     locale: 'en',
+    sessionScene: '',
   };
+}
+
+function isBlindModeScene(sessionScene: string | undefined): boolean {
+  return sessionScene === 'dungeon' || sessionScene === 'death_match';
 }
 
 class DashboardStore {
@@ -87,12 +92,15 @@ class DashboardStore {
   private lastSettingsSubRoute = '';
   private lastSteamId: string | null = null;
   private localPlayerWasAlive: boolean | null = null;
+  private lastSessionScene = '';
   private globalSettingsPromise: Promise<void> | null = null;
   private saveSettingsPromise: Promise<void> | null = null;
   private saveProfilePromise: Promise<void> | null = null;
 
   get playerBlindMode() {
-    return this.playerBlindModeUserEnabled && !this.playerBlindModeAutoSuspended;
+    return this.playerBlindModeUserEnabled
+      && isBlindModeScene(this.status.sessionScene)
+      && !this.playerBlindModeAutoSuspended;
   }
 
   get isGameRoute() {
@@ -264,6 +272,7 @@ class DashboardStore {
 
   applySnapshot(payload: SnapshotPayload) {
     const wasConnected = this.status.isConnected;
+    const previousSessionScene = this.lastSessionScene;
     this.status = payload.status || this.status;
     if (payload.playersLiveOnly) {
       for (const live of payload.players || []) {
@@ -282,6 +291,11 @@ class DashboardStore {
       if (this.playerBlindMode && this.hasActivePlayerCheats()) {
         Api.disableAllPlayerCheats().catch(() => {});
       }
+      const sessionScene = this.status.sessionScene ?? '';
+      if (sessionScene !== previousSessionScene) {
+        this.lastSessionScene = sessionScene;
+        this.applyMinimapFilter(true);
+      }
     }
     this.apiError = false;
     this.setConnectedMode();
@@ -295,6 +309,7 @@ class DashboardStore {
       this.minimapRaw = null;
       this.minimap = null;
       this.localPlayerWasAlive = null;
+      this.lastSessionScene = '';
     } else if (this.status.isConnected && !wasConnected) {
       void this.prefetchDashboardData();
     } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {

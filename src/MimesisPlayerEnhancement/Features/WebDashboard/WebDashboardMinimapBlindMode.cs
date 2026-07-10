@@ -25,6 +25,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            if (!WebDashboardSessionScene.IsBlindModeScene(pdata?.main))
+            {
+                return false;
+            }
+
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
             if (localSteamId == 0)
             {

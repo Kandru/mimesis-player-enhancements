@@ -903,7 +903,7 @@
     "page_desc_settings_customize": "Einzelne Feature-Optionen ",
     "page_desc_player": "Detaillierte Statistiken",
     "blind_mode": "Blindmodus",
-    "blind_mode_title": "Lebend/Tot-Status, Gesundheit, Toxizität und Wiederbelebungs-Aktionen ausblenden, um Spoiler zu vermeiden. Während du tot bist vorübergehend deaktiviert, damit du die Stats anderer einsehen kannst.",
+    "blind_mode_title": "Lebend/Tot-Status, Gesundheit, Toxizität und Wiederbelebungs-Aktionen während Dungeon- und Deathmatch-Runs ausblenden, solange du lebst. In der Wartungshalle und Tram-Szene inaktiv. Während du tot bist vorübergehend deaktiviert, damit du die Stats anderer einsehen kannst.",
     "god_mode": "Godmode",
     "god_mode_title": "Unverwundbarkeit für diesen Spieler umschalten.",
     "noclip": "Noclip",

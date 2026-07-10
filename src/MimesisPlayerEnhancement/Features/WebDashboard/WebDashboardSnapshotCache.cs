@@ -216,6 +216,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         ? LateJoinRouteTracker.GetActiveRoutingCount()
                         : 0,
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
+                    SessionScene = WebDashboardSessionScene.Resolve(JoinAnytimeHub.GetPdata()?.main),
                 },
             };
 
@@ -409,6 +410,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append('|')
                 .Append(status.JoinAnytimeRoutingCount)
                 .Append('|')
+                .Append(status.SessionScene)
+                .Append('|')
                 .Append(livePlayers.Count)
                 .Append('|');
 
@@ -447,6 +450,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append(status.SaveSlotId)
                 .Append('|')
                 .Append(status.LobbyName)
+                .Append('|')
+                .Append(status.SessionScene)
                 .Append('|')
                 .Append(status.ConfigVersion)
                 .Append('|')

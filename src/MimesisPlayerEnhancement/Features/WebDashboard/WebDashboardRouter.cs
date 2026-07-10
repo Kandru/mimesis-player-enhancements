@@ -78,6 +78,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ConfigVersion = snapshot.Status.ConfigVersion,
                     JoinAnytimeRoutingCount = snapshot.Status.JoinAnytimeRoutingCount,
                     Locale = WebDashboardRequestLocale.Current,
+                    SessionScene = snapshot.Status.SessionScene,
                 };
                 WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
                 return;

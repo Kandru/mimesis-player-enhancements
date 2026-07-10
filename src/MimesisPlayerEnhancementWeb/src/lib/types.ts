@@ -9,6 +9,7 @@ export interface StatusDto {
   configVersion: number;
   joinAnytimeRoutingCount: number;
   locale: string;
+  sessionScene?: string;
 }
 
 export interface SessionStatsDto {
