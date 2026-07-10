@@ -3,12 +3,12 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.8
 - switched the web-dashboard to Svelte for a single-page application (looks and feels way better)
 - when the game gets updates this mod will be disabled automatically to avoid incompatibilities or bugs/crashes until the user updates it (when any update is available)
-- draft: fix godmode/noclip being auto-disabled by dashboard snapshots and multi-tab blind-mode desync
-- draft: probably a fix for late-joiners not always joining the moving tram
-- draft: the dead player UI should sort the players by alphabet but living people first
-- draft: new feature to disable player collisions (each player needs the mod for it to work)
-- draft: custom menu structure to fix new features inside the main menu or esc menu (hopefully aligning correctly on different resolutions)
-- draft: show health bars above players/mimics/monsters when they got hit and also show a floating damage indicator (each player needs the mod for it to work)
+- the dead player UI sort the players by alphabet (but living people first)
+- new feature to disable player collisions (each player needs the mod for it to work)
+- custom menu structure to fix new features inside the main menu or esc menu
+- show health bars above players/mimics/monsters when they got hit and also show a floating damage indicator (each player needs the mod for it to work)
+- fix: godmode/noclip being auto-disabled by dashboard snapshots and multi-tab blind-mode desync
+- fix: late-joiners not always joining the moving tram
 - draft: allow to properly record voice lines during maintenance, during the tram scene and when possessing a mimic (there seems to be a bug which stops recording a possesed mimic after the first time lol)
 
 ## 26.7.7
