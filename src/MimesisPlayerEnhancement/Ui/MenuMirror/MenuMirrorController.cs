@@ -19,8 +19,11 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         /// <summary>Empty space between stacked menu labels. ~10 matches vanilla spacing.</summary>
         private const float InGameMenuLabelGapPx = 10f;
 
-        /// <summary>Reference pixel gap that captured vanilla spacing is normalized against.</summary>
-        private const float VanillaReferenceGapPx = 11f;
+        private static string[] GetColumnIds(MenuKind kind) =>
+            kind == MenuKind.MainMenu ? MainMenuColumnIds : InGameMenuColumnIds;
+
+        private static float LabelGapPx(MenuKind kind) =>
+            kind == MenuKind.MainMenu ? MainMenuLabelGapPx : InGameMenuLabelGapPx;
 
         private static readonly string[] MainMenuColumnIds =
         [
@@ -160,7 +163,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             state.Entries.Clear();
             state.EntriesById.Clear();
 
-            string[] columnIds = kind == MenuKind.MainMenu ? MainMenuColumnIds : InGameMenuColumnIds;
+            string[] columnIds = GetColumnIds(kind);
             foreach (string ueid in columnIds)
             {
                 Button? button = state.Menu!.PickButton(ueid);
@@ -182,28 +185,29 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 return;
             }
 
-            state.LabelGapLocal = MeasureVanillaLabelGap(state);
+            float vanillaGapLocal = MeasureVanillaLabelGap(state);
+            float defaultGapPx = LabelGapPx(kind);
+            state.GapUnitsPerPx = defaultGapPx > 0.0001f ? vanillaGapLocal / defaultGapPx : 0f;
             state.Captured = true;
             ModLog.Debug(
                 Feature,
-                $"{kind} captured — {state.Entries.Count} buttons, labelGapLocal={state.LabelGapLocal:F2}");
+                $"{kind} captured — {state.Entries.Count} buttons, gapUnitsPerPx={state.GapUnitsPerPx:F4}");
         }
 
         private static void Rebuild(MenuKind kind, MenuState state)
         {
+            bool hadCustomizations = state.Clones.Count > 0;
             DestroyClones(state);
-            bool wasMirrored = state.Mirrored;
             RestoreVanilla(state);
 
             IReadOnlyCollection<MenuCustomization> specs = MenuMirrorRegistry.GetAll(kind);
             if (specs.Count == 0)
             {
-                if (wasMirrored)
+                if (hadCustomizations)
                 {
                     ModLog.Info(Feature, $"{kind} restored to vanilla layout.");
                 }
 
-                state.Mirrored = false;
                 return;
             }
 
@@ -215,9 +219,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 customs.AddRange(spec.CustomButtons);
             }
 
-            string[] columnIds = kind == MenuKind.MainMenu ? MainMenuColumnIds : InGameMenuColumnIds;
-            LayoutCompactColumn(kind, state, columnIds, hiddenIds, customs);
-            state.Mirrored = true;
+            LayoutCompactColumn(kind, state, GetColumnIds(kind), hiddenIds, customs);
             ModLog.Info(
                 Feature,
                 $"{kind} rebuilt — {hiddenIds.Count} hidden, {customs.Count} custom.");
@@ -273,7 +275,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 row.Measure(measureSpace);
             }
 
-            float gapLocal = ResolveLabelGapLocal(kind, state, measureSpace);
+            float gapLocal = ResolveLabelGapLocal(kind, state);
 
             // Pin the top row at its captured vanilla anchor — never move the column origin.
             rows[0].Rect.anchoredPosition = rows[0].CapturedAnchoredPosition;
@@ -325,30 +327,8 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             return samples > 0 ? totalGap / samples : 0f;
         }
 
-        private static float ResolveLabelGapLocal(MenuKind kind, MenuState state, RectTransform measureSpace)
-        {
-            float labelGapPx = kind == MenuKind.MainMenu ? MainMenuLabelGapPx : InGameMenuLabelGapPx;
-
-            // Scale the requested pixel gap through this menu's captured vanilla spacing
-            // so the same constant works on both canvas setups.
-            if (state.LabelGapLocal > 0.0001f)
-            {
-                return state.LabelGapLocal * (labelGapPx / VanillaReferenceGapPx);
-            }
-
-            return GapLocalForScreenPixels(measureSpace, labelGapPx);
-        }
-
-        /// <summary>
-        /// Converts a screen-pixel gap into the measuring space's local units. Used as a
-        /// fallback when vanilla capture did not produce a measurable label gap.
-        /// </summary>
-        private static float GapLocalForScreenPixels(RectTransform measureSpace, float screenPixels)
-        {
-            float gapLocal = Mathf.Abs(
-                measureSpace.InverseTransformVector(new Vector3(0f, screenPixels, 0f)).y);
-            return gapLocal > 0.0001f ? gapLocal : screenPixels;
-        }
+        private static float ResolveLabelGapLocal(MenuKind kind, MenuState state) =>
+            LabelGapPx(kind) * state.GapUnitsPerPx;
 
         private static LabelBounds MeasureLabelBounds(RectTransform buttonRoot, RectTransform measureSpace)
         {
@@ -429,10 +409,9 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             DestroyClones(state);
             state.Entries.Clear();
             state.EntriesById.Clear();
-            state.LabelGapLocal = 0f;
+            state.GapUnitsPerPx = 0f;
             state.Menu = null;
             state.Captured = false;
-            state.Mirrored = false;
         }
 
         private sealed class MenuState
@@ -445,12 +424,10 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 
             internal List<GameObject> Clones { get; } = [];
 
-            /// <summary>Captured average empty space between vanilla labels (local units).</summary>
-            internal float LabelGapLocal;
+            /// <summary>Local canvas units per spacing pixel, from capture-time vanilla layout.</summary>
+            internal float GapUnitsPerPx;
 
             internal bool Captured;
-
-            internal bool Mirrored;
         }
 
         /// <summary>
