@@ -173,6 +173,8 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
+        internal static MelonPreferences_Entry<string> AcknowledgedMismatchGameVersion { get; private set; } = null!;
+
         public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSaveSlots { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
@@ -214,6 +216,12 @@ namespace MimesisPlayerEnhancement
                 false,
                 "Enable Debug Logging",
                 "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting.");
+
+            AcknowledgedMismatchGameVersion = CreateHiddenTrackedEntry(MainCategory,
+                "AcknowledgedMismatchGameVersion",
+                string.Empty,
+                "Acknowledged Mismatch Game Version",
+                "Detected game version the user acknowledged for a version mismatch warning.");
 
             MorePlayersConfig.CreateEntries();
             MoreVoicesConfig.CreateEntries();
@@ -350,6 +358,19 @@ namespace MimesisPlayerEnhancement
             MelonPreferences_Entry<T> entry = category.CreateEntry(
                 identifier, defaultValue, displayName, description);
             ModConfigRegistry.TrackEntry(entry);
+            return entry;
+        }
+
+        internal static MelonPreferences_Entry<T> CreateHiddenTrackedEntry<T>(
+            MelonPreferences_Category category,
+            string identifier,
+            T defaultValue,
+            string displayName,
+            string description)
+        {
+            MelonPreferences_Entry<T> entry = CreateTrackedEntry(
+                category, identifier, defaultValue, displayName, description);
+            entry.IsHidden = true;
             return entry;
         }
 

@@ -19,6 +19,12 @@ namespace MimesisPlayerEnhancement
             try
             {
                 ModConfig.Initialize(LoggerInstance);
+                if (!GameVersionChecker.TryAllowLoad())
+                {
+                    throw new InvalidOperationException(
+                        $"Mimesis Player Enhancement refused to load — game version mismatch (expected {VersionInfo.GameVersion}).");
+                }
+
                 ModL10n.Initialize();
 
                 _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
