@@ -18,6 +18,21 @@ import { isLobbyRoute } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
 import { isValidSteamId, OFFLINE_ROUTES, parseHash } from '../utils';
 
+const BLIND_MODE_STORAGE_KEY = 'playerBlindModeEnabled';
+const LEGACY_BLIND_MODE_STORAGE_KEY = 'playerBlindModeUserEnabled';
+
+function readStoredBlindModePreference(): boolean {
+  const stored =
+    localStorage.getItem(BLIND_MODE_STORAGE_KEY)
+    ?? localStorage.getItem(LEGACY_BLIND_MODE_STORAGE_KEY);
+  if (stored === null) return true;
+  return stored !== 'false';
+}
+
+function writeStoredBlindModePreference(enabled: boolean) {
+  localStorage.setItem(BLIND_MODE_STORAGE_KEY, String(enabled));
+}
+
 function createInitialStatus(): StatusDto {
   return {
     isConnected: false,
@@ -81,8 +96,7 @@ class DashboardStore {
 
   sidebarOpen = $state(false);
 
-  playerBlindModeUserEnabled = $state(true);
-  playerBlindModeAutoSuspended = $state(false);
+  playerBlindModeEnabled = $state(readStoredBlindModePreference());
   darkMode = $state(localStorage.getItem('darkMode') !== 'false');
 
   private eventSource: EventSource | null = null;
@@ -91,16 +105,17 @@ class DashboardStore {
   private lastRoute = '';
   private lastSettingsSubRoute = '';
   private lastSteamId: string | null = null;
-  private localPlayerWasAlive: boolean | null = null;
   private lastSessionScene = '';
   private globalSettingsPromise: Promise<void> | null = null;
   private saveSettingsPromise: Promise<void> | null = null;
   private saveProfilePromise: Promise<void> | null = null;
 
   get playerBlindMode() {
-    return this.playerBlindModeUserEnabled
-      && isBlindModeScene(this.status.sessionScene)
-      && !this.playerBlindModeAutoSuspended;
+    if (!this.playerBlindModeEnabled) return false;
+    if (!isBlindModeScene(this.status.sessionScene)) return false;
+    const local = this.getLocalPlayer();
+    if (local && !local.isAlive) return false;
+    return true;
   }
 
   get isGameRoute() {
@@ -118,6 +133,7 @@ class DashboardStore {
     this.settingsSubRoute = settingsSubRoute;
     this.steamId = steamId;
     window.addEventListener('hashchange', () => this.onHashChange());
+    window.addEventListener('storage', (ev) => this.onStorageChange(ev));
 
     Api.getStatus()
       .then(async (status) => {
@@ -225,48 +241,32 @@ class DashboardStore {
   }
 
   async togglePlayerBlindMode() {
-    this.playerBlindModeUserEnabled = !this.playerBlindModeUserEnabled;
-    this.playerBlindModeAutoSuspended = false;
-    const local = this.getLocalPlayer();
-    if (local && !local.isAlive && this.playerBlindModeUserEnabled) {
-      this.playerBlindModeAutoSuspended = true;
-    }
+    this.playerBlindModeEnabled = !this.playerBlindModeEnabled;
+    writeStoredBlindModePreference(this.playerBlindModeEnabled);
     try {
-      await Api.setBlindMode(this.playerBlindMode);
+      await Api.setBlindMode(this.playerBlindModeEnabled);
     } catch {
       /* local fallback */
     }
     this.applyMinimapFilter(true);
-    if (this.playerBlindMode && this.hasActivePlayerCheats()) {
-      Api.disableAllPlayerCheats().catch((e) => this.showToast(e.message));
-    }
   }
 
   getLocalPlayer() {
     return this.players.find((p) => p.isLocal && p.playerUid);
   }
 
-  hasActivePlayerCheats() {
-    return this.players.some((p) => p.godMode || p.noClip);
+  private onStorageChange(ev: StorageEvent) {
+    if (ev.key !== BLIND_MODE_STORAGE_KEY && ev.key !== LEGACY_BLIND_MODE_STORAGE_KEY) return;
+    if (ev.newValue === null) return;
+    this.playerBlindModeEnabled = ev.newValue !== 'false';
+    this.applyMinimapFilter(true);
   }
 
-  syncBlindModeForLocalPlayer() {
-    const local = this.getLocalPlayer();
-    if (!local) return;
-    const isAlive = local.isAlive;
-    const wasAlive = this.localPlayerWasAlive;
-    if (wasAlive === null) {
-      if (!isAlive && this.playerBlindModeUserEnabled) this.playerBlindModeAutoSuspended = true;
-      this.localPlayerWasAlive = isAlive;
-    } else if (wasAlive && !isAlive) {
-      if (this.playerBlindModeUserEnabled) this.playerBlindModeAutoSuspended = true;
-      this.localPlayerWasAlive = isAlive;
-    } else if (!wasAlive && isAlive) {
-      if (this.playerBlindModeUserEnabled && this.playerBlindModeAutoSuspended) {
-        this.playerBlindModeAutoSuspended = false;
-      }
-      this.localPlayerWasAlive = isAlive;
-    }
+  private syncBlindModeFromServer(status: StatusDto) {
+    if (typeof status.blindModeEnabled !== 'boolean') return;
+    if (this.playerBlindModeEnabled === status.blindModeEnabled) return;
+    this.playerBlindModeEnabled = status.blindModeEnabled;
+    writeStoredBlindModePreference(status.blindModeEnabled);
     this.applyMinimapFilter(true);
   }
 
@@ -287,15 +287,12 @@ class DashboardStore {
       if (payload.minimap != null) this.minimapRaw = payload.minimap;
     }
     if (this.status.isConnected) {
-      this.syncBlindModeForLocalPlayer();
-      if (this.playerBlindMode && this.hasActivePlayerCheats()) {
-        Api.disableAllPlayerCheats().catch(() => {});
-      }
+      this.syncBlindModeFromServer(this.status);
       const sessionScene = this.status.sessionScene ?? '';
       if (sessionScene !== previousSessionScene) {
         this.lastSessionScene = sessionScene;
-        this.applyMinimapFilter(true);
       }
+      this.applyMinimapFilter(true);
     }
     this.apiError = false;
     this.setConnectedMode();
@@ -308,7 +305,6 @@ class DashboardStore {
       this.quickPresets = [];
       this.minimapRaw = null;
       this.minimap = null;
-      this.localPlayerWasAlive = null;
       this.lastSessionScene = '';
     } else if (this.status.isConnected && !wasConnected) {
       void this.prefetchDashboardData();

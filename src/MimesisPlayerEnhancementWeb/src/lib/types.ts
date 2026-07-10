@@ -10,6 +10,7 @@ export interface StatusDto {
   joinAnytimeRoutingCount: number;
   locale: string;
   sessionScene?: string;
+  blindModeEnabled?: boolean;
 }
 
 export interface SessionStatsDto {

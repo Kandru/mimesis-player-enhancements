@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int JoinAnytimeRoutingCount;
         public string Locale = "en";
         public string SessionScene = "";
+        public bool BlindModeEnabled;
     }
 
     internal sealed class WebDashboardSessionStatsDto

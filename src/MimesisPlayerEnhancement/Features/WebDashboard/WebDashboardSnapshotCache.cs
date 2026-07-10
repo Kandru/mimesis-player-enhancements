@@ -217,6 +217,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         : 0,
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
                     SessionScene = WebDashboardSessionScene.Resolve(JoinAnytimeHub.GetPdata()?.main),
+                    BlindModeEnabled = WebDashboardMinimapBlindMode.Enabled,
                 },
             };
 
@@ -412,6 +413,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append('|')
                 .Append(status.SessionScene)
                 .Append('|')
+                .Append(status.BlindModeEnabled ? '1' : '0')
+                .Append('|')
                 .Append(livePlayers.Count)
                 .Append('|');
 
@@ -452,6 +455,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append(status.LobbyName)
                 .Append('|')
                 .Append(status.SessionScene)
+                .Append('|')
+                .Append(status.BlindModeEnabled ? '1' : '0')
                 .Append('|')
                 .Append(status.ConfigVersion)
                 .Append('|')
@@ -537,7 +542,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 .Append(':')
                 .Append(player.ActivityState)
                 .Append(':')
-                .Append(player.ActivityDetail);
+                .Append(player.ActivityDetail)
+                .Append(':')
+                .Append(player.GodMode ? '1' : '0')
+                .Append(':')
+                .Append(player.NoClip ? '1' : '0');
 
             WebDashboardSessionStatsDto? session = player.CurrentSession;
             if (session != null)

@@ -108,7 +108,7 @@
     >
       <span class="header-blind-label">{t('dashboard.blind_mode')}</span>
       <Toggle
-        checked={dashboard.playerBlindModeUserEnabled}
+        checked={dashboard.playerBlindModeEnabled}
         disabled={blindModeDisabled}
         label={t('dashboard.blind_mode')}
         onchange={() => dashboard.togglePlayerBlindMode()}

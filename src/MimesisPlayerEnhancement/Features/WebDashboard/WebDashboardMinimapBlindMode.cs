@@ -13,7 +13,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void SetEnabled(bool enabled)
         {
+            bool wasEnabled = _enabled;
             _enabled = enabled;
+            if (enabled && !wasEnabled)
+            {
+                WebDashboardHostCheatsRuntime.DisableAll("blind mode enabled");
+            }
+
             WebDashboardSnapshotCache.MarkDirty();
             WebDashboardSseHub.NotifyMinimapChanged();
         }

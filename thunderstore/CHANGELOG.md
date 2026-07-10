@@ -3,6 +3,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.8
 - switched the web-dashboard to Svelte for a single-page application (looks and feels way better)
 - when the game gets updates this mod will be disabled automatically to avoid incompatibilities or bugs/crashes until the user updates it (when any update is available)
+- draft: fix godmode/noclip being auto-disabled by dashboard snapshots and multi-tab blind-mode desync
 - draft: probably a fix for late-joiners not always joining the moving tram
 - draft: the dead player UI should sort the players by alphabet but living people first
 - draft: new feature to disable player collisions (each player needs the mod for it to work)

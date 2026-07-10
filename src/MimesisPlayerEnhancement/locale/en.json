@@ -759,6 +759,7 @@
     "host_player_unavailable": "Host player is not available.",
     "host_cheats_require_alive": "Host cheats require an alive host player.",
     "player_cheats_require_alive": "Player cheats require an alive in-game player.",
+    "player_cheats_require_blind_off": "Turn off blind mode before enabling player cheats.",
     "player_godmode_enabled": "Godmode enabled.",
     "player_godmode_disabled": "Godmode disabled.",
     "player_noclip_enabled": "Noclip enabled.",

@@ -37,6 +37,7 @@
   let pageSize = $state(10);
   let page = $state(0);
   let confirmOpen = $state(false);
+  let cheatToggleInFlight = $state<string | null>(null);
   let confirmLoading = $state(false);
   let confirmTitle = $state('');
   let confirmMessage = $state('');
@@ -211,6 +212,9 @@
   }
 
   async function toggleCheat(player: PlayerDto, action: 'godmode' | 'noclip') {
+    const key = `${player.steamId}/${action}`;
+    if (cheatToggleInFlight) return;
+    cheatToggleInFlight = key;
     try {
       const res = await Api.postAction(String(player.steamId), action);
       dashboard.showToast(res.message || t('api.done'));
@@ -218,7 +222,13 @@
       if (typeof res.noClip === 'boolean') player.noClip = res.noClip;
     } catch (e) {
       dashboard.showToast(e instanceof Error ? e.message : String(e));
+    } finally {
+      cheatToggleInFlight = null;
     }
+  }
+
+  function cheatToggleBusy(player: PlayerDto, action: 'godmode' | 'noclip') {
+    return cheatToggleInFlight === `${player.steamId}/${action}`;
   }
 
   function requestDeletePlayerData(player: PlayerDto) {
@@ -423,6 +433,7 @@
                       type="button"
                       class="btn btn-secondary btn-xs {player.godMode ? 'btn-active' : ''}"
                       title={t('dashboard.god_mode_title')}
+                      disabled={cheatToggleBusy(player, 'godmode')}
                       onclick={() => toggleCheat(player, 'godmode')}
                     >
                       {t('dashboard.god_mode')} {player.godMode ? t('dashboard.on') : t('dashboard.off')}
@@ -431,6 +442,7 @@
                       type="button"
                       class="btn btn-secondary btn-xs {player.noClip ? 'btn-active' : ''}"
                       title={t('dashboard.noclip_title')}
+                      disabled={cheatToggleBusy(player, 'noclip')}
                       onclick={() => toggleCheat(player, 'noclip')}
                     >
                       {t('dashboard.noclip')} {player.noClip ? t('dashboard.on') : t('dashboard.off')}

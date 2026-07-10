@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool TryToggleGodMode(VPlayer player, out bool enabled, out string? errorMessage)
         {
             errorMessage = null;
-            bool currentlyEnabled = IsGodModeActive(player);
+            bool currentlyEnabled = IsGodModeEnabled(player.UID);
             if (!TrySetGodMode(player, !currentlyEnabled, out errorMessage))
             {
                 enabled = currentlyEnabled;
@@ -77,7 +77,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool TryToggleNoClip(VPlayer player, out bool enabled, out string? errorMessage)
         {
             errorMessage = null;
-            bool currentlyEnabled = IsNoClipActive(player);
+            bool currentlyEnabled = IsNoClipEnabled(player.UID);
             if (!TrySetNoClip(player, !currentlyEnabled, out errorMessage))
             {
                 enabled = currentlyEnabled;
@@ -98,6 +98,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (enabled)
             {
+                if (WebDashboardMinimapBlindMode.Enabled)
+                {
+                    errorMessage = WebDashboardL10n.Get("api.player_cheats_require_blind_off");
+                    return false;
+                }
+
                 GodModePlayerUids.Add(player.UID);
             }
             else
@@ -121,6 +127,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (enabled)
             {
+                if (WebDashboardMinimapBlindMode.Enabled)
+                {
+                    errorMessage = WebDashboardL10n.Get("api.player_cheats_require_blind_off");
+                    return false;
+                }
+
                 NoClipPlayerUids.Add(player.UID);
                 if (IsLocalPlayer(player))
                 {
@@ -181,6 +193,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             PruneInactivePlayers();
+            if (!_roomTransitionSuspend)
+            {
+                ReapplyConfiguredCheats();
+            }
         }
 
         internal static void OnDeinitialize()
