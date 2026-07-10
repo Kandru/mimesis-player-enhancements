@@ -139,6 +139,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 ThreadPool.QueueUserWorkItem(_ => WebDashboardSettingsCache.WarmGlobal());
 
+                ManagementMenuButton.SyncVisibility(dashboardRunning: true, _listenUrl);
+
                 ModLog.Info(Feature, $"Listening at {_listenUrl.TrimEnd('/')}");
             }
             catch (Exception ex)
@@ -151,6 +153,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void Stop()
         {
             _running = false;
+            ManagementMenuButton.SyncVisibility(dashboardRunning: false, "");
             WebDashboardSseHub.Shutdown();
             HttpListener? listener = _listener;
             _listener = null;

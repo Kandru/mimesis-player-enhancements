@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Ui.MenuMirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -72,7 +73,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             ConfigureExtendedMainMenuButtons();
             ApplyFunnyHostButtonLabel();
-            HideLoadButton();
+            HideLoadButtonViaMirror();
         }
 
         internal static void ApplyVanillaMode()
@@ -93,10 +94,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             {
                 VanillaMainMenuWiring.Restore(_mainMenu, _mainMenuUi);
             }
-            else if (_mainMenuUi != null)
-            {
-                _mainMenuUi.UE_LoadButton.gameObject.SetActive(true);
-            }
+
+            // The mirror restores the Load button and collapses the column back to vanilla.
+            MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
         }
 
         internal static void TryHandleHostButtonClick(UIPrefab_MainMenu mainMenuUi)
@@ -277,12 +277,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 UIPrefab_MainMenu.UEID_LoadButton);
         }
 
-        private static void HideLoadButton()
+        private static void HideLoadButtonViaMirror()
         {
-            if (_mainMenuUi?.UE_LoadButton != null)
-            {
-                _mainMenuUi.UE_LoadButton.gameObject.SetActive(false);
-            }
+            MenuMirrorRegistry.SetCustomization(
+                MenuKind.MainMenu,
+                Feature,
+                new MenuCustomization().HideVanilla(UIPrefab_MainMenu.UEID_LoadButton));
         }
 
         private static void RestoreMainMenuRoot()

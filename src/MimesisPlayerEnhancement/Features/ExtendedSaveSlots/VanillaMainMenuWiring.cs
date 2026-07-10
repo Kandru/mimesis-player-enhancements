@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 mainMenuUi.UE_LoadButton.gameObject,
                 SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_LOAD_TRAM"));
 
-            mainMenuUi.UE_LoadButton.gameObject.SetActive(true);
+            // Load button visibility/position is restored by the menu mirror.
         }
 
         private static void ApplyButtonLabel(GameObject buttonRoot, string label)

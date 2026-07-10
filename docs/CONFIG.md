@@ -402,6 +402,8 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 **Host process.** Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). On by default — set `EnableWebDashboard = false` in the cfg file to turn it off. Available whenever the game is running with the web dashboard enabled (not only during an active session).
 
+**Management menu button:** While the dashboard server is running, a yellow **Management** button appears on the main menu and the ESC menu (between Settings and Quit). Clicking it opens the dashboard in the Steam overlay browser, falling back to the system browser when the overlay is unavailable. The button disappears automatically when `EnableWebDashboard` is turned off — no separate toggle.
+
 **Dashboard UI:** The Web Dashboard section is **not shown** in the dashboard settings UI, and the dashboard API rejects writes to `EnableWebDashboard`, listen address, and port. Edit those keys in `MimesisPlayerEnhancement.cfg` only — this prevents disabling the dashboard from inside the dashboard itself.
 
 **Views:**

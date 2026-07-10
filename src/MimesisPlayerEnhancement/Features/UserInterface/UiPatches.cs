@@ -2,6 +2,7 @@ using System.Linq;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList;
+using MimesisPlayerEnhancement.Ui.MenuMirror;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -16,7 +17,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNamespacePatchTypes(typeof(UiPatches))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ExtendedSaveSlotsPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ModVersionDisplayPatches)));
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ModVersionDisplayPatches)))
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(MenuMirrorPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
