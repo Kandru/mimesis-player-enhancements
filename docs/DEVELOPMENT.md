@@ -102,7 +102,7 @@ Reference: `Features/ExtendedSaveSlots/` (save slot picker).
 
 ## Localization
 
-User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale JSON under `Assets/Locale/` (e.g. `en.json`, `de.json`), loaded at startup. Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
+User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale source JSON under `locale/` (e.g. `en.json`, `de.json`); `./scripts/build.sh` copies them into `Assets/Locale/` before embed. Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
 
 ## Per-save sidecars
 

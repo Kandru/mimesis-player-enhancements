@@ -7,7 +7,7 @@ src/**/bin/
 src/**/obj/
 src/MimesisPlayerEnhancementWeb/node_modules/
 src/MimesisPlayerEnhancementWeb/dist/
-src/MimesisPlayerEnhancement/Assets/WebDashboard/assets/
+src/MimesisPlayerEnhancement/Assets/
 deps/MimicAPI/
 deps/nuget/
 deps/reference/Managed/

@@ -30,6 +30,11 @@ if [[ "${SKIP_WEB_BUILD:-false}" != "true" ]]; then
   "$ROOT/scripts/build-webdashboard.sh"
 fi
 
+LOCALE_SRC="$ROOT/src/MimesisPlayerEnhancement/locale"
+LOCALE_OUT="$ROOT/src/MimesisPlayerEnhancement/Assets/Locale"
+mkdir -p "$LOCALE_OUT"
+cp "$LOCALE_SRC"/*.json "$LOCALE_OUT/"
+
 if [[ "${SKIP_FORMAT:-false}" != "true" ]]; then
   "$ROOT/scripts/format-code.sh"
 fi
