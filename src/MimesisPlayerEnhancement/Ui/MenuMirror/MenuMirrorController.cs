@@ -6,19 +6,21 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 {
     /// <summary>
     /// Rebuilds a vanilla menu's button column whenever features customize it.
-    /// Buttons use fixed RectTransform anchors (uGUI, not UI Toolkit flex). Layout
-    /// compacts by label bounds using each menu's own captured vanilla spacing.
+    /// Spacing is tuned via <see cref="MainMenuLabelGapPx"/> and
+    /// <see cref="InGameMenuLabelGapPx"/>.
     /// </summary>
     internal static class MenuMirrorController
     {
         private const string Feature = "MenuMirror";
 
-        /// <summary>
-        /// Fallback label gap when capture cannot measure vanilla spacing (screen pixels).
-        /// Main menu screen-space canvases resolve this correctly; in-game menus use the
-        /// captured per-menu gap instead.
-        /// </summary>
-        private const float FallbackLabelGapPx = 11f;
+        /// <summary>Empty space between stacked menu labels. ~10 matches vanilla spacing.</summary>
+        private const float MainMenuLabelGapPx = 10f;
+
+        /// <summary>Empty space between stacked menu labels. ~10 matches vanilla spacing.</summary>
+        private const float InGameMenuLabelGapPx = 10f;
+
+        /// <summary>Reference pixel gap that captured vanilla spacing is normalized against.</summary>
+        private const float VanillaReferenceGapPx = 11f;
 
         private static readonly string[] MainMenuColumnIds =
         [
@@ -214,7 +216,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             }
 
             string[] columnIds = kind == MenuKind.MainMenu ? MainMenuColumnIds : InGameMenuColumnIds;
-            LayoutCompactColumn(state, columnIds, hiddenIds, customs);
+            LayoutCompactColumn(kind, state, columnIds, hiddenIds, customs);
             state.Mirrored = true;
             ModLog.Info(
                 Feature,
@@ -222,6 +224,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         }
 
         private static void LayoutCompactColumn(
+            MenuKind kind,
             MenuState state,
             string[] columnIds,
             HashSet<string> hiddenIds,
@@ -270,7 +273,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 row.Measure(measureSpace);
             }
 
-            float gapLocal = ResolveLabelGapLocal(state, measureSpace);
+            float gapLocal = ResolveLabelGapLocal(kind, state, measureSpace);
 
             // Pin the top row at its captured vanilla anchor — never move the column origin.
             rows[0].Rect.anchoredPosition = rows[0].CapturedAnchoredPosition;
@@ -322,14 +325,18 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             return samples > 0 ? totalGap / samples : 0f;
         }
 
-        private static float ResolveLabelGapLocal(MenuState state, RectTransform measureSpace)
+        private static float ResolveLabelGapLocal(MenuKind kind, MenuState state, RectTransform measureSpace)
         {
+            float labelGapPx = kind == MenuKind.MainMenu ? MainMenuLabelGapPx : InGameMenuLabelGapPx;
+
+            // Scale the requested pixel gap through this menu's captured vanilla spacing
+            // so the same constant works on both canvas setups.
             if (state.LabelGapLocal > 0.0001f)
             {
-                return state.LabelGapLocal;
+                return state.LabelGapLocal * (labelGapPx / VanillaReferenceGapPx);
             }
 
-            return GapLocalForScreenPixels(measureSpace, FallbackLabelGapPx);
+            return GapLocalForScreenPixels(measureSpace, labelGapPx);
         }
 
         /// <summary>
