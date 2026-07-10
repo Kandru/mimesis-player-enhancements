@@ -6,16 +6,19 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
 {
     /// <summary>
     /// Rebuilds a vanilla menu's button column whenever features customize it.
-    /// Buttons use fixed RectTransform anchors (uGUI, not UI Toolkit flex). The mirror
-    /// only adjusts anchored Y so hidden rows leave no gap; anchors/pivots/sizes are
-    /// never touched.
+    /// Buttons use fixed RectTransform anchors (uGUI, not UI Toolkit flex). Layout
+    /// compacts by label bounds using each menu's own captured vanilla spacing.
     /// </summary>
     internal static class MenuMirrorController
     {
         private const string Feature = "MenuMirror";
 
-        /// <summary>Empty vertical space between stacked menu button labels (screen pixels).</summary>
-        private const float ButtonVisualGapPx = 11f;
+        /// <summary>
+        /// Fallback label gap when capture cannot measure vanilla spacing (screen pixels).
+        /// Main menu screen-space canvases resolve this correctly; in-game menus use the
+        /// captured per-menu gap instead.
+        /// </summary>
+        private const float FallbackLabelGapPx = 11f;
 
         private static readonly string[] MainMenuColumnIds =
         [
@@ -177,8 +180,11 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 return;
             }
 
+            state.LabelGapLocal = MeasureVanillaLabelGap(state);
             state.Captured = true;
-            ModLog.Debug(Feature, $"{kind} captured — {state.Entries.Count} buttons");
+            ModLog.Debug(
+                Feature,
+                $"{kind} captured — {state.Entries.Count} buttons, labelGapLocal={state.LabelGapLocal:F2}");
         }
 
         private static void Rebuild(MenuKind kind, MenuState state)
@@ -264,7 +270,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
                 row.Measure(measureSpace);
             }
 
-            float gapLocal = GapLocalForScreenPixels(measureSpace, ButtonVisualGapPx);
+            float gapLocal = ResolveLabelGapLocal(state, measureSpace);
 
             // Pin the top row at its captured vanilla anchor — never move the column origin.
             rows[0].Rect.anchoredPosition = rows[0].CapturedAnchoredPosition;
@@ -283,17 +289,80 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         }
 
         /// <summary>
-        /// Converts a screen-pixel gap into the measuring space's local units, computed
-        /// once for the whole column so every row uses the exact same gap.
+        /// Averages the empty space between adjacent vanilla labels at capture time.
+        /// Each menu stores its own value so layout matches that menu's canvas scale.
+        /// </summary>
+        private static float MeasureVanillaLabelGap(MenuState state)
+        {
+            if (state.Entries.Count < 2)
+            {
+                return 0f;
+            }
+
+            RectTransform? measureSpace = state.Entries[0].Rect.parent as RectTransform;
+            if (measureSpace == null)
+            {
+                return 0f;
+            }
+
+            float totalGap = 0f;
+            int samples = 0;
+            for (int index = 0; index < state.Entries.Count - 1; index++)
+            {
+                LabelBounds upper = MeasureLabelBounds(state.Entries[index].Rect, measureSpace);
+                LabelBounds lower = MeasureLabelBounds(state.Entries[index + 1].Rect, measureSpace);
+                float gap = upper.BottomLocal - lower.TopLocal;
+                if (gap > 0.0001f)
+                {
+                    totalGap += gap;
+                    samples++;
+                }
+            }
+
+            return samples > 0 ? totalGap / samples : 0f;
+        }
+
+        private static float ResolveLabelGapLocal(MenuState state, RectTransform measureSpace)
+        {
+            if (state.LabelGapLocal > 0.0001f)
+            {
+                return state.LabelGapLocal;
+            }
+
+            return GapLocalForScreenPixels(measureSpace, FallbackLabelGapPx);
+        }
+
+        /// <summary>
+        /// Converts a screen-pixel gap into the measuring space's local units. Used as a
+        /// fallback when vanilla capture did not produce a measurable label gap.
         /// </summary>
         private static float GapLocalForScreenPixels(RectTransform measureSpace, float screenPixels)
         {
-            // Screen-space canvases render one world unit per screen pixel, so a
-            // world-space vector of the requested length converts directly into the
-            // measuring space via the inverse transform.
             float gapLocal = Mathf.Abs(
                 measureSpace.InverseTransformVector(new Vector3(0f, screenPixels, 0f)).y);
             return gapLocal > 0.0001f ? gapLocal : screenPixels;
+        }
+
+        private static LabelBounds MeasureLabelBounds(RectTransform buttonRoot, RectTransform measureSpace)
+        {
+            RectTransform layoutRect = ResolveLayoutRect(buttonRoot);
+            Vector3[] corners = new Vector3[4];
+            layoutRect.GetWorldCorners(corners);
+            float bottom = measureSpace.InverseTransformPoint(corners[0]).y;
+            float top = measureSpace.InverseTransformPoint(corners[1]).y;
+            float halfHeight = Mathf.Abs(top - bottom) * 0.5f;
+            return new LabelBounds((top + bottom) * 0.5f, halfHeight);
+        }
+
+        private static RectTransform ResolveLayoutRect(RectTransform buttonRoot)
+        {
+            Component? label = ModUiText.FindTextComponent(buttonRoot.gameObject);
+            if (label != null && label.transform is RectTransform labelRect)
+            {
+                return labelRect;
+            }
+
+            return buttonRoot;
         }
 
         private static void InsertCustomRow(MenuState state, List<ColumnRow> rows, CustomMenuButton custom)
@@ -353,6 +422,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             DestroyClones(state);
             state.Entries.Clear();
             state.EntriesById.Clear();
+            state.LabelGapLocal = 0f;
             state.Menu = null;
             state.Captured = false;
             state.Mirrored = false;
@@ -367,6 +437,9 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             internal Dictionary<string, VanillaEntry> EntriesById { get; } = new();
 
             internal List<GameObject> Clones { get; } = [];
+
+            /// <summary>Captured average empty space between vanilla labels (local units).</summary>
+            internal float LabelGapLocal;
 
             internal bool Captured;
 
@@ -425,26 +498,21 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             internal void Measure(RectTransform measureSpace)
             {
                 MeasuredAnchoredY = Rect.anchoredPosition.y;
-
-                RectTransform layoutRect = ResolveLayoutRect(Rect);
-                Vector3[] corners = new Vector3[4];
-                layoutRect.GetWorldCorners(corners);
-                float bottom = measureSpace.InverseTransformPoint(corners[0]).y;
-                float top = measureSpace.InverseTransformPoint(corners[1]).y;
-                LabelCenterLocalY = (top + bottom) * 0.5f;
-                LabelHalfHeightLocal = Mathf.Abs(top - bottom) * 0.5f;
+                LabelBounds bounds = MeasureLabelBounds(Rect, measureSpace);
+                LabelCenterLocalY = bounds.CenterLocalY;
+                LabelHalfHeightLocal = bounds.HalfHeightLocal;
             }
+        }
 
-            private static RectTransform ResolveLayoutRect(RectTransform buttonRoot)
-            {
-                Component? label = ModUiText.FindTextComponent(buttonRoot.gameObject);
-                if (label != null && label.transform is RectTransform labelRect)
-                {
-                    return labelRect;
-                }
+        private readonly struct LabelBounds(float centerLocalY, float halfHeightLocal)
+        {
+            internal float CenterLocalY { get; } = centerLocalY;
 
-                return buttonRoot;
-            }
+            internal float HalfHeightLocal { get; } = halfHeightLocal;
+
+            internal float BottomLocal => CenterLocalY - HalfHeightLocal;
+
+            internal float TopLocal => CenterLocalY + HalfHeightLocal;
         }
     }
 }

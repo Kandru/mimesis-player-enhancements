@@ -36,14 +36,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             foreach (MenuKind kind in new[] { MenuKind.MainMenu, MenuKind.InGameMenu })
             {
+                string settingsButtonId = kind == MenuKind.MainMenu
+                    ? UIPrefab_MainMenu.UEID_SettingButton
+                    : UIPrefab_InGameMenu.UEID_SettingButton;
+
                 MenuMirrorRegistry.SetCustomization(
                     kind,
                     Feature,
                     new MenuCustomization().AddCustom(new CustomMenuButton(ButtonId, "Management", () => OpenDashboard(url))
                     {
                         LabelColor = ManagementYellow,
-                        // Between Settings and Quit on both menus.
-                        AfterButtonId = UIPrefab_MainMenu.UEID_SettingButton,
+                        AfterButtonId = settingsButtonId,
                     }));
             }
 
