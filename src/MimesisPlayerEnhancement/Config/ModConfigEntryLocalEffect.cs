@@ -19,6 +19,11 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "ModToastDurationSeconds"),
                 (UiConfig.SectionId, "EnableExtendedSaveSlots"),
                 (UiConfig.SectionId, "EnableExtendedSpectatorPlayerList"),
+                (UiConfig.SectionId, "EnableWorldHealthBars"),
+                (UiConfig.SectionId, "WorldHealthBarDurationSeconds"),
+                (UiConfig.SectionId, "EnableFloatingDamageNumbers"),
+                (UiConfig.SectionId, "FloatingDamageDurationSeconds"),
+                (UiConfig.SectionId, "EnableFloatingDetoxIndicators"),
                 (PlayerTuningSectionId, "DisablePlayerCollision"),
             };
 

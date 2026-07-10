@@ -35,7 +35,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | Section | Feature | Scope |
 |---------|---------|-------|
 | [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
-| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list | Local UI |
+| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, world health bars, damage numbers | Local UI |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
 | [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
@@ -59,7 +59,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap, Economy scrap/round-goal on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls |
 | **Event-triggered** | Economy shop prices (maintenance room visit; also refreshed when Economy config changes while a maintenance room is active) |
-| **Global UI** | Extended save picker, spectator list layout, toast duration |
+| **Global UI** | Extended save picker, spectator list layout, toast duration, world health bars, floating damage numbers |
 
 ---
 
@@ -80,6 +80,11 @@ Mod-wide settings that are not owned by a single feature.
 | `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
 | `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
+| `EnableWorldHealthBars` | bool | `true` | — | Show a world-space health bar above other players, mimics, and monsters for a few seconds after they take damage. Never shown on your own avatar. |
+| `WorldHealthBarDurationSeconds` | float | `4.0` | `1`–`5` | How long the world health bar stays visible after an entity takes damage. |
+| `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
+| `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage and detox indicators remain visible. |
+| `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when any player drinks detox juice, including yourself. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 
@@ -450,6 +455,11 @@ EnableDebugLogging = false
 ModToastDurationSeconds = 5.0
 EnableExtendedSaveSlots = true
 EnableExtendedSpectatorPlayerList = true
+EnableWorldHealthBars = true
+WorldHealthBarDurationSeconds = 4.0
+EnableFloatingDamageNumbers = true
+FloatingDamageDurationSeconds = 2.0
+EnableFloatingDetoxIndicators = true
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false

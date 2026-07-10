@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -13,6 +14,7 @@ namespace MimesisPlayerEnhancement
         private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
         private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
+        private const string UiSectionId = UiConfig.SectionId;
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
             new(EntryKeyComparer.Instance)
@@ -222,6 +224,21 @@ namespace MimesisPlayerEnhancement
                     ["WeatherCycleMaxDelaySeconds"] = "weatherCycle",
                     ["StartTimePreset"] = "startTime",
                     ["EnableRealtimeTramClock"] = "startTime",
+                };
+            }
+
+            if (sectionId == UiSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["ModToastDurationSeconds"] = "modToasts",
+                    ["EnableExtendedSaveSlots"] = "extendedSaveSlots",
+                    ["EnableExtendedSpectatorPlayerList"] = "extendedSpectatorList",
+                    ["EnableWorldHealthBars"] = "worldHealthBars",
+                    ["WorldHealthBarDurationSeconds"] = "worldHealthBars",
+                    ["EnableFloatingDamageNumbers"] = "floatingDamage",
+                    ["FloatingDamageDurationSeconds"] = "floatingDamage",
+                    ["EnableFloatingDetoxIndicators"] = "floatingDetox",
                 };
             }
 

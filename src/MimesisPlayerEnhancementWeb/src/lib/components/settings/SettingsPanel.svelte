@@ -10,6 +10,7 @@
     entryEditable,
     entryVisible,
     featureEnabled,
+    groupConfigEntries,
     matchesSettingsQuery,
     sectionHasVisibleEntries,
   } from '$lib/settings';
@@ -38,6 +39,11 @@
     if (sections.length === 0) return null;
     const selected = dashboard.selectedSettingsSectionId;
     return sections.find((s) => s.id === selected) ?? sections[0];
+  });
+
+  const activeEntryGroups = $derived.by(() => {
+    if (!activeSection || !settings) return [];
+    return groupConfigEntries(activeSection, settings, query);
   });
 
   $effect(() => {
@@ -159,24 +165,29 @@
                   onsave={(value) => saveEntry(activeSection.id, activeSection.featureToggle!.key, value)}
                 />
               {/if}
-              {#each activeSection.entries as entry (entry.key)}
-                {#if entryVisible(activeSection, entry, settings) && matchesSettingsQuery(entry, activeSection.title, query)}
-                  <SettingsEntry
-                    {entry}
-                    section={activeSection}
-                    {settings}
-                    {scope}
-                    editable={entryEditable(
-                      activeSection,
-                      entry,
-                      settings,
-                      scope,
-                      dashboard.status.isHost,
-                      dashboard.status.isConnected,
-                    )}
-                    onsave={(value) => saveEntry(activeSection.id, entry.key, value)}
-                  />
-                {/if}
+              {#each activeEntryGroups as group (group.id || group.entries[0]?.key)}
+                <div class="settings-entry-group">
+                  {#if group.label}
+                    <h4 class="settings-entry-group-title">{group.label}</h4>
+                  {/if}
+                  {#each group.entries as entry (entry.key)}
+                    <SettingsEntry
+                      {entry}
+                      section={activeSection}
+                      {settings}
+                      {scope}
+                      editable={entryEditable(
+                        activeSection,
+                        entry,
+                        settings,
+                        scope,
+                        dashboard.status.isHost,
+                        dashboard.status.isConnected,
+                      )}
+                      onsave={(value) => saveEntry(activeSection.id, entry.key, value)}
+                    />
+                  {/each}
+                </div>
               {/each}
             </div>
           </section>

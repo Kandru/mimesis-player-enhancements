@@ -1,4 +1,11 @@
 import type { ConfigEntryDto, ConfigSectionDto, SettingsDto } from './types';
+import { t } from './i18n';
+
+export interface ConfigEntryGroup {
+  id: string;
+  label: string;
+  entries: ConfigEntryDto[];
+}
 
 export function settingsHaystack(entry: ConfigEntryDto, sectionTitle: string) {
   return [
@@ -83,9 +90,22 @@ export function sectionHasVisibleEntries(
     return section.entries.some((e) => entryVisible(section, e, settings));
   }
 
-  return section.entries.some(
-    (e) => entryVisible(section, e, settings) && matchesSettingsQuery(e, section.title, query),
-  );
+  return section.entries.some((e) => {
+    if (!entryVisible(section, e, settings)) {
+      return false;
+    }
+
+    if (matchesSettingsQuery(e, section.title, query)) {
+      return true;
+    }
+
+    if (!query || !e.entryGroup) {
+      return false;
+    }
+
+    const label = configEntryGroupLabel(section.id, e.entryGroup);
+    return label.toLowerCase().includes(query.trim().toLowerCase());
+  });
 }
 
 export function guestSectionVisible(section: ConfigSectionDto) {
@@ -122,4 +142,80 @@ export function settingDiffersFromDefault(entry: ConfigEntryDto) {
 
 export function settingDiffersFromGlobal(entry: ConfigEntryDto) {
   return entry.value !== entry.globalValue;
+}
+
+export function configEntryGroupId(entryGroup: string) {
+  const separator = entryGroup.indexOf('::');
+  return separator >= 0 ? entryGroup.slice(separator + 2) : entryGroup;
+}
+
+export function configEntryGroupLabel(sectionId: string, entryGroup: string) {
+  const groupId = configEntryGroupId(entryGroup);
+  const key = `config.${sectionId}._groups.${groupId}`;
+  const label = t(key);
+  return label !== key ? label : groupId;
+}
+
+export function groupConfigEntries(
+  section: ConfigSectionDto,
+  settings: SettingsDto | null,
+  query: string,
+): ConfigEntryGroup[] {
+  const visible = section.entries.filter(
+    (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query),
+  );
+  if (visible.length === 0) {
+    return [];
+  }
+
+  const grouped = new Map<string, ConfigEntryDto[]>();
+  const ungrouped: ConfigEntryDto[] = [];
+
+  for (const entry of visible) {
+    if (!entry.entryGroup) {
+      ungrouped.push(entry);
+      continue;
+    }
+
+    const list = grouped.get(entry.entryGroup) ?? [];
+    list.push(entry);
+    grouped.set(entry.entryGroup, list);
+  }
+
+  const groups: ConfigEntryGroup[] = [];
+  const seen = new Set<string>();
+
+  for (const entry of visible) {
+    if (!entry.entryGroup || seen.has(entry.entryGroup)) {
+      continue;
+    }
+
+    seen.add(entry.entryGroup);
+    const label = configEntryGroupLabel(section.id, entry.entryGroup);
+    const groupMatches = !query || label.toLowerCase().includes(query.trim().toLowerCase());
+    const entries = (grouped.get(entry.entryGroup) ?? []).filter(
+      (item) =>
+        groupMatches
+        || matchesSettingsQuery(item, section.title, query),
+    );
+    if (entries.length === 0) {
+      continue;
+    }
+
+    groups.push({
+      id: entry.entryGroup,
+      label,
+      entries,
+    });
+  }
+
+  if (ungrouped.length > 0) {
+    groups.push({
+      id: '',
+      label: '',
+      entries: ungrouped,
+    });
+  }
+
+  return groups;
 }

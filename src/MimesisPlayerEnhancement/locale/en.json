@@ -9,6 +9,14 @@
     },
     "MimesisPlayerEnhancement_Ui": {
       "_section": "User Interface",
+      "_groups": {
+        "modToasts": "Mod messages",
+        "extendedSaveSlots": "Extended save slots",
+        "extendedSpectatorList": "Spectator player list",
+        "worldHealthBars": "World health bars",
+        "floatingDamage": "Floating damage numbers",
+        "floatingDetox": "Floating detox indicators"
+      },
       "ModToastDurationSeconds": {
         "title": "Mod Message Duration (seconds)",
         "description": "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally."
@@ -20,6 +28,26 @@
       "EnableExtendedSpectatorPlayerList": {
         "title": "Enable Extended Spectator Player List",
         "description": "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically."
+      },
+      "EnableWorldHealthBars": {
+        "title": "Enable World Health Bars",
+        "description": "Show a world-space health bar above other players, mimics, and monsters for a few seconds after they take damage. Never shown on your own avatar."
+      },
+      "WorldHealthBarDurationSeconds": {
+        "title": "World Health Bar Duration (seconds)",
+        "description": "How long the world health bar stays visible after an entity takes damage."
+      },
+      "EnableFloatingDamageNumbers": {
+        "title": "Enable Floating Damage Numbers",
+        "description": "Show red animated floating damage numbers (e.g. -42) when other players, mimics, or monsters take damage. Numbers face your camera and drift toward you. Never shown on your own avatar."
+      },
+      "FloatingDamageDurationSeconds": {
+        "title": "Floating Damage Duration (seconds)",
+        "description": "How long floating damage and detox indicators remain visible."
+      },
+      "EnableFloatingDetoxIndicators": {
+        "title": "Enable Floating Detox Indicators",
+        "description": "Show green floating toxicity reduction (e.g. -27%) when any player drinks detox juice, including yourself. Duration is configured under Floating damage numbers."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {

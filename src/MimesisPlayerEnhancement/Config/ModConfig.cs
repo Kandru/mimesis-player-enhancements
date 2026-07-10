@@ -178,6 +178,11 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSaveSlots { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableWorldHealthBars { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> WorldHealthBarDurationSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableFloatingDamageNumbers { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> FloatingDamageDurationSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableFloatingDetoxIndicators { get; internal set; } = null!;
 
         private static readonly List<MelonPreferences_Entry<float>> FloatEntries = [];
 

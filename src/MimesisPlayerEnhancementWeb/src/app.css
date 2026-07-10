@@ -780,6 +780,30 @@ body {
   flex-direction: column;
 }
 
+.settings-entry-group {
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-entry-group:last-child {
+  border-bottom: 0;
+}
+
+.settings-entry-group-title {
+  margin: 0;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: #f9fafb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #667085;
+}
+
+.dark .settings-entry-group-title {
+  background: rgba(255, 255, 255, 0.03);
+  color: #98a2b3;
+}
+
 .settings-entry {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);

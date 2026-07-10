@@ -2,6 +2,7 @@ using System.Linq;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList;
+using MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays;
 using MimesisPlayerEnhancement.Ui.MenuMirror;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
@@ -18,7 +19,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ExtendedSaveSlotsPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ModVersionDisplayPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(MenuMirrorPatches)));
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(MenuMirrorPatches)))
+                .Concat(WorldOverlayPatches.GetPatchTypes());
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -46,6 +48,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             SpectatorPlayerGrid.RefreshFromConfig();
             ExtendedSaveSlotsRuntime.RefreshFromConfig();
+            WorldOverlayGate.RefreshCache();
+            WorldOverlayRuntime.RefreshFromConfig();
         }
     }
 }

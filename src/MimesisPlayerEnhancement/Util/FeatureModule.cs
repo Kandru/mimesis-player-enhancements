@@ -8,6 +8,7 @@ using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.UserInterface;
+using MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays;
 using MimesisPlayerEnhancement.Features.Weather;
 using MimesisPlayerEnhancement.Features.WebDashboard;
 
@@ -119,7 +120,8 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("MimicTuning", MimicTuningPatches.Apply,
                 syncFromConfig: MimicTuningRuntime.RefreshFromConfig),
             new FeatureModule("Ui", UiPatches.Apply,
-                syncFromConfig: UiRuntime.RefreshFromConfig),
+                syncFromConfig: UiRuntime.RefreshFromConfig,
+                onUpdate: WorldOverlayRuntime.OnUpdate),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),

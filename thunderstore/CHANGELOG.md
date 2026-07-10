@@ -7,6 +7,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: the dead player UI should sort the players by alphabet but living people first
 - draft: new feature to disable player collisions (each player needs the mod for it to work)
 - draft: custom menu structure to fix new features inside the main menu or esc menu (hopefully aligning correctly on different resolutions)
+- draft: show health bars above players/mimics/monsters when they got hit and also show a floating damage indicator (each player needs the mod for it to work)
 
 ## 26.7.7
 - improved the loot allow/deny list to be searchable

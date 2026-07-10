@@ -39,6 +39,8 @@ namespace MimesisPlayerEnhancement
             const string Ui = "MimesisPlayerEnhancement_Ui";
 
             Float(Ui, "ModToastDurationSeconds", 1f);
+            FloatRange(Ui, "WorldHealthBarDurationSeconds", 1f, 5f);
+            FloatRange(Ui, "FloatingDamageDurationSeconds", 1f, 3f);
 
             Int(MorePlayers, "MaxPlayers", 1);
             Int(MoreVoices, "MaxIndoorVoiceEvents", 1);
