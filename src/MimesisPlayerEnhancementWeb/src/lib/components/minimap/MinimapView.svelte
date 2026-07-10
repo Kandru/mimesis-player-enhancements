@@ -84,11 +84,11 @@
   }
 
   const rendered = $derived.by(() => {
-    if (!data || data.layout.displayMode === 'hidden') return null;
-    const tiles = data.layout.tiles || [];
+    if (!data || data.displayMode === 'hidden') return null;
+    const tiles = data.tiles || [];
     const vp = computeViewport(tiles);
     const tilesById = new Map(tiles.map((t) => [t.id, t]));
-    const cps = (data as MinimapPayload & { connectionPoints?: MinimapConnectionPointDto[] }).connectionPoints || [];
+    const cps = data.connectionPoints || [];
     return { tiles, vp, tilesById, cps, markers: data.markers || [], train: data.train, blind: !!data.blindMode };
   });
 </script>

@@ -10,7 +10,7 @@ From the repository root:
 ./scripts/build-webdashboard.sh
 ```
 
-This builds inside `node:22-alpine`, writes output to `src/MimesisPlayerEnhancement/Assets/WebDashboard/`, and preserves static images under `img/`.
+This builds inside `node:22-alpine` and writes output to `src/MimesisPlayerEnhancement/Assets/WebDashboard/` (gitignored; produced at build time). Static images live in `public/img/` and are copied into the build output by Vite.
 
 `./scripts/build.sh` runs the web build automatically unless `SKIP_WEB_BUILD=true`.
 

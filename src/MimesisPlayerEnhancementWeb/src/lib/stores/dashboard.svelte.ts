@@ -4,7 +4,10 @@ import { loadLocale, resolveBrowserLocale } from '../i18n';
 import type {
   ItemOptionDto,
   LeaderboardDto,
+  MinimapAreaDto,
+  MinimapMarkerDto,
   MinimapPayload,
+  MinimapTrainDto,
   PlayerDto,
   PlayerStatsDto,
   QuickPresetDto,
@@ -13,7 +16,7 @@ import type {
   StatusDto,
 } from '../types';
 import { isLobbyRoute } from '../playerHelpers';
-import { OFFLINE_ROUTES, parseHash } from '../utils';
+import { isValidSteamId, OFFLINE_ROUTES, parseHash } from '../utils';
 
 function createInitialStatus(): StatusDto {
   return {
@@ -289,12 +292,13 @@ class DashboardStore {
   }
 
   applyMinimapFilter(force = false) {
-    if (!this.minimapRaw) return;
-    const raw = this.minimapRaw;
-    const layout = raw.layout;
-    let activeAreaId = this.minimapAreaId;
-    const markers = this.filterMinimapMarkers(raw.markers || []);
+    if (!this.minimapRaw) {
+      this.minimap = null;
+      return;
+    }
 
+    const raw = this.minimapRaw;
+    const areas = raw.areas || [];
     const connectedIds = new Set(
       this.players.filter((p) => p.playerUid).map((p) => String(p.steamId)),
     );
@@ -303,39 +307,78 @@ class DashboardStore {
       localStorage.removeItem('minimapFocusSteamId');
     }
 
-    const focusId = this.minimapFocusSteamId;
-    const followLocal =
-      !focusId && this.getLocalPlayer()?.isAlive && this.playerBlindMode;
-    const focusMarker = focusId
-      ? markers.find((m) => String(m.steamId) === focusId)
-      : followLocal
-        ? markers.find((m) => m.isLocal)
-        : markers.find((m) => m.isLocal) ?? markers[0];
-
-    if (focusMarker?.areaId) activeAreaId = focusMarker.areaId;
-    else if (!activeAreaId) activeAreaId = layout.defaultAreaId;
-
-    const area = layout.areas?.find((a) => a.id === activeAreaId) ?? layout.areas?.[0];
-    const tiles = area?.tiles?.length ? area.tiles : layout.tiles || [];
-    const connectionPoints = area?.connectionPoints?.length
-      ? area.connectionPoints
-      : [];
+    const markers = this.filterMinimapMarkers(raw.markers || []);
+    const activeAreaId = this.resolveMinimapAreaId(markers, areas, raw);
+    const activeArea = areas.find((area) => area.id === activeAreaId) ?? null;
+    const areaMarkers = markers.filter((marker) => {
+      if (!activeAreaId) return true;
+      if (!marker.areaId) return raw.displayMode === 'markers-only';
+      return marker.areaId === activeAreaId;
+    });
 
     this.minimap = {
-      ...raw,
-      activeAreaId: area?.id || activeAreaId,
-      markers,
-      layout: { ...layout, tiles },
+      layoutVersion: raw.layoutVersion,
+      layoutKind: raw.layoutKind,
+      displayMode: raw.displayMode,
+      sceneLabel: raw.sceneLabel,
+      defaultAreaId: raw.defaultAreaId,
+      bounds: activeArea?.bounds ?? raw.bounds,
+      areas: raw.areas,
+      tiles: activeArea?.tiles?.length ? activeArea.tiles : raw.tiles || [],
+      connections: raw.connections,
+      markers: areaMarkers,
+      train: this.resolveTrainForArea(raw.train, activeAreaId),
+      activeAreaId,
+      activeAreaLabel: activeArea?.label ?? '',
+      connectionPoints: activeArea?.connectionPoints?.length
+        ? activeArea.connectionPoints
+        : [],
       blindMode: this.playerBlindMode,
     };
-    this.minimap.layout = { ...this.minimap.layout, tiles };
-    (this.minimap as MinimapPayload & { connectionPoints?: unknown }).connectionPoints =
-      connectionPoints;
 
     if (force || activeAreaId !== this.minimapAreaId) {
       this.minimapAreaId = activeAreaId;
       localStorage.setItem('minimapAreaId', activeAreaId);
     }
+  }
+
+  private resolveMinimapFocus() {
+    if (this.route === 'player' && this.steamId) return String(this.steamId);
+    if (this.minimapFocusSteamId) return this.minimapFocusSteamId;
+    const local = this.getLocalPlayer();
+    if (local && isValidSteamId(local.steamId)) return String(local.steamId);
+    const first = this.players.find((p) => isValidSteamId(p.steamId));
+    return first ? String(first.steamId) : '';
+  }
+
+  private resolveMinimapAreaId(
+    filteredMarkers: MinimapMarkerDto[],
+    areas: MinimapAreaDto[],
+    raw: MinimapPayload,
+  ) {
+    if (!areas.length) return '';
+
+    const focusId = this.resolveMinimapFocus();
+    if (focusId && filteredMarkers.length > 0) {
+      const focused = filteredMarkers.find((marker) => String(marker.steamId) === focusId);
+      if (focused?.areaId) return focused.areaId;
+    }
+
+    if (this.minimapAreaId && areas.some((area) => area.id === this.minimapAreaId)) {
+      return this.minimapAreaId;
+    }
+
+    if (raw.defaultAreaId) return raw.defaultAreaId;
+    return areas[0].id;
+  }
+
+  private resolveTrainForArea(
+    rawTrain: MinimapTrainDto | null | undefined,
+    activeAreaId: string,
+  ) {
+    if (!rawTrain || !activeAreaId) return null;
+    if (rawTrain.areaId && rawTrain.areaId !== activeAreaId) return null;
+    return rawTrain;
   }
 
   private filterMinimapMarkers(markers: MinimapPayload['markers']) {

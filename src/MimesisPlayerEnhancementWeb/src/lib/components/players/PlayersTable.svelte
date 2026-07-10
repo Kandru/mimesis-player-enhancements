@@ -50,6 +50,20 @@
     }
   });
 
+  $effect(() => {
+    if (!isHost || stored) return;
+    const defaultKey = defaultItemSelectionKey(dashboard.itemCatalog);
+    for (const player of players) {
+      if (!player.playerUid || !player.isAlive) continue;
+      const key = String(player.steamId);
+      if (!dashboard.spawnSelections[key]) {
+        dashboard.spawnSelections[key] = { selectionKey: defaultKey };
+      } else if (!dashboard.spawnSelections[key].selectionKey && defaultKey) {
+        dashboard.spawnSelections[key].selectionKey = defaultKey;
+      }
+    }
+  });
+
   const filtered = $derived.by(() => {
     const q = dashboard.headerSearchQuery.trim().toLowerCase();
     let list = stored ? sortPlayersByName(players) : sortConnectedPlayers(players);
@@ -127,6 +141,13 @@
 
   function canGiveItem(player: PlayerDto) {
     return isHost && !blindMode && !!player.playerUid && player.isAlive && !stored;
+  }
+
+  function getItemSelectionKey(steamId: string | number) {
+    const key = String(steamId);
+    const existing = dashboard.spawnSelections[key]?.selectionKey;
+    if (existing) return existing;
+    return defaultItemSelectionKey(dashboard.itemCatalog);
   }
 
   function ensureItemSelection(steamId: string | number) {
@@ -403,7 +424,7 @@
                         <select
                           id="give-item-{player.steamId}"
                           class="input give-item-select"
-                          value={ensureItemSelection(player.steamId).selectionKey}
+                          value={getItemSelectionKey(player.steamId)}
                           onchange={(e) => setItemSelection(player.steamId, (e.currentTarget as HTMLSelectElement).value)}
                         >
                           {#each itemCatalogGroups as group (group.id)}

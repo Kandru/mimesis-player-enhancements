@@ -130,23 +130,21 @@ export interface MinimapTrainDto {
   areaId: string;
 }
 
-export interface MinimapLayoutDto {
+export interface MinimapPayload {
   layoutVersion: number;
   layoutKind: string;
   displayMode: string;
   sceneLabel: string;
   defaultAreaId: string;
   bounds: MinimapBoundsDto;
-  areas: MinimapAreaDto[];
+  areas?: MinimapAreaDto[];
   tiles: MinimapTileDto[];
-  connections: Array<{ from: string; to: string }>;
-}
-
-export interface MinimapPayload {
-  layout: MinimapLayoutDto;
+  connections?: Array<{ from: string; to: string }>;
   markers: MinimapMarkerDto[];
   train?: MinimapTrainDto | null;
   activeAreaId?: string;
+  activeAreaLabel?: string;
+  connectionPoints?: MinimapConnectionPointDto[];
   blindMode?: boolean;
 }
 
