@@ -400,6 +400,18 @@
       "MaxOutdoorVoiceEvents": {
         "title": "Max Outdoor Voice Events",
         "description": "Maximum stored voice events per player outdoors (default game limit is much lower)."
+      },
+      "RecordVoiceInMaintenance": {
+        "title": "Record Voice in Maintenance",
+        "description": "Record mimic voice lines while players are in the maintenance room."
+      },
+      "RecordVoiceInTram": {
+        "title": "Record Voice in Tram",
+        "description": "Record mimic voice lines while players are in the tram waiting scene."
+      },
+      "RecordVoiceDuringMimicPossession": {
+        "title": "Record Voice During Mimic Possession",
+        "description": "Keep recording while a player possesses a mimic and resume after possession ends."
       }
     },
     "MimesisPlayerEnhancement_Persistence": {

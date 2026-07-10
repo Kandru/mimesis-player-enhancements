@@ -400,6 +400,18 @@
       "MaxOutdoorVoiceEvents": {
         "title": "Max. Outdoor-Stimmereignisse",
         "description": "Maximal gespeicherte Stimmereignisse pro Spieler im Freien (Vanilla-Limit ist deutlich niedriger)."
+      },
+      "RecordVoiceInMaintenance": {
+        "title": "Stimmen in Maintenance aufnehmen",
+        "description": "Mimic-Stimmen in der Maintenance-Raum aufnehmen."
+      },
+      "RecordVoiceInTram": {
+        "title": "Stimmen in der Tram aufnehmen",
+        "description": "Mimic-Stimmen in der Tram-Warteszene aufnehmen."
+      },
+      "RecordVoiceDuringMimicPossession": {
+        "title": "Stimmen bei Mimic-Besitz aufnehmen",
+        "description": "Aufnahme während Mimic-Besitz beibehalten und danach fortsetzen."
       }
     },
     "MimesisPlayerEnhancement_Persistence": {

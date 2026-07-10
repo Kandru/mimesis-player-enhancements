@@ -41,6 +41,24 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 3000,
                 "Max Outdoor Voice Events",
                 "Maximum stored voice events per player outdoors (default game limit is much lower).");
+
+            ModConfig.RecordVoiceInMaintenance = ModConfig.CreateTrackedEntry(_category,
+                "RecordVoiceInMaintenance",
+                true,
+                "Record Voice in Maintenance",
+                "Record mimic voice lines while players are in the maintenance room.");
+
+            ModConfig.RecordVoiceInTram = ModConfig.CreateTrackedEntry(_category,
+                "RecordVoiceInTram",
+                true,
+                "Record Voice in Tram",
+                "Record mimic voice lines while players are in the tram waiting scene.");
+
+            ModConfig.RecordVoiceDuringMimicPossession = ModConfig.CreateTrackedEntry(_category,
+                "RecordVoiceDuringMimicPossession",
+                true,
+                "Record Voice During Mimic Possession",
+                "Keep recording while a player possesses a mimic and resume after possession ends.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -48,7 +66,15 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             WireMinOne(logger, ModConfig.MaxIndoorVoiceEvents);
             WireMinOne(logger, ModConfig.MaxDeathMatchVoiceEvents);
             WireMinOne(logger, ModConfig.MaxOutdoorVoiceEvents);
-            ModConfig.EnableMoreVoices.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableMoreVoices));
+            WireNotifyChanged(ModConfig.EnableMoreVoices);
+            WireNotifyChanged(ModConfig.RecordVoiceInMaintenance);
+            WireNotifyChanged(ModConfig.RecordVoiceInTram);
+            WireNotifyChanged(ModConfig.RecordVoiceDuringMimicPossession);
+        }
+
+        private static void WireNotifyChanged(MelonPreferences_Entry<bool> entry)
+        {
+            entry.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(entry));
         }
 
         private static void WireMinOne(MelonLogger.Instance logger, MelonPreferences_Entry<int> entry)

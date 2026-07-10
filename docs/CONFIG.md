@@ -99,7 +99,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
-**Host-only.** Raise per-player mimic voice recording limits above vanilla caps.
+**Host-only.** Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -107,6 +107,9 @@ The mod version is always prepended to the version text on the main menu and in-
 | `MaxIndoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in indoor dungeon runs (default game limit is much lower). |
 | `MaxDeathMatchVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in deathmatch (default game limit is much lower). |
 | `MaxOutdoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player outdoors (default game limit is much lower). |
+| `RecordVoiceInMaintenance` | bool | `true` | — | Record mimic voice lines in the maintenance room (vanilla only records in dungeon). |
+| `RecordVoiceInTram` | bool | `true` | — | Record mimic voice lines in the tram waiting scene (vanilla only records in dungeon). |
+| `RecordVoiceDuringMimicPossession` | bool | `true` | — | Keep recording while possessing a mimic and resume after possession ends. |
 
 ## Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
@@ -470,6 +473,9 @@ EnableMoreVoices = true
 MaxIndoorVoiceEvents = 3000
 MaxDeathMatchVoiceEvents = 3000
 MaxOutdoorVoiceEvents = 3000
+RecordVoiceInMaintenance = true
+RecordVoiceInTram = true
+RecordVoiceDuringMimicPossession = true
 
 [MimesisPlayerEnhancement_Persistence]
 EnablePersistence = true
