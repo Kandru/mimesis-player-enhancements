@@ -105,7 +105,7 @@
     return !!player.playerUid && (!blindMode || player.isLocal);
   }
 
-  function showConnectionInfo(player: PlayerDto) {
+  function showActivityLine(player: PlayerDto) {
     return !blindMode || player.isLocal;
   }
 
@@ -256,13 +256,11 @@
       return { primary: storedDetailsLine(player, t), secondary: '' };
     }
     return {
-      primary: showConnectionInfo(player)
-        ? connectionMeta(
-            player,
-            voiceLinesShort(player.voiceLineCount ?? 0, t),
-          )
-        : '',
-      secondary: showConnectionInfo(player) ? playerActivityLine(player, t) : '',
+      primary: connectionMeta(
+        player,
+        voiceLinesShort(player.voiceLineCount ?? 0, t),
+      ),
+      secondary: showActivityLine(player) ? playerActivityLine(player, t) : '',
     };
   }
 </script>
@@ -335,7 +333,7 @@
                         {player.isAlive ? t('dashboard.badge_alive') : t('dashboard.badge_dead')}
                       </span>
                     {/if}
-                    {#if isHost && showConnectionInfo(player) && player.lateJoinLabel}
+                    {#if isHost && showActivityLine(player) && player.lateJoinLabel}
                       <span class="badge bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">{player.lateJoinLabel}</span>
                     {/if}
                   </div>
@@ -365,7 +363,7 @@
                 {#if details.secondary}
                   <span class="data-table-stats">{details.secondary}</span>
                 {/if}
-                {#if !details.primary && !details.secondary && (stored || showConnectionInfo(player))}
+                {#if !details.primary && !details.secondary}
                   <span class="data-table-muted">—</span>
                 {/if}
               </div>

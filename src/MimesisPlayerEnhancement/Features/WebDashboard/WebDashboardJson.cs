@@ -238,10 +238,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 IsLocal = player.IsLocal,
                 IsBanned = player.IsBanned,
                 IsAlive = hideOtherPlayerDetails ? true : player.IsAlive,
-                NetworkGrade = hideOtherPlayerDetails ? -1 : player.NetworkGrade,
-                ConnectionRole = hideOtherPlayerDetails ? "" : player.ConnectionRole,
-                ConnectionAddress = hideOtherPlayerDetails ? "" : player.ConnectionAddress,
-                VoiceLineCount = hideOtherPlayerDetails ? 0 : player.VoiceLineCount,
+                NetworkGrade = player.NetworkGrade,
+                ConnectionRole = player.ConnectionRole,
+                ConnectionAddress = player.ConnectionAddress,
+                VoiceLineCount = player.VoiceLineCount,
                 CurrentSession = hideOtherPlayerDetails || player.CurrentSession == null
                     ? null
                     : MapSessionStats(player.CurrentSession),
