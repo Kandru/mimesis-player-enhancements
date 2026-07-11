@@ -1,10 +1,4 @@
 using System.Linq;
-using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
-using MimesisPlayerEnhancement.Features.ModVersionDisplay;
-using MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList;
-using MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList;
-using MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays;
-using MimesisPlayerEnhancement.Ui.MenuMirror;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -17,12 +11,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             _ = GameNetworkApi.GetGameAssembly();
 
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNamespacePatchTypes(typeof(UiPatches))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPlayerListPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ExtendedSaveSlotsPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ModVersionDisplayPatches)))
-                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(MenuMirrorPatches)))
-                .Concat(WorldOverlayPatches.GetPatchTypes());
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SpectatorPlayerListPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InGameMenuPlayerListPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ExtendedSaveSlotsPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ModVersionDisplayPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(WorldOverlayPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,

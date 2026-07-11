@@ -6,7 +6,9 @@ Mimesis Player Enhancement stores settings in a TOML file separate from MelonLoa
 <Mimesis Steam folder>/UserData/MimesisPlayerEnhancement.cfg
 ```
 
-The game reloads this file while running. Most settings apply immediately or on the next relevant game event; see **Apply timing** below. Mid-dungeon changes to spawn budgets, loot pools, and dungeon-time bonuses do not revert an already-started run.
+The game reloads this file while running. Most settings apply immediately or on the next relevant game event; see **Apply timing** below.
+
+**Scene-boundary deferral:** For DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling, value changes made during an active gameplay scene (maintenance, tram, dungeon, deathmatch) are held until that scene ends — preventing mid-run spawn/loot spikes. Master `Enable*` toggles turned **off** still apply immediately.
 
 ## Section layout
 
@@ -56,9 +58,10 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 
 | Timing | Features |
 |--------|----------|
-| **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap and round-goal scaling on next hook, Economy scrap on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
-| **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls |
-| **Event-triggered** | Economy shop prices (maintenance room visit; also refreshed when Economy config changes while a maintenance room is active) |
+| **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap and round-goal scaling on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
+| **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time, Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
+| **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
+| **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
 | **Global UI** | Extended save picker, spectator list layout, toast duration, world health bars, floating damage numbers |
 
 ---

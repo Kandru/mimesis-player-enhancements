@@ -1,5 +1,3 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.Weather
 {
     internal static class WeatherResolver

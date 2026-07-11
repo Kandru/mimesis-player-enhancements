@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard

@@ -37,7 +37,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void ApplyAfterInit(DungeonRoom room)
         {
-            if (!ModConfig.EnableSpawnScaling.Value
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling
                 || DungeonRoomAppliedSet.IsApplied(room, DungeonRoomApplyKind.MapPlacedEncounters))
             {
                 return;
@@ -57,6 +57,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             int playerCount = room.GetMemberCount();
             RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
+            SpawnScalingSceneConfig config = SceneScopedConfigGate.Spawn;
+            state.SetSnapshot(config);
 
             foreach (DictionaryEntry entry in spawnDatas)
             {
@@ -75,7 +77,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 int masterId = group.Key;
                 SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
-                float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount);
+                float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);
                 int vanillaCount = group.Value.Count;
                 int targetTotal = SpawnMultiplierResolver.ScaleCount(vanillaCount, multiplier);
                 int need = targetTotal - vanillaCount;
@@ -120,7 +122,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void OnActorDead(SpawnedActorData spawnData)
         {
-            if (!ModConfig.EnableSpawnScaling.Value || spawnData == null)
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling || spawnData == null)
             {
                 return;
             }
@@ -157,7 +159,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static void ProcessPendingEncounters()
         {
             if (PendingEncounters.Count == 0
-                || !ModConfig.EnableSpawnScaling.Value
+                || !SceneScopedConfigGate.Spawn.EnableSpawnScaling
                 || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
@@ -184,7 +186,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     if (ModConfig.EnableDebugLogging.Value)
                     {
                         ModLog.Debug(Feature, $"Bonus encounter waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
-                            $"players within {ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value:0.#}m");
+                            $"players within {ResolveMinPlayerDistanceMeters(pending.Room):0.#}m");
                     }
 
                     DeferNextAttempt(i, pending, now);
@@ -323,8 +325,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
             }
 
-            float minDelay = ModConfig.MapPlacedEncounterDelayMinSeconds.Value;
-            float maxDelay = ModConfig.MapPlacedEncounterDelayMaxSeconds.Value;
+            (float minDelay, float maxDelay) = ResolveEncounterDelays(room);
             float delay = minDelay >= maxDelay ? minDelay : UnityEngine.Random.Range(minDelay, maxDelay);
             long spawnWaitMs = spawnData.SpawnWaitTime;
             if (spawnWaitMs > 0)
@@ -348,6 +349,29 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static void DeferNextAttempt(int index, PendingEncounterSpawn pending, float now)
         {
             PendingEncounters[index] = pending.WithNextAttemptAt(now + EncounterSpawnTiming.RetryIntervalSeconds);
+        }
+
+        private static (float MinDelay, float MaxDelay) ResolveEncounterDelays(DungeonRoom room)
+        {
+            if (RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state) && state.HasSnapshot)
+            {
+                return (state.Snapshot.MapPlacedEncounterDelayMinSeconds, state.Snapshot.MapPlacedEncounterDelayMaxSeconds);
+            }
+
+            SpawnScalingSceneConfig spawn = SceneScopedConfigGate.Spawn;
+            return (spawn.MapPlacedEncounterDelayMinSeconds, spawn.MapPlacedEncounterDelayMaxSeconds);
+        }
+
+        private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
+        {
+            if (room != null
+                && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state)
+                && state.HasSnapshot)
+            {
+                return state.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+            }
+
+            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
         }
 
         private static bool TryFindRoomState(

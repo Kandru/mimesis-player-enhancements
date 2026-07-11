@@ -8,48 +8,26 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
     /// </summary>
     internal static class MenuMirrorPatches
     {
-        [HarmonyPatch(typeof(UIPrefab_MainMenu), "Start")]
-        internal static class MainMenuStartPostfix
+        internal static void Apply(HarmonyLib.Harmony harmony)
         {
-            [HarmonyPostfix]
-            [HarmonyPriority(HarmonyLib.Priority.Last)]
-            private static void Postfix(UIPrefab_MainMenu __instance)
-            {
-                MenuMirrorController.RefreshFor(MenuKind.MainMenu, __instance, allowCapture: true);
-            }
+            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
+                harmony,
+                "Ui",
+                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)));
+
+            LogPatchAudit(harmony);
+            HarmonyPatchHelper.LogPatchSummary("Ui", result);
         }
 
-        [HarmonyPatch(typeof(UIPrefab_MainMenu), "OnEnable")]
-        internal static class MainMenuOnEnablePostfix
+        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
-            [HarmonyPostfix]
-            [HarmonyPriority(HarmonyLib.Priority.Last)]
-            private static void Postfix(UIPrefab_MainMenu __instance)
-            {
-                MenuMirrorController.RefreshFor(MenuKind.MainMenu, __instance, allowCapture: false);
-            }
-        }
-
-        [HarmonyPatch(typeof(UIPrefab_InGameMenu), "Start")]
-        internal static class InGameMenuStartPostfix
-        {
-            [HarmonyPostfix]
-            [HarmonyPriority(HarmonyLib.Priority.Last)]
-            private static void Postfix(UIPrefab_InGameMenu __instance)
-            {
-                MenuMirrorController.RefreshFor(MenuKind.InGameMenu, __instance, allowCapture: true);
-            }
-        }
-
-        [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
-        internal static class InGameMenuOnEnablePostfix
-        {
-            [HarmonyPostfix]
-            [HarmonyPriority(HarmonyLib.Priority.Last)]
-            private static void Postfix(UIPrefab_InGameMenu __instance)
-            {
-                MenuMirrorController.RefreshFor(MenuKind.InGameMenu, __instance, allowCapture: false);
-            }
+            HarmonyPatchHelper.LogPatchAudit("Ui", harmony,
+            [
+                ("Start/UIPrefab_MainMenu (menu mirror)", AccessTools.Method(typeof(UIPrefab_MainMenu), "Start")),
+                ("OnEnable/UIPrefab_MainMenu (menu mirror)", AccessTools.Method(typeof(UIPrefab_MainMenu), "OnEnable")),
+                ("Start/UIPrefab_InGameMenu (menu mirror)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "Start")),
+                ("OnEnable/UIPrefab_InGameMenu (menu mirror)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
+            ]);
         }
     }
 }

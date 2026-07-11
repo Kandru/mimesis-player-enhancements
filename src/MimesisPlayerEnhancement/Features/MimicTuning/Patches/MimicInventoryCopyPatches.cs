@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Features.SpawnScaling;
-
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     internal static class MimicInventoryCopyPatches

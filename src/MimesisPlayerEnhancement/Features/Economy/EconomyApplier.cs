@@ -1,5 +1,3 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyApplier
@@ -14,13 +12,14 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
         internal static bool IsEnabled()
         {
-            return ModConfig.EnableEconomy.Value && HostApplyGate.ShouldApplyHostOnlyFeature();
+            return SceneScopedConfigGate.Economy.EnableEconomy && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
 
         internal static bool ShouldRetainUnspentCurrency()
         {
-            return ModConfig.EnableEconomy.Value
-                && ModConfig.RetainUnspentCurrencyBetweenCycles.Value
+            EconomySceneConfig config = SceneScopedConfigGate.Economy;
+            return config.EnableEconomy
+                && config.RetainUnspentCurrencyBetweenCycles
                 && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
 

@@ -1,5 +1,4 @@
 using MimesisPlayerEnhancement.Features.UserInterface;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement

@@ -1,4 +1,3 @@
-using Bifrost.Cooked;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays

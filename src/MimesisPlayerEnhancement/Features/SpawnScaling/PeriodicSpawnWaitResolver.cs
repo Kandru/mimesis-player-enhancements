@@ -19,12 +19,22 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static PeriodicSpawnWaitMode GetMode()
         {
-            return ParseMode(ModConfig.PeriodicSpawnWaitMode.Value);
+            return GetMode(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static PeriodicSpawnWaitMode GetMode(SpawnScalingSceneConfig config)
+        {
+            return ParseMode(config.PeriodicSpawnWaitMode);
         }
 
         internal static bool IsWaitModeActive()
         {
-            return ModConfig.EnableSpawnScaling.Value && GetMode() != PeriodicSpawnWaitMode.Vanilla;
+            return IsWaitModeActive(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static bool IsWaitModeActive(SpawnScalingSceneConfig config)
+        {
+            return config.EnableSpawnScaling && GetMode(config) != PeriodicSpawnWaitMode.Vanilla;
         }
 
         internal static bool ShouldApplyHostWaitOverrides()
@@ -34,40 +44,60 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static float RollInitialWaitSeconds()
         {
-            float min = ModConfig.InitialPeriodicSpawnWaitMinSeconds.Value;
-            float max = ModConfig.InitialPeriodicSpawnWaitMaxSeconds.Value;
+            return RollInitialWaitSeconds(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static float RollInitialWaitSeconds(SpawnScalingSceneConfig config)
+        {
+            float min = config.InitialPeriodicSpawnWaitMinSeconds;
+            float max = config.InitialPeriodicSpawnWaitMaxSeconds;
             return RollSeconds(min, max);
         }
 
         internal static float ResolveInitialWaitSeconds()
         {
-            return GetMode() switch
+            return ResolveInitialWaitSeconds(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static float ResolveInitialWaitSeconds(SpawnScalingSceneConfig config)
+        {
+            return GetMode(config) switch
             {
-                PeriodicSpawnWaitMode.Fixed => ModConfig.InitialPeriodicSpawnWaitSeconds.Value,
-                PeriodicSpawnWaitMode.Random => RollInitialWaitSeconds(),
+                PeriodicSpawnWaitMode.Fixed => config.InitialPeriodicSpawnWaitSeconds,
+                PeriodicSpawnWaitMode.Random => RollInitialWaitSeconds(config),
                 _ => 0f,
             };
         }
 
         internal static int RollWaveIntervalMs()
         {
-            return SecondsToMs(RollWaveIntervalSeconds());
+            return RollWaveIntervalMs(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static int RollWaveIntervalMs(SpawnScalingSceneConfig config)
+        {
+            return SecondsToMs(RollWaveIntervalSeconds(config));
         }
 
         internal static int ResolveWaveIntervalMs()
         {
-            return GetMode() switch
+            return ResolveWaveIntervalMs(SceneScopedConfigGate.Spawn);
+        }
+
+        internal static int ResolveWaveIntervalMs(SpawnScalingSceneConfig config)
+        {
+            return GetMode(config) switch
             {
-                PeriodicSpawnWaitMode.Fixed => SecondsToMs(ModConfig.PeriodicSpawnIntervalSeconds.Value),
-                PeriodicSpawnWaitMode.Random => RollWaveIntervalMs(),
+                PeriodicSpawnWaitMode.Fixed => SecondsToMs(config.PeriodicSpawnIntervalSeconds),
+                PeriodicSpawnWaitMode.Random => RollWaveIntervalMs(config),
                 _ => 0,
             };
         }
 
-        private static float RollWaveIntervalSeconds()
+        private static float RollWaveIntervalSeconds(SpawnScalingSceneConfig config)
         {
-            float min = ModConfig.PeriodicSpawnIntervalMinSeconds.Value;
-            float max = ModConfig.PeriodicSpawnIntervalMaxSeconds.Value;
+            float min = config.PeriodicSpawnIntervalMinSeconds;
+            float max = config.PeriodicSpawnIntervalMaxSeconds;
             return RollSeconds(min, max);
         }
 

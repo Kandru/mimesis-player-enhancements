@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
-    public static class DungeonTimePatches
+    internal static class DungeonTimePatches
     {
         private const string Feature = "DungeonTime";
 
@@ -11,7 +11,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNestedPatchTypes(typeof(DungeonTimePatches)));
+                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(DungeonTimePatches)));
 
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
@@ -23,23 +23,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             [
                 ("OnAllMemberEntered/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "OnAllMemberEntered")),
             ]);
-        }
-
-        [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
-        public static class DungeonRoomOnAllMemberEnteredPatch
-        {
-            [HarmonyPostfix]
-            public static void Postfix(DungeonRoom __instance)
-            {
-                try
-                {
-                    DungeonTimeApplier.EnsureApplied(__instance);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"OnAllMemberEntered postfix failed — {ex.Message}");
-                }
-            }
         }
     }
 }

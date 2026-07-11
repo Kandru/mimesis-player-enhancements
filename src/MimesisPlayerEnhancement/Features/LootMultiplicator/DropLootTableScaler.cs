@@ -1,5 +1,3 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class DropLootTableScaler

@@ -31,10 +31,21 @@ Mod.cs (MelonMod entry)
 
 Typical feature files under `Features/{FeatureName}/`:
 
+```
+Features/{FeatureName}/
+├── {Feature}Config.cs          # config registration (where present)
+├── {Feature}Patches.cs         # entry: Apply(Harmony) [+ RefreshFromConfig]
+├── {Feature}Log.cs             # only when shared formatting is needed
+├── Patches/                    # ALL [HarmonyPatch] classes, one file per patched game type
+│   ├── GlobalUsings.cs
+│   └── {GameType}Patches.cs
+└── (resolvers/appliers/runtime/helpers at root; sub-feature folders keep theirs)
+```
+
 | Pattern | Role |
 |---------|------|
-| `{Feature}Patches.cs` | Harmony entry point (`Apply(Harmony)`), nested patch classes |
-| `Patches/*.cs` | Extra patch types (optional) |
+| `{Feature}Patches.cs` | Harmony entry (`Apply(Harmony)`), uses `HarmonyPatchHelper.GetNamespacePatchTypes` |
+| `Patches/*.cs` | Patch types in namespace `{Feature}.Patches` (standard for every feature) |
 | `{Feature}Config.cs` | Registers `[MimesisPlayerEnhancement_{FeatureName}]`; properties live on `ModConfig` |
 | `{Feature}Resolver.cs` / `{Feature}Applier.cs` | Optional — multiplier/value features |
 | `{Feature}Runtime.cs` | Optional — session or per-frame state |
@@ -60,6 +71,7 @@ Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `s
 - Global toggles/values: `[MimesisPlayerEnhancement]` and `[MimesisPlayerEnhancement_{FeatureName}]`.
 - Per-save overrides: `SaveSlotConfigStore` + sidecar `.mpe-overrides.sav` (web dashboard); loaded at save load, flushed on vanilla save.
 - Runtime edits: `GlobalConfigStore` (global) or `SaveSlotConfigStore` (per slot); `ModConfig.Changed` triggers selective `SyncFromConfig`.
+- **Scene-boundary apply:** DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling read frozen config snapshots for the current scene. Mid-scene edits (e.g. web dashboard) defer until the scene ends (maintenance, tram, dungeon, or deathmatch). Turning a master `Enable*` toggle **off** still applies immediately. See `Util/SceneScopedConfigGate.cs`.
 
 ## Web dashboard (Svelte)
 
@@ -81,7 +93,6 @@ Shared primitives in `src/MimesisPlayerEnhancement/Ui/`. Features compose these;
 | **ModUiRoot** | Attach point (`UIManager.nodes[eUIHeight.Top]`) |
 | **ModUiAssets** | Sprites/font/SFX/colors from vanilla prefabs (`TryCaptureFromMainMenu`) or `Fallback` |
 | **ModPage** | Full-screen overlay (title, content, action/back bands) |
-| **ModPanel** | Dim overlay with centered panel |
 | **ModButton** | Styled button with TMP label and hover/click SFX |
 | **ModScrollList** | Vertical scroll view; rows via factory into `Content` |
 | **ModUiScrollForwarder** | Forwards wheel events to parent `ScrollRect` |

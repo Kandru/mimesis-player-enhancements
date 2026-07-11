@@ -7,7 +7,7 @@ alwaysApply: false
 # Harmony patches
 
 - Each feature exposes a static `{Feature}Patches.Apply(Harmony harmony)` method registered in `FeatureModules.All`.
-- Put patch types as nested classes in the main patches file, or in `Features/{Feature}/Patches/` as separate types.
+- Put patch types under `Features/{Feature}/Patches/` as separate types (one file per patched game type); `{Feature}Patches.Apply` uses `HarmonyPatchHelper.GetNamespacePatchTypes`.
 - Use `HarmonyPatchHelper.GetNestedPatchTypes` / `GetNamespacePatchTypes` for discovery and `ApplyPatchTypes` for apply + logging.
 - Define `private const string Feature = "FeatureName"` matching the config section and log tag.
 - Prefer `AccessTools.Method` / `AccessTools.Field` over string literals when the target type is known.

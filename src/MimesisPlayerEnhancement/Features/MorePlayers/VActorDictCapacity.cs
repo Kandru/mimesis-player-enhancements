@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 return VanillaRoomPlayerDictCap;
             }
 
-            return Math.Max(VanillaRoomPlayerDictCap, MorePlayersPatches.GetMaxPlayers());
+            return Math.Max(VanillaRoomPlayerDictCap, MorePlayersPatchHelpers.GetMaxPlayers());
         }
 
         internal static void ApplyToRoom(IVroom? room)

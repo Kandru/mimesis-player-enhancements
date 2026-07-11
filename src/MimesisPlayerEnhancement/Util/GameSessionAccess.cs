@@ -1,5 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 
 namespace MimesisPlayerEnhancement.Util
 {

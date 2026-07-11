@@ -17,7 +17,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             ModConfig.Changed += OnConfigChanged;
             WebDashboardPatches.Apply(harmony);
-            WebDashboardMinimapPatches.Apply(harmony);
         }
 
         private static void OnConfigChanged(ModConfigChangeInfo change)

@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Features.SpawnScaling;
-
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     internal static class StatisticsEntityNames

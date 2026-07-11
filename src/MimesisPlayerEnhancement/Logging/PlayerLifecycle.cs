@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Text;
-using MimesisPlayerEnhancement.Features.MoreVoices;
 
 namespace MimesisPlayerEnhancement
 {
@@ -60,7 +59,7 @@ namespace MimesisPlayerEnhancement
             }
 
             ConnectState state = GetOrCreateConnectState(archive);
-            PlayerLifecycleContribution? moreVoices = MoreVoicesPatches.TryDescribeArchiveStarted(archive);
+            PlayerLifecycleContribution? moreVoices = MoreVoicesPatchHelpers.TryDescribeArchiveStarted(archive);
             if (moreVoices.HasValue)
             {
                 state.Contributions[moreVoices.Value.Feature] = moreVoices.Value;

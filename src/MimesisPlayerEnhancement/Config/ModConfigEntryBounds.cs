@@ -1,6 +1,4 @@
 using System.Globalization;
-using MimesisPlayerEnhancement.Features.MorePlayers;
-using MimesisPlayerEnhancement.Features.PlayerTuning;
 
 namespace MimesisPlayerEnhancement
 {

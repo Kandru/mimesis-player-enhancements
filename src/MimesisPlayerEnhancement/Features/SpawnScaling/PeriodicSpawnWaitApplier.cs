@@ -24,13 +24,19 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void ApplyInitialWait(DungeonRoom room, RoomSpawnScalingState state)
         {
-            if (!PeriodicSpawnWaitResolver.ShouldApplyHostWaitOverrides())
+            SpawnScalingSceneConfig config = state.HasSnapshot ? state.Snapshot : SceneScopedConfigGate.Spawn;
+            if (!config.EnableSpawnScaling || !PeriodicSpawnWaitResolver.IsWaitModeActive(config))
             {
                 return;
             }
 
-            float initialSeconds = PeriodicSpawnWaitResolver.ResolveInitialWaitSeconds();
-            int intervalMs = PeriodicSpawnWaitResolver.ResolveWaveIntervalMs();
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
+            {
+                return;
+            }
+
+            float initialSeconds = PeriodicSpawnWaitResolver.ResolveInitialWaitSeconds(config);
+            int intervalMs = PeriodicSpawnWaitResolver.ResolveWaveIntervalMs(config);
             state.NextJakoWavePeriodMs = intervalMs;
             state.NextMimicWavePeriodMs = intervalMs;
 
@@ -43,24 +49,30 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnScalingFields.LastMimicSpawnTimeField.SetValue(room, lastMimic);
 
             SpawnScalingLog.InfoPeriodicSpawnWaitApplied(
-                PeriodicSpawnWaitResolver.GetMode(),
+                PeriodicSpawnWaitResolver.GetMode(config),
                 initialSeconds,
                 intervalMs / 1000f);
         }
 
         internal static void OnManageSpawnDataPostfix(DungeonRoom room, ManageSpawnDataSnapshot snapshot)
         {
-            if (!PeriodicSpawnWaitResolver.ShouldApplyHostWaitOverrides())
-            {
-                return;
-            }
-
-            if (PeriodicSpawnWaitResolver.GetMode() != PeriodicSpawnWaitMode.Random)
-            {
-                return;
-            }
-
             if (!RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state))
+            {
+                return;
+            }
+
+            SpawnScalingSceneConfig config = state.HasSnapshot ? state.Snapshot : SceneScopedConfigGate.Spawn;
+            if (!config.EnableSpawnScaling || !PeriodicSpawnWaitResolver.IsWaitModeActive(config))
+            {
+                return;
+            }
+
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
+            {
+                return;
+            }
+
+            if (PeriodicSpawnWaitResolver.GetMode(config) != PeriodicSpawnWaitMode.Random)
             {
                 return;
             }
@@ -70,14 +82,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (currentJako != snapshot.LastNormalMonsterSpawnTime)
             {
-                state.NextJakoWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs();
+                state.NextJakoWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs(config);
                 SpawnScalingLog.DebugPeriodicSpawnIntervalRerolled("jako", state.NextJakoWavePeriodMs / 1000f);
                 RefreshTimingOverridePeriod(state);
             }
 
             if (currentMimic != snapshot.LastMimicSpawnTime)
             {
-                state.NextMimicWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs();
+                state.NextMimicWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs(config);
                 SpawnScalingLog.DebugPeriodicSpawnIntervalRerolled("mimic", state.NextMimicWavePeriodMs / 1000f);
                 RefreshTimingOverridePeriod(state);
             }

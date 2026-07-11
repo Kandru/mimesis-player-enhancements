@@ -1,16 +1,5 @@
-using MimesisPlayerEnhancement.Features.DungeonRandomizer;
-using MimesisPlayerEnhancement.Features.DungeonTime;
-using MimesisPlayerEnhancement.Features.LootMultiplicator;
 using MimesisPlayerEnhancement.Features.MimicTuning;
-using MimesisPlayerEnhancement.Features.MorePlayers;
-using MimesisPlayerEnhancement.Features.MoreVoices;
-using MimesisPlayerEnhancement.Features.PlayerAnnouncements;
-using MimesisPlayerEnhancement.Features.PlayerTuning;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.UserInterface;
-using MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays;
-using MimesisPlayerEnhancement.Features.Weather;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Util
 {
@@ -100,7 +89,7 @@ namespace MimesisPlayerEnhancement.Util
             {
                 if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } },
                 onDeinitialize: SaveSlotSidecarPersistence.FlushAllSync),
-            new FeatureModule("PlayerAnnouncements", PlayerAnnouncementPatches.Apply),
+            new FeatureModule("PlayerAnnouncements", PlayerAnnouncementsPatches.Apply),
             new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
             new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply,
                 syncFromConfig: JoinAnytimeRuntime.RefreshFromConfig,

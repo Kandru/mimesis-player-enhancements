@@ -1,4 +1,5 @@
 using MelonLoader;
+using MimesisPlayerEnhancement.Util.Patches;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(MimesisPlayerEnhancement.Mod), "MimesisPlayerEnhancement", MimesisPlayerEnhancement.VersionInfo.ModuleVersion, "kalle")]
@@ -19,6 +20,8 @@ namespace MimesisPlayerEnhancement
             try
             {
                 ModConfig.Initialize(LoggerInstance);
+                SceneScopedConfigGate.Initialize();
+                SceneScopedConfigGate.SetDeferredModuleSyncAction(SyncFeatureModuleByName);
                 if (!GameVersionChecker.TryAllowLoad())
                 {
                     throw new InvalidOperationException(
@@ -33,6 +36,7 @@ namespace MimesisPlayerEnhancement
                     module.ApplyPatches(_harmony);
                 }
 
+                SceneScopedConfigPatches.Apply(_harmony);
                 SyncFromConfig(ModConfigChangeInfo.FullReload);
                 LogStartupSummary();
                 ModConfig.Changed += SyncFromConfig;
@@ -125,6 +129,8 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            SceneScopedConfigGate.OnConfigChangePrepared(change);
+
             HashSet<string>? affectedModules = change.IsFullReload
                 ? null
                 : ModConfigRegistry.GetAffectedModuleNames(change);
@@ -136,10 +142,27 @@ namespace MimesisPlayerEnhancement
                     continue;
                 }
 
+                if (SceneScopedConfigGate.ShouldDeferModuleSync(module.Name, change))
+                {
+                    continue;
+                }
+
                 module.SyncFromConfig();
             }
 
             ModLog.Debug("Config", $"Synced — {BuildConfigSummary()}");
+        }
+
+        private static void SyncFeatureModuleByName(string moduleName)
+        {
+            foreach (IFeatureModule module in FeatureModules.All)
+            {
+                if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
+                {
+                    module.SyncFromConfig();
+                    break;
+                }
+            }
         }
 
         private void LogStartupSummary()

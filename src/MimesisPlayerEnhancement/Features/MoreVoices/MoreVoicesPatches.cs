@@ -1,17 +1,11 @@
-using System.Reflection;
+using MimesisPlayerEnhancement.Features.MoreVoices.Patches;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices
 {
-    public static class MoreVoicesPatches
+    internal static class MoreVoicesPatches
     {
         private const string Feature = "MoreVoices";
         private static bool _wasApplying;
-
-        private static readonly MethodInfo? BroadcastNewEventWithRemovalMethod =
-            AccessTools.Method(typeof(SpeechEventArchive), "ServerRpcBroadcastNewEventWithRemoval");
-
-        [ThreadStatic]
-        private static List<long>? _lastRemovalIds;
 
         public static void Apply(HarmonyLib.Harmony harmony)
         {
@@ -25,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ModLog.Warn(Feature, "RemoveLowerValueEventsIfExceeded not found — re-trim may not apply");
             }
 
-            if (BroadcastNewEventWithRemovalMethod == null)
+            if (MoreVoicesPatchHelpers.BroadcastNewEventWithRemovalMethod == null)
             {
                 ModLog.Warn(Feature, "ServerRpcBroadcastNewEventWithRemoval not found — hub sync may not apply");
             }
@@ -33,9 +27,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNestedPatchTypes(typeof(MoreVoicesPatches)));
-
-            VoicePerformancePatches.Apply(harmony);
+                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MoreVoicesPatches)));
 
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
@@ -130,230 +122,24 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ("AddEvent/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "AddEvent")),
                 ("OnSpeechEventRecorded/SpeechEventArchive",
                     AccessTools.Method(typeof(SpeechEventArchive), "OnSpeechEventRecorded")),
+                ("GetWarmedUpSpeechEvents/SpeechEventArchive",
+                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.GetWarmedUpSpeechEvents))),
+                ("WarmedUpCount/SpeechEventArchive",
+                    AccessTools.PropertyGetter(typeof(SpeechEventArchive), nameof(SpeechEventArchive.WarmedUpCount))),
+                ("OnStartClient/SpeechEventArchive (voice cache)",
+                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStartClient))),
+                ("OnStopClient/SpeechEventArchive (voice cache)",
+                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))),
+                ("CreateAudioClip/SpeechEventArchive", SpeechEventArchivePatchSupport.CreateAudioClipMethod),
+                ("RpcLogic___ObserverRpcPlayOnActor/SpeechEventArchive", SpeechEventArchivePatchSupport.ObserverRpcPlayOnActorLogicMethod),
+                ("RpcLogic___ObserverRpcPlayOnNonMimicMonster/SpeechEventArchive", SpeechEventArchivePatchSupport.ObserverRpcPlayOnNonMimicLogicMethod),
+                ("GetAllDissonancePlayers/MimicVoiceSpawner",
+                    AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllDissonancePlayers")),
+                ("GetAllMimicActors/MimicVoiceSpawner",
+                    AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllMimicActors")),
+                ("PickBestMatch/SpeechEventAdditionalGameData",
+                    AccessTools.Method(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))),
             ]);
-            VoicePerformancePatches.LogPatchAudit(harmony);
-        }
-
-        internal static PlayerLifecycleContribution? TryDescribeArchiveStarted(SpeechEventArchive archive)
-        {
-            if (!ModConfig.EnableMoreVoices.Value || archive == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                SpeechEventArchiveLimits.EffectiveCaps caps = SpeechEventArchiveLimits.ReadEffectiveCaps(archive);
-                return new PlayerLifecycleContribution(
-                    Feature,
-                    $"caps {SpeechEventArchiveLimits.FormatEffectiveCaps(caps)}");
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
-        [HarmonyPriority(-100)]
-        internal static class SpeechEventArchiveOnStartClientPatch
-        {
-            [HarmonyPrefix]
-            public static void Prefix(SpeechEventArchive __instance)
-            {
-                if (!ModConfig.EnableMoreVoices.Value || __instance == null)
-                {
-                    return;
-                }
-
-                try
-                {
-                    if (!SpeechEventArchiveLimits.TryApply(__instance, retrimOnDecrease: false))
-                    {
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Voice archive prefix failed: {ex.Message}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")]
-        internal static class RemoveLowerValueEventsIfExceededPrefix
-        {
-            [HarmonyPrefix]
-            public static void Prefix(SpeechEventArchive __instance)
-            {
-                if (!ModConfig.EnableMoreVoices.Value || __instance == null)
-                {
-                    return;
-                }
-
-                try
-                {
-                    _ = SpeechEventArchiveLimits.TryApplyFields(__instance);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Voice limit prefix before eviction failed: {ex.Message}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")]
-        [HarmonyPriority(500)]
-        internal static class RemoveLowerValueEventsIfExceededUnifiedPatch
-        {
-            [HarmonyPrefix]
-            public static bool Prefix(SpeechEventArchive __instance, ref List<long> __result)
-            {
-                if (!MoreVoicesUnify.IsActive || __instance == null)
-                {
-                    return true;
-                }
-
-                try
-                {
-                    __result = SpeechEventArchiveUnifiedEviction.TryEvict(__instance);
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Unified voice eviction failed: {ex.Message}");
-                    return true;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))]
-        [HarmonyPriority(500)]
-        internal static class PickBestMatchUnifyPatch
-        {
-            [HarmonyPrefix]
-            public static bool Prefix(
-                MimicVoiceSpawner.MimicContext context,
-                List<(string playerID, SpeechEvent evt)> allEvents,
-                SpeechEventAdditionalGameData curGameData,
-                bool periodic,
-                int pickCount,
-                float playTimeIntervalRandom,
-                out SpeechEvent? speechEvent,
-                out string mimickingPlayerID,
-                out string pickReason,
-                ref bool __result)
-            {
-                if (!MoreVoicesUnify.IsActive || VoicePerformanceRuntime.IsActive)
-                {
-                    speechEvent = null;
-                    mimickingPlayerID = string.Empty;
-                    pickReason = string.Empty;
-                    return true;
-                }
-
-                __result = VoicePickBestMatch.TryPick(
-                    context,
-                    allEvents,
-                    curGameData,
-                    periodic,
-                    pickCount,
-                    playTimeIntervalRandom,
-                    out speechEvent,
-                    out mimickingPlayerID,
-                    out pickReason);
-                return false;
-            }
-        }
-
-        [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))]
-        internal static class VoiceManagerSetVoiceModePatch
-        {
-            [HarmonyPostfix]
-            public static void Postfix(VoiceManager __instance, VoiceMode voiceMode)
-            {
-                if (!MoreVoicesRecording.IsFeatureActive()
-                    || voiceMode != VoiceMode.PreGame
-                    || !MoreVoicesRecording.ShouldRecordInCurrentHubScene())
-                {
-                    return;
-                }
-
-                try
-                {
-                    MoreVoicesVoiceAccess.StartRecording(__instance);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Hub voice recording postfix failed: {ex.Message}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.EndPossessionToMimic))]
-        internal static class VoiceManagerEndPossessionToMimicPatch
-        {
-            [HarmonyPostfix]
-            public static void Postfix(VoiceManager __instance)
-            {
-                if (!MoreVoicesRecording.ShouldResumeRecordingAfterPossession())
-                {
-                    return;
-                }
-
-                try
-                {
-                    MoreVoicesVoiceAccess.StartRecording(__instance);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Possession voice recording resume failed: {ex.Message}");
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventArchive), "AddEvent")]
-        internal static class SpeechEventArchiveAddEventPatch
-        {
-            [HarmonyPostfix]
-            public static void Postfix(List<long> __result)
-            {
-                _lastRemovalIds = __result;
-            }
-        }
-
-        [HarmonyPatch(typeof(SpeechEventArchive), "OnSpeechEventRecorded")]
-        internal static class SpeechEventArchiveOnSpeechEventRecordedPatch
-        {
-            [HarmonyPrefix]
-            public static void Prefix()
-            {
-                _lastRemovalIds = null;
-            }
-
-            [HarmonyPostfix]
-            public static void Postfix(SpeechEventArchive __instance, SpeechEvent speechEvent, bool isForce)
-            {
-                if (!MoreVoicesRecording.IsFeatureActive()
-                    || BroadcastNewEventWithRemovalMethod == null
-                    || __instance == null
-                    || speechEvent == null
-                    || MoreVoicesRecording.VanillaWouldSyncRecordedEvent(isForce)
-                    || !MoreVoicesRecording.ShouldSyncRecordedEvent(isForce))
-                {
-                    return;
-                }
-
-                try
-                {
-                    long[] idsToRemove = _lastRemovalIds?.ToArray() ?? [];
-                    BroadcastNewEventWithRemovalMethod.Invoke(__instance, [speechEvent, idsToRemove]);
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Hub voice sync postfix failed: {ex.Message}");
-                }
-            }
         }
     }
 }

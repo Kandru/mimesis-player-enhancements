@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void OnMemberDead(GroupSpawnData groupData, bool groupWiped)
         {
-            if (!ModConfig.EnableSpawnScaling.Value || !groupWiped)
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling || !groupWiped)
             {
                 return;
             }

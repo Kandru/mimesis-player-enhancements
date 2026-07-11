@@ -1,35 +1,55 @@
-using Bifrost.ConstEnum;
-
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootMultiplierResolver
     {
         internal static bool IsAutoScaleEnabled(LootSource source, ItemType itemType)
         {
+            return IsAutoScaleEnabled(source, itemType, SceneScopedConfigGate.Loot);
+        }
+
+        internal static bool IsAutoScaleEnabled(
+            LootSource source,
+            ItemType itemType,
+            LootMultiplicatorSceneConfig config)
+        {
             _ = itemType;
             return source switch
             {
-                LootSource.Map => ModConfig.AutoScaleMapLootByPlayerCount.Value,
-                LootSource.Drop => ModConfig.AutoScaleDropLootByPlayerCount.Value,
+                LootSource.Map => config.AutoScaleMapLootByPlayerCount,
+                LootSource.Drop => config.AutoScaleDropLootByPlayerCount,
                 _ => false,
             };
         }
 
         internal static float GetPlayerScale(LootSource source, ItemType itemType, int playerCount)
         {
+            return GetPlayerScale(source, itemType, playerCount, SceneScopedConfigGate.Loot);
+        }
+
+        internal static float GetPlayerScale(
+            LootSource source,
+            ItemType itemType,
+            int playerCount,
+            LootMultiplicatorSceneConfig config)
+        {
             return ScalingMath.GetPlayerScale(
                 playerCount,
-                IsAutoScaleEnabled(source, itemType),
-                ModConfig.LootMultiplicatorPlayerCountScaleRate.Value);
+                IsAutoScaleEnabled(source, itemType, config),
+                config.LootMultiplicatorPlayerCountScaleRate);
         }
 
         internal static float GetBaseMultiplier(LootSource source, ItemType itemType)
         {
+            return GetBaseMultiplier(source, itemType, SceneScopedConfigGate.Loot);
+        }
+
+        internal static float GetBaseMultiplier(LootSource source, ItemType itemType, LootMultiplicatorSceneConfig config)
+        {
             _ = itemType;
             return source switch
             {
-                LootSource.Map => ModConfig.MapLootMultiplier.Value,
-                LootSource.Drop => ModConfig.DropLootMultiplier.Value,
+                LootSource.Map => config.MapLootMultiplier,
+                LootSource.Drop => config.DropLootMultiplier,
                 _ => FeatureToggleGate.NeutralMultiplier,
             };
         }
@@ -45,7 +65,18 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             int playerCount,
             int masterId)
         {
-            if (!ModConfig.EnableLootMultiplicator.Value)
+            return GetEffectiveMultiplier(source, itemType, playerCount, masterId, SceneScopedConfigGate.Loot);
+        }
+
+        internal static float GetEffectiveMultiplier(
+            LootSource source,
+            ItemType itemType,
+            int playerCount,
+            int masterId,
+            LootMultiplicatorSceneConfig config)
+        {
+            _ = masterId;
+            if (!config.EnableLootMultiplicator)
             {
                 return FeatureToggleGate.NeutralMultiplier;
             }
@@ -55,7 +86,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return FeatureToggleGate.NeutralMultiplier;
             }
 
-            return GetBaseMultiplier(source, itemType) * GetPlayerScale(source, itemType, playerCount);
+            return GetBaseMultiplier(source, itemType, config) * GetPlayerScale(source, itemType, playerCount, config);
         }
 
         internal static float GetEffectiveMultiplier(LootSource source, int masterId, int playerCount)

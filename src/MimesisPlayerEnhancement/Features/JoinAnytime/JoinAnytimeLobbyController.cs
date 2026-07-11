@@ -2,7 +2,6 @@ using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.MorePlayers;
 using ReluNetwork.ConstEnum;
 using Steamworks;
 using UnityEngine;
@@ -307,7 +306,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
             int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            int waitingThreshold = Math.Min(4, MorePlayersPatches.GetMaxPlayers());
+            int waitingThreshold = Math.Min(4, MorePlayersPatchHelpers.GetMaxPlayers());
 
             if (phase == JoinAnytimeSessionPhase.Maintenance && sessionCount >= waitingThreshold)
             {
@@ -404,7 +403,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 }
 
                 int memberCount = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
-                int desiredLimit = Math.Max(MorePlayersPatches.GetMaxPlayers(), memberCount + 1);
+                int desiredLimit = Math.Max(MorePlayersPatchHelpers.GetMaxPlayers(), memberCount + 1);
                 if (SteamMatchmaking.GetLobbyMemberLimit(lobbyId) != desiredLimit)
                 {
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyId, desiredLimit);
@@ -534,7 +533,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     return false;
                 }
 
-                int maxPlayers = MorePlayersPatches.GetMaxPlayers();
+                int maxPlayers = MorePlayersPatchHelpers.GetMaxPlayers();
                 int steam = JoinAnytimeRoomTools.GetSessionPlayerCount();
                 int steamMembers = SteamMatchmaking.GetNumLobbyMembers(lobbyId);
                 int memberLimit = SteamMatchmaking.GetLobbyMemberLimit(lobbyId);
@@ -593,7 +592,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     ? " [join now]"
                     : string.Empty;
 
-            return $"{baseName}{tag} ({sessionCount}/{MorePlayersPatches.GetMaxPlayers()})";
+            return $"{baseName}{tag} ({sessionCount}/{MorePlayersPatchHelpers.GetMaxPlayers()})";
         }
 
         internal static void OnHostSceneReady()

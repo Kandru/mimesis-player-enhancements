@@ -49,7 +49,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             int cycleCount = (int)parameters[0];
             bool success = (bool)parameters[1];
             int playerCount = (int)parameters[2];
-            int maxDisplay = Math.Min(playerCount, MorePlayersPatches.GetMaxPlayers());
+            int maxDisplay = Math.Min(playerCount, MorePlayersPatchHelpers.GetMaxPlayers());
 
             SetTitle(ui, GetL10NText("UI_PREFAB_SURVIVAL_RESULT_TITLE", cycleCount));
             SurvivalResultRowSlot[] slots = EnsureSlots(ui, maxDisplay);
@@ -72,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         private static SurvivalResultRowSlot[] EnsureSlots(object ui, int playerCount)
         {
             SurvivalResultRowSlot[] nativeRows = BuildNativeSlots(ui);
-            int requiredSlots = Math.Min(playerCount, MorePlayersPatches.GetMaxPlayers());
+            int requiredSlots = Math.Min(playerCount, MorePlayersPatchHelpers.GetMaxPlayers());
             if (requiredSlots <= RowsPerColumn)
             {
                 return nativeRows;

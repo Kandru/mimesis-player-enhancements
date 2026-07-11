@@ -204,7 +204,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
             float effective = EconomyResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
-            bool modDiscountsEnabled = ModConfig.ShopDiscountChancePercent.Value > 0;
+            EconomySceneConfig economy = SceneScopedConfigGate.Economy;
+            bool modDiscountsEnabled = economy.ShopDiscountChancePercent > 0;
 
             Dictionary<int, int> basePrices = BasePricesByRoom.GetOrCreateValue(room);
             TrackRoom(room);
@@ -266,7 +267,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 return;
             }
 
-            if (ModConfig.ShopDiscountChancePercent.Value <= 0)
+            EconomySceneConfig economy = SceneScopedConfigGate.Economy;
+            if (economy.ShopDiscountChancePercent <= 0)
             {
                 return;
             }
@@ -277,9 +279,9 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 return;
             }
 
-            int minPercent = ModConfig.ShopDiscountMinPercent.Value;
-            int maxPercent = ModConfig.ShopDiscountMaxPercent.Value;
-            int chancePercent = ModConfig.ShopDiscountChancePercent.Value;
+            int minPercent = economy.ShopDiscountMinPercent;
+            int maxPercent = economy.ShopDiscountMaxPercent;
+            int chancePercent = economy.ShopDiscountChancePercent;
             if (maxPercent < minPercent)
             {
                 maxPercent = minPercent;

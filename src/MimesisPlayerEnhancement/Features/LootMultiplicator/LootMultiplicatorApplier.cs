@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Reflection;
-using Bifrost.ConstEnum;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
@@ -56,13 +55,14 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             int playerCount = room.GetMemberCount();
+            LootMultiplicatorSceneConfig config = SceneScopedConfigGate.Loot;
             LootMultiplicatorLog.InfoScalingApplied(playerCount);
 
-            int scaled = ScaleSpawnPointDatas(room, playerCount);
+            int scaled = ScaleSpawnPointDatas(room, playerCount, config);
             ModLog.Info(Feature, $"Map loot spawn data updated — scaledSlots={scaled}, players={playerCount}");
         }
 
-        private static int ScaleSpawnPointDatas(DungeonRoom room, int playerCount)
+        private static int ScaleSpawnPointDatas(DungeonRoom room, int playerCount, LootMultiplicatorSceneConfig config)
         {
             if (SpawnedActorDatasField.GetValue(room) is not IDictionary datas)
             {
@@ -77,19 +77,19 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     continue;
                 }
 
-                scaled += ScaleLootSpawnData(entry.Value, playerCount) ? 1 : 0;
+                scaled += ScaleLootSpawnData(entry.Value, playerCount, config) ? 1 : 0;
             }
 
             return scaled;
         }
 
-        private static bool ScaleLootSpawnData(object spawnData, int playerCount)
+        private static bool ScaleLootSpawnData(object spawnData, int playerCount, LootMultiplicatorSceneConfig config)
         {
             return spawnData switch
             {
-                RandomSpawnedItemActorData random => ScaleRandomLootSpawnData(random, playerCount),
+                RandomSpawnedItemActorData random => ScaleRandomLootSpawnData(random, playerCount, config),
                 FixedSpawnedActorData fixedLoot when IsLootFixedSpawn(fixedLoot) =>
-                    ScaleFixedLootSpawnData(fixedLoot, playerCount),
+                    ScaleFixedLootSpawnData(fixedLoot, playerCount, config),
                 _ => false,
             };
         }
@@ -99,10 +99,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             return spawnData.MarkerType.Equals(MapMarkerType.LootingObject);
         }
 
-        private static bool ScaleRandomLootSpawnData(RandomSpawnedItemActorData spawnData, int playerCount)
+        private static bool ScaleRandomLootSpawnData(
+            RandomSpawnedItemActorData spawnData,
+            int playerCount,
+            LootMultiplicatorSceneConfig config)
         {
             ItemType itemType = ItemTypeLookup.GetDominantItemType(spawnData.Candidates);
-            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount);
+            float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(LootSource.Map, itemType, playerCount, masterId: 0, config);
             // Stack count is scaled at spawn time via RuntimeLootScaler (ReasonOfSpawn.Spawn).
             return ScaleCommonSpawnFields(
                 spawnData,
@@ -113,14 +116,18 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 scaleStackCount: false);
         }
 
-        private static bool ScaleFixedLootSpawnData(FixedSpawnedActorData spawnData, int playerCount)
+        private static bool ScaleFixedLootSpawnData(
+            FixedSpawnedActorData spawnData,
+            int playerCount,
+            LootMultiplicatorSceneConfig config)
         {
             ItemType itemType = ItemTypeLookup.GetItemType(spawnData.MasterID);
             float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
                 LootSource.Map,
                 itemType,
                 playerCount,
-                spawnData.MasterID);
+                spawnData.MasterID,
+                config);
             bool scaleStackCount = itemType.Equals(ItemType.Consumable);
             return ScaleCommonSpawnFields(
                 spawnData,

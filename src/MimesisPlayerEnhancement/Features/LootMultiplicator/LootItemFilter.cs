@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
-using Bifrost.Cooked;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {

@@ -449,7 +449,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (sessionManager != null
                 && playerUid != 0
                 && (WebDashboardSessionAccess.TryGetNetworkGrade(sessionManager, playerUid, out int grade)
-                    || WebDashboardPatches.TryGetCachedGrade(playerUid, out grade)))
+                    || WebDashboardPatchHelpers.TryGetCachedGrade(playerUid, out grade)))
             {
                 dto.NetworkGrade = grade;
             }
@@ -607,7 +607,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 if (playerUid != 0
                     && (WebDashboardSessionAccess.TryGetNetworkGrade(sessionManager, playerUid, out int grade)
-                        || WebDashboardPatches.TryGetCachedGrade(playerUid, out grade)))
+                        || WebDashboardPatchHelpers.TryGetCachedGrade(playerUid, out grade)))
                 {
                     dto.NetworkGrade = grade;
                 }

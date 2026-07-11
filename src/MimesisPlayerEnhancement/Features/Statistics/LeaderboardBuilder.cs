@@ -1,6 +1,5 @@
 using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 
 namespace MimesisPlayerEnhancement.Features.Statistics
 {

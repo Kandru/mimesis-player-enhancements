@@ -1,5 +1,3 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal enum SpawnCategory

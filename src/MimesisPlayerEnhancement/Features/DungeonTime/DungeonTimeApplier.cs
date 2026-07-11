@@ -11,10 +11,10 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableDungeonTime.Value))
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => SceneScopedConfigGate.DungeonTime.EnableDungeonTime))
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-                if (!ModConfig.EnableDungeonTime.Value)
+                if (!SceneScopedConfigGate.DungeonTime.EnableDungeonTime)
                 {
                     DungeonTimeLog.DebugSkipped("EnableDungeonTime is off");
                 }

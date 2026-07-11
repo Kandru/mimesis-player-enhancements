@@ -4,7 +4,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     {
         internal static bool ShouldScale()
         {
-            return HostApplyGate.ShouldApplyHostOnlyFeature(() => ModConfig.EnableLootMultiplicator.Value);
+            return HostApplyGate.ShouldApplyHostOnlyFeature(() => SceneScopedConfigGate.Loot.EnableLootMultiplicator);
         }
 
         internal static bool ShouldScale(DungeonRoom room)

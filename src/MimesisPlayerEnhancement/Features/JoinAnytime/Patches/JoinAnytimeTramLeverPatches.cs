@@ -1,5 +1,4 @@
 using System.Reflection;
-using Bifrost.ConstEnum;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches

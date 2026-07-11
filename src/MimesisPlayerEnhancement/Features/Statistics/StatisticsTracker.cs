@@ -1,6 +1,5 @@
 using System.Threading;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics

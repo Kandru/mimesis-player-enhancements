@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         internal static string? ResolveLayoutFlow(DungeonMasterInfo info, string vanillaFlow)
         {
-            if (!ModConfig.RandomizeLayoutFlow.Value)
+            if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeLayoutFlow)
             {
                 return null;
             }
@@ -23,7 +23,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         internal static int? ResolveMapId(DungeonMasterInfo info, int vanillaMapId)
         {
-            if (!ModConfig.RandomizeMapVariant.Value)
+            if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeMapVariant)
             {
                 return null;
             }

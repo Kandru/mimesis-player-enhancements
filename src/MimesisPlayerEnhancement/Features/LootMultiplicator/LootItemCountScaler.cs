@@ -1,5 +1,3 @@
-using Bifrost.ConstEnum;
-
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootItemCountScaler

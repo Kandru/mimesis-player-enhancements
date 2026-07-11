@@ -1,5 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 using UnityEngine.UI;

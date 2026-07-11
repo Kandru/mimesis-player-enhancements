@@ -1,4 +1,3 @@
-using Bifrost.ConstEnum;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator

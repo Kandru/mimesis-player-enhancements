@@ -12,11 +12,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnedActorData? spawnData,
             bool throttle = true)
         {
-            return ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value > 0f
+            float minDistance = ResolveMinPlayerDistanceMeters(room);
+            return minDistance > 0f
                 && room != null
                 && spawnData != null
                 && IsBonusCreatureEncounter(spawnData)
-                && IsPlayerBlockingSpawnCached(room, spawnData, CreatureBlockCache, throttle);
+                && IsPlayerBlockingSpawnCached(room, spawnData, CreatureBlockCache, throttle, minDistance);
         }
 
         internal static bool ShouldBlockBonusLootRespawn(
@@ -24,16 +25,21 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnedActorData? spawnData,
             bool throttle = true)
         {
-            return ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value > 0f
+            float minDistance = ResolveMinPlayerDistanceMeters(room);
+            return minDistance > 0f
                 && room != null
                 && spawnData != null
                 && IsBonusLootRespawn(spawnData)
-                && IsPlayerBlockingSpawnCached(room, spawnData, LootBlockCache, throttle);
+                && IsPlayerBlockingSpawnCached(room, spawnData, LootBlockCache, throttle, minDistance);
         }
 
         internal static bool IsPlayerBlockingSpawn(DungeonRoom room, Vector3 spawnPos)
         {
-            float minDistance = ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value;
+            return IsPlayerBlockingSpawn(room, spawnPos, ResolveMinPlayerDistanceMeters(room));
+        }
+
+        internal static bool IsPlayerBlockingSpawn(DungeonRoom room, Vector3 spawnPos, float minDistance)
+        {
             if (minDistance <= 0f)
             {
                 return false;
@@ -62,7 +68,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             DungeonRoom room,
             SpawnedActorData spawnData,
             Dictionary<SpawnedActorData, CachedBlockResult> cache,
-            bool throttle)
+            bool throttle,
+            float minDistance)
         {
             float now = Time.time;
 
@@ -73,13 +80,25 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return cached.Blocked;
             }
 
-            bool blocked = IsPlayerBlockingSpawn(room, spawnData.PosVector);
+            bool blocked = IsPlayerBlockingSpawn(room, spawnData.PosVector, minDistance);
             if (throttle)
             {
                 cache[spawnData] = new CachedBlockResult(blocked, now + EncounterSpawnTiming.RetryIntervalSeconds);
             }
 
             return blocked;
+        }
+
+        private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
+        {
+            if (room != null
+                && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state)
+                && state.HasSnapshot)
+            {
+                return state.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+            }
+
+            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
         }
 
         private readonly struct CachedBlockResult

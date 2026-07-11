@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         internal static int RollSeed(int vanillaSeed)
         {
-            if (!ModConfig.RandomizeDungeonSeed.Value)
+            if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeDungeonSeed)
             {
                 return vanillaSeed;
             }

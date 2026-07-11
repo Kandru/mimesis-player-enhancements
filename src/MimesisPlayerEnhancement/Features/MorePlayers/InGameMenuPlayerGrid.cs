@@ -1,5 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 return;
             }
 
-            int targetSlots = MorePlayersPatches.GetMaxPlayers();
+            int targetSlots = MorePlayersPatchHelpers.GetMaxPlayers();
             if (targetSlots <= VanillaPlayerRows
                 || menu.playerUIElements == null
                 || menu.playerUIElements.Count < VanillaPlayerRows)
@@ -194,7 +193,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 return;
             }
 
-            int cap = MorePlayersPatches.GetMaxPlayers();
+            int cap = MorePlayersPatchHelpers.GetMaxPlayers();
             while (tempVolumeList.Count < cap)
             {
                 tempVolumeList.Add(0f);

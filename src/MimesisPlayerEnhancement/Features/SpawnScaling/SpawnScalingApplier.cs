@@ -40,7 +40,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void Apply(DungeonRoom room)
         {
-            if (!ModConfig.EnableSpawnScaling.Value)
+            SpawnScalingSceneConfig config = SceneScopedConfigGate.Spawn;
+            if (!config.EnableSpawnScaling)
             {
                 ModLog.Debug(Feature, "Spawn scaling skipped — EnableSpawnScaling is off");
                 return;
@@ -49,8 +50,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             int playerCount = room.GetMemberCount();
             SpawnScalingLog.InfoScalingApplied(playerCount);
 
-            float mimicMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount);
-            float jakoMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount);
+            float mimicMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount, config);
+            float jakoMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config);
 
             int mimicMax = ScaleField(room, SpawnScalingFields.MimicSpawnCountMaxField, mimicMultiplier, "mimicSpawnCountMax");
             int mimicRemain = ScaleField(room, SpawnScalingFields.MimicSpawnCountRemainField, mimicMultiplier, "mimicSpawnCountRemain");
@@ -67,6 +68,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             int bonusGroupWaves = ConfigureBonusGroupWaves(room, playerCount);
 
             RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
+            state.SetSnapshot(config);
             if (SpawnScalingFields.DungeonMasterInfoField.GetValue(room) is DungeonMasterInfo dungeonInfo)
             {
                 PeriodicSpawnWaitApplier.ApplyInitialWait(room, state);

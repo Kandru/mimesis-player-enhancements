@@ -2,7 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
-    public static class JoinAnytimePatches
+    internal static class JoinAnytimePatches
     {
         private const string Feature = "JoinAnytime";
 

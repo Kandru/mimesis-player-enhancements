@@ -1,6 +1,4 @@
 using System.Reflection;
-using Bifrost.Cooked;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerTuning

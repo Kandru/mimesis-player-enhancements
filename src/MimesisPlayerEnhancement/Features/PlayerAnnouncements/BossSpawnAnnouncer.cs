@@ -1,6 +1,5 @@
 using System.Collections;
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements

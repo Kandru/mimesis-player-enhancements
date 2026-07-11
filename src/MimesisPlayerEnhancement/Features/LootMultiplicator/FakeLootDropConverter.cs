@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            int chancePercent = ModConfig.ConvertFakeActorDyingDropChancePercent.Value;
+            int chancePercent = SceneScopedConfigGate.Loot.ConvertFakeActorDyingDropChancePercent;
             if (chancePercent <= 0 || !RollConversion(chancePercent))
             {
                 return;

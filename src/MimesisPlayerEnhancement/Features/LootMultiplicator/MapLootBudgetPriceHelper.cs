@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
-using Bifrost.Cooked;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
@@ -18,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static float GetFilterPriceRatio(DungeonRoom room, DungeonMasterInfo dungeonInfo)
         {
-            if (!ModConfig.AutoScaleMapLootBudgetForFilter.Value
+            if (!SceneScopedConfigGate.Loot.AutoScaleMapLootBudgetForFilter
                 || !LootItemFilter.IsFilterActive()
                 || dungeonInfo.SpawnableItemInfo == null)
             {

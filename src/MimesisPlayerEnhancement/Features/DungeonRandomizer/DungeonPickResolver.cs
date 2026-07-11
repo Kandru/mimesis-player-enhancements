@@ -11,8 +11,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         internal static int ResolvePick(int vanillaResult, IReadOnlyList<int> excludeDungeonIds)
         {
-            GetFilters(out HashSet<int> allowlist, out HashSet<int> blocklist);
-            DungeonPickPoolMode mode = DungeonIdListParser.ParsePoolMode(ModConfig.DungeonPickPoolMode.Value);
+            DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;
+            GetFilters(config, out HashSet<int> allowlist, out HashSet<int> blocklist);
+            DungeonPickPoolMode mode = DungeonIdListParser.ParsePoolMode(config.DungeonPickPoolMode);
 
             if (mode == DungeonPickPoolMode.WidenVanilla
                 && IsEligible(vanillaResult, allowlist, blocklist)
@@ -65,18 +66,21 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                    && !blocklist.Contains(dungeonId);
         }
 
-        private static void GetFilters(out HashSet<int> allowlist, out HashSet<int> blocklist)
+        private static void GetFilters(
+            DungeonRandomizerSceneConfig config,
+            out HashSet<int> allowlist,
+            out HashSet<int> blocklist)
         {
-            string allowRaw = ModConfig.DungeonAllowlist.Value ?? "";
-            string blockRaw = ModConfig.DungeonBlocklist.Value ?? "";
+            string allowRaw = config.DungeonAllowlist;
+            string blockRaw = config.DungeonBlocklist;
 
-            if (_cachedAllowlist == null || !string.Equals(_cachedAllowlistRaw, allowRaw, System.StringComparison.Ordinal))
+            if (_cachedAllowlist == null || !string.Equals(_cachedAllowlistRaw, allowRaw, StringComparison.Ordinal))
             {
                 _cachedAllowlistRaw = allowRaw;
                 _cachedAllowlist = DungeonIdListParser.Parse(allowRaw);
             }
 
-            if (_cachedBlocklist == null || !string.Equals(_cachedBlocklistRaw, blockRaw, System.StringComparison.Ordinal))
+            if (_cachedBlocklist == null || !string.Equals(_cachedBlocklistRaw, blockRaw, StringComparison.Ordinal))
             {
                 _cachedBlocklistRaw = blockRaw;
                 _cachedBlocklist = DungeonIdListParser.Parse(blockRaw);

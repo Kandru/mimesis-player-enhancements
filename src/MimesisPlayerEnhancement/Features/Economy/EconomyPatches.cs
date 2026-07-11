@@ -1,8 +1,6 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.Economy
 {
-    public static class EconomyPatches
+    internal static class EconomyPatches
     {
         private const string Feature = "Economy";
 
@@ -22,6 +20,11 @@ namespace MimesisPlayerEnhancement.Features.Economy
         /// <summary>Called via FeatureModule.SyncFromConfig when the Economy section changes.</summary>
         public static void RefreshFromConfig()
         {
+            if (SceneScopedConfigGate.IsModuleSyncDeferred(Feature))
+            {
+                return;
+            }
+
             EconomyApplier.InvalidateScrapScaling();
             MaintenanceShopApplier.NotifyConfigChanged();
 

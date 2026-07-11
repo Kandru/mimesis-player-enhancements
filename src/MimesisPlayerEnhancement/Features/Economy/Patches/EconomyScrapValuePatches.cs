@@ -1,5 +1,3 @@
-using Bifrost.Cooked;
-
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
     [HarmonyPatch(typeof(ItemElement), nameof(ItemElement.FinalPrice), MethodType.Getter)]
@@ -10,7 +8,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         [HarmonyPostfix]
         public static void Postfix(ItemElement __instance, ref int __result)
         {
-            if (!ModConfig.EnableEconomy.Value)
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }
@@ -38,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         [HarmonyPostfix]
         public static void Postfix(ConsumableItemElement __instance, ref ItemInfo __result)
         {
-            if (!ModConfig.EnableEconomy.Value)
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }
@@ -62,7 +60,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         [HarmonyPostfix]
         public static void Postfix(MiscellanyItemElement __instance, ref ItemInfo __result)
         {
-            if (!ModConfig.EnableEconomy.Value)
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }
@@ -86,7 +84,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         [HarmonyPostfix]
         public static void Postfix(ItemMasterInfo __instance, ref int __result)
         {
-            if (!ModConfig.EnableEconomy.Value)
+            if (!EconomyApplier.IsEnabled())
             {
                 return;
             }
@@ -110,7 +108,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         [HarmonyPostfix]
         public static void Postfix(ref ItemElement? __result)
         {
-            if (!ModConfig.EnableEconomy.Value || __result == null)
+            if (!EconomyApplier.IsEnabled() || __result == null)
             {
                 return;
             }

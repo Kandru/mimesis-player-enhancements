@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
-    public static class StatisticsPatches
+    internal static class StatisticsPatches
     {
         private const string Feature = "Statistics";
 

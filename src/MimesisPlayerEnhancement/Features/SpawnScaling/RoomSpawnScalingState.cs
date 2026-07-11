@@ -14,6 +14,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal DungeonRoom Room { get; }
 
+        internal SpawnScalingSceneConfig Snapshot { get; private set; }
+
+        internal bool HasSnapshot { get; private set; }
+
+        internal void SetSnapshot(SpawnScalingSceneConfig snapshot)
+        {
+            Snapshot = snapshot;
+            HasSnapshot = true;
+        }
+
         internal SpawnTimingOverrides? TimingOverrides { get; set; }
 
         internal int NextJakoWavePeriodMs { get; set; }

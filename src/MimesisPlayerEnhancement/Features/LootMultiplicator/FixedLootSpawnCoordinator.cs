@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Reflection;
-using Bifrost.ConstEnum;
-using MimesisPlayerEnhancement.Features.SpawnScaling;
 using ReluProtocol.Enum;
 using UnityEngine;
 
@@ -92,7 +90,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             int playerCount = room.GetMemberCount();
-            RoomState state = new(room);
+            LootMultiplicatorSceneConfig lootConfig = SceneScopedConfigGate.Loot;
+            RoomState state = new(room, lootConfig);
 
             foreach (DictionaryEntry entry in spawnDatas)
             {
@@ -122,7 +121,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     LootSource.Map,
                     itemType,
                     playerCount,
-                    masterId);
+                    masterId,
+                    lootConfig);
                 int vanillaCount = group.Value.Count;
                 int targetTotal = LootMultiplierResolver.ScaleCount(vanillaCount, multiplier);
                 int need = targetTotal - vanillaCount;
@@ -199,7 +199,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static void ProcessPendingRespawns()
         {
             if (PendingRespawns.Count == 0
-                || !ModConfig.EnableLootMultiplicator.Value
+                || !SceneScopedConfigGate.Loot.EnableLootMultiplicator
                 || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
@@ -231,7 +231,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     if (ModConfig.EnableDebugLogging.Value)
                     {
                         ModLog.Debug(Feature, $"Fixed loot respawn waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
-                            $"players within {ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value:0.#}m");
+                            $"players within {ResolveMinPlayerDistanceMeters(pending.Room):0.#}m");
                     }
 
                     DeferNextAttempt(i, pending, now);
@@ -447,8 +447,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
             }
 
-            float minDelay = ModConfig.MapPlacedEncounterDelayMinSeconds.Value;
-            float maxDelay = ModConfig.MapPlacedEncounterDelayMaxSeconds.Value;
+            (float minDelay, float maxDelay) = ResolveEncounterDelays(room);
             float delay = minDelay >= maxDelay ? minDelay : UnityEngine.Random.Range(minDelay, maxDelay);
             long spawnWaitMs = spawnData.SpawnWaitTime;
             if (spawnWaitMs > 0)
@@ -489,16 +488,42 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             return false;
         }
 
+        private static (float MinDelay, float MaxDelay) ResolveEncounterDelays(DungeonRoom room)
+        {
+            if (RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? spawnState) && spawnState.HasSnapshot)
+            {
+                return (spawnState.Snapshot.MapPlacedEncounterDelayMinSeconds, spawnState.Snapshot.MapPlacedEncounterDelayMaxSeconds);
+            }
+
+            SpawnScalingSceneConfig spawn = SceneScopedConfigGate.Spawn;
+            return (spawn.MapPlacedEncounterDelayMinSeconds, spawn.MapPlacedEncounterDelayMaxSeconds);
+        }
+
+        private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
+        {
+            if (room != null
+                && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? spawnState)
+                && spawnState.HasSnapshot)
+            {
+                return spawnState.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+            }
+
+            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
+        }
+
         private sealed class RoomState
         {
             private readonly Dictionary<int, int> _remainingQuotaByMasterId = [];
 
-            internal RoomState(DungeonRoom room)
+            internal RoomState(DungeonRoom room, LootMultiplicatorSceneConfig snapshot)
             {
                 Room = room;
+                Snapshot = snapshot;
             }
 
             internal DungeonRoom Room { get; }
+
+            internal LootMultiplicatorSceneConfig Snapshot { get; }
 
             internal int SlotCount => _slots.Count;
 

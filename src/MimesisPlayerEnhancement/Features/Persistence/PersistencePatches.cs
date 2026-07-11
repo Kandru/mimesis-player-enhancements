@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Persistence
 {
-    public static class PersistencePatches
+    internal static class PersistencePatches
     {
         private const string Feature = "Persistence";
 
