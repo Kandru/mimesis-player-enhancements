@@ -7,8 +7,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 {
     internal static class SpectatorPlayerGrid
     {
+        private const string Feature = "Ui";
         private const int VanillaPlayerRows = 4;
         private const float ColumnGap = 12f;
+        private const float BottomMargin = 8f;
         private const float FallbackColumnStep = 220f;
 
         private static readonly FieldInfo? LiveColorField =
@@ -83,7 +85,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 ApplyExtended(state);
             }
 
-            RefreshLayoutIfNeeded(state);
+            RefreshLayoutIfNeeded(state, actorsInfo.Count);
             List<Tuple<int, bool, bool, bool>> visibleActors = SelectVisibleActors(actorsInfo, state.MaxVisibleSlots);
             EnsureCloneRows(state, state.MaxVisibleSlots);
             BindRows(state, visibleActors, cancellationToken);
@@ -201,7 +203,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             state.ExtendedActive = false;
         }
 
-        private static void RefreshLayoutIfNeeded(SpectatorListState state)
+        private static void RefreshLayoutIfNeeded(SpectatorListState state, int actorCount = 0)
         {
             if (state.NativeRows.Length == 0)
             {
@@ -210,9 +212,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 
             int screenWidth = Screen.width;
             int screenHeight = Screen.height;
-            if (state.LastScreenWidth == screenWidth
+            bool screenUnchanged = state.LastScreenWidth == screenWidth
                 && state.LastScreenHeight == screenHeight
-                && state.RowsPerColumn > 0)
+                && state.RowsPerColumn > 0;
+            bool actorsDropped = actorCount > state.MaxVisibleSlots;
+            if (screenUnchanged && !actorsDropped)
             {
                 return;
             }
@@ -220,9 +224,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             state.LastScreenWidth = screenWidth;
             state.LastScreenHeight = screenHeight;
             MeasureRowMetrics(state);
-            state.RowsPerColumn = ComputeRowsPerColumn(state);
+            state.RowsPerColumn = ComputeRowsPerColumn(state, out float availableHeight);
             state.ColumnStepX = MeasureColumnStepX(state);
             state.MaxVisibleSlots = state.RowsPerColumn * 2;
+
+            ModLog.Debug(
+                Feature,
+                $"Spectator list layout — availableHeight={availableHeight:F1}, rowHeight={state.RowHeight:F1}, rowsPerColumn={state.RowsPerColumn}, maxVisible={state.MaxVisibleSlots}, actors={actorCount}");
         }
 
         private static void MeasureRowMetrics(SpectatorListState state)
@@ -261,34 +269,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
         }
 
-        private static int ComputeRowsPerColumn(SpectatorListState state)
+        private static int ComputeRowsPerColumn(SpectatorListState state, out float availableHeight)
         {
+            availableHeight = state.RowHeight;
             if (state.NativeRows[0].transform is not RectTransform firstRect)
             {
-                return VanillaPlayerRows;
+                return 1;
             }
 
-            float availableHeight = ResolveAvailableHeight(state, firstRect);
+            availableHeight = ResolveAvailableHeight(state, firstRect);
             int rows = Mathf.FloorToInt(availableHeight / state.RowHeight);
-            return Mathf.Max(VanillaPlayerRows, rows);
+            return Mathf.Max(1, rows);
         }
 
         private static float ResolveAvailableHeight(SpectatorListState state, RectTransform firstRect)
         {
-            Transform rowParent = firstRect.parent;
-            if (rowParent is RectTransform parentRect && parentRect.rect.height > 1f)
-            {
-                float startOffset = Mathf.Abs(firstRect.anchoredPosition.y);
-                float usableHeight = parentRect.rect.height - startOffset;
-                if (usableHeight > state.RowHeight)
-                {
-                    return usableHeight;
-                }
-            }
-
             float canvasHeight = ResolveCanvasHeight(state.ListView);
             float topOffset = Mathf.Abs(firstRect.anchoredPosition.y) + (firstRect.rect.height * 0.5f);
-            return Mathf.Max(state.RowHeight * VanillaPlayerRows, canvasHeight - topOffset);
+            float available = canvasHeight - topOffset - BottomMargin;
+            return Mathf.Max(state.RowHeight, available);
         }
 
         private static float ResolveCanvasHeight(UIPrefab_Spectator_PlayerListView listView)
