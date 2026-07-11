@@ -20,6 +20,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string itemId,
             int? percent)
         {
+            if (WebDashboardServer.IsShuttingDown)
+            {
+                return new WebDashboardSpawnItemResult
+                {
+                    Success = false,
+                    Message = L("timed_out"),
+                };
+            }
+
             string locale = WebDashboardRequestLocale.Current;
             PendingSpawn pending = new()
             {
@@ -79,6 +88,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     IsProcessing = false;
                     pending.Done.Set();
                 }
+            }
+        }
+
+        internal static void CancelPending()
+        {
+            IsProcessing = false;
+            while (Pending.TryDequeue(out PendingSpawn? pending))
+            {
+                pending.Result = new WebDashboardSpawnItemResult
+                {
+                    Success = false,
+                    Message = L("timed_out"),
+                };
+                pending.Done.Set();
             }
         }
 

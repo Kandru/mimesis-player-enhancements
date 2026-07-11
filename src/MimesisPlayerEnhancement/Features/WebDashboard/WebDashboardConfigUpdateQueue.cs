@@ -16,6 +16,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static T EnqueueAndWait<T>(Func<T> work)
         {
+            if (WebDashboardServer.IsShuttingDown)
+            {
+                throw new OperationCanceledException(L("timed_out"));
+            }
+
             string locale = WebDashboardRequestLocale.Current;
             PendingWork pending = new()
             {
@@ -106,6 +111,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     IsProcessing = false;
                     pending.Done.Set();
                 }
+            }
+        }
+
+        internal static void CancelPending()
+        {
+            IsProcessing = false;
+            while (Pending.TryDequeue(out PendingWork? pending))
+            {
+                pending.Error = new OperationCanceledException(L("timed_out"));
+                pending.Done.Set();
             }
         }
 

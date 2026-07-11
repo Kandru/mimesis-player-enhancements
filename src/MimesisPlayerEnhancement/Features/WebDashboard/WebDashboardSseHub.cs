@@ -97,12 +97,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!_shuttingDown && ex is not ThreadAbortException)
             {
-                if (!_shuttingDown)
-                {
-                    ModLog.Warn(Feature, $"SSE client disconnected: {ex.Message}");
-                }
+                ModLog.Warn(Feature, $"SSE client disconnected: {ex.Message}");
             }
             finally
             {
@@ -157,7 +154,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             Thread? thread = _broadcastThread;
             _broadcastThread = null;
-            if (thread != null && thread.IsAlive && thread != Thread.CurrentThread)
+            if (thread != null && thread.IsAlive && thread != Thread.CurrentThread && !_shuttingDown)
             {
                 try
                 {

@@ -14,6 +14,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardHostCheatsDto EnqueueAndWait(Func<WebDashboardHostCheatsDto> work)
         {
+            if (WebDashboardServer.IsShuttingDown)
+            {
+                return new WebDashboardHostCheatsDto
+                {
+                    Success = false,
+                    Message = L("timed_out"),
+                };
+            }
+
             string locale = WebDashboardRequestLocale.Current;
             PendingWork pending = new()
             {
@@ -60,6 +69,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     pending.Done.Set();
                 }
+            }
+        }
+
+        internal static void CancelPending()
+        {
+            while (Pending.TryDequeue(out PendingWork? pending))
+            {
+                pending.Error = new OperationCanceledException(L("timed_out"));
+                pending.Done.Set();
             }
         }
 

@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
@@ -16,6 +17,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Handle(HttpListenerContext context)
         {
+            if (WebDashboardServer.IsShuttingDown)
+            {
+                TryClose(context);
+                return;
+            }
+
             WebDashboardRequestLocale.Set(context.Request);
             try
             {
@@ -30,7 +37,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 ServeStatic(context, path);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!IsExpectedShutdownException(ex))
             {
                 ModLog.Warn(Feature, $"Request failed: {ex.Message}");
                 TryWriteError(context, 500, L("internal_error"));
@@ -38,6 +45,24 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             finally
             {
                 WebDashboardRequestLocale.Clear();
+            }
+        }
+
+        private static bool IsExpectedShutdownException(Exception ex)
+        {
+            return WebDashboardServer.IsShuttingDown || ex is ThreadAbortException;
+        }
+
+        private static void TryClose(HttpListenerContext context)
+        {
+            try
+            {
+                context.Response.StatusCode = 503;
+                context.Response.Close();
+            }
+            catch
+            {
+                /* listener already closed */
             }
         }
 

@@ -1,4 +1,5 @@
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util.Patches;
 using UnityEngine;
 
@@ -40,11 +41,17 @@ namespace MimesisPlayerEnhancement
                 SyncFromConfig(ModConfigChangeInfo.FullReload);
                 LogStartupSummary();
                 ModConfig.Changed += SyncFromConfig;
+                Application.quitting += OnApplicationQuitting;
             }
             finally
             {
                 _isInitializing = false;
             }
+        }
+
+        private static void OnApplicationQuitting()
+        {
+            WebDashboardServer.PrepareApplicationQuit();
         }
 
         public override void OnPreferencesSaved(string filepath)
@@ -103,6 +110,8 @@ namespace MimesisPlayerEnhancement
 
         public override void OnDeinitializeMelon()
         {
+            Application.quitting -= OnApplicationQuitting;
+
             foreach (IFeatureModule module in FeatureModules.All)
             {
                 module.OnDeinitialize();

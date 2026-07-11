@@ -10,8 +10,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static HttpListener? _listener;
         private static Thread? _listenerThread;
         private static volatile bool _running;
+        private static volatile bool _shuttingDown;
         private static bool _syncDeferred;
         private static string _listenUrl = "";
+
+        internal static bool IsShuttingDown => _shuttingDown;
 
         internal static void Apply(HarmonyLib.Harmony harmony)
         {
@@ -27,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void SyncFromConfig()
         {
-            if (!ModConfig.IsInitialized)
+            if (_shuttingDown || !ModConfig.IsInitialized)
             {
                 return;
             }
@@ -101,15 +104,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        internal static void StopOnDeinit()
+        /// <summary>
+        /// Tear down the HTTP server as soon as the game begins quitting, while the main
+        /// thread can still drain dashboard queues in <see cref="OnUpdate"/>.
+        /// </summary>
+        internal static void PrepareApplicationQuit()
         {
-            ModConfig.Changed -= OnConfigChanged;
+            if (_shuttingDown)
+            {
+                return;
+            }
+
+            _shuttingDown = true;
+            ModLog.Debug(Feature, "Application quit — shutting down dashboard.");
             WebDashboardHostCheatsRuntime.OnDeinitialize();
             Stop();
         }
 
+        internal static void StopOnDeinit()
+        {
+            PrepareApplicationQuit();
+            ModConfig.Changed -= OnConfigChanged;
+        }
+
+        private static void CancelAllPendingWork()
+        {
+            WebDashboardConfigUpdateQueue.CancelPending();
+            WebDashboardItemSpawnQueue.CancelPending();
+            WebDashboardHostCheatsQueue.CancelPending();
+        }
+
         private static void Start(string prefix)
         {
+            if (_shuttingDown)
+            {
+                return;
+            }
+
             if (!WebDashboardEmbeddedAssets.IsAvailable)
             {
                 ModLog.Error(Feature, "Web dashboard assets are missing from the mod assembly.");
@@ -153,6 +184,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             _running = false;
             ManagementMenuButton.SyncVisibility(dashboardRunning: false, "");
+            CancelAllPendingWork();
             WebDashboardSseHub.Shutdown();
             HttpListener? listener = _listener;
             _listener = null;
@@ -162,7 +194,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 try
                 {
-                    listener.Stop();
+                    // Close abandons active SSE/API handlers immediately. Stop() can block
+                    // on Mono while handlers wait for the game thread during quit.
                     listener.Close();
                 }
                 catch
@@ -171,19 +204,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            Thread? thread = _listenerThread;
             _listenerThread = null;
-            if (thread != null && thread.IsAlive && thread != Thread.CurrentThread)
-            {
-                try
-                {
-                    _ = thread.Join(500);
-                }
-                catch
-                {
-                    /* ignore */
-                }
-            }
         }
 
         private static void ListenLoop()
