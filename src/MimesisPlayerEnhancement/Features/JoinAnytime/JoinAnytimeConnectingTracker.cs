@@ -62,6 +62,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             TryMarkReady(player.UID);
+            TryPromoteIfReady(player);
         }
 
         internal static void OnServerPlayerCreated(VPlayer player)
@@ -74,7 +75,30 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (player.LevelLoadCompleted)
             {
                 TryMarkReady(player.UID);
+                TryPromoteIfReady(player);
             }
+        }
+
+        internal static void TryPromoteIfReady(VPlayer player)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || player == null || player.IsHost)
+            {
+                return;
+            }
+
+            if (JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host)
+            {
+                return;
+            }
+
+            if (!IsPlayerFullyReady(player))
+            {
+                return;
+            }
+
+            JoinAnytimePlayerRegistration.MarkFullyReady(player);
+            RemovePending(player.UID);
+            ModLog.Debug(Feature, $"Connecting tracker — uid={player.UID} promoted ready");
         }
 
         internal static void OnUpdate()
@@ -106,6 +130,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
                 if (!WebDashboardSessionAccess.TryGetPlayerByUid(pending.Uid, out VPlayer? player))
                 {
+                    if (!IsPendingSessionGone(pending))
+                    {
+                        continue;
+                    }
+
                     toRemove.Add(entry.Key);
                     continue;
                 }
@@ -265,6 +294,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 DisconnectReason.KickByServer);
 
             ModLog.Info(Feature, $"Connecting tracker — kicked uid={pending.Uid} after {GraceSeconds}s timeout");
+        }
+
+        private static bool IsPendingSessionGone(PendingConnection pending)
+        {
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return true;
+            }
+
+            return !WebDashboardSessionAccess.TryGetSessionContextBySessionId(
+                sessionManager,
+                pending.SessionId,
+                out _);
         }
 
         private static bool IsHostSession(SessionContext context)

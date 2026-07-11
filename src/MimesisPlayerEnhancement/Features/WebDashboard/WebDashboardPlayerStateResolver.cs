@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return "connecting";
             }
 
-            if (JoinAnytimePlayerRegistration.ShouldDeferRegistration(vPlayer) || !vPlayer.LevelLoadCompleted)
+            if (!vPlayer.LevelLoadCompleted)
             {
                 return "loading";
             }
@@ -62,9 +62,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return string.Empty;
             }
 
-            if (JoinAnytimePlayerRegistration.ShouldDeferRegistration(vPlayer) || !vPlayer.LevelLoadCompleted)
+            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+
+            if (!vPlayer.LevelLoadCompleted)
             {
-                return ResolveLoadingSceneKey(JoinAnytimeHub.GetPdata()?.main);
+                if (!string.IsNullOrWhiteSpace(dto.LateJoinLabel))
+                {
+                    return dto.LateJoinLabel;
+                }
+
+                if (vPlayer.VRoom is MaintenanceRoom
+                    && pdata?.main is InTramWaitingScene or GamePlayScene)
+                {
+                    return "tram";
+                }
+
+                return ResolveLoadingSceneKey(pdata?.main);
             }
 
             if (!string.IsNullOrWhiteSpace(dto.LateJoinLabel))
@@ -77,7 +90,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return string.Empty;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
             if (pdata?.main is not GamePlayScene gps)
             {
                 return string.Empty;

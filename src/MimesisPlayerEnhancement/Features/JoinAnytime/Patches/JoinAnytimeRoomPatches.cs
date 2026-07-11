@@ -1,3 +1,5 @@
+using MimesisPlayerEnhancement.Features.WebDashboard;
+
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
@@ -72,6 +74,26 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         {
             JoinAnytimeRoomTools.EnsureWaitingRoomEnterReady();
             LateJoinManager.OnServerEnterWaitingRoom(context);
+        }
+
+        [HarmonyPostfix]
+        private static void Postfix(SessionContext context)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || context == null)
+            {
+                return;
+            }
+
+            VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+            if (player != null)
+            {
+                JoinAnytimeConnectingTracker.TryPromoteIfReady(player);
+            }
+
+            if (ModConfig.EnableWebDashboard.Value)
+            {
+                WebDashboardSnapshotCache.MarkDirty();
+            }
         }
     }
 
