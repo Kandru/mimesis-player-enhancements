@@ -38,6 +38,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "Enable Extended Spectator Player List",
                 "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically.");
 
+            ModConfig.EnableExtendedInGameMenuPlayerList = ModConfig.CreateTrackedEntry(_category,
+                "EnableExtendedInGameMenuPlayerList",
+                true,
+                "Enable Extended In-Game Menu Player List",
+                "Pin the join-code button to the top of the ESC menu player column, stretch the player list to fill remaining vertical space, and show a scrollbar when rows overflow.");
+
             ModConfig.EnableWorldHealthBars = ModConfig.CreateTrackedEntry(_category,
                 "EnableWorldHealthBars",
                 true,
@@ -86,6 +92,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedSaveSlots));
             ModConfig.EnableExtendedSpectatorPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedSpectatorPlayerList));
+            ModConfig.EnableExtendedInGameMenuPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableExtendedInGameMenuPlayerList));
 
             ModConfig.EnableWorldHealthBars.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableWorldHealthBars));

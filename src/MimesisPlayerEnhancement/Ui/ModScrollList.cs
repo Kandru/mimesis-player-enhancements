@@ -10,6 +10,9 @@ namespace MimesisPlayerEnhancement.Ui
     /// </summary>
     internal sealed class ModScrollList
     {
+        internal const float DefaultScrollbarWidth = 14f;
+        internal const float DefaultScrollbarSpacing = 6f;
+
         internal RectTransform Content { get; }
         internal ScrollRect ScrollRect { get; }
 
@@ -21,8 +24,6 @@ namespace MimesisPlayerEnhancement.Ui
 
         internal static ModScrollList Create(RectTransform band)
         {
-            const float scrollbarWidth = 14f;
-
             GameObject scrollGo = ModUiLayout.CreateChild("ScrollView", band);
             ModUiLayout.Stretch(scrollGo.GetComponent<RectTransform>());
 
@@ -37,14 +38,14 @@ namespace MimesisPlayerEnhancement.Ui
             scrollRect.scrollSensitivity = 35f;
             scrollRect.inertia = true;
 
-            Scrollbar verticalScrollbar = CreateVerticalScrollbar(scrollGo.transform, scrollbarWidth);
+            Scrollbar verticalScrollbar = CreateVerticalScrollbar(scrollGo.transform, DefaultScrollbarWidth);
             scrollRect.verticalScrollbar = verticalScrollbar;
-            scrollRect.verticalScrollbarSpacing = 6f;
+            scrollRect.verticalScrollbarSpacing = DefaultScrollbarSpacing;
 
             GameObject viewportGo = ModUiLayout.CreateChild("Viewport", scrollGo.transform);
             RectTransform viewportRect = viewportGo.GetComponent<RectTransform>();
             ModUiLayout.Stretch(viewportRect);
-            viewportRect.offsetMax = new Vector2(-(scrollbarWidth + 6f), 0f);
+            viewportRect.offsetMax = new Vector2(-(DefaultScrollbarWidth + DefaultScrollbarSpacing), 0f);
             viewportGo.AddComponent<RectMask2D>();
 
             GameObject contentGo = ModUiLayout.CreateChild("Content", viewportGo.transform);
@@ -90,7 +91,7 @@ namespace MimesisPlayerEnhancement.Ui
             return label;
         }
 
-        private static Scrollbar CreateVerticalScrollbar(Transform parent, float width)
+        internal static Scrollbar CreateVerticalScrollbar(Transform parent, float width)
         {
             GameObject scrollbarGo = ModUiLayout.CreateChild("Scrollbar Vertical", parent);
             RectTransform scrollbarRect = scrollbarGo.GetComponent<RectTransform>();

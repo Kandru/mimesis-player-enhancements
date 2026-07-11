@@ -1,6 +1,7 @@
 using System.Linq;
 using MimesisPlayerEnhancement.Features.ExtendedSaveSlots;
 using MimesisPlayerEnhancement.Features.ModVersionDisplay;
+using MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList;
 using MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays;
 using MimesisPlayerEnhancement.Ui.MenuMirror;
@@ -17,6 +18,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNamespacePatchTypes(typeof(UiPatches))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SpectatorPlayerListPatches)))
+                .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ExtendedSaveSlotsPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(ModVersionDisplayPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(MenuMirrorPatches)))
@@ -38,6 +40,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ("Start/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), "Start")),
                 ("UpdatePlayerListView/UIPrefab_Spectator_PlayerListView", AccessTools.Method(typeof(UIPrefab_Spectator_PlayerListView), nameof(UIPrefab_Spectator_PlayerListView.UpdatePlayerListView))),
                 ("Hide/UIPrefabScript (spectator list)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
+                ("Start/UIPrefab_InGameMenu (player list layout)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "Start")),
+                ("OnEnable/UIPrefab_InGameMenu (player list layout)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
             ]);
         }
     }

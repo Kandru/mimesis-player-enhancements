@@ -13,6 +13,7 @@
         "modToasts": "Mod messages",
         "extendedSaveSlots": "Extended save slots",
         "extendedSpectatorList": "Spectator player list",
+        "extendedInGameMenuPlayerList": "In-game menu player list",
         "worldHealthBars": "World health bars",
         "floatingDamage": "Floating damage numbers",
         "floatingDetox": "Floating detox indicators"
@@ -28,6 +29,10 @@
       "EnableExtendedSpectatorPlayerList": {
         "title": "Enable Extended Spectator Player List",
         "description": "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically."
+      },
+      "EnableExtendedInGameMenuPlayerList": {
+        "title": "Enable Extended In-Game Menu Player List",
+        "description": "Pin the join-code button to the top of the ESC menu player column, stretch the player list to fill remaining vertical space, and show a scrollbar when rows overflow."
       },
       "EnableWorldHealthBars": {
         "title": "Enable World Health Bars",
