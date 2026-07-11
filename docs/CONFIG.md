@@ -110,6 +110,8 @@ The mod version is always prepended to the version text on the main menu and in-
 | `RecordVoiceInMaintenance` | bool | `true` | — | Record mimic voice lines in the maintenance room (vanilla only records in dungeon). |
 | `RecordVoiceInTram` | bool | `true` | — | Record mimic voice lines in the tram waiting scene (vanilla only records in dungeon). |
 | `RecordVoiceDuringMimicPossession` | bool | `true` | — | Keep recording while possessing a mimic and resume after possession ends. |
+| `EnableVoicePerformanceCache` | bool | `true` | — | Cache warmed voice lists, decoded audio clips, mimic host selection, and player lookups to reduce lag with large voice pools. |
+| `VoiceClipCacheMaxEntries` | int | `128` | ≥ `1` | Maximum decoded mimic voice AudioClips kept in memory (LRU eviction). |
 
 ## Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
@@ -476,6 +478,8 @@ MaxOutdoorVoiceEvents = 3000
 RecordVoiceInMaintenance = true
 RecordVoiceInTram = true
 RecordVoiceDuringMimicPossession = true
+EnableVoicePerformanceCache = true
+VoiceClipCacheMaxEntries = 128
 
 [MimesisPlayerEnhancement_Persistence]
 EnablePersistence = true

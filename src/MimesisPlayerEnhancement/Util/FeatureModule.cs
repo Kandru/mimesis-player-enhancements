@@ -88,7 +88,8 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal static IReadOnlyList<IFeatureModule> All { get; } =
         [
-            new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig),
+            new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
+                onDeinitialize: VoicePerformanceRuntime.ClearAll),
             new FeatureModule("Persistence", PersistencePatches.Apply, onUpdate: () =>
             {
                 if (ModConfig.EnablePersistence.Value) { SpeechEventPoolManager.ProcessDeferredUpdates(); } },

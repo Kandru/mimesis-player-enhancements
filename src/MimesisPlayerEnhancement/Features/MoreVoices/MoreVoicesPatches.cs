@@ -35,6 +35,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 Feature,
                 HarmonyPatchHelper.GetNestedPatchTypes(typeof(MoreVoicesPatches)));
 
+            VoicePerformancePatches.Apply(harmony);
+
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
@@ -42,6 +44,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         /// <summary>Updates voice limits on all live archives after config changes.</summary>
         public static void RefreshFromConfig()
         {
+            VoicePerformanceRuntime.RefreshFromConfig();
+
             if (ModConfig.EnableMoreVoices.Value)
             {
                 SpeechEventArchiveLimits.PoolLimits? limits = SpeechEventArchiveLimits.ResolveFromConfig();
@@ -123,6 +127,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ("OnSpeechEventRecorded/SpeechEventArchive",
                     AccessTools.Method(typeof(SpeechEventArchive), "OnSpeechEventRecorded")),
             ]);
+            VoicePerformancePatches.LogPatchAudit(harmony);
         }
 
         internal static PlayerLifecycleContribution? TryDescribeArchiveStarted(SpeechEventArchive archive)

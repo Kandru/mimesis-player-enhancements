@@ -46,6 +46,7 @@ namespace MimesisPlayerEnhancement
             Int(MoreVoices, "MaxIndoorVoiceEvents", 1);
             Int(MoreVoices, "MaxDeathMatchVoiceEvents", 1);
             Int(MoreVoices, "MaxOutdoorVoiceEvents", 1);
+            Int(MoreVoices, "VoiceClipCacheMaxEntries", 1);
             Int(Statistics, "SessionReconnectGraceMinutes", 1);
 
             FloatRange(PlayerTuning, "MoveSpeedMultiplier");

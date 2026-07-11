@@ -59,6 +59,18 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 true,
                 "Record Voice During Mimic Possession",
                 "Keep recording while a player possesses a mimic and resume after possession ends.");
+
+            ModConfig.EnableVoicePerformanceCache = ModConfig.CreateTrackedEntry(_category,
+                "EnableVoicePerformanceCache",
+                true,
+                "Enable Voice Performance Cache",
+                "Cache warmed voice lists, decoded audio clips, mimic host selection, and player lookups to reduce lag with large voice pools.");
+
+            ModConfig.VoiceClipCacheMaxEntries = ModConfig.CreateTrackedEntry(_category,
+                "VoiceClipCacheMaxEntries",
+                128,
+                "Voice Clip Cache Max Entries",
+                "Maximum decoded mimic voice AudioClips kept in memory (LRU eviction).");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -66,7 +78,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             WireMinOne(logger, ModConfig.MaxIndoorVoiceEvents);
             WireMinOne(logger, ModConfig.MaxDeathMatchVoiceEvents);
             WireMinOne(logger, ModConfig.MaxOutdoorVoiceEvents);
+            WireMinOne(logger, ModConfig.VoiceClipCacheMaxEntries);
             WireNotifyChanged(ModConfig.EnableMoreVoices);
+            WireNotifyChanged(ModConfig.EnableVoicePerformanceCache);
             WireNotifyChanged(ModConfig.RecordVoiceInMaintenance);
             WireNotifyChanged(ModConfig.RecordVoiceInTram);
             WireNotifyChanged(ModConfig.RecordVoiceDuringMimicPossession);

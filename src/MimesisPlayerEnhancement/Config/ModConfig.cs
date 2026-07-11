@@ -54,6 +54,8 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> RecordVoiceInMaintenance { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RecordVoiceInTram { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RecordVoiceDuringMimicPossession { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableVoicePerformanceCache { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> VoiceClipCacheMaxEntries { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePersistence { get; internal set; } = null!;
 
