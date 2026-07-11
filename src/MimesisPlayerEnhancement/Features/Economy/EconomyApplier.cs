@@ -1,14 +1,9 @@
-using System.Reflection;
 using Bifrost.Cooked;
 
 namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyApplier
     {
-        private static readonly FieldInfo TargetCurrencyField =
-            AccessTools.Field(typeof(GameSessionInfo), "_targetCurrency")
-            ?? throw new InvalidOperationException("GameSessionInfo._targetCurrency not found");
-
         private static int _scrapScaleFrame = -1;
         private static int _scrapScalePlayerCount = SessionPlayerCountHelper.VanillaPlayerBaseline;
         private static float _scrapEffectiveMultiplier = FeatureToggleGate.NeutralMultiplier;
@@ -79,24 +74,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
             currency = ScaleForType(MoneyType.Startup, currency, playerCount, logAsInfo: true);
-        }
-
-        internal static void ApplyRoundGoal(GameSessionInfo info)
-        {
-            if (!IsEnabled())
-            {
-                return;
-            }
-
-            int vanilla = (int)(TargetCurrencyField.GetValue(info) ?? 0);
-            if (vanilla <= 0)
-            {
-                return;
-            }
-
-            int playerCount = SessionPlayerCountHelper.ResolveFromSession(info);
-            int scaled = ScaleForType(MoneyType.RoundGoal, vanilla, playerCount, logAsInfo: true);
-            TargetCurrencyField.SetValue(info, scaled);
         }
 
         internal static void InvalidateScrapScaling()

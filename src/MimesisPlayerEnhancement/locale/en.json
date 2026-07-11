@@ -309,7 +309,7 @@
       "_section": "Economy",
       "EnableEconomy": {
         "title": "Enable Economy",
-        "description": "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only."
+        "description": "Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Economy Player Count Scale Rate",
@@ -322,14 +322,6 @@
       "StartupMoneyMultiplier": {
         "title": "Startup Money Multiplier",
         "description": "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game."
-      },
-      "AutoScaleRoundGoalMoneyByPlayerCount": {
-        "title": "Auto Scale Round Goal Money by Player Count",
-        "description": "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier)."
-      },
-      "RoundGoalMoneyMultiplier": {
-        "title": "Round Goal Money Multiplier",
-        "description": "Target currency required to finish a stage (1 = vanilla, 2 = double)."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Auto Scale Scrap Sell Value by Player Count",
@@ -381,6 +373,26 @@
       "MaxPlayers": {
         "title": "Max Players",
         "description": "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.)."
+      },
+      "EnableScalingRoundGoals": {
+        "title": "Enable Scaling Round Goals",
+        "description": "Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. Host only."
+      },
+      "RoundGoalBasePerZone": {
+        "title": "Round Goal Base Per Zone",
+        "description": "Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier)."
+      },
+      "RoundGoalMoneyMultiplier": {
+        "title": "Round Goal Money Multiplier",
+        "description": "Global multiplier on the computed tram repair quota (1 = formula only, 2 = double)."
+      },
+      "RoundGoalRandomSpreadPercent": {
+        "title": "Round Goal Random Spread (percent)",
+        "description": "Random ±% band around the computed center quota when departing maintenance (save load uses the low bound)."
+      },
+      "RoundGoalCurveExponent": {
+        "title": "Round Goal Curve Exponent",
+        "description": "Zone growth curve: 1 = linear, below 1 = flatter late-game growth, above 1 = steeper."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {

@@ -45,7 +45,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             return type switch
             {
                 MoneyType.Startup => "Startup money",
-                MoneyType.RoundGoal => "Round goal",
                 MoneyType.ScrapSellValue => "Scrap/sell value",
                 MoneyType.ShopBuyPrice => "Shop buy price",
                 MoneyType.ReinforcePrice => "Reinforce price",

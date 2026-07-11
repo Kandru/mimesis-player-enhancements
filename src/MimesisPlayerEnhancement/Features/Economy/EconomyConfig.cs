@@ -22,7 +22,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 "EnableEconomy",
                 false,
                 "Enable Economy",
-                "Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only.");
+                "Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only.");
 
             ModConfig.EconomyPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "EconomyPlayerCountScaleRate",
@@ -41,18 +41,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 1f,
                 "Startup Money Multiplier",
                 "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game.");
-
-            ModConfig.AutoScaleRoundGoalMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleRoundGoalMoneyByPlayerCount",
-                true,
-                "Auto Scale Round Goal Money by Player Count",
-                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Round Goal Money Multiplier).");
-
-            ModConfig.RoundGoalMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "RoundGoalMoneyMultiplier",
-                1f,
-                "Round Goal Money Multiplier",
-                "Target currency required to finish a stage (1 = vanilla, 2 = double).");
 
             ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleScrapSellValueByPlayerCount",
@@ -129,7 +117,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             ModConfig.EconomyPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
                 ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.EconomyPlayerCountScaleRate));
             ModConfig.AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleStartupMoneyByPlayerCount));
-            ModConfig.AutoScaleRoundGoalMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleRoundGoalMoneyByPlayerCount));
             ModConfig.AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleScrapSellValueByPlayerCount));
             ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
             ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
@@ -137,7 +124,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 ModConfig.NotifyChanged(ModConfig.RetainUnspentCurrencyBetweenCycles));
 
             ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
-            ModConfig.RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.RoundGoalMoneyMultiplier));
             ModConfig.ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValueMultiplier));
             ModConfig.ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ShopBuyPriceMultiplier));
             ModConfig.ShopDiscountMinPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMinPercent));
@@ -150,7 +136,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
         {
             ModConfig.TrackFloatEntry(ModConfig.EconomyPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.StartupMoneyMultiplier);
-            ModConfig.TrackFloatEntry(ModConfig.RoundGoalMoneyMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ScrapSellValueMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ShopBuyPriceMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ReinforcePriceMultiplier);

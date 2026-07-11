@@ -1,6 +1,7 @@
 using Bifrost.ConstEnum;
 using MimesisPlayerEnhancement.Features.DungeonTime;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
+using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.SpawnScaling;
 using MimesisPlayerEnhancement.Features.Weather;
 
@@ -21,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             AppendSpawnSummary(parts, playerCount);
             AppendLootSummary(parts, playerCount);
             AppendMoneySummary(parts, playerCount);
+            AppendRoundGoalSummary(parts);
             AppendDungeonTime(parts, playerCount);
             AppendDungeonRandomizer(parts);
             AppendWeather(parts);
@@ -72,12 +74,27 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
             AppendMultiplier(
                 parts,
-                ModL10n.Get("announce.quota"),
-                EconomyResolver.GetEffectiveMultiplier(MoneyType.RoundGoal, playerCount));
-            AppendMultiplier(
-                parts,
                 ModL10n.Get("announce.scrap_value"),
                 EconomyResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount));
+        }
+
+        private static void AppendRoundGoalSummary(List<string> parts)
+        {
+            if (!RoundGoalScalingResolver.ShouldApply())
+            {
+                return;
+            }
+
+            if (IsDefaultMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value))
+            {
+                return;
+            }
+
+            parts.Add(ModL10n.Get("announce.multiplier_prefix", new Dictionary<string, object>
+            {
+                ["label"] = ModL10n.Get("announce.quota"),
+                ["multiplier"] = FormatMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value),
+            }));
         }
 
         private static void AppendDungeonTime(List<string> parts, int playerCount)

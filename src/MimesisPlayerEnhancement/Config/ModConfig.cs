@@ -46,6 +46,11 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableMorePlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxPlayers { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableScalingRoundGoals { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> RoundGoalBasePerZone { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> RoundGoalMoneyMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> RoundGoalRandomSpreadPercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> RoundGoalCurveExponent { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoreVoices { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxIndoorVoiceEvents { get; internal set; } = null!;
@@ -108,8 +113,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleRoundGoalMoneyByPlayerCount { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> RoundGoalMoneyMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; internal set; } = null!;
@@ -327,6 +330,7 @@ namespace MimesisPlayerEnhancement
 
         private static void RegisterFloatEntries()
         {
+            MorePlayersConfig.RegisterFloatEntries();
             SpawnScalingConfig.RegisterFloatEntries();
             LootMultiplicatorConfig.RegisterFloatEntries();
             EconomyConfig.RegisterFloatEntries();

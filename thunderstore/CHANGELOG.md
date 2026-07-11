@@ -11,6 +11,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: late-joiners not always joining the moving tram
 - draft: allow to properly record voice lines during maintenance, during the tram scene and when possessing a mimic (there seems to be a bug which stops recording a possesed mimic after the first time lol)
 - draft: possible fix for small lags when a lot of voices have been recorded (proper caching)
+- draft: unlimited zones and money increases (with flatter curve when having a high zone)
 
 ## 26.7.7
 - improved the loot allow/deny list to be searchable

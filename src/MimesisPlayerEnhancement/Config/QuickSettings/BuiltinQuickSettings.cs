@@ -118,7 +118,8 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.25f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.25f, dropLoot: 1.25f);
-            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.25f, roundGoal: 1.25f, scrap: 1.25f, shop: 1.25f, reinforce: 1.25f);
+            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.25f, scrap: 1.25f, shop: 1.25f, reinforce: 1.25f);
+            QuickSettingsValuesBuilder.SetRoundGoalMultipliers(values, moneyMultiplier: 1.25f, basePerZone: 200f, curveExponent: 0.9f);
 
             return new QuickSettingPreset
             {
@@ -167,7 +168,8 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
                 intervalMinSeconds: 10f,
                 intervalMaxSeconds: 30f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.8f, dropLoot: 1.8f);
-            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.5f, roundGoal: 2f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
+            QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startup: 1.5f, scrap: 0.8f, shop: 1.8f, reinforce: 1.8f);
+            QuickSettingsValuesBuilder.SetRoundGoalMultipliers(values, moneyMultiplier: 2f, basePerZone: 200f, curveExponent: 0.9f);
             QuickSettingsValuesBuilder.SetBool(values, "MimesisPlayerEnhancement_MimicTuning", "EnableMimicPossessionTuning", true);
 
             return new QuickSettingPreset

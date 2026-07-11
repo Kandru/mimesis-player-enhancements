@@ -36,8 +36,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("set_Currency/IVroom", AccessTools.PropertySetter(typeof(IVroom), nameof(IVroom.Currency))),
-                ("RefreshTargetCurrency/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))),
-                ("ClampTargetCurrencyToMin/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), "ClampTargetCurrencyToMin")),
                 ("InitMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.InitMaintenenceRoom))),
                 ("FinalPrice/ItemElement", AccessTools.PropertyGetter(typeof(ItemElement), nameof(ItemElement.FinalPrice))),
                 ("toItemInfo/ConsumableItemElement", AccessTools.Method(typeof(ConsumableItemElement), nameof(ConsumableItemElement.toItemInfo))),

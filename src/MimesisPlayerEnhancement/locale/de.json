@@ -309,7 +309,7 @@
       "_section": "Wirtschaft",
       "EnableEconomy": {
         "title": "Wirtschaft aktivieren",
-        "description": "Skaliert Startgeld, Runden-Ziel-Quote, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Optional ungenutztes Geld zwischen Maintenance-Zyklen behalten. Nur Host."
+        "description": "Skaliert Startgeld, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Optional ungenutztes Geld zwischen Maintenance-Zyklen behalten. Nur Host."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Wirtschaft-Spieleranzahl-Skalierungsrate",
@@ -322,14 +322,6 @@
       "StartupMoneyMultiplier": {
         "title": "Startgeld-Multiplikator",
         "description": "Startwährung im Maintenance-Raum bei neuem Save-Slot oder Sitzungs-Reset auf Vanilla-Anfangsgeld (1 = Vanilla, 2 = doppelt). Gilt nicht beim Laden eines Savegames."
-      },
-      "AutoScaleRoundGoalMoneyByPlayerCount": {
-        "title": "Runden-Ziel-Geld automatisch nach Spieleranzahl skalieren",
-        "description": "Wenn aktiviert, Wirtschaft-Spieleranzahl-Skalierungsrate pro Spieler über 4 anwenden (stapelt sich mit Runden-Ziel-Geld-Multiplikator)."
-      },
-      "RoundGoalMoneyMultiplier": {
-        "title": "Runden-Ziel-Geld-Multiplikator",
-        "description": "Zielwährung, die zum Abschließen einer Stage nötig ist (1 = Vanilla, 2 = doppelt)."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Schrott-Verkaufswert automatisch nach Spieleranzahl skalieren",
@@ -381,6 +373,26 @@
       "MaxPlayers": {
         "title": "Max. Spieler",
         "description": "Maximale Spieler in einer Sitzung inklusive Host (1 = Solo, 2 = Host + 1 Client usw.)."
+      },
+      "EnableScalingRoundGoals": {
+        "title": "Skalierende Runden-Ziele aktivieren",
+        "description": "Skaliert die Tram-Reparatur-Quote nach Zone statt bei Vanilla-Stage 5 zu deckeln. Erfordert Mehr Spieler. Nur Host."
+      },
+      "RoundGoalBasePerZone": {
+        "title": "Runden-Ziel-Basis pro Zone",
+        "description": "Basis-Dollar multipliziert mit der Zonen-Kurve (Zone 1 bei Standard ≈ 200 $ vor Streuung und Multiplikator)."
+      },
+      "RoundGoalMoneyMultiplier": {
+        "title": "Runden-Ziel-Geld-Multiplikator",
+        "description": "Globaler Multiplikator auf die berechnete Tram-Reparatur-Quote (1 = nur Formel, 2 = doppelt)."
+      },
+      "RoundGoalRandomSpreadPercent": {
+        "title": "Runden-Ziel-Zufallsstreuung (Prozent)",
+        "description": "Zufälliges ±%-Band um die berechnete Mittel-Quote beim Verlassen des Maintenance-Raums (beim Laden wird die Untergrenze verwendet)."
+      },
+      "RoundGoalCurveExponent": {
+        "title": "Runden-Ziel-Kurven-Exponent",
+        "description": "Zonen-Wachstumskurve: 1 = linear, unter 1 = flacheres Spätspiel-Wachstum, über 1 = steiler."
       }
     },
     "MimesisPlayerEnhancement_MoreVoices": {

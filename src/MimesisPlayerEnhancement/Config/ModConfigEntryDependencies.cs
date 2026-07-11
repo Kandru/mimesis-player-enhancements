@@ -317,7 +317,6 @@ namespace MimesisPlayerEnhancement
                 ["MapLootMultiplier"] = "AutoScaleMapLootByPlayerCount",
                 ["DropLootMultiplier"] = "AutoScaleDropLootByPlayerCount",
                 ["StartupMoneyMultiplier"] = "AutoScaleStartupMoneyByPlayerCount",
-                ["RoundGoalMoneyMultiplier"] = "AutoScaleRoundGoalMoneyByPlayerCount",
                 ["ScrapSellValueMultiplier"] = "AutoScaleScrapSellValueByPlayerCount",
                 ["ShopBuyPriceMultiplier"] = "AutoScaleShopBuyPriceByPlayerCount",
                 ["ReinforcePriceMultiplier"] = "AutoScaleReinforcePriceByPlayerCount",

@@ -138,16 +138,25 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
         internal static void SetEconomyMultipliers(
             Dictionary<string, Dictionary<string, string>> map,
             float startup,
-            float roundGoal,
             float scrap,
             float shop,
             float reinforce)
         {
             Set(map, "MimesisPlayerEnhancement_Economy", "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
-            Set(map, "MimesisPlayerEnhancement_Economy", "RoundGoalMoneyMultiplier", ModConfigFloatHelper.Format(roundGoal));
             Set(map, "MimesisPlayerEnhancement_Economy", "ScrapSellValueMultiplier", ModConfigFloatHelper.Format(scrap));
             Set(map, "MimesisPlayerEnhancement_Economy", "ShopBuyPriceMultiplier", ModConfigFloatHelper.Format(shop));
             Set(map, "MimesisPlayerEnhancement_Economy", "ReinforcePriceMultiplier", ModConfigFloatHelper.Format(reinforce));
+        }
+
+        internal static void SetRoundGoalMultipliers(
+            Dictionary<string, Dictionary<string, string>> map,
+            float moneyMultiplier,
+            float basePerZone,
+            float curveExponent)
+        {
+            Set(map, "MimesisPlayerEnhancement_MorePlayers", "RoundGoalMoneyMultiplier", ModConfigFloatHelper.Format(moneyMultiplier));
+            Set(map, "MimesisPlayerEnhancement_MorePlayers", "RoundGoalBasePerZone", ModConfigFloatHelper.Format(basePerZone));
+            Set(map, "MimesisPlayerEnhancement_MorePlayers", "RoundGoalCurveExponent", ModConfigFloatHelper.Format(curveExponent));
         }
 
         internal static Dictionary<string, Dictionary<string, string>> CloneValues(

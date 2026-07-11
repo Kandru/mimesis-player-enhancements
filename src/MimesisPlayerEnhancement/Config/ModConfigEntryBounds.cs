@@ -1,4 +1,5 @@
 using System.Globalization;
+using MimesisPlayerEnhancement.Features.MorePlayers;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 
 namespace MimesisPlayerEnhancement
@@ -43,6 +44,13 @@ namespace MimesisPlayerEnhancement
             FloatRange(Ui, "FloatingDamageDurationSeconds", 1f, 3f);
 
             Int(MorePlayers, "MaxPlayers", 1);
+            MinZeroFloat(MorePlayers,
+                "RoundGoalBasePerZone",
+                "RoundGoalMoneyMultiplier");
+            FloatRange(MorePlayers, "RoundGoalCurveExponent",
+                RoundGoalScalingResolver.MinCurveExponent,
+                RoundGoalScalingResolver.MaxCurveExponent);
+            IntRange(MorePlayers, "RoundGoalRandomSpreadPercent", 0, 100);
             Int(MoreVoices, "MaxIndoorVoiceEvents", 1);
             Int(MoreVoices, "MaxDeathMatchVoiceEvents", 1);
             Int(MoreVoices, "MaxOutdoorVoiceEvents", 1);
@@ -60,7 +68,6 @@ namespace MimesisPlayerEnhancement
             MinZeroFloat(Economy,
                 "EconomyPlayerCountScaleRate",
                 "StartupMoneyMultiplier",
-                "RoundGoalMoneyMultiplier",
                 "ScrapSellValueMultiplier",
                 "ShopBuyPriceMultiplier",
                 "ReinforcePriceMultiplier");

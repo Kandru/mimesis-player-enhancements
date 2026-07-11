@@ -56,7 +56,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 
 | Timing | Features |
 |--------|----------|
-| **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap, Economy scrap/round-goal on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
+| **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap and round-goal scaling on next hook, Economy scrap on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls |
 | **Event-triggered** | Economy shop prices (maintenance room visit; also refreshed when Economy config changes while a maintenance room is active) |
 | **Global UI** | Extended save picker, spectator list layout, toast duration, world health bars, floating damage numbers |
@@ -90,12 +90,17 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
-**Host-only.** Raise the vanilla 4-player multiplayer session cap.
+**Host-only.** Raise the vanilla 4-player multiplayer session cap and optionally scale tram repair quotas beyond vanilla stage 5.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
+| `EnableScalingRoundGoals` | bool | `true` | — | Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. Host only. |
+| `RoundGoalBasePerZone` | float | `200` | ≥ `0` | Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier). |
+| `RoundGoalMoneyMultiplier` | float | `1.0` | ≥ `0` | Global multiplier on the computed tram repair quota. |
+| `RoundGoalRandomSpreadPercent` | int | `10` | `0`–`100` | Random ±% band around the computed center quota when departing maintenance (save load uses the low bound). |
+| `RoundGoalCurveExponent` | float | `0.9` | `0.1`–`2` | Zone growth curve: `1` = linear, below `1` = flatter late-game growth, above `1` = steeper. |
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
@@ -231,12 +236,11 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-**Host-only.** Scales five separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4.
+**Host-only.** Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
 
 | Setting | What it affects |
 |---------|-----------------|
 | **Startup** | Starting currency on a new save game or session reset (not when loading a save) |
-| **Round goal** | Target currency (quota) required to finish a stage |
 | **Scrap / sell value** | Currency from scrapping items and item value counted in the tram toward the quota |
 | **Shop buy price** | Maintenance shop and vending-machine kiosk purchase cost |
 | **Reinforce price** | Maintenance item reinforcement cost |
@@ -248,12 +252,10 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableEconomy` | bool | `false` | — | Scale startup money, round goal quota, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only. |
+| `EnableEconomy` | bool | `false` | — | Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only. |
 | `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Startup money multiplier on new save or session reset. Does not apply when loading a save. |
-| `AutoScaleRoundGoalMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for stage target currency. |
-| `RoundGoalMoneyMultiplier` | float | `1.0` | ≥ `0` | Round goal (quota) multiplier. |
 | `AutoScaleScrapSellValueByPlayerCount` | bool | `true` | — | Player-count scaling for scrap/sell values. |
 | `ScrapSellValueMultiplier` | float | `1.0` | ≥ `0` | Scrap/sell value multiplier. |
 | `AutoScaleShopBuyPriceByPlayerCount` | bool | `true` | — | Player-count scaling for shop buy prices. |

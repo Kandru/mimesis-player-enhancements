@@ -24,6 +24,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         public static void Apply(HarmonyLib.Harmony harmony)
         {
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNestedPatchTypes(typeof(MorePlayersPatches))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MorePlayersPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(SurvivalResultPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(InGameMenuPatches)))
                 .Concat(HarmonyPatchHelper.GetNestedPatchTypes(typeof(VActorDictCapacityPatches)));
@@ -55,6 +56,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 ("SetPingImage/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
                 ("ctor/IVroom", AccessTools.Constructor(typeof(IVroom), [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty), typeof(OnCreateRoomDelegate)])),
+                ("RefreshTargetCurrency/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))),
+                ("ClampTargetCurrencyToMin/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), "ClampTargetCurrencyToMin")),
             ];
 
             foreach (MethodBase lambda in MaxPlayerCountFieldTranspiler.FindEnterRoomLambdaMethods())
