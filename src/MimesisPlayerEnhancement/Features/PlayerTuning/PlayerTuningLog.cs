@@ -35,7 +35,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         {
             ModLog.Debug(
                 Feature,
-                $"Player collision {(disabled ? "disabled" : "restored")} on {actorCount} remote proxy actor(s)");
+                $"Pass-through collision {(disabled ? "disabled" : "restored")} on {actorCount} player/mimic actor(s)");
         }
     }
 }

@@ -27,6 +27,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 ("OnChangeInventory/InventoryController", AccessTools.Method(typeof(InventoryController), nameof(InventoryController.OnChangeInventory))),
                 ("SetControlMode/ProtoActor", AccessTools.Method(typeof(ProtoActor), "SetControlMode")),
                 ("SetAsOtherPlayer/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.SetAsOtherPlayer))),
+                ("SetAsMonster/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.SetAsMonster))),
+                ("SetupMonsterCapsuleCollider/ProtoActor", AccessTools.Method(typeof(ProtoActor), "SetupMonsterCapsuleCollider")),
                 ("OnActorRevive/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.OnActorRevive))),
             ]);
         }
@@ -83,7 +85,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             {
                 try
                 {
-                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                    PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
                 }
                 catch (Exception ex)
                 {
@@ -100,11 +102,45 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             {
                 try
                 {
-                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                    PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
                 }
                 catch (Exception ex)
                 {
                     ModLog.Warn(Feature, $"SetAsOtherPlayer postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsMonster))]
+        public static class ProtoActorSetAsMonsterPatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ProtoActor __instance)
+            {
+                try
+                {
+                    PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"SetAsMonster postfix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ProtoActor), "SetupMonsterCapsuleCollider")]
+        public static class ProtoActorSetupMonsterCapsuleColliderPatch
+        {
+            [HarmonyPostfix]
+            public static void Postfix(ProtoActor __instance, int masterID)
+            {
+                try
+                {
+                    PlayerTuningCollision.OnPassThroughActorConfigured(__instance, masterID);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"SetupMonsterCapsuleCollider postfix failed — {ex.Message}");
                 }
             }
         }
@@ -117,7 +153,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             {
                 try
                 {
-                    PlayerTuningCollision.OnRemotePlayerConfigured(__instance);
+                    PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
                 }
                 catch (Exception ex)
                 {

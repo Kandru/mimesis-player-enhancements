@@ -1,17 +1,16 @@
 using System.Reflection;
+using Bifrost.Cooked;
+using MimesisPlayerEnhancement.Features.SpawnScaling;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerTuning
 {
     /// <summary>
-    /// Disables remote player capsule colliders on the local client so the host avatar
-    /// can move through other players. Server positions are not validated for overlap.
+    /// Disables remote player and mimic capsule colliders on the local client so the avatar
+    /// can move through them. Server positions are not validated for overlap.
     /// </summary>
     internal static class PlayerTuningCollision
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly Type? CapsuleColliderType =
             AccessTools.TypeByName("UnityEngine.CapsuleCollider");
 
@@ -55,25 +54,80 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             }
         }
 
-        internal static void OnRemotePlayerConfigured(ProtoActor actor)
+        internal static void OnPassThroughActorConfigured(ProtoActor actor)
         {
             TryApplyToActor(actor);
         }
 
+        internal static void OnPassThroughActorConfigured(ProtoActor actor, int masterId)
+        {
+            if (!IsMimicMasterId(masterId))
+            {
+                return;
+            }
+
+            SetCapsuleColliderEnabled(actor, GetTargetColliderEnabled(masterId));
+        }
+
         private static bool TryApplyToActor(ProtoActor actor)
         {
-            if (!IsRemotePlayerProxy(actor))
+            if (!ShouldApplyPassThrough(actor))
             {
                 return false;
             }
 
-            SetCapsuleColliderEnabled(actor, enabled: !ShouldDisable);
+            SetCapsuleColliderEnabled(actor, GetTargetColliderEnabled(actor));
             return true;
+        }
+
+        private static bool ShouldApplyPassThrough(ProtoActor actor)
+        {
+            return IsRemotePlayerProxy(actor) || IsMimicProxy(actor);
         }
 
         private static bool IsRemotePlayerProxy(ProtoActor actor)
         {
             return actor.ActorType == ActorType.Player && !actor.AmIAvatar();
+        }
+
+        private static bool IsMimicProxy(ProtoActor actor)
+        {
+            return actor.ActorType == ActorType.Monster && actor.IsMimic();
+        }
+
+        private static bool IsMimicMasterId(int masterId)
+        {
+            return MonsterTypeLookup.TryGetMonster(masterId, out MonsterInfo info) && info.IsMimic();
+        }
+
+        private static bool GetTargetColliderEnabled(ProtoActor actor)
+        {
+            if (ShouldDisable)
+            {
+                return false;
+            }
+
+            if (IsMimicProxy(actor))
+            {
+                return GetVanillaMimicColliderEnabled(actor.monsterMasterID);
+            }
+
+            return true;
+        }
+
+        private static bool GetTargetColliderEnabled(int masterId)
+        {
+            return ShouldDisable ? false : GetVanillaMimicColliderEnabled(masterId);
+        }
+
+        private static bool GetVanillaMimicColliderEnabled(int masterId)
+        {
+            if (!MonsterTypeLookup.TryGetMonster(masterId, out MonsterInfo info))
+            {
+                return true;
+            }
+
+            return !info.CapsuleColliderOff;
         }
 
         private static void SetCapsuleColliderEnabled(ProtoActor actor, bool enabled)

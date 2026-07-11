@@ -70,7 +70,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 "DisablePlayerCollision",
                 true,
                 "Disable Player Collision",
-                "On the host client, disable capsule colliders on other players so you can walk through them (e.g. crowded tram). Local effect only; requires Enable Player Tuning.");
+                "On the local client, disable capsule colliders on other players and mimics so you can walk through them (e.g. crowded tram). Regular monsters and walls remain solid. Local effect only; requires Enable Player Tuning.");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

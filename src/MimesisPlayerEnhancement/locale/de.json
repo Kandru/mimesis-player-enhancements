@@ -464,7 +464,7 @@
       },
       "DisablePlayerCollision": {
         "title": "Spieler-Kollision deaktivieren",
-        "description": "Deaktiviert auf dem Host-Client die Kapsel-Kollider anderer Spieler, sodass du durch sie laufen kannst (z. B. voller Tram). Nur lokaler Effekt; erfordert Spieler-Tuning aktivieren."
+        "description": "Deaktiviert auf dem lokalen Client die Kapsel-Kollider anderer Spieler und Mimics, sodass du durch sie laufen kannst (z. B. voller Tram). Normale Monster und Wände bleiben solid. Nur lokaler Effekt; erfordert Spieler-Tuning aktivieren."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
