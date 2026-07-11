@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool ShouldReplaceControl(ProtoActor actor)
         {
             if (WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
-                || !WebDashboardHostCheatsRuntime.IsLocalAvatarNoClipActive()
+                || !WebDashboardHostCheatsRuntime.IsNoClipActiveForActor(actor)
                 || !actor.AmIAvatar()
                 || actor.controlMode != ProtoActor.ControlMode.Manual
                 || actor.dead
@@ -74,17 +74,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return true;
         }
 
-        internal static void PrepareLocalAvatar()
+        internal static void PrepareActor(long playerUid)
         {
+            if (playerUid == 0)
+            {
+                return;
+            }
+
             try
             {
-                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-                if (pdata?.main == null || pdata.MyActorID == 0)
-                {
-                    return;
-                }
-
-                if (pdata.main.GetActorByActorID(pdata.MyActorID) is ProtoActor actor)
+                GameMainBase? main = JoinAnytimeHub.GetPdata()?.main;
+                if (main?.GetActorByPlayerUID(playerUid) is ProtoActor actor)
                 {
                     SetCharacterControllerEnabled(actor, enabled: false);
                 }
@@ -144,25 +144,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void RestoreCharacterController(ProtoActor actor)
         {
-            if (!actor.AmIAvatar())
+            EnableCcMethod.Invoke(actor, null);
+        }
+
+        internal static void TryRestoreActor(long playerUid)
+        {
+            if (playerUid == 0)
             {
                 return;
             }
 
-            EnableCcMethod.Invoke(actor, null);
-        }
-
-        internal static void TryRestoreLocalAvatar()
-        {
             try
             {
-                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-                if (pdata?.main == null || pdata.MyActorID == 0)
-                {
-                    return;
-                }
-
-                if (pdata.main.GetActorByActorID(pdata.MyActorID) is ProtoActor actor)
+                GameMainBase? main = JoinAnytimeHub.GetPdata()?.main;
+                if (main?.GetActorByPlayerUID(playerUid) is ProtoActor actor)
                 {
                     RestoreCharacterController(actor);
                 }

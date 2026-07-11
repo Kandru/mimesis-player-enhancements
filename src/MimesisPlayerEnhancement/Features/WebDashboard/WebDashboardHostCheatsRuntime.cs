@@ -8,7 +8,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly HashSet<long> NoClipPlayerUids = [];
         private static bool _roomTransitionSuspend;
 
+        [ThreadStatic]
+        private static VCreature? _moveValidationCreature;
+
         internal static bool IsRoomTransitionSuspended => _roomTransitionSuspend;
+
+        internal static VCreature? MoveValidationCreature => _moveValidationCreature;
 
         internal static bool IsGodModeEnabled(long playerUid) =>
             playerUid != 0 && GodModePlayerUids.Contains(playerUid);
@@ -25,14 +30,32 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool IsNoClipActive(VCreature? creature) =>
             creature is VPlayer player && IsNoClipActive(player);
 
-        internal static bool IsLocalAvatarNoClipActive()
+        internal static bool IsNoClipActiveForActor(ProtoActor? actor)
         {
-            if (_roomTransitionSuspend || !TryGetLocalVPlayer(out VPlayer? player))
+            if (actor == null || !actor.AmIAvatar() || _roomTransitionSuspend)
             {
                 return false;
             }
 
-            return IsNoClipActive(player);
+            if (actor.UID != 0 && IsNoClipEnabled(actor.UID))
+            {
+                return true;
+            }
+
+            return WebDashboardHostCheatsClientRuntime.IsLocalNoClipEnabled();
+        }
+
+        internal static void BeginMoveValidationBypass(VCreature creature)
+        {
+            if (IsNoClipActive(creature))
+            {
+                _moveValidationCreature = creature;
+            }
+        }
+
+        internal static void EndMoveValidationBypass()
+        {
+            _moveValidationCreature = null;
         }
 
         internal static void BeginRoomTransition(string reason)
@@ -134,20 +157,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 NoClipPlayerUids.Add(player.UID);
-                if (IsLocalPlayer(player))
-                {
-                    WebDashboardHostCheatsNoClipMovement.PrepareLocalAvatar();
-                }
+                WebDashboardHostCheatsNoClipMovement.PrepareActor(player.UID);
             }
             else
             {
                 NoClipPlayerUids.Remove(player.UID);
-                if (IsLocalPlayer(player))
-                {
-                    WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
-                }
+                WebDashboardHostCheatsNoClipMovement.TryRestoreActor(player.UID);
             }
 
+            SyncNoClipToClient(player, enabled);
             WebDashboardSnapshotCache.MarkDirty();
             ModLog.Info(Feature, $"Noclip {(enabled ? "enabled" : "disabled")} — uid={player.UID}.");
             return true;
@@ -159,6 +177,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (GodModePlayerUids.Count == 0 && NoClipPlayerUids.Count == 0)
             {
+                WebDashboardHostCheatsClientRuntime.Reset(reason);
                 return;
             }
 
@@ -173,13 +192,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ApplyGodMode(player, enabled: false);
             }
 
-            if (NoClipPlayerUids.Count > 0)
+            foreach (long playerUid in new List<long>(NoClipPlayerUids))
             {
-                WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                WebDashboardHostCheatsNoClipMovement.TryRestoreActor(playerUid);
+                if (WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    && player != null)
+                {
+                    WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: false);
+                }
             }
 
             GodModePlayerUids.Clear();
             NoClipPlayerUids.Clear();
+            WebDashboardHostCheatsClientRuntime.Reset(reason);
             WebDashboardSnapshotCache.MarkDirty();
             ModLog.Debug(Feature, $"Player cheats disabled — {reason}.");
         }
@@ -249,9 +274,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     || !player.IsAliveStatus())
                 {
                     NoClipPlayerUids.Remove(playerUid);
-                    if (player != null && IsLocalPlayer(player))
+                    if (player != null)
                     {
-                        WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                        WebDashboardHostCheatsNoClipMovement.TryRestoreActor(playerUid);
+                        WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: false);
                     }
                 }
             }
@@ -273,9 +299,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (NoClipPlayerUids.Count > 0)
+            foreach (long playerUid in new List<long>(NoClipPlayerUids))
             {
-                WebDashboardHostCheatsNoClipMovement.TryRestoreLocalAvatar();
+                WebDashboardHostCheatsNoClipMovement.TryRestoreActor(playerUid);
+                if (WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
+                    && player != null)
+                {
+                    WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: false);
+                }
             }
         }
 
@@ -300,11 +331,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                if (IsLocalPlayer(player))
-                {
-                    WebDashboardHostCheatsNoClipMovement.PrepareLocalAvatar();
-                }
+                WebDashboardHostCheatsNoClipMovement.PrepareActor(playerUid);
+                WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: true);
             }
+        }
+
+        private static void SyncNoClipToClient(VPlayer player, bool enabled)
+        {
+            if (!WebDashboardGameState.IsHost())
+            {
+                return;
+            }
+
+            WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled);
         }
 
         private static bool CanApplyCheatsForPlayer(VPlayer player, out string? errorMessage)
@@ -352,40 +391,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             player.SetHarmBlocked(enabled);
-        }
-
-        private static bool TryGetLocalVPlayer(out VPlayer? player)
-        {
-            player = null;
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager == null)
-            {
-                return false;
-            }
-
-            ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
-            if (localSteamId == 0)
-            {
-                return false;
-            }
-
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
-            {
-                if (context.SteamID != localSteamId)
-                {
-                    continue;
-                }
-
-                player = WebDashboardSessionAccess.GetVPlayer(context);
-                return player != null;
-            }
-
-            return false;
-        }
-
-        private static bool IsLocalPlayer(VPlayer player)
-        {
-            return TryGetLocalVPlayer(out VPlayer? local) && local != null && local.UID == player.UID;
         }
     }
 }

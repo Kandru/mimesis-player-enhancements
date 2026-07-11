@@ -434,6 +434,8 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 **Player cheats** (per-player buttons on the Players page, host only): **Godmode** prevents the selected player from dying; **Noclip** lets that player fly with normal movement controls. Both appear next to Heal/Respawn for alive in-game players and are automatically turned off when blind mode is active or when the player dies.
 
+**Noclip and remote players:** The host can toggle noclip for any in-game player. The server always relaxes movement validation for noclip players. **Full flight** (disabling collision and flying with normal movement controls) requires the target player to have this mod installed on their client; without it, they only get partial server-side movement acceptance and cannot walk through walls locally.
+
 **Security:** Default bind is `127.0.0.1` (loopback) so only your machine can connect. Binding to another address (e.g. `0.0.0.0` or your LAN IP) exposes the dashboard to anyone on that network — there is no login.
 
 | Key | Type | Default | Range | Description |

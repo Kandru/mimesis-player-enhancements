@@ -120,6 +120,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             private static bool Prefix(IVroom __instance, ref bool __result)
             {
+                VCreature? bypassCreature = WebDashboardHostCheatsRuntime.MoveValidationCreature;
+                if (bypassCreature != null
+                    && bypassCreature.VRoom == __instance
+                    && WebDashboardHostCheatsRuntime.IsNoClipActive(bypassCreature))
+                {
+                    __result = true;
+                    return false;
+                }
+
                 if (!WebDashboardHostCheatsRuntime.IsNoClipActiveInRoom(__instance))
                 {
                     return true;
@@ -127,6 +136,72 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 __result = true;
                 return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStart))]
+        internal static class DirectMoveStartPatch
+        {
+            private static readonly FieldInfo CreatureField =
+                AccessTools.Field(typeof(MovementController), "_creature")!;
+
+            private static void Prefix(MovementController __instance)
+            {
+                if (CreatureField.GetValue(__instance) is VCreature creature)
+                {
+                    WebDashboardHostCheatsRuntime.BeginMoveValidationBypass(creature);
+                }
+            }
+
+            private static void Postfix()
+            {
+                WebDashboardHostCheatsRuntime.EndMoveValidationBypass();
+            }
+
+            private static Exception? Finalizer(Exception? __exception)
+            {
+                WebDashboardHostCheatsRuntime.EndMoveValidationBypass();
+                return __exception;
+            }
+        }
+
+        [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStop))]
+        internal static class DirectMoveStopPatch
+        {
+            private static readonly FieldInfo CreatureField =
+                AccessTools.Field(typeof(MovementController), "_creature")!;
+
+            private static void Prefix(MovementController __instance)
+            {
+                if (CreatureField.GetValue(__instance) is VCreature creature)
+                {
+                    WebDashboardHostCheatsRuntime.BeginMoveValidationBypass(creature);
+                }
+            }
+
+            private static void Postfix()
+            {
+                WebDashboardHostCheatsRuntime.EndMoveValidationBypass();
+            }
+
+            private static Exception? Finalizer(Exception? __exception)
+            {
+                WebDashboardHostCheatsRuntime.EndMoveValidationBypass();
+                return __exception;
+            }
+        }
+
+        [HarmonyPatch(typeof(NetworkManagerV2), "HandleGlobalPacket")]
+        internal static class NoClipSyncPacketPatch
+        {
+            private static void Postfix(IMsg msg, ref bool __result)
+            {
+                if (!__result || msg is not AdminCommandRes response)
+                {
+                    return;
+                }
+
+                WebDashboardHostCheatsNoClipSync.TryHandleAdminCommandRes(response);
             }
         }
 
