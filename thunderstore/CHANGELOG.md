@@ -17,6 +17,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: possible fix for small lags when a lot of voices have been recorded (proper caching)
 - draft: unlimited zones and money increases (with flatter curve when having a high zone)
 - draft: maybe fix to allow clients with the mod installed to use noclip (unfortunately no host-only feature)
+- draft: possibility to unify ingame voices (no more difference between indoor/outdoor voices so chatter without area-specific sounds are played everywhere)
 
 ## 26.7.7
 - improved the loot allow/deny list to be searchable

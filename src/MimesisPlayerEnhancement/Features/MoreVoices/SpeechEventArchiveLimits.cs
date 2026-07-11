@@ -74,8 +74,14 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 return null;
             }
 
-            int indoor = ModConfig.MaxIndoorVoiceEvents.Value;
             int deathMatch = ModConfig.MaxDeathMatchVoiceEvents.Value;
+            if (MoreVoicesUnify.IsActive)
+            {
+                int shared = ModConfig.MaxIndoorVoiceEvents.Value + ModConfig.MaxOutdoorVoiceEvents.Value;
+                return new PoolLimits(deathMatch + shared, deathMatch, shared);
+            }
+
+            int indoor = ModConfig.MaxIndoorVoiceEvents.Value;
             int outdoor = ModConfig.MaxOutdoorVoiceEvents.Value;
             return new PoolLimits(indoor + deathMatch + outdoor, deathMatch, outdoor);
         }
@@ -98,6 +104,11 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static string FormatEffectiveCaps(EffectiveCaps caps)
         {
+            if (MoreVoicesUnify.IsActive)
+            {
+                return $"shared={caps.Indoor + caps.Outdoor}, deathmatch={caps.DeathMatch}";
+            }
+
             return $"indoor={caps.Indoor}, deathmatch={caps.DeathMatch}, outdoor={caps.Outdoor}";
         }
 

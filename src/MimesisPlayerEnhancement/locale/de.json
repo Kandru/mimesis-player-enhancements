@@ -401,6 +401,10 @@
         "title": "Mehr Stimmen aktivieren",
         "description": "Erhöht die Stimmen-Aufnahmelimits pro Spieler."
       },
+      "UnifyIndoorOutdoorVoices": {
+        "title": "Indoor/Outdoor-Stimmen vereinheitlichen",
+        "description": "Teilt Indoor- und Outdoor-Stimmenspeicher und erlaubt bereichsübergreifende Wiedergabe; Deathmatch bleibt getrennt. Indoor- und Outdoor-Limits bilden bei Aktivierung ein gemeinsames Limit."
+      },
       "MaxIndoorVoiceEvents": {
         "title": "Max. Indoor-Stimmereignisse",
         "description": "Maximal gespeicherte Stimmereignisse pro Spieler in Indoor-Dungeon-Läufen (Vanilla-Limit ist deutlich niedriger)."

@@ -155,6 +155,7 @@ namespace MimesisPlayerEnhancement
                 $"MoreVoices={ModConfig.EnableMoreVoices.Value}" +
                 (ModConfig.EnableMoreVoices.Value
                     ? $" (indoor {ModConfig.MaxIndoorVoiceEvents.Value}, deathmatch {ModConfig.MaxDeathMatchVoiceEvents.Value}, outdoor {ModConfig.MaxOutdoorVoiceEvents.Value}; " +
+                      $"unifiedIndoorOutdoor={ModConfig.UnifyIndoorOutdoorVoices.Value}; " +
                       $"maintenance={ModConfig.RecordVoiceInMaintenance.Value}, tram={ModConfig.RecordVoiceInTram.Value}, possession={ModConfig.RecordVoiceDuringMimicPossession.Value})"
                     : "") +
                 $", Persistence={ModConfig.EnablePersistence.Value}, " +

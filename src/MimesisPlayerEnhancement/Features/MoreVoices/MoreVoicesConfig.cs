@@ -24,6 +24,12 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 "Enable More Voices",
                 "Raise per-player voice recording limits.");
 
+            ModConfig.UnifyIndoorOutdoorVoices = ModConfig.CreateTrackedEntry(_category,
+                "UnifyIndoorOutdoorVoices",
+                true,
+                "Unify Indoor/Outdoor Voices",
+                "Share indoor and outdoor voice storage and allow cross-area playback; deathmatch stays separate. When enabled, MaxIndoorVoiceEvents and MaxOutdoorVoiceEvents sum into one shared cap.");
+
             ModConfig.MaxIndoorVoiceEvents = ModConfig.CreateTrackedEntry(_category,
                 "MaxIndoorVoiceEvents",
                 3000,
@@ -80,6 +86,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             WireMinOne(logger, ModConfig.MaxOutdoorVoiceEvents);
             WireMinOne(logger, ModConfig.VoiceClipCacheMaxEntries);
             WireNotifyChanged(ModConfig.EnableMoreVoices);
+            WireNotifyChanged(ModConfig.UnifyIndoorOutdoorVoices);
             WireNotifyChanged(ModConfig.EnableVoicePerformanceCache);
             WireNotifyChanged(ModConfig.RecordVoiceInMaintenance);
             WireNotifyChanged(ModConfig.RecordVoiceInTram);

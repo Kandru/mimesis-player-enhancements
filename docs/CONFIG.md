@@ -109,9 +109,10 @@ The mod version is always prepended to the version text on the main menu and in-
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMoreVoices` | bool | `true` | — | Turn higher voice recording limits on or off. |
-| `MaxIndoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in indoor dungeon runs (default game limit is much lower). |
+| `UnifyIndoorOutdoorVoices` | bool | `true` | — | Share indoor and outdoor voice storage and allow cross-area playback; deathmatch stays separate. When enabled, `MaxIndoorVoiceEvents` + `MaxOutdoorVoiceEvents` form one shared non-deathmatch cap. |
+| `MaxIndoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in indoor dungeon runs (default game limit is much lower). When `UnifyIndoorOutdoorVoices` is on, sums with `MaxOutdoorVoiceEvents` into a shared cap. |
 | `MaxDeathMatchVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player in deathmatch (default game limit is much lower). |
-| `MaxOutdoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player outdoors (default game limit is much lower). |
+| `MaxOutdoorVoiceEvents` | int | `3000` | ≥ `1` | Stored mimic voice lines per player outdoors (default game limit is much lower). When `UnifyIndoorOutdoorVoices` is on, sums with `MaxIndoorVoiceEvents` into a shared cap. |
 | `RecordVoiceInMaintenance` | bool | `true` | — | Record mimic voice lines in the maintenance room (vanilla only records in dungeon). |
 | `RecordVoiceInTram` | bool | `true` | — | Record mimic voice lines in the tram waiting scene (vanilla only records in dungeon). |
 | `RecordVoiceDuringMimicPossession` | bool | `true` | — | Keep recording while possessing a mimic and resume after possession ends. |
@@ -476,6 +477,7 @@ MaxPlayers = 32
 
 [MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true
+UnifyIndoorOutdoorVoices = true
 MaxIndoorVoiceEvents = 3000
 MaxDeathMatchVoiceEvents = 3000
 MaxOutdoorVoiceEvents = 3000

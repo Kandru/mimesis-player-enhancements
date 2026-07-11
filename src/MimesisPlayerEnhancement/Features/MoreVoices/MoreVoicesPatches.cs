@@ -121,6 +121,10 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "OnStartClient")),
                 ("RemoveLowerValueEventsIfExceeded/SpeechEventArchive",
                     AccessTools.Method(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")),
+                ("RemoveLowerValueEventsIfExceeded/SpeechEventArchive (unified)",
+                    AccessTools.Method(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")),
+                ("PickBestMatch/SpeechEventAdditionalGameData (unify)",
+                    AccessTools.Method(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))),
                 ("SetVoiceMode/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))),
                 ("EndPossessionToMimic/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.EndPossessionToMimic))),
                 ("AddEvent/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "AddEvent")),
@@ -195,6 +199,70 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 {
                     ModLog.Warn(Feature, $"Voice limit prefix before eviction failed: {ex.Message}");
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")]
+        [HarmonyPriority(500)]
+        internal static class RemoveLowerValueEventsIfExceededUnifiedPatch
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(SpeechEventArchive __instance, ref List<long> __result)
+            {
+                if (!MoreVoicesUnify.IsActive || __instance == null)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    __result = SpeechEventArchiveUnifiedEviction.TryEvict(__instance);
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Unified voice eviction failed: {ex.Message}");
+                    return true;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))]
+        [HarmonyPriority(500)]
+        internal static class PickBestMatchUnifyPatch
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(
+                MimicVoiceSpawner.MimicContext context,
+                List<(string playerID, SpeechEvent evt)> allEvents,
+                SpeechEventAdditionalGameData curGameData,
+                bool periodic,
+                int pickCount,
+                float playTimeIntervalRandom,
+                out SpeechEvent? speechEvent,
+                out string mimickingPlayerID,
+                out string pickReason,
+                ref bool __result)
+            {
+                if (!MoreVoicesUnify.IsActive || VoicePerformanceRuntime.IsActive)
+                {
+                    speechEvent = null;
+                    mimickingPlayerID = string.Empty;
+                    pickReason = string.Empty;
+                    return true;
+                }
+
+                __result = VoicePickBestMatch.TryPick(
+                    context,
+                    allEvents,
+                    curGameData,
+                    periodic,
+                    pickCount,
+                    playTimeIntervalRandom,
+                    out speechEvent,
+                    out mimickingPlayerID,
+                    out pickReason);
+                return false;
             }
         }
 

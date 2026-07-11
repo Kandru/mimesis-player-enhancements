@@ -53,6 +53,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> RoundGoalCurveExponent { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMoreVoices { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> UnifyIndoorOutdoorVoices { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxIndoorVoiceEvents { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxDeathMatchVoiceEvents { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxOutdoorVoiceEvents { get; internal set; } = null!;

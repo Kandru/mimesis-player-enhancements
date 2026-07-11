@@ -401,6 +401,10 @@
         "title": "Enable More Voices",
         "description": "Raise per-player voice recording limits."
       },
+      "UnifyIndoorOutdoorVoices": {
+        "title": "Unify Indoor/Outdoor Voices",
+        "description": "Share indoor and outdoor voice storage and allow cross-area playback; deathmatch stays separate. Max indoor and outdoor limits sum into one shared cap when enabled."
+      },
       "MaxIndoorVoiceEvents": {
         "title": "Max Indoor Voice Events",
         "description": "Maximum stored voice events per player in indoor dungeon runs (default game limit is much lower)."
