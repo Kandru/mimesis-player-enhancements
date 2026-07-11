@@ -158,9 +158,6 @@ export function playerActivityLine(
     const scene = t(`dashboard.player_state_scene_${sceneKey}`, {});
     return t('dashboard.player_state_loading', { scene });
   }
-  if (state === 'dungeon' && detail) {
-    return t('dashboard.player_state_dungeon_room', { room: detail });
-  }
   const key = `dashboard.player_state_${state}`;
   const label = t(key, {});
   return label === key ? state : label;
