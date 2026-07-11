@@ -66,6 +66,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 ("SpawnLootingObject/IVroom", ResolveSpawnLootingObjectMethod()),
                 ("OnActorDead/SpawnedActorData", AccessTools.Method(typeof(SpawnedActorData), "OnActorDead")),
                 ("BarterItem/InventoryController", AccessTools.Method(typeof(InventoryController), "BarterItem", [typeof(PosWithRot)])),
+                ("ExtractRoomInfo/DeathMatchRoom", AccessTools.Method(typeof(DeathMatchRoom), "ExtractRoomInfo", [typeof(bool)])),
             ]);
         }
 
@@ -185,6 +186,26 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 if (__state)
                 {
                     BarterDropTableContext.Exit();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(DeathMatchRoom), "ExtractRoomInfo", [typeof(bool)])]
+        public static class DeathMatchRoomExtractRoomInfoPatch
+        {
+            [HarmonyPrefix]
+            public static void Prefix(ref bool __state)
+            {
+                __state = true;
+                DeathMatchRewardDropTableContext.Enter();
+            }
+
+            [HarmonyFinalizer]
+            public static void Finalizer(bool __state)
+            {
+                if (__state)
+                {
+                    DeathMatchRewardDropTableContext.Exit();
                 }
             }
         }

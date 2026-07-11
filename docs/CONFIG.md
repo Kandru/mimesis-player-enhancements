@@ -218,7 +218,7 @@ Map-placed pickup loot uses three separate paths:
 | **Map** | Loot placed when a dungeon room loads — fixed markers and random pool markers (see table above). |
 | **Drop** | Items from enemy death tables when a monster is killed, plus inventory items dropped on death. Adds extra weighted re-rolls from the same drop table. Consumable stack count is also scaled when the item spawns. Mimics often drop **fake** decoy items from inventory — see `ConvertFakeActorDyingDropChancePercent`. |
 
-Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: shop purchases, Crow Shop scrap exchange, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`).
+Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: shop purchases, Crow Shop scrap exchange, deathmatch MVP winner rewards, admin/cheat spawns, or other spawn reasons (e.g. `Release`, `Buying`, `Admin`, `Skill`).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

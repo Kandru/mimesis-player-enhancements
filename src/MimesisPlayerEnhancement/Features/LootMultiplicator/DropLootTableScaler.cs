@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static void ScaleDropList(ItemDropInfo dropInfo, List<int> dropList)
         {
             if (BarterDropTableContext.IsActive
+                || DeathMatchRewardDropTableContext.IsActive
                 || !LootScalingGate.ShouldScale()
                 || dropInfo == null
                 || dropList == null)
