@@ -7,6 +7,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int SaveSlotId = -1;
         public string LobbyName = "";
         public string ModVersion = "";
+        public string LastSeenModVersion = "";
         public string ListenUrl = "";
         public int SnapshotVersion;
         public int ConfigVersion;
@@ -188,6 +189,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public bool Success;
         public string Message = "";
+    }
+
+    internal sealed class WebDashboardChangelogAcknowledgeResult
+    {
+        public bool Success;
+        public string Message = "";
+        public string ModVersion = "";
+        public string LastSeenModVersion = "";
     }
 
     internal sealed class WebDashboardSettingsDto

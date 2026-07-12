@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement
             new(EntryKeyComparer.Instance)
             {
                 (MainSectionId, "EnableDebugLogging"),
+                (MainSectionId, "LastSeenModVersion"),
                 (UiConfig.SectionId, "ModToastDurationSeconds"),
                 (UiConfig.SectionId, "EnableExtendedSaveSlots"),
                 (UiConfig.SectionId, "EnableExtendedSpectatorPlayerList"),

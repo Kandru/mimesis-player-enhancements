@@ -209,6 +209,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     SaveSlotId = saveSlotId,
                     LobbyName = WebDashboardGameState.GetLobbyName(),
                     ModVersion = VersionInfo.ModuleVersion,
+                    LastSeenModVersion = ModConfig.LastSeenModVersion.Value ?? string.Empty,
                     ListenUrl = listenUrl,
                     SnapshotVersion = Version,
                     ConfigVersion = ModConfig.Version,

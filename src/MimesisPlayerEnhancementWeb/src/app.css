@@ -245,6 +245,20 @@ body {
   width: 100%;
 }
 
+.sidebar-link-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-link-badge {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 0 0 2px rgba(70, 95, 255, 0.2);
+}
+
 /* ── Header ── */
 
 .app-header {
@@ -1149,6 +1163,51 @@ body {
 }
 
 /* ── Donation ── */
+
+/* ── Changelog ── */
+
+.changelog-page {
+  width: 100%;
+  min-height: calc(100dvh - var(--header-height) - var(--page-padding-y) * 2);
+  display: flex;
+  flex-direction: column;
+}
+
+.changelog-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.changelog-article {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.changelog-lead {
+  margin: 0 0 1.25rem;
+  max-width: 72ch;
+  font-size: clamp(0.9375rem, 0.85rem + 0.2vw, 1.0625rem);
+  line-height: 1.6;
+  color: #475467;
+}
+
+.dark .changelog-lead {
+  color: #98a2b3;
+}
+
+.changelog-error {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: #d92d20;
+}
+
+.dark .changelog-error {
+  color: #f97066;
+}
 
 .donation-page {
   display: flex;

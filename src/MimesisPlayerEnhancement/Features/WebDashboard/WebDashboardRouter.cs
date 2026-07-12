@@ -98,6 +98,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     SaveSlotId = snapshot.Status.SaveSlotId,
                     LobbyName = snapshot.Status.LobbyName,
                     ModVersion = snapshot.Status.ModVersion,
+                    LastSeenModVersion = snapshot.Status.LastSeenModVersion,
                     ListenUrl = snapshot.Status.ListenUrl,
                     SnapshotVersion = snapshot.Status.SnapshotVersion,
                     ConfigVersion = snapshot.Status.ConfigVersion,
@@ -106,6 +107,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     SessionScene = snapshot.Status.SessionScene,
                 };
                 WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
+                return;
+            }
+
+            if (path == "/api/changelog/acknowledge" && method == "POST")
+            {
+                WebDashboardChangelogAcknowledgeResult acknowledgeResult = ModChangelogAcknowledgment.Acknowledge();
+                WriteJson(
+                    context,
+                    acknowledgeResult.Success ? 200 : 400,
+                    WebDashboardJson.SerializeChangelogAcknowledgeResult(acknowledgeResult));
                 return;
             }
 

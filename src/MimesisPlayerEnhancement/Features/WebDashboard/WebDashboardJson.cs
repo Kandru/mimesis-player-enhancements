@@ -56,6 +56,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(result);
         }
 
+        public static string SerializeChangelogAcknowledgeResult(WebDashboardChangelogAcknowledgeResult result)
+        {
+            return ModJson.Serialize(result);
+        }
+
         public static string SerializeError(int statusCode, string message)
         {
             return ModJson.Serialize(new ErrorApiResponse

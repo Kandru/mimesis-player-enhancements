@@ -8,6 +8,8 @@ export function getPageTitle(
   switch (route) {
     case 'home':
       return t('dashboard.home_title');
+    case 'changelog':
+      return t('dashboard.nav_changelog');
     case 'donation':
       return t('dashboard.nav_donation');
     case 'global-settings':
@@ -33,6 +35,8 @@ export function getPageDescription(route: string, settingsSubRoute = ''): string
   switch (route) {
     case 'home':
       return t('dashboard.page_desc_home');
+    case 'changelog':
+      return t('dashboard.page_desc_changelog');
     case 'donation':
       return t('dashboard.page_desc_donation');
     case 'global-settings':

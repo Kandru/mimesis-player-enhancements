@@ -18,6 +18,12 @@ const Api = {
     return Api.fetchJson<import('./types').StatusDto>('/api/status');
   },
 
+  acknowledgeChangelog() {
+    return Api.fetchJson<import('./types').ChangelogAcknowledgeResult>('/api/changelog/acknowledge', {
+      method: 'POST',
+    });
+  },
+
   disableAllPlayerCheats() {
     return Api.fetchJson('/api/host-cheats', {
       method: 'POST',

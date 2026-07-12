@@ -40,7 +40,7 @@ export function formatCountMap(
     .map(([key, count]) => [labelFn ? labelFn(key) : key, count ?? 0] as [string, number]);
 }
 
-export const OFFLINE_ROUTES = ['home', 'donation', 'global-settings'];
+export const OFFLINE_ROUTES = ['home', 'changelog', 'donation', 'global-settings'];
 
 export function parseHash(): {
   route: string;
@@ -63,4 +63,14 @@ export function parseHash(): {
 
 export function navigate(path: string) {
   location.hash = path.startsWith('#') ? path : `#/${path}`;
+}
+
+export function isChangelogPending(status: {
+  modVersion?: string;
+  lastSeenModVersion?: string;
+}): boolean {
+  const current = status.modVersion?.trim() ?? '';
+  const last = status.lastSeenModVersion?.trim() ?? '';
+  if (!current) return false;
+  return current.localeCompare(last, undefined, { sensitivity: 'accent' }) !== 0;
 }

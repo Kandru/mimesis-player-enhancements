@@ -16,10 +16,11 @@ import type {
 } from '../types';
 import { isLobbyRoute } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
-import { isValidSteamId, OFFLINE_ROUTES, parseHash } from '../utils';
+  import { isValidSteamId, isChangelogPending, OFFLINE_ROUTES, parseHash, navigate } from '../utils';
 
 const BLIND_MODE_STORAGE_KEY = 'playerBlindModeEnabled';
 const LEGACY_BLIND_MODE_STORAGE_KEY = 'playerBlindModeUserEnabled';
+const CHANGELOG_REDIRECT_KEY = 'changelogAutoRedirectedFor';
 
 function readStoredBlindModePreference(): boolean {
   const stored =
@@ -40,6 +41,7 @@ function createInitialStatus(): StatusDto {
     saveSlotId: -1,
     lobbyName: '',
     modVersion: '',
+    lastSeenModVersion: '',
     listenUrl: '',
     snapshotVersion: 0,
     configVersion: 0,
@@ -119,6 +121,10 @@ class DashboardStore {
     return true;
   }
 
+  get changelogPending() {
+    return isChangelogPending(this.status);
+  }
+
   get isGameRoute() {
     return ['players', 'minimap', 'leaderboard', 'settings', 'player'].includes(this.route);
   }
@@ -147,6 +153,7 @@ class DashboardStore {
       })
       .finally(() => {
         this.setConnectedMode();
+        this.maybeAutoRedirectToChangelog();
         this.loadPageData(false);
         void this.prefetchDashboardData();
         this.connectSse();
@@ -222,9 +229,50 @@ class DashboardStore {
       location.hash = '#/home';
       const p = parseHash();
       this.route = p.route;
-    } else if (this.status.isConnected && (!location.hash || location.hash === '#')) {
+    } else if (
+      this.status.isConnected
+      && (!location.hash || location.hash === '#')
+      && !this.changelogPending
+    ) {
       location.hash = '#/players';
       this.route = 'players';
+    }
+  }
+
+  maybeAutoRedirectToChangelog() {
+    if (!this.changelogPending) return;
+    if (this.route === 'changelog') return;
+    const stored = localStorage.getItem(CHANGELOG_REDIRECT_KEY);
+    if (stored === this.status.modVersion) return;
+    localStorage.setItem(CHANGELOG_REDIRECT_KEY, this.status.modVersion);
+    navigate('changelog');
+    this.route = 'changelog';
+  }
+
+  applyChangelogAcknowledgment(lastSeenModVersion: string) {
+    this.status = {
+      ...this.status,
+      lastSeenModVersion,
+    };
+    localStorage.removeItem(CHANGELOG_REDIRECT_KEY);
+  }
+
+  private acknowledgingChangelog = false;
+
+  async acknowledgeChangelogIfPending(): Promise<string | null> {
+    if (!this.changelogPending || this.acknowledgingChangelog) return null;
+    this.acknowledgingChangelog = true;
+    try {
+      const result = await Api.acknowledgeChangelog();
+      if (!result.success) {
+        return result.message || null;
+      }
+      this.applyChangelogAcknowledgment(result.lastSeenModVersion);
+      return null;
+    } catch (ex) {
+      return ex instanceof Error ? ex.message : null;
+    } finally {
+      this.acknowledgingChangelog = false;
     }
   }
 
@@ -321,6 +369,7 @@ class DashboardStore {
       this.applyMinimapFilter();
     }
     this.ensureDefaultRoute();
+    this.maybeAutoRedirectToChangelog();
   }
 
   applyMinimapLive(minimap: MinimapPayload) {

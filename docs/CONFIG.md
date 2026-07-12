@@ -74,6 +74,13 @@ Mod-wide settings that are not owned by a single feature.
 |-----|------|---------|-------|-------------|
 | `EnableDebugLogging` | bool | `false` | — | Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting. |
 
+**Hidden keys** (managed automatically; not shown in the web dashboard settings UI):
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `AcknowledgedMismatchGameVersion` | string | `""` | Set when a game-version mismatch dialog is shown so the same warning is not repeated every launch. Cleared when versions match again. |
+| `LastSeenModVersion` | string | `""` | Last mod version for which the player acknowledged the changelog in the web dashboard. When this differs from the installed mod version, the changelog page is shown again. |
+
 ## User Interface — `[MimesisPlayerEnhancement_Ui]`
 
 **Local UI.** Global-only preferences for mod presentation. Not available in per-save override UI or quick presets.

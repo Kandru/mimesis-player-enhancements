@@ -20,6 +20,12 @@ echo "Copying wiki source for ingestion…"
 rm -rf "$WEB_SRC/.wiki-src"
 cp -r "$ROOT/docs/wiki" "$WEB_SRC/.wiki-src"
 
+echo "Copying changelog source for ingestion…"
+rm -rf "$WEB_SRC/.changelog-src"
+mkdir -p "$WEB_SRC/.changelog-src"
+cp "$ROOT/thunderstore/CHANGELOG.md" "$WEB_SRC/.changelog-src/CHANGELOG.md"
+cp "$ROOT/src/Version.cs" "$WEB_SRC/.changelog-src/Version.cs"
+
 echo "Building web dashboard (Docker)…"
 docker build -t mpe-webdashboard:local -f "$WEB_SRC/Dockerfile" "$WEB_SRC"
 

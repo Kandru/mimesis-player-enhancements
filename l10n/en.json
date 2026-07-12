@@ -10,6 +10,10 @@
       "AcknowledgedMismatchGameVersion": {
         "title": "Acknowledged Mismatch Game Version",
         "description": "Detected game version the user acknowledged for a version mismatch warning."
+      },
+      "LastSeenModVersion": {
+        "title": "Last Seen Mod Version",
+        "description": "Last mod version for which the changelog was acknowledged in the web dashboard."
       }
     },
     "MimesisPlayerEnhancement_Ui": {
@@ -911,6 +915,14 @@
     "nav_statistics": "Statistics",
     "nav_lobby": "Lobby",
     "nav_donation": "Donation",
+    "nav_changelog": "Changelog",
+    "changelog_heading": "What's new",
+    "changelog_lead": "You updated to v{version}. Here's everything that changed in recent releases.",
+    "changelog_continue": "Continue",
+    "changelog_acknowledging": "Saving…",
+    "changelog_ack_failed": "Could not save changelog acknowledgment.",
+    "changelog_pending_badge": "New update — changelog not yet acknowledged",
+    "page_desc_changelog": "Recent mod changes and release notes.",
     "nav_players": "Players",
     "nav_minimap": "Minimap",
     "nav_leaderboard": "Leaderboard",

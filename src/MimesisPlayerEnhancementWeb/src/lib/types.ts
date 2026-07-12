@@ -4,6 +4,7 @@ export interface StatusDto {
   saveSlotId: number;
   lobbyName: string;
   modVersion: string;
+  lastSeenModVersion?: string;
   listenUrl: string;
   snapshotVersion: number;
   configVersion: number;
@@ -11,6 +12,13 @@ export interface StatusDto {
   locale: string;
   sessionScene?: string;
   blindModeEnabled?: boolean;
+}
+
+export interface ChangelogAcknowledgeResult {
+  success: boolean;
+  message: string;
+  modVersion: string;
+  lastSeenModVersion: string;
 }
 
 export interface SessionStatsDto {
@@ -228,6 +236,7 @@ export interface PlayerStatsDto {
 
 export type RouteName =
   | 'home'
+  | 'changelog'
   | 'donation'
   | 'global-settings'
   | 'players'

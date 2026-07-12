@@ -8,6 +8,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - custom menu structure to fix new features inside the main menu or esc menu
 - show health bars above players/mimics/monsters when they got hit and also show a floating damage indicator (each player needs the mod for it to work)
 - optimized the translations into one global file, and translate everything (instead of multiple)
+- webinterface now shows changelog whenever the mod version changes to inform users
 - fix: godmode/noclip being auto-disabled by dashboard snapshots and multi-tab blind-mode desync
 - fix: late-joiners not always joining the moving tram
 - fix: show "In dungeon" without room name in player list

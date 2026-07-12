@@ -4,6 +4,7 @@
   import AppShell from '$lib/components/layout/AppShell.svelte';
   import LobbyShell from '$lib/components/layout/LobbyShell.svelte';
   import HomePage from '$lib/routes/HomePage.svelte';
+  import ChangelogPage from '$lib/routes/Changelog.svelte';
   import DonationPage from '$lib/routes/Donation.svelte';
   import PlayersPage from '$lib/routes/Players.svelte';
   import MinimapPage from '$lib/routes/MinimapPage.svelte';
@@ -33,6 +34,8 @@
 <AppShell>
   {#if dashboard.route === 'home'}
     <HomePage />
+  {:else if dashboard.route === 'changelog'}
+    <ChangelogPage />
   {:else if dashboard.route === 'donation'}
     <DonationPage />
   {:else if dashboard.route === 'global-settings'}

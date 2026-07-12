@@ -10,6 +10,10 @@
       "AcknowledgedMismatchGameVersion": {
         "title": "Bestätigte abweichende Spielversion",
         "description": "Erkannte Spielversion, die der Nutzer bei einer Versionswarnung bestätigt hat."
+      },
+      "LastSeenModVersion": {
+        "title": "Zuletzt gesehene Mod-Version",
+        "description": "Letzte Mod-Version, für die das Changelog im Web-Dashboard bestätigt wurde."
       }
     },
     "MimesisPlayerEnhancement_Ui": {
@@ -911,6 +915,14 @@
     "nav_statistics": "Statistik",
     "nav_lobby": "Lobby",
     "nav_donation": "Spende",
+    "nav_changelog": "Changelog",
+    "changelog_heading": "Neuigkeiten",
+    "changelog_lead": "Du hast auf v{version} aktualisiert. Hier sind die Änderungen der letzten Versionen.",
+    "changelog_continue": "Weiter",
+    "changelog_acknowledging": "Speichern…",
+    "changelog_ack_failed": "Changelog-Bestätigung konnte nicht gespeichert werden.",
+    "changelog_pending_badge": "Neues Update — Changelog noch nicht bestätigt",
+    "page_desc_changelog": "Aktuelle Mod-Änderungen und Versionshinweise.",
     "nav_players": "Spieler",
     "nav_minimap": "Minimap",
     "nav_leaderboard": "Bestenliste",

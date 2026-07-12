@@ -8,6 +8,7 @@ src/**/obj/
 src/MimesisPlayerEnhancementWeb/node_modules/
 src/MimesisPlayerEnhancementWeb/dist/
 src/MimesisPlayerEnhancementWeb/.wiki-src/
+src/MimesisPlayerEnhancementWeb/.changelog-src/
 src/MimesisPlayerEnhancementWeb/src/lib/generated/
 src/MimesisPlayerEnhancement/Assets/
 deps/MimicAPI/
