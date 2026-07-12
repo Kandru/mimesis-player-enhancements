@@ -38,8 +38,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
     {
         private const string Feature = "Ui";
 
+        private static readonly System.Reflection.FieldInfo? InventoryUiField =
+            AccessTools.Field(typeof(GameMainBase), "inventoryui");
+
         [HarmonyPostfix]
-        private static void Postfix(ProtoActor actor)
+        private static void Postfix(GameMainBase __instance, ProtoActor actor)
         {
             if (!actor.AmIAvatar())
             {
@@ -56,7 +59,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
                 if (FpsUiNetWorthOverlay.IsEnabled())
                 {
                     FpsUiNetWorthOverlay.NotifyInventoryShown();
+                    if (InventoryUiField?.GetValue(__instance) is UIPrefab_Inventory inventoryUi)
+                    {
+                        inventoryUi.UpdateSlot(
+                            actor.GetInventoryItems(),
+                            actor.GetSelectedInventorySlotIndex());
+                    }
                 }
+
+                __instance.UpdateInventoryUI(actor);
             }
             catch (Exception ex)
             {
@@ -65,30 +76,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
-    [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.UpdateInventoryUI))]
-    internal static class UpdateInventoryUiPostfix
+    [HarmonyPatch]
+    internal static class GameMainOnDestroyPostfix
     {
         private const string Feature = "Ui";
 
+        internal static System.Reflection.MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(GameMainBase), "OnDestroy");
+
         [HarmonyPostfix]
-        private static void Postfix(ProtoActor actor)
+        private static void Postfix()
         {
             try
             {
-                if (FpsUiOverlay.IsEnabled())
-                {
-                    FpsUiOverlay.NotifyInventoryShown();
-                }
-
-                if (FpsUiNetWorthOverlay.IsEnabled())
-                {
-                    FpsUiNetWorthOverlay.NotifyInventoryShown();
-                    FpsUiNetWorthOverlay.UpdateFromActor(actor);
-                }
+                FpsUiOverlay.OnSessionEnded();
+                FpsUiNetWorthOverlay.OnSessionEnded();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS UI inventory net-worth update failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI session cleanup failed — {ex.Message}");
             }
         }
     }

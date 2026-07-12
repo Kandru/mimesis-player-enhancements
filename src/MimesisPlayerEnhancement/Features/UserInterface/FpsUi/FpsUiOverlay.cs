@@ -56,6 +56,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            if (!IsInventoryVisibleForOverlay())
+            {
+                _overlayRoot?.SetActive(false);
+                return;
+            }
+
             RefreshLayout();
         }
 
@@ -79,6 +85,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             if (!IsEnabled())
             {
+                return;
+            }
+
+            if (!IsInventoryVisibleForOverlay())
+            {
+                _overlayRoot?.SetActive(false);
                 return;
             }
 
@@ -113,6 +125,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             if (!IsEnabled())
             {
+                return;
+            }
+
+            if (!IsInventoryVisibleForOverlay())
+            {
+                _overlayRoot?.SetActive(false);
                 return;
             }
 
@@ -159,6 +177,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
         }
 
+        internal static void OnSessionEnded() => Deactivate();
+
+        internal static void OnInventoryHidden()
+        {
+            _state.Active = false;
+            _overlayRoot?.SetActive(false);
+        }
+
         internal static void ForceHideOxyGauge(UIPrefab_InGame ingameUi)
         {
             if (IsEnabled())
@@ -176,6 +202,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         {
             if (!IsEnabled())
             {
+                return;
+            }
+
+            if (!IsInventoryVisibleForOverlay())
+            {
+                _overlayRoot?.SetActive(false);
                 return;
             }
 
@@ -204,6 +236,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             _state.Active = false;
+            _ingameUi = null;
             DestroyOverlay();
         }
 
@@ -291,9 +324,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         {
             if (_overlayRoot != null)
             {
-                _overlayRoot.SetActive(IsEnabled() && _state.Active);
+                _overlayRoot.SetActive(
+                    IsEnabled()
+                    && _state.Active
+                    && IsInventoryVisibleForOverlay());
             }
         }
+
+        private static bool IsInventoryVisibleForOverlay() =>
+            FpsUiInventoryLayoutHelper.IsInventoryVisible();
 
         private static bool TryMeasureInventoryScreenPosition(
             out Vector2 leftLocal,

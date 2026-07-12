@@ -82,6 +82,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             return null;
         }
 
+        internal static int ComputeItemSellPrice(InventoryItem item) => ResolveSellPrice(item);
+
         private static int ResolveSellPrice(InventoryItem item)
         {
             ItemMasterInfo info = item.MasterInfo;

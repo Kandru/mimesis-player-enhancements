@@ -39,6 +39,33 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    [HarmonyPatch]
+    internal static class InGameHidePostfix
+    {
+        private const string Feature = "Ui";
+
+        internal static System.Reflection.MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide));
+
+        [HarmonyPostfix]
+        private static void Postfix(UIPrefabScript __instance)
+        {
+            if (__instance is not UIPrefab_InGame)
+            {
+                return;
+            }
+
+            try
+            {
+                FpsUiOverlay.OnSessionEnded();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"FPS UI hide failed — {ex.Message}");
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnHpChanged))]
     internal static class InGameOnHpChangedPrefix
     {

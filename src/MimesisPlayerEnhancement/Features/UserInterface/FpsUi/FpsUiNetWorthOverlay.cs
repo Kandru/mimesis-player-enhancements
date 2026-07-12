@@ -9,110 +9,144 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
     {
         private const string LabelObjectName = "MPE_NetWorth";
         private const float TopEdgeNudgePixels = 0f;
-        private const int RetryFrames = 90;
+        private const int UnsetTotal = -1;
 
         private static GameObject? _labelRoot;
         private static Component? _label;
-        private static int _retriesRemaining;
-        private static int _lastTotal;
+        private static bool _active;
+        private static int _resolvedTotal = UnsetTotal;
+        private static int _displayedTotal = UnsetTotal;
+        private static bool _loggedEnsureFailure;
 
         internal static bool IsEnabled() => ModConfig.EnableFpsUiInventoryNetWorth.Value;
 
-        internal static void NotifyInventoryShown() => Refresh();
-
-        internal static void ScheduleLayoutRetry() => ScheduleRetry();
-
-        internal static void UpdateFromActor(ProtoActor actor)
-        {
-            if (!IsEnabled() || actor == null)
-            {
-                return;
-            }
-
-            Refresh();
-            ApplyValue(FpsUiInventoryNetWorthCalculator.ComputeTotal(actor));
-        }
-
-        internal static void UpdateValue(IReadOnlyList<InventoryItem?> inventoryItems)
+        internal static void NotifyInventoryShown()
         {
             if (!IsEnabled())
             {
                 return;
             }
 
-            Refresh();
-
-            ProtoActor? avatar = Hub.Main?.GetMyAvatar();
-            int total = avatar != null
-                ? FpsUiInventoryNetWorthCalculator.ComputeTotal(avatar)
-                : FpsUiInventoryNetWorthCalculator.ComputeFromInventoryItems(inventoryItems);
-            ApplyValue(total);
+            _active = true;
+            Activate();
         }
 
-        internal static void OnUpdate()
+        internal static void UpdateValue(IReadOnlyList<InventoryItem> inventoryItems)
         {
-            if (!IsEnabled() || _retriesRemaining <= 0)
+            if (!IsEnabled())
             {
                 return;
             }
 
-            _retriesRemaining--;
-            Refresh();
+            _resolvedTotal = ResolveTotal(inventoryItems);
+            if (_label != null)
+            {
+                ApplyTotal(_resolvedTotal);
+            }
+            else if (_active)
+            {
+                Activate();
+            }
+        }
+
+        internal static void OnUpdate()
+        {
+            if (!IsEnabled() || !_active)
+            {
+                return;
+            }
+
+            Activate();
+        }
+
+        internal static void OnInventoryHidden()
+        {
+            _labelRoot?.SetActive(false);
+        }
+
+        internal static void OnSessionEnded()
+        {
+            _active = false;
+            ReleaseWidget();
         }
 
         internal static void RefreshFromConfig()
         {
             if (!IsEnabled())
             {
-                Deactivate();
+                OnSessionEnded();
                 return;
             }
 
-            ScheduleRetry();
-            if (FpsUiInventoryLayoutHelper.IsInventoryReady())
+            if (FpsUiInventoryLayoutHelper.IsInventoryVisible())
             {
-                Refresh();
+                NotifyInventoryShown();
+            }
+        }
+
+        private static void Activate()
+        {
+            if (!FpsUiInventoryLayoutHelper.IsInventoryVisible())
+            {
+                _labelRoot?.SetActive(false);
+                return;
             }
 
+            if (!TryEnsureWidget())
+            {
+                return;
+            }
+
+            RefreshLayout();
+            ApplyTotal(_resolvedTotal == UnsetTotal ? 0 : _resolvedTotal);
+            _labelRoot!.SetActive(true);
+        }
+
+        private static int ResolveTotal(IReadOnlyList<InventoryItem> inventoryItems)
+        {
             ProtoActor? avatar = Hub.Main?.GetMyAvatar();
             if (avatar != null)
             {
-                ApplyValue(FpsUiInventoryNetWorthCalculator.ComputeTotal(avatar));
+                return FpsUiInventoryNetWorthCalculator.ComputeTotal(avatar);
             }
-        }
 
-        private static void Refresh()
-        {
-            if (!IsEnabled())
+            int total = 0;
+            foreach (InventoryItem? item in inventoryItems)
             {
-                return;
+                if (item == null || item.IsFake)
+                {
+                    continue;
+                }
+
+                total += FpsUiInventoryNetWorthCalculator.ComputeItemSellPrice(item);
             }
 
-            if (!EnsureWidget())
-            {
-                return;
-            }
-
-            TryRefreshLayout();
+            return total;
         }
 
-        private static void ScheduleRetry() => _retriesRemaining = RetryFrames;
-
-        private static void Deactivate()
+        private static bool HasValidWidget()
         {
-            DestroyWidget();
-            _retriesRemaining = 0;
-            _lastTotal = 0;
+            return _labelRoot != null
+                && _label != null
+                && FpsUiInventoryLayoutHelper.TryGetInventoryUi() != null;
         }
 
-        private static bool EnsureWidget()
+        private static bool TryEnsureWidget()
         {
-            if (_labelRoot != null)
+            if (HasValidWidget())
             {
                 return true;
             }
 
+            ReleaseWidget();
+
             UIPrefab_Inventory? inventoryUi = FpsUiInventoryLayoutHelper.TryGetInventoryUi();
+            if (!FpsUiInventoryLayoutHelper.IsInventoryReady())
+            {
+                LogEnsureFailureOnce();
+                return false;
+            }
+
             Component? weightText = FpsUiInventoryLayoutHelper.TryGetWeightText(inventoryUi);
             RectTransform? weightAnchor = weightText?.transform as RectTransform;
             RectTransform? sourceRow = weightAnchor != null
@@ -121,44 +155,41 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             RectTransform? strip = sourceRow?.parent as RectTransform;
             if (weightText == null || weightAnchor == null || sourceRow == null || strip == null)
             {
-                ScheduleRetry();
+                LogEnsureFailureOnce();
                 return false;
             }
 
-            _labelRoot = UnityEngine.Object.Instantiate(sourceRow.gameObject, strip);
+            _loggedEnsureFailure = false;
+            _labelRoot = UnityEngine.Object.Instantiate(
+                sourceRow.gameObject,
+                strip,
+                worldPositionStays: false);
             _labelRoot.name = LabelObjectName;
 
             RectTransform? cloneRect = _labelRoot.GetComponent<RectTransform>();
             if (cloneRect == null)
             {
-                DestroyWidget();
+                ReleaseWidget();
                 return false;
             }
 
             _label = FindMatchingText(_labelRoot, weightText);
             if (_label == null)
             {
-                DestroyWidget();
+                ReleaseWidget();
                 return false;
             }
 
             CopyTextStyle(weightText, _label);
-            ApplyValue(_lastTotal);
-            _labelRoot.SetActive(false);
+            _displayedTotal = UnsetTotal;
             return true;
         }
 
-        private static bool TryRefreshLayout()
+        private static void RefreshLayout()
         {
-            if (_labelRoot == null && !EnsureWidget())
+            if (!HasValidWidget())
             {
-                return false;
-            }
-
-            if (!FpsUiInventoryLayoutHelper.IsInventoryVisible())
-            {
-                _labelRoot?.SetActive(false);
-                return false;
+                return;
             }
 
             UIPrefab_Inventory? inventoryUi = FpsUiInventoryLayoutHelper.TryGetInventoryUi();
@@ -167,35 +198,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             RectTransform? sourceRow = weightAnchor != null
                 ? FpsUiInventoryLayoutHelper.ResolveWeightRowRect(weightAnchor)
                 : null;
-            RectTransform? cloneRect = _labelRoot?.GetComponent<RectTransform>();
+            RectTransform? cloneRect = _labelRoot!.GetComponent<RectTransform>();
             if (sourceRow == null || cloneRect == null)
             {
-                _labelRoot?.SetActive(false);
-                ScheduleRetry();
-                return false;
+                return;
             }
 
-            if (!FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
-                    sourceRow,
-                    cloneRect,
-                    TopEdgeNudgePixels))
-            {
-                _labelRoot?.SetActive(false);
-                ScheduleRetry();
-                return false;
-            }
-
-            if (_label != null && weightText != null)
-            {
-                CopyTextStyle(weightText, _label);
-            }
-
-            _labelRoot!.SetActive(true);
-            ApplyValue(_lastTotal);
-            return true;
+            FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
+                sourceRow,
+                cloneRect,
+                TopEdgeNudgePixels);
         }
 
-        private static void DestroyWidget()
+        private static void ReleaseWidget()
         {
             if (_labelRoot != null)
             {
@@ -204,15 +219,35 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             _labelRoot = null;
             _label = null;
+            _resolvedTotal = UnsetTotal;
+            _displayedTotal = UnsetTotal;
         }
 
-        private static void ApplyValue(int total)
+        private static void ApplyTotal(int total)
         {
-            _lastTotal = total;
-            if (_label != null)
+            if (_label == null)
             {
-                ModUiText.SetText(_label, $"${total}");
+                return;
             }
+
+            if (_displayedTotal == total)
+            {
+                return;
+            }
+
+            _displayedTotal = total;
+            ModUiText.SetText(_label, $"${total}");
+        }
+
+        private static void LogEnsureFailureOnce()
+        {
+            if (_loggedEnsureFailure)
+            {
+                return;
+            }
+
+            _loggedEnsureFailure = true;
+            ModLog.Warn("Ui", "Net-worth unavailable — inventory weight row not ready");
         }
 
         private static Component? FindMatchingText(GameObject cloneRoot, Component sourceText)
