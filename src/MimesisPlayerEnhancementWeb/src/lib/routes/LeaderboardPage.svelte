@@ -1,7 +1,8 @@
 <script lang="ts">
+  import PlayerIdentity from '$lib/components/players/PlayerIdentity.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
-  import { navigate } from '$lib/utils';
+  import { playerDisplayLabel } from '$lib/utils';
 
   type SortKey = 'name' | 'currency' | 'sessions';
   type SortDir = 'asc' | 'desc';
@@ -24,7 +25,9 @@
     list.sort((a, b) => {
       let cmp = 0;
       if (sortKey === 'name') {
-        cmp = String(a.displayName || a.steamId).localeCompare(String(b.displayName || b.steamId));
+        cmp = playerDisplayLabel(a.displayName, a.steamId).localeCompare(
+          playerDisplayLabel(b.displayName, b.steamId),
+        );
       } else if (sortKey === 'currency') {
         cmp = ((a as Record<string, number>).currencyEarned ?? 0) - ((b as Record<string, number>).currencyEarned ?? 0);
       } else {
@@ -76,15 +79,13 @@
         {#each entries as entry (entry.steamId)}
           <tr class="data-table-row">
             <td>
-              <div class="data-table-player-name">
-                <button class="text-[var(--brand)] hover:underline" onclick={() => navigate(`player/${entry.steamId}`)}>
-                  {entry.displayName || entry.steamId}
-                </button>
-                {#if connectedSet.has(String(entry.steamId))}
-                  <span class="badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">{t('dashboard.badge_online')}</span>
-                {/if}
-              </div>
-              <div class="data-table-muted">{String(entry.steamId)}</div>
+              <PlayerIdentity steamId={entry.steamId} displayName={entry.displayName}>
+                {#snippet badges()}
+                  {#if connectedSet.has(String(entry.steamId))}
+                    <span class="badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">{t('dashboard.badge_online')}</span>
+                  {/if}
+                {/snippet}
+              </PlayerIdentity>
             </td>
             <td>{(entry as Record<string, number>).currencyEarned ?? 0}</td>
             <td>{(entry as Record<string, number>).sessionsCompleted ?? 0}</td>

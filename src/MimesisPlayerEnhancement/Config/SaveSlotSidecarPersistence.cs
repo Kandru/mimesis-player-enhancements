@@ -35,6 +35,7 @@ namespace MimesisPlayerEnhancement
 
             if (SaveSlotConfigStore.ActiveSlotId == slotId)
             {
+                WebDashboardPlayerNameStore.EnsureSlotLoaded(slotId);
                 JoinAnytimeLobbyStore.EnsureSlotBound(slotId);
                 JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
                 return;

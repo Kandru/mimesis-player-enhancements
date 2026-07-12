@@ -254,9 +254,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             MergeOfflineStatisticsPlayers(
                 playersBySteam,
                 context.LocalSteamId,
-                context.SteamNames,
                 context.SaveSlotId,
-                context.NickSnapshot,
                 context.IsHost);
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
             WebDashboardPlayerListMerger.SortPlayers(players);
@@ -265,23 +263,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal readonly struct OfflinePlayerBuildContext
         {
-            internal ActorNickSnapshot NickSnapshot { get; }
-            internal Dictionary<ulong, string> SteamNames { get; }
             internal int SaveSlotId { get; }
             internal ulong LocalSteamId { get; }
             internal bool IsHost { get; }
             internal bool EnableStatistics { get; }
 
             internal OfflinePlayerBuildContext(
-                ActorNickSnapshot nickSnapshot,
-                Dictionary<ulong, string> steamNames,
                 int saveSlotId,
                 ulong localSteamId,
                 bool isHost,
                 bool enableStatistics)
             {
-                NickSnapshot = nickSnapshot;
-                SteamNames = steamNames;
                 SaveSlotId = saveSlotId;
                 LocalSteamId = localSteamId;
                 IsHost = isHost;
@@ -291,99 +283,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             internal static OfflinePlayerBuildContext Capture()
             {
                 return new OfflinePlayerBuildContext(
-                    ActorNickSnapshot.Capture(),
-                    CopySteamNameCache(),
                     WebDashboardGameState.GetSaveSlotId(),
                     LocalPlayerHelper.TryGetLocalSteamId(),
                     WebDashboardGameState.IsHost(),
                     ModConfig.EnableStatistics.Value);
-            }
-        }
-
-        internal readonly struct ActorNickSnapshot
-        {
-            private readonly Dictionary<long, string> _byUid;
-            private readonly Dictionary<ulong, string> _bySteamId;
-
-            private ActorNickSnapshot(
-                Dictionary<long, string> byUid,
-                Dictionary<ulong, string> bySteamId)
-            {
-                _byUid = byUid;
-                _bySteamId = bySteamId;
-            }
-
-            internal static ActorNickSnapshot Capture()
-            {
-                Dictionary<long, string> byUid = [];
-                Dictionary<ulong, string> bySteamId = [];
-                try
-                {
-                    Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-                    Dictionary<int, ProtoActor>? map = pdata?.main?.GetProtoActorMap();
-                    if (map == null)
-                    {
-                        return new ActorNickSnapshot(byUid, bySteamId);
-                    }
-
-                    foreach (ProtoActor? actor in map.Values)
-                    {
-                        if (actor == null
-                            || actor.ActorType != ActorType.Player
-                            || string.IsNullOrWhiteSpace(actor.nickName))
-                        {
-                            continue;
-                        }
-
-                        if (actor.UID != 0)
-                        {
-                            byUid[actor.UID] = actor.nickName;
-                        }
-
-                        if (StatisticsTracker.TryResolveSteamId(actor) is ulong steamId && steamId != 0)
-                        {
-                            bySteamId[steamId] = actor.nickName;
-                        }
-                    }
-                }
-                catch
-                {
-                    /* scene may be transitioning */
-                }
-
-                return new ActorNickSnapshot(byUid, bySteamId);
-            }
-
-            internal string? ResolveNickName(long playerUid, ulong steamId)
-            {
-                if (playerUid != 0
-                    && _byUid.TryGetValue(playerUid, out string? byUidNick)
-                    && !string.IsNullOrWhiteSpace(byUidNick))
-                {
-                    return byUidNick;
-                }
-
-                if (steamId != 0
-                    && _bySteamId.TryGetValue(steamId, out string? bySteamNick)
-                    && !string.IsNullOrWhiteSpace(bySteamNick))
-                {
-                    return bySteamNick;
-                }
-
-                return null;
-            }
-        }
-
-        private static Dictionary<ulong, string> CopySteamNameCache()
-        {
-            try
-            {
-                Dictionary<ulong, string>? cache = TryGetSteamNameCache();
-                return cache == null || cache.Count == 0 ? [] : new Dictionary<ulong, string>(cache);
-            }
-            catch
-            {
-                return [];
             }
         }
 
@@ -461,9 +364,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void MergeOfflineStatisticsPlayers(
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam,
             ulong localSteamId,
-            Dictionary<ulong, string> nameCache,
             int saveSlotId,
-            ActorNickSnapshot nickSnapshot,
             bool isHost)
         {
             if (saveSlotId < 0)
@@ -485,13 +386,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
                         saveSlotId,
                         player.SteamId,
-                        IsUsableName(player.DisplayName, player.SteamId)
-                            ? player.DisplayName
-                            : ResolveOfflineDisplayName(
-                                player.SteamId,
-                                nameCache,
-                                nickSnapshot,
-                                saveSlotId)),
+                        player.DisplayName),
                     IsHost = isHost && isLocal,
                     IsLocal = isLocal,
                 };
@@ -499,38 +394,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 EnrichStoredPlayerDto(dto, saveSlotId);
                 playersBySteam[player.SteamId] = dto;
             }
-        }
-
-        private static string ResolveOfflineDisplayName(
-            ulong steamId,
-            Dictionary<ulong, string> nameCache,
-            ActorNickSnapshot nickSnapshot,
-            int saveSlotId)
-        {
-            if (nameCache.TryGetValue(steamId, out string? cached) && IsUsableName(cached, steamId))
-            {
-                return cached;
-            }
-
-            string? fromActor = nickSnapshot.ResolveNickName(0, steamId);
-            if (IsUsableName(fromActor, steamId))
-            {
-                return fromActor!;
-            }
-
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is PlayerStatisticsDocument live
-                && IsUsableName(live.DisplayName, steamId))
-            {
-                return live.DisplayName;
-            }
-
-            string? remembered = WebDashboardPlayerNameStore.TryGetName(saveSlotId, steamId);
-            if (IsUsableName(remembered, steamId))
-            {
-                return remembered!;
-            }
-
-            return steamId.ToString();
         }
 
         private static void EnrichStoredPlayerDto(WebDashboardPlayerDto dto, int saveSlotId)
@@ -684,8 +547,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return !string.IsNullOrWhiteSpace(name) && name != steamId.ToString();
         }
 
-        // Single fallback chain for every payload: live session nick → Steam name cache → actor nick
-        // → live statistics doc → stored statistics doc → leaderboard entry → local nick → Steam ID.
+        // Single fallback chain for live payloads: session nick → Steam name cache → actor nick
+        // → live statistics doc → name sidecar → local nick → Steam ID.
         private static string ResolveDisplayNameCore(
             SessionContext? context,
             ulong steamId,
@@ -747,7 +610,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            WebDashboardPlayerNameStore.RememberName(
+            bool nameChanged = WebDashboardPlayerNameStore.RememberName(
                 WebDashboardGameState.GetSaveSlotId(),
                 dto.SteamId,
                 dto.DisplayName);
@@ -757,6 +620,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 && doc.DisplayName != dto.DisplayName)
             {
                 doc.DisplayName = dto.DisplayName;
+            }
+
+            if (nameChanged)
+            {
+                StatisticsTracker.BumpRevision();
+                WebDashboardSnapshotCache.MarkDirty();
             }
         }
 

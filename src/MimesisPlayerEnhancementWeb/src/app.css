@@ -575,6 +575,10 @@ body {
   @apply bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300;
 }
 
+.badge-steam {
+  @apply bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200;
+}
+
 .input {
   @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-950;
 }

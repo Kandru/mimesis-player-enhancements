@@ -2,6 +2,7 @@
   import Api from '$lib/api';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import GiveItemDialog from '$lib/components/players/GiveItemDialog.svelte';
+  import PlayerIdentity from '$lib/components/players/PlayerIdentity.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import type { PlayerDto } from '$lib/types';
   import { t } from '$lib/i18n';
@@ -21,9 +22,8 @@
   import {
     avatarUrl,
     formatVitalPercent,
-    isValidSteamId,
     navigate,
-    steamProfileUrl,
+    playerDisplayLabel,
   } from '$lib/utils';
 
   let {
@@ -195,7 +195,7 @@
 
   function requestModeration(player: PlayerDto, action: string) {
     const actionLabel = moderationActionLabel(action);
-    const name = player.displayName || String(player.steamId);
+    const name = playerDisplayLabel(player.displayName, player.steamId);
     openConfirm({
       title: t('dashboard.confirm_action_title', { action: actionLabel }),
       message: t('dashboard.confirm_action_message', { name, steamId: player.steamId }),
@@ -232,7 +232,7 @@
   }
 
   function requestDeletePlayerData(player: PlayerDto) {
-    const name = player.displayName || String(player.steamId);
+    const name = playerDisplayLabel(player.displayName, player.steamId);
     openConfirm({
       title: t('dashboard.confirm_delete_title'),
       message: t('dashboard.confirm_delete_player', { name, steamId: player.steamId }),
@@ -316,28 +316,21 @@
                   onerror={(e) => ((e.currentTarget as HTMLImageElement).src = '/img/default-avatar.svg')}
                 />
                 <div class="min-w-0 flex-1">
-                  <div class="data-table-player-name">
-                    <a
-                      class="hover:text-[var(--brand)]"
-                      href={steamProfileUrl(player.steamId)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {player.displayName || player.steamId}
-                    </a>
-                    {#if player.isHost}<span class="badge badge-host">{t('dashboard.badge_host')}</span>{/if}
-                    {#if player.isLocal}<span class="badge badge-local">{t('dashboard.badge_you')}</span>{/if}
-                    {#if player.isBanned}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">{t('dashboard.badge_banned')}</span>{/if}
-                    {#if showAlive(player)}
-                      <span class="badge {player.isAlive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}">
-                        {player.isAlive ? t('dashboard.badge_alive') : t('dashboard.badge_dead')}
-                      </span>
-                    {/if}
-                    {#if isHost && showActivityLine(player) && player.lateJoinLabel}
-                      <span class="badge bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">{player.lateJoinLabel}</span>
-                    {/if}
-                  </div>
-                  <div class="data-table-muted">{String(player.steamId)}</div>
+                  <PlayerIdentity steamId={player.steamId} displayName={player.displayName}>
+                    {#snippet badges()}
+                      {#if player.isHost}<span class="badge badge-host">{t('dashboard.badge_host')}</span>{/if}
+                      {#if player.isLocal}<span class="badge badge-local">{t('dashboard.badge_you')}</span>{/if}
+                      {#if player.isBanned}<span class="badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">{t('dashboard.badge_banned')}</span>{/if}
+                      {#if showAlive(player)}
+                        <span class="badge {player.isAlive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}">
+                          {player.isAlive ? t('dashboard.badge_alive') : t('dashboard.badge_dead')}
+                        </span>
+                      {/if}
+                      {#if isHost && showActivityLine(player) && player.lateJoinLabel}
+                        <span class="badge bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300">{player.lateJoinLabel}</span>
+                      {/if}
+                    {/snippet}
+                  </PlayerIdentity>
                 </div>
               </div>
             </td>
@@ -414,11 +407,6 @@
             {#if isHost}
               <td>
                 <div class="data-table-actions">
-                  {#if isValidSteamId(player.steamId)}
-                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => navigate(`player/${player.steamId}`)}>
-                      {t('dashboard.badge_stats')}
-                    </button>
-                  {/if}
                   {#if canKickBan(player)}
                     <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, 'kick')}>{t('dashboard.kick')}</button>
                     <button type="button" class="btn btn-secondary btn-xs" onclick={() => requestModeration(player, player.isBanned ? 'unban' : 'ban')}>

@@ -239,12 +239,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardLeaderboardCache.Clear();
                 WebDashboardOfflinePlayerCache.Clear();
                 WebDashboardSnapshotEventCache.Clear();
-                WebDashboardPlayerNameStore.Clear();
                 WebDashboardHostCheatsRuntime.DisableAll("disconnected");
                 WebDashboardCatalogCache.Invalidate();
             }
             else
             {
+                if (saveSlotId >= 0)
+                {
+                    WebDashboardPlayerNameStore.EnsureSlotLoaded(saveSlotId);
+                }
+
                 WebDashboardHostCheatsRuntime.SyncFromSession();
                 WebDashboardCatalogCache.RefreshCatalogsIfNeeded(connected: true);
                 WebDashboardCatalogCache.RefreshHostCheats();

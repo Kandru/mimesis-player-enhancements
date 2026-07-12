@@ -1,3 +1,13 @@
+export function playerDisplayLabel(
+  displayName: string | undefined,
+  steamId: string | number,
+): string {
+  const id = String(steamId);
+  const name = displayName?.trim();
+  if (name && name !== id) return name;
+  return id;
+}
+
 export function isValidSteamId(steamId: string | number | null | undefined) {
   if (steamId == null || steamId === '') return false;
   const id = String(steamId);

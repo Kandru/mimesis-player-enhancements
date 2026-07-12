@@ -14,6 +14,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static int _loadedSlotId = -1;
         private static bool _dirty;
 
+        internal static void EnsureSlotLoaded(int slotId)
+        {
+            if (slotId < 0 || slotId == _loadedSlotId)
+            {
+                return;
+            }
+
+            LoadForSlot(slotId);
+        }
+
         internal static void LoadForSlot(int slotId)
         {
             if (slotId < 0)
@@ -85,27 +95,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        internal static void RememberName(int slotId, ulong steamId, string name)
+        internal static bool RememberName(int slotId, ulong steamId, string name)
         {
             if (slotId < 0 || steamId == 0 || string.IsNullOrWhiteSpace(name) || name == steamId.ToString())
             {
-                return;
+                return false;
             }
 
             if (slotId != _loadedSlotId)
             {
-                return;
+                return false;
             }
 
             lock (Gate)
             {
                 if (_names.TryGetValue(steamId, out string? existing) && existing == name)
                 {
-                    return;
+                    return false;
                 }
 
                 _names[steamId] = name;
                 _dirty = true;
+                return true;
             }
         }
 
