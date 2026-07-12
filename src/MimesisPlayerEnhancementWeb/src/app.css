@@ -9,15 +9,15 @@
   --page-padding-y: 1rem;
   --brand: #465fff;
   --brand-dark: #3641f5;
-  --surface: #ffffff;
-  --surface-muted: #f9fafb;
-  --border: #e4e7ec;
+  --surface: #f9fafb;
+  --surface-muted: #f2f4f7;
+  --border: #d0d5dd;
 }
 
 .dark {
-  --surface: #101828;
-  --surface-muted: #0c111d;
-  --border: #1d2939;
+  --surface: #1a2234;
+  --surface-muted: #101828;
+  --border: #344054;
 }
 
 html, body, #app {
@@ -137,11 +137,11 @@ body {
 }
 
 .sidebar-brand:hover {
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .sidebar-brand:hover {
-  background: #1d2939;
+  background: #344054;
 }
 
 .sidebar-logo {
@@ -205,11 +205,11 @@ body {
 }
 
 .sidebar-link:hover {
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .sidebar-link:hover {
-  background: #1d2939;
+  background: #344054;
 }
 
 .sidebar-link-active {
@@ -365,7 +365,7 @@ body {
   height: 2.5rem;
   border: 1px solid var(--border);
   border-radius: 0.625rem;
-  background: #f9fafb;
+  background: #f2f4f7;
   padding: 0 0.875rem 0 2.5rem;
   font-size: 0.875rem;
   color: inherit;
@@ -406,11 +406,11 @@ body {
 }
 
 .header-icon-btn:hover {
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .header-icon-btn:hover {
-  background: #1d2939;
+  background: #344054;
 }
 
 .header-icon-btn svg {
@@ -436,7 +436,7 @@ body {
 /* ── Cards & buttons ── */
 
 .card {
-  @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900;
+  @apply rounded-xl border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-800 dark:bg-gray-800;
 }
 
 .btn {
@@ -448,7 +448,7 @@ body {
 }
 
 .btn-secondary {
-  @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800;
+  @apply border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
 }
 
 .btn-danger {
@@ -580,11 +580,11 @@ body {
 }
 
 .input {
-  @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-950;
+  @apply w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900;
 }
 
 .input:disabled {
-  @apply cursor-not-allowed bg-gray-50 text-gray-500 dark:bg-gray-900;
+  @apply cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-gray-800;
 }
 
 /* ── Toggle switch ── */
@@ -701,11 +701,11 @@ body {
 }
 
 .settings-nav-item:hover {
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .settings-nav-item:hover {
-  background: #1d2939;
+  background: #344054;
 }
 
 .settings-nav-item-active {
@@ -790,11 +790,11 @@ body {
   color: #98a2b3;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .wiki-nav-scope {
-  background: #1d2939;
+  background: #344054;
   color: #667085;
 }
 
@@ -915,12 +915,12 @@ body {
   font-size: 0.8125em;
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  background: #f2f4f7;
+  background: #e4e7ec;
   color: #344054;
 }
 
 .dark .wiki-prose code {
-  background: #1d2939;
+  background: #344054;
   color: #d0d5dd;
 }
 
@@ -939,12 +939,12 @@ body {
 }
 
 .wiki-prose th {
-  background: #f9fafb;
+  background: #f2f4f7;
   font-weight: 600;
 }
 
 .dark .wiki-prose th {
-  background: #1d2939;
+  background: #344054;
 }
 
 .wiki-prose strong {
@@ -1042,7 +1042,7 @@ body {
   margin: 0;
   padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--border);
-  background: #f9fafb;
+  background: #f2f4f7;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -1085,7 +1085,7 @@ body {
 }
 
 .settings-entry-readonly {
-  background: #f9fafb;
+  background: #f2f4f7;
 }
 
 .dark .settings-entry-readonly {
@@ -1645,11 +1645,11 @@ body {
 }
 
 .lobby-nav-item:hover {
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .dark .lobby-nav-item:hover {
-  background: #1d2939;
+  background: #344054;
 }
 
 .lobby-nav-item-active {
@@ -1814,7 +1814,7 @@ body {
 .data-table th {
   padding: 0.625rem 1rem;
   border-bottom: 1px solid var(--border);
-  background: #f9fafb;
+  background: #f2f4f7;
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
@@ -1865,7 +1865,7 @@ body {
   flex-shrink: 0;
   border-radius: 0.5rem;
   object-fit: cover;
-  background: #f2f4f7;
+  background: #e4e7ec;
 }
 
 .data-table-player-name {
@@ -2083,7 +2083,7 @@ button.player-identity-name:hover {
 .vital-track {
   height: 0.5rem;
   border-radius: 9999px;
-  background: #e4e7ec;
+  background: #d0d5dd;
   overflow: hidden;
 }
 

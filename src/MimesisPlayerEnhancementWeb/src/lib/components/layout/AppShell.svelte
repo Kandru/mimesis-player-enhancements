@@ -7,7 +7,7 @@
   let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="app-shell min-h-full bg-gray-50 dark:bg-gray-950" class:sidebar-open={dashboard.sidebarOpen}>
+<div class="app-shell min-h-full bg-gray-100 dark:bg-gray-900" class:sidebar-open={dashboard.sidebarOpen}>
   <button
     type="button"
     class="sidebar-backdrop"
