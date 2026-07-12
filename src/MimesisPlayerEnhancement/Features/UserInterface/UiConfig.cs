@@ -15,64 +15,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory(SectionId, "User Interface");
+            _category = ModConfig.CreateCategory(SectionId);
         }
 
         internal static void CreateEntries()
         {
             ModConfig.ModToastDurationSeconds = ModConfig.CreateTrackedEntry(_category,
                 "ModToastDurationSeconds",
-                5f,
-                "Mod Message Duration (seconds)",
-                "How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally.");
+                5f);
 
             ModConfig.EnableExtendedSaveSlots = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedSaveSlots",
-                true,
-                "Enable Extended Save Slots",
-                "When enabled, replaces the separate New/Load Tram menus with a unified save picker (up to 99 manual slots). When disabled, vanilla New/Load Tram behavior is used.");
+                true);
 
             ModConfig.EnableExtendedSpectatorPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedSpectatorPlayerList",
-                true,
-                "Enable Extended Spectator Player List",
-                "Replace the 4-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically.");
+                true);
 
             ModConfig.EnableExtendedInGameMenuPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedInGameMenuPlayerList",
-                true,
-                "Enable Extended In-Game Menu Player List",
-                "Pin the join-code button to the top of the ESC menu player column, stretch the player list to fill remaining vertical space, and show a scrollbar when rows overflow.");
+                true);
 
             ModConfig.EnableWorldHealthBars = ModConfig.CreateTrackedEntry(_category,
                 "EnableWorldHealthBars",
-                true,
-                "Enable World Health Bars",
-                "Show a world-space health bar above other players, mimics, and monsters for a few seconds after they take damage. Never shown on your own avatar.");
+                true);
 
             ModConfig.WorldHealthBarDurationSeconds = ModConfig.CreateTrackedEntry(_category,
                 "WorldHealthBarDurationSeconds",
-                4f,
-                "World Health Bar Duration (seconds)",
-                "How long the world health bar stays visible after an entity takes damage.");
+                4f);
 
             ModConfig.EnableFloatingDamageNumbers = ModConfig.CreateTrackedEntry(_category,
                 "EnableFloatingDamageNumbers",
-                true,
-                "Enable Floating Damage Numbers",
-                "Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar.");
+                true);
 
             ModConfig.FloatingDamageDurationSeconds = ModConfig.CreateTrackedEntry(_category,
                 "FloatingDamageDurationSeconds",
-                2f,
-                "Floating Damage Duration (seconds)",
-                "How long floating damage and detox indicators remain visible.");
+                2f);
 
             ModConfig.EnableFloatingDetoxIndicators = ModConfig.CreateTrackedEntry(_category,
                 "EnableFloatingDetoxIndicators",
-                true,
-                "Enable Floating Detox Indicators",
-                "Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. Duration is configured under Floating damage numbers.");
+                true);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

@@ -5,6 +5,10 @@
       "EnableDebugLogging": {
         "title": "Debug-Logging aktivieren",
         "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
+      },
+      "AcknowledgedMismatchGameVersion": {
+        "title": "Bestätigte abweichende Spielversion",
+        "description": "Erkannte Spielversion, die der Nutzer bei einer Versionswarnung bestätigt hat."
       }
     },
     "MimesisPlayerEnhancement_Ui": {
@@ -433,6 +437,14 @@
       "RecordVoiceDuringMimicPossession": {
         "title": "Stimmen bei Mimic-Besitz aufnehmen",
         "description": "Aufnahme während Mimic-Besitz beibehalten und danach fortsetzen."
+      },
+      "EnableVoicePerformanceCache": {
+        "title": "Stimmen-Performance-Cache aktivieren",
+        "description": "Zwischenspeichert aufgewärmte Stimmenlisten, dekodierte Audioclips, Mimic-Host-Auswahl und Spieler-Lookups, um Lag bei großen Stimmen-Pools zu reduzieren."
+      },
+      "VoiceClipCacheMaxEntries": {
+        "title": "Max. Einträge im Voice-Clip-Cache",
+        "description": "Maximal im Speicher gehaltene dekodierte Mimic-Voice-AudioClips (LRU-Auslagerung)."
       }
     },
     "MimesisPlayerEnhancement_Persistence": {

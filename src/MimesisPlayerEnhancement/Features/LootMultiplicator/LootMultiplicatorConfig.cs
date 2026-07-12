@@ -13,76 +13,54 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_LootMultiplicator", "Loot Multiplicator");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_LootMultiplicator");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableLootMultiplicator = ModConfig.CreateTrackedEntry(_category,
                 "EnableLootMultiplicator",
-                false,
-                "Enable Loot Multiplicator",
-                "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only.");
+                false);
 
             ModConfig.LootMultiplicatorPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "LootMultiplicatorPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate,
-                "Loot Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0.");
+                ScalingMath.DefaultPlayerCountScaleRate);
 
             ModConfig.AutoScaleMapLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMapLootByPlayerCount",
-                true,
-                "Auto Scale Map Loot by Player Count",
-                "Map loot is items placed on the dungeon map (spawn markers, shelves, floors). When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Map Loot Multiplier).");
+                true);
 
             ModConfig.MapLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MapLootMultiplier",
-                1f,
-                "Map Loot Multiplier",
-                "Multiplier for map-placed pickup loot: (1) fixed markers — extra copies, consumable stack size, and respawn count; (2) random pool markers — spawn count via the dungeon scrap-value budget; (3) not applied to trigger/event spawns. 1 = vanilla, 2 = double. With allowlist/blocklist, Auto Scale Map Loot Budget for Filter (default on) adjusts the random-pool budget for item sell value so this multiplier still targets spawn count.");
+                1f);
 
             ModConfig.AutoScaleDropLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleDropLootByPlayerCount",
-                true,
-                "Auto Scale Drop Loot by Player Count",
-                "Drop loot is items from enemy death tables when killed. When enabled, apply Loot Player Count Scale Rate per player above 4 (stacks with Drop Loot Multiplier).");
+                true);
 
             ModConfig.DropLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "DropLootMultiplier",
-                1f,
-                "Drop Loot Multiplier",
-                "Multiplier for enemy death drops: extra weighted re-rolls from drop tables and consumable stack count on spawn. 1 = vanilla, 2 = double.");
+                1f);
 
             ModConfig.LootItemFilterMode = ModConfig.CreateTrackedEntry(_category,
                 "LootItemFilterMode",
-                "All",
-                "Loot Item Filter Mode",
-                "All = every item can spawn; AllowlistOnly = only comma-separated master IDs in Loot Allowlist; BlocklistOnly = all items except Loot Blocklist. Filtering changes which items random pool markers can roll. Expensive allowlists consume more of the dungeon scrap-value budget per spawn unless Auto Scale Map Loot Budget for Filter is enabled.");
+                "All");
 
             ModConfig.LootAllowlist = ModConfig.CreateTrackedEntry(_category,
                 "LootAllowlist",
-                "",
-                "Loot Allowlist",
-                "Comma-separated item master IDs (e.g. 12345,67890). Used when Loot Item Filter Mode is AllowlistOnly. IDs not in the dungeon table are injected into random pool markers. High-value items use more scrap budget per spawn. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "");
 
             ModConfig.LootBlocklist = ModConfig.CreateTrackedEntry(_category,
                 "LootBlocklist",
-                "",
-                "Loot Blocklist",
-                "Comma-separated item master IDs to exclude from spawning. Used when Loot Item Filter Mode is BlocklistOnly. See docs/LOOT_ITEM_IDS.md in the repo for the full list.");
+                "");
 
             ModConfig.AutoScaleMapLootBudgetForFilter = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMapLootBudgetForFilter",
-                true,
-                "Auto Scale Map Loot Budget for Filter",
-                "When Loot Item Filter Mode is AllowlistOnly or BlocklistOnly, multiply the random-pool scrap budget by the filtered/vanilla weighted mean item sell value (on top of Map Loot Multiplier) so Map Loot Multiplier still means more spawns, not just higher total scrap value. No effect when filter mode is All.");
+                true);
 
             ModConfig.ConvertFakeActorDyingDropChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ConvertFakeActorDyingDropChancePercent",
-                30,
-                "Fake Death Drop Chance (percent)",
-                "Chance (0–100) that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. 0 = vanilla (fake items vanish on grab), 100 = always real. Monster drop-table loot is already real.");
+                30);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

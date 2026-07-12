@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
@@ -14,7 +15,14 @@ namespace MimesisPlayerEnhancement.Util
             RegexOptions.Compiled);
 
         private static readonly Dictionary<string, JObject> LocaleRoots = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly List<string> AvailableLocales = [];
         private static bool _initialized;
+
+        internal static IReadOnlyList<string> GetAvailableLocales()
+        {
+            EnsureInitialized();
+            return AvailableLocales;
+        }
 
         internal static void Initialize()
         {
@@ -23,8 +31,25 @@ namespace MimesisPlayerEnhancement.Util
                 return;
             }
 
-            LoadLocale(DefaultLocale);
-            LoadLocale("de");
+            foreach (string fileName in EmbeddedAssets.ListFeatureFiles(LocaleFolder))
+            {
+                if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string locale = Path.GetFileNameWithoutExtension(fileName);
+                if (!string.IsNullOrWhiteSpace(locale))
+                {
+                    LoadLocale(locale);
+                }
+            }
+
+            if (!LocaleRoots.ContainsKey(DefaultLocale))
+            {
+                LoadLocale(DefaultLocale);
+            }
+
             _initialized = true;
         }
 
@@ -123,6 +148,20 @@ namespace MimesisPlayerEnhancement.Util
             if (root != null)
             {
                 LocaleRoots[locale] = root;
+                bool localeKnown = false;
+                foreach (string existing in AvailableLocales)
+                {
+                    if (string.Equals(existing, locale, StringComparison.OrdinalIgnoreCase))
+                    {
+                        localeKnown = true;
+                        break;
+                    }
+                }
+
+                if (!localeKnown)
+                {
+                    AvailableLocales.Add(locale);
+                }
             }
         }
 

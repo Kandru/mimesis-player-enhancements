@@ -14,154 +14,106 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_SpawnScaling", "Spawn Scaling");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_SpawnScaling");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableSpawnScaling = ModConfig.CreateTrackedEntry(_category,
                 "EnableSpawnScaling",
-                false,
-                "Enable Spawn Scaling",
-                "Scale dungeon monster and trap spawn budgets by type. Host only.");
+                false);
 
             ModConfig.SpawnScalingPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "SpawnScalingPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate,
-                "Spawn Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0.");
+                ScalingMath.DefaultPlayerCountScaleRate);
 
             ModConfig.AutoScaleMimicSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleMimicSpawnsByPlayerCount",
-                true,
-                "Auto Scale Mimic Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Mimic Spawn Multiplier).");
+                true);
 
             ModConfig.MimicSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicSpawnMultiplier",
-                1f,
-                "Mimic Spawn Multiplier",
-                "Total mimic spawn budget across the run, including periodic spawns (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.AutoScaleBossSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleBossSpawnsByPlayerCount",
-                true,
-                "Auto Scale Boss Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Boss Spawn Multiplier).");
+                true);
 
             ModConfig.BossSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "BossSpawnMultiplier",
-                1f,
-                "Boss Spawn Multiplier",
-                "Map-placed bosses: activates unused alternate markers and schedules bonus encounters after kill (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.AutoScaleJakoSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleJakoSpawnsByPlayerCount",
-                true,
-                "Auto Scale Jako Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Jako Spawn Multiplier).");
+                true);
 
             ModConfig.JakoSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "JakoSpawnMultiplier",
-                1f,
-                "Jako Spawn Multiplier",
-                "Total normal-monster threat budget for ambient dungeon spawns (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.AutoScaleSpecialSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleSpecialSpawnsByPlayerCount",
-                true,
-                "Auto Scale Special Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Special Spawn Multiplier).");
+                true);
 
             ModConfig.SpecialSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "SpecialSpawnMultiplier",
-                1f,
-                "Special Spawn Multiplier",
-                "Special monster budget for periodic spawns and map-placed specials (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.AutoScaleTrapSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleTrapSpawnsByPlayerCount",
-                true,
-                "Auto Scale Trap Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Trap Spawn Multiplier).");
+                true);
 
             ModConfig.TrapSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "TrapSpawnMultiplier",
-                1f,
-                "Trap Spawn Multiplier",
-                "Map-placed traps: activates unused alternate markers and schedules bonus encounters after trigger/kill (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.PeriodicSpawnWaitMode = ModConfig.CreateTrackedEntry(_category,
                 "PeriodicSpawnWaitMode",
-                "Vanilla",
-                "Periodic Spawn Wait Mode",
-                "Controls initial delay before the first ambient jako/mimic wave and the interval between waves. Vanilla uses dungeon data; Fixed and Random use the second-based keys below.");
+                "Vanilla");
 
             ModConfig.InitialPeriodicSpawnWaitSeconds = ModConfig.CreateTrackedEntry(_category,
                 "InitialPeriodicSpawnWaitSeconds",
-                60f,
-                "Initial Periodic Spawn Wait (seconds)",
-                "Fixed mode: seconds after dungeon start before the first ambient jako/mimic spawn wave can fire.");
+                60f);
 
             ModConfig.InitialPeriodicSpawnWaitMinSeconds = ModConfig.CreateTrackedEntry(_category,
                 "InitialPeriodicSpawnWaitMinSeconds",
-                30f,
-                "Initial Periodic Spawn Wait Min (seconds)",
-                "Random mode: shortest initial wait before the first ambient spawn wave.");
+                30f);
 
             ModConfig.InitialPeriodicSpawnWaitMaxSeconds = ModConfig.CreateTrackedEntry(_category,
                 "InitialPeriodicSpawnWaitMaxSeconds",
-                90f,
-                "Initial Periodic Spawn Wait Max (seconds)",
-                "Random mode: longest initial wait. Actual wait is picked between min and max.");
+                90f);
 
             ModConfig.PeriodicSpawnIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PeriodicSpawnIntervalSeconds",
-                30f,
-                "Periodic Spawn Interval (seconds)",
-                "Fixed mode: seconds between subsequent ambient jako/mimic spawn waves.");
+                30f);
 
             ModConfig.PeriodicSpawnIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PeriodicSpawnIntervalMinSeconds",
-                20f,
-                "Periodic Spawn Interval Min (seconds)",
-                "Random mode: shortest interval between ambient spawn waves.");
+                20f);
 
             ModConfig.PeriodicSpawnIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PeriodicSpawnIntervalMaxSeconds",
-                45f,
-                "Periodic Spawn Interval Max (seconds)",
-                "Random mode: longest interval between waves. Actual interval is picked between min and max after each wave.");
+                45f);
 
             ModConfig.MapPlacedEncounterDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MapPlacedEncounterDelayMinSeconds",
-                5f,
-                "Map-Placed Encounter Delay Min (seconds)",
-                "Shortest wait after a map-placed enemy, trap, or loot marker is cleared before the next bonus encounter from scaling can appear there.");
+                5f);
 
             ModConfig.MapPlacedEncounterDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MapPlacedEncounterDelayMaxSeconds",
-                30f,
-                "Map-Placed Encounter Delay Max (seconds)",
-                "Longest wait for that random delay. Actual delay is picked between min and max.");
+                30f);
 
             ModConfig.MapPlacedEncounterMinPlayerDistanceMeters = ModConfig.CreateTrackedEntry(_category,
                 "MapPlacedEncounterMinPlayerDistanceMeters",
-                10f,
-                "Map-Placed Encounter Min Player Distance (m)",
-                "After the delay, hold the spawn until no living players are within this radius of the marker. 0 = spawn as soon as the delay elapses.");
+                10f);
 
             ModConfig.AutoScaleOtherSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleOtherSpawnsByPlayerCount",
-                true,
-                "Auto Scale Other Spawns by Player Count",
-                "When enabled, apply Spawn Player Count Scale Rate per player above 4 (stacks with Other Spawn Multiplier).");
+                true);
 
             ModConfig.OtherSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "OtherSpawnMultiplier",
-                1f,
-                "Other Spawn Multiplier",
-                "Spawn multiplier for entities that are not mimics, bosses, jakos, specials, or traps.");
+                1f);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

@@ -17,13 +17,44 @@ function interpolate(template: string, params?: Record<string, string | number>)
   return template.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? `{${name}}`));
 }
 
+function normalizeLanguageTag(lang?: string): string {
+  if (!lang) return '';
+  const normalized = lang.trim().toLowerCase().replace('_', '-');
+  const dash = normalized.indexOf('-');
+  return dash > 0 ? normalized.slice(0, dash) : normalized;
+}
+
+function resolveLocaleCandidates(lang?: string): string[] {
+  const candidates: string[] = [];
+  const add = (value?: string) => {
+    const code = normalizeLanguageTag(value);
+    if (code && !candidates.includes(code)) candidates.push(code);
+  };
+
+  add(lang);
+  if (typeof navigator !== 'undefined') {
+    add(navigator.language);
+    for (const pref of navigator.languages ?? []) add(pref);
+  }
+  add('en');
+  return candidates;
+}
+
 export async function loadLocale(lang: string) {
-  const normalized = (lang || 'en').toLowerCase().startsWith('de') ? 'de' : 'en';
-  const res = await fetch(`/api/locale/${normalized}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`locale ${normalized}`);
-  messages = await res.json();
-  locale = normalized;
-  localeVersion++;
+  let lastError: Error | undefined;
+  for (const candidate of resolveLocaleCandidates(lang)) {
+    const res = await fetch(`/api/locale/${candidate}`, { cache: 'no-store' });
+    if (res.ok) {
+      messages = await res.json();
+      locale = candidate;
+      localeVersion++;
+      return;
+    }
+
+    lastError = new Error(`locale ${candidate}`);
+  }
+
+  throw lastError ?? new Error('locale unavailable');
 }
 
 export function getLocale() {
@@ -38,6 +69,5 @@ export function t(key: string, params?: Record<string, string | number>): string
 }
 
 export function resolveBrowserLocale() {
-  const lang = navigator.language || 'en';
-  return lang.toLowerCase().startsWith('de') ? 'de' : 'en';
+  return resolveLocaleCandidates()[0] || 'en';
 }

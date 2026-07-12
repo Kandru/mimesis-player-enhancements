@@ -13,28 +13,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_WebDashboard", "Web Dashboard");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_WebDashboard");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableWebDashboard = ModConfig.CreateTrackedEntry(_category,
                 "EnableWebDashboard",
-                true,
-                "Enable Web Dashboard",
-                "Serve a local web UI for connected players and host moderation. Default bind is loopback only.");
+                true);
 
             ModConfig.WebDashboardListenAddress = ModConfig.CreateTrackedEntry(_category,
                 "WebDashboardListenAddress",
-                "127.0.0.1",
-                "Listen Address",
-                "HTTP bind address. Use 127.0.0.1 for local-only access.");
+                "127.0.0.1");
 
             ModConfig.WebDashboardListenPort = ModConfig.CreateTrackedEntry(_category,
                 "WebDashboardListenPort",
-                8001,
-                "Listen Port",
-                "TCP port for the local web dashboard.");
+                8001);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

@@ -10,100 +10,70 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory(SectionId, "Mimic Tuning");
+            _category = ModConfig.CreateCategory(SectionId);
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableMimicTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicTuning",
-                false,
-                "Enable Mimic Tuning",
-                "Host-only mimic voice frequency and inventory-copy tuning. Subfeatures use Vanilla or Custom modes.");
+                false);
 
             ModConfig.MimicVoiceTuningMode = ModConfig.CreateTrackedEntry(_category,
                 "MimicVoiceTuningMode",
-                nameof(MimicVoiceTuningMode.Vanilla),
-                "Mimic Voice Tuning Mode",
-                "Vanilla keeps game voice timing. Custom applies the response chance, cooldown, delay, distance, and interval keys below.");
+                nameof(MimicVoiceTuningMode.Vanilla));
 
             ModConfig.PeriodicVoiceIntervalMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "PeriodicVoiceIntervalMultiplier",
-                1f,
-                "Periodic Voice Interval Multiplier",
-                "Custom only: scales ambient mimic voice cooldown between lines (1 = vanilla, 0.5 = about twice as chatty).");
+                1f);
 
             ModConfig.PlayerVoiceResponseChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "PlayerVoiceResponseChancePercent",
-                100,
-                "Player Voice Response Chance (%)",
-                "Custom only: chance a nearby mimic replays an archived line after a player speaks (0–100).");
+                100);
 
             ModConfig.PlayerVoiceResponseCooldownSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PlayerVoiceResponseCooldownSeconds",
-                3f,
-                "Player Voice Response Cooldown (seconds)",
-                "Custom only: minimum seconds between mimic reactions to player speech (vanilla is 3).");
+                3f);
 
             ModConfig.PlayerVoiceResponseDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PlayerVoiceResponseDelayMinSeconds",
-                0.2f,
-                "Player Voice Response Delay Min (seconds)",
-                "Custom only: shortest random pause before a mimic replies to player speech.");
+                0.2f);
 
             ModConfig.PlayerVoiceResponseDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
                 "PlayerVoiceResponseDelayMaxSeconds",
-                0.2f,
-                "Player Voice Response Delay Max (seconds)",
-                "Custom only: longest random pause before a mimic replies. Must be ≥ min.");
+                0.2f);
 
             ModConfig.PlayerVoiceResponseMaxDistance = ModConfig.CreateTrackedEntry(_category,
                 "PlayerVoiceResponseMaxDistance",
-                20f,
-                "Player Voice Response Max Distance (m)",
-                "Custom only: max range for mimics to react when a player speaks (vanilla is 20).");
+                20f);
 
             ModConfig.MimicInventoryCopyMode = ModConfig.CreateTrackedEntry(_category,
                 "MimicInventoryCopyMode",
-                nameof(MimicInventoryCopyMode.Vanilla),
-                "Mimic Inventory Copy Mode",
-                "Vanilla uses behavior-tree pick rules. Custom forces the pick rule below for mimic CopyInventory.");
+                nameof(MimicInventoryCopyMode.Vanilla));
 
             ModConfig.MimicInventoryCopyPickRule = ModConfig.CreateTrackedEntry(_category,
                 "MimicInventoryCopyPickRule",
-                nameof(BTTargetPickRule.MinDistance),
-                "Mimic Inventory Copy Pick Rule",
-                "Custom only: which player inventory mimics copy (MinDistance, MaxDistance, or Random).");
+                nameof(BTTargetPickRule.MinDistance));
 
             ModConfig.EnableMimicPossessionTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnableMimicPossessionTuning",
-                false,
-                "Enable Mimic Possession Tuning",
-                "Tune dead-player mimic possession speak duration and cooldown on the host.");
+                false);
 
             ModConfig.RandomizeMimicPossessionDuration = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeMimicPossessionDuration",
-                false,
-                "Randomize Mimic Possession Duration",
-                "Roll a random speak window per E-possession between min and max seconds below.");
+                false);
 
             ModConfig.MimicPossessionMinTimeSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionMinTimeSeconds",
-                MimicPossessionResolver.VanillaPossessionDurationSeconds,
-                "Mimic Possession Min Time (seconds)",
-                "Minimum rolled speak duration in seconds (vanilla is 12).");
+                MimicPossessionResolver.VanillaPossessionDurationSeconds);
 
             ModConfig.MimicPossessionMaxTimeSeconds = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionMaxTimeSeconds",
-                MimicPossessionResolver.VanillaPossessionDurationSeconds,
-                "Mimic Possession Max Time (seconds)",
-                "Maximum rolled speak duration in seconds (vanilla is 12).");
+                MimicPossessionResolver.VanillaPossessionDurationSeconds);
 
             ModConfig.MimicPossessionCooltimeMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicPossessionCooltimeMultiplier",
-                1f,
-                "Mimic Possession Cooltime Multiplier",
-                "Multiplier for wait time after mimic possession before the next E-possession (1 = vanilla).");
+                1f);
 
             MimicVoiceTuningResolver.RefreshConfigCache();
             MimicInventoryCopyResolver.RefreshConfigCache();

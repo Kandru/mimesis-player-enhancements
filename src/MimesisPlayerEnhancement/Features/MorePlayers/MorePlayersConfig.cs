@@ -13,52 +13,38 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MorePlayers", "More Players");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MorePlayers");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableMorePlayers = ModConfig.CreateTrackedEntry(_category,
                 "EnableMorePlayers",
-                false,
-                "Enable More Players",
-                "Raise the multiplayer player cap above 4.");
+                false);
 
             ModConfig.MaxPlayers = ModConfig.CreateTrackedEntry(_category,
                 "MaxPlayers",
-                32,
-                "Max Players",
-                "Maximum players in a session including the host (1 = solo, 2 = host + 1 client, etc.).");
+                32);
 
             ModConfig.EnableScalingRoundGoals = ModConfig.CreateTrackedEntry(_category,
                 "EnableScalingRoundGoals",
-                true,
-                "Enable Scaling Round Goals",
-                "Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. Host only.");
+                true);
 
             ModConfig.RoundGoalBasePerZone = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalBasePerZone",
-                RoundGoalScalingResolver.DefaultBasePerZone,
-                "Round Goal Base Per Zone",
-                "Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier).");
+                RoundGoalScalingResolver.DefaultBasePerZone);
 
             ModConfig.RoundGoalMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalMoneyMultiplier",
-                1f,
-                "Round Goal Money Multiplier",
-                "Global multiplier on the computed tram repair quota (1 = formula only, 2 = double).");
+                1f);
 
             ModConfig.RoundGoalRandomSpreadPercent = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalRandomSpreadPercent",
-                RoundGoalScalingResolver.DefaultRandomSpreadPercent,
-                "Round Goal Random Spread (percent)",
-                "Random ±% band around the computed center quota when departing maintenance (save load uses the low bound).");
+                RoundGoalScalingResolver.DefaultRandomSpreadPercent);
 
             ModConfig.RoundGoalCurveExponent = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalCurveExponent",
-                RoundGoalScalingResolver.DefaultCurveExponent,
-                "Round Goal Curve Exponent",
-                "Zone growth curve: 1 = linear, below 1 = flatter late-game growth, above 1 = steeper.");
+                RoundGoalScalingResolver.DefaultCurveExponent);
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>

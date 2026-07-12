@@ -198,7 +198,7 @@ namespace MimesisPlayerEnhancement
             FilePath = Path.Combine(MelonEnvironment.UserDataDirectory, "MimesisPlayerEnhancement.cfg");
             SparseTomlConfig.RepairTomletCompatibility(FilePath);
 
-            MainCategory = CreateCategory(MainCategoryId, "Mimesis Player Enhancement");
+            MainCategory = CreateCategory(MainCategoryId);
             UiConfig.CreateCategory();
             MorePlayersConfig.CreateCategory();
             MoreVoicesConfig.CreateCategory();
@@ -218,15 +218,11 @@ namespace MimesisPlayerEnhancement
 
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",
-                false,
-                "Enable Debug Logging",
-                "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting.");
+                false);
 
             AcknowledgedMismatchGameVersion = CreateHiddenTrackedEntry(MainCategory,
                 "AcknowledgedMismatchGameVersion",
-                string.Empty,
-                "Acknowledged Mismatch Game Version",
-                "Detected game version the user acknowledged for a version mismatch warning.");
+                string.Empty);
 
             MorePlayersConfig.CreateEntries();
             MoreVoicesConfig.CreateEntries();
@@ -278,6 +274,7 @@ namespace MimesisPlayerEnhancement
             SanitizeFloatEntries();
 
             IsInitialized = true;
+            ModConfigLocalization.Apply();
         }
 
         /// <summary>Persist current preference values to <see cref="FilePath"/>.</summary>
@@ -346,8 +343,9 @@ namespace MimesisPlayerEnhancement
             NotifyChanged(entry);
         }
 
-        internal static MelonPreferences_Category CreateCategory(string id, string displayName)
+        internal static MelonPreferences_Category CreateCategory(string id)
         {
+            string displayName = ModL10n.GetConfigSectionTitle(id) ?? id;
             MelonPreferences_Category category = MelonPreferences.CreateCategory(id, displayName);
             category.SetFilePath(FilePath);
             ModConfigRegistry.TrackCategory(category);
@@ -357,10 +355,11 @@ namespace MimesisPlayerEnhancement
         internal static MelonPreferences_Entry<T> CreateTrackedEntry<T>(
             MelonPreferences_Category category,
             string identifier,
-            T defaultValue,
-            string displayName,
-            string description)
+            T defaultValue)
         {
+            string sectionId = category.Identifier;
+            string displayName = ModL10n.GetConfigEntryTitle(sectionId, identifier) ?? identifier;
+            string description = ModL10n.GetConfigEntryDescription(sectionId, identifier) ?? string.Empty;
             MelonPreferences_Entry<T> entry = category.CreateEntry(
                 identifier, defaultValue, displayName, description);
             ModConfigRegistry.TrackEntry(entry);
@@ -370,12 +369,10 @@ namespace MimesisPlayerEnhancement
         internal static MelonPreferences_Entry<T> CreateHiddenTrackedEntry<T>(
             MelonPreferences_Category category,
             string identifier,
-            T defaultValue,
-            string displayName,
-            string description)
+            T defaultValue)
         {
             MelonPreferences_Entry<T> entry = CreateTrackedEntry(
-                category, identifier, defaultValue, displayName, description);
+                category, identifier, defaultValue);
             entry.IsHidden = true;
             return entry;
         }

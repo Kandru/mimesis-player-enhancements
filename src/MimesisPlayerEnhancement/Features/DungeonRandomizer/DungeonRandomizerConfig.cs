@@ -13,64 +13,46 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_DungeonRandomizer", "Dungeon Randomizer");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_DungeonRandomizer");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableDungeonRandomizer = ModConfig.CreateTrackedEntry(_category,
                 "EnableDungeonRandomizer",
-                false,
-                "Enable Dungeon Randomizer",
-                "Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only.");
+                false);
 
             ModConfig.RandomizeDungeonPick = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeDungeonPick",
-                true,
-                "Randomize Dungeon Pick",
-                "Override which dungeon master ID is rolled on the tram.");
+                true);
 
             ModConfig.DungeonPickPoolMode = ModConfig.CreateTrackedEntry(_category,
                 "DungeonPickPoolMode",
-                "WidenVanilla",
-                "Dungeon Pick Pool Mode",
-                "WidenVanilla = keep cycle weights but allow repeats sooner; AllActiveUniform = pick uniformly from all active dungeons (ignores cycle table).");
+                "WidenVanilla");
 
             ModConfig.DungeonAllowlist = ModConfig.CreateTrackedEntry(_category,
                 "DungeonAllowlist",
-                "",
-                "Dungeon Allowlist",
-                "Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible.");
+                "");
 
             ModConfig.DungeonBlocklist = ModConfig.CreateTrackedEntry(_category,
                 "DungeonBlocklist",
-                "",
-                "Dungeon Blocklist",
-                "Comma-separated dungeon master IDs to exclude from the pool.");
+                "");
 
             ModConfig.IgnoreDungeonExcludeList = ModConfig.CreateTrackedEntry(_category,
                 "IgnoreDungeonExcludeList",
-                true,
-                "Ignore Dungeon Exclude List",
-                "When using WidenVanilla, do not exclude recently played dungeons from the tram roll.");
+                true);
 
             ModConfig.RandomizeLayoutFlow = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeLayoutFlow",
-                true,
-                "Randomize Layout Flow",
-                "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls.");
+                true);
 
             ModConfig.RandomizeMapVariant = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeMapVariant",
-                true,
-                "Randomize Map Variant",
-                "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection.");
+                true);
 
             ModConfig.RandomizeDungeonSeed = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeDungeonSeed",
-                true,
-                "Randomize Dungeon Seed",
-                "Replace the procedural dungeon seed with a new random value when a dungeon is chosen.");
+                true);
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>

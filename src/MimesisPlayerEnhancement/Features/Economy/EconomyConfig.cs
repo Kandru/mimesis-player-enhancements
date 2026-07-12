@@ -13,94 +13,66 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_Economy", "Economy");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_Economy");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableEconomy = ModConfig.CreateTrackedEntry(_category,
                 "EnableEconomy",
-                false,
-                "Enable Economy",
-                "Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only.");
+                false);
 
             ModConfig.EconomyPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
                 "EconomyPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate,
-                "Economy Player Count Scale Rate",
-                "Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0.");
+                ScalingMath.DefaultPlayerCountScaleRate);
 
             ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleStartupMoneyByPlayerCount",
-                true,
-                "Auto Scale Startup Money by Player Count",
-                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Startup Money Multiplier).");
+                true);
 
             ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StartupMoneyMultiplier",
-                1f,
-                "Startup Money Multiplier",
-                "Starting maintenance-room currency on a new save slot or session reset to vanilla initial money (1 = vanilla, 2 = double). Does not apply when loading a save game.");
+                1f);
 
             ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleScrapSellValueByPlayerCount",
-                true,
-                "Auto Scale Scrap Sell Value by Player Count",
-                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Scrap Sell Value Multiplier).");
+                true);
 
             ModConfig.ScrapSellValueMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ScrapSellValueMultiplier",
-                1f,
-                "Scrap Sell Value Multiplier",
-                "Currency earned when scrapping items and item value counted toward the tram quota (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.AutoScaleShopBuyPriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleShopBuyPriceByPlayerCount",
-                true,
-                "Auto Scale Shop Buy Price by Player Count",
-                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Shop Buy Price Multiplier).");
+                true);
 
             ModConfig.ShopBuyPriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ShopBuyPriceMultiplier",
-                1f,
-                "Shop Buy Price Multiplier",
-                "Maintenance shop and vending-machine kiosk purchase cost multiplier (1 = vanilla, 2 = double). Applied when shop items are initialized each maintenance round.");
+                1f);
 
             ModConfig.ShopDiscountMinPercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountMinPercent",
-                0,
-                "Shop Discount Min (percent)",
-                "Minimum shop discount percentage when a discount is rolled (0–100). Only used when Shop Discount Chance (percent) is above 0.");
+                0);
 
             ModConfig.ShopDiscountMaxPercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountMaxPercent",
-                100,
-                "Shop Discount Max (percent)",
-                "Maximum shop discount percentage when a discount is rolled (0–100). Must be ≥ Shop Discount Min (percent).");
+                100);
 
             ModConfig.ShopDiscountChancePercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountChancePercent",
-                0,
-                "Shop Discount Chance (percent)",
-                "Chance per shop item to receive a discount between min and max percent (0 = vanilla shop discounts, 100 = every item discounted).");
+                0);
 
             ModConfig.AutoScaleReinforcePriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleReinforcePriceByPlayerCount",
-                true,
-                "Auto Scale Reinforce Price by Player Count",
-                "When enabled, apply Economy Player Count Scale Rate per player above 4 (stacks with Reinforce Price Multiplier).");
+                true);
 
             ModConfig.ReinforcePriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ReinforcePriceMultiplier",
-                1f,
-                "Reinforce Price Multiplier",
-                "Maintenance item reinforcement cost multiplier (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.RetainUnspentCurrencyBetweenCycles = ModConfig.CreateTrackedEntry(_category,
                 "RetainUnspentCurrencyBetweenCycles",
-                false,
-                "Retain Unspent Currency Between Cycles",
-                "Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. Host only.");
+                false);
         }
 
         /// <summary>Clamps persisted shop discount percents once at startup, before change handlers are wired.</summary>

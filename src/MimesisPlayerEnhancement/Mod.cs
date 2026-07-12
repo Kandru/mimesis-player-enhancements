@@ -1,5 +1,4 @@
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.WebDashboard;
 using MimesisPlayerEnhancement.Util.Patches;
 using UnityEngine;
 
@@ -13,6 +12,7 @@ namespace MimesisPlayerEnhancement
     {
         private HarmonyLib.Harmony? _harmony;
         private float _nextEncounterSpawnProcessTime;
+        private float _nextLocaleRefreshTime;
         private bool _isInitializing;
 
         public override void OnInitializeMelon()
@@ -20,6 +20,7 @@ namespace MimesisPlayerEnhancement
             _isInitializing = true;
             try
             {
+                ModL10n.Initialize();
                 ModConfig.Initialize(LoggerInstance);
                 SceneScopedConfigGate.Initialize();
                 SceneScopedConfigGate.SetDeferredModuleSyncAction(SyncFeatureModuleByName);
@@ -28,8 +29,6 @@ namespace MimesisPlayerEnhancement
                     throw new InvalidOperationException(
                         $"Mimesis Player Enhancement refused to load — game version mismatch (expected {VersionInfo.GameVersion}).");
                 }
-
-                ModL10n.Initialize();
 
                 _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
                 foreach (IFeatureModule module in FeatureModules.All)
@@ -106,6 +105,12 @@ namespace MimesisPlayerEnhancement
             }
 
             SaveSlotConfigLifecycle.Tick();
+
+            if (Time.time >= _nextLocaleRefreshTime)
+            {
+                _nextLocaleRefreshTime = Time.time + 2f;
+                ModConfigLocalization.RefreshIfLanguageChanged();
+            }
         }
 
         public override void OnDeinitializeMelon()

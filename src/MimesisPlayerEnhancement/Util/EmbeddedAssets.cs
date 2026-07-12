@@ -43,6 +43,33 @@ namespace MimesisPlayerEnhancement.Util
             }
         }
 
+        internal static IReadOnlyList<string> ListFeatureFiles(string featureFolder)
+        {
+            if (string.IsNullOrWhiteSpace(featureFolder))
+            {
+                return Array.Empty<string>();
+            }
+
+            string featurePrefix = featureFolder.Trim('/').Replace('/', '.').Replace('\\', '.');
+            string prefix = RootPrefix + featurePrefix + ".";
+            List<string> files = [];
+            foreach (string resourceName in Assembly.GetManifestResourceNames())
+            {
+                if (!resourceName.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                string fileName = resourceName[prefix.Length..];
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    files.Add(fileName);
+                }
+            }
+
+            return files;
+        }
+
         private static string? ToResourceName(string featureFolder, string relativePath)
         {
             if (string.IsNullOrWhiteSpace(featureFolder))

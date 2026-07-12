@@ -13,12 +13,6 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly PropertyInfo? L10NManagerLanguageProperty =
             typeof(L10NManager).GetProperty("language", InstanceFlags);
 
-        private static readonly HashSet<string> SupportedModLocales = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "en",
-            "de",
-        };
-
         internal static string GetCurrentLanguage()
         {
             try
@@ -26,9 +20,9 @@ namespace MimesisPlayerEnhancement.Util
                 L10NManager? manager = UnityEngine.Object.FindAnyObjectByType<L10NManager>();
                 if (manager != null
                     && L10NManagerLanguageProperty?.GetValue(manager) is string language
-                    && !string.IsNullOrWhiteSpace(language))
+                    && TryResolveSupportedLocale(language, out string locale))
                 {
-                    return NormalizeLanguageCode(language);
+                    return locale;
                 }
             }
             catch
@@ -41,19 +35,28 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static string NormalizeLanguageCode(string? language)
         {
-            if (string.IsNullOrWhiteSpace(language))
+            return TryResolveSupportedLocale(language, out string locale) ? locale : "en";
+        }
+
+        internal static bool TryResolveSupportedLocale(string? language, out string locale)
+        {
+            locale = "en";
+            string normalized = NormalizeLanguageTag(language);
+            if (string.IsNullOrEmpty(normalized))
             {
-                return "en";
+                return false;
             }
 
-            string normalized = language.Trim().Replace('_', '-').ToLowerInvariant();
-            int dash = normalized.IndexOf('-', StringComparison.Ordinal);
-            if (dash > 0)
+            foreach (string available in ModL10n.GetAvailableLocales())
             {
-                normalized = normalized[..dash];
+                if (string.Equals(available, normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    locale = available;
+                    return true;
+                }
             }
 
-            return SupportedModLocales.Contains(normalized) ? normalized : "en";
+            return false;
         }
 
         internal static string GetL10NText(string key, params object[] formattingArgs)
@@ -64,6 +67,23 @@ namespace MimesisPlayerEnhancement.Util
             }
 
             return key;
+        }
+
+        private static string NormalizeLanguageTag(string? language)
+        {
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                return string.Empty;
+            }
+
+            string normalized = language.Trim().Replace('_', '-').ToLowerInvariant();
+            int dash = normalized.IndexOf('-', StringComparison.Ordinal);
+            if (dash > 0)
+            {
+                normalized = normalized[..dash];
+            }
+
+            return normalized;
         }
     }
 }

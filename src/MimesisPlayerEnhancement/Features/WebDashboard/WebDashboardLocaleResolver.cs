@@ -66,11 +66,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             foreach (LanguagePreference preference in preferences)
             {
-                string normalized = GameLocaleAccess.NormalizeLanguageCode(preference.Tag);
-                if (string.Equals(normalized, "en", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(normalized, "de", StringComparison.OrdinalIgnoreCase))
+                if (GameLocaleAccess.TryResolveSupportedLocale(preference.Tag, out string locale))
                 {
-                    return normalized;
+                    return locale;
                 }
             }
 

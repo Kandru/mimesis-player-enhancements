@@ -40,6 +40,14 @@ namespace MimesisPlayerEnhancement
             return SectionTitles.TryGetValue(sectionId, out title!);
         }
 
+        internal static void SetSectionTitle(string sectionId, string title)
+        {
+            if (SectionTitles.ContainsKey(sectionId))
+            {
+                SectionTitles[sectionId] = title;
+            }
+        }
+
         internal static void ClearRegistrationOrder()
         {
             SectionOrder.Clear();

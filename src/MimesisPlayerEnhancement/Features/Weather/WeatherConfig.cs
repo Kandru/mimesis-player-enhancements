@@ -13,69 +13,46 @@ namespace MimesisPlayerEnhancement.Features.Weather
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_Weather", "Weather");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_Weather");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableWeather = ModConfig.CreateTrackedEntry(_category,
                 "EnableWeather",
-                false,
-                "Enable Weather",
-                "Control dungeon weather, cyclic presets, and synced start time. Host only.");
+                false);
 
             ModConfig.WeatherMode = ModConfig.CreateTrackedEntry(_category,
                 "WeatherMode",
-                "Vanilla",
-                "Weather Mode",
-                "Vanilla = game schedule; Fixed = one preset for the run; Cycle = rotate presets on a timer. Host only.");
+                "Vanilla");
 
             ModConfig.FixedWeatherPreset = ModConfig.CreateTrackedEntry(_category,
                 "FixedWeatherPreset",
-                "Sunny",
-                "Fixed Weather Preset",
-                "Used when Weather Mode is Fixed. Sunny, Rain, HeavyRain, or Squall.");
+                "Sunny");
 
             ModConfig.DisableRandomWeather = ModConfig.CreateTrackedEntry(_category,
                 "DisableRandomWeather",
-                false,
-                "Disable Random Weather",
-                "Vanilla mode only — remove procedural random weather while keeping scheduled changes. Host only.");
+                false);
 
             ModConfig.WeatherCyclePresets = ModConfig.CreateTrackedEntry(_category,
                 "WeatherCyclePresets",
-                "Sunny,Rain",
-                "Weather Cycle Presets",
-                "Cycle mode only — comma-separated preset names in order (Sunny, Rain, HeavyRain, Squall). Host only.");
+                "Sunny,Rain");
 
             ModConfig.WeatherCycleMinDelaySeconds = ModConfig.CreateTrackedEntry(_category,
                 "WeatherCycleMinDelaySeconds",
-                300f,
-                "Cycle Min Delay (seconds)",
-                "Minimum real seconds before the next cycle step. Host only.");
+                300f);
 
             ModConfig.WeatherCycleMaxDelaySeconds = ModConfig.CreateTrackedEntry(_category,
                 "WeatherCycleMaxDelaySeconds",
-                600f,
-                "Cycle Max Delay (seconds)",
-                "Maximum real seconds before the next cycle step. Host only.");
+                600f);
 
             ModConfig.StartTimePreset = ModConfig.CreateTrackedEntry(_category,
                 "StartTimePreset",
-                "Vanilla",
-                "Start Time Preset",
-                "Synced in-game clock when the dungeon starts (lighting/sky only; real shift deadline unchanged). "
-                + "Sunrise ~06:00, sunset ~18:00. Vanilla uses dungeon data (~10:00). "
-                + "Vanilla ~10:00→24:00; Morning 08:00→24:00; Noon 12:00→24:00; Dusk 18:00→24:00 (sunset); "
-                + "Night 21:00→24:00 (dark); Midnight 00:00→24:00 (darkest). Host only.");
+                "Vanilla");
 
             ModConfig.EnableRealtimeTramClock = ModConfig.CreateTrackedEntry(_category,
                 "EnableRealtimeTramClock",
-                false,
-                "Realtime Tram Clock",
-                "Requires Enable Weather. During a dungeon run, sync the tram console clock every in-game minute "
-                + "instead of only on hour changes (~once per real minute at default time scale). Uses vanilla "
-                + "TimeSyncSig so clients without the mod stay in sync. Host only.");
+                false);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

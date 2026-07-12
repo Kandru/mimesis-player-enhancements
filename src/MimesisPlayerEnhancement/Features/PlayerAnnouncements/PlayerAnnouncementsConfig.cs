@@ -13,16 +13,14 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_PlayerAnnouncements", "Player Announcements");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_PlayerAnnouncements");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.ShowPlayerAnnouncements = ModConfig.CreateTrackedEntry(_category,
                 "ShowPlayerAnnouncements",
-                true,
-                "Show Player Messages",
-                "Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages.");
+                true);
         }
 
         internal static void WireValidation()

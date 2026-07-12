@@ -13,70 +13,50 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MoreVoices", "More Voices");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_MoreVoices");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableMoreVoices = ModConfig.CreateTrackedEntry(_category,
                 "EnableMoreVoices",
-                true,
-                "Enable More Voices",
-                "Raise per-player voice recording limits.");
+                true);
 
             ModConfig.UnifyIndoorOutdoorVoices = ModConfig.CreateTrackedEntry(_category,
                 "UnifyIndoorOutdoorVoices",
-                true,
-                "Unify Indoor/Outdoor Voices",
-                "Share indoor and outdoor voice storage and allow cross-area playback; deathmatch stays separate. When enabled, MaxIndoorVoiceEvents and MaxOutdoorVoiceEvents sum into one shared cap.");
+                true);
 
             ModConfig.MaxIndoorVoiceEvents = ModConfig.CreateTrackedEntry(_category,
                 "MaxIndoorVoiceEvents",
-                3000,
-                "Max Indoor Voice Events",
-                "Maximum stored voice events per player in indoor dungeon runs (default game limit is much lower).");
+                3000);
 
             ModConfig.MaxDeathMatchVoiceEvents = ModConfig.CreateTrackedEntry(_category,
                 "MaxDeathMatchVoiceEvents",
-                3000,
-                "Max Deathmatch Voice Events",
-                "Maximum stored voice events per player in deathmatch (default game limit is much lower).");
+                3000);
 
             ModConfig.MaxOutdoorVoiceEvents = ModConfig.CreateTrackedEntry(_category,
                 "MaxOutdoorVoiceEvents",
-                3000,
-                "Max Outdoor Voice Events",
-                "Maximum stored voice events per player outdoors (default game limit is much lower).");
+                3000);
 
             ModConfig.RecordVoiceInMaintenance = ModConfig.CreateTrackedEntry(_category,
                 "RecordVoiceInMaintenance",
-                true,
-                "Record Voice in Maintenance",
-                "Record mimic voice lines while players are in the maintenance room.");
+                true);
 
             ModConfig.RecordVoiceInTram = ModConfig.CreateTrackedEntry(_category,
                 "RecordVoiceInTram",
-                true,
-                "Record Voice in Tram",
-                "Record mimic voice lines while players are in the tram waiting scene.");
+                true);
 
             ModConfig.RecordVoiceDuringMimicPossession = ModConfig.CreateTrackedEntry(_category,
                 "RecordVoiceDuringMimicPossession",
-                true,
-                "Record Voice During Mimic Possession",
-                "Keep recording while a player possesses a mimic and resume after possession ends.");
+                true);
 
             ModConfig.EnableVoicePerformanceCache = ModConfig.CreateTrackedEntry(_category,
                 "EnableVoicePerformanceCache",
-                true,
-                "Enable Voice Performance Cache",
-                "Cache warmed voice lists, decoded audio clips, mimic host selection, and player lookups to reduce lag with large voice pools.");
+                true);
 
             ModConfig.VoiceClipCacheMaxEntries = ModConfig.CreateTrackedEntry(_category,
                 "VoiceClipCacheMaxEntries",
-                128,
-                "Voice Clip Cache Max Entries",
-                "Maximum decoded mimic voice AudioClips kept in memory (LRU eviction).");
+                128);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

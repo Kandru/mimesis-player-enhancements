@@ -13,28 +13,22 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_DungeonTime", "Dungeon Time");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_DungeonTime");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableDungeonTime = ModConfig.CreateTrackedEntry(_category,
                 "EnableDungeonTime",
-                false,
-                "Enable Dungeon Time",
-                "Extend dungeon shift length when player count exceeds the baseline. Host only.");
+                false);
 
             ModConfig.DungeonTimeBaselinePlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "DungeonTimeBaselinePlayerCount",
-                4,
-                "Baseline Player Count",
-                "No extra shift time at or below this player count (vanilla is 4). Minimum is 1.");
+                4);
 
             ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline = ModConfig.CreateTrackedEntry(_category,
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
-                10f,
-                "Extra Shift Time per Player (seconds)",
-                "Real seconds added to the shift deadline for each player above the baseline. Minimum is 0.");
+                10f);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

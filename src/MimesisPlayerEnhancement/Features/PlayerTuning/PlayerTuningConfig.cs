@@ -13,64 +13,46 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_PlayerTuning", "Player Tuning");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_PlayerTuning");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnablePlayerTuning = ModConfig.CreateTrackedEntry(_category,
                 "EnablePlayerTuning",
-                false,
-                "Enable Player Tuning",
-                "Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only.");
+                false);
 
             ModConfig.MoveSpeedMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MoveSpeedMultiplier",
-                1f,
-                "Move Speed Multiplier",
-                "Scales walk and run base speed (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.NoClipSpeedMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "NoClipSpeedMultiplier",
-                3f,
-                "Noclip Speed Multiplier",
-                "Scales dashboard noclip fly speed relative to the player's current walk/run speed (3 = triple). Only applies while noclip is active.");
+                3f);
 
             ModConfig.MaxStaminaMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MaxStaminaMultiplier",
-                1f,
-                "Max Stamina Multiplier",
-                "Scales maximum stamina (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.StaminaDrainMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StaminaDrainMultiplier",
-                1f,
-                "Stamina Drain Multiplier",
-                "Scales sprint stamina cost per tick (1 = vanilla, 0.5 = half drain).");
+                1f);
 
             ModConfig.StaminaRegenMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StaminaRegenMultiplier",
-                1f,
-                "Stamina Regen Multiplier",
-                "Scales stamina recovered per regen tick (1 = vanilla, 2 = double).");
+                1f);
 
             ModConfig.StaminaRegenDelayMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "StaminaRegenDelayMultiplier",
-                1f,
-                "Stamina Regen Delay Multiplier",
-                "Scales wait time before stamina regen starts after sprinting (1 = vanilla, 0.5 = regen starts sooner).");
+                1f);
 
             ModConfig.MaxCarryWeightMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MaxCarryWeightMultiplier",
-                1f,
-                "Max Carry Weight Multiplier",
-                "Scales carry capacity before encumbrance slows movement (1 = vanilla, 2 = double capacity).");
+                1f);
 
             ModConfig.DisablePlayerCollision = ModConfig.CreateTrackedEntry(_category,
                 "DisablePlayerCollision",
-                true,
-                "Disable Player Collision",
-                "On the local client, disable capsule colliders on other players and mimics so you can walk through them (e.g. crowded tram). Regular monsters and walls remain solid. Local effect only; requires Enable Player Tuning.");
+                true);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)

@@ -13,22 +13,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void CreateCategory()
         {
-            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_JoinAnytime", "Join Anytime");
+            _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_JoinAnytime");
         }
 
         internal static void CreateEntries()
         {
             ModConfig.EnableJoinAnytime = ModConfig.CreateTrackedEntry(_category,
                 "EnableJoinAnytime",
-                true,
-                "Enable Join Anytime",
-                "Allow players to join a session after it has already started.");
+                true);
 
             ModConfig.JoinConnectionGraceSeconds = ModConfig.CreateTrackedEntry(_category,
                 "JoinConnectionGraceSeconds",
-                30,
-                "Join Connection Grace (seconds)",
-                "When a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked).");
+                30);
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>
