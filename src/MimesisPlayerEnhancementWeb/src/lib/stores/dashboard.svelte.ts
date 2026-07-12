@@ -63,6 +63,7 @@ class DashboardStore {
 
   route = $state('home');
   settingsSubRoute = $state('');
+  homeSubRoute = $state('');
   steamId = $state<string | null>(null);
 
   toastMessage = $state('');
@@ -128,9 +129,10 @@ class DashboardStore {
     if (cachedGlobal) this.settingsGlobal = cachedGlobal;
     void this.loadGlobalSettings(true, true);
 
-    const { route, settingsSubRoute, steamId } = parseHash();
+    const { route, settingsSubRoute, homeSubRoute, steamId } = parseHash();
     this.route = route;
     this.settingsSubRoute = settingsSubRoute;
+    this.homeSubRoute = homeSubRoute;
     this.steamId = steamId;
     window.addEventListener('hashchange', () => this.onHashChange());
     window.addEventListener('storage', (ev) => this.onStorageChange(ev));
@@ -190,6 +192,7 @@ class DashboardStore {
     const parsed = parseHash();
     this.route = parsed.route;
     this.settingsSubRoute = parsed.settingsSubRoute;
+    this.homeSubRoute = parsed.homeSubRoute;
     this.steamId = parsed.steamId;
     this.headerSearchQuery = '';
     const onSaveCustomize =

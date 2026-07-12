@@ -16,6 +16,10 @@ if [[ ! -f "$WEB_SRC/package.json" ]]; then
   exit 1
 fi
 
+echo "Copying wiki source for ingestion…"
+rm -rf "$WEB_SRC/.wiki-src"
+cp -r "$ROOT/docs/wiki" "$WEB_SRC/.wiki-src"
+
 echo "Building web dashboard (Docker)…"
 docker build -t mpe-webdashboard:local -f "$WEB_SRC/Dockerfile" "$WEB_SRC"
 

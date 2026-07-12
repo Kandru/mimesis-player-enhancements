@@ -4,12 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-wiki.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/generate-wiki.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json"
   },
   "devDependencies": {
+    "marked": "^15.0.12",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.9",
     "@tsconfig/svelte": "^5.0.4",

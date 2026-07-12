@@ -45,6 +45,7 @@ export const OFFLINE_ROUTES = ['home', 'donation', 'global-settings'];
 export function parseHash(): {
   route: string;
   settingsSubRoute: string;
+  homeSubRoute: string;
   steamId: string | null;
 } {
   const hash = location.hash || '#/home';
@@ -52,10 +53,12 @@ export function parseHash(): {
   let route = parts[0] || 'home';
   if (route === 'waiting') route = 'home';
   let settingsSubRoute = '';
+  let homeSubRoute = '';
   let steamId: string | null = null;
   if (route === 'settings') settingsSubRoute = parts[1] || '';
+  if (route === 'home') homeSubRoute = parts[1] || '';
   if (route === 'player') steamId = parts[1] ? String(parts[1]) : null;
-  return { route, settingsSubRoute, steamId };
+  return { route, settingsSubRoute, homeSubRoute, steamId };
 }
 
 export function navigate(path: string) {
