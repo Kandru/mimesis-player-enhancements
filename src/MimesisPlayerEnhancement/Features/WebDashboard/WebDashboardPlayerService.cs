@@ -250,6 +250,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return [];
             }
 
+            WebDashboardPlayerNameStore.EnsureSlotLoaded(context.SaveSlotId);
+
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
             MergeOfflineStatisticsPlayers(
                 playersBySteam,

@@ -14,7 +14,7 @@
   );
   const saveIntro = $derived(
     t('dashboard.settings_intro_save', {
-      slot: Math.max(0, dashboard.status.saveSlotId) + 1,
+      slot: Math.max(0, dashboard.status.saveSlotId),
     }),
   );
 

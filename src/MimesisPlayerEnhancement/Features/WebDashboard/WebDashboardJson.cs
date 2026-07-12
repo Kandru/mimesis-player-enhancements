@@ -224,6 +224,30 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             };
         }
 
+        private static string ResolveApiDisplayName(ulong steamId, string? displayName, long playerUid)
+        {
+            if (steamId == 0)
+            {
+                return "";
+            }
+
+            int slotId = WebDashboardGameState.GetSaveSlotId();
+            if (slotId >= 0)
+            {
+                WebDashboardPlayerNameStore.EnsureSlotLoaded(slotId);
+            }
+
+            string current = displayName ?? "";
+            if (playerUid == 0
+                || string.IsNullOrWhiteSpace(current)
+                || current == steamId.ToString())
+            {
+                return WebDashboardPlayerNameStore.ResolveDisplayName(slotId, steamId, current);
+            }
+
+            return current;
+        }
+
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
         {
             bool hideOtherPlayerDetails =
@@ -233,7 +257,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = player.SteamId.ToString(),
                 PlayerUid = player.PlayerUid,
-                DisplayName = player.DisplayName,
+                DisplayName = ResolveApiDisplayName(player.SteamId, player.DisplayName, player.PlayerUid),
                 IsHost = player.IsHost,
                 IsLocal = player.IsLocal,
                 IsBanned = player.IsBanned,
@@ -289,7 +313,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return new LeaderboardEntryApiDto
             {
                 SteamId = entry.SteamId.ToString(),
-                DisplayName = entry.DisplayName,
+                DisplayName = ResolveApiDisplayName(entry.SteamId, entry.DisplayName, playerUid: 0),
                 ItemCarryCount = entry.ItemCarryCount,
                 DamageToFriend = entry.DamageToFriend,
                 FriendsKilled = entry.FriendsKilled,
@@ -314,7 +338,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 Version = doc.Version,
                 SteamId = doc.SteamId.ToString(),
-                DisplayName = doc.DisplayName,
+                DisplayName = ResolveApiDisplayName(doc.SteamId, doc.DisplayName, playerUid: 0),
                 Global = doc.Global,
                 CurrentSession = doc.CurrentSession,
                 RecentSessions = doc.RecentSessions,

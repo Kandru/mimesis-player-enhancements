@@ -1503,6 +1503,54 @@ body {
   font-weight: 500;
 }
 
+.player-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.player-identity-primary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.player-identity-name {
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+}
+
+button.player-identity-name {
+  color: var(--brand);
+}
+
+button.player-identity-name:hover {
+  text-decoration: underline;
+}
+
+.player-identity-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.badge-compact {
+  font-size: 0.625rem;
+  line-height: 1.1;
+  padding: 0.1rem 0.35rem;
+}
+
+.player-identity-badges .badge {
+  font-size: 0.625rem;
+  line-height: 1.1;
+  padding: 0.1rem 0.35rem;
+}
+
 .data-table-muted {
   font-size: 0.75rem;
   color: #98a2b3;

@@ -47,7 +47,7 @@
       dashboard.status.isHost ? t('dashboard.subtitle_host') : t('dashboard.subtitle_client'),
     );
     if (dashboard.status.saveSlotId >= 0) {
-      parts.push(`#${dashboard.status.saveSlotId + 1}`);
+      parts.push(`#${dashboard.status.saveSlotId}`);
     }
     return parts.join(' · ');
   });

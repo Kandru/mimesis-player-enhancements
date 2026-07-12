@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     /// <summary>
@@ -16,7 +18,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void EnsureSlotLoaded(int slotId)
         {
-            if (slotId < 0 || slotId == _loadedSlotId)
+            if (slotId < 0)
+            {
+                return;
+            }
+
+            if (slotId != _loadedSlotId)
+            {
+                LoadForSlot(slotId);
+                return;
+            }
+
+            lock (Gate)
+            {
+                if (_names.Count > 0)
+                {
+                    return;
+                }
+            }
+
+            string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
             {
                 return;
             }
@@ -46,10 +68,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 try
                 {
                     string? json = AtomicFileIO.ReadText(path, Feature);
-                    if (!string.IsNullOrEmpty(json)
-                        && ModJson.Deserialize<Dictionary<ulong, string>>(json) is Dictionary<ulong, string> loaded)
+                    if (!string.IsNullOrEmpty(json))
                     {
-                        _names = loaded;
+                        _names = ParseNamesJson(json);
                     }
                 }
                 catch (Exception ex)
@@ -184,6 +205,35 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 _loadedSlotId = -1;
                 _dirty = false;
             }
+        }
+
+        private static Dictionary<ulong, string> ParseNamesJson(string json)
+        {
+            if (ModJson.Deserialize<Dictionary<ulong, string>>(json) is Dictionary<ulong, string> loaded
+                && loaded.Count > 0)
+            {
+                return loaded;
+            }
+
+            Dictionary<ulong, string> parsed = [];
+            if (ModJson.Deserialize<Dictionary<string, string>>(json) is not Dictionary<string, string> stringKeys)
+            {
+                return parsed;
+            }
+
+            foreach (KeyValuePair<string, string> kvp in stringKeys)
+            {
+                if (!ulong.TryParse(kvp.Key, out ulong steamId)
+                    || steamId == 0
+                    || string.IsNullOrWhiteSpace(kvp.Value))
+                {
+                    continue;
+                }
+
+                parsed[steamId] = kvp.Value;
+            }
+
+            return parsed;
         }
     }
 }
