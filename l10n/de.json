@@ -1007,7 +1007,6 @@
     "donation_button_paypal": "Über PayPal spenden",
     "donation_button_kofi": "Auf Ko-fi unterstützen",
     "donation_footnote": "Der Mod bleibt in jedem Fall kostenlos und Open Source.",
-    "donation_ai_note": "Entwickelt mit KI-Unterstützung — diese Tools verursachen neben meiner Zeit laufende Kosten.",
     "waiting_unavailable": "Dashboard nicht verfügbar",
     "waiting_not_connected": "Nicht verbunden",
     "waiting_api_error": "Dashboard-API nicht erreichbar. Stelle sicher, dass das Spiel mit geladenem Mod läuft.",

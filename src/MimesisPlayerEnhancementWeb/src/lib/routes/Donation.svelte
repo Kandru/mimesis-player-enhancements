@@ -72,6 +72,5 @@
     </div>
 
     <p class="donation-footnote">{t('dashboard.donation_footnote')}</p>
-    <p class="donation-disclosure">{t('dashboard.donation_ai_note')}</p>
   </section>
 </article>
