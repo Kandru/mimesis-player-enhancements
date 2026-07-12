@@ -207,6 +207,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
 
         private static void MountInviteCode(UIPrefab_InGameMenu menu, OverlayState state)
         {
+            if (menu.UE_InviteRinkCopy == null || state.InviteBand == null)
+            {
+                return;
+            }
+
             RectTransform invite = menu.UE_InviteRinkCopy.GetComponent<RectTransform>();
             if (!state.InviteMounted)
             {
@@ -221,12 +226,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
             }
 
             invite.SetParent(state.InviteBand, false);
-            invite.anchorMin = state.InviteOriginalAnchorMin;
-            invite.anchorMax = state.InviteOriginalAnchorMax;
-            invite.pivot = state.InviteOriginalPivot;
-            invite.sizeDelta = state.InviteOriginalSizeDelta;
-            invite.anchoredPosition = state.InviteOriginalAnchoredPosition;
+            ApplyInviteOverlayLayout(invite, state);
+        }
+
+        private static void ApplyInviteOverlayLayout(RectTransform invite, OverlayState state)
+        {
+            float inviteHeight = MeasureInviteHeight(invite, state);
+
+            invite.anchorMin = new Vector2(0f, 1f);
+            invite.anchorMax = new Vector2(1f, 1f);
+            invite.pivot = new Vector2(0.5f, 1f);
+            invite.anchoredPosition = Vector2.zero;
+            invite.sizeDelta = new Vector2(0f, inviteHeight);
             LayoutRebuilder.ForceRebuildLayoutImmediate(invite);
+        }
+
+        private static float MeasureInviteHeight(RectTransform invite, OverlayState state)
+        {
+            if (state.InviteOriginalSizeDelta.y >= 1f)
+            {
+                return state.InviteOriginalSizeDelta.y;
+            }
+
+            LayoutElement? layoutElement = invite.GetComponent<LayoutElement>();
+            if (layoutElement != null && layoutElement.preferredHeight >= 1f)
+            {
+                return layoutElement.preferredHeight;
+            }
+
+            if (invite.rect.height >= 1f)
+            {
+                return invite.rect.height;
+            }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(invite);
+            if (invite.rect.height >= 1f)
+            {
+                return invite.rect.height;
+            }
+
+            return 56f;
         }
 
         private static void LayoutBandsForInvite(OverlayState state)
@@ -234,15 +273,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
             if (state.Panel == null
                 || state.InviteBand == null
                 || state.ScrollBand == null
-                || state.Menu == null)
+                || state.Menu == null
+                || state.Menu.UE_InviteRinkCopy == null)
             {
                 return;
             }
 
             RectTransform invite = state.Menu.UE_InviteRinkCopy.GetComponent<RectTransform>();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(invite);
+            ApplyInviteOverlayLayout(invite, state);
 
-            float inviteHeight = invite.rect.height;
+            float inviteHeight = Mathf.Max(invite.rect.height, MeasureInviteHeight(invite, state));
             float topReserved = inviteHeight + InviteScrollGapPx;
 
             state.InviteBand.anchorMin = new Vector2(0f, 1f);
@@ -250,6 +290,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
             state.InviteBand.pivot = new Vector2(0.5f, 1f);
             state.InviteBand.anchoredPosition = Vector2.zero;
             state.InviteBand.sizeDelta = new Vector2(0f, inviteHeight);
+            state.InviteBand.SetAsLastSibling();
+
+            invite.anchorMin = Vector2.zero;
+            invite.anchorMax = Vector2.one;
+            invite.pivot = new Vector2(0.5f, 0.5f);
+            invite.offsetMin = Vector2.zero;
+            invite.offsetMax = Vector2.zero;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(invite);
 
             state.ScrollBand.anchorMin = Vector2.zero;
             state.ScrollBand.anchorMax = Vector2.one;
