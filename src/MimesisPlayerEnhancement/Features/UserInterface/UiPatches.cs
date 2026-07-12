@@ -45,6 +45,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         internal static void RefreshFromConfig()
         {
             SpectatorPlayerGrid.RefreshFromConfig();
+            InGameMenuPlayerListOverlay.RefreshFromConfig();
             ExtendedSaveSlotsRuntime.RefreshFromConfig();
             WorldOverlayGate.RefreshCache();
             WorldOverlayRuntime.RefreshFromConfig();

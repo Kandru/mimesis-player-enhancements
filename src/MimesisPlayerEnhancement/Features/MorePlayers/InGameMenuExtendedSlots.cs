@@ -1,14 +1,12 @@
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
 {
-    internal static class InGameMenuPlayerGrid
+    internal static class InGameMenuExtendedSlots
     {
         private const string Feature = "MorePlayers";
         private const int VanillaPlayerRows = 4;
-        private const float DefaultRowHeight = 56f;
 
         private static readonly MethodInfo OnClickSpeakButtonMethod =
             AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnClickSpeakButton");
@@ -51,8 +49,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             {
                 ModLog.Debug(Feature, $"InGameMenu extended to {targetSlots} player row slots.");
             }
-
-            InGameMenuPlayerListLayout.Apply(menu);
         }
 
         private static UIPrefab_InGameMenu.PlayerUIElement BindPlayerElement(
@@ -133,51 +129,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             {
                 _ = OnClickSpeakButtonMethod.Invoke(menu, [index]);
             });
-        }
-
-        internal static void ApplyRowLayoutElements(UIPrefab_InGameMenu menu, float rowHeight)
-        {
-            foreach (UIPrefab_InGameMenu.PlayerUIElement row in menu.playerUIElements)
-            {
-                ApplyRowLayoutElement(row, rowHeight);
-            }
-        }
-
-        private static void ApplyRowLayoutElement(UIPrefab_InGameMenu.PlayerUIElement row, float rowHeight)
-        {
-            if (row.container == null)
-            {
-                return;
-            }
-
-            LayoutElement layoutElement = row.container.GetComponent<LayoutElement>()
-                ?? row.container.AddComponent<LayoutElement>();
-            layoutElement.minHeight = rowHeight;
-            layoutElement.preferredHeight = rowHeight;
-        }
-
-        internal static float MeasureRowHeight(UIPrefab_InGameMenu menu)
-        {
-            if (menu.playerUIElements.Count >= 2)
-            {
-                RectTransform? first = menu.playerUIElements[0].container.GetComponent<RectTransform>();
-                RectTransform? second = menu.playerUIElements[1].container.GetComponent<RectTransform>();
-                if (first != null && second != null)
-                {
-                    float step = Mathf.Abs(first.anchoredPosition.y - second.anchoredPosition.y);
-                    if (step >= 1f)
-                    {
-                        return step;
-                    }
-
-                    if (first.rect.height >= 1f)
-                    {
-                        return first.rect.height;
-                    }
-                }
-            }
-
-            return DefaultRowHeight;
         }
 
         internal static void ResizeTempVolumeList(UIPrefab_InGameMenu menu)

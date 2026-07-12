@@ -15,7 +15,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 
             try
             {
-                InGameMenuPlayerGrid.EnsureExtendedSlots(__instance);
+                InGameMenuExtendedSlots.EnsureExtendedSlots(__instance);
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
                 return;
             }
 
-            InGameMenuPlayerGrid.ResizeTempVolumeList(__instance);
+            InGameMenuExtendedSlots.ResizeTempVolumeList(__instance);
         }
     }
 }

@@ -83,7 +83,7 @@ Mod-wide settings that are not owned by a single feature.
 | `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
 | `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
-| `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Pin the join-code button to the top of the ESC menu player column, stretch the player list to fill remaining vertical space, and show a scrollbar when rows overflow. Independent of More Players. |
+| `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Show the ESC menu player list in a right-side overlay (join-code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls. Independent of More Players. |
 | `EnableWorldHealthBars` | bool | `true` | — | Show a world-space health bar above other players, mimics, and monsters for a few seconds after they take damage. Never shown on your own avatar. |
 | `WorldHealthBarDurationSeconds` | float | `4.0` | `1`–`5` | How long the world health bar stays visible after an entity takes damage. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
