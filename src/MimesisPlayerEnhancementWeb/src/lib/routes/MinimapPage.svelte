@@ -35,7 +35,7 @@
       >
         <option value="">{t('dashboard.minimap_follow_local')}</option>
         {#each focusOptions as p (p.steamId)}
-          <option value={String(p.steamId)}>{p.displayName || p.steamId}</option>
+          <option value={String(p.steamId)}>{p.displayName}</option>
         {/each}
       </select>
     </div>

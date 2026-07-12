@@ -20,7 +20,16 @@ namespace MimesisPlayerEnhancement
             WebDashboardPlayerNameStore.LoadForSlot(slotId);
             JoinAnytimeLobbyStore.LoadForSlot(slotId);
             JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
-            ModLog.Debug(Feature, $"Loaded slot sidecars for save slot {slotId}.");
+
+            int statsPlayers = StatisticsTracker.GetCachedPlayerDocumentsView().Count;
+            int nameCount = WebDashboardPlayerNameStore.LoadedNameCount;
+            ModLog.Info(
+                Feature,
+                $"Loaded slot sidecars for save slot {slotId} — stats={statsPlayers}, names={nameCount}.");
+
+            WebDashboardOfflinePlayerCache.RebuildSync(StatisticsTracker.Revision);
+            WebDashboardSnapshotCache.MarkDirty();
+            WebDashboardSnapshotCache.RequestFullPublish();
         }
 
         /// <summary>
@@ -33,11 +42,17 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            if (SaveSlotConfigStore.ActiveSlotId == slotId)
+            int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
+            if (activeSlotId >= 0)
             {
-                WebDashboardPlayerNameStore.EnsureSlotLoaded(slotId);
-                JoinAnytimeLobbyStore.EnsureSlotBound(slotId);
-                JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
+                if (activeSlotId == slotId)
+                {
+                    return;
+                }
+
+                ModLog.Debug(
+                    Feature,
+                    $"Ignoring sidecar reload — active slot {activeSlotId}, requested {slotId}.");
                 return;
             }
 

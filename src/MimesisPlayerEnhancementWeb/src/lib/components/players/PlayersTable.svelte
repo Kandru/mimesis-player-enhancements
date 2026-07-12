@@ -23,7 +23,6 @@
     avatarUrl,
     formatVitalPercent,
     navigate,
-    playerDisplayLabel,
   } from '$lib/utils';
 
   let {
@@ -195,7 +194,7 @@
 
   function requestModeration(player: PlayerDto, action: string) {
     const actionLabel = moderationActionLabel(action);
-    const name = playerDisplayLabel(player.displayName, player.steamId);
+    const name = player.displayName;
     openConfirm({
       title: t('dashboard.confirm_action_title', { action: actionLabel }),
       message: t('dashboard.confirm_action_message', { name, steamId: player.steamId }),
@@ -232,7 +231,7 @@
   }
 
   function requestDeletePlayerData(player: PlayerDto) {
-    const name = playerDisplayLabel(player.displayName, player.steamId);
+    const name = player.displayName;
     openConfirm({
       title: t('dashboard.confirm_delete_title'),
       message: t('dashboard.confirm_delete_player', { name, steamId: player.steamId }),

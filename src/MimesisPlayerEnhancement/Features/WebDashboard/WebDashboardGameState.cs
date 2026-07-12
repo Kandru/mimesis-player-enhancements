@@ -65,28 +65,34 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static int GetSaveSlotId()
         {
+            if (!IsConnected() || !IsHost())
+            {
+                return -1;
+            }
+
+            // Sidecars load from ApplyLoadedGameData(saveGameData.SlotID) — authoritative for this session.
+            int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
+            if (activeSlotId >= 0 && GameSessionAccess.IsValidSaveSlotId(activeSlotId))
+            {
+                int vworldSlotId = GameSessionAccess.GetSaveSlotId();
+                if (vworldSlotId >= 0
+                    && GameSessionAccess.IsValidSaveSlotId(vworldSlotId)
+                    && vworldSlotId != activeSlotId)
+                {
+                    ModLog.Debug(
+                        "WebDashboard",
+                        $"Save slot mismatch — sidecar={activeSlotId}, vworld={vworldSlotId}; using sidecar.");
+                }
+
+                return activeSlotId;
+            }
+
             if (MimesisSaveManager.TryGetActiveSaveSlotId(out int slotId))
             {
                 return slotId;
             }
 
-            if (!IsHost())
-            {
-                return -1;
-            }
-
-            if (SaveSlotConfigStore.ActiveSlotId >= 0)
-            {
-                return SaveSlotConfigStore.ActiveSlotId;
-            }
-
-            slotId = GameSessionAccess.GetSaveSlotId();
-            if (slotId >= 0 && GameSessionAccess.IsValidSaveSlotId(slotId))
-            {
-                return slotId;
-            }
-
-            return StatisticsTracker.TryGetLoadedSlotId(out slotId) ? slotId : -1;
+            return -1;
         }
 
         internal static string GetLobbyName()

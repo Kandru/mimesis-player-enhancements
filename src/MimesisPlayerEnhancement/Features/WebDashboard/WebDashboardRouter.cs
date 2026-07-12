@@ -586,12 +586,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                string? displayName;
                 PlayerStatisticsDocument? doc;
                 try
                 {
-                    (doc, displayName) = WebDashboardConfigUpdateQueue.EnqueueAndWait(
-                        () => WebDashboardPlayerStatsService.TryGetStats(steamId, slotId));
+                    doc = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardPlayerStatsService.TryGetStats(steamId));
                 }
                 catch (TimeoutException)
                 {
@@ -605,7 +604,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                string json = WebDashboardJson.SerializePlayerStatsSnapshot(doc, displayName);
+                string json = WebDashboardJson.SerializePlayerStats(doc);
                 WriteJson(context, 200, json);
                 return;
             }

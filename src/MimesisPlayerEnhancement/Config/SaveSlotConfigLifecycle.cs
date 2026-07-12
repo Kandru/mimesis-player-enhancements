@@ -37,9 +37,13 @@ namespace MimesisPlayerEnhancement
 
             _ensureSlotRetryFrame = frame;
 
+            if (SaveSlotConfigStore.ActiveSlotId >= 0)
+            {
+                return;
+            }
+
             int slotId = GameSessionAccess.GetSaveSlotId();
-            if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
-                || SaveSlotConfigStore.ActiveSlotId == slotId)
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 return;
             }

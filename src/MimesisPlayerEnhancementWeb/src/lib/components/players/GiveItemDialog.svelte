@@ -112,7 +112,7 @@
               {#if selected}
                 <span class="recipient-chip-check" aria-hidden="true">✓</span>
               {/if}
-              {player.displayName || player.steamId}
+              {player.displayName}
             </button>
           {/each}
         </div>

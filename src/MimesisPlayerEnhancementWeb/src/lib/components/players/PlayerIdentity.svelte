@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { t } from '$lib/i18n';
-  import { isValidSteamId, navigate, playerDisplayLabel, steamProfileUrl } from '$lib/utils';
+  import { isValidSteamId, navigate, steamProfileUrl } from '$lib/utils';
 
   let {
     steamId,
@@ -9,11 +9,10 @@
     badges,
   }: {
     steamId: string | number;
-    displayName?: string;
+    displayName: string;
     badges?: Snippet;
   } = $props();
 
-  const label = $derived(playerDisplayLabel(displayName, steamId));
   const canNavigate = $derived(isValidSteamId(steamId));
 </script>
 
@@ -25,7 +24,7 @@
         class="player-identity-name"
         onclick={() => navigate(`player/${steamId}`)}
       >
-        {label}
+        {displayName}
       </button>
       <a
         class="badge badge-steam badge-compact hover:opacity-80"
@@ -36,7 +35,7 @@
         {t('dashboard.badge_steam')}
       </a>
     {:else}
-      <span class="player-identity-name">{label}</span>
+      <span class="player-identity-name">{displayName}</span>
     {/if}
   </div>
   {#if badges}

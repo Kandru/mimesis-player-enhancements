@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     /// <summary>
@@ -16,34 +14,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static int _loadedSlotId = -1;
         private static bool _dirty;
 
-        internal static void EnsureSlotLoaded(int slotId)
+        internal static int LoadedNameCount
         {
-            if (slotId < 0)
+            get
             {
-                return;
-            }
-
-            if (slotId != _loadedSlotId)
-            {
-                LoadForSlot(slotId);
-                return;
-            }
-
-            lock (Gate)
-            {
-                if (_names.Count > 0)
+                lock (Gate)
                 {
-                    return;
+                    return _names.Count;
                 }
             }
-
-            string? path = SaveSidecarPaths.GetPlayerNamesPath(slotId);
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-            {
-                return;
-            }
-
-            LoadForSlot(slotId);
         }
 
         internal static void LoadForSlot(int slotId)

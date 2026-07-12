@@ -244,11 +244,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
             else
             {
-                if (saveSlotId >= 0)
-                {
-                    WebDashboardPlayerNameStore.EnsureSlotLoaded(saveSlotId);
-                }
-
                 WebDashboardHostCheatsRuntime.SyncFromSession();
                 WebDashboardCatalogCache.RefreshCatalogsIfNeeded(connected: true);
                 WebDashboardCatalogCache.RefreshHostCheats();

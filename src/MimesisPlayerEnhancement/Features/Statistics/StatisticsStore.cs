@@ -37,17 +37,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
-        public static PlayerStatisticsDocument LoadPlayer(int slotId, ulong steamId)
-        {
-            SlotStatisticsDocument? slot = TryLoadSlot(slotId);
-            if (slot?.Players != null && slot.Players.TryGetValue(steamId, out PlayerStatisticsDocument? doc))
-            {
-                return NormalizePlayer(doc, steamId);
-            }
-
-            return NewPlayerDocument(steamId);
-        }
-
         internal static void SaveSlot(
             int slotId,
             IReadOnlyDictionary<ulong, PlayerStatisticsDocument> players,
@@ -304,16 +293,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             return doc;
-        }
-
-        private static PlayerStatisticsDocument NewPlayerDocument(ulong steamId)
-        {
-            return new()
-            {
-                SteamId = steamId,
-                Global = new GlobalStats(),
-                RecentSessions = [],
-            };
         }
 
         private static void EnsureCounterDictionaries(StatCounters? counters)

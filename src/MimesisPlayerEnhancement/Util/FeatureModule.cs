@@ -77,6 +77,7 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal static IReadOnlyList<IFeatureModule> All { get; } =
         [
+            new FeatureModule("SaveSlotSidecar", SaveSlotSidecarPersistencePatches.Apply),
             new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
                 onDeinitialize: VoicePerformanceRuntime.ClearAll),
             new FeatureModule("Persistence", PersistencePatches.Apply, onUpdate: () =>

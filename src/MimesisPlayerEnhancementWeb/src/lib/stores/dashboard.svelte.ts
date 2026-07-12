@@ -255,6 +255,12 @@ class DashboardStore {
     return this.players.find((p) => p.isLocal && p.playerUid);
   }
 
+  get playerRouteTitle() {
+    if (!this.steamId) return null;
+    const fromSnapshot = this.players.find((p) => String(p.steamId) === this.steamId)?.displayName;
+    return fromSnapshot || this.playerStats?.displayName || this.steamId;
+  }
+
   private onStorageChange(ev: StorageEvent) {
     if (ev.key !== BLIND_MODE_STORAGE_KEY && ev.key !== LEGACY_BLIND_MODE_STORAGE_KEY) return;
     if (ev.newValue === null) return;

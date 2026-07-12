@@ -19,7 +19,7 @@
     getPageTitle(
       dashboard.route,
       dashboard.settingsSubRoute,
-      dashboard.playerStats?.displayName || dashboard.playerStats?.steamId,
+      dashboard.playerRouteTitle,
     ),
   );
 

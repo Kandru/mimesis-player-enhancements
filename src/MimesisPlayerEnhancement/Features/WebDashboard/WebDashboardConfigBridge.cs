@@ -243,11 +243,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                     resetCount++;
                 }
-
-                if (scope == WebDashboardConfigScope.Save && resetCount > 0)
-                {
-                    SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
-                }
             }
             finally
             {

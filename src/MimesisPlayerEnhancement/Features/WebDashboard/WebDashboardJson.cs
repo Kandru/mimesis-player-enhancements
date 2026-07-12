@@ -51,27 +51,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(MapPlayerStats(doc));
         }
 
-        public static string SerializePlayerStatsSnapshot(PlayerStatisticsDocument source, string? displayNameOverride)
-        {
-            PlayerStatisticsDocument snapshot = new()
-            {
-                Version = source.Version,
-                SteamId = source.SteamId,
-                DisplayName = source.DisplayName,
-                Global = source.Global,
-                CurrentSession = source.CurrentSession,
-                RecentSessions = source.RecentSessions,
-            };
-
-            if (!string.IsNullOrWhiteSpace(displayNameOverride)
-                && !string.Equals(displayNameOverride, source.SteamId.ToString(), StringComparison.Ordinal))
-            {
-                snapshot.DisplayName = displayNameOverride;
-            }
-
-            return SerializePlayerStats(snapshot);
-        }
-
         public static string SerializeActionResult(WebDashboardActionResult result)
         {
             return ModJson.Serialize(result);
@@ -224,28 +203,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             };
         }
 
-        private static string ResolveApiDisplayName(ulong steamId, string? displayName, long playerUid)
+        private static string NormalizeApiDisplayName(ulong steamId, string? displayName)
         {
             if (steamId == 0)
             {
                 return "";
             }
 
-            int slotId = WebDashboardGameState.GetSaveSlotId();
-            if (slotId >= 0)
+            if (!string.IsNullOrWhiteSpace(displayName) && displayName != steamId.ToString())
             {
-                WebDashboardPlayerNameStore.EnsureSlotLoaded(slotId);
+                return displayName;
             }
 
-            string current = displayName ?? "";
-            if (playerUid == 0
-                || string.IsNullOrWhiteSpace(current)
-                || current == steamId.ToString())
-            {
-                return WebDashboardPlayerNameStore.ResolveDisplayName(slotId, steamId, current);
-            }
-
-            return current;
+            return steamId.ToString();
         }
 
         private static PlayerApiDto MapPlayer(WebDashboardPlayerDto player)
@@ -257,7 +227,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = player.SteamId.ToString(),
                 PlayerUid = player.PlayerUid,
-                DisplayName = ResolveApiDisplayName(player.SteamId, player.DisplayName, player.PlayerUid),
+                DisplayName = NormalizeApiDisplayName(player.SteamId, player.DisplayName),
                 IsHost = player.IsHost,
                 IsLocal = player.IsLocal,
                 IsBanned = player.IsBanned,
@@ -313,7 +283,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return new LeaderboardEntryApiDto
             {
                 SteamId = entry.SteamId.ToString(),
-                DisplayName = ResolveApiDisplayName(entry.SteamId, entry.DisplayName, playerUid: 0),
+                DisplayName = NormalizeApiDisplayName(entry.SteamId, entry.DisplayName),
                 ItemCarryCount = entry.ItemCarryCount,
                 DamageToFriend = entry.DamageToFriend,
                 FriendsKilled = entry.FriendsKilled,
@@ -334,11 +304,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static PlayerStatsApiDto MapPlayerStats(PlayerStatisticsDocument doc)
         {
+            int slotId = WebDashboardGameState.GetSaveSlotId();
+            string displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(doc.SteamId, slotId);
+
             return new PlayerStatsApiDto
             {
                 Version = doc.Version,
                 SteamId = doc.SteamId.ToString(),
-                DisplayName = ResolveApiDisplayName(doc.SteamId, doc.DisplayName, playerUid: 0),
+                DisplayName = displayName,
                 Global = doc.Global,
                 CurrentSession = doc.CurrentSession,
                 RecentSessions = doc.RecentSessions,

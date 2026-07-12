@@ -53,6 +53,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _pendingRevision = 0;
         }
 
+        internal static void RebuildSync(int revision)
+        {
+            WebDashboardPlayerService.OfflinePlayerBuildContext context =
+                WebDashboardPlayerService.OfflinePlayerBuildContext.Capture();
+            _cached = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(context);
+            _cachedRevision = revision;
+            _pendingRevision = 0;
+        }
+
         private static void RebuildBackground(
             int revision,
             WebDashboardPlayerService.OfflinePlayerBuildContext context)

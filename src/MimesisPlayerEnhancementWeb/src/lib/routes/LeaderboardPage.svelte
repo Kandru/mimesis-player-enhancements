@@ -2,7 +2,6 @@
   import PlayerIdentity from '$lib/components/players/PlayerIdentity.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
-  import { playerDisplayLabel } from '$lib/utils';
 
   type SortKey = 'name' | 'currency' | 'sessions';
   type SortDir = 'asc' | 'desc';
@@ -25,9 +24,7 @@
     list.sort((a, b) => {
       let cmp = 0;
       if (sortKey === 'name') {
-        cmp = playerDisplayLabel(a.displayName, a.steamId).localeCompare(
-          playerDisplayLabel(b.displayName, b.steamId),
-        );
+        cmp = String(a.displayName).localeCompare(String(b.displayName), undefined, { sensitivity: 'base' });
       } else if (sortKey === 'currency') {
         cmp = ((a as Record<string, number>).currencyEarned ?? 0) - ((b as Record<string, number>).currencyEarned ?? 0);
       } else {
