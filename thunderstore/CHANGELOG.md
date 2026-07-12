@@ -1,6 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.8
+Attention: the Wiki / Help pages are yet to be improved! There is so much going on right now that things take time. Anyway, time to finally announce v26.7.8 for the broader public. Added a lot of new stuff (and hopefully fixed old stuff). Still: there will be major bugs / things breaking that did work before. This will gradually be sorted out in the coming days. Feel free to create an Issue whenever you find some bugs. Thanks for testing and have fun playing Mimesis :)
+
 - switched the web-dashboard to Svelte for a single-page application (looks and feels way better)
 - when the game gets updates this mod will be disabled automatically to avoid incompatibilities or bugs/crashes until the user updates it (when any update is available)
 - the dead player UI sort the players by alphabet (but living people first)

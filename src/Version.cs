@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement
     /// </summary>
     public static class VersionInfo
     {
-        public const string ModuleVersion = "26.7.7";
+        public const string ModuleVersion = "26.7.8";
 
         /// <summary>MIMESIS game version this release was built and tested against.</summary>
         public const string GameVersion = "0.3.0";
