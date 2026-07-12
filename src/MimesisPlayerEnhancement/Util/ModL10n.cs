@@ -75,6 +75,16 @@ namespace MimesisPlayerEnhancement.Util
             return GetOptional($"config.{sectionId}._section", locale);
         }
 
+        internal static string? GetConfigSectionDescription(string sectionId)
+        {
+            return GetConfigSectionDescription(sectionId, null);
+        }
+
+        internal static string? GetConfigSectionDescription(string sectionId, string? locale)
+        {
+            return GetOptional($"config.{sectionId}._description", locale);
+        }
+
         internal static string? GetConfigEntryTitle(string sectionId, string key)
         {
             return GetConfigEntryTitle(sectionId, key, null);

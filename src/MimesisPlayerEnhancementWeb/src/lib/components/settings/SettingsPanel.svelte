@@ -187,7 +187,12 @@
         <div class="settings-content">
           <section class="settings-section-card">
             <div class="settings-section-header">
-              <h3 class="settings-section-title">{activeSection.title}</h3>
+              <div class="settings-section-heading">
+                <h3 class="settings-section-title">{activeSection.title}</h3>
+                {#if activeSection.description}
+                  <p class="settings-section-description">{activeSection.description}</p>
+                {/if}
+              </div>
               {#if activeSectionResettable.length > 0}
                 <button
                   type="button"

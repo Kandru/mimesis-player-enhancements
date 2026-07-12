@@ -20,6 +20,7 @@ Config entry shape:
 "config": {
   "MimesisPlayerEnhancement_LootMultiplicator": {
     "_section": "Loot Multiplicator",
+    "_description": "Adjust map loot and enemy drops; scale with player count or filter item types. Host only.",
     "EnableLootMultiplicator": {
       "title": "Enable Loot Multiplicator",
       "description": "Scale map loot and enemy death drops..."
@@ -27,6 +28,9 @@ Config entry shape:
   }
 }
 ```
+
+- `_section` — category title (MelonPreferences and web settings nav)
+- `_description` — category subtitle on the web dashboard settings panel
 
 Select options add an `options` map keyed by the stored value.
 

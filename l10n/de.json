@@ -2,6 +2,7 @@
   "config": {
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
+      "_description": "Globale Mod-Optionen, einschließlich ausführlicher Debug-Protokollierung.",
       "EnableDebugLogging": {
         "title": "Debug-Logging aktivieren",
         "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
@@ -13,6 +14,7 @@
     },
     "MimesisPlayerEnhancement_Ui": {
       "_section": "Benutzeroberfläche",
+      "_description": "Erweiterter Spielstand-Picker, skalierbare Zuschauerliste und lokale HUD-Anpassungen. Gilt nur auf deinem Client.",
       "_groups": {
         "modToasts": "Mod-Nachrichten",
         "extendedSaveSlots": "Erweiterte Save-Slots",
@@ -66,6 +68,7 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
+      "_description": "Randomisiere Tram-Dungeon-Würfe, Layout-Flows, Kartenvarianten und prozeduralen Seed. Nur Host.",
       "EnableDungeonRandomizer": {
         "title": "Dungeon-Randomizer aktivieren",
         "description": "Randomisiert die Dungeon-Auswahl: Tram-Dungeon-Pick, Layout-Flow, Map-Variante und prozeduralen Seed. Nur Host."
@@ -109,6 +112,7 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon-Zeit",
+      "_description": "Verlängere Schichtfristen bei mehr Spielern in der Sitzung. Nur Host.",
       "EnableDungeonTime": {
         "title": "Dungeon-Zeit aktivieren",
         "description": "Verlängert die Dungeon-Schichtdauer, wenn die Spieleranzahl über der Baseline liegt. Nur Host."
@@ -124,6 +128,7 @@
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Wetter",
+      "_description": "Festes, zyklisches oder vanilla Wetter plus synchronisierte Startzeit für Beleuchtung. Nur Host.",
       "EnableWeather": {
         "title": "Wetter aktivieren",
         "description": "Dungeon-Wetter, Zyklus-Presets und synchronisierte Startzeit steuern. Nur Host."
@@ -182,6 +187,7 @@
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Jederzeit beitreten",
+      "_description": "Erlaube Freunden, nach Sitzungsstart beizutreten. Nur Host.",
       "EnableJoinAnytime": {
         "title": "Jederzeit beitreten aktivieren",
         "description": "Erlaubt Spielern, einer bereits gestarteten Sitzung beizutreten."
@@ -193,6 +199,7 @@
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot-Multiplikator",
+      "_description": "Passe Karten-Loot und Gegner-Drops an; skaliere mit Spieleranzahl oder filtere Item-Typen. Nur Host.",
       "EnableLootMultiplicator": {
         "title": "Loot-Multiplikator aktivieren",
         "description": "Skaliert Karten-Loot und Gegner-Tod-Drops und kann Mimic-Fake-Drops optional in echten Loot umwandeln. Nur Host."
@@ -245,6 +252,7 @@
     },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic-Tuning",
+      "_description": "Passe Mimik-Stimmhäufigkeit, Inventar-Kopier-Regeln und Besitz-Timing an. Nur Host.",
       "EnableMimicTuning": {
         "title": "Mimic-Tuning aktivieren",
         "description": "Host-only: Mimic-Sprachhäufigkeit und Inventar-Kopie. Unterfeatures mit Vanilla- oder Custom-Modus."
@@ -321,6 +329,7 @@
     },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Wirtschaft",
+      "_description": "Stelle Startgeld, Schrottwert, Shop-Preise und optionalen Währungserhalt ein. Nur Host.",
       "EnableEconomy": {
         "title": "Wirtschaft aktivieren",
         "description": "Skaliert Startgeld, Schrott-/Verkaufswerte, Shop-Kaufpreise und Verstärkungskosten. Optional ungenutztes Geld zwischen Maintenance-Zyklen behalten. Nur Host."
@@ -380,6 +389,7 @@
     },
     "MimesisPlayerEnhancement_MorePlayers": {
       "_section": "Mehr Spieler",
+      "_description": "Erhöhe das vanilla Vier-Spieler-Limit für größere Gruppen. Nur Host.",
       "EnableMorePlayers": {
         "title": "Mehr Spieler aktivieren",
         "description": "Erhöht das Multiplayer-Spielerlimit über 4 hinaus."
@@ -411,6 +421,7 @@
     },
     "MimesisPlayerEnhancement_MoreVoices": {
       "_section": "Mehr Stimmen",
+      "_description": "Speichere deutlich mehr aufgezeichnete Spielerstimmen für Mimiks pro Run. Nur Host.",
       "EnableMoreVoices": {
         "title": "Mehr Stimmen aktivieren",
         "description": "Erhöht die Stimmen-Aufnahmelimits pro Spieler."
@@ -454,6 +465,7 @@
     },
     "MimesisPlayerEnhancement_Persistence": {
       "_section": "Persistenz",
+      "_description": "Speichere und stelle Mimik-Stimmaufnahmen über Speichern/Laden wieder her. Nur Host.",
       "EnablePersistence": {
         "title": "Stimmen-Persistenz aktivieren",
         "description": "Speichert und stellt Mimic-Stimmaufnahmen über Speichern/Laden wieder her."
@@ -461,6 +473,7 @@
     },
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
       "_section": "Spieler-Nachrichten",
+      "_description": "Hinweise zu Dungeon-Einstellungen, Boss-Spawns und persönlichen Todesstatistiken. Nur Host.",
       "ShowPlayerAnnouncements": {
         "title": "Spieler-Nachrichten anzeigen",
         "description": "Zeigt Spieler-Nachrichten unten links für Dungeon-Einstellungen, Boss-Spawns und deine Karten-Stats beim Tod. Ersetzt nicht die eigenen Nachrichten des Spiels."
@@ -468,6 +481,7 @@
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Spieler-Tuning",
+      "_description": "Passe Bewegungsgeschwindigkeit, Ausdauer und Traggewicht für alle in der Sitzung an. Nur Host.",
       "EnablePlayerTuning": {
         "title": "Spieler-Tuning aktivieren",
         "description": "Skaliert Bewegungsgeschwindigkeit, Ausdauer und Tragegewicht. Beitretende Clients brauchen den Mod nicht. Nur Host."
@@ -507,6 +521,7 @@
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn-Skalierung",
+      "_description": "Skaliere Monster- und Fallen-Spawn-Budgets nach Typ oder Spieleranzahl. Nur Host.",
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
         "description": "Skaliert Dungeon-Monster- und Fallen-Spawn-Budgets nach Typ. Nur Host."
@@ -611,6 +626,7 @@
     },
     "MimesisPlayerEnhancement_Statistics": {
       "_section": "Statistiken",
+      "_description": "Verfolge Tode, Kills, Spielzeit, Mimik-Begegnungen und mehr pro Spielstand. Nur Host.",
       "EnableStatistics": {
         "title": "Spielerstatistiken aktivieren",
         "description": "Verfolgt Sitzungs- und globale Spielerstatistiken pro Save-Slot."
@@ -626,6 +642,7 @@
     },
     "MimesisPlayerEnhancement_WebDashboard": {
       "_section": "Web-Dashboard",
+      "_description": "Browser-Ansicht für Spieler, Statistiken, Einstellungen und Moderation während das Spiel läuft.",
       "EnableWebDashboard": {
         "title": "Web-Dashboard aktivieren",
         "description": "Stellt eine lokale Web-UI für verbundene Spieler und Host-Moderation bereit. Standard: nur Loopback."

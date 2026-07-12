@@ -53,6 +53,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static string? GetConfigSectionTitle(string sectionId) =>
             ModL10n.GetConfigSectionTitle(sectionId, WebDashboardRequestLocale.Current);
 
+        internal static string? GetConfigSectionDescription(string sectionId) =>
+            ModL10n.GetConfigSectionDescription(sectionId, WebDashboardRequestLocale.Current);
+
         internal static string? GetConfigEntryTitle(string sectionId, string key) =>
             ModL10n.GetConfigEntryTitle(sectionId, key, WebDashboardRequestLocale.Current);
 

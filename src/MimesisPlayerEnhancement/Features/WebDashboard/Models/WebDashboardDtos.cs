@@ -273,6 +273,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
     {
         public string Id = "";
         public string Title = "";
+        public string Description = "";
         public WebDashboardConfigEntryDto? FeatureToggle;
         public List<WebDashboardConfigEntryDto> Entries = [];
     }

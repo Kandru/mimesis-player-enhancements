@@ -70,7 +70,10 @@ export function sectionHasVisibleEntries(
   query: string,
 ) {
   const normalizedQuery = query.trim().toLowerCase();
-  const titleMatches = normalizedQuery.length > 0 && section.title.toLowerCase().includes(normalizedQuery);
+  const titleMatches = normalizedQuery.length > 0 && (
+    section.title.toLowerCase().includes(normalizedQuery)
+    || (section.description?.toLowerCase().includes(normalizedQuery) ?? false)
+  );
 
   if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query)) {
     return true;

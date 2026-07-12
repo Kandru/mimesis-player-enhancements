@@ -12,7 +12,7 @@ SRC = ROOT / "src" / "MimesisPlayerEnhancement"
 EN_JSON = ROOT / "l10n" / "en.json"
 DE_JSON = ROOT / "l10n" / "de.json"
 
-METADATA_KEYS = {"_section", "_groups", "title", "description", "options"}
+METADATA_KEYS = {"_section", "_description", "_groups", "title", "description", "options"}
 
 
 def load_config_entries(path: Path) -> dict[str, set[str]]:
@@ -104,6 +104,9 @@ def validate_locale_tree(path: Path, csharp_entries: dict[str, set[str]]) -> lis
         if not section.get("_section"):
             errors.append(f"missing config.{section_id}._section in {path.name}")
 
+        if not section.get("_description"):
+            errors.append(f"missing config.{section_id}._description in {path.name}")
+
         for key in sorted(keys):
             entry = section.get(key)
             if not isinstance(entry, dict):
@@ -145,6 +148,8 @@ def main() -> int:
             if not isinstance(section, dict):
                 continue
             de_section = de_config.get(section_id, {})
+            if not de_section.get("_description"):
+                print(f"warning: de.json missing config.{section_id}._description")
             for key, value in section.items():
                 if key in METADATA_KEYS or not isinstance(value, dict):
                     continue

@@ -186,6 +186,7 @@ export interface ConfigEntryDto {
 export interface ConfigSectionDto {
   id: string;
   title: string;
+  description?: string;
   featureToggle?: ConfigEntryDto;
   entries: ConfigEntryDto[];
 }

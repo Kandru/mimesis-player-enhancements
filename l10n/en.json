@@ -2,6 +2,7 @@
   "config": {
     "MimesisPlayerEnhancement": {
       "_section": "Mimesis Player Enhancement",
+      "_description": "Global mod options, including verbose debug logging.",
       "EnableDebugLogging": {
         "title": "Enable Debug Logging",
         "description": "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting."
@@ -13,6 +14,7 @@
     },
     "MimesisPlayerEnhancement_Ui": {
       "_section": "User Interface",
+      "_description": "Extended save picker, scalable spectator list, and local HUD tweaks. Applies to your client only.",
       "_groups": {
         "modToasts": "Mod messages",
         "extendedSaveSlots": "Extended save slots",
@@ -66,6 +68,7 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
+      "_description": "Randomize tram dungeon picks, layout flows, map variants, and procedural seed. Host only.",
       "EnableDungeonRandomizer": {
         "title": "Enable Dungeon Randomizer",
         "description": "Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only."
@@ -109,6 +112,7 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon Time",
+      "_description": "Extend shift deadlines when more players are in the session. Host only.",
       "EnableDungeonTime": {
         "title": "Enable Dungeon Time",
         "description": "Extend dungeon shift length when player count exceeds the baseline. Host only."
@@ -124,6 +128,7 @@
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Weather",
+      "_description": "Fixed, cycling, or vanilla weather plus synced start time for lighting. Host only.",
       "EnableWeather": {
         "title": "Enable Weather",
         "description": "Control dungeon weather, cyclic presets, and synced start time. Host only."
@@ -182,6 +187,7 @@
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Join Anytime",
+      "_description": "Let friends join after a session has already started. Host only.",
       "EnableJoinAnytime": {
         "title": "Enable Join Anytime",
         "description": "Allow players to join a session after it has already started."
@@ -193,6 +199,7 @@
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot Multiplicator",
+      "_description": "Adjust map loot and enemy drops; scale with player count or filter item types. Host only.",
       "EnableLootMultiplicator": {
         "title": "Enable Loot Multiplicator",
         "description": "Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only."
@@ -245,6 +252,7 @@
     },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic Tuning",
+      "_description": "Tune mimic voice frequency, inventory-copy rules, and possession timing. Host only.",
       "EnableMimicTuning": {
         "title": "Enable Mimic Tuning",
         "description": "Host-only mimic voice frequency and inventory-copy tuning. Subfeatures use Vanilla or Custom modes."
@@ -321,6 +329,7 @@
     },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Economy",
+      "_description": "Tune starting cash, scrap value, shop prices, and optional currency retention. Host only.",
       "EnableEconomy": {
         "title": "Enable Economy",
         "description": "Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only."
@@ -380,6 +389,7 @@
     },
     "MimesisPlayerEnhancement_MorePlayers": {
       "_section": "More Players",
+      "_description": "Raise the vanilla four-player session cap for larger groups. Host only.",
       "EnableMorePlayers": {
         "title": "Enable More Players",
         "description": "Raise the multiplayer player cap above 4."
@@ -411,6 +421,7 @@
     },
     "MimesisPlayerEnhancement_MoreVoices": {
       "_section": "More Voices",
+      "_description": "Store many more recorded player voice lines for mimics per run. Host only.",
       "EnableMoreVoices": {
         "title": "Enable More Voices",
         "description": "Raise per-player voice recording limits."
@@ -454,6 +465,7 @@
     },
     "MimesisPlayerEnhancement_Persistence": {
       "_section": "Persistence",
+      "_description": "Save and restore mimic voice recordings across save/load. Host only.",
       "EnablePersistence": {
         "title": "Enable Voice Persistence",
         "description": "Save and restore mimic voice recordings across save/load."
@@ -461,6 +473,7 @@
     },
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
       "_section": "Player Announcements",
+      "_description": "On-screen tips for dungeon settings, boss spawns, and personal death stats. Host only.",
       "ShowPlayerAnnouncements": {
         "title": "Show Player Messages",
         "description": "Show player messages in the bottom-left corner for dungeon run settings, boss spawns, and your per-map stats when you die. Does not replace the game's own messages."
@@ -468,6 +481,7 @@
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Player Tuning",
+      "_description": "Adjust movement speed, stamina, and carry weight for everyone in the session. Host only.",
       "EnablePlayerTuning": {
         "title": "Enable Player Tuning",
         "description": "Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only."
@@ -507,6 +521,7 @@
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn Scaling",
+      "_description": "Scale monster and trap spawn budgets by type or player count. Host only.",
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
         "description": "Scale dungeon monster and trap spawn budgets by type. Host only."
@@ -611,6 +626,7 @@
     },
     "MimesisPlayerEnhancement_Statistics": {
       "_section": "Statistics",
+      "_description": "Track deaths, kills, play time, mimic encounters, and more per save. Host only.",
       "EnableStatistics": {
         "title": "Enable Player Statistics",
         "description": "Track per-session and global player statistics per save slot."
@@ -626,6 +642,7 @@
     },
     "MimesisPlayerEnhancement_WebDashboard": {
       "_section": "Web Dashboard",
+      "_description": "Browser view for players, stats, settings, and moderation while the game runs.",
       "EnableWebDashboard": {
         "title": "Enable Web Dashboard",
         "description": "Serve a local web UI for connected players and host moderation. Default bind is loopback only."
