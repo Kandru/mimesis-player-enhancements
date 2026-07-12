@@ -16,6 +16,17 @@ namespace MimesisPlayerEnhancement.Ui
 
         internal static readonly ModUiAssets Fallback = new();
 
+        internal static ModUiAssets FromTextSource(GameObject? source)
+        {
+            ModUiAssets assets = new();
+            if (source != null)
+            {
+                assets.FontTemplate = ModUiText.FindTextComponent(source);
+            }
+
+            return assets;
+        }
+
         internal Sprite? RowSprite { get; private set; }
         internal Image.Type RowImageType { get; private set; } = Image.Type.Sliced;
         internal Sprite? ButtonSprite { get; private set; }

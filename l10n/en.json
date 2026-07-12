@@ -20,7 +20,8 @@
         "extendedInGameMenuPlayerList": "In-game menu player list",
         "worldHealthBars": "World health bars",
         "floatingDamage": "Floating damage numbers",
-        "floatingDetox": "Floating detox indicators"
+        "floatingDetox": "Floating detox indicators",
+        "fpsVitalsHud": "FPS vitals HUD"
       },
       "ModToastDurationSeconds": {
         "title": "Mod Message Duration (seconds)",
@@ -57,6 +58,10 @@
       "EnableFloatingDetoxIndicators": {
         "title": "Enable Floating Detox Indicators",
         "description": "Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. Duration is configured under Floating damage numbers."
+      },
+      "EnableFpsVitalsHud": {
+        "title": "Enable FPS-Style Vitals HUD",
+        "description": "Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {

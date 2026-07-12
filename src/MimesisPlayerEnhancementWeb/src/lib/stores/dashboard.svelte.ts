@@ -126,7 +126,7 @@ class DashboardStore {
     if (this.darkMode) document.documentElement.classList.add('dark');
     const cachedGlobal = readCachedGlobalSettings();
     if (cachedGlobal) this.settingsGlobal = cachedGlobal;
-    void this.loadGlobalSettings(true, false);
+    void this.loadGlobalSettings(true, true);
 
     const { route, settingsSubRoute, steamId } = parseHash();
     this.route = route;
@@ -528,7 +528,7 @@ class DashboardStore {
       }
 
       if (onGlobal) {
-        await this.loadGlobalSettings(false, false);
+        await this.loadGlobalSettings(false, true);
         void this.loadItemCatalog();
         void this.loadDungeonCatalog();
       }

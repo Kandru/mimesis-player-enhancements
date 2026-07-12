@@ -55,6 +55,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableFloatingDetoxIndicators = ModConfig.CreateTrackedEntry(_category,
                 "EnableFloatingDetoxIndicators",
                 true);
+
+            ModConfig.EnableFpsVitalsHud = ModConfig.CreateTrackedEntry(_category,
+                "EnableFpsVitalsHud",
+                true);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -87,6 +91,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnFloatingDamageDurationChanged(logger, value));
             ModConfig.EnableFloatingDetoxIndicators.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDetoxIndicators));
+            ModConfig.EnableFpsVitalsHud.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableFpsVitalsHud));
         }
 
         internal static void RegisterFloatEntries()

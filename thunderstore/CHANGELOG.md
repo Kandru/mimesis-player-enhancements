@@ -20,6 +20,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: maybe fix to allow clients with the mod installed to use noclip (unfortunately no host-only feature)
 - draft: possibility to unify ingame voices (no more difference between indoor/outdoor voices so chatter without area-specific sounds are played everywhere)
 - draft: improve ESC menu player list (show more players and add scroll bar)
+- draft: FPS-style (inspired by Counter-Strike) health/toxicity level display
 
 ## 26.7.7
 - improved the loot allow/deny list to be searchable

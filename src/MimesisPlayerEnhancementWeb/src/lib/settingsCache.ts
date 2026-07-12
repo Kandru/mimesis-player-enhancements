@@ -1,6 +1,6 @@
 import type { SettingsDto } from './types';
 
-const GLOBAL_SETTINGS_KEY = 'mpe.dashboard.globalSettings';
+const GLOBAL_SETTINGS_KEY = 'mpe.dashboard.globalSettings.v2';
 
 export function readCachedGlobalSettings(): SettingsDto | null {
   try {

@@ -75,6 +75,11 @@ namespace MimesisPlayerEnhancement.Ui
             SetAlignment(textComponent, TextAlignment.MiddleCenter);
         }
 
+        internal static void SetTopRightAlignment(Component? textComponent)
+        {
+            SetAlignmentByName(textComponent, "TopRight");
+        }
+
         private static void SetAlignment(Component? textComponent, TextAlignment alignment)
         {
             if (textComponent == null)
@@ -92,6 +97,33 @@ namespace MimesisPlayerEnhancement.Ui
 
             object value = Enum.ToObject(alignmentProperty.PropertyType, (int)alignment);
             alignmentProperty.SetValue(textComponent, value, null);
+        }
+
+        private static void SetAlignmentByName(Component? textComponent, string alignmentName)
+        {
+            if (textComponent == null)
+            {
+                return;
+            }
+
+            PropertyInfo? alignmentProperty = textComponent.GetType().GetProperty(
+                "alignment",
+                BindingFlags.Instance | BindingFlags.Public);
+            if (alignmentProperty == null || !alignmentProperty.PropertyType.IsEnum)
+            {
+                return;
+            }
+
+            try
+            {
+                object value = Enum.Parse(alignmentProperty.PropertyType, alignmentName);
+                alignmentProperty.SetValue(textComponent, value, null);
+            }
+            catch (ArgumentException)
+            {
+                // Fall back to top alignment when TopRight is unavailable.
+                SetAlignment(textComponent, TextAlignment.Top);
+            }
         }
 
         // TMP TextAlignmentOptions raw values.

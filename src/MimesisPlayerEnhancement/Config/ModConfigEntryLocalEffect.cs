@@ -25,6 +25,7 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "EnableFloatingDamageNumbers"),
                 (UiConfig.SectionId, "FloatingDamageDurationSeconds"),
                 (UiConfig.SectionId, "EnableFloatingDetoxIndicators"),
+                (UiConfig.SectionId, "EnableFpsVitalsHud"),
                 (PlayerTuningSectionId, "DisablePlayerCollision"),
             };
 
