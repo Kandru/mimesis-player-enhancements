@@ -4,31 +4,60 @@ using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {
+    /// <summary>
+    /// Screen-space FPS vitals on the Main UI layer, positioned from measured inventory coordinates.
+    /// </summary>
     internal static class FpsUiOverlay
     {
-        private const string ConsumerId = "FpsUi";
+        private const string Feature = "Ui";
+        private const string OverlayRootName = "MPE_FpsVitals";
         private const float LayoutGapPixels = 20f;
         private const float LabelWidthPixels = 112f;
         private const float HealthFontSize = 50f;
         private const float ToxicFontSize = 30f;
-        private const int LayoutRetryFrames = 90;
+        private const float HealthNudgeDownPixels = 4f;
+        private const float ToxicNudgeUpPixels = 4f;
 
-        private static readonly FieldInfo? InventoryUiField =
-            AccessTools.Field(typeof(GameMainBase), "inventoryui");
+        private static readonly PropertyInfo? CurrencyTextProperty =
+            AccessTools.Property(typeof(UIPrefab_InGame), "UE_Currency");
 
-        private static readonly PropertyInfo? StackCountTextProperty =
-            AccessTools.Property(typeof(UIPrefab_Inventory), "UE_stackCount1");
+        private static readonly PropertyInfo? KillCountTextProperty =
+            AccessTools.Property(typeof(UIPrefab_InGame), "UE_KillCount");
 
         private static UIPrefab_InGame? _ingameUi;
         private static SessionState _state = new();
-        private static RectTransform? _vitalsRoot;
-        private static RectTransform? _toxicBand;
-        private static RectTransform? _healthBand;
-        private static Component? _toxicLabel;
+        private static GameObject? _overlayRoot;
+        private static RectTransform? _healthRect;
+        private static RectTransform? _toxicRect;
         private static Component? _healthLabel;
-        private static int _layoutRetriesRemaining;
+        private static Component? _toxicLabel;
+        private static bool _loggedOverlayFailure;
 
         internal static bool IsEnabled() => ModConfig.EnableFpsUi.Value;
+
+        internal static void NotifyInventoryShown()
+        {
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            ResolveIngameUi();
+            Activate();
+            RefreshLayout();
+        }
+
+        internal static void ScheduleLayoutRetry() => RefreshLayout();
+
+        internal static void OnUpdate()
+        {
+            if (!IsEnabled() || !_state.Active)
+            {
+                return;
+            }
+
+            RefreshLayout();
+        }
 
         internal static void Attach(UIPrefab_InGame ingameUi)
         {
@@ -41,38 +70,73 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             Activate();
         }
 
-        internal static void ScheduleLayoutRetry() => _layoutRetriesRemaining = LayoutRetryFrames;
-
-        internal static void OnUpdate()
+        internal static void UpdateHealth(UIPrefab_InGame ingameUi, long curr, long maxHp, bool isDead)
         {
-            if (!IsEnabled() || _layoutRetriesRemaining <= 0)
+            _ingameUi = ingameUi;
+            _state.LastHp = curr;
+            _state.LastMaxHp = maxHp;
+            _state.LastIsDead = isDead;
+
+            if (!IsEnabled())
             {
                 return;
             }
 
-            _layoutRetriesRemaining--;
-            TryRefreshLayout();
-        }
-
-        internal static void UpdateHealth(UIPrefab_InGame ingameUi, long curr, long maxHp, bool isDead)
-        {
-            _state.LastHp = curr;
-            _state.LastMaxHp = maxHp;
-            _state.LastIsDead = isDead;
-            if (IsEnabled() && TryActivate(ingameUi))
+            if (!TryEnsureOverlay(ingameUi))
             {
-                ApplyValues();
+                return;
             }
+
+            if (!_state.Active)
+            {
+                HideVanillaVitals(ingameUi);
+                _state.Active = true;
+                RefreshLayout();
+                UpdateOverlayVisibility();
+            }
+
+            if (_healthLabel == null)
+            {
+                return;
+            }
+
+            long displayHp = isDead ? 0L : curr;
+            ModUiText.SetText(_healthLabel, displayHp.ToString());
+            ModUiText.SetColor(_healthLabel, ResolveHealthColor(curr, maxHp, isDead));
         }
 
         internal static void UpdateConta(UIPrefab_InGame ingameUi, long curr, long maxConta)
         {
+            _ingameUi = ingameUi;
             _state.LastConta = curr;
             _state.LastMaxConta = maxConta;
-            if (IsEnabled() && TryActivate(ingameUi))
+
+            if (!IsEnabled())
             {
-                ApplyValues();
+                return;
             }
+
+            if (!TryEnsureOverlay(ingameUi))
+            {
+                return;
+            }
+
+            if (!_state.Active)
+            {
+                HideVanillaVitals(ingameUi);
+                _state.Active = true;
+                RefreshLayout();
+                UpdateOverlayVisibility();
+            }
+
+            if (_toxicLabel == null)
+            {
+                return;
+            }
+
+            float percent = maxConta <= 0L ? 0f : (float)curr / maxConta * 100f;
+            ModUiText.SetText(_toxicLabel, $"{percent:F0}%");
+            ModUiText.SetColor(_toxicLabel, ResolveToxicColor(percent));
         }
 
         internal static void RefreshFromConfig()
@@ -83,9 +147,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            ResolveIngameUi();
             if (_ingameUi != null)
             {
-                Activate();
+                Attach(_ingameUi);
             }
 
             foreach (UIPrefab_InGame ingameUi in UnityEngine.Object.FindObjectsByType<UIPrefab_InGame>(FindObjectsSortMode.None))
@@ -102,41 +167,33 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
         }
 
-        private static bool TryActivate(UIPrefab_InGame ingameUi)
+        private static void ResolveIngameUi()
         {
-            _ingameUi = ingameUi;
-            if (_state.Active && _vitalsRoot != null)
-            {
-                return true;
-            }
-
-            Activate();
-            return _state.Active;
+            _ingameUi ??= FpsUiInventoryLayoutHelper.TryGetIngameUi();
         }
 
         private static void Activate()
         {
-            if (!IsEnabled() || _ingameUi == null)
+            if (!IsEnabled())
             {
                 return;
             }
 
-            InGameScreenOverlay.Register(ConsumerId);
-            HideVanillaVitals(_ingameUi);
-
-            if (!EnsureWidgets(_ingameUi))
+            ResolveIngameUi();
+            if (_ingameUi == null || !TryEnsureOverlay(_ingameUi))
             {
-                ScheduleLayoutRetry();
                 return;
             }
 
-            _state.Active = true;
-            ApplyValues();
-
-            if (!TryRefreshLayout())
+            if (!_state.Active)
             {
-                ScheduleLayoutRetry();
+                HideVanillaVitals(_ingameUi);
+                _state.Active = true;
             }
+
+            RefreshLayout();
+            ReplayCachedValues();
+            UpdateOverlayVisibility();
         }
 
         private static void Deactivate()
@@ -147,135 +204,143 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             _state.Active = false;
-            DestroyWidgets();
-            InGameScreenOverlay.Unregister(ConsumerId);
-            _layoutRetriesRemaining = 0;
+            DestroyOverlay();
         }
 
-        private static bool TryRefreshLayout()
+        internal static void RefreshLayout()
         {
-            if (_vitalsRoot == null || _toxicBand == null || _healthBand == null)
+            if (!IsEnabled() || _overlayRoot == null || _healthRect == null || _toxicRect == null)
             {
-                return false;
+                return;
             }
 
-            RectTransform? frame = TryGetInventoryFrame();
-            if (frame == null
-                || !InGameScreenOverlay.TryProjectBounds(frame, out float leftX, out float bottomY, out float topY))
+            if (!TryMeasureInventoryScreenPosition(out Vector2 leftLocal, out Vector2 topLocal, out Vector2 bottomLocal))
             {
-                return false;
+                return;
             }
 
-            float x = leftX - LayoutGapPixels;
-            float height = topY - bottomY;
+            float x = leftLocal.x - LayoutGapPixels;
 
-            _vitalsRoot.anchorMin = _vitalsRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            _vitalsRoot.pivot = new Vector2(1f, 0.5f);
-            _vitalsRoot.anchoredPosition = new Vector2(x, (topY + bottomY) * 0.5f);
-            _vitalsRoot.sizeDelta = new Vector2(LabelWidthPixels, height);
+            _toxicRect.anchorMin = new Vector2(0.5f, 0.5f);
+            _toxicRect.anchorMax = new Vector2(0.5f, 0.5f);
+            _toxicRect.pivot = new Vector2(1f, 1f);
+            _toxicRect.anchoredPosition = new Vector2(x, topLocal.y + ToxicNudgeUpPixels);
+            _toxicRect.sizeDelta = new Vector2(LabelWidthPixels, ToxicFontSize);
 
-            ModUiLayout.AnchorTopStrip(_toxicBand, ToxicFontSize);
-            ModUiLayout.AnchorBottomStrip(_healthBand, HealthFontSize);
-            _vitalsRoot.gameObject.SetActive(true);
-            return true;
+            _healthRect.anchorMin = new Vector2(0.5f, 0.5f);
+            _healthRect.anchorMax = new Vector2(0.5f, 0.5f);
+            _healthRect.pivot = new Vector2(1f, 0f);
+            _healthRect.anchoredPosition = new Vector2(x, bottomLocal.y - HealthNudgeDownPixels);
+            _healthRect.sizeDelta = new Vector2(LabelWidthPixels, HealthFontSize);
         }
 
-        private static bool EnsureWidgets(UIPrefab_InGame ingameUi)
+        private static bool TryEnsureOverlay(UIPrefab_InGame ingameUi)
         {
-            if (_vitalsRoot != null)
+            if (_overlayRoot != null && _healthRect != null && _toxicRect != null
+                && _healthLabel != null && _toxicLabel != null)
             {
                 return true;
             }
 
-            RectTransform? overlay = InGameScreenOverlay.EnsureRoot();
-            if (overlay == null)
+            Transform? main = ModUiRoot.GetMain();
+            if (main == null)
             {
+                LogOverlayFailureOnce("Main UI layer unavailable");
                 return false;
             }
 
             ModUiAssets assets = CaptureAssets(ingameUi);
-            _vitalsRoot = ModUiLayout.CreateChild("FpsVitals", overlay).GetComponent<RectTransform>();
-            _vitalsRoot.localScale = Vector3.one;
-            _vitalsRoot.gameObject.SetActive(false);
+            _overlayRoot = ModUiRoot.CreateUiRoot(main, OverlayRootName);
+            _overlayRoot.transform.SetAsLastSibling();
 
-            _toxicBand = CreateBand("Toxic", ToxicFontSize, alignTop: true, assets, "0%", out _toxicLabel);
-            _healthBand = CreateBand("Health", HealthFontSize, alignTop: false, assets, "100", out _healthLabel);
-            return _toxicLabel != null && _healthLabel != null;
+            GameObject healthGo = ModUiLayout.CreateChild("Health", _overlayRoot.transform);
+            _healthRect = healthGo.GetComponent<RectTransform>();
+            _healthRect.localScale = Vector3.one;
+            _healthLabel = ModUiFactory.AddText(healthGo, assets, "100", HealthFontSize, ModUiFontStyle.Bold);
+            ModUiText.SetBottomRightAlignment(_healthLabel);
+            ModUiText.ConfigureTextLayout(_healthLabel, wordWrap: false, ModUiText.OverflowOverflow);
+            StretchTextToParent(_healthLabel);
+
+            GameObject toxicGo = ModUiLayout.CreateChild("Toxic", _overlayRoot.transform);
+            _toxicRect = toxicGo.GetComponent<RectTransform>();
+            _toxicRect.localScale = Vector3.one;
+            _toxicLabel = ModUiFactory.AddText(toxicGo, assets, "0%", ToxicFontSize, ModUiFontStyle.Normal);
+            ModUiText.SetTopRightAlignment(_toxicLabel);
+            ModUiText.ConfigureTextLayout(_toxicLabel, wordWrap: false, ModUiText.OverflowOverflow);
+            StretchTextToParent(_toxicLabel);
+
+            _overlayRoot.SetActive(false);
+            return true;
         }
 
-        private static RectTransform CreateBand(
-            string name,
-            float bandHeight,
-            bool alignTop,
-            ModUiAssets assets,
-            string initialText,
-            out Component? label)
+        private static void DestroyOverlay()
         {
-            RectTransform band = ModUiLayout.CreateChild(name, _vitalsRoot!).GetComponent<RectTransform>();
-            band.localScale = Vector3.one;
-            label = ModUiFactory.AddText(
-                band.gameObject,
-                assets,
-                initialText,
-                bandHeight,
-                alignTop ? ModUiFontStyle.Normal : ModUiFontStyle.Bold);
-            ModUiText.ConfigureHudLabel(label, alignTop);
-            return band;
-        }
-
-        private static void DestroyWidgets()
-        {
-            if (_vitalsRoot != null)
+            if (_overlayRoot != null)
             {
-                UnityEngine.Object.Destroy(_vitalsRoot.gameObject);
+                UnityEngine.Object.Destroy(_overlayRoot);
             }
 
-            _vitalsRoot = null;
-            _toxicBand = null;
-            _healthBand = null;
-            _toxicLabel = null;
+            _overlayRoot = null;
+            _healthRect = null;
+            _toxicRect = null;
             _healthLabel = null;
+            _toxicLabel = null;
         }
 
-        private static void ApplyValues()
+        private static void UpdateOverlayVisibility()
         {
-            if (_healthLabel != null)
+            if (_overlayRoot != null)
             {
-                long displayHp = _state.LastIsDead ? 0L : _state.LastHp;
-                ModUiText.SetText(_healthLabel, displayHp.ToString());
-                ModUiText.SetColor(_healthLabel, ResolveHealthColor(_state.LastHp, _state.LastMaxHp, _state.LastIsDead));
+                _overlayRoot.SetActive(IsEnabled() && _state.Active);
+            }
+        }
+
+        private static bool TryMeasureInventoryScreenPosition(
+            out Vector2 leftLocal,
+            out Vector2 topLocal,
+            out Vector2 bottomLocal)
+        {
+            leftLocal = Vector2.zero;
+            topLocal = Vector2.zero;
+            bottomLocal = Vector2.zero;
+
+            if (_overlayRoot == null)
+            {
+                return false;
             }
 
-            if (_toxicLabel != null)
+            RectTransform? anchorRect = FpsUiInventoryLayoutHelper.TryGetInventoryFrame();
+            if (anchorRect == null)
             {
-                float percent = _state.LastMaxConta <= 0L ? 0f : (float)_state.LastConta / _state.LastMaxConta * 100f;
-                ModUiText.SetText(_toxicLabel, $"{percent:F0}%");
-                ModUiText.SetColor(_toxicLabel, ResolveToxicColor(percent));
+                return false;
             }
+
+            Vector3[] corners = new Vector3[4];
+            anchorRect.GetWorldCorners(corners);
+
+            RectTransform overlayRect = _overlayRoot.GetComponent<RectTransform>();
+            bottomLocal = overlayRect.InverseTransformPoint(corners[0]);
+            topLocal = overlayRect.InverseTransformPoint(corners[1]);
+            leftLocal = bottomLocal;
+            return true;
+        }
+
+        private static void ReplayCachedValues()
+        {
+            if (_ingameUi == null)
+            {
+                return;
+            }
+
+            UpdateHealth(_ingameUi, _state.LastHp, _state.LastMaxHp, _state.LastIsDead || _ingameUi.isDead);
+            UpdateConta(_ingameUi, _state.LastConta, _state.LastMaxConta);
         }
 
         private static ModUiAssets CaptureAssets(UIPrefab_InGame ingameUi)
         {
-            UIPrefab_Inventory? inventoryUi = TryGetInventoryUi();
-            Component? template = StackCountTextProperty?.GetValue(inventoryUi) as Component;
+            Component? template = CurrencyTextProperty?.GetValue(ingameUi) as Component
+                ?? KillCountTextProperty?.GetValue(ingameUi) as Component;
             return ModUiAssets.FromTextSource(template?.gameObject ?? ingameUi.gameObject);
-        }
-
-        private static RectTransform? TryGetInventoryFrame()
-        {
-            UIPrefab_Inventory? inventoryUi = TryGetInventoryUi();
-            return inventoryUi?.UE_InvenFrame1?.rectTransform
-                ?? inventoryUi?.transform as RectTransform;
-        }
-
-        private static UIPrefab_Inventory? TryGetInventoryUi()
-        {
-            if (Hub.Main == null || InventoryUiField == null)
-            {
-                return null;
-            }
-
-            return InventoryUiField.GetValue(Hub.Main) as UIPrefab_Inventory;
         }
 
         private static void HideVanillaVitals(UIPrefab_InGame ingameUi)
@@ -302,6 +367,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             if (_state.LastMaxConta > 0L)
             {
                 ingameUi.OnContaChanged(_state.LastConta, _state.LastMaxConta);
+            }
+        }
+
+        private static void LogOverlayFailureOnce(string reason)
+        {
+            if (_loggedOverlayFailure)
+            {
+                return;
+            }
+
+            _loggedOverlayFailure = true;
+            ModLog.Warn(Feature, $"FPS UI overlay unavailable — {reason}");
+        }
+
+        private static void StretchTextToParent(Component? textComponent)
+        {
+            if (textComponent?.transform is RectTransform textRect)
+            {
+                ModUiLayout.Stretch(textRect);
             }
         }
 

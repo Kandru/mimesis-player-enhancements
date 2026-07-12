@@ -30,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
             try
             {
                 FpsUiOverlay.Attach(__instance);
-                FpsUiOverlay.ScheduleLayoutRetry();
+                FpsUiOverlay.RefreshLayout();
             }
             catch (Exception ex)
             {

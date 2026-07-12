@@ -45,6 +45,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ("Show/UIPrefab_Inventory (FPS UI layout)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))),
                 ("UpdateSlot/UIPrefab_Inventory (FPS UI layout)", AccessTools.Method(typeof(UIPrefab_Inventory), nameof(UIPrefab_Inventory.UpdateSlot))),
                 ("InitCommonUIValue/GameMainBase (FPS UI)", AccessTools.Method(typeof(GameMainBase), "InitCommonUIValue")),
+                ("OnPlayerSpawn/GameMainBase (FPS UI)", AccessTools.Method(typeof(GameMainBase), nameof(GameMainBase.OnPlayerSpawn))),
+                ("UpdateInventoryUI/GameMainBase (FPS UI net worth)", AccessTools.Method(typeof(GameMainBase), nameof(GameMainBase.UpdateInventoryUI))),
             ]);
         }
     }
@@ -59,12 +61,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             WorldOverlayGate.RefreshCache();
             WorldOverlayRuntime.RefreshFromConfig();
             FpsUiOverlay.RefreshFromConfig();
+            FpsUiNetWorthOverlay.RefreshFromConfig();
         }
 
         internal static void OnUpdate()
         {
             WorldOverlayRuntime.OnUpdate();
             FpsUiOverlay.OnUpdate();
+            FpsUiNetWorthOverlay.OnUpdate();
         }
     }
 }

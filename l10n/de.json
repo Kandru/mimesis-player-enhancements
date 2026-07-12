@@ -64,6 +64,10 @@
       "EnableFpsUi": {
         "title": "FPS-UI aktivieren",
         "description": "Ersetzt die Lebensbalken- und Conta-Anzeige oben links durch eine Counter-Strike-artige numerische Lebensanzeige und Toxizitätsprozent, links neben dem Inventar-Hotbar. Der Vollbild-Conta-Effekt bleibt unverändert."
+      },
+      "EnableFpsUiInventoryNetWorth": {
+        "title": "Inventar-Nettowert anzeigen",
+        "description": "Zeigt den Gesamt-Verkaufswert aller Gegenstände im Inventar oberhalb der Hotbar an, im Stil der Gewichtsanzeige darunter. Unabhängig vom FPS-Vital-HUD."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {

@@ -90,6 +90,7 @@ Mod-wide settings that are not owned by a single feature.
 | `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage and detox indicators remain visible. |
 | `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. |
 | `EnableFpsUi` | bool | `true` | — | Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged. |
+| `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 
@@ -477,6 +478,7 @@ EnableFloatingDamageNumbers = true
 FloatingDamageDurationSeconds = 2.0
 EnableFloatingDetoxIndicators = true
 EnableFpsUi = true
+EnableFpsUiInventoryNetWorth = true
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false

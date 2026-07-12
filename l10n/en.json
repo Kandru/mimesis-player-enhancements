@@ -64,6 +64,10 @@
       "EnableFpsUi": {
         "title": "Enable FPS UI",
         "description": "Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged."
+      },
+      "EnableFpsUiInventoryNetWorth": {
+        "title": "Enable Inventory Net Worth",
+        "description": "Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD."
       }
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {

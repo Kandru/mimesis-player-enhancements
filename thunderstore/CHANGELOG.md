@@ -21,6 +21,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: possibility to unify ingame voices (no more difference between indoor/outdoor voices so chatter without area-specific sounds are played everywhere)
 - draft: improve ESC menu player list (show more players and add scroll bar)
 - draft: FPS-style (inspired by Counter-Strike) health/toxicity level display
+- draft: show net-worth of the items a player is carrying
 - draft: first idea of a built-in wiki (for both via Github and via the webinterface)
 
 ## 26.7.7

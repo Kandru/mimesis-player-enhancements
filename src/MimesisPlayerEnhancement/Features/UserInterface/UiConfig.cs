@@ -59,6 +59,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableFpsUi = ModConfig.CreateTrackedEntry(_category,
                 "EnableFpsUi",
                 true);
+
+            ModConfig.EnableFpsUiInventoryNetWorth = ModConfig.CreateTrackedEntry(_category,
+                "EnableFpsUiInventoryNetWorth",
+                true);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -93,6 +97,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDetoxIndicators));
             ModConfig.EnableFpsUi.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUi));
+            ModConfig.EnableFpsUiInventoryNetWorth.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableFpsUiInventoryNetWorth));
         }
 
         internal static void RegisterFloatEntries()

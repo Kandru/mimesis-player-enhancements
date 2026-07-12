@@ -1,4 +1,5 @@
 using System.Reflection;
+using Mimic;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
@@ -13,14 +14,23 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefabScript __instance)
         {
-            if (__instance is not UIPrefab_Inventory || !FpsUiOverlay.IsEnabled())
+            if (__instance is not UIPrefab_Inventory)
             {
                 return;
             }
 
             try
             {
-                FpsUiOverlay.ScheduleLayoutRetry();
+                if (FpsUiOverlay.IsEnabled())
+                {
+                    FpsUiOverlay.NotifyInventoryShown();
+                    FpsUiOverlay.RefreshLayout();
+                }
+
+                if (FpsUiNetWorthOverlay.IsEnabled())
+                {
+                    FpsUiNetWorthOverlay.NotifyInventoryShown();
+                }
             }
             catch (Exception ex)
             {
@@ -35,16 +45,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         private const string Feature = "Ui";
 
         [HarmonyPostfix]
-        private static void Postfix()
+        private static void Postfix(in List<InventoryItem?> inventoryItems)
         {
-            if (!FpsUiOverlay.IsEnabled())
-            {
-                return;
-            }
-
             try
             {
-                FpsUiOverlay.ScheduleLayoutRetry();
+                if (FpsUiOverlay.IsEnabled())
+                {
+                    FpsUiOverlay.NotifyInventoryShown();
+                    FpsUiOverlay.RefreshLayout();
+                }
+
+                if (FpsUiNetWorthOverlay.IsEnabled())
+                {
+                    FpsUiNetWorthOverlay.UpdateValue(inventoryItems);
+                }
             }
             catch (Exception ex)
             {

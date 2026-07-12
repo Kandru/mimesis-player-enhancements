@@ -240,6 +240,7 @@ namespace MimesisPlayerEnhancement
                     ["FloatingDamageDurationSeconds"] = "floatingDamage",
                     ["EnableFloatingDetoxIndicators"] = "floatingDetox",
                     ["EnableFpsUi"] = "fpsUi",
+                    ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
                 };
             }
 
