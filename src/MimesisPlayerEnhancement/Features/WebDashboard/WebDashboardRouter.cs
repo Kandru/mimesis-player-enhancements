@@ -226,6 +226,39 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/settings/global/reset" && method == "POST")
+            {
+                WebDashboardConfigResetRequest? globalResetRequest = ModJson.Deserialize<WebDashboardConfigResetRequest>(ReadRequestBody(context.Request));
+                if (globalResetRequest == null || string.IsNullOrWhiteSpace(globalResetRequest.SectionId))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(globalResetRequest.Key))
+                {
+                    if (!WebDashboardGameState.CanEditGlobalSetting(globalResetRequest.SectionId, globalResetRequest.Key))
+                    {
+                        WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                        return;
+                    }
+                }
+                else if (!WebDashboardGameState.CanEditGlobalSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardConfigUpdateResult globalResetResult = WebDashboardConfigUpdateQueue.EnqueueAndWaitReset(
+                    WebDashboardConfigScope.Global,
+                    saveSlotId: -1,
+                    globalResetRequest.SectionId,
+                    string.IsNullOrWhiteSpace(globalResetRequest.Key) ? null : globalResetRequest.Key);
+
+                WriteJson(context, globalResetResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(globalResetResult));
+                return;
+            }
+
             if (path == "/api/settings/save" && method == "GET")
             {
                 if (!WebDashboardGameState.CanEditSaveSettings())
@@ -277,6 +310,31 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     saveRequest.Value ?? "");
 
                 WriteJson(context, saveResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(saveResult));
+                return;
+            }
+
+            if (path == "/api/settings/save/reset" && method == "POST")
+            {
+                if (!WebDashboardGameState.CanEditSaveSettings())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardConfigResetRequest? saveResetRequest = ModJson.Deserialize<WebDashboardConfigResetRequest>(ReadRequestBody(context.Request));
+                if (saveResetRequest == null || string.IsNullOrWhiteSpace(saveResetRequest.SectionId))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                WebDashboardConfigUpdateResult saveResetResult = WebDashboardConfigUpdateQueue.EnqueueAndWaitReset(
+                    WebDashboardConfigScope.Save,
+                    WebDashboardGameState.GetSaveSlotId(),
+                    saveResetRequest.SectionId,
+                    string.IsNullOrWhiteSpace(saveResetRequest.Key) ? null : saveResetRequest.Key);
+
+                WriteJson(context, saveResetResult.Success ? 200 : 400, WebDashboardJson.SerializeConfigUpdateResult(saveResetResult));
                 return;
             }
 

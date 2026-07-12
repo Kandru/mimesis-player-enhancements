@@ -88,6 +88,34 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        internal static WebDashboardConfigUpdateResult EnqueueAndWaitReset(
+            WebDashboardConfigScope scope,
+            int saveSlotId,
+            string sectionId,
+            string? key)
+        {
+            try
+            {
+                return EnqueueAndWait(() => WebDashboardConfigBridge.ApplyReset(scope, saveSlotId, sectionId, key));
+            }
+            catch (TimeoutException ex)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = ex.Message,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = ex.Message,
+                };
+            }
+        }
+
         internal static void Process()
         {
             if (IsProcessing)

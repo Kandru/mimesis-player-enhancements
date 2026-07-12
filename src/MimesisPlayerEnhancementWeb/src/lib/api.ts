@@ -38,6 +38,14 @@ const Api = {
     });
   },
 
+  resetGlobalSetting(sectionId: string, key?: string) {
+    return Api.fetchJson<{ resetCount?: number; message?: string }>('/api/settings/global/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sectionId, key: key ?? '' }),
+    });
+  },
+
   getSaveSettings() {
     return Api.fetchJson<import('./types').SettingsDto>('/api/settings/save');
   },
@@ -47,6 +55,14 @@ const Api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sectionId, key, value }),
+    });
+  },
+
+  resetSaveSetting(sectionId: string, key?: string) {
+    return Api.fetchJson<{ resetCount?: number; message?: string }>('/api/settings/save/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sectionId, key: key ?? '' }),
     });
   },
 

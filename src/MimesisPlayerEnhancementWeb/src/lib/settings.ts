@@ -108,9 +108,33 @@ export function sectionHasVisibleEntries(
   });
 }
 
-export function guestSectionVisible(section: ConfigSectionDto) {
-  if (section.featureToggle?.hasLocalEffect) return true;
-  return section.entries.some((e) => e.hasLocalEffect);
+export function entryIsModified(entry: ConfigEntryDto, scope: 'global' | 'save') {
+  return scope === 'save' ? entry.isOverridden : settingDiffersFromDefault(entry);
+}
+
+export function sectionResettableEntries(
+  section: ConfigSectionDto,
+  settings: SettingsDto | null,
+  scope: 'global' | 'save',
+  query: string,
+  isHost: boolean,
+  isConnected: boolean,
+) {
+  const entries: ConfigEntryDto[] = [];
+  const candidates = [
+    ...(section.featureToggle ? [section.featureToggle] : []),
+    ...section.entries.filter(
+      (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query),
+    ),
+  ];
+
+  for (const entry of candidates) {
+    if (!entryIsModified(entry, scope)) continue;
+    if (!entryEditable(section, entry, settings, scope, isHost, isConnected)) continue;
+    entries.push(entry);
+  }
+
+  return entries;
 }
 
 export function canEditEntry(
@@ -129,11 +153,11 @@ export function normalizeBoolInput(value: string) {
 }
 
 export function formatDefaultHint(entry: ConfigEntryDto) {
-  return `Default: ${entry.defaultValue}`;
+  return t('dashboard.settings_default_hint', { value: entry.defaultValue });
 }
 
 export function formatGlobalHint(entry: ConfigEntryDto) {
-  return `Global: ${entry.globalValue}`;
+  return t('dashboard.settings_global_hint', { value: entry.globalValue });
 }
 
 export function settingDiffersFromDefault(entry: ConfigEntryDto) {

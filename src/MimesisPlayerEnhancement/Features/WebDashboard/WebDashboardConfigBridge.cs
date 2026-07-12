@@ -139,12 +139,135 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     ReconcileActiveSaveOverride(activeSlotId, sectionId, key, effectiveValue, out error);
                 }
 
+                WebDashboardSettingsCache.Invalidate();
                 return BuildUpdateResult(sectionId, key, effectiveValue, L("saved_global"));
             }
             finally
             {
                 ModConfigChangeTracker.EndBatch();
             }
+        }
+
+        internal static WebDashboardConfigUpdateResult ApplyReset(
+            WebDashboardConfigScope scope,
+            int slotId,
+            string sectionId,
+            string? key)
+        {
+            if (!ModConfig.IsInitialized)
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = L("config_not_initialized"),
+                };
+            }
+
+            if (ModConfigRegistry.IsWebDashboardSection(sectionId))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = scope == WebDashboardConfigScope.Save
+                        ? L("web_dashboard_no_save_override")
+                        : L("web_dashboard_readonly"),
+                };
+            }
+
+            if (!TryCollectResetKeys(scope, slotId, sectionId, key, out List<string> keys, out string? collectError))
+            {
+                return new WebDashboardConfigUpdateResult
+                {
+                    Success = false,
+                    Message = collectError ?? L("invalid_value"),
+                    SectionId = sectionId,
+                    Key = key ?? "",
+                };
+            }
+
+            if (scope == WebDashboardConfigScope.Save && MimesisSaveManager.IsValidSaveSlotId(slotId))
+            {
+                SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
+            }
+
+            int resetCount = 0;
+            string? lastError = null;
+
+            ModConfigChangeTracker.BeginBatch();
+            try
+            {
+                foreach (string entryKey in keys)
+                {
+                    if (scope == WebDashboardConfigScope.Global)
+                    {
+                        if (!WebDashboardGameState.CanEditGlobalSetting(sectionId, entryKey))
+                        {
+                            continue;
+                        }
+
+                        if (!TryResetGlobalKey(sectionId, entryKey, out lastError))
+                        {
+                            if (!string.IsNullOrEmpty(lastError))
+                            {
+                                return new WebDashboardConfigUpdateResult
+                                {
+                                    Success = false,
+                                    Message = lastError,
+                                    SectionId = sectionId,
+                                    Key = entryKey,
+                                };
+                            }
+
+                            continue;
+                        }
+
+                        resetCount++;
+                        continue;
+                    }
+
+                    if (!TryResetSaveKey(slotId, sectionId, entryKey, out lastError))
+                    {
+                        if (!string.IsNullOrEmpty(lastError))
+                        {
+                            return new WebDashboardConfigUpdateResult
+                            {
+                                Success = false,
+                                Message = lastError,
+                                SectionId = sectionId,
+                                Key = entryKey,
+                            };
+                        }
+
+                        continue;
+                    }
+
+                    resetCount++;
+                }
+
+                if (scope == WebDashboardConfigScope.Save && resetCount > 0)
+                {
+                    SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
+                }
+            }
+            finally
+            {
+                ModConfigChangeTracker.EndBatch();
+            }
+
+            if (scope == WebDashboardConfigScope.Global && resetCount > 0)
+            {
+                WebDashboardSettingsCache.Invalidate();
+            }
+
+            return new WebDashboardConfigUpdateResult
+            {
+                Success = true,
+                Message = scope == WebDashboardConfigScope.Save ? L("reset_global") : L("reset_defaults"),
+                ConfigVersion = ModConfig.Version,
+                SectionId = sectionId,
+                Key = key ?? "",
+                ResetCount = resetCount,
+            };
         }
 
         internal static WebDashboardConfigUpdateResult ApplySaveUpdate(int slotId, string sectionId, string key, string value)
@@ -357,6 +480,136 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             return sections;
+        }
+
+        private static bool TryCollectResetKeys(
+            WebDashboardConfigScope scope,
+            int slotId,
+            string sectionId,
+            string? key,
+            out List<string> keys,
+            out string? error)
+        {
+            keys = [];
+            error = null;
+
+            if (!ModConfigRegistry.TryGetSectionTitle(sectionId, out _))
+            {
+                error = L("unknown_setting");
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? singleEntry) || singleEntry == null)
+                {
+                    error = L("unknown_setting");
+                    return false;
+                }
+
+                if (scope == WebDashboardConfigScope.Save && !ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key))
+                {
+                    error = L("save_override_not_allowed");
+                    return false;
+                }
+
+                keys.Add(key);
+                return true;
+            }
+
+            foreach (string entryKey in ModConfigRegistry.GetEntryOrder(sectionId))
+            {
+                if (!ModConfigRegistry.TryGetEntry(sectionId, entryKey, out MelonPreferences_Entry? entry) || entry == null)
+                {
+                    continue;
+                }
+
+                if (scope == WebDashboardConfigScope.Save && !ModConfigRegistry.IsSaveOverrideAllowed(sectionId, entryKey))
+                {
+                    continue;
+                }
+
+                if (scope == WebDashboardConfigScope.Save)
+                {
+                    if (!SaveSlotConfigStore.IsOverridden(slotId, sectionId, entryKey))
+                    {
+                        continue;
+                    }
+                }
+
+                keys.Add(entryKey);
+            }
+
+            return true;
+        }
+
+        private static bool TryResetGlobalKey(string sectionId, string key, out string? error)
+        {
+            error = null;
+
+            if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+            {
+                error = L("unknown_setting");
+                return false;
+            }
+
+            string defaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry);
+            string currentValue = ModConfigRegistry.FormatEntryValue(entry);
+            if (ModConfigRegistry.RawValuesEqual(sectionId, key, currentValue, defaultValue))
+            {
+                return false;
+            }
+
+            if (!ModConfigRegistry.TryNormalizeRawValue(sectionId, key, defaultValue, out string normalized, out error))
+            {
+                return false;
+            }
+
+            if (!ModConfigRegistry.TryApplyNormalizedEntry(sectionId, key, normalized, out string effectiveValue, out error))
+            {
+                return false;
+            }
+
+            if (!GlobalConfigStore.TryWriteValue(sectionId, key, effectiveValue, out error, waitForCompletion: false))
+            {
+                return false;
+            }
+
+            int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
+            if (activeSlotId < 0 && MimesisSaveManager.TryGetActiveSaveSlotId(out int resolvedSlotId))
+            {
+                activeSlotId = resolvedSlotId;
+            }
+
+            if (activeSlotId >= 0)
+            {
+                ReconcileActiveSaveOverride(activeSlotId, sectionId, key, effectiveValue, out error);
+            }
+
+            return true;
+        }
+
+        private static bool TryResetSaveKey(int slotId, string sectionId, string key, out string? error)
+        {
+            error = null;
+
+            if (!SaveSlotConfigStore.IsOverridden(slotId, sectionId, key))
+            {
+                return false;
+            }
+
+            if (!ModConfigRegistry.TryGetGlobalRawValue(sectionId, key, out string globalRaw))
+            {
+                error = L("unknown_setting");
+                return false;
+            }
+
+            if (!SaveSlotConfigStore.TrySetOverride(slotId, sectionId, key, globalRaw, out error, waitForCompletion: false))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

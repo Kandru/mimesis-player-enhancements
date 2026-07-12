@@ -322,6 +322,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Value = "";
     }
 
+    internal sealed class WebDashboardConfigResetRequest
+    {
+        public string SectionId = "";
+        public string Key = "";
+    }
+
     internal sealed class WebDashboardConfigUpdateResult
     {
         public bool Success;
@@ -332,6 +338,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Value = "";
         public string Type = "";
         public bool IsOverridden;
+        public int ResetCount;
     }
 
     internal sealed class WebDashboardItemOptionDto

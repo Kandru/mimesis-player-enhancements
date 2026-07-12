@@ -8,11 +8,10 @@
   import {
     canEditEntry,
     entryEditable,
-    entryVisible,
     featureEnabled,
     groupConfigEntries,
-    matchesSettingsQuery,
     sectionHasVisibleEntries,
+    sectionResettableEntries,
   } from '$lib/settings';
 
   let {
@@ -46,6 +45,22 @@
     return groupConfigEntries(activeSection, settings, query);
   });
 
+  const activeSectionResettable = $derived.by(() => {
+    if (!activeSection || !settings) return [];
+    return sectionResettableEntries(
+      activeSection,
+      settings,
+      scope,
+      query,
+      dashboard.status.isHost,
+      dashboard.status.isConnected,
+    );
+  });
+
+  const sectionResetSaving = $derived(
+    activeSection != null && dashboard.savingSettingKey === `${activeSection.id}/*`,
+  );
+
   $effect(() => {
     if (!sections.length) {
       dashboard.selectedSettingsSectionId = '';
@@ -60,17 +75,42 @@
     dashboard.selectedSettingsSectionId = section.id;
   }
 
+  async function reloadSettings() {
+    if (scope === 'global') await dashboard.loadGlobalSettings(false, true);
+    else {
+      await dashboard.loadSaveSettings(false, true);
+      await dashboard.loadSaveProfileData(true);
+    }
+  }
+
   async function saveEntry(sectionId: string, key: string, value: string) {
     dashboard.savingSettingKey = `${sectionId}/${key}`;
     try {
       const api = scope === 'global' ? Api.updateGlobalSetting : Api.updateSaveSetting;
       const result = await api(sectionId, key, value);
       dashboard.showToast((result as { message?: string }).message || t('api.done'));
-      if (scope === 'global') await dashboard.loadGlobalSettings(false, true);
-      else {
-        await dashboard.loadSaveSettings(false, true);
-        await dashboard.loadSaveProfileData(true);
-      }
+      await reloadSettings();
+    } catch (e) {
+      dashboard.showToast(e instanceof Error ? e.message : String(e));
+    } finally {
+      dashboard.savingSettingKey = '';
+    }
+  }
+
+  async function resetSetting(sectionId: string, key?: string) {
+    dashboard.savingSettingKey = key ? `${sectionId}/${key}` : `${sectionId}/*`;
+    try {
+      const api = scope === 'global' ? Api.resetGlobalSetting : Api.resetSaveSetting;
+      const result = await api(sectionId, key);
+      const count = result.resetCount ?? 0;
+      const target =
+        scope === 'global' ? t('dashboard.reset_target_defaults') : t('dashboard.reset_target_global');
+      dashboard.showToast(
+        count > 0
+          ? t('dashboard.reset_settings_toast', { count: String(count), target })
+          : result.message || t('api.done'),
+      );
+      await reloadSettings();
     } catch (e) {
       dashboard.showToast(e instanceof Error ? e.message : String(e));
     } finally {
@@ -146,25 +186,23 @@
       {#if activeSection}
         <div class="settings-content">
           <section class="settings-section-card">
-            <h3 class="settings-section-title">{activeSection.title}</h3>
-            <div class="settings-entries">
-              {#if activeSection.featureToggle && matchesSettingsQuery(activeSection.featureToggle, activeSection.title, query)}
-                <SettingsEntry
-                  entry={activeSection.featureToggle}
-                  section={activeSection}
-                  {settings}
-                  {scope}
-                  editable={entryEditable(
-                    activeSection,
-                    activeSection.featureToggle,
-                    settings,
-                    scope,
-                    dashboard.status.isHost,
-                    dashboard.status.isConnected,
-                  )}
-                  onsave={(value) => saveEntry(activeSection.id, activeSection.featureToggle!.key, value)}
-                />
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">{activeSection.title}</h3>
+              {#if activeSectionResettable.length > 0}
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-xs"
+                  disabled={sectionResetSaving}
+                  title={scope === 'save'
+                    ? t('dashboard.settings_reset_all_global_title')
+                    : t('dashboard.settings_reset_all_defaults_title')}
+                  onclick={() => resetSetting(activeSection.id)}
+                >
+                  {t('dashboard.settings_reset_all')}
+                </button>
               {/if}
+            </div>
+            <div class="settings-entries">
               {#each activeEntryGroups as group (group.id || group.entries[0]?.key)}
                 <div class="settings-entry-group">
                   {#if group.label}
@@ -176,6 +214,7 @@
                       section={activeSection}
                       {settings}
                       {scope}
+                      savingKey={dashboard.savingSettingKey}
                       editable={entryEditable(
                         activeSection,
                         entry,
@@ -185,6 +224,7 @@
                         dashboard.status.isConnected,
                       )}
                       onsave={(value) => saveEntry(activeSection.id, entry.key, value)}
+                      onreset={() => resetSetting(activeSection.id, entry.key)}
                     />
                   {/each}
                 </div>
