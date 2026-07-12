@@ -112,7 +112,7 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: MimicTuningRuntime.RefreshFromConfig),
             new FeatureModule("Ui", UiPatches.Apply,
                 syncFromConfig: UiRuntime.RefreshFromConfig,
-                onUpdate: WorldOverlayRuntime.OnUpdate),
+                onUpdate: UiRuntime.OnUpdate),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),

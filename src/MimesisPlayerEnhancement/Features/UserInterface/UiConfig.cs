@@ -56,8 +56,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "EnableFloatingDetoxIndicators",
                 true);
 
-            ModConfig.EnableFpsVitalsHud = ModConfig.CreateTrackedEntry(_category,
-                "EnableFpsVitalsHud",
+            ModConfig.EnableFpsUi = ModConfig.CreateTrackedEntry(_category,
+                "EnableFpsUi",
                 true);
         }
 
@@ -91,8 +91,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnFloatingDamageDurationChanged(logger, value));
             ModConfig.EnableFloatingDetoxIndicators.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDetoxIndicators));
-            ModConfig.EnableFpsVitalsHud.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableFpsVitalsHud));
+            ModConfig.EnableFpsUi.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableFpsUi));
         }
 
         internal static void RegisterFloatEntries()

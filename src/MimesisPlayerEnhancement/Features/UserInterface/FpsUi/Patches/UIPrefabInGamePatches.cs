@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
+namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
     [HarmonyPatch(typeof(UIPrefab_InGame), "Start")]
     internal static class InGameStartPostfix
@@ -10,11 +10,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         {
             try
             {
-                FpsVitalsHudOverlay.Attach(__instance);
+                FpsUiOverlay.Attach(__instance);
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD init failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI init failed — {ex.Message}");
             }
         }
     }
@@ -29,12 +29,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         {
             try
             {
-                FpsVitalsHudOverlay.Attach(__instance);
-                FpsVitalsHudOverlay.RefreshLayout();
+                FpsUiOverlay.Attach(__instance);
+                FpsUiOverlay.ScheduleLayoutRetry();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD show failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI show failed — {ex.Message}");
             }
         }
     }
@@ -47,20 +47,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPrefix]
         private static bool Prefix(UIPrefab_InGame __instance, long curr, long maxHP)
         {
-            if (!FpsVitalsHudOverlay.IsEnabled())
+            if (!FpsUiOverlay.IsEnabled())
             {
                 return true;
             }
 
             try
             {
-                FpsVitalsHudOverlay.Attach(__instance);
-                FpsVitalsHudOverlay.UpdateHealth(__instance, curr, maxHP, __instance.isDead);
+                FpsUiOverlay.UpdateHealth(__instance, curr, maxHP, __instance.isDead);
                 return false;
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD HP update failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI HP update failed — {ex.Message}");
                 return true;
             }
         }
@@ -74,19 +73,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_InGame __instance, long curr, long maxContaVal)
         {
-            if (!FpsVitalsHudOverlay.IsEnabled())
+            if (!FpsUiOverlay.IsEnabled())
             {
                 return;
             }
 
             try
             {
-                FpsVitalsHudOverlay.Attach(__instance);
-                FpsVitalsHudOverlay.UpdateConta(__instance, curr, maxContaVal);
+                FpsUiOverlay.UpdateConta(__instance, curr, maxContaVal);
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD conta update failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI conta update failed — {ex.Message}");
             }
         }
     }
@@ -99,18 +97,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_InGame __instance, bool visible)
         {
-            if (!visible || !FpsVitalsHudOverlay.IsEnabled())
+            if (!visible || !FpsUiOverlay.IsEnabled())
             {
                 return;
             }
 
             try
             {
-                FpsVitalsHudOverlay.ForceHideOxyGauge(__instance);
+                FpsUiOverlay.ForceHideOxyGauge(__instance);
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD oxy gauge hide failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI oxy gauge hide failed — {ex.Message}");
             }
         }
     }

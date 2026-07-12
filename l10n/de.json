@@ -23,7 +23,7 @@
         "worldHealthBars": "Welt-Lebensbalken",
         "floatingDamage": "Schwebende Schadenszahlen",
         "floatingDetox": "Schwebende Detox-Indikatoren",
-        "fpsVitalsHud": "FPS-Vitals-HUD"
+        "fpsUi": "FPS-UI"
       },
       "ModToastDurationSeconds": {
         "title": "Mod-Nachrichtendauer (Sekunden)",
@@ -61,8 +61,8 @@
         "title": "Schwebende Detox-Indikatoren aktivieren",
         "description": "Zeigt grüne schwebende Toxizitätsreduktion (z. B. -27%), wenn ein anderer Spieler Detox-Saft trinkt. Die Dauer wird unter Schwebende Schadenszahlen eingestellt."
       },
-      "EnableFpsVitalsHud": {
-        "title": "FPS-Vitals-HUD aktivieren",
+      "EnableFpsUi": {
+        "title": "FPS-UI aktivieren",
         "description": "Ersetzt die Lebensbalken- und Conta-Anzeige oben links durch eine Counter-Strike-artige numerische Lebensanzeige und Toxizitätsprozent, links neben dem Inventar-Hotbar. Der Vollbild-Conta-Effekt bleibt unverändert."
       }
     },

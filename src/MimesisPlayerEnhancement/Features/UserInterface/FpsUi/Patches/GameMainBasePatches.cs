@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
+namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
     [HarmonyPatch(typeof(GameMainBase), "InitCommonUIValue")]
     internal static class InitCommonUiValuePostfix
@@ -11,7 +11,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPostfix]
         private static void Postfix(GameMainBase __instance)
         {
-            if (!FpsVitalsHudOverlay.IsEnabled())
+            if (!FpsUiOverlay.IsEnabled())
             {
                 return;
             }
@@ -23,12 +23,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
                     return;
                 }
 
-                FpsVitalsHudOverlay.Attach(ingameUi);
-                FpsVitalsHudOverlay.RefreshLayout();
+                FpsUiOverlay.Attach(ingameUi);
+                FpsUiOverlay.ScheduleLayoutRetry();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD init values sync failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI init values sync failed — {ex.Message}");
             }
         }
     }

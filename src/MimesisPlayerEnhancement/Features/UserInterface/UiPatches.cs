@@ -17,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ModVersionDisplayPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(WorldOverlayPatches)))
-                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsVitalsHudPatches)));
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsUiPatches)));
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -37,14 +37,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ("Hide/UIPrefabScript (spectator list)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
                 ("Start/UIPrefab_InGameMenu (player list layout)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "Start")),
                 ("OnEnable/UIPrefab_InGameMenu (player list layout)", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
-                ("Start/UIPrefab_InGame (FPS vitals)", AccessTools.Method(typeof(UIPrefab_InGame), "Start")),
-                ("OnShow/UIPrefab_InGame (FPS vitals)", AccessTools.Method(typeof(UIPrefab_InGame), "OnShow")),
-                ("OnHpChanged/UIPrefab_InGame (FPS vitals)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnHpChanged))),
-                ("OnContaChanged/UIPrefab_InGame (FPS vitals)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnContaChanged))),
-                ("SetVisibleOxyGauge/UIPrefab_InGame (FPS vitals)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.SetVisibleOxyGauge))),
-                ("Show/UIPrefab_Inventory (FPS vitals layout)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))),
-                ("UpdateSlot/UIPrefab_Inventory (FPS vitals layout)", AccessTools.Method(typeof(UIPrefab_Inventory), nameof(UIPrefab_Inventory.UpdateSlot))),
-                ("InitCommonUIValue/GameMainBase (FPS vitals)", AccessTools.Method(typeof(GameMainBase), "InitCommonUIValue")),
+                ("Start/UIPrefab_InGame (FPS UI)", AccessTools.Method(typeof(UIPrefab_InGame), "Start")),
+                ("OnShow/UIPrefab_InGame (FPS UI)", AccessTools.Method(typeof(UIPrefab_InGame), "OnShow")),
+                ("OnHpChanged/UIPrefab_InGame (FPS UI)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnHpChanged))),
+                ("OnContaChanged/UIPrefab_InGame (FPS UI)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnContaChanged))),
+                ("SetVisibleOxyGauge/UIPrefab_InGame (FPS UI)", AccessTools.Method(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.SetVisibleOxyGauge))),
+                ("Show/UIPrefab_Inventory (FPS UI layout)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))),
+                ("UpdateSlot/UIPrefab_Inventory (FPS UI layout)", AccessTools.Method(typeof(UIPrefab_Inventory), nameof(UIPrefab_Inventory.UpdateSlot))),
+                ("InitCommonUIValue/GameMainBase (FPS UI)", AccessTools.Method(typeof(GameMainBase), "InitCommonUIValue")),
             ]);
         }
     }
@@ -58,7 +58,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ExtendedSaveSlotsRuntime.RefreshFromConfig();
             WorldOverlayGate.RefreshCache();
             WorldOverlayRuntime.RefreshFromConfig();
-            FpsVitalsHudOverlay.RefreshFromConfig();
+            FpsUiOverlay.RefreshFromConfig();
+        }
+
+        internal static void OnUpdate()
+        {
+            WorldOverlayRuntime.OnUpdate();
+            FpsUiOverlay.OnUpdate();
         }
     }
 }

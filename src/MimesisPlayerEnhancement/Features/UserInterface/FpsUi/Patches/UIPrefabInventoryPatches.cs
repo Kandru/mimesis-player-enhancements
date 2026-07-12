@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
+namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
     [HarmonyPatch]
     internal static class InventoryShowPostfix
@@ -13,23 +13,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefabScript __instance)
         {
-            if (__instance is not UIPrefab_Inventory)
-            {
-                return;
-            }
-
-            if (!FpsVitalsHudOverlay.IsEnabled())
+            if (__instance is not UIPrefab_Inventory || !FpsUiOverlay.IsEnabled())
             {
                 return;
             }
 
             try
             {
-                FpsVitalsHudOverlay.RefreshLayout();
+                FpsUiOverlay.ScheduleLayoutRetry();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD layout refresh failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI inventory show failed — {ex.Message}");
             }
         }
     }
@@ -42,18 +37,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsVitalsHud.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
-            if (!FpsVitalsHudOverlay.IsEnabled())
+            if (!FpsUiOverlay.IsEnabled())
             {
                 return;
             }
 
             try
             {
-                FpsVitalsHudOverlay.RefreshLayout();
+                FpsUiOverlay.ScheduleLayoutRetry();
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"FPS vitals HUD layout refresh failed — {ex.Message}");
+                ModLog.Warn(Feature, $"FPS UI inventory update failed — {ex.Message}");
             }
         }
     }

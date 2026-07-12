@@ -25,6 +25,32 @@ namespace MimesisPlayerEnhancement.Ui
             rect.offsetMax = Vector2.zero;
         }
 
+        internal static void AnchorTopStrip(RectTransform rect, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(0f, height);
+        }
+
+        internal static void AnchorBottomStrip(RectTransform rect, float height)
+        {
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(0f, height);
+        }
+
+        internal static void StretchTextToParent(Component? textComponent)
+        {
+            if (textComponent?.transform is RectTransform textRect)
+            {
+                Stretch(textRect);
+            }
+        }
+
         internal static void SetAnchors(RectTransform rect, float minX, float minY, float maxX, float maxY)
         {
             rect.anchorMin = new Vector2(minX, minY);
