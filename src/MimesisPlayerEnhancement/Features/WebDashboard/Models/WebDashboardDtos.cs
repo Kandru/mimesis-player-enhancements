@@ -84,6 +84,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int FloorIndex;
         public float CenterY;
         public bool MultiFloor = false;
+        public List<int> FloorSpan = [];
     }
 
     internal sealed class WebDashboardMinimapConnectionDto
@@ -115,6 +116,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Id = "";
         public string Label = "";
         public string Kind = "";
+        public bool Borderless = false;
         public WebDashboardMinimapBoundsDto Bounds = new();
         public List<WebDashboardMinimapTileDto> Tiles = [];
         public List<WebDashboardMinimapConnectionPointDto> ConnectionPoints = [];
@@ -142,6 +144,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float Z;
         public float Yaw;
         public string AreaId = "";
+        public float SpanX;
+        public float SpanZ;
     }
 
     internal sealed class WebDashboardMinimapLayoutDto

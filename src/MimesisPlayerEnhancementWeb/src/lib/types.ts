@@ -90,6 +90,7 @@ export interface MinimapTileDto {
   floorIndex?: number;
   centerY?: number;
   multiFloor?: boolean;
+  floorSpan?: number[];
 }
 
 export interface MinimapConnectionPointDto {
@@ -113,6 +114,7 @@ export interface MinimapAreaDto {
   id: string;
   label: string;
   kind: string;
+  borderless?: boolean;
   bounds: MinimapBoundsDto;
   tiles: MinimapTileDto[];
   connectionPoints: MinimapConnectionPointDto[];
@@ -138,6 +140,8 @@ export interface MinimapTrainDto {
   z: number;
   yaw: number;
   areaId: string;
+  spanX?: number;
+  spanZ?: number;
 }
 
 export interface MinimapPayload {
@@ -154,6 +158,7 @@ export interface MinimapPayload {
   train?: MinimapTrainDto | null;
   activeAreaId?: string;
   activeAreaLabel?: string;
+  activeFloorIndex?: number;
   connectionPoints?: MinimapConnectionPointDto[];
   blindMode?: boolean;
 }

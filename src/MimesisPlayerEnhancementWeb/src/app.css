@@ -1544,19 +1544,23 @@ body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: calc(100dvh - var(--header-height) - var(--page-padding-y) * 2);
+  min-height: 0;
+  height: calc(100dvh - var(--header-height) - var(--page-padding-y) * 2);
+  max-height: calc(100dvh - var(--header-height) - var(--page-padding-y) * 2);
 }
 
 .minimap-card {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-height: 20rem;
+  min-height: 0;
+  overflow: hidden;
   padding: 1rem;
 }
 
 .minimap-toolbar {
   display: flex;
+  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
@@ -1567,26 +1571,107 @@ body {
 .minimap-viewport {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.minimap-viewport-inner {
+  flex: 1;
+  min-height: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.minimap-viewport-inner:active {
+  cursor: grabbing;
+}
+
+.minimap-viewport-controls {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.minimap-view-root {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.minimap-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.minimap-player-chips {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.minimap-player-chip {
+  @apply rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200;
+}
+
+.minimap-player-chip.active {
+  @apply border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-200;
 }
 
 .minimap-svg {
-  @apply h-full w-full rounded-xl border border-gray-200 bg-slate-950 dark:border-gray-800;
+  @apply h-full w-full rounded-xl border border-gray-200 bg-slate-100 dark:border-gray-800 dark:bg-slate-950;
 }
 
 .minimap-tile {
-  fill: #1e293b;
-  stroke: #475569;
+  fill: #e2e8f0;
+  stroke: #94a3b8;
   stroke-width: 2;
 }
 
 .minimap-tile.main-path {
+  fill: #cbd5e1;
+  stroke: #64748b;
+}
+
+.dark .minimap-tile {
+  fill: #1e293b;
+  stroke: #475569;
+}
+
+.dark .minimap-tile.main-path {
   fill: #0f172a;
   stroke: #64748b;
 }
 
 .minimap-connection {
-  stroke: #fbbf24;
+  stroke: #64748b;
   stroke-linecap: round;
+}
+
+.dark .minimap-connection {
+  stroke: #cbd5e1;
+}
+
+.minimap-tile.multi-floor {
+  stroke-dasharray: 6 4;
+  stroke: #38bdf8;
+}
+
+.minimap-tram-bounds {
+  fill: rgba(100, 116, 139, 0.15);
+  stroke: #64748b;
+  stroke-width: 2;
+}
+
+.dark .minimap-tram-bounds {
+  fill: rgba(148, 163, 184, 0.12);
 }
 
 .minimap-teleporter polygon {
@@ -1626,11 +1711,16 @@ body {
 
 .minimap-tile-label,
 .minimap-marker-label {
-  fill: #cbd5e1;
+  fill: #475569;
   font-size: 11px;
   text-anchor: middle;
   dominant-baseline: middle;
   pointer-events: none;
+}
+
+.dark .minimap-tile-label,
+.dark .minimap-marker-label {
+  fill: #cbd5e1;
 }
 
 /* ── Page headings ── */

@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private const int LargeRosterRefreshIntervalMs = 2000;
         private const int LargeRosterPlayerThreshold = 64;
         private const int MinDirtyRefreshMs = 500;
-        private const int MinimapRefreshIntervalMs = 250;
+        private const int MinimapRefreshIntervalMs = 100;
         private const int TickIntervalMs = 100;
 
         private static WebDashboardSnapshot _snapshot = new();

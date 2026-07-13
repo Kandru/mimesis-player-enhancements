@@ -8,37 +8,50 @@
     dashboard.players.filter((p) => p.playerUid && isValidSteamId(p.steamId)),
   );
 
-  function setFocus(steamId: string) {
-    dashboard.minimapFocusSteamId = steamId;
-    localStorage.setItem('minimapFocusSteamId', steamId);
-    dashboard.applyMinimapFilter(true);
+  const areaOptions = $derived(dashboard.minimapRaw?.areas || dashboard.minimap?.areas || []);
+
+  function toggleFocus(steamId: string) {
+    const id = String(steamId);
+    if (dashboard.minimapFocusSteamId === id) {
+      dashboard.setMinimapFollow('');
+    } else {
+      dashboard.setMinimapFollow(id);
+    }
   }
 
-  function clearFocus() {
-    dashboard.minimapFocusSteamId = '';
-    localStorage.removeItem('minimapFocusSteamId');
-    dashboard.applyMinimapFilter(true);
+  function onAreaChange(event: Event) {
+    const areaId = (event.currentTarget as HTMLSelectElement).value;
+    dashboard.setMinimapArea(areaId);
   }
 </script>
 
 <div class="minimap-page">
   <div class="card minimap-card">
     <div class="minimap-toolbar">
-      <select
-        class="input max-w-xs"
-        value={dashboard.minimapFocusSteamId}
-        onchange={(e) => {
-          const v = (e.currentTarget as HTMLSelectElement).value;
-          if (v) setFocus(v);
-          else clearFocus();
-        }}
-      >
-        <option value="">{t('dashboard.minimap_follow_local')}</option>
-        {#each focusOptions as p (p.steamId)}
-          <option value={String(p.steamId)}>{p.displayName}</option>
-        {/each}
-      </select>
+      <label class="minimap-toolbar-label">
+        <span>{t('dashboard.minimap_area')}</span>
+        <select class="input max-w-xs" value={dashboard.minimapAreaId} onchange={onAreaChange}>
+          {#each areaOptions as area (area.id)}
+            <option value={area.id}>{area.label}</option>
+          {/each}
+        </select>
+      </label>
     </div>
+
+    {#if dashboard.canFollowMinimapPlayers}
+      <div class="minimap-player-chips">
+        {#each focusOptions as p (p.steamId)}
+          <button
+            type="button"
+            class="minimap-player-chip {dashboard.minimapFocusSteamId === String(p.steamId) ? 'active' : ''}"
+            onclick={() => toggleFocus(String(p.steamId))}
+          >
+            {p.displayName}
+          </button>
+        {/each}
+      </div>
+    {/if}
+
     <div class="minimap-viewport">
       <MinimapView data={dashboard.minimap} />
     </div>

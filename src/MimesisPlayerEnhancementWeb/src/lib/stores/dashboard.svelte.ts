@@ -6,6 +6,7 @@ import type {
   MinimapAreaDto,
   MinimapMarkerDto,
   MinimapPayload,
+  MinimapTileDto,
   MinimapTrainDto,
   PlayerDto,
   PlayerStatsDto,
@@ -55,6 +56,22 @@ function isBlindModeScene(sessionScene: string | undefined): boolean {
   return sessionScene === 'dungeon' || sessionScene === 'death_match';
 }
 
+function parseFloorFromAreaId(areaId: string): number {
+  if (!areaId || areaId === 'indoor') return 0;
+  const match = areaId.match(/^indoor-(\d+)$/);
+  return match ? Number(match[1]) : 0;
+}
+
+function buildTileFloorSpanMap(tiles: MinimapTileDto[]) {
+  const map = new Map<string, number[]>();
+  for (const tile of tiles) {
+    if (tile.floorSpan?.length) {
+      map.set(tile.id, tile.floorSpan);
+    }
+  }
+  return map;
+}
+
 class DashboardStore {
   status = $state<StatusDto>(createInitialStatus());
   players = $state<PlayerDto[]>([]);
@@ -96,6 +113,7 @@ class DashboardStore {
 
   minimapFocusSteamId = $state(localStorage.getItem('minimapFocusSteamId') || '');
   minimapAreaId = $state(localStorage.getItem('minimapAreaId') || '');
+  minimapFloorIndex = $state(Number(localStorage.getItem('minimapFloorIndex') || '0'));
 
   sidebarOpen = $state(false);
 
@@ -112,6 +130,12 @@ class DashboardStore {
   private globalSettingsPromise: Promise<void> | null = null;
   private saveSettingsPromise: Promise<void> | null = null;
   private saveProfilePromise: Promise<void> | null = null;
+
+  get canFollowMinimapPlayers() {
+    if (!this.playerBlindMode) return true;
+    const local = this.getLocalPlayer();
+    return !!local && !local.isAlive;
+  }
 
   get playerBlindMode() {
     if (!this.playerBlindModeEnabled) return false;
@@ -380,6 +404,25 @@ class DashboardStore {
     }
   }
 
+  setMinimapArea(areaId: string, floorIndex = 0) {
+    this.minimapAreaId = areaId;
+    this.minimapFloorIndex = floorIndex;
+    localStorage.setItem('minimapAreaId', areaId);
+    localStorage.setItem('minimapFloorIndex', String(floorIndex));
+    this.applyMinimapFilter(true);
+  }
+
+  setMinimapFollow(steamId: string) {
+    if (!steamId) {
+      this.minimapFocusSteamId = '';
+      localStorage.removeItem('minimapFocusSteamId');
+    } else if (this.canFollowMinimapPlayers) {
+      this.minimapFocusSteamId = steamId;
+      localStorage.setItem('minimapFocusSteamId', steamId);
+    }
+    this.applyMinimapFilter(true);
+  }
+
   applyMinimapFilter(force = false) {
     if (!this.minimapRaw) {
       this.minimap = null;
@@ -399,10 +442,20 @@ class DashboardStore {
     const markers = this.filterMinimapMarkers(raw.markers || []);
     const activeAreaId = this.resolveMinimapAreaId(markers, areas, raw);
     const activeArea = areas.find((area) => area.id === activeAreaId) ?? null;
+    const activeFloorIndex = parseFloorFromAreaId(activeAreaId);
+    const tileFloorSpan = buildTileFloorSpanMap(activeArea?.tiles || []);
+
     const areaMarkers = markers.filter((marker) => {
       if (!activeAreaId) return true;
-      if (!marker.areaId) return raw.displayMode === 'markers-only';
-      return marker.areaId === activeAreaId;
+      if (!marker.areaId) return raw.displayMode === 'open' || raw.displayMode === 'markers-only';
+      if (marker.areaId === activeAreaId) return true;
+      if (marker.tileId && tileFloorSpan.has(marker.tileId)) {
+        const span = tileFloorSpan.get(marker.tileId) || [];
+        return span.includes(activeFloorIndex);
+      }
+      return marker.floorIndex === activeFloorIndex
+        && marker.areaId.startsWith('indoor')
+        && activeAreaId.startsWith('indoor');
     });
 
     this.minimap = {
@@ -414,11 +467,11 @@ class DashboardStore {
       bounds: activeArea?.bounds ?? raw.bounds,
       areas: raw.areas,
       tiles: activeArea?.tiles?.length ? activeArea.tiles : raw.tiles || [],
-      connections: raw.connections,
       markers: areaMarkers,
       train: this.resolveTrainForArea(raw.train, activeAreaId),
       activeAreaId,
       activeAreaLabel: activeArea?.label ?? '',
+      activeFloorIndex,
       connectionPoints: activeArea?.connectionPoints?.length
         ? activeArea.connectionPoints
         : [],
@@ -427,7 +480,9 @@ class DashboardStore {
 
     if (force || activeAreaId !== this.minimapAreaId) {
       this.minimapAreaId = activeAreaId;
+      this.minimapFloorIndex = activeFloorIndex;
       localStorage.setItem('minimapAreaId', activeAreaId);
+      localStorage.setItem('minimapFloorIndex', String(activeFloorIndex));
     }
   }
 
@@ -447,14 +502,21 @@ class DashboardStore {
   ) {
     if (!areas.length) return '';
 
-    const focusId = this.resolveMinimapFocus();
-    if (focusId && filteredMarkers.length > 0) {
-      const focused = filteredMarkers.find((marker) => String(marker.steamId) === focusId);
+    if (this.minimapFocusSteamId && this.canFollowMinimapPlayers) {
+      const focused = filteredMarkers.find(
+        (marker) => String(marker.steamId) === this.minimapFocusSteamId,
+      );
       if (focused?.areaId) return focused.areaId;
     }
 
     if (this.minimapAreaId && areas.some((area) => area.id === this.minimapAreaId)) {
       return this.minimapAreaId;
+    }
+
+    const focusId = this.resolveMinimapFocus();
+    if (focusId && filteredMarkers.length > 0) {
+      const focused = filteredMarkers.find((marker) => String(marker.steamId) === focusId);
+      if (focused?.areaId) return focused.areaId;
     }
 
     if (raw.defaultAreaId) return raw.defaultAreaId;

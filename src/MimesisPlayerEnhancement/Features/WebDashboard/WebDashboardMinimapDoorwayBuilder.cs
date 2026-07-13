@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     /// </summary>
     internal static class WebDashboardMinimapDoorwayBuilder
     {
-        private const float DefaultDoorWidth = 0.04f;
+        private const float DoorOpeningMeters = 2f;
 
         internal static void AppendDoorwayConnections(
             WebDashboardMinimapAreaDto area,
@@ -95,12 +95,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             float spanX = Mathf.Max(areaBounds.MaxX - areaBounds.MinX, 1f);
             float spanZ = Mathf.Max(areaBounds.MaxZ - areaBounds.MinZ, 1f);
-            float width = ResolveDoorwayWidth(doorway, spanX, spanZ);
+            float avgSpan = (spanX + spanZ) * 0.5f;
+            float width = DoorOpeningMeters / Mathf.Max(avgSpan, 1f);
 
             point.X = WebDashboardMinimapMath.Normalize(worldPos.x, areaBounds.MinX, spanX);
             point.Z = WebDashboardMinimapMath.Normalize(worldPos.z, areaBounds.MinZ, spanZ);
-            point.DirX = forward.x / spanX;
-            point.DirZ = forward.z / spanZ;
+
+            Vector3 tangent = new(-forward.z, 0f, forward.x);
+            point.DirX = tangent.x / spanX;
+            point.DirZ = tangent.z / spanZ;
             float dirLen = Mathf.Sqrt((point.DirX * point.DirX) + (point.DirZ * point.DirZ));
             if (dirLen > 0.0001f)
             {
@@ -113,13 +116,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             point.Width = width;
             point.CrossArea = false;
             return true;
-        }
-
-        private static float ResolveDoorwayWidth(Doorway doorway, float spanX, float spanZ)
-        {
-            float socketSize = doorway.Socket != null ? Mathf.Max(doorway.Socket.Size.x, doorway.Socket.Size.y) : 2f;
-            float avgSpan = (spanX + spanZ) * 0.5f;
-            return Mathf.Clamp(socketSize / Mathf.Max(avgSpan, 1f), 0.015f, 0.12f);
         }
 
         internal static void AppendCrossFloorConnections(

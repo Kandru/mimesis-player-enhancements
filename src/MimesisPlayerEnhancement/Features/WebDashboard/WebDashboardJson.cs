@@ -189,6 +189,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     IsAlive = marker.IsAlive,
                     IsHost = marker.IsHost,
                     IsLocal = marker.IsLocal,
+                    FloorIndex = marker.FloorIndex,
                 });
             }
 
@@ -462,6 +463,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public bool IsAlive = true;
             public bool IsHost;
             public bool IsLocal;
+            public int FloorIndex;
         }
     }
 }

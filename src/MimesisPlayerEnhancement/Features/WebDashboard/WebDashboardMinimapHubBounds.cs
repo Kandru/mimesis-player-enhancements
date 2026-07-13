@@ -4,60 +4,150 @@ using UnityEngine;
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     /// <summary>
-    /// Computes minimap world bounds for hub scenes (tram waiting room, maintenance bay)
-    /// from scene renderers, with fallbacks when no geometry is available.
+    /// Computes minimap bounds for hub scenes (tram waiting room, maintenance bay)
+    /// in BGRoot-local space so rotated trams and player markers stay aligned.
     /// </summary>
     internal static class WebDashboardMinimapHubBounds
     {
         private const float HubMinSpan = 40f;
         private const float HubMaxSpan = 120f;
         private const float HubFallbackHalfSpan = 75f;
+        private const float TramMinSpan = 15f;
+        private const float TramMaxSpan = 40f;
+
+        private static readonly Vector3[] BoundsCornerFactors =
+        [
+            new(0f, 0f, 0f),
+            new(0f, 0f, 1f),
+            new(0f, 1f, 0f),
+            new(0f, 1f, 1f),
+            new(1f, 0f, 0f),
+            new(1f, 0f, 1f),
+            new(1f, 1f, 0f),
+            new(1f, 1f, 1f),
+        ];
+
+        internal static WebDashboardMinimapBoundsDto TryBuildOpenAreaBounds(GameMainBase? main, string kind)
+        {
+            float minSpan = kind == "tram" ? TramMinSpan : HubMinSpan;
+            float maxSpan = kind == "tram" ? TramMaxSpan : HubMaxSpan;
+            float fallbackHalfSpan = kind == "tram" ? TramMinSpan * 0.5f : HubFallbackHalfSpan;
+            bool includeMaintenanceRoot = kind == "maintenance";
+
+            return TryBuildLocalSceneBounds(main, minSpan, maxSpan, fallbackHalfSpan, includeMaintenanceRoot);
+        }
 
         internal static WebDashboardMinimapBoundsDto TryBuildHubBounds(GameMainBase? main)
         {
+            return TryBuildOpenAreaBounds(main, "maintenance");
+        }
+
+        internal static WebDashboardMinimapBoundsDto TryBuildTramBounds(GameMainBase? main)
+        {
+            return TryBuildOpenAreaBounds(main, "tram");
+        }
+
+        internal static bool TryGetTramLocalBounds(
+            GameMainBase? main,
+            out float centerX,
+            out float centerZ,
+            out float spanX,
+            out float spanZ,
+            out float yaw)
+        {
+            centerX = 0f;
+            centerZ = 0f;
+            spanX = TramMinSpan;
+            spanZ = TramMinSpan;
+            yaw = 0f;
+
+            Transform? root = WebDashboardSceneRoots.TryGetBgRoot(main);
+            if (root == null)
+            {
+                return false;
+            }
+
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+            ExpandLocalBoundsFromTransform(root, root, ref minX, ref maxX, ref minZ, ref maxZ);
+            if (float.IsPositiveInfinity(minX))
+            {
+                return true;
+            }
+
+            centerX = (minX + maxX) * 0.5f;
+            centerZ = (minZ + maxZ) * 0.5f;
+            spanX = Mathf.Clamp(maxX - minX, TramMinSpan, TramMaxSpan);
+            spanZ = Mathf.Clamp(maxZ - minZ, TramMinSpan, TramMaxSpan);
+            yaw = 0f;
+            return true;
+        }
+
+        internal static bool TryGetTramWorldBounds(
+            GameMainBase? main,
+            out float centerX,
+            out float centerZ,
+            out float spanX,
+            out float spanZ,
+            out float yaw)
+        {
+            return TryGetTramLocalBounds(main, out centerX, out centerZ, out spanX, out spanZ, out yaw);
+        }
+
+        private static WebDashboardMinimapBoundsDto TryBuildLocalSceneBounds(
+            GameMainBase? main,
+            float minSpan,
+            float maxSpan,
+            float fallbackHalfSpan,
+            bool includeMaintenanceRoot)
+        {
             Transform? bgRoot = WebDashboardSceneRoots.TryGetBgRoot(main);
+            if (bgRoot == null)
+            {
+                return PlaceholderBounds();
+            }
+
             float minX = float.PositiveInfinity;
             float maxX = float.NegativeInfinity;
             float minZ = float.PositiveInfinity;
             float maxZ = float.NegativeInfinity;
 
-            if (main != null)
+            ExpandLocalBoundsFromTransform(bgRoot, bgRoot, ref minX, ref maxX, ref minZ, ref maxZ);
+            if (main is MaintenanceScene maintenanceScene && includeMaintenanceRoot)
             {
-                ExpandBoundsFromTransform(bgRoot, ref minX, ref maxX, ref minZ, ref maxZ);
-                if (main is MaintenanceScene maintenanceScene)
-                {
-                    ExpandBoundsFromTransform(
-                        WebDashboardSceneRoots.TryGetMaintenanceRoomRoot(maintenanceScene),
-                        ref minX,
-                        ref maxX,
-                        ref minZ,
-                        ref maxZ);
-                }
+                ExpandLocalBoundsFromTransform(
+                    bgRoot,
+                    WebDashboardSceneRoots.TryGetMaintenanceRoomRoot(maintenanceScene),
+                    ref minX,
+                    ref maxX,
+                    ref minZ,
+                    ref maxZ);
             }
 
             if (float.IsPositiveInfinity(minX))
             {
-                return bgRoot != null
-                    ? CenteredBounds(bgRoot.position.x, bgRoot.position.z, HubFallbackHalfSpan)
-                    : PlaceholderBounds();
+                return CenteredBounds(0f, 0f, fallbackHalfSpan);
             }
 
-            return FinalizeHubBounds(minX, maxX, minZ, maxZ, bgRoot);
+            return FinalizeLocalBounds(minX, maxX, minZ, maxZ, minSpan, maxSpan);
         }
 
-        private static WebDashboardMinimapBoundsDto FinalizeHubBounds(
+        private static WebDashboardMinimapBoundsDto FinalizeLocalBounds(
             float minX,
             float maxX,
             float minZ,
             float maxZ,
-            Transform? anchor)
+            float minSpan,
+            float maxSpan)
         {
-            float centerX = anchor != null ? anchor.position.x : (minX + maxX) * 0.5f;
-            float centerZ = anchor != null ? anchor.position.z : (minZ + maxZ) * 0.5f;
-            float spanX = Mathf.Clamp(maxX - minX, HubMinSpan, HubMaxSpan);
-            float spanZ = Mathf.Clamp(maxZ - minZ, HubMinSpan, HubMaxSpan);
+            float centerX = (minX + maxX) * 0.5f;
+            float centerZ = (minZ + maxZ) * 0.5f;
+            float spanX = Mathf.Clamp(maxX - minX, minSpan, maxSpan);
+            float spanZ = Mathf.Clamp(maxZ - minZ, minSpan, maxSpan);
 
-            if (maxX - minX > HubMaxSpan || maxZ - minZ > HubMaxSpan)
+            if (maxX - minX > maxSpan || maxZ - minZ > maxSpan)
             {
                 minX = centerX - (spanX * 0.5f);
                 maxX = centerX + (spanX * 0.5f);
@@ -89,20 +179,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             };
         }
 
-        private static void ExpandBoundsFromTransform(
-            Transform? root,
+        private static void ExpandLocalBoundsFromTransform(
+            Transform localRoot,
+            Transform? source,
             ref float minX,
             ref float maxX,
             ref float minZ,
             ref float maxZ)
         {
-            if (root == null)
+            if (source == null)
             {
                 return;
             }
 
             bool expanded = false;
-            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);
             foreach (Renderer renderer in renderers)
             {
                 if (renderer == null)
@@ -110,21 +201,40 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                Bounds bounds = renderer.bounds;
-                minX = Mathf.Min(minX, bounds.min.x);
-                maxX = Mathf.Max(maxX, bounds.max.x);
-                minZ = Mathf.Min(minZ, bounds.min.z);
-                maxZ = Mathf.Max(maxZ, bounds.max.z);
+                ExpandLocalBoundsFromRendererBounds(localRoot, renderer.bounds, ref minX, ref maxX, ref minZ, ref maxZ);
                 expanded = true;
             }
 
-            if (!expanded)
+            if (!expanded && source == localRoot)
             {
-                Vector3 position = root.position;
-                minX = Mathf.Min(minX, position.x - HubFallbackHalfSpan);
-                maxX = Mathf.Max(maxX, position.x + HubFallbackHalfSpan);
-                minZ = Mathf.Min(minZ, position.z - HubFallbackHalfSpan);
-                maxZ = Mathf.Max(maxZ, position.z + HubFallbackHalfSpan);
+                minX = Mathf.Min(minX, -HubFallbackHalfSpan);
+                maxX = Mathf.Max(maxX, HubFallbackHalfSpan);
+                minZ = Mathf.Min(minZ, -HubFallbackHalfSpan);
+                maxZ = Mathf.Max(maxZ, HubFallbackHalfSpan);
+            }
+        }
+
+        private static void ExpandLocalBoundsFromRendererBounds(
+            Transform localRoot,
+            Bounds worldBounds,
+            ref float minX,
+            ref float maxX,
+            ref float minZ,
+            ref float maxZ)
+        {
+            Vector3 boundsMin = worldBounds.min;
+            Vector3 boundsSize = worldBounds.size;
+            foreach (Vector3 factor in BoundsCornerFactors)
+            {
+                Vector3 worldCorner = boundsMin + new Vector3(
+                    boundsSize.x * factor.x,
+                    boundsSize.y * factor.y,
+                    boundsSize.z * factor.z);
+                Vector3 local = localRoot.InverseTransformPoint(worldCorner);
+                minX = Mathf.Min(minX, local.x);
+                maxX = Mathf.Max(maxX, local.x);
+                minZ = Mathf.Min(minZ, local.z);
+                maxZ = Mathf.Max(maxZ, local.z);
             }
         }
 

@@ -79,22 +79,17 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         private static string TryGetTileName(VSpaceTileGroup tileGroup, int tileId)
         {
-            return tileId <= 0 || TilesField.GetValue(tileGroup) is not IDictionary tiles
-                ? string.Empty
-                : tiles[tileId] is not Tile tile
-                ? string.Empty
-                : SanitizeRoomName(tile.name) ?? SanitizeRoomName(tile.gameObject?.name) ?? string.Empty;
-        }
-
-        private static string? SanitizeRoomName(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
+            if (tileId <= 0 || TilesField.GetValue(tileGroup) is not IDictionary tiles)
             {
-                return null;
+                return string.Empty;
             }
 
-            string trimmed = name.Trim();
-            return trimmed.Equals("GameObject", StringComparison.OrdinalIgnoreCase) ? null : trimmed;
+            if (tiles[tileId] is not Tile tile)
+            {
+                return string.Empty;
+            }
+
+            return WebDashboardMinimapTileLabels.ResolveTileLabel(tile);
         }
     }
 }

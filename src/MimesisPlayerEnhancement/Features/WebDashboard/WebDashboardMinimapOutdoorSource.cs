@@ -52,21 +52,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardMinimapAreaDto area = new()
             {
                 Id = WebDashboardMinimapAreaResolver.OutdoorAreaId,
-                Label = "Outdoor",
+                Label = WebDashboardMinimapTileLabels.ResolveLabel("Outdoor"),
                 Kind = "outdoor",
+                Borderless = true,
                 Bounds = bounds,
             };
-
-            area.Tiles.Add(new WebDashboardMinimapTileDto
-            {
-                Id = "outdoor-zone",
-                Label = "Outdoor",
-                X = 0f,
-                Z = 0f,
-                W = 1f,
-                H = 1f,
-                IsMainPath = true,
-            });
 
             return area;
         }

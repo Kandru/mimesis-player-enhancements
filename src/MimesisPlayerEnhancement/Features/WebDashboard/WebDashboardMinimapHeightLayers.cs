@@ -7,9 +7,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const float MinFloorCenterGap = 3.5f;
 
-        internal static List<List<Tile>> ClusterTilesByHeight(IReadOnlyList<Tile> tiles)
+        internal readonly struct HeightLayer
         {
-            List<(Tile tile, float centerY)> entries = [];
+            internal HeightLayer(int index, List<Tile> tiles, float minY, float maxY)
+            {
+                Index = index;
+                Tiles = tiles;
+                MinY = minY;
+                MaxY = maxY;
+            }
+
+            internal readonly int Index;
+            internal readonly List<Tile> Tiles;
+            internal readonly float MinY;
+            internal readonly float MaxY;
+        }
+
+        internal static List<HeightLayer> ClusterTilesByHeight(IReadOnlyList<Tile> tiles)
+        {
+            List<(Tile tile, float centerY, float minY, float maxY)> entries = [];
 
             foreach (Tile tile in tiles)
             {
@@ -19,7 +35,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 Bounds bounds = tile.Placement?.Bounds ?? tile.Bounds;
-                entries.Add((tile, bounds.center.y));
+                entries.Add((tile, bounds.center.y, bounds.min.y, bounds.max.y));
             }
 
             if (entries.Count == 0)
@@ -29,28 +45,90 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             entries.Sort((left, right) => left.centerY.CompareTo(right.centerY));
 
-            List<List<Tile>> clusters = [];
+            List<HeightLayer> layers = [];
             List<Tile> current = [entries[0].tile];
             float centerSum = entries[0].centerY;
+            float layerMinY = entries[0].minY;
+            float layerMaxY = entries[0].maxY;
 
             for (int index = 1; index < entries.Count; index++)
             {
-                (Tile tile, float centerY) entry = entries[index];
+                (Tile tile, float centerY, float minY, float maxY) entry = entries[index];
                 float averageCenter = centerSum / current.Count;
                 if (entry.centerY - averageCenter >= MinFloorCenterGap)
                 {
-                    clusters.Add(current);
+                    layers.Add(new HeightLayer(layers.Count, current, layerMinY, layerMaxY));
                     current = [entry.tile];
                     centerSum = entry.centerY;
+                    layerMinY = entry.minY;
+                    layerMaxY = entry.maxY;
                     continue;
                 }
 
                 current.Add(entry.tile);
                 centerSum += entry.centerY;
+                layerMinY = Mathf.Min(layerMinY, entry.minY);
+                layerMaxY = Mathf.Max(layerMaxY, entry.maxY);
             }
 
-            clusters.Add(current);
-            return clusters;
+            layers.Add(new HeightLayer(layers.Count, current, layerMinY, layerMaxY));
+            return layers;
+        }
+
+        internal static List<int> ResolveFloorSpan(float tileMinY, float tileMaxY, IReadOnlyList<HeightLayer> layers)
+        {
+            List<int> span = [];
+            const float overlapEpsilon = 0.5f;
+
+            foreach (HeightLayer layer in layers)
+            {
+                if (tileMaxY >= layer.MinY - overlapEpsilon && tileMinY <= layer.MaxY + overlapEpsilon)
+                {
+                    span.Add(layer.Index);
+                }
+            }
+
+            return span;
+        }
+
+        internal static int ResolveFloorIndexFromWorldY(float worldY, IReadOnlyList<HeightLayer> layers)
+        {
+            if (layers.Count == 0)
+            {
+                return 0;
+            }
+
+            int bestIndex = layers[0].Index;
+            float bestDistance = float.MaxValue;
+            foreach (HeightLayer layer in layers)
+            {
+                if (worldY >= layer.MinY - 0.5f && worldY <= layer.MaxY + 0.5f)
+                {
+                    return layer.Index;
+                }
+
+                float centerY = (layer.MinY + layer.MaxY) * 0.5f;
+                float distance = Mathf.Abs(worldY - centerY);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestIndex = layer.Index;
+                }
+            }
+
+            return bestIndex;
+        }
+
+        internal static List<List<Tile>> ClusterTilesByHeightLegacy(IReadOnlyList<Tile> tiles)
+        {
+            List<HeightLayer> layers = ClusterTilesByHeight(tiles);
+            List<List<Tile>> legacy = [];
+            foreach (HeightLayer layer in layers)
+            {
+                legacy.Add(layer.Tiles);
+            }
+
+            return legacy;
         }
 
         internal static WebDashboardMinimapDungeonGraph ExtractSubgraph(

@@ -37,7 +37,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                if (Current.DisplayMode is "hidden" or "markers-only" && runKey.StartsWith("hub:", StringComparison.Ordinal))
+                if ((Current.DisplayMode is "hidden" or "markers-only" or "open")
+                    && runKey.StartsWith("hub:", StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -60,12 +61,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Current = main switch
             {
                 GamePlayScene gps => TryBuildDungeonLayout(gps, runKey),
-                InTramWaitingScene => BuildHiddenLayout("Tram waiting room"),
-                MaintenanceScene => BuildHiddenLayout("Maintenance bay"),
+                InTramWaitingScene => BuildOpenAreaLayout(main, "Tram waiting room", "tram"),
+                MaintenanceScene => BuildOpenAreaLayout(main, "Maintenance bay", "maintenance"),
                 DeathMatchScene => BuildHiddenLayout("Death match"),
                 _ => WebDashboardMinimapAreaResolver.ShouldHideMap(main)
                     ? BuildHiddenLayout(ResolveSceneLabel(main))
-                    : BuildHubLayout(main, ResolveSceneLabel(main)),
+                    : BuildOpenAreaLayout(main, ResolveSceneLabel(main), "hub"),
             };
 
             Current.LayoutVersion = ++LayoutVersion;
@@ -109,7 +110,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     outdoorArea = BuildAreaFromGridGraph(
                         outdoorGridGraph,
                         WebDashboardMinimapAreaResolver.OutdoorAreaId,
-                        "Outdoor",
+                        WebDashboardMinimapTileLabels.ResolveLabel("Outdoor"),
                         "outdoor");
                     WebDashboardMinimapTileRegistry.RegisterGridGraph(outdoorGridGraph, outdoorArea.Id);
                     layout.Areas.Add(outdoorArea);
@@ -121,7 +122,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     outdoorArea = BuildAreaFromGraph(
                         outdoorGraph,
                         WebDashboardMinimapAreaResolver.OutdoorAreaId,
-                        "Outdoor",
+                        WebDashboardMinimapTileLabels.ResolveLabel("Outdoor"),
                         "outdoor");
                     WebDashboardMinimapTileRegistry.RegisterGraph(outdoorGraph, outdoorArea.Id);
                     layout.Areas.Add(outdoorArea);
@@ -160,17 +161,33 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardMinimapLayoutDto layout,
             WebDashboardMinimapDungeonGraph indoorGraph)
         {
-            List<List<Tile>> layers = WebDashboardMinimapHeightLayers.ClusterTilesByHeight(indoorGraph.Tiles);
+            List<WebDashboardMinimapHeightLayers.HeightLayer> layers =
+                WebDashboardMinimapHeightLayers.ClusterTilesByHeight(indoorGraph.Tiles);
             if (layers.Count == 0)
             {
                 return false;
             }
 
+            WebDashboardMinimapFloorRegistry.Clear();
             Dictionary<int, int> tileFloorById = [];
+            Dictionary<int, List<int>> tileFloorSpanById = [];
+            foreach (Tile tile in indoorGraph.Tiles)
+            {
+                if (tile == null || !indoorGraph.TileIds.TryGetValue(tile, out int tileId))
+                {
+                    continue;
+                }
+
+                Bounds bounds = tile.Placement?.Bounds ?? tile.Bounds;
+                List<int> span = WebDashboardMinimapHeightLayers.ResolveFloorSpan(bounds.min.y, bounds.max.y, layers);
+                tileFloorSpanById[tileId] = span;
+            }
+
             for (int layerIndex = 0; layerIndex < layers.Count; layerIndex++)
             {
+                WebDashboardMinimapHeightLayers.HeightLayer layer = layers[layerIndex];
                 WebDashboardMinimapDungeonGraph layerGraph =
-                    WebDashboardMinimapHeightLayers.ExtractSubgraph(indoorGraph, layers[layerIndex]);
+                    WebDashboardMinimapHeightLayers.ExtractSubgraph(indoorGraph, layer.Tiles);
                 if (layerGraph.Tiles.Count == 0)
                 {
                     continue;
@@ -179,9 +196,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 string areaId = WebDashboardMinimapHeightLayers.BuildIndoorLayerAreaId(layerIndex, layers.Count);
                 string label = WebDashboardMinimapHeightLayers.BuildIndoorLayerLabel(layerIndex, layers.Count);
                 WebDashboardMinimapAreaDto area = BuildAreaFromGraph(layerGraph, areaId, label, "indoor", layerIndex);
+                WebDashboardMinimapFloorRegistry.RegisterLayer(layerIndex, areaId, layer.MinY, layer.MaxY);
+
                 foreach (KeyValuePair<Tile, int> entry in layerGraph.TileIds)
                 {
                     tileFloorById[entry.Value] = layerIndex;
+                    if (!tileFloorSpanById.TryGetValue(entry.Value, out List<int>? span))
+                    {
+                        continue;
+                    }
+
+                    string tileId = $"tile-{entry.Value}";
+                    WebDashboardMinimapFloorRegistry.RegisterTileFloorSpan(tileId, span);
+                    foreach (WebDashboardMinimapTileDto tileDto in area.Tiles)
+                    {
+                        if (tileDto.Id != tileId)
+                        {
+                            continue;
+                        }
+
+                        tileDto.FloorSpan = [.. span];
+                        tileDto.MultiFloor = span.Count > 1;
+                        break;
+                    }
                 }
 
                 WebDashboardMinimapTileRegistry.RegisterGraph(layerGraph, areaId);
@@ -248,7 +285,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 float halfH = Mathf.Max(bounds.extents.z, 0.5f);
                 rawTiles.Add(new RawMapTile(
                     $"tile-{tileIndex}",
-                    ResolveTileLabel(tile),
+                    WebDashboardMinimapTileLabels.ResolveTileLabel(tile),
                     center.x,
                     center.z,
                     halfW * 2f,
@@ -264,7 +301,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 connections.Add(($"tile-{from}", $"tile-{to}"));
             }
 
-            WebDashboardMinimapAreaDto area = BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections);
+            WebDashboardMinimapAreaDto area = BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections, includeEdgeConnections: false);
             Dictionary<string, WebDashboardMinimapTileDto> tilesById = [];
             foreach (WebDashboardMinimapTileDto tileDto in area.Tiles)
             {
@@ -287,7 +324,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 rawTiles.Add(new RawMapTile(
                     WebDashboardMinimapGridSource.BuildCellId(cell.Coordinate),
-                    "Sector",
+                    WebDashboardMinimapTileLabels.ResolveLabel("Sector"),
                     cell.CenterX,
                     cell.CenterZ,
                     cell.Size,
@@ -311,7 +348,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string label,
             string kind,
             List<RawMapTile> rawTiles,
-            List<(string fromId, string toId)> connections)
+            List<(string fromId, string toId)> connections,
+            bool includeEdgeConnections = true)
         {
             WebDashboardMinimapAreaDto area = new()
             {
@@ -378,46 +416,58 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             HashSet<string> seenConnections = [];
-            // Doorway connections are added by BuildAreaFromGraph when a dungeon graph is available.
-            foreach ((string fromId, string toId) in connections)
+            if (includeEdgeConnections)
             {
-                if (fromId == toId)
+                // Doorway connections are added by BuildAreaFromGraph when a dungeon graph is available.
+                foreach ((string fromId, string toId) in connections)
                 {
-                    continue;
-                }
-
-                string pairKey = string.CompareOrdinal(fromId, toId) < 0
-                    ? fromId + "|" + toId
-                    : toId + "|" + fromId;
-                if (!seenConnections.Add(pairKey))
-                {
-                    continue;
-                }
-
-                if (!tilesById.TryGetValue(fromId, out WebDashboardMinimapTileDto? fromTile)
-                    || !tilesById.TryGetValue(toId, out WebDashboardMinimapTileDto? toTile))
-                {
-                    continue;
-                }
-
-                if (WebDashboardMinimapConnectionBuilder.TryComputeConnectionPoint(fromTile, toTile, out float pointX, out float pointZ)
-                    && WebDashboardMinimapConnectionBuilder.TryComputeConnectionDirection(fromTile, toTile, out float dirX, out float dirZ))
-                {
-                    area.ConnectionPoints.Add(new WebDashboardMinimapConnectionPointDto
+                    if (fromId == toId)
                     {
-                        X = pointX,
-                        Z = pointZ,
-                        DirX = dirX,
-                        DirZ = dirZ,
-                        FromTileId = fromId,
-                        ToTileId = toId,
-                        CrossArea = false,
-                        Width = 0.04f,
-                    });
+                        continue;
+                    }
+
+                    string pairKey = string.CompareOrdinal(fromId, toId) < 0
+                        ? fromId + "|" + toId
+                        : toId + "|" + fromId;
+                    if (!seenConnections.Add(pairKey))
+                    {
+                        continue;
+                    }
+
+                    if (!tilesById.TryGetValue(fromId, out WebDashboardMinimapTileDto? fromTile)
+                        || !tilesById.TryGetValue(toId, out WebDashboardMinimapTileDto? toTile))
+                    {
+                        continue;
+                    }
+
+                    if (WebDashboardMinimapConnectionBuilder.TryComputeConnectionPoint(fromTile, toTile, out float pointX, out float pointZ)
+                        && WebDashboardMinimapConnectionBuilder.TryComputeConnectionDirection(fromTile, toTile, out float dirX, out float dirZ))
+                    {
+                        area.ConnectionPoints.Add(new WebDashboardMinimapConnectionPointDto
+                        {
+                            X = pointX,
+                            Z = pointZ,
+                            DirX = dirX,
+                            DirZ = dirZ,
+                            FromTileId = fromId,
+                            ToTileId = toId,
+                            CrossArea = false,
+                            Width = DoorOpeningMetersNormalized(area.Bounds),
+                        });
+                    }
                 }
             }
 
             return area;
+        }
+
+        private const float DoorOpeningMeters = 2f;
+
+        private static float DoorOpeningMetersNormalized(WebDashboardMinimapBoundsDto bounds)
+        {
+            float spanX = Mathf.Max(bounds.MaxX - bounds.MinX, 1f);
+            float spanZ = Mathf.Max(bounds.MaxZ - bounds.MinZ, 1f);
+            return DoorOpeningMeters / ((spanX + spanZ) * 0.5f);
         }
 
         // Teleporters between indoor and outdoor are not part of the dungeon tile graph,
@@ -457,13 +507,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return layout;
         }
 
-        private static WebDashboardMinimapLayoutDto BuildHubLayout(GameMainBase? main, string sceneLabel)
+        private static WebDashboardMinimapLayoutDto BuildOpenAreaLayout(
+            GameMainBase? main,
+            string sceneLabel,
+            string kind)
         {
-            WebDashboardMinimapBoundsDto bounds = WebDashboardMinimapHubBounds.TryBuildHubBounds(main);
+            WebDashboardMinimapBoundsDto bounds = WebDashboardMinimapHubBounds.TryBuildOpenAreaBounds(main, kind);
+
             WebDashboardMinimapLayoutDto layout = new()
             {
-                LayoutKind = "hub",
-                DisplayMode = "markers-only",
+                LayoutKind = kind,
+                DisplayMode = "open",
                 SceneLabel = sceneLabel,
                 Bounds = bounds,
                 DefaultAreaId = WebDashboardMinimapAreaResolver.HubAreaId,
@@ -473,11 +527,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 Id = WebDashboardMinimapAreaResolver.HubAreaId,
                 Label = sceneLabel,
-                Kind = "hub",
+                Kind = kind,
+                Borderless = true,
                 Bounds = bounds,
             });
 
             return layout;
+        }
+
+        private static WebDashboardMinimapLayoutDto BuildHubLayout(GameMainBase? main, string sceneLabel)
+        {
+            return BuildOpenAreaLayout(main, sceneLabel, "hub");
         }
 
         private static string ResolveDefaultAreaId(List<WebDashboardMinimapAreaDto> areas)
@@ -618,26 +678,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             FieldInfo? roomUidField = typeof(GamePlayScene).GetField("RoomUID", InstanceFlags)
                 ?? typeof(GamePlayScene).GetField("roomUID", InstanceFlags);
             return roomUidField != null ? Convert.ToInt64(roomUidField.GetValue(gps)) : 0L;
-        }
-
-        private static string ResolveTileLabel(Tile tile)
-        {
-            string? fromPlacement = tile.Placement?.TileSet?.name;
-            string? raw = SanitizeRoomName(tile.name)
-                ?? SanitizeRoomName(tile.gameObject?.name)
-                ?? SanitizeRoomName(fromPlacement);
-            return string.IsNullOrWhiteSpace(raw) ? "Room" : raw;
-        }
-
-        private static string? SanitizeRoomName(string? name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return null;
-            }
-
-            string trimmed = name.Trim();
-            return trimmed.Equals("GameObject", StringComparison.OrdinalIgnoreCase) ? null : trimmed;
         }
 
     }

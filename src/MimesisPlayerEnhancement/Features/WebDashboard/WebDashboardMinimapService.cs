@@ -42,25 +42,45 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
 
                     Transform transform = actor.transform;
-                    Vector3 position = transform.position;
-                    float x = position.x;
-                    float z = position.z;
-                    float yaw = ResolveHorizontalYaw(transform);
+                    float worldY = transform.position.y;
+                    float x;
+                    float z;
+                    float yaw;
 
                     string areaId = WebDashboardMinimapAreaResolver.HubAreaId;
                     string tileId = string.Empty;
                     string roomName = string.Empty;
+                    int floorIndex = 0;
 
                     if (main is GamePlayScene gps && dungeonRoom != null)
                     {
+                        Vector3 position = transform.position;
+                        x = position.x;
+                        z = position.z;
+                        yaw = ResolveHorizontalYaw(transform);
                         areaId = WebDashboardMinimapAreaResolver.ResolvePlayerAreaId(gps, dungeonRoom, position) ?? string.Empty;
                         roomName = SpawnScalingRoomLookup.TryGetRoomName(dungeonRoom, position);
                         tileId = TryResolveTileId(dungeonRoom, position, areaId);
+                        floorIndex = WebDashboardMinimapFloorRegistry.ResolveFloorIndex(worldY, areaId);
+                        if (WebDashboardMinimapAreaResolver.IsIndoorAreaId(areaId))
+                        {
+                            string? floorAreaId = WebDashboardMinimapFloorRegistry.TryGetAreaIdForFloor(floorIndex);
+                            if (!string.IsNullOrWhiteSpace(floorAreaId))
+                            {
+                                areaId = floorAreaId;
+                            }
+                        }
                     }
-                    else if (WebDashboardMinimapTramSpace.IsWaitingRoom(main))
+                    else if (ShouldUseTramLocalCoords(main))
                     {
                         WebDashboardMinimapTramSpace.WorldToLocal(main, transform, out x, out z, out yaw);
-                        areaId = string.Empty;
+                    }
+                    else
+                    {
+                        Vector3 position = transform.position;
+                        x = position.x;
+                        z = position.z;
+                        yaw = ResolveHorizontalYaw(transform);
                     }
 
                     markers.Add(new WebDashboardMinimapMarkerDto
@@ -73,6 +93,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         RoomName = roomName,
                         AreaId = areaId,
                         TileId = tileId,
+                        FloorIndex = floorIndex,
                         IsAlive = !actor.dead,
                         IsHost = WebDashboardGameState.IsHost() && LocalPlayerHelper.IsLocalSteamId(steamId),
                         IsLocal = LocalPlayerHelper.IsLocalSteamId(steamId),
@@ -104,23 +125,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 normalized.Add(NormalizeMarker(marker, bounds));
             }
 
-            WebDashboardMinimapAreaDto? outdoorArea =
-                TryGetArea(layout, WebDashboardMinimapAreaResolver.OutdoorAreaId);
-            train = NormalizeTrainForLayout(rawTrain, layout, outdoorArea);
+            train = NormalizeTrainForLayout(rawTrain, layout);
             return normalized;
         }
 
         private static WebDashboardMinimapTrainDto? NormalizeTrainForLayout(
             WebDashboardMinimapTrainDto? rawTrain,
-            WebDashboardMinimapLayoutDto layout,
-            WebDashboardMinimapAreaDto? outdoorArea)
+            WebDashboardMinimapLayoutDto layout)
         {
             if (rawTrain == null)
             {
                 return null;
             }
 
-            if (outdoorArea != null)
+            WebDashboardMinimapAreaDto? outdoorArea =
+                TryGetArea(layout, WebDashboardMinimapAreaResolver.OutdoorAreaId);
+            if (outdoorArea != null && rawTrain.AreaId == WebDashboardMinimapAreaResolver.OutdoorAreaId)
             {
                 return NormalizeTrain(
                     rawTrain,
@@ -208,12 +228,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return null;
             }
 
+            float spanX = Mathf.Max(bounds.MaxX - bounds.MinX, 1f);
+            float spanZ = Mathf.Max(bounds.MaxZ - bounds.MinZ, 1f);
+
             return new WebDashboardMinimapTrainDto
             {
                 X = NormalizeCoord(train.X, bounds.MinX, bounds.MaxX),
                 Z = NormalizeCoord(train.Z, bounds.MinZ, bounds.MaxZ),
                 Yaw = train.Yaw,
                 AreaId = areaId,
+                SpanX = train.SpanX > 0f ? train.SpanX / spanX : 0f,
+                SpanZ = train.SpanZ > 0f ? train.SpanZ / spanZ : 0f,
             };
         }
 
@@ -233,7 +258,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             GameMainBase? main,
             WebDashboardMinimapLayoutDto layout)
         {
-            if (main is InTramWaitingScene or DeathMatchScene or MaintenanceScene)
+            if (main is DeathMatchScene)
             {
                 return null;
             }
@@ -242,7 +267,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 WebDashboardMinimapAreaDto? outdoorArea =
                     TryGetArea(layout, WebDashboardMinimapAreaResolver.OutdoorAreaId);
-                return outdoorArea != null ? TryFindSceneTrainMarker(main) : null;
+                return outdoorArea != null ? TryFindSceneTrainMarker(main, WebDashboardMinimapAreaResolver.OutdoorAreaId) : null;
+            }
+
+            if (main != null
+                && (main is InTramWaitingScene or MaintenanceScene
+                    || layout.DisplayMode == "open"))
+            {
+                return TryFindSceneTrainMarker(main, WebDashboardMinimapAreaResolver.HubAreaId);
             }
 
             return null;
@@ -307,6 +339,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        private static bool ShouldUseTramLocalCoords(GameMainBase? main)
+        {
+            return WebDashboardMinimapTramSpace.IsWaitingRoom(main)
+                || main is MaintenanceScene
+                || WebDashboardMinimapLayoutBuilder.Current.DisplayMode == "open";
+        }
+
         private static float ResolveHorizontalYaw(Transform transform)
         {
             Vector3 forward = transform.forward;
@@ -319,10 +358,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
         }
 
-        private static WebDashboardMinimapTrainDto? TryFindSceneTrainMarker(GameMainBase main)
+        private static WebDashboardMinimapTrainDto? TryFindSceneTrainMarker(GameMainBase main, string areaId)
         {
             try
             {
+                if (WebDashboardMinimapHubBounds.TryGetTramLocalBounds(
+                        main,
+                        out float centerX,
+                        out float centerZ,
+                        out float spanX,
+                        out float spanZ,
+                        out float yaw))
+                {
+                    return new WebDashboardMinimapTrainDto
+                    {
+                        X = centerX,
+                        Z = centerZ,
+                        Yaw = yaw,
+                        AreaId = areaId,
+                        SpanX = spanX,
+                        SpanZ = spanZ,
+                    };
+                }
+
                 Transform? root = WebDashboardSceneRoots.TryGetBgRoot(main);
                 if (root == null && WebDashboardSceneRoots.TryGetTramConsole(main) is Component console)
                 {
@@ -338,12 +396,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return null;
                 }
 
-                Vector3 position = root.position;
                 return new WebDashboardMinimapTrainDto
                 {
-                    X = position.x,
-                    Z = position.z,
-                    Yaw = ResolveHorizontalYaw(root),
+                    X = 0f,
+                    Z = 0f,
+                    Yaw = 0f,
+                    AreaId = areaId,
                 };
             }
             catch
@@ -411,6 +469,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 RoomName = marker.RoomName,
                 AreaId = marker.AreaId,
                 TileId = marker.TileId,
+                FloorIndex = marker.FloorIndex,
                 IsAlive = marker.IsAlive,
                 IsHost = marker.IsHost,
                 IsLocal = marker.IsLocal,
