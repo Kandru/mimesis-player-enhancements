@@ -217,9 +217,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            PruneInactivePlayers();
             if (!_roomTransitionSuspend)
             {
+                PruneInactivePlayers();
                 ReapplyConfiguredCheats();
             }
         }
@@ -253,39 +253,69 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void PruneInactivePlayers()
         {
+            bool changed = false;
+
             foreach (long playerUid in new List<long>(GodModePlayerUids))
             {
-                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
-                    || player == null
-                    || !player.IsAliveStatus())
+                if (!ShouldPruneCheatPlayer(playerUid, out VPlayer? player, out bool shouldDisable))
                 {
-                    GodModePlayerUids.Remove(playerUid);
-                    if (player != null)
-                    {
-                        ApplyGodMode(player, enabled: false);
-                    }
+                    continue;
+                }
+
+                _ = GodModePlayerUids.Remove(playerUid);
+                changed = true;
+                if (shouldDisable && player != null)
+                {
+                    ApplyGodMode(player, enabled: false);
                 }
             }
 
             foreach (long playerUid in new List<long>(NoClipPlayerUids))
             {
-                if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player)
-                    || player == null
-                    || !player.IsAliveStatus())
+                if (!ShouldPruneCheatPlayer(playerUid, out VPlayer? player, out bool shouldDisable))
                 {
-                    NoClipPlayerUids.Remove(playerUid);
-                    if (player != null)
-                    {
-                        WebDashboardHostCheatsNoClipMovement.TryRestoreActor(playerUid);
-                        WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: false);
-                    }
+                    continue;
+                }
+
+                _ = NoClipPlayerUids.Remove(playerUid);
+                changed = true;
+                WebDashboardHostCheatsNoClipMovement.TryRestoreActor(playerUid);
+                if (shouldDisable && player != null)
+                {
+                    WebDashboardHostCheatsNoClipSync.SendToPlayer(player, enabled: false);
                 }
             }
 
-            if (GodModePlayerUids.Count > 0 || NoClipPlayerUids.Count > 0)
+            if (changed)
             {
                 WebDashboardSnapshotCache.MarkDirty();
             }
+        }
+
+        private static bool ShouldPruneCheatPlayer(long playerUid, out VPlayer? player, out bool shouldDisable)
+        {
+            player = null;
+            shouldDisable = false;
+
+            if (!WebDashboardSessionAccess.TryGetSessionContextByUid(playerUid, out SessionContext? context)
+                || context == null)
+            {
+                return true;
+            }
+
+            if (!WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out player)
+                || player == null)
+            {
+                return false;
+            }
+
+            if (!player.IsAliveStatus())
+            {
+                shouldDisable = true;
+                return true;
+            }
+
+            return false;
         }
 
         private static void RevertAppliedCheats()

@@ -659,11 +659,58 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             WebDashboardPlayerStateResolver.ApplyActivityState(dto, context);
 
-            if (WebDashboardGameState.IsHost() && dto.PlayerUid != 0)
+            if (WebDashboardGameState.IsHost())
             {
-                dto.GodMode = WebDashboardHostCheatsRuntime.IsGodModeEnabled(dto.PlayerUid);
-                dto.NoClip = WebDashboardHostCheatsRuntime.IsNoClipEnabled(dto.PlayerUid);
+                long cheatUid = ResolveCheatPlayerUid(dto, context);
+                if (cheatUid != 0)
+                {
+                    if (dto.PlayerUid == 0)
+                    {
+                        dto.PlayerUid = cheatUid;
+                    }
+
+                    dto.GodMode = WebDashboardHostCheatsRuntime.IsGodModeEnabled(cheatUid);
+                    dto.NoClip = WebDashboardHostCheatsRuntime.IsNoClipEnabled(cheatUid);
+                }
             }
+        }
+
+        private static long ResolveCheatPlayerUid(WebDashboardPlayerDto dto, SessionContext? context)
+        {
+            if (dto.PlayerUid != 0)
+            {
+                return dto.PlayerUid;
+            }
+
+            VPlayer? vPlayer = context != null ? WebDashboardSessionAccess.GetVPlayer(context) : null;
+            if (vPlayer != null)
+            {
+                return vPlayer.UID;
+            }
+
+            if (dto.SteamId == 0)
+            {
+                return 0;
+            }
+
+            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return 0;
+            }
+
+            foreach (SessionContext sessionContext in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            {
+                if (sessionContext.SteamID != dto.SteamId)
+                {
+                    continue;
+                }
+
+                vPlayer = WebDashboardSessionAccess.GetVPlayer(sessionContext);
+                return vPlayer?.UID ?? 0;
+            }
+
+            return 0;
         }
 
         private static void ApplyConnectionInfo(WebDashboardPlayerDto dto, SessionContext? context)
