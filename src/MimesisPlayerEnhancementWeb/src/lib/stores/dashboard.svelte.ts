@@ -17,7 +17,14 @@ import type {
 } from '../types';
 import { isLobbyRoute } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
-  import { isValidSteamId, isChangelogPending, OFFLINE_ROUTES, parseHash, navigate } from '../utils';
+  import {
+  canEditSaveSettings,
+  isValidSteamId,
+  isChangelogPending,
+  OFFLINE_ROUTES,
+  parseHash,
+  navigate,
+} from '../utils';
 
 const BLIND_MODE_STORAGE_KEY = 'playerBlindModeEnabled';
 const LEGACY_BLIND_MODE_STORAGE_KEY = 'playerBlindModeUserEnabled';
@@ -353,6 +360,12 @@ class DashboardStore {
 
   applySnapshot(payload: SnapshotPayload) {
     const wasConnected = this.status.isConnected;
+    const previousSaveSlotId = this.status.saveSlotId;
+    const wasSaveEditable = canEditSaveSettings({
+      isConnected: wasConnected,
+      isHost: this.status.isHost,
+      saveSlotId: previousSaveSlotId,
+    });
     const previousSessionScene = this.lastSessionScene;
     this.status = payload.status || this.status;
     if (payload.playersLiveOnly) {
@@ -389,6 +402,8 @@ class DashboardStore {
       this.lastSessionScene = '';
     } else if (this.status.isConnected && !wasConnected) {
       void this.prefetchDashboardData();
+    } else if (canEditSaveSettings(this.status) && !wasSaveEditable) {
+      void this.prefetchDashboardData(true);
     } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
       this.applyMinimapFilter();
     }
@@ -547,7 +562,7 @@ class DashboardStore {
     void this.loadGlobalSettings(true, force);
     void this.loadItemCatalog();
     void this.loadDungeonCatalog();
-    if (this.status.isConnected && this.status.isHost) {
+    if (canEditSaveSettings(this.status)) {
       void this.loadSaveProfileData(force);
       void this.loadSaveSettings(true, force);
     }
@@ -576,7 +591,7 @@ class DashboardStore {
   }
 
   async loadSaveSettings(background = false, force = false) {
-    if (!this.status.isHost) return;
+    if (!canEditSaveSettings(this.status)) return;
     if (!force && this.settingsSave) return;
     if (this.saveSettingsPromise) return this.saveSettingsPromise;
 
@@ -602,7 +617,7 @@ class DashboardStore {
 
   async loadPageData(force = false) {
     const onGlobal = this.route === 'global-settings';
-    const onSettings = this.route === 'settings' && this.status.isHost;
+    const onSettings = this.route === 'settings' && canEditSaveSettings(this.status);
     const settingsActivelyEditing =
       onSettings
       && (this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
@@ -686,7 +701,7 @@ class DashboardStore {
   }
 
   async loadSaveProfileData(force = false) {
-    if (!this.status.isHost) return;
+    if (!canEditSaveSettings(this.status)) return;
     if (!force && this.saveProfile) return;
     if (this.saveProfilePromise) return this.saveProfilePromise;
 

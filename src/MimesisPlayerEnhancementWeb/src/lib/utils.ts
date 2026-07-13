@@ -42,6 +42,15 @@ export function formatCountMap(
 
 export const OFFLINE_ROUTES = ['home', 'changelog', 'donation', 'global-settings'];
 
+/** Mirrors WebDashboardGameState.CanEditSaveSettings on the server. */
+export function canEditSaveSettings(status: {
+  isConnected: boolean;
+  isHost: boolean;
+  saveSlotId: number;
+}) {
+  return status.isConnected && status.isHost && status.saveSlotId >= 0;
+}
+
 export function parseHash(): {
   route: string;
   settingsSubRoute: string;
