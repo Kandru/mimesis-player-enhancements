@@ -3,7 +3,7 @@
   import { t } from '$lib/i18n';
   import { doorSegment } from '$lib/minimap/minimapDoors';
   import { createMinimapNavigation } from '$lib/minimap/minimapNavigation';
-  import { createMinimapThrottler } from '$lib/minimap/minimapThrottler';
+  import { fingerprintMarkers } from '$lib/minimap/minimapThrottler';
   import {
     computeViewportFromBounds,
     computeViewportFromTiles,
@@ -27,8 +27,6 @@
     },
   });
 
-  const throttler = createMinimapThrottler(100);
-
   const isOpenMode = $derived(data?.displayMode === 'open');
   const isHidden = $derived(!data || data.displayMode === 'hidden');
   const borderless = $derived(
@@ -38,6 +36,24 @@
   const layoutKey = $derived(
     `${data?.layoutVersion}:${data?.activeAreaId}:${data?.displayMode}:${data?.tiles?.length ?? 0}`,
   );
+
+  const markerMotionKey = $derived(
+    data?.markers?.length ? fingerprintMarkers(data.markers) : '',
+  );
+
+  const followSteamId = $derived(
+    dashboard.minimapFocusSteamId && dashboard.canFollowMinimapPlayers
+      ? dashboard.minimapFocusSteamId
+      : '',
+  );
+
+  const followedMarker = $derived(
+    followSteamId
+      ? liveMarkers.find((marker) => String(marker.steamId) === followSteamId) ?? null
+      : null,
+  );
+
+  const mapCenter = VIEW_SIZE * 0.5;
 
   const staticLayer = $derived.by(() => {
     void navVersion;
@@ -64,41 +80,60 @@
   });
 
   $effect(() => {
-    if (!data) return;
-    throttler.schedule(() => {
-      liveMarkers = data.markers || [];
-      liveTrain = data.train ?? null;
-    });
-  });
-
-  $effect(() => () => throttler.dispose());
-
-  $effect(() => {
-    if (dashboard.minimapFocusSteamId && dashboard.canFollowMinimapPlayers) {
-      navigation.setFollow(dashboard.minimapFocusSteamId);
-    } else {
+    void markerMotionKey;
+    void followSteamId;
+    void layoutKey;
+    if (!data) {
+      liveMarkers = [];
+      liveTrain = null;
       navigation.setFollow(null);
+      return;
     }
-  });
 
-  $effect(() => {
-    if (!liveMarkers.length || !navigation.followSteamId) return;
-    const focused = liveMarkers.find((m) => String(m.steamId) === navigation.followSteamId);
+    liveMarkers = data.markers || [];
+    liveTrain = data.train ?? null;
+    navigation.setFollow(followSteamId || null);
+
+    if (!followSteamId) {
+      return;
+    }
+
+    const focused = liveMarkers.find((marker) => String(marker.steamId) === followSteamId);
     navigation.tickFollow(focused);
   });
 
   $effect(() => {
     if (!viewportEl) return;
-    const observer = new ResizeObserver(() => {
-      if (!navigation.userOverride && !navigation.followSteamId && data && !isHidden) {
-        const tiles = data.tiles || [];
-        const tight = isOpenMode || data.layoutKind === 'tram';
-        if (tiles.length) navigation.fitToTiles(tiles, tight);
-        else navigation.fitToBounds(data.bounds, tight);
+
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[0]?.contentRect;
+      if (!rect) return;
+      if (Math.abs(rect.width - lastWidth) < 1 && Math.abs(rect.height - lastHeight) < 1) {
+        return;
       }
+      lastWidth = rect.width;
+      lastHeight = rect.height;
+
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (!navigation.userOverride && !navigation.followSteamId && data && !isHidden) {
+          const tiles = data.tiles || [];
+          const tight = isOpenMode || data.layoutKind === 'tram';
+          if (tiles.length) navigation.fitToTiles(tiles, tight);
+          else navigation.fitToBounds(data.bounds, tight);
+        }
+      }, 150);
     });
+
     observer.observe(viewportEl);
-    return () => observer.disconnect();
+    return () => {
+      if (timer) clearTimeout(timer);
+      observer.disconnect();
+    };
   });
 
   function markerClass(m: MinimapMarkerDto, blind: boolean) {
@@ -226,17 +261,31 @@
 
         <g class="minimap-markers">
           {#each liveMarkers as marker (marker.steamId)}
-            {@const pos = mapPoint(rendered.vp, marker.x, marker.z)}
-            <g class={markerClass(marker, !!data.blindMode)} transform="translate({pos.x} {pos.y})">
-              <g transform="rotate({marker.yaw + 180})">
-                <circle r="10" />
-                <polygon class="minimap-heading" points="0,16 6,6 -6,6" />
+            {#if String(marker.steamId) !== followSteamId}
+              {@const pos = mapPoint(rendered.vp, marker.x, marker.z)}
+              <g class={markerClass(marker, !!data.blindMode)} transform="translate({pos.x} {pos.y})">
+                <g transform="rotate({marker.yaw + 180})">
+                  <circle r="10" />
+                  <polygon class="minimap-heading" points="0,16 6,6 -6,6" />
+                </g>
+                <text y="24" class="minimap-marker-label">{(marker.displayName || '').slice(0, 10)}</text>
               </g>
-              <text y="24" class="minimap-marker-label">{(marker.displayName || '').slice(0, 10)}</text>
-            </g>
+            {/if}
           {/each}
         </g>
       </g>
+      {#if followedMarker}
+        <g
+          class="{markerClass(followedMarker, !!data.blindMode)} minimap-marker-followed"
+          transform="translate({mapCenter} {mapCenter})"
+        >
+          <g transform="rotate({followedMarker.yaw + 180})">
+            <circle r="10" />
+            <polygon class="minimap-heading" points="0,16 6,6 -6,6" />
+          </g>
+          <text y="24" class="minimap-marker-label">{(followedMarker.displayName || '').slice(0, 10)}</text>
+        </g>
+      {/if}
     </svg>
     </div>
   </div>

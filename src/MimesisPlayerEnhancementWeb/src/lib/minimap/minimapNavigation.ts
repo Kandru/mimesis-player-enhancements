@@ -10,6 +10,14 @@ import {
 
 export type MinimapNavigation = ReturnType<typeof createMinimapNavigation>;
 
+function viewportEquals(a: Viewport, b: Viewport) {
+  return (
+    Math.abs(a.scale - b.scale) < 1e-6
+    && Math.abs(a.offsetX - b.offsetX) < 1e-6
+    && Math.abs(a.offsetZ - b.offsetZ) < 1e-6
+  );
+}
+
 export function createMinimapNavigation(options: {
   onChange?: () => void;
 }) {
@@ -37,9 +45,17 @@ export function createMinimapNavigation(options: {
   }
 
   function setBaseViewport(vp: Viewport) {
+    const viewportChanged = !viewportEquals(baseViewport, vp);
+    if (!viewportChanged) {
+      return;
+    }
+
     baseViewport = vp;
     if (!userOverride && !followSteamId) {
-      resetTransform();
+      panX = 0;
+      panY = 0;
+      zoom = 1;
+      userOverride = false;
     }
     notify();
   }
@@ -57,7 +73,12 @@ export function createMinimapNavigation(options: {
   }
 
   function setFollow(steamId: string | null) {
-    followSteamId = steamId || null;
+    const next = steamId || null;
+    if (followSteamId === next) {
+      return;
+    }
+
+    followSteamId = next;
     if (followSteamId) {
       userOverride = false;
     }
@@ -72,18 +93,28 @@ export function createMinimapNavigation(options: {
   }
 
   function clearFollowFromInteraction() {
+    let changed = false;
     if (followSteamId) {
       followSteamId = null;
+      changed = true;
     }
-    userOverride = true;
-    notify();
+    if (!userOverride) {
+      userOverride = true;
+      changed = true;
+    }
+    if (changed) {
+      notify();
+    }
   }
 
   function handleWheel(event: WheelEvent) {
     event.preventDefault();
     clearFollowFromInteraction();
-    const factor = event.deltaY < 0 ? 1.12 : 0.89;
-    zoom = Math.min(8, Math.max(0.35, zoom * factor));
+    const nextZoom = Math.min(8, Math.max(0.35, zoom * (event.deltaY < 0 ? 1.12 : 0.89)));
+    if (Math.abs(nextZoom - zoom) < 1e-6) {
+      return;
+    }
+    zoom = nextZoom;
     notify();
   }
 
@@ -100,8 +131,13 @@ export function createMinimapNavigation(options: {
   function handlePointerMove(event: PointerEvent) {
     if (!dragging) return;
     clearFollowFromInteraction();
-    panX = dragPanX + (event.clientX - dragStartX);
-    panY = dragPanY + (event.clientY - dragStartY);
+    const nextPanX = dragPanX + (event.clientX - dragStartX);
+    const nextPanY = dragPanY + (event.clientY - dragStartY);
+    if (Math.abs(nextPanX - panX) < 0.5 && Math.abs(nextPanY - panY) < 0.5) {
+      return;
+    }
+    panX = nextPanX;
+    panY = nextPanY;
     notify();
   }
 
@@ -112,15 +148,26 @@ export function createMinimapNavigation(options: {
 
   function zoomBy(delta: number) {
     clearFollowFromInteraction();
-    zoom = Math.min(8, Math.max(0.35, zoom + delta));
+    const nextZoom = Math.min(8, Math.max(0.35, zoom + delta));
+    if (Math.abs(nextZoom - zoom) < 1e-6) {
+      return;
+    }
+    zoom = nextZoom;
     notify();
   }
 
   function tickFollow(marker: MinimapMarkerDto | null | undefined) {
     if (!followSteamId || !marker || userOverride) return;
     const pos = mapPoint(baseViewport, marker.x, marker.z);
-    panX = VIEW_SIZE * 0.5 - pos.x * zoom;
-    panY = VIEW_SIZE * 0.5 - pos.y * zoom;
+    const cx = VIEW_SIZE * 0.5;
+    const cy = VIEW_SIZE * 0.5;
+    const nextPanX = zoom * (cx - pos.x);
+    const nextPanY = zoom * (cy - pos.y);
+    if (Math.abs(nextPanX - panX) < 0.05 && Math.abs(nextPanY - panY) < 0.05) {
+      return;
+    }
+    panX = nextPanX;
+    panY = nextPanY;
     notify();
   }
 

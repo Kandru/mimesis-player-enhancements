@@ -1705,8 +1705,12 @@ body {
   stroke-width: 3;
 }
 
-.minimap-heading {
-  fill: #fff;
+.minimap-marker-followed {
+  pointer-events: none;
+}
+
+.minimap-marker-followed circle {
+  stroke-width: 3;
 }
 
 .minimap-tile-label,
