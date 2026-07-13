@@ -5,6 +5,12 @@ export const MINIMAP_MARKER_SMOOTH_MS = 100;
 /** Normalized map units; above this distance markers snap instead of sliding. */
 export const MINIMAP_MARKER_TELEPORT_DIST = 0.08;
 
+export type MarkerDisplayPosition = {
+  x: number;
+  z: number;
+  yaw: number;
+};
+
 type MarkerMotionState = {
   displayX: number;
   displayZ: number;
@@ -24,7 +30,7 @@ function lerp(a: number, b: number, t: number) {
 }
 
 function lerpYaw(from: number, to: number, t: number) {
-  let delta = ((to - from + 540) % 360) - 180;
+  const delta = ((to - from + 540) % 360) - 180;
   return from + delta * t;
 }
 
@@ -122,29 +128,12 @@ export function createMinimapMarkerMotion() {
     return animating;
   }
 
-  function isAnimating() {
-    for (const state of states.values()) {
-      if (state.animDuration > 0) {
-        return true;
-      }
+  function getDisplayPosition(steamId: string | number): MarkerDisplayPosition | null {
+    const state = states.get(String(steamId));
+    if (!state) {
+      return null;
     }
-    return false;
-  }
-
-  function getDisplayMarkers(markers: MinimapMarkerDto[]): MinimapMarkerDto[] {
-    return markers.map((marker) => {
-      const state = states.get(String(marker.steamId));
-      if (!state) {
-        return marker;
-      }
-
-      return {
-        ...marker,
-        x: state.displayX,
-        z: state.displayZ,
-        yaw: state.displayYaw,
-      };
-    });
+    return { x: state.displayX, z: state.displayZ, yaw: state.displayYaw };
   }
 
   function reset() {
@@ -154,8 +143,9 @@ export function createMinimapMarkerMotion() {
   return {
     setTargets,
     tick,
-    isAnimating,
-    getDisplayMarkers,
+    getDisplayPosition,
     reset,
   };
 }
+
+export type MinimapMarkerMotion = ReturnType<typeof createMinimapMarkerMotion>;

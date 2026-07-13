@@ -1954,6 +1954,7 @@ body.dev-verify-shake {
   fill: #e2e8f0;
   stroke: #94a3b8;
   stroke-width: 2;
+  transition: fill-opacity 0.25s ease, opacity 0.25s ease, stroke-opacity 0.25s ease;
 }
 
 .minimap-tile.main-path {
@@ -1974,6 +1975,7 @@ body.dev-verify-shake {
 .minimap-connection {
   stroke: #64748b;
   stroke-linecap: round;
+  transition: opacity 0.25s ease, stroke-opacity 0.25s ease;
 }
 
 .dark .minimap-connection {
@@ -1991,6 +1993,28 @@ body.dev-verify-shake {
 .minimap-tile.multi-floor {
   stroke-dasharray: 6 4;
   stroke: #38bdf8;
+}
+
+.minimap-tile.inactive-floor {
+  opacity: 0.35;
+  filter: saturate(0.25);
+}
+
+.minimap-tile.inactive-floor .minimap-tile-label {
+  opacity: 0.45;
+}
+
+.minimap-tile.multi-floor.inactive-floor {
+  opacity: 0.55;
+  filter: saturate(0.45);
+}
+
+.minimap-connection.inactive-floor {
+  opacity: 0.3;
+}
+
+.dark .minimap-tile.inactive-floor {
+  opacity: 0.4;
 }
 
 .minimap-tram-bounds {
@@ -2084,12 +2108,6 @@ body.dev-verify-shake {
   stroke-width: 1.5;
 }
 
-.minimap-stair circle {
-  fill: #38bdf8;
-  stroke: #e0f2fe;
-  stroke-width: 1.5;
-}
-
 .minimap-marker circle {
   fill: #22c55e;
   stroke: #fff;
@@ -2105,17 +2123,6 @@ body.dev-verify-shake {
 .minimap-marker.dead circle,
 .minimap-marker.dead .minimap-heading {
   fill: #6b7280;
-}
-
-.minimap-marker.blind-other circle,
-.minimap-marker.blind-other .minimap-heading {
-  fill: #9ca3af;
-  stroke: #e5e7eb;
-  opacity: 0.75;
-}
-
-.minimap-marker.blind-other .minimap-marker-label {
-  opacity: 0.55;
 }
 
 .minimap-marker.local circle,

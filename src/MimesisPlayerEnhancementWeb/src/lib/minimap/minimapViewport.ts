@@ -82,7 +82,8 @@ export function computeViewportFromBounds(
   bounds: MinimapBoundsDto | null | undefined,
   padding = VIEW_PADDING,
 ): Viewport {
-  if (!bounds) return { scale: 1, offsetX: 0, offsetZ: 0 };
+  // Payload bounds are already normalized; markers-only / empty-tile views use the full 0–1 square.
+  void bounds;
   return computeViewportFromNormalizedRect(0, 0, 1, 1, padding);
 }
 

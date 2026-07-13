@@ -18,6 +18,12 @@ import type {
   SnapshotPayload,
   StatusDto,
 } from '../types';
+import {
+  listIndoorAreas,
+  mergeIndoorComposite,
+  shouldUseIndoorComposite,
+} from '../minimap/minimapFloorState';
+import { fingerprintMarkers } from '../minimap/minimapThrottler';
 import { isLobbyRoute } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
   import {
@@ -84,7 +90,7 @@ function buildTileFloorSpanMap(tiles: MinimapTileDto[]) {
 
 function resolveSseChannels(route: string): string[] {
   const channels = ['snapshot'];
-  if (route === 'minimap' || route === 'player') {
+  if (route === 'minimap') {
     channels.push('minimap');
   }
   return channels;
@@ -148,6 +154,8 @@ class DashboardStore {
 
   private eventSource: EventSource | null = null;
   private sseChannelsKey = '';
+  private lastMinimapLayoutFingerprint = '';
+  private lastMinimapMarkerFingerprint = '';
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private lastSnapshotVersion = -1;
   private lastRoute = '';
@@ -432,7 +440,7 @@ class DashboardStore {
       void this.prefetchDashboardData();
     } else if (canEditSaveSettings(this.status) && !wasSaveEditable) {
       void this.prefetchDashboardData(true);
-    } else if (this.status.isConnected && (this.route === 'minimap' || this.route === 'player')) {
+    } else if (this.status.isConnected && this.route === 'minimap') {
       this.applyMinimapFilter();
     }
     this.ensureDefaultRoute();
@@ -442,7 +450,7 @@ class DashboardStore {
   applyMinimapLive(minimap: MinimapPayload) {
     if (!this.status.isConnected || !minimap) return;
     this.minimapRaw = minimap;
-    if (this.route === 'minimap' || this.route === 'player') {
+    if (this.route === 'minimap') {
       this.applyMinimapFilter(false);
     }
   }
@@ -496,6 +504,8 @@ class DashboardStore {
   applyMinimapFilter(force = false) {
     if (!this.minimapRaw) {
       this.minimap = null;
+      this.lastMinimapLayoutFingerprint = '';
+      this.lastMinimapMarkerFingerprint = '';
       return;
     }
 
@@ -515,12 +525,31 @@ class DashboardStore {
     const activeAreaId = this.resolveMinimapAreaId(markers, areas, raw);
     const activeArea = areas.find((area) => area.id === activeAreaId) ?? null;
     const activeFloorIndex = parseFloorFromAreaId(activeAreaId);
-    const tileFloorSpan = buildTileFloorSpanMap(activeArea?.tiles || []);
+    const compositeIndoor =
+      shouldUseIndoorComposite(raw.layoutKind, areas)
+      && (activeAreaId === 'indoor' || activeAreaId.startsWith('indoor-'));
+    const indoorAreas = compositeIndoor ? listIndoorAreas(areas) : [];
+
+    let tiles = activeArea?.tiles?.length ? activeArea.tiles : raw.tiles || [];
+    let connectionPoints = activeArea?.connectionPoints?.length
+      ? activeArea.connectionPoints
+      : [];
+
+    if (compositeIndoor && indoorAreas.length >= 2) {
+      const composite = mergeIndoorComposite(indoorAreas, activeFloorIndex);
+      tiles = composite.tiles;
+      connectionPoints = composite.connectionPoints;
+    }
+
+    const tileFloorSpan = buildTileFloorSpanMap(tiles);
 
     const areaMarkers = markers.filter((marker) => {
       if (!activeAreaId) return true;
       if (!marker.areaId) return raw.displayMode === 'open' || raw.displayMode === 'markers-only';
       if (marker.areaId === activeAreaId) return true;
+      if (compositeIndoor && marker.areaId.startsWith('indoor') && activeAreaId.startsWith('indoor')) {
+        if (marker.floorIndex === activeFloorIndex) return true;
+      }
       if (marker.tileId && tileFloorSpan.has(marker.tileId)) {
         const span = tileFloorSpan.get(marker.tileId) || [];
         return span.includes(activeFloorIndex);
@@ -530,6 +559,38 @@ class DashboardStore {
         && activeAreaId.startsWith('indoor');
     });
 
+    const layoutFingerprint = [
+      raw.layoutVersion,
+      activeAreaId,
+      activeFloorIndex,
+      compositeIndoor ? 'composite' : 'single',
+      areas.length,
+      tiles.length,
+      connectionPoints.length,
+      this.playerBlindMode ? 'blind' : 'normal',
+    ].join(':');
+    const markerFingerprint = fingerprintMarkers(areaMarkers);
+
+    if (
+      !force
+      && this.minimap
+      && layoutFingerprint === this.lastMinimapLayoutFingerprint
+      && markerFingerprint === this.lastMinimapMarkerFingerprint
+    ) {
+      return;
+    }
+
+    const markersOnly = !force
+      && this.minimap
+      && layoutFingerprint === this.lastMinimapLayoutFingerprint
+      && markerFingerprint !== this.lastMinimapMarkerFingerprint;
+
+    if (markersOnly) {
+      this.minimap.markers = areaMarkers;
+      this.lastMinimapMarkerFingerprint = markerFingerprint;
+      return;
+    }
+
     this.minimap = {
       layoutVersion: raw.layoutVersion,
       layoutKind: raw.layoutKind,
@@ -538,18 +599,20 @@ class DashboardStore {
       defaultAreaId: raw.defaultAreaId,
       bounds: activeArea?.bounds ?? raw.bounds,
       areas: raw.areas,
-      tiles: activeArea?.tiles?.length ? activeArea.tiles : raw.tiles || [],
+      tiles,
       markers: areaMarkers,
       train: this.resolveTrainForArea(raw.train, activeAreaId),
       pointsOfInterest: this.resolvePoisForArea(raw.pointsOfInterest, activeAreaId),
       activeAreaId,
       activeAreaLabel: activeArea?.label ?? '',
       activeFloorIndex,
-      connectionPoints: activeArea?.connectionPoints?.length
-        ? activeArea.connectionPoints
-        : [],
+      connectionPoints,
       blindMode: this.playerBlindMode,
+      compositeIndoor,
     };
+
+    this.lastMinimapLayoutFingerprint = layoutFingerprint;
+    this.lastMinimapMarkerFingerprint = markerFingerprint;
 
     if (force || activeAreaId !== this.minimapAreaId) {
       this.minimapAreaId = activeAreaId;
@@ -745,7 +808,7 @@ class DashboardStore {
           await this.loadSaveSettings(false, force);
         }
       }
-      if ((this.route === 'minimap' || this.route === 'player') && this.minimapRaw) {
+      if (this.route === 'minimap' && this.minimapRaw) {
         this.applyMinimapFilter(force);
       }
       if (this.status.isHost && this.route === 'players') await this.loadItemCatalog();

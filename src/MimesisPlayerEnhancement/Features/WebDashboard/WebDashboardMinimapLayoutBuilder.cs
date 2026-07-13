@@ -171,6 +171,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardMinimapFloorRegistry.Clear();
             Dictionary<int, int> tileFloorById = [];
             Dictionary<int, List<int>> tileFloorSpanById = [];
+            List<RawMapTile> sharedRawTiles = CollectRawTilesFromGraph(indoorGraph, 0);
+            WorldBounds? sharedBounds = sharedRawTiles.Count > 0
+                ? ComputeWorldBounds(sharedRawTiles)
+                : null;
+
             foreach (Tile tile in indoorGraph.Tiles)
             {
                 if (tile == null || !indoorGraph.TileIds.TryGetValue(tile, out int tileId))
@@ -195,7 +200,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 string areaId = WebDashboardMinimapHeightLayers.BuildIndoorLayerAreaId(layerIndex, layers.Count);
                 string label = WebDashboardMinimapHeightLayers.BuildIndoorLayerLabel(layerIndex, layers.Count);
-                WebDashboardMinimapAreaDto area = BuildAreaFromGraph(layerGraph, areaId, label, "indoor", layerIndex);
+                WebDashboardMinimapAreaDto area = BuildAreaFromGraph(
+                    layerGraph,
+                    areaId,
+                    label,
+                    "indoor",
+                    layerIndex,
+                    sharedBounds);
                 WebDashboardMinimapFloorRegistry.RegisterLayer(layerIndex, areaId, layer.MinY, layer.MaxY);
 
                 foreach (KeyValuePair<Tile, int> entry in layerGraph.TileIds)
@@ -264,12 +275,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             internal readonly int FloorIndex;
         }
 
-        private static WebDashboardMinimapAreaDto BuildAreaFromGraph(
+        private readonly struct WorldBounds
+        {
+            internal WorldBounds(float minX, float maxX, float minZ, float maxZ)
+            {
+                MinX = minX;
+                MaxX = maxX;
+                MinZ = minZ;
+                MaxZ = maxZ;
+            }
+
+            internal readonly float MinX;
+            internal readonly float MaxX;
+            internal readonly float MinZ;
+            internal readonly float MaxZ;
+        }
+
+        private static List<RawMapTile> CollectRawTilesFromGraph(
             WebDashboardMinimapDungeonGraph graph,
-            string areaId,
-            string label,
-            string kind,
-            int floorIndex = 0)
+            int floorIndex)
         {
             List<RawMapTile> rawTiles = [];
             foreach (Tile tile in graph.Tiles)
@@ -295,13 +319,55 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     floorIndex));
             }
 
+            return rawTiles;
+        }
+
+        private static WorldBounds ComputeWorldBounds(List<RawMapTile> rawTiles)
+        {
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+            foreach (RawMapTile tile in rawTiles)
+            {
+                float halfW = tile.Width * 0.5f;
+                float halfH = tile.Height * 0.5f;
+                minX = Mathf.Min(minX, tile.CenterX - halfW);
+                maxX = Mathf.Max(maxX, tile.CenterX + halfW);
+                minZ = Mathf.Min(minZ, tile.CenterZ - halfH);
+                maxZ = Mathf.Max(maxZ, tile.CenterZ + halfH);
+            }
+
+            float spanX = Mathf.Max(maxX - minX, 1f);
+            float spanZ = Mathf.Max(maxZ - minZ, 1f);
+            float padX = spanX * WebDashboardMinimapMath.BoundsPadding;
+            float padZ = spanZ * WebDashboardMinimapMath.BoundsPadding;
+            return new WorldBounds(minX - padX, maxX + padX, minZ - padZ, maxZ + padZ);
+        }
+
+        private static WebDashboardMinimapAreaDto BuildAreaFromGraph(
+            WebDashboardMinimapDungeonGraph graph,
+            string areaId,
+            string label,
+            string kind,
+            int floorIndex = 0,
+            WorldBounds? sharedBounds = null)
+        {
+            List<RawMapTile> rawTiles = CollectRawTilesFromGraph(graph, floorIndex);
             List<(string fromId, string toId)> connections = [];
             foreach ((int from, int to) in graph.Connections)
             {
                 connections.Add(($"tile-{from}", $"tile-{to}"));
             }
 
-            WebDashboardMinimapAreaDto area = BuildAreaFromRawTiles(areaId, label, kind, rawTiles, connections, includeEdgeConnections: false);
+            WebDashboardMinimapAreaDto area = BuildAreaFromRawTiles(
+                areaId,
+                label,
+                kind,
+                rawTiles,
+                connections,
+                includeEdgeConnections: false,
+                sharedBounds);
             Dictionary<string, WebDashboardMinimapTileDto> tilesById = [];
             foreach (WebDashboardMinimapTileDto tileDto in area.Tiles)
             {
@@ -349,7 +415,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string kind,
             List<RawMapTile> rawTiles,
             List<(string fromId, string toId)> connections,
-            bool includeEdgeConnections = true)
+            bool includeEdgeConnections = true,
+            WorldBounds? sharedBounds = null)
         {
             WebDashboardMinimapAreaDto area = new()
             {
@@ -363,30 +430,45 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return area;
             }
 
-            float minX = float.PositiveInfinity;
-            float maxX = float.NegativeInfinity;
-            float minZ = float.PositiveInfinity;
-            float maxZ = float.NegativeInfinity;
-            foreach (RawMapTile tile in rawTiles)
+            float minX;
+            float maxX;
+            float minZ;
+            float maxZ;
+            if (sharedBounds.HasValue)
             {
-                float halfW = tile.Width * 0.5f;
-                float halfH = tile.Height * 0.5f;
-                minX = Mathf.Min(minX, tile.CenterX - halfW);
-                maxX = Mathf.Max(maxX, tile.CenterX + halfW);
-                minZ = Mathf.Min(minZ, tile.CenterZ - halfH);
-                maxZ = Mathf.Max(maxZ, tile.CenterZ + halfH);
+                minX = sharedBounds.Value.MinX;
+                maxX = sharedBounds.Value.MaxX;
+                minZ = sharedBounds.Value.MinZ;
+                maxZ = sharedBounds.Value.MaxZ;
+            }
+            else
+            {
+                minX = float.PositiveInfinity;
+                maxX = float.NegativeInfinity;
+                minZ = float.PositiveInfinity;
+                maxZ = float.NegativeInfinity;
+                foreach (RawMapTile tile in rawTiles)
+                {
+                    float halfW = tile.Width * 0.5f;
+                    float halfH = tile.Height * 0.5f;
+                    minX = Mathf.Min(minX, tile.CenterX - halfW);
+                    maxX = Mathf.Max(maxX, tile.CenterX + halfW);
+                    minZ = Mathf.Min(minZ, tile.CenterZ - halfH);
+                    maxZ = Mathf.Max(maxZ, tile.CenterZ + halfH);
+                }
+
+                float spanX = Mathf.Max(maxX - minX, 1f);
+                float spanZ = Mathf.Max(maxZ - minZ, 1f);
+                float padX = spanX * WebDashboardMinimapMath.BoundsPadding;
+                float padZ = spanZ * WebDashboardMinimapMath.BoundsPadding;
+                minX -= padX;
+                maxX += padX;
+                minZ -= padZ;
+                maxZ += padZ;
             }
 
-            float spanX = Mathf.Max(maxX - minX, 1f);
-            float spanZ = Mathf.Max(maxZ - minZ, 1f);
-            float padX = spanX * WebDashboardMinimapMath.BoundsPadding;
-            float padZ = spanZ * WebDashboardMinimapMath.BoundsPadding;
-            minX -= padX;
-            maxX += padX;
-            minZ -= padZ;
-            maxZ += padZ;
-            spanX = maxX - minX;
-            spanZ = maxZ - minZ;
+            float spanXNorm = maxX - minX;
+            float spanZNorm = maxZ - minZ;
 
             area.Bounds = new WebDashboardMinimapBoundsDto
             {
@@ -403,10 +485,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     Id = tile.Id,
                     Label = tile.Label,
-                    X = WebDashboardMinimapMath.Normalize(tile.CenterX - (tile.Width * 0.5f), minX, spanX),
-                    Z = WebDashboardMinimapMath.Normalize(tile.CenterZ - (tile.Height * 0.5f), minZ, spanZ),
-                    W = Mathf.Clamp01(tile.Width / spanX),
-                    H = Mathf.Clamp01(tile.Height / spanZ),
+                    X = WebDashboardMinimapMath.Normalize(tile.CenterX - (tile.Width * 0.5f), minX, spanXNorm),
+                    Z = WebDashboardMinimapMath.Normalize(tile.CenterZ - (tile.Height * 0.5f), minZ, spanZNorm),
+                    W = Mathf.Clamp01(tile.Width / spanXNorm),
+                    H = Mathf.Clamp01(tile.Height / spanZNorm),
                     IsMainPath = tile.IsMainPath,
                     CenterY = tile.CenterY,
                     FloorIndex = tile.FloorIndex,

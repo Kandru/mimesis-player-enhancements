@@ -91,6 +91,7 @@ export interface MinimapTileDto {
   centerY?: number;
   multiFloor?: boolean;
   floorSpan?: number[];
+  floorState?: 'active' | 'inactive' | 'connector';
 }
 
 export interface MinimapConnectionPointDto {
@@ -171,6 +172,7 @@ export interface MinimapPayload {
   activeFloorIndex?: number;
   connectionPoints?: MinimapConnectionPointDto[];
   blindMode?: boolean;
+  compositeIndoor?: boolean;
 }
 
 export interface SnapshotPayload {

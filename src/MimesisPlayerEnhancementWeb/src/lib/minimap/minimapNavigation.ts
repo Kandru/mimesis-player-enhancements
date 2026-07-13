@@ -31,8 +31,6 @@ export function createMinimapNavigation(options: {
   let zoom = DEFAULT_MINIMAP_ZOOM;
   let userOverride = false;
   let followSteamId: string | null = null;
-  let activeAreaId = '';
-  let activeFloorIndex = 0;
   let dragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
@@ -106,13 +104,6 @@ export function createMinimapNavigation(options: {
     if (followSteamId) {
       userOverride = false;
     }
-    notify();
-  }
-
-  function setArea(areaId: string, floorIndex = 0) {
-    activeAreaId = areaId;
-    activeFloorIndex = floorIndex;
-    resetTransform();
     notify();
   }
 
@@ -238,12 +229,6 @@ export function createMinimapNavigation(options: {
     get followSteamId() {
       return followSteamId;
     },
-    get activeAreaId() {
-      return activeAreaId;
-    },
-    get activeFloorIndex() {
-      return activeFloorIndex;
-    },
     get pivotX() {
       return viewMetrics.pivotX;
     },
@@ -255,7 +240,6 @@ export function createMinimapNavigation(options: {
     fitToTiles,
     fitToBounds,
     setFollow,
-    setArea,
     clearFollowFromInteraction,
     handleWheel,
     handlePointerDown,
