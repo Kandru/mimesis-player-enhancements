@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./easter-eggs.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

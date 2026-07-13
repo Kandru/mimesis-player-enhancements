@@ -57,6 +57,9 @@
     <div class="sidebar-brand-text">
       <div class="sidebar-brand-title">{t('dashboard.brand_title')}</div>
       <div class="sidebar-brand-sub">{t('dashboard.brand_subtitle')}</div>
+      {#if dashboard.activeEasterEggFlavorKey}
+        <div class="sidebar-easter-flavor">{t(dashboard.activeEasterEggFlavorKey)}</div>
+      {/if}
     </div>
   </button>
 

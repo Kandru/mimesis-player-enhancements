@@ -1,0 +1,322 @@
+/* Easter egg theming — egg-* classes live on <html> (:root) */
+
+/* ── New Year ── */
+:root.egg-new-year {
+  --brand: #b8860b;
+  --brand-dark: #8b6914;
+}
+:root.dark.egg-new-year {
+  --brand: #f0c040;
+  --brand-dark: #d4a017;
+}
+
+/* ── Christmas ── */
+:root.egg-christmas {
+  --brand: #b71c1c;
+  --brand-dark: #7f0000;
+}
+:root.dark.egg-christmas {
+  --brand: #ef5350;
+  --brand-dark: #c62828;
+}
+
+/* ── Valentine's ── */
+:root.egg-valentines {
+  --brand: #c2185b;
+  --brand-dark: #880e4f;
+}
+:root.dark.egg-valentines {
+  --brand: #f48fb1;
+  --brand-dark: #e91e63;
+}
+
+/* ── Star Trek ── */
+:root.egg-star-trek {
+  --brand: #0d47a1;
+  --brand-dark: #002171;
+}
+:root.dark.egg-star-trek {
+  --brand: #64b5f6;
+  --brand-dark: #1976d2;
+}
+
+/* ── Pi Day ── */
+:root.egg-pi-day {
+  --brand: #6a1b9a;
+  --brand-dark: #4a148c;
+}
+:root.dark.egg-pi-day {
+  --brand: #ce93d8;
+  --brand-dark: #9c27b0;
+}
+:root.egg-pi-day .sidebar-brand::after {
+  content: 'π';
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  opacity: 0.15;
+  pointer-events: none;
+}
+:root.egg-pi-day .sidebar-brand {
+  position: relative;
+}
+
+/* ── April Fools ── */
+:root.egg-april-fools .sidebar-logo {
+  animation: egg-wobble 2s ease-in-out infinite;
+}
+@keyframes egg-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+/* ── May the Fourth ── */
+:root.egg-may-the-fourth {
+  --brand: #b7950b;
+  --brand-dark: #1a5276;
+}
+:root.dark.egg-may-the-fourth {
+  --brand: #f9e547;
+  --brand-dark: #5dade2;
+}
+
+/* ── Towel Day ── */
+:root.egg-towel-day {
+  --brand: #1e8449;
+  --brand-dark: #145a32;
+}
+:root.dark.egg-towel-day {
+  --brand: #58d68d;
+  --brand-dark: #27ae60;
+}
+
+/* ── Talk Like a Pirate ── */
+:root.egg-talk-like-a-pirate {
+  --brand: #9a7b0a;
+  --brand-dark: #0e6655;
+}
+:root.dark.egg-talk-like-a-pirate {
+  --brand: #f4d03f;
+  --brand-dark: #48c9b0;
+}
+:root.egg-talk-like-a-pirate .sidebar {
+  border-right-color: color-mix(in srgb, var(--brand) 60%, var(--border));
+}
+
+/* ── Programmer's Day ── */
+:root.egg-programmers-day {
+  --brand: #008a2e;
+  --brand-dark: #006622;
+}
+:root.dark.egg-programmers-day {
+  --brand: #39ff14;
+  --brand-dark: #00c853;
+}
+
+/* ── Halloween ── */
+:root.egg-halloween {
+  --brand: #d35400;
+  --brand-dark: #6c3483;
+}
+:root.dark.egg-halloween {
+  --brand: #f39c12;
+  --brand-dark: #bb8fce;
+}
+:root.egg-halloween .card {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--brand-dark) 20%, transparent);
+}
+
+/* ── Brand-tinted surfaces (override hardcoded default blue) ── */
+:root[class^="egg-"] .sidebar-link-active,
+:root[class^="egg-"] .settings-nav-item-active,
+:root[class^="egg-"] .lobby-nav-item-active,
+:root[class^="egg-"] .home-feature-badge {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+:root[class^="egg-"] .btn-active {
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+:root[class^="egg-"] .data-table-row:hover {
+  background: color-mix(in srgb, var(--brand) 3%, transparent);
+}
+
+:root[class^="egg-"] .wiki-scope-host,
+:root[class^="egg-"] .wiki-scope-host-process {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+:root[class^="egg-"] .wiki-prose blockquote {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+
+:root[class^="egg-"] .header-search-input:focus {
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+:root[class^="egg-"] .toggle-input:focus-visible + .toggle-track {
+  outline-color: color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+:root[class^="egg-"] .sidebar-link-badge {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 20%, transparent);
+}
+
+:root[class^="egg-"] .donation-hero {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 70%),
+    var(--surface-muted);
+}
+
+:root[class^="egg-"] .donation-hero-icon {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+:root[class^="egg-"] .donation-btn-paypal {
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+/* ── Sidebar flavor line ── */
+.sidebar-easter-flavor {
+  font-size: 0.7rem;
+  color: var(--brand);
+  margin-top: 0.15rem;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+/* ── Overlay effects (DOM particles on top of UI, pointer-events: none) ── */
+.easter-egg-fx {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.easter-egg-fx-particle {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Snow */
+.easter-egg-fx-particle--snow {
+  top: -10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(150, 195, 245, 0.95);
+  box-shadow: 0 0 4px rgba(150, 195, 245, 0.5);
+}
+.dark .easter-egg-fx-particle--snow {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+}
+
+/* Stars */
+.easter-egg-fx-particle--stars {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 6px var(--brand);
+}
+
+/* Hearts */
+.easter-egg-fx-particle--hearts {
+  font-size: 14px;
+  line-height: 1;
+  color: var(--brand);
+}
+
+/* Confetti */
+.easter-egg-fx-particle--confetti {
+  top: -10px;
+  width: 8px;
+  height: 4px;
+  border-radius: 1px;
+  opacity: 0.85;
+}
+
+/* Dots */
+.easter-egg-fx-particle--dots {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 5px var(--brand);
+}
+
+@keyframes egg-particle-fall {
+  0% {
+    top: -10px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 0.85;
+  }
+  100% {
+    top: 100vh;
+    opacity: 0;
+  }
+}
+
+@keyframes egg-particle-fall-spin {
+  0% {
+    top: -10px;
+    transform: rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 100vh;
+    transform: rotate(540deg);
+    opacity: 0;
+  }
+}
+
+@keyframes egg-particle-twinkle {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes egg-particle-float {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-18px);
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .easter-egg-fx-particle,
+  :root.egg-april-fools .sidebar-logo {
+    animation: none !important;
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: 640px) {
+  .easter-egg-fx-particle:nth-child(n+20) {
+    display: none;
+  }
+}

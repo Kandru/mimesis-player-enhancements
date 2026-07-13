@@ -4,6 +4,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - minor webinterface bug fixes
 - minimap refactor
 - added some recognition for the developer (dev-badge appearing in lobbies when I am online :D)
+- added some easter eggs which activate automatically depending on the date
 
 ## 26.7.8
 Attention: the Wiki / Help pages are yet to be improved! There is so much going on right now that things take time. Anyway, time to finally announce v26.7.8 for the broader public. Added a lot of new stuff (and hopefully fixed old stuff). Still: there will be major bugs / things breaking that did work before. This will gradually be sorted out in the coming days. Feel free to create an Issue whenever you find some bugs. Thanks for testing and have fun playing Mimesis :)

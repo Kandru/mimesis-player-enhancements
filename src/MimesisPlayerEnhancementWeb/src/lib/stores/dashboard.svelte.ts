@@ -1,4 +1,6 @@
 import Api from '../api';
+import { initEasterEgg } from '../easterEggs/apply';
+import type { EasterEggId, EasterEggOverlay } from '../easterEggs/types';
 import { loadLocale, resolveBrowserLocale } from '../i18n';
 import type {
   ItemOptionDto,
@@ -140,6 +142,10 @@ class DashboardStore {
   playerBlindModeEnabled = $state(readStoredBlindModePreference());
   darkMode = $state(localStorage.getItem('darkMode') !== 'false');
 
+  activeEasterEggId = $state<EasterEggId | null>(null);
+  activeEasterEggOverlay = $state<EasterEggOverlay | null>(null);
+  activeEasterEggFlavorKey = $state<string | null>(null);
+
   private eventSource: EventSource | null = null;
   private sseChannelsKey = '';
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -175,6 +181,7 @@ class DashboardStore {
 
   init() {
     if (this.darkMode) document.documentElement.classList.add('dark');
+    initEasterEgg();
     const cachedGlobal = readCachedGlobalSettings();
     if (cachedGlobal) this.settingsGlobal = cachedGlobal;
     void this.loadGlobalSettings(true, true);
