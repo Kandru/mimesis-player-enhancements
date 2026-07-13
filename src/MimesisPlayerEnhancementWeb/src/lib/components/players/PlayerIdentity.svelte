@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import DevBadge from '$lib/dev/DevBadge.svelte';
+  import { isDevSteamId } from '$lib/dev/devIdentity';
   import { t } from '$lib/i18n';
   import { isValidSteamId, navigate, steamProfileUrl } from '$lib/utils';
 
@@ -14,6 +16,7 @@
   } = $props();
 
   const canNavigate = $derived(isValidSteamId(steamId));
+  const showDevBadge = $derived(isDevSteamId(steamId));
 </script>
 
 <div class="player-identity">
@@ -38,9 +41,14 @@
       <span class="player-identity-name">{displayName}</span>
     {/if}
   </div>
-  {#if badges}
+  {#if showDevBadge || badges}
     <div class="player-identity-badges">
-      {@render badges()}
+      {#if showDevBadge}
+        <DevBadge />
+      {/if}
+      {#if badges}
+        {@render badges()}
+      {/if}
     </div>
   {/if}
 </div>

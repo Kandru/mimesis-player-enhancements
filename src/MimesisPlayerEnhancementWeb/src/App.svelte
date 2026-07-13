@@ -13,6 +13,7 @@
   import GlobalSettingsPage from '$lib/routes/GlobalSettingsPage.svelte';
   import PlayerDetailPage from '$lib/routes/PlayerDetail.svelte';
   import Toast from '$lib/components/Toast.svelte';
+  import DevVerifyOverlay from '$lib/dev/DevVerifyOverlay.svelte';
   import { isLobbyRoute } from '$lib/playerHelpers';
   import { getPageTitle } from '$lib/pageTitles';
 
@@ -60,3 +61,4 @@
 </AppShell>
 
 <Toast />
+<DevVerifyOverlay />
