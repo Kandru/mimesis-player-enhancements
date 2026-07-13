@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// </summary>
     internal static class MoreVoicesRecording
     {
+        private const string Feature = "MoreVoices";
+
         internal static bool IsFeatureActive() => ModConfig.EnableMoreVoices.Value;
 
         internal static bool IsMaintenanceRecordingEnabled() =>
@@ -16,23 +18,30 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         internal static bool IsPossessionRecordingEnabled() =>
             IsFeatureActive() && ModConfig.RecordVoiceDuringMimicPossession.Value;
 
-        internal static bool IsInMaintenanceScene() =>
-            GameSessionAccess.TryGetPdata()?.main is MaintenanceScene;
-
-        internal static bool IsInTramScene() =>
-            GameSessionAccess.TryGetPdata()?.main is InTramWaitingScene;
-
         internal static bool IsLocalPlayerPossessingMimic() =>
             MoreVoicesVoiceAccess.IsLocalPlayerPossessingMimic();
 
+        internal static bool IsLocalPlayerInMaintenanceRoom() =>
+            MoreVoicesVoiceAccess.TryGetLocalVPlayer()?.VRoom is MaintenanceRoom;
+
+        internal static bool IsLocalPlayerInTramWaitingRoom()
+        {
+            if (MoreVoicesVoiceAccess.TryGetLocalVPlayer()?.VRoom is not VWaitingRoom waitingRoom)
+            {
+                return false;
+            }
+
+            return !waitingRoom.BackToMaintenance;
+        }
+
         internal static bool ShouldRecordInCurrentHubScene()
         {
-            if (IsInMaintenanceScene())
+            if (IsLocalPlayerInMaintenanceRoom())
             {
                 return IsMaintenanceRecordingEnabled();
             }
 
-            if (IsInTramScene())
+            if (IsLocalPlayerInTramWaitingRoom())
             {
                 return IsTramRecordingEnabled();
             }
@@ -115,13 +124,16 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
             if (voiceMode == VoiceMode.PreGame)
             {
+                string roomLabel = MoreVoicesVoiceAccess.TryGetLocalVPlayer()?.VRoom?.GetType().Name ?? "unknown";
                 if (ShouldRecordInCurrentHubScene())
                 {
                     MoreVoicesVoiceAccess.StartRecording(voiceman);
+                    ModLog.Debug(Feature, $"Hub voice recording started — room={roomLabel}");
                 }
                 else
                 {
                     MoreVoicesVoiceAccess.StopRecording(voiceman);
+                    ModLog.Debug(Feature, $"Hub voice recording stopped — room={roomLabel}");
                 }
 
                 return;

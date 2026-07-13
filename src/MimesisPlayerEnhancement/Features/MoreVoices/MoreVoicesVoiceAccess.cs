@@ -25,6 +25,18 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static readonly PropertyInfo? CameraModeProperty =
             AccessTools.Property(typeof(CameraManager), "Mode");
 
+        private static readonly FieldInfo? VWorldSessionManagerField =
+            typeof(VWorld).GetField("_sessionManager", InstanceFlags);
+
+        private static readonly FieldInfo? SessionManagerHostContextField =
+            typeof(SessionManager).GetField("_hostSessionContext", InstanceFlags);
+
+        private static readonly FieldInfo? SessionManagerContextsField =
+            typeof(SessionManager).GetField("m_Contexts", InstanceFlags);
+
+        private static readonly FieldInfo? SessionContextVPlayerField =
+            typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
+
         internal static VoiceManager? TryGetVoiceManager()
         {
             if (Hub.s == null || HubVoicemanField == null)
@@ -43,6 +55,45 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
 
             return VoiceModeProperty.GetValue(voiceman) is VoiceMode mode ? mode : null;
+        }
+
+        internal static VPlayer? TryGetLocalVPlayer()
+        {
+            ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
+            if (localSteamId == 0)
+            {
+                return null;
+            }
+
+            VWorld? vworld = GameSessionAccess.TryGetVWorld();
+            if (vworld == null || VWorldSessionManagerField == null)
+            {
+                return null;
+            }
+
+            if (VWorldSessionManagerField.GetValue(vworld) is not SessionManager sessionManager)
+            {
+                return null;
+            }
+
+            if (SessionManagerHostContextField?.GetValue(sessionManager) is SessionContext hostContext
+                && hostContext.SteamID == localSteamId)
+            {
+                return SessionContextVPlayerField?.GetValue(hostContext) as VPlayer;
+            }
+
+            if (SessionManagerContextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts)
+            {
+                foreach (SessionContext context in contexts.Values)
+                {
+                    if (context != null && context.SteamID == localSteamId)
+                    {
+                        return SessionContextVPlayerField?.GetValue(context) as VPlayer;
+                    }
+                }
+            }
+
+            return null;
         }
 
         internal static bool IsLocalPlayerPossessingMimic()
