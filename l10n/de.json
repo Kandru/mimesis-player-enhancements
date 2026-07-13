@@ -7,10 +7,6 @@
         "title": "Debug-Logging aktivieren",
         "description": "Ausführliche Diagnosezeilen in die MelonLoader-Konsole schreiben. Nützlich zur Fehlersuche."
       },
-      "AcknowledgedMismatchGameVersion": {
-        "title": "Bestätigte abweichende Spielversion",
-        "description": "Erkannte Spielversion, die der Nutzer bei einer Versionswarnung bestätigt hat."
-      },
       "LastSeenModVersion": {
         "title": "Zuletzt gesehene Mod-Version",
         "description": "Letzte Mod-Version, für die das Changelog im Web-Dashboard bestätigt wurde."

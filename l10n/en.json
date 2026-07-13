@@ -7,10 +7,6 @@
         "title": "Enable Debug Logging",
         "description": "Emit verbose diagnostic lines to the MelonLoader console. Useful for troubleshooting."
       },
-      "AcknowledgedMismatchGameVersion": {
-        "title": "Acknowledged Mismatch Game Version",
-        "description": "Detected game version the user acknowledged for a version mismatch warning."
-      },
       "LastSeenModVersion": {
         "title": "Last Seen Mod Version",
         "description": "Last mod version for which the changelog was acknowledged in the web dashboard."

@@ -172,8 +172,6 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableDebugLogging { get; private set; } = null!;
 
-        internal static MelonPreferences_Entry<string> AcknowledgedMismatchGameVersion { get; private set; } = null!;
-
         public static MelonPreferences_Entry<string> LastSeenModVersion { get; private set; } = null!;
 
         public static MelonPreferences_Entry<float> ModToastDurationSeconds { get; internal set; } = null!;
@@ -223,10 +221,6 @@ namespace MimesisPlayerEnhancement
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",
                 false);
-
-            AcknowledgedMismatchGameVersion = CreateHiddenTrackedEntry(MainCategory,
-                "AcknowledgedMismatchGameVersion",
-                string.Empty);
 
             LastSeenModVersion = CreateHiddenTrackedEntry(MainCategory,
                 "LastSeenModVersion",
