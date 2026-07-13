@@ -17,6 +17,18 @@ const DEFAULT_SVG_METRICS: SvgViewMetrics = {
   pxToSvg: 1,
 };
 
+function getSvgRenderedViewport(rect: DOMRect, vbWidth: number, vbHeight: number) {
+  const scale = Math.min(rect.width / vbWidth, rect.height / vbHeight);
+  const renderedWidth = vbWidth * scale;
+  const renderedHeight = vbHeight * scale;
+  return {
+    left: rect.left + (rect.width - renderedWidth) * 0.5,
+    top: rect.top + (rect.height - renderedHeight) * 0.5,
+    width: renderedWidth,
+    height: renderedHeight,
+  };
+}
+
 export function measureMinimapSvg(svg: SVGSVGElement | null | undefined): SvgViewMetrics {
   if (!svg) {
     return DEFAULT_SVG_METRICS;
@@ -27,6 +39,11 @@ export function measureMinimapSvg(svg: SVGSVGElement | null | undefined): SvgVie
     return DEFAULT_SVG_METRICS;
   }
 
+  const viewBox = svg.viewBox.baseVal;
+  const vbWidth = viewBox.width > 0 ? viewBox.width : VIEW_SIZE;
+  const vbHeight = viewBox.height > 0 ? viewBox.height : VIEW_SIZE;
+  const rendered = getSvgRenderedViewport(rect, vbWidth, vbHeight);
+
   const ctm = svg.getScreenCTM();
   if (!ctm) {
     return DEFAULT_SVG_METRICS;
@@ -34,12 +51,12 @@ export function measureMinimapSvg(svg: SVGSVGElement | null | undefined): SvgVie
 
   const inverse = ctm.inverse();
   const point = svg.createSVGPoint();
-  point.x = rect.left + rect.width / 2;
-  point.y = rect.top + rect.height / 2;
+  point.x = rendered.left + rendered.width * 0.5;
+  point.y = rendered.top + rendered.height * 0.5;
   const pivot = point.matrixTransform(inverse);
 
-  point.x = rect.left + rect.width / 2 + 1;
-  point.y = rect.top + rect.height / 2;
+  point.x = rendered.left + rendered.width * 0.5 + 1;
+  point.y = rendered.top + rendered.height * 0.5;
   const next = point.matrixTransform(inverse);
   const pxToSvg = Math.hypot(next.x - pivot.x, next.y - pivot.y) || 1;
 

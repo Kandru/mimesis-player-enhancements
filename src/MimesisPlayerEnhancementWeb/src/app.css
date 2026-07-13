@@ -1579,6 +1579,7 @@ body {
 .minimap-viewport-inner {
   flex: 1;
   min-height: 0;
+  position: relative;
   touch-action: none;
   cursor: grab;
 }
@@ -1634,7 +1635,7 @@ body {
 }
 
 .minimap-svg {
-  @apply block h-full w-full rounded-xl border border-gray-200 bg-slate-100 dark:border-gray-800 dark:bg-slate-950;
+  @apply absolute inset-0 block h-full w-full rounded-xl border border-gray-200 bg-slate-100 dark:border-gray-800 dark:bg-slate-950;
 }
 
 .minimap-tile {
@@ -1780,13 +1781,13 @@ body {
 .minimap-marker circle {
   fill: #22c55e;
   stroke: #fff;
-  stroke-width: 1;
+  stroke-width: 1.2;
 }
 
 .minimap-marker .minimap-heading {
   fill: #22c55e;
   stroke: #fff;
-  stroke-width: 1;
+  stroke-width: 1.2;
 }
 
 .minimap-marker.dead circle,
@@ -1813,7 +1814,7 @@ body {
 .minimap-marker.host circle,
 .minimap-marker.host .minimap-heading {
   stroke: #fbbf24;
-  stroke-width: 1.5;
+  stroke-width: 1.8;
 }
 
 .minimap-marker-followed {
@@ -1822,7 +1823,7 @@ body {
 
 .minimap-marker-followed circle,
 .minimap-marker-followed .minimap-heading {
-  stroke-width: 1.5;
+  stroke-width: 1.8;
 }
 
 .minimap-tile-label {
@@ -1840,10 +1841,10 @@ body {
 .minimap-marker-label {
   fill: #fff;
   stroke: #000;
-  stroke-width: 3px;
+  stroke-width: 3.6px;
   paint-order: stroke fill;
   stroke-linejoin: round;
-  font-size: 11px;
+  font-size: 13.2px;
   font-weight: 600;
   text-anchor: middle;
   dominant-baseline: hanging;

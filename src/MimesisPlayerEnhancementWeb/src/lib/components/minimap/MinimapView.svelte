@@ -3,7 +3,10 @@
   import { t } from '$lib/i18n';
   import { doorSegment } from '$lib/minimap/minimapDoors';
   import { createMinimapMarkerMotion } from '$lib/minimap/minimapMarkerMotion';
-  import { createMinimapNavigation } from '$lib/minimap/minimapNavigation';
+  import {
+    createMinimapNavigation,
+    MINIMAP_ZOOM_STEP,
+  } from '$lib/minimap/minimapNavigation';
   import { fingerprintMarkers } from '$lib/minimap/minimapThrottler';
   import {
     computeViewportFromBounds,
@@ -81,9 +84,9 @@
     void navVersion;
     return { x: navigation.pivotX, y: navigation.pivotY };
   });
-  const markerRadius = 6;
-  const markerHeadingPoints = '0,10 4,4 -4,4';
-  const markerLabelY = 8;
+  const markerRadius = 7.2;
+  const markerHeadingPoints = '0,12 4.8,4.8 -4.8,4.8';
+  const markerLabelY = 9.6;
 
   function refreshSvgMetrics(recenterFollow = false) {
     if (!svgEl) return;
@@ -265,8 +268,8 @@
   {@const navTransform = (void navVersion, navigation.getTransform())}
   <div class="minimap-view-root">
     <div class="minimap-viewport-controls">
-      <button type="button" class="btn btn-secondary btn-sm" onclick={() => navigation.zoomBy(-0.2)} aria-label={t('dashboard.minimap_zoom_out')}>−</button>
-      <button type="button" class="btn btn-secondary btn-sm" onclick={() => navigation.zoomBy(0.2)} aria-label={t('dashboard.minimap_zoom_in')}>+</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick={() => navigation.zoomBy(-MINIMAP_ZOOM_STEP)} aria-label={t('dashboard.minimap_zoom_out')}>−</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick={() => navigation.zoomBy(MINIMAP_ZOOM_STEP)} aria-label={t('dashboard.minimap_zoom_in')}>+</button>
     </div>
     <div
       class="minimap-viewport-inner{followSteamId ? ' minimap-viewport-following' : ''}"

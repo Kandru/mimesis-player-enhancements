@@ -11,7 +11,8 @@ import {
 
 export type MinimapNavigation = ReturnType<typeof createMinimapNavigation>;
 
-export const DEFAULT_MINIMAP_ZOOM = 2;
+export const DEFAULT_MINIMAP_ZOOM = 2.4;
+export const MINIMAP_ZOOM_STEP = 0.2;
 
 function viewportEquals(a: Viewport, b: Viewport) {
   return (
@@ -130,18 +131,26 @@ export function createMinimapNavigation(options: {
     }
   }
 
+  function clampZoom(value: number) {
+    return Math.min(8, Math.max(0.35, value));
+  }
+
+  function setZoom(nextZoom: number) {
+    const clamped = clampZoom(nextZoom);
+    if (Math.abs(clamped - zoom) < 1e-6) {
+      return false;
+    }
+    zoom = clamped;
+    notify();
+    return true;
+  }
+
   function handleWheel(event: WheelEvent) {
     event.preventDefault();
-    if (followSteamId) {
-      return;
+    if (!followSteamId) {
+      clearFollowFromInteraction();
     }
-    clearFollowFromInteraction();
-    const nextZoom = Math.min(8, Math.max(0.35, zoom * (event.deltaY < 0 ? 1.12 : 0.89)));
-    if (Math.abs(nextZoom - zoom) < 1e-6) {
-      return;
-    }
-    zoom = nextZoom;
-    notify();
+    setZoom(zoom * (event.deltaY < 0 ? 1.12 : 0.89));
   }
 
   function handlePointerDown(event: PointerEvent) {
@@ -175,16 +184,10 @@ export function createMinimapNavigation(options: {
   }
 
   function zoomBy(delta: number) {
-    if (followSteamId) {
-      return;
+    if (!followSteamId) {
+      clearFollowFromInteraction();
     }
-    clearFollowFromInteraction();
-    const nextZoom = Math.min(8, Math.max(0.35, zoom + delta));
-    if (Math.abs(nextZoom - zoom) < 1e-6) {
-      return;
-    }
-    zoom = nextZoom;
-    notify();
+    setZoom(zoom + delta);
   }
 
   function tickFollow(marker: MinimapMarkerDto | null | undefined, force = false) {
