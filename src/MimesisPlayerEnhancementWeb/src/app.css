@@ -1587,6 +1587,14 @@ body {
   cursor: grabbing;
 }
 
+.minimap-viewport-following {
+  cursor: default;
+}
+
+.minimap-viewport-following:active {
+  cursor: default;
+}
+
 .minimap-viewport-controls {
   display: flex;
   flex-shrink: 0;
@@ -1626,7 +1634,7 @@ body {
 }
 
 .minimap-svg {
-  @apply h-full w-full rounded-xl border border-gray-200 bg-slate-100 dark:border-gray-800 dark:bg-slate-950;
+  @apply block h-full w-full rounded-xl border border-gray-200 bg-slate-100 dark:border-gray-800 dark:bg-slate-950;
 }
 
 .minimap-tile {
@@ -1659,6 +1667,14 @@ body {
   stroke: #cbd5e1;
 }
 
+.minimap-connection-stairs {
+  stroke: #38bdf8;
+}
+
+.dark .minimap-connection-stairs {
+  stroke: #7dd3fc;
+}
+
 .minimap-tile.multi-floor {
   stroke-dasharray: 6 4;
   stroke: #38bdf8;
@@ -1672,6 +1688,81 @@ body {
 
 .dark .minimap-tram-bounds {
   fill: rgba(148, 163, 184, 0.12);
+}
+
+.minimap-poi-vending rect {
+  fill: #f59e0b;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.minimap-poi-vending .minimap-poi-screen {
+  fill: #1e293b;
+  stroke: none;
+}
+
+.dark .minimap-poi-vending rect {
+  stroke: #0f172a;
+}
+
+.minimap-poi-shower rect,
+.minimap-poi-shower line {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.minimap-poi-shower rect {
+  fill: #38bdf8;
+}
+
+.minimap-poi-shower line {
+  stroke: #7dd3fc;
+  stroke-linecap: round;
+}
+
+.dark .minimap-poi-shower rect,
+.dark .minimap-poi-shower line {
+  stroke: #0f172a;
+}
+
+.minimap-poi-save rect,
+.minimap-poi-save circle {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.minimap-poi-save rect {
+  fill: #22c55e;
+}
+
+.minimap-poi-save circle {
+  fill: #dcfce7;
+  stroke: none;
+}
+
+.dark .minimap-poi-save rect,
+.dark .minimap-poi-save circle {
+  stroke: #0f172a;
+}
+
+.minimap-poi-tram_start line,
+.minimap-poi-tram_start rect {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.minimap-poi-tram_start line {
+  stroke: #fbbf24;
+  stroke-linecap: round;
+}
+
+.minimap-poi-tram_start rect {
+  fill: #f59e0b;
+}
+
+.dark .minimap-poi-tram_start line,
+.dark .minimap-poi-tram_start rect {
+  stroke: #0f172a;
 }
 
 .minimap-teleporter polygon {
@@ -1689,32 +1780,52 @@ body {
 .minimap-marker circle {
   fill: #22c55e;
   stroke: #fff;
-  stroke-width: 2;
+  stroke-width: 1;
 }
 
-.minimap-marker.dead circle {
+.minimap-marker .minimap-heading {
+  fill: #22c55e;
+  stroke: #fff;
+  stroke-width: 1;
+}
+
+.minimap-marker.dead circle,
+.minimap-marker.dead .minimap-heading {
   fill: #6b7280;
 }
 
-.minimap-marker.local circle {
+.minimap-marker.blind-other circle,
+.minimap-marker.blind-other .minimap-heading {
+  fill: #9ca3af;
+  stroke: #e5e7eb;
+  opacity: 0.75;
+}
+
+.minimap-marker.blind-other .minimap-marker-label {
+  opacity: 0.55;
+}
+
+.minimap-marker.local circle,
+.minimap-marker.local .minimap-heading {
   fill: #3b82f6;
 }
 
-.minimap-marker.host circle {
+.minimap-marker.host circle,
+.minimap-marker.host .minimap-heading {
   stroke: #fbbf24;
-  stroke-width: 3;
+  stroke-width: 1.5;
 }
 
 .minimap-marker-followed {
   pointer-events: none;
 }
 
-.minimap-marker-followed circle {
-  stroke-width: 3;
+.minimap-marker-followed circle,
+.minimap-marker-followed .minimap-heading {
+  stroke-width: 1.5;
 }
 
-.minimap-tile-label,
-.minimap-marker-label {
+.minimap-tile-label {
   fill: #475569;
   font-size: 11px;
   text-anchor: middle;
@@ -1722,9 +1833,21 @@ body {
   pointer-events: none;
 }
 
-.dark .minimap-tile-label,
-.dark .minimap-marker-label {
+.dark .minimap-tile-label {
   fill: #cbd5e1;
+}
+
+.minimap-marker-label {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  pointer-events: none;
 }
 
 /* ── Page headings ── */

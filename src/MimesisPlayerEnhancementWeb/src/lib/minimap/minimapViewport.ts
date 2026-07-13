@@ -5,6 +5,47 @@ export const VIEW_PADDING = 0.08;
 
 export type Viewport = { scale: number; offsetX: number; offsetZ: number };
 
+export type SvgViewMetrics = {
+  pivotX: number;
+  pivotY: number;
+  pxToSvg: number;
+};
+
+const DEFAULT_SVG_METRICS: SvgViewMetrics = {
+  pivotX: VIEW_SIZE / 2,
+  pivotY: VIEW_SIZE / 2,
+  pxToSvg: 1,
+};
+
+export function measureMinimapSvg(svg: SVGSVGElement | null | undefined): SvgViewMetrics {
+  if (!svg) {
+    return DEFAULT_SVG_METRICS;
+  }
+
+  const rect = svg.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) {
+    return DEFAULT_SVG_METRICS;
+  }
+
+  const ctm = svg.getScreenCTM();
+  if (!ctm) {
+    return DEFAULT_SVG_METRICS;
+  }
+
+  const inverse = ctm.inverse();
+  const point = svg.createSVGPoint();
+  point.x = rect.left + rect.width / 2;
+  point.y = rect.top + rect.height / 2;
+  const pivot = point.matrixTransform(inverse);
+
+  point.x = rect.left + rect.width / 2 + 1;
+  point.y = rect.top + rect.height / 2;
+  const next = point.matrixTransform(inverse);
+  const pxToSvg = Math.hypot(next.x - pivot.x, next.y - pivot.y) || 1;
+
+  return { pivotX: pivot.x, pivotY: pivot.y, pxToSvg };
+}
+
 export function computeViewportFromTiles(tiles: MinimapTileDto[], padding = VIEW_PADDING): Viewport {
   if (!tiles.length) return { scale: 1, offsetX: 0, offsetZ: 0 };
   let minX = Infinity;

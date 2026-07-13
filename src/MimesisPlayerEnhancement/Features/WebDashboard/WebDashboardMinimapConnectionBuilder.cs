@@ -71,6 +71,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         DirZ = forward.z,
                         TargetAreaId = targetAreaId,
                         CrossArea = true,
+                        TeleporterId = teleporter.StartCallSign,
+                        Label = WebDashboardMinimapPoiLabels.ResolveTeleporterLabel(
+                            teleporter,
+                            targetAreaId,
+                            layout),
                     });
                 }
             }
@@ -111,6 +116,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (string.IsNullOrWhiteSpace(fromAreaId)
                     || string.IsNullOrWhiteSpace(toAreaId)
                     || fromAreaId == toAreaId)
+                {
+                    continue;
+                }
+
+                if (WebDashboardMinimapAreaResolver.IsIndoorAreaId(fromAreaId)
+                    && WebDashboardMinimapAreaResolver.IsIndoorAreaId(toAreaId))
                 {
                     continue;
                 }

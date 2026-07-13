@@ -2,6 +2,7 @@
   import type { MinimapMarkerDto, MinimapPayload } from '$lib/types';
   import { t } from '$lib/i18n';
   import { doorSegment } from '$lib/minimap/minimapDoors';
+  import { createMinimapMarkerMotion } from '$lib/minimap/minimapMarkerMotion';
   import { createMinimapNavigation } from '$lib/minimap/minimapNavigation';
   import { fingerprintMarkers } from '$lib/minimap/minimapThrottler';
   import {
@@ -9,6 +10,7 @@
     computeViewportFromTiles,
     mapPoint,
     mapRect,
+    measureMinimapSvg,
     VIEW_SIZE,
     type Viewport,
   } from '$lib/minimap/minimapViewport';
@@ -17,9 +19,10 @@
   let { data }: { data: MinimapPayload | null } = $props();
 
   let viewportEl: HTMLDivElement | undefined = $state();
+  let svgEl: SVGSVGElement | undefined = $state();
   let navVersion = $state(0);
-  let liveMarkers = $state<MinimapMarkerDto[]>([]);
-  let liveTrain = $state<MinimapPayload['train']>(null);
+
+  const markerMotion = createMinimapMarkerMotion();
 
   const navigation = createMinimapNavigation({
     onChange: () => {
@@ -41,11 +44,32 @@
     data?.markers?.length ? fingerprintMarkers(data.markers) : '',
   );
 
-  const followSteamId = $derived(
-    dashboard.minimapFocusSteamId && dashboard.canFollowMinimapPlayers
-      ? dashboard.minimapFocusSteamId
-      : '',
-  );
+  const liveMarkers = $derived.by(() => {
+    void navVersion;
+    void markerMotionKey;
+    void layoutKey;
+    const markers = data?.markers ?? [];
+    return markerMotion.getDisplayMarkers(markers);
+  });
+
+  const liveTrain = $derived.by(() => {
+    void layoutKey;
+    return data?.train ?? null;
+  });
+
+  const followSteamId = $derived.by(() => {
+    if (data?.blindMode) {
+      const local = data.markers?.find((marker) => marker.isLocal);
+      return local ? String(local.steamId) : '';
+    }
+    if (dashboard.minimapFocusSteamId) {
+      return dashboard.minimapFocusSteamId;
+    }
+    const local = data?.markers?.find((marker) => marker.isLocal);
+    return local ? String(local.steamId) : '';
+  });
+
+  let syncedFollowKey = '';
 
   const followedMarker = $derived(
     followSteamId
@@ -53,7 +77,25 @@
       : null,
   );
 
-  const mapCenter = VIEW_SIZE * 0.5;
+  const mapPivot = $derived.by(() => {
+    void navVersion;
+    return { x: navigation.pivotX, y: navigation.pivotY };
+  });
+  const markerRadius = 6;
+  const markerHeadingPoints = '0,10 4,4 -4,4';
+  const markerLabelY = 8;
+
+  function refreshSvgMetrics(recenterFollow = false) {
+    if (!svgEl) return;
+    const changed = navigation.setViewMetrics(measureMinimapSvg(svgEl));
+    if (!recenterFollow || !changed || !navigation.followSteamId || !data) {
+      return;
+    }
+    const focused = markerMotion.getDisplayMarkers(data.markers ?? []).find(
+      (marker) => String(marker.steamId) === navigation.followSteamId,
+    );
+    navigation.recenterFollow(focused);
+  }
 
   const staticLayer = $derived.by(() => {
     void navVersion;
@@ -81,25 +123,68 @@
 
   $effect(() => {
     void markerMotionKey;
-    void followSteamId;
     void layoutKey;
+    markerMotion.setTargets(data?.markers ?? []);
+  });
+
+  $effect(() => {
+    if (isHidden || !data?.markers?.length) {
+      markerMotion.reset();
+      return;
+    }
+
+    let frame = 0;
+    const loop = (now: number) => {
+      const animating = markerMotion.tick(now);
+
+      if (navigation.followSteamId) {
+        const focused = markerMotion.getDisplayMarkers(data?.markers ?? []).find(
+          (marker) => String(marker.steamId) === navigation.followSteamId,
+        );
+        navigation.tickFollow(focused);
+      } else if (animating) {
+        navVersion += 1;
+      }
+
+      frame = requestAnimationFrame(loop);
+    };
+
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  });
+
+  $effect(() => {
+    const nextFollow = followSteamId || null;
+    const key = `${nextFollow ?? ''}:${layoutKey}`;
+
     if (!data) {
-      liveMarkers = [];
-      liveTrain = null;
+      syncedFollowKey = '';
       navigation.setFollow(null);
       return;
     }
 
-    liveMarkers = data.markers || [];
-    liveTrain = data.train ?? null;
-    navigation.setFollow(followSteamId || null);
+    navigation.setFollow(nextFollow);
 
-    if (!followSteamId) {
+    if (!nextFollow) {
+      syncedFollowKey = '';
       return;
     }
 
-    const focused = liveMarkers.find((marker) => String(marker.steamId) === followSteamId);
-    navigation.tickFollow(focused);
+    if (syncedFollowKey === key) {
+      return;
+    }
+
+    syncedFollowKey = key;
+    refreshSvgMetrics();
+    const focused = data.markers?.find(
+      (marker) => String(marker.steamId) === nextFollow,
+    );
+    navigation.recenterFollow(focused);
+  });
+
+  $effect(() => {
+    if (!svgEl) return;
+    refreshSvgMetrics();
   });
 
   $effect(() => {
@@ -120,7 +205,12 @@
 
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        if (!navigation.userOverride && !navigation.followSteamId && data && !isHidden) {
+        if (!data || isHidden) return;
+        refreshSvgMetrics(true);
+        if (navigation.followSteamId) {
+          return;
+        }
+        if (!navigation.userOverride) {
           const tiles = data.tiles || [];
           const tight = isOpenMode || data.layoutKind === 'tram';
           if (tiles.length) navigation.fitToTiles(tiles, tight);
@@ -149,7 +239,9 @@
   }
 
   function onPointerDown(event: PointerEvent) {
+    if (followSteamId) return;
     navigation.handlePointerDown(event);
+    if (data?.blindMode || !dashboard.canFollowMinimapPlayers) return;
     if (dashboard.minimapFocusSteamId) {
       dashboard.setMinimapFollow('');
     }
@@ -177,7 +269,7 @@
       <button type="button" class="btn btn-secondary btn-sm" onclick={() => navigation.zoomBy(0.2)} aria-label={t('dashboard.minimap_zoom_in')}>+</button>
     </div>
     <div
-      class="minimap-viewport-inner"
+      class="minimap-viewport-inner{followSteamId ? ' minimap-viewport-following' : ''}"
       role="application"
       aria-label={t('dashboard.nav_minimap')}
       bind:this={viewportEl}
@@ -187,7 +279,12 @@
       onpointerup={navigation.handlePointerUp}
       onpointercancel={navigation.handlePointerUp}
     >
-      <svg class="minimap-svg" viewBox="0 0 {VIEW_SIZE} {VIEW_SIZE}" preserveAspectRatio="xMidYMid meet">
+      <svg
+        class="minimap-svg"
+        viewBox="0 0 {VIEW_SIZE} {VIEW_SIZE}"
+        preserveAspectRatio="xMidYMid meet"
+        bind:this={svgEl}
+      >
       <g transform={navTransform}>
         {#if !borderless}
           <g class="minimap-tiles">
@@ -218,18 +315,29 @@
               {@const mid = mapPoint(rendered.vp, point.x, point.z)}
               <g class="minimap-teleporter" transform="translate({mid.x} {mid.y})">
                 <polygon points="0,-9 9,0 0,9 -9,0" />
-                <title>{t('dashboard.minimap_tooltip_teleporter', { target: point.targetAreaId || '?' })}</title>
+                <title>
+                  {point.label
+                    || (point.teleporterId
+                      ? t('dashboard.minimap_tooltip_teleporter', { target: point.targetAreaId || '?' })
+                      : t('dashboard.minimap_tooltip_area', { target: point.targetAreaId || '?' }))}
+                </title>
               </g>
               {#if point.destX != null && point.destZ != null}
                 {@const dest = mapPoint(rendered.vp, point.destX, point.destZ)}
                 <line x1={mid.x} y1={mid.y} x2={dest.x} y2={dest.y} stroke="#f87171" stroke-dasharray="4 4" opacity="0.5" />
               {/if}
             {:else if point.crossFloor}
-              {@const mid = mapPoint(rendered.vp, point.x, point.z)}
-              <g class="minimap-stair" transform="translate({mid.x} {mid.y})">
-                <circle r="7" />
-                <title>{t('dashboard.minimap_tooltip_stairs')}</title>
-              </g>
+              {@const line = doorSegment(rendered.vp, point)}
+              <line
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                stroke-width={line.strokeWidth}
+                class="minimap-connection minimap-connection-stairs"
+              >
+                <title>{t('dashboard.minimap_tooltip_stairs')} — {point.fromTileId} ↔ {point.toTileId}</title>
+              </line>
             {:else}
               {@const line = doorSegment(rendered.vp, point)}
               <line
@@ -259,16 +367,46 @@
           </g>
         {/if}
 
+        <g class="minimap-pois">
+          {#each data.pointsOfInterest || [] as poi (`${poi.kind}:${poi.x}:${poi.z}`)}
+            {@const pos = mapPoint(rendered.vp, poi.x, poi.z)}
+            <g class="minimap-poi minimap-poi-{poi.kind}" transform="translate({pos.x} {pos.y})">
+              {#if poi.kind === 'vending'}
+                <rect x="-6" y="-8" width="12" height="16" rx="2" />
+                <rect x="-4" y="-5" width="8" height="5" rx="1" class="minimap-poi-screen" />
+                <title>{poi.label || t('dashboard.minimap_tooltip_vending')}</title>
+              {:else if poi.kind === 'shower'}
+                <rect x="-5" y="-7" width="10" height="6" rx="1.5" />
+                <line x1="-3" y1="0" x2="-3" y2="6" />
+                <line x1="0" y1="0" x2="0" y2="7" />
+                <line x1="3" y1="0" x2="3" y2="6" />
+                <title>{poi.label || t('dashboard.minimap_tooltip_shower')}</title>
+              {:else if poi.kind === 'save'}
+                <rect x="-6" y="-6" width="12" height="12" rx="2" />
+                <circle r="2.5" cy="-1" />
+                <title>{poi.label || t('dashboard.minimap_tooltip_save')}</title>
+              {:else if poi.kind === 'tram_start'}
+                <line x1="0" y1="-8" x2="0" y2="8" />
+                <rect x="-7" y="-10" width="14" height="4" rx="1.5" />
+                <title>{poi.label || t('dashboard.minimap_tooltip_tram_start')}</title>
+              {:else}
+                <circle r="6" />
+                <title>{poi.label || poi.kind}</title>
+              {/if}
+            </g>
+          {/each}
+        </g>
+
         <g class="minimap-markers">
           {#each liveMarkers as marker (marker.steamId)}
             {#if String(marker.steamId) !== followSteamId}
               {@const pos = mapPoint(rendered.vp, marker.x, marker.z)}
               <g class={markerClass(marker, !!data.blindMode)} transform="translate({pos.x} {pos.y})">
                 <g transform="rotate({marker.yaw + 180})">
-                  <circle r="10" />
-                  <polygon class="minimap-heading" points="0,16 6,6 -6,6" />
+                  <circle r={markerRadius} />
+                  <polygon class="minimap-heading" points={markerHeadingPoints} />
                 </g>
-                <text y="24" class="minimap-marker-label">{(marker.displayName || '').slice(0, 10)}</text>
+                <text y={markerLabelY} class="minimap-marker-label">{(marker.displayName || '').slice(0, 10)}</text>
               </g>
             {/if}
           {/each}
@@ -277,13 +415,13 @@
       {#if followedMarker}
         <g
           class="{markerClass(followedMarker, !!data.blindMode)} minimap-marker-followed"
-          transform="translate({mapCenter} {mapCenter})"
+          transform="translate({mapPivot.x} {mapPivot.y})"
         >
           <g transform="rotate({followedMarker.yaw + 180})">
-            <circle r="10" />
-            <polygon class="minimap-heading" points="0,16 6,6 -6,6" />
+            <circle r={markerRadius} />
+            <polygon class="minimap-heading" points={markerHeadingPoints} />
           </g>
-          <text y="24" class="minimap-marker-label">{(followedMarker.displayName || '').slice(0, 10)}</text>
+          <text y={markerLabelY} class="minimap-marker-label">{(followedMarker.displayName || '').slice(0, 10)}</text>
         </g>
       {/if}
     </svg>

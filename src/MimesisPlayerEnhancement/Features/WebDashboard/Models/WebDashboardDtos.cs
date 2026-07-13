@@ -109,6 +109,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float? DestZ = null;
         public string DestAreaId = "";
         public string TeleporterId = "";
+        public string Label = "";
     }
 
     internal sealed class WebDashboardMinimapAreaDto
@@ -148,6 +149,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public float SpanZ;
     }
 
+    internal sealed class WebDashboardMinimapPoiDto
+    {
+        public string Kind = "";
+        public float X;
+        public float Z;
+        public string Label = "";
+        public string AreaId = "";
+    }
+
     internal sealed class WebDashboardMinimapLayoutDto
     {
         public int LayoutVersion;
@@ -159,6 +169,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public List<WebDashboardMinimapAreaDto> Areas = [];
         public List<WebDashboardMinimapTileDto> Tiles = [];
         public List<WebDashboardMinimapConnectionDto> Connections = [];
+        public List<WebDashboardMinimapPoiDto> PointsOfInterest = [];
     }
 
     internal sealed class WebDashboardSnapshot

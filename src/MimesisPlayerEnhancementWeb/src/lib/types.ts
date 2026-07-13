@@ -108,6 +108,7 @@ export interface MinimapConnectionPointDto {
   destZ?: number;
   destAreaId?: string;
   teleporterId?: string;
+  label?: string;
 }
 
 export interface MinimapAreaDto {
@@ -144,6 +145,14 @@ export interface MinimapTrainDto {
   spanZ?: number;
 }
 
+export interface MinimapPoiDto {
+  kind: string;
+  x: number;
+  z: number;
+  label?: string;
+  areaId?: string;
+}
+
 export interface MinimapPayload {
   layoutVersion: number;
   layoutKind: string;
@@ -156,6 +165,7 @@ export interface MinimapPayload {
   connections?: Array<{ from: string; to: string }>;
   markers: MinimapMarkerDto[];
   train?: MinimapTrainDto | null;
+  pointsOfInterest?: MinimapPoiDto[];
   activeAreaId?: string;
   activeAreaLabel?: string;
   activeFloorIndex?: number;

@@ -126,16 +126,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     .Append(ModJson.Serialize(players))
                     .Append(",\"leaderboard\":")
                     .Append(snapshot.LeaderboardJson);
-                if (snapshot.Status.IsConnected)
-                {
-                    List<WebDashboardMinimapMarkerDto> filteredMarkers =
-                        WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
-                    _ = payload.Append(",\"minimap\":")
-                        .Append(SerializeMinimap(
-                            snapshot.MinimapLayout,
-                            filteredMarkers,
-                            snapshot.MinimapTrain));
-                }
 
                 _ = payload.Append('}');
                 return payload.ToString();
@@ -146,16 +136,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Status = snapshot.Status,
                 Players = players,
             };
-
-            if (snapshot.Status.IsConnected)
-            {
-                List<WebDashboardMinimapMarkerDto> filteredMarkers =
-                    WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
-                dto.Minimap = BuildMinimapResponse(
-                    snapshot.MinimapLayout,
-                    filteredMarkers,
-                    snapshot.MinimapTrain);
-            }
 
             return ModJson.Serialize(dto);
         }
@@ -206,6 +186,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Connections = layout.Connections,
                 Train = train,
                 Markers = mappedMarkers,
+                PointsOfInterest = layout.PointsOfInterest,
             };
         }
 
@@ -328,7 +309,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             public WebDashboardStatusDto Status = new();
             public List<PlayerApiDto> Players = [];
-            public MinimapApiResponse? Minimap;
         }
 
         private sealed class LiveSnapshotEventDto
@@ -448,6 +428,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public List<WebDashboardMinimapConnectionDto> Connections = [];
             public WebDashboardMinimapTrainDto? Train;
             public List<MinimapMarkerApiDto> Markers = [];
+            public List<WebDashboardMinimapPoiDto> PointsOfInterest = [];
         }
 
         private sealed class MinimapMarkerApiDto

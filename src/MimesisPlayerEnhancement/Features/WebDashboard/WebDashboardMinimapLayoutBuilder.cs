@@ -532,6 +532,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Bounds = bounds,
             });
 
+            layout.PointsOfInterest = WebDashboardMinimapPoiCollector.CollectForLayout(main, bounds);
+
             return layout;
         }
 

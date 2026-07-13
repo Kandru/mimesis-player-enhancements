@@ -79,9 +79,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 long nowMs = tickNowMs;
-                bool hasAudience = WebDashboardSseHub.HasClients;
+                bool hasMinimapAudience = WebDashboardSseHub.HasMinimapClients;
 
-                if (hasAudience && nowMs - _lastMinimapRefreshMs >= MinimapRefreshIntervalMs)
+                if (hasMinimapAudience && nowMs - _lastMinimapRefreshMs >= MinimapRefreshIntervalMs)
                 {
                     RefreshMinimapLive();
                     _lastMinimapRefreshMs = nowMs;
@@ -132,7 +132,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return nowMs - _lastFullRefreshMs >= MinDirtyRefreshMs;
             }
 
-            if (!WebDashboardSseHub.HasClients)
+            if (!WebDashboardSseHub.HasSnapshotClients)
             {
                 return false;
             }
@@ -344,28 +344,37 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     next.LeaderboardJson = _lastLeaderboardJson ?? _snapshot.LeaderboardJson;
                 }
 
-                if (WebDashboardSseHub.HasClients)
+                if (WebDashboardSseHub.HasSnapshotClients)
                 {
                     WebDashboardAvatarService.PrewarmForPlayers([.. avatarSteamIds]);
                 }
 
-                if (nowMs - _lastMinimapRefreshMs < MinimapRefreshIntervalMs
-                    && _snapshot.MinimapMarkers.Count > 0)
+                if (WebDashboardSseHub.HasMinimapClients)
+                {
+                    if (nowMs - _lastMinimapRefreshMs < MinimapRefreshIntervalMs
+                        && _snapshot.MinimapMarkers.Count > 0)
+                    {
+                        next.MinimapLayout = _snapshot.MinimapLayout;
+                        next.MinimapMarkers = CloneMarkers(_snapshot.MinimapMarkers);
+                        next.MinimapTrain = _snapshot.MinimapTrain;
+                    }
+                    else
+                    {
+                        WebDashboardMinimapLayoutBuilder.EnsureLayout();
+                        next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
+                        List<WebDashboardMinimapMarkerDto> markers =
+                            WebDashboardMinimapService.CollectMarkers(livePlayers, out WebDashboardMinimapTrainDto? train);
+                        next.MinimapMarkers = CloneMarkers(markers);
+                        next.MinimapTrain = train;
+                        _minimapFingerprint = BuildMinimapFingerprint(markers, train);
+                        _lastMinimapRefreshMs = nowMs;
+                    }
+                }
+                else
                 {
                     next.MinimapLayout = _snapshot.MinimapLayout;
                     next.MinimapMarkers = CloneMarkers(_snapshot.MinimapMarkers);
                     next.MinimapTrain = _snapshot.MinimapTrain;
-                }
-                else
-                {
-                    WebDashboardMinimapLayoutBuilder.EnsureLayout();
-                    next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
-                    List<WebDashboardMinimapMarkerDto> markers =
-                        WebDashboardMinimapService.CollectMarkers(livePlayers, out WebDashboardMinimapTrainDto? train);
-                    next.MinimapMarkers = CloneMarkers(markers);
-                    next.MinimapTrain = train;
-                    _minimapFingerprint = BuildMinimapFingerprint(markers, train);
-                    _lastMinimapRefreshMs = nowMs;
                 }
             }
 
@@ -374,7 +383,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             string publishFingerprint = publishFull
                 ? BuildPublishFingerprint(next, _previousLiveSteamIds, offlineRevision)
                 : BuildLivePublishFingerprint(next, liveForPublish);
-            if (WebDashboardSseHub.HasClients
+            if (WebDashboardSseHub.HasSnapshotClients
                 && publishFingerprint != _lastPublishFingerprint)
             {
                 _lastPublishFingerprint = publishFingerprint;

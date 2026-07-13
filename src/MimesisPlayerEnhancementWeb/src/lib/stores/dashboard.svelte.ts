@@ -6,6 +6,7 @@ import type {
   MinimapAreaDto,
   MinimapMarkerDto,
   MinimapPayload,
+  MinimapPoiDto,
   MinimapTileDto,
   MinimapTrainDto,
   PlayerDto,
@@ -79,6 +80,18 @@ function buildTileFloorSpanMap(tiles: MinimapTileDto[]) {
   return map;
 }
 
+function resolveSseChannels(route: string): string[] {
+  const channels = ['snapshot'];
+  if (route === 'minimap' || route === 'player') {
+    channels.push('minimap');
+  }
+  return channels;
+}
+
+function buildSseUrl(channels: string[]) {
+  return `/api/events?channels=${encodeURIComponent(channels.join(','))}`;
+}
+
 class DashboardStore {
   status = $state<StatusDto>(createInitialStatus());
   players = $state<PlayerDto[]>([]);
@@ -128,6 +141,7 @@ class DashboardStore {
   darkMode = $state(localStorage.getItem('darkMode') !== 'false');
 
   private eventSource: EventSource | null = null;
+  private sseChannelsKey = '';
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private lastSnapshotVersion = -1;
   private lastRoute = '';
@@ -139,9 +153,8 @@ class DashboardStore {
   private saveProfilePromise: Promise<void> | null = null;
 
   get canFollowMinimapPlayers() {
-    if (!this.playerBlindMode) return true;
-    const local = this.getLocalPlayer();
-    return !!local && !local.isAlive;
+    if (this.playerBlindMode) return false;
+    return true;
   }
 
   get playerBlindMode() {
@@ -191,9 +204,16 @@ class DashboardStore {
       });
   }
 
-  private connectSse() {
+  private connectSse(route = this.route) {
+    const channels = resolveSseChannels(route);
+    const channelsKey = channels.join(',');
+    if (this.eventSource && this.sseChannelsKey === channelsKey) {
+      return;
+    }
+
     this.eventSource?.close();
-    const source = new EventSource('/api/events');
+    this.sseChannelsKey = channelsKey;
+    const source = new EventSource(buildSseUrl(channels));
     source.addEventListener('snapshot', (ev) => {
       try {
         this.applySnapshot(JSON.parse(ev.data));
@@ -233,6 +253,7 @@ class DashboardStore {
     this.homeSubRoute = parsed.homeSubRoute;
     this.steamId = parsed.steamId;
     this.headerSearchQuery = '';
+    this.connectSse(parsed.route);
     const onSaveCustomize =
       parsed.route === 'settings'
       && (parsed.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
@@ -428,6 +449,7 @@ class DashboardStore {
   }
 
   setMinimapFollow(steamId: string) {
+    if (this.playerBlindMode) return;
     if (!steamId) {
       this.minimapFocusSteamId = '';
       localStorage.removeItem('minimapFocusSteamId');
@@ -435,7 +457,33 @@ class DashboardStore {
       this.minimapFocusSteamId = steamId;
       localStorage.setItem('minimapFocusSteamId', steamId);
     }
-    this.applyMinimapFilter(true);
+    this.applyMinimapFilter();
+  }
+
+  private ensureMinimapFocus() {
+    if (this.playerBlindMode) {
+      if (this.minimapFocusSteamId) {
+        this.minimapFocusSteamId = '';
+        localStorage.removeItem('minimapFocusSteamId');
+      }
+      return;
+    }
+
+    const local = this.getLocalPlayer();
+    if (!local || !isValidSteamId(local.steamId)) {
+      return;
+    }
+
+    const connectedIds = new Set(
+      this.players.filter((p) => p.playerUid).map((p) => String(p.steamId)),
+    );
+    if (this.minimapFocusSteamId && connectedIds.has(this.minimapFocusSteamId)) {
+      return;
+    }
+
+    const localId = String(local.steamId);
+    this.minimapFocusSteamId = localId;
+    localStorage.setItem('minimapFocusSteamId', localId);
   }
 
   applyMinimapFilter(force = false) {
@@ -443,6 +491,8 @@ class DashboardStore {
       this.minimap = null;
       return;
     }
+
+    this.ensureMinimapFocus();
 
     const raw = this.minimapRaw;
     const areas = raw.areas || [];
@@ -484,6 +534,7 @@ class DashboardStore {
       tiles: activeArea?.tiles?.length ? activeArea.tiles : raw.tiles || [],
       markers: areaMarkers,
       train: this.resolveTrainForArea(raw.train, activeAreaId),
+      pointsOfInterest: this.resolvePoisForArea(raw.pointsOfInterest, activeAreaId),
       activeAreaId,
       activeAreaLabel: activeArea?.label ?? '',
       activeFloorIndex,
@@ -502,6 +553,11 @@ class DashboardStore {
   }
 
   private resolveMinimapFocus() {
+    if (this.playerBlindMode) {
+      const local = this.getLocalPlayer();
+      if (local && isValidSteamId(local.steamId)) return String(local.steamId);
+      return '';
+    }
     if (this.route === 'player' && this.steamId) return String(this.steamId);
     if (this.minimapFocusSteamId) return this.minimapFocusSteamId;
     const local = this.getLocalPlayer();
@@ -522,6 +578,11 @@ class DashboardStore {
         (marker) => String(marker.steamId) === this.minimapFocusSteamId,
       );
       if (focused?.areaId) return focused.areaId;
+    }
+
+    if (this.playerBlindMode) {
+      const local = filteredMarkers.find((marker) => marker.isLocal);
+      if (local?.areaId) return local.areaId;
     }
 
     if (this.minimapAreaId && areas.some((area) => area.id === this.minimapAreaId)) {
@@ -545,6 +606,14 @@ class DashboardStore {
     if (!rawTrain || !activeAreaId) return null;
     if (rawTrain.areaId && rawTrain.areaId !== activeAreaId) return null;
     return rawTrain;
+  }
+
+  private resolvePoisForArea(
+    rawPois: MinimapPoiDto[] | null | undefined,
+    activeAreaId: string,
+  ) {
+    if (!rawPois?.length || !activeAreaId) return [];
+    return rawPois.filter((poi) => !poi.areaId || poi.areaId === activeAreaId);
   }
 
   private filterMinimapMarkers(markers: MinimapPayload['markers']) {

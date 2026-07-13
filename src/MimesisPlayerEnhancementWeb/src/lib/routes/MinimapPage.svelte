@@ -10,13 +10,24 @@
 
   const areaOptions = $derived(dashboard.minimapRaw?.areas || dashboard.minimap?.areas || []);
 
-  function toggleFocus(steamId: string) {
+  function isFocusedPlayer(steamId: string | number, isLocal: boolean) {
     const id = String(steamId);
-    if (dashboard.minimapFocusSteamId === id) {
-      dashboard.setMinimapFollow('');
-    } else {
-      dashboard.setMinimapFollow(id);
+    if (dashboard.minimapFocusSteamId) {
+      return dashboard.minimapFocusSteamId === id;
     }
+    return isLocal;
+  }
+
+  function toggleFocus(steamId: string) {
+    if (dashboard.playerBlindMode) return;
+    const id = String(steamId);
+    const player = focusOptions.find((p) => String(p.steamId) === id);
+    if (!player) return;
+    if (isFocusedPlayer(player.steamId, !!player.isLocal) && dashboard.minimapFocusSteamId === id) {
+      dashboard.setMinimapFollow('');
+      return;
+    }
+    dashboard.setMinimapFollow(id);
   }
 
   function onAreaChange(event: Event) {
@@ -43,7 +54,7 @@
         {#each focusOptions as p (p.steamId)}
           <button
             type="button"
-            class="minimap-player-chip {dashboard.minimapFocusSteamId === String(p.steamId) ? 'active' : ''}"
+            class="minimap-player-chip {isFocusedPlayer(p.steamId, !!p.isLocal) ? 'active' : ''}"
             onclick={() => toggleFocus(String(p.steamId))}
           >
             {p.displayName}

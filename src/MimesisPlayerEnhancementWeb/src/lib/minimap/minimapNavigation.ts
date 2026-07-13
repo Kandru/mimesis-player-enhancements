@@ -5,10 +5,13 @@ import {
   computeViewportFromTiles,
   mapPoint,
   VIEW_SIZE,
+  type SvgViewMetrics,
   type Viewport,
 } from './minimapViewport';
 
 export type MinimapNavigation = ReturnType<typeof createMinimapNavigation>;
+
+export const DEFAULT_MINIMAP_ZOOM = 2;
 
 function viewportEquals(a: Viewport, b: Viewport) {
   return (
@@ -24,7 +27,7 @@ export function createMinimapNavigation(options: {
   let baseViewport: Viewport = { scale: 1, offsetX: 0, offsetZ: 0 };
   let panX = 0;
   let panY = 0;
-  let zoom = 1;
+  let zoom = DEFAULT_MINIMAP_ZOOM;
   let userOverride = false;
   let followSteamId: string | null = null;
   let activeAreaId = '';
@@ -34,30 +37,50 @@ export function createMinimapNavigation(options: {
   let dragStartY = 0;
   let dragPanX = 0;
   let dragPanY = 0;
+  let viewMetrics: SvgViewMetrics = {
+    pivotX: VIEW_SIZE * 0.5,
+    pivotY: VIEW_SIZE * 0.5,
+    pxToSvg: 1,
+  };
 
   const notify = () => options.onChange?.();
+
+  function setViewMetrics(metrics: SvgViewMetrics) {
+    const changed =
+      Math.abs(metrics.pivotX - viewMetrics.pivotX) > 0.25
+      || Math.abs(metrics.pivotY - viewMetrics.pivotY) > 0.25
+      || Math.abs(metrics.pxToSvg - viewMetrics.pxToSvg) > 0.001;
+    if (!changed) {
+      return false;
+    }
+
+    viewMetrics = metrics;
+    notify();
+    return true;
+  }
 
   function resetTransform() {
     panX = 0;
     panY = 0;
-    zoom = 1;
+    zoom = DEFAULT_MINIMAP_ZOOM;
     userOverride = false;
   }
 
   function setBaseViewport(vp: Viewport) {
     const viewportChanged = !viewportEquals(baseViewport, vp);
     if (!viewportChanged) {
-      return;
+      return false;
     }
 
     baseViewport = vp;
     if (!userOverride && !followSteamId) {
       panX = 0;
       panY = 0;
-      zoom = 1;
+      zoom = DEFAULT_MINIMAP_ZOOM;
       userOverride = false;
     }
     notify();
+    return true;
   }
 
   function fitToTiles(tiles: Parameters<typeof computeViewportFromTiles>[0], tight = false) {
@@ -109,6 +132,9 @@ export function createMinimapNavigation(options: {
 
   function handleWheel(event: WheelEvent) {
     event.preventDefault();
+    if (followSteamId) {
+      return;
+    }
     clearFollowFromInteraction();
     const nextZoom = Math.min(8, Math.max(0.35, zoom * (event.deltaY < 0 ? 1.12 : 0.89)));
     if (Math.abs(nextZoom - zoom) < 1e-6) {
@@ -119,7 +145,7 @@ export function createMinimapNavigation(options: {
   }
 
   function handlePointerDown(event: PointerEvent) {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || followSteamId) return;
     dragging = true;
     dragStartX = event.clientX;
     dragStartY = event.clientY;
@@ -129,10 +155,12 @@ export function createMinimapNavigation(options: {
   }
 
   function handlePointerMove(event: PointerEvent) {
-    if (!dragging) return;
+    if (!dragging || followSteamId) return;
     clearFollowFromInteraction();
-    const nextPanX = dragPanX + (event.clientX - dragStartX);
-    const nextPanY = dragPanY + (event.clientY - dragStartY);
+    const dx = (event.clientX - dragStartX) * viewMetrics.pxToSvg;
+    const dy = (event.clientY - dragStartY) * viewMetrics.pxToSvg;
+    const nextPanX = dragPanX + dx;
+    const nextPanY = dragPanY + dy;
     if (Math.abs(nextPanX - panX) < 0.5 && Math.abs(nextPanY - panY) < 0.5) {
       return;
     }
@@ -147,6 +175,9 @@ export function createMinimapNavigation(options: {
   }
 
   function zoomBy(delta: number) {
+    if (followSteamId) {
+      return;
+    }
     clearFollowFromInteraction();
     const nextZoom = Math.min(8, Math.max(0.35, zoom + delta));
     if (Math.abs(nextZoom - zoom) < 1e-6) {
@@ -156,14 +187,18 @@ export function createMinimapNavigation(options: {
     notify();
   }
 
-  function tickFollow(marker: MinimapMarkerDto | null | undefined) {
+  function tickFollow(marker: MinimapMarkerDto | null | undefined, force = false) {
     if (!followSteamId || !marker || userOverride) return;
     const pos = mapPoint(baseViewport, marker.x, marker.z);
-    const cx = VIEW_SIZE * 0.5;
-    const cy = VIEW_SIZE * 0.5;
+    const cx = viewMetrics.pivotX;
+    const cy = viewMetrics.pivotY;
     const nextPanX = zoom * (cx - pos.x);
     const nextPanY = zoom * (cy - pos.y);
-    if (Math.abs(nextPanX - panX) < 0.05 && Math.abs(nextPanY - panY) < 0.05) {
+    if (
+      !force
+      && Math.abs(nextPanX - panX) < 0.05
+      && Math.abs(nextPanY - panY) < 0.05
+    ) {
       return;
     }
     panX = nextPanX;
@@ -171,9 +206,13 @@ export function createMinimapNavigation(options: {
     notify();
   }
 
+  function recenterFollow(marker: MinimapMarkerDto | null | undefined) {
+    tickFollow(marker, true);
+  }
+
   function getTransform(): string {
-    const cx = VIEW_SIZE * 0.5;
-    const cy = VIEW_SIZE * 0.5;
+    const cx = viewMetrics.pivotX;
+    const cy = viewMetrics.pivotY;
     return `translate(${cx + panX}, ${cy + panY}) scale(${zoom}) translate(${-cx}, ${-cy})`;
   }
 
@@ -202,6 +241,13 @@ export function createMinimapNavigation(options: {
     get activeFloorIndex() {
       return activeFloorIndex;
     },
+    get pivotX() {
+      return viewMetrics.pivotX;
+    },
+    get pivotY() {
+      return viewMetrics.pivotY;
+    },
+    setViewMetrics,
     setBaseViewport,
     fitToTiles,
     fitToBounds,
@@ -214,6 +260,7 @@ export function createMinimapNavigation(options: {
     handlePointerUp,
     zoomBy,
     tickFollow,
+    recenterFollow,
     getTransform,
     resetTransform,
   };

@@ -22,11 +22,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static volatile bool _pendingSnapshotBroadcast;
         private static volatile bool _pendingMinimapBroadcast;
         private static int _clientCount;
+        private static int _snapshotClientCount;
+        private static int _minimapClientCount;
         private static long _lastSnapshotPublishMs;
         private static long _lastMinimapPublishMs;
         private static int _lastPublishedVersion;
 
         internal static bool HasClients => Volatile.Read(ref _clientCount) > 0;
+
+        internal static bool HasSnapshotClients => Volatile.Read(ref _snapshotClientCount) > 0;
+
+        internal static bool HasMinimapClients => Volatile.Read(ref _minimapClientCount) > 0;
 
         internal static void Start()
         {
@@ -56,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             response.Headers["Connection"] = "keep-alive";
             response.SendChunked = true;
 
-            SseClient client = new(context);
+            SseClient client = new(context, WebDashboardSseSubscriptions.Parse(context.Request.QueryString));
             string initialPayload = WebDashboardJson.SerializeSnapshotEvent(WebDashboardSnapshotCache.Get());
 
             lock (Gate)
@@ -69,16 +75,44 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 Clients.Add(client);
                 _ = Interlocked.Increment(ref _clientCount);
+                if (client.Subscriptions.Snapshot)
+                {
+                    _ = Interlocked.Increment(ref _snapshotClientCount);
+                }
+
+                if (client.Subscriptions.Minimap)
+                {
+                    _ = Interlocked.Increment(ref _minimapClientCount);
+                }
             }
 
             WebDashboardSnapshotCache.MarkDirty();
-            WebDashboardSnapshotCache.RequestFullPublish();
+            if (client.Subscriptions.Snapshot)
+            {
+                WebDashboardSnapshotCache.RequestFullPublish();
+            }
 
             try
             {
-                if (!client.TryWriteEvent("snapshot", initialPayload))
+                if (client.Subscriptions.Snapshot
+                    && !client.TryWriteEvent("snapshot", initialPayload))
                 {
                     return;
+                }
+
+                if (client.Subscriptions.Minimap)
+                {
+                    WebDashboardSnapshot snapshot = WebDashboardSnapshotCache.Get();
+                    List<WebDashboardMinimapMarkerDto> filteredMarkers =
+                        WebDashboardMinimapService.FilterMarkersForClient(snapshot.MinimapMarkers);
+                    string minimapPayload = WebDashboardJson.SerializeMinimap(
+                        snapshot.MinimapLayout,
+                        filteredMarkers,
+                        snapshot.MinimapTrain);
+                    if (!client.TryWriteEvent("minimap", minimapPayload))
+                    {
+                        return;
+                    }
                 }
 
                 while (!_shuttingDown && client.Active)
@@ -110,7 +144,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void NotifySnapshotChanged()
         {
-            if (_shuttingDown || Volatile.Read(ref _clientCount) == 0)
+            if (_shuttingDown || Volatile.Read(ref _snapshotClientCount) == 0)
             {
                 return;
             }
@@ -121,7 +155,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void NotifyMinimapChanged()
         {
-            if (_shuttingDown || Volatile.Read(ref _clientCount) == 0)
+            if (_shuttingDown || Volatile.Read(ref _minimapClientCount) == 0)
             {
                 return;
             }
@@ -143,6 +177,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 toClose = [.. Clients];
                 Clients.Clear();
                 _clientCount = 0;
+                _snapshotClientCount = 0;
+                _minimapClientCount = 0;
             }
 
             foreach (SseClient client in toClose)
@@ -189,7 +225,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: true);
+            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: true, wantsMinimap: true);
             if (clients == null)
             {
                 return;
@@ -223,7 +259,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: false);
+            SseClient[]? clients = CopyClientsAndClearPending(isMinimap: false, wantsMinimap: false);
             if (clients == null)
             {
                 return;
@@ -254,7 +290,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        private static SseClient[]? CopyClientsAndClearPending(bool isMinimap)
+        private static SseClient[]? CopyClientsAndClearPending(bool isMinimap, bool wantsMinimap)
         {
             lock (Gate)
             {
@@ -281,7 +317,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     _pendingSnapshotBroadcast = false;
                 }
 
-                return [.. Clients];
+                List<SseClient> selected = [];
+                foreach (SseClient client in Clients)
+                {
+                    if (wantsMinimap)
+                    {
+                        if (client.Subscriptions.Minimap)
+                        {
+                            selected.Add(client);
+                        }
+                    }
+                    else if (client.Subscriptions.Snapshot)
+                    {
+                        selected.Add(client);
+                    }
+                }
+
+                return selected.Count == 0 ? null : [.. selected];
             }
         }
 
@@ -312,6 +364,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (Clients.Remove(client))
                 {
                     _ = Interlocked.Decrement(ref _clientCount);
+                    if (client.Subscriptions.Snapshot)
+                    {
+                        _ = Interlocked.Decrement(ref _snapshotClientCount);
+                    }
+
+                    if (client.Subscriptions.Minimap)
+                    {
+                        _ = Interlocked.Decrement(ref _minimapClientCount);
+                    }
                 }
             }
         }
@@ -346,14 +407,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private sealed class SseClient
         {
             internal readonly HttpListenerContext Context;
+            internal readonly WebDashboardSseSubscriptions Subscriptions;
             internal readonly AutoResetEvent Signal = new(false);
             internal volatile bool Active = true;
             private readonly object _writeLock = new();
             private Stream? _stream;
 
-            internal SseClient(HttpListenerContext context)
+            internal SseClient(HttpListenerContext context, WebDashboardSseSubscriptions subscriptions)
             {
                 Context = context;
+                Subscriptions = subscriptions;
             }
 
             internal bool TryWriteEvent(string eventName, string data)

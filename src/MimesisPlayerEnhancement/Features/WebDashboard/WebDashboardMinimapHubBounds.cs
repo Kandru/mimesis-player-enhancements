@@ -67,6 +67,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
+            if (TryGetTramLocalBoundsFromVolume(root, out centerX, out centerZ, out spanX, out spanZ))
+            {
+                yaw = ResolveTramYaw(root);
+                return true;
+            }
+
             float minX = float.PositiveInfinity;
             float maxX = float.NegativeInfinity;
             float minZ = float.PositiveInfinity;
@@ -81,8 +87,56 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             centerZ = (minZ + maxZ) * 0.5f;
             spanX = Mathf.Clamp(maxX - minX, TramMinSpan, TramMaxSpan);
             spanZ = Mathf.Clamp(maxZ - minZ, TramMinSpan, TramMaxSpan);
-            yaw = 0f;
+            yaw = ResolveTramYaw(root);
             return true;
+        }
+
+        private static bool TryGetTramLocalBoundsFromVolume(
+            Transform bgRoot,
+            out float centerX,
+            out float centerZ,
+            out float spanX,
+            out float spanZ)
+        {
+            centerX = 0f;
+            centerZ = 0f;
+            spanX = TramMinSpan;
+            spanZ = TramMinSpan;
+
+            DynamicDataManager? dynamicData = HubGameDataAccess.DynamicData;
+            if (dynamicData == null)
+            {
+                return false;
+            }
+
+            float minX = float.PositiveInfinity;
+            float maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+            bool expanded = false;
+
+            foreach ((MapTrigger _, Bounds bounds) in dynamicData.GetInTramVolume())
+            {
+                ExpandLocalBoundsFromRendererBounds(bgRoot, bounds, ref minX, ref maxX, ref minZ, ref maxZ);
+                expanded = true;
+            }
+
+            if (!expanded || float.IsPositiveInfinity(minX))
+            {
+                return false;
+            }
+
+            centerX = (minX + maxX) * 0.5f;
+            centerZ = (minZ + maxZ) * 0.5f;
+            spanX = Mathf.Clamp(maxX - minX, TramMinSpan, TramMaxSpan);
+            spanZ = Mathf.Clamp(maxZ - minZ, TramMinSpan, TramMaxSpan);
+            return true;
+        }
+
+        private static float ResolveTramYaw(Transform bgRoot)
+        {
+            // Tram markers live in BGRoot-local space where the tram is axis-aligned.
+            return 0f;
         }
 
         internal static bool TryGetTramWorldBounds(

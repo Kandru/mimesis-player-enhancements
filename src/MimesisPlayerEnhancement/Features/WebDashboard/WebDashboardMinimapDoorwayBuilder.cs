@@ -146,7 +146,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                if (!TryFindDoorwayPair(fullGraph, from, to, out Doorway? doorway, out Tile? localTile))
+                if (!TryFindDoorwayPair(fullGraph, from, to, out Doorway? doorway, out Tile? localTile, out Tile? remoteTile))
                 {
                     continue;
                 }
@@ -157,21 +157,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     continue;
                 }
 
-                Bounds bounds = localTile!.Placement?.Bounds ?? localTile.Bounds;
-                Vector3 worldPos = doorway!.ProjectPositionToTileBounds(bounds);
-                float spanX = Mathf.Max(fromArea.Bounds.MaxX - fromArea.Bounds.MinX, 1f);
-                float spanZ = Mathf.Max(fromArea.Bounds.MaxZ - fromArea.Bounds.MinZ, 1f);
-
-                fromArea.ConnectionPoints.Add(new WebDashboardMinimapConnectionPointDto
+                if (!TryBuildDoorwayPoint(
+                        doorway!,
+                        localTile!,
+                        remoteTile!,
+                        fromArea.Bounds,
+                        $"tile-{from}",
+                        $"tile-{to}",
+                        out WebDashboardMinimapConnectionPointDto point))
                 {
-                    X = WebDashboardMinimapMath.Normalize(worldPos.x, fromArea.Bounds.MinX, spanX),
-                    Z = WebDashboardMinimapMath.Normalize(worldPos.z, fromArea.Bounds.MinZ, spanZ),
-                    FromTileId = $"tile-{from}",
-                    ToTileId = $"tile-{to}",
-                    TargetAreaId = toAreaId ?? "",
-                    CrossFloor = true,
-                    CrossArea = false,
-                });
+                    continue;
+                }
+
+                point.TargetAreaId = toAreaId ?? "";
+                point.CrossFloor = true;
+                fromArea.ConnectionPoints.Add(point);
             }
         }
 
@@ -180,10 +180,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             int fromId,
             int toId,
             out Doorway? doorway,
-            out Tile? localTile)
+            out Tile? localTile,
+            out Tile? remoteTile)
         {
             doorway = null;
             localTile = null;
+            remoteTile = null;
             foreach (Tile tile in graph.Tiles)
             {
                 if (tile == null || !graph.TileIds.TryGetValue(tile, out int tileId) || tileId != fromId)
@@ -199,7 +201,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         continue;
                     }
 
-                    if (graph.TileIds.TryGetValue(used.ConnectedDoorway.Tile, out int remoteId) && remoteId == toId)
+                    remoteTile = used.ConnectedDoorway.Tile;
+                    if (graph.TileIds.TryGetValue(remoteTile, out int remoteId) && remoteId == toId)
                     {
                         doorway = used;
                         return true;
