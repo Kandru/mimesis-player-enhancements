@@ -19,9 +19,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
-                ("UpdateHp/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.UpdateHp))),
                 ("UpdateConta/ProtoActor", AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.UpdateConta))),
                 ("ResolvePacket_HitTargetSig/ProtoActor", AccessTools.Method(typeof(ProtoActor), "ResolvePacket_HitTargetSig")),
+                ("OnPacket/ProtoActor (ActorDamagedSig)", AccessTools.Method(typeof(ProtoActor), "OnPacket", [typeof(ActorDamagedSig)])),
                 ("OnPacket/GameMainBase (FieldHitTargetSig)", AccessTools.Method(typeof(GameMainBase), "OnPacket", [typeof(FieldHitTargetSig)])),
                 ("OnPacket/GameMainBase (ProjectileHitTargetSig)", AccessTools.Method(typeof(GameMainBase), "OnPacket", [typeof(ProjectileHitTargetSig)])),
             ]);

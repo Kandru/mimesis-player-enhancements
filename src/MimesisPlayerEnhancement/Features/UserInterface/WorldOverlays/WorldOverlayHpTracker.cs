@@ -3,8 +3,7 @@ using ReluProtocol.Enum;
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     /// <summary>
-    /// Client-side HP estimates for actors whose mutable HP is not replicated (e.g. mimics/monsters).
-    /// Authoritative <see cref="ProtoActor.UpdateHp"/> values take precedence when present.
+    /// HP estimates driven by host-sent damage packets for world overlay health bars.
     /// </summary>
     internal static class WorldOverlayHpTracker
     {
@@ -19,25 +18,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
             TrackedHp tracked = GetOrCreate(actor);
             tracked.Hp = Math.Max(0L, tracked.Hp - damage);
-        }
-
-        internal static void NotifySynced(ProtoActor actor)
-        {
-            TrackedHp tracked = GetOrCreate(actor);
-            long netMax = actor.netSyncActorData.maxHP;
-            long netHp = actor.netSyncActorData.hp;
-
-            long resolvedMax = ResolveMaxHp(actor, netMax);
-            if (resolvedMax > 0)
-            {
-                tracked.MaxHp = resolvedMax;
-            }
-
-            if (netMax > 0 || tracked.HasAuthoritativeHp)
-            {
-                tracked.Hp = Math.Clamp(netHp, 0L, tracked.MaxHp > 0 ? tracked.MaxHp : netHp);
-                tracked.HasAuthoritativeHp = true;
-            }
         }
 
         internal static bool TryGetDisplay(ProtoActor actor, out long hp, out long maxHp)
@@ -85,15 +65,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             }
 
             tracked.MaxHp = resolvedMax;
-            if (netMax > 0)
-            {
-                tracked.Hp = Math.Clamp(netHp, 0L, resolvedMax);
-                tracked.HasAuthoritativeHp = true;
-                return tracked;
-            }
-
-            // Monsters/mimics often keep default net HP on clients — assume full until damage is observed.
-            tracked.Hp = resolvedMax;
+            tracked.Hp = netMax > 0
+                ? Math.Clamp(netHp, 0L, resolvedMax)
+                : resolvedMax;
             return tracked;
         }
 
@@ -117,7 +91,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             internal long Hp;
             internal long MaxHp;
-            internal bool HasAuthoritativeHp;
         }
     }
 }

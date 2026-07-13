@@ -1,4 +1,3 @@
-using ReluProtocol.Enum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
@@ -85,17 +84,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             RefreshActiveFlag();
         }
 
-        internal static void NotifyHpChanged(ProtoActor actor, long previousHp, long newHp)
-        {
-            if (newHp >= previousHp || !WorldOverlayGate.IsDamageOverlayTarget(actor))
-            {
-                return;
-            }
-
-            long damage = previousHp - newHp;
-            NotifyEntityDamaged(actor, damage);
-        }
-
         internal static void NotifyHitDamage(ProtoActor victim, long damage)
         {
             if (damage <= 0 || !WorldOverlayGate.IsHealthBarTarget(victim))
@@ -103,11 +91,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return;
             }
 
-            if (victim.ActorType == ActorType.Monster)
-            {
-                WorldOverlayHpTracker.ApplyDamage(victim, damage);
-            }
-
+            WorldOverlayHpTracker.ApplyDamage(victim, damage);
             NotifyEntityDamaged(victim, damage);
         }
 
