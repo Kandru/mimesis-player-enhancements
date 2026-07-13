@@ -9,9 +9,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     {
         private const float CanvasScale = 0.01f;
         private const float BarWidth = 84f;
-        private const float BarHeight = 12f;
-        private const float BarBorderInset = 1.5f;
-        internal const float FloaterScale = 0.65f;
+        private const float BarHeight = 10f;
+        private const float BarBorderInset = 1f;
+        internal const float FloaterScale = 0.5f;
 
         private static readonly Color HealthFill = new(0.82f, 0.18f, 0.18f, 1f);
         private static readonly Color HealthFillFlash = new(1f, 0.42f, 0.42f, 1f);
@@ -170,7 +170,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
 
-            Component label = ModUiFactory.AddText(textGo, ModUiAssets.Fallback, "100/100", 11f, ModUiFontStyle.Bold);
+            Component label = ModUiFactory.AddText(textGo, ModUiAssets.Fallback, "100/100", 10f, ModUiFontStyle.Bold);
             ModUiText.SetMiddleCenterAlignment(label);
             ModUiText.SetColor(label, White);
             ModUiText.ConfigureTextLayout(label, wordWrap: false, ModUiText.OverflowOverflow);

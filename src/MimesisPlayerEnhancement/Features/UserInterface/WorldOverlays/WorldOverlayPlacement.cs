@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     internal static class WorldOverlayPlacement
     {
         private const float HipHeightRatio = 0.52f;
-        private const float HealthBarForwardOffset = 0.5f;
+        private const float HealthBarForwardOffset = 0.6f;
         private const float FloaterForwardOffset = 0.4f;
 
         private static readonly Type? CapsuleColliderType =
