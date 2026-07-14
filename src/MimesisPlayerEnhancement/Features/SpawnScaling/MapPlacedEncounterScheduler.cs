@@ -87,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
                 float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);
                 int vanillaCount = group.Value.Count;
-                int targetTotal = SpawnMultiplierResolver.ScaleCount(vanillaCount, multiplier);
+                int targetTotal = ScalingMath.ScaleCount(vanillaCount, multiplier);
                 int need = targetTotal - vanillaCount;
 
                 if (need <= 0)
@@ -148,7 +148,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 SpawnCategory category = SpawnCategoryLookup.GetCategory(entry.Key);
                 float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);
-                if (SpawnMultiplierResolver.ScaleCount(entry.Value, multiplier) > entry.Value)
+                if (ScalingMath.ScaleCount(entry.Value, multiplier) > entry.Value)
                 {
                     return true;
                 }
@@ -407,18 +407,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             out RoomSpawnScalingState state,
             out DungeonRoom room)
         {
-            foreach (KeyValuePair<DungeonRoom, RoomSpawnScalingState> entry in RoomSpawnScalingRegistry.EnumerateAll())
-            {
-                if (entry.Value.TryGetRoomForSpawnData(spawnData, out room))
-                {
-                    state = entry.Value;
-                    return true;
-                }
-            }
-
-            state = null!;
-            room = null!;
-            return false;
+            return SpawnDataRoomLookup.TryFindRoomState(
+                RoomSpawnScalingRegistry.EnumerateAll(),
+                spawnData,
+                out state,
+                out room);
         }
 
         private readonly struct PendingEncounterSpawn

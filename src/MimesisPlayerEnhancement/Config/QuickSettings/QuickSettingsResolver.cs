@@ -1,5 +1,4 @@
 using MelonLoader;
-using MimesisPlayerEnhancement.Config.QuickSettings;
 
 namespace MimesisPlayerEnhancement
 {

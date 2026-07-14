@@ -182,7 +182,7 @@ namespace MimesisPlayerEnhancement
                 playerUid = ResolvePlayerUidFromSteamId(steamId);
             }
 
-            bool isLocal = steamId != 0 && steamId == GetLocalSteamId();
+            bool isLocal = steamId != 0 && steamId == GameSessionAccess.GetLocalSteamId();
             if (TryGetConnectionInfo(session, playerUid, steamId, isLocal, out PlayerConnectionInfo info))
             {
                 return FormatFull(info, voiceId: "(n/a)");
@@ -404,7 +404,7 @@ namespace MimesisPlayerEnhancement
 
         /// <summary>
         /// Resolve SteamID for a player.
-        /// Prefers the live session context, then actorUIDToSteamID, then the host's PlatformMgr path.
+        /// Prefers the live session context, then the shared session-access lookup.
         /// </summary>
         private static ulong ResolveSteamId(long playerUid, bool isLocal, SessionContext? session)
         {
@@ -424,50 +424,7 @@ namespace MimesisPlayerEnhancement
                 }
             }
 
-            if (playerUid != 0)
-            {
-                try
-                {
-                    object? pdata = GetHubMember("pdata");
-                    FieldInfo? field = pdata?.GetType().GetField("actorUIDToSteamID", InstanceMemberFlags);
-                    if (field?.GetValue(pdata) is Dictionary<long, ulong> dict
-                        && dict.TryGetValue(playerUid, out ulong steamId))
-                    {
-                        return steamId;
-                    }
-                }
-                catch
-                {
-                    /* Hub / actor map may be unavailable */
-                }
-            }
-
-            return isLocal ? GetLocalSteamId() : 0;
-        }
-
-        private static ulong GetLocalSteamId()
-        {
-            try
-            {
-                PlatformMgr platformMgr = MonoSingleton<PlatformMgr>.Instance;
-                if (platformMgr == null)
-                {
-                    return 0;
-                }
-
-                FieldInfo field = typeof(PlatformMgr).GetField("_uniqueUserPath", InstanceMemberFlags);
-                string? userPath = field?.GetValue(platformMgr) as string;
-                if (!string.IsNullOrEmpty(userPath) && ulong.TryParse(userPath, out ulong steamId))
-                {
-                    return steamId;
-                }
-            }
-            catch
-            {
-                /* PlatformMgr may be unavailable during teardown */
-            }
-
-            return 0;
+            return GameSessionAccess.ResolveSteamId(playerUid, isLocal);
         }
 
         /// <summary>

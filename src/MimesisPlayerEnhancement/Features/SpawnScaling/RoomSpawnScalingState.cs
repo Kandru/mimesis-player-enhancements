@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
-    internal sealed class RoomSpawnScalingState
+    internal sealed class RoomSpawnScalingState : ISpawnDataRoomIndex
     {
         private readonly Dictionary<int, int> _remainingCreditsByMasterId = [];
         private readonly Dictionary<int, int> _bonusGroupWavesByGroupId = [];
@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             _spawnDataToRoom[data] = Room;
         }
 
-        internal bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)
+        public bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)
         {
             return _spawnDataToRoom.TryGetValue(data, out room!);
         }

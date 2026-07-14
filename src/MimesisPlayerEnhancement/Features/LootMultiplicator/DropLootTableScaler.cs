@@ -32,7 +32,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             int vanillaCount = dropList.Count;
-            int targetCount = LootMultiplierResolver.ScaleCount(vanillaCount, multiplier);
+            int targetCount = ScalingMath.ScaleCount(vanillaCount, multiplier);
             int extraNeeded = targetCount - vanillaCount;
             if (extraNeeded <= 0)
             {

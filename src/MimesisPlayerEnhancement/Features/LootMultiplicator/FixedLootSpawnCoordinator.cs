@@ -131,7 +131,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     masterId,
                     lootConfig);
                 int vanillaCount = group.Value.Count;
-                int targetTotal = LootMultiplierResolver.ScaleCount(vanillaCount, multiplier);
+                int targetTotal = ScalingMath.ScaleCount(vanillaCount, multiplier);
                 int need = targetTotal - vanillaCount;
 
                 if (need <= 0)
@@ -205,7 +205,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     playerCount,
                     entry.Key,
                     lootConfig);
-                if (LootMultiplierResolver.ScaleCount(entry.Value, multiplier) > entry.Value)
+                if (ScalingMath.ScaleCount(entry.Value, multiplier) > entry.Value)
                 {
                     return true;
                 }
@@ -522,18 +522,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         private static bool TryFindRoomState(SpawnedActorData spawnData, out RoomState state, out DungeonRoom room)
         {
-            foreach (KeyValuePair<DungeonRoom, RoomState> entry in RoomStates.EnumerateAll())
-            {
-                if (entry.Value.TryGetRoomForSpawnData(spawnData, out room))
-                {
-                    state = entry.Value;
-                    return true;
-                }
-            }
-
-            state = null!;
-            room = null!;
-            return false;
+            return SpawnDataRoomLookup.TryFindRoomState(RoomStates.EnumerateAll(), spawnData, out state, out room);
         }
 
         private static (float MinDelay, float MaxDelay) ResolveEncounterDelays(DungeonRoom room)
@@ -559,7 +548,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
         }
 
-        private sealed class RoomState
+        private sealed class RoomState : ISpawnDataRoomIndex
         {
             private readonly Dictionary<int, int> _remainingQuotaByMasterId = [];
 
@@ -600,7 +589,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 _spawnDataToRoom[data] = Room;
             }
 
-            internal bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)
+            public bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)
             {
                 return _spawnDataToRoom.TryGetValue(data, out room);
             }

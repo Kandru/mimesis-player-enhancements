@@ -99,7 +99,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         private static int ScaleTimingCount(int vanilla, float multiplier)
         {
-            return SpawnMultiplierResolver.ScaleCount(vanilla, multiplier);
+            return ScalingMath.ScaleCount(vanilla, multiplier);
         }
 
         private static int ScaleTimingRate(int vanilla, float multiplier)

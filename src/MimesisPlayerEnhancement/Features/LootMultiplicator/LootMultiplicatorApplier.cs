@@ -156,12 +156,9 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             int stackAfter = 0;
             bool stackTracked = false;
 
-            FieldInfo? stackCountField = ReflectionFieldCache.GetField(spawnData, "StackCount");
-            if (scaleStackCount && stackCountField != null)
+            if (scaleStackCount
+                && SpawnDataFieldScaler.TryScaleStackCount(spawnData, multiplier, out stackBefore, out stackAfter))
             {
-                stackBefore = (int)(stackCountField.GetValue(spawnData) ?? 0);
-                stackAfter = LootMultiplierResolver.ScaleCountWithImplicitBase(stackBefore, multiplier, implicitWhenZero: 1);
-                stackCountField.SetValue(spawnData, stackAfter);
                 stackTracked = true;
                 LootMultiplicatorLog.DebugFieldScaled(
                     $"{context}[{masterId}].stackCount",
@@ -171,21 +168,14 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 scaled = true;
             }
 
-            FieldInfo? maxRespawnField = ReflectionFieldCache.GetField(spawnData, "MaxRespawnCount");
-            if (maxRespawnField != null)
+            if (SpawnDataFieldScaler.TryScaleMaxRespawnCount(spawnData, multiplier, out int respawnBefore, out int respawnAfter))
             {
-                int respawnBefore = (int)(maxRespawnField.GetValue(spawnData) ?? 0);
-                if (respawnBefore > 0)
-                {
-                    int respawnAfter = LootMultiplierResolver.ScaleCount(respawnBefore, multiplier);
-                    maxRespawnField.SetValue(spawnData, respawnAfter);
-                    LootMultiplicatorLog.DebugFieldScaled(
-                        $"{context}[{masterId}].maxRespawn",
-                        respawnBefore,
-                        respawnAfter,
-                        multiplier);
-                    scaled = true;
-                }
+                LootMultiplicatorLog.DebugFieldScaled(
+                    $"{context}[{masterId}].maxRespawn",
+                    respawnBefore,
+                    respawnAfter,
+                    multiplier);
+                scaled = true;
             }
 
             if (scaled && stackTracked)

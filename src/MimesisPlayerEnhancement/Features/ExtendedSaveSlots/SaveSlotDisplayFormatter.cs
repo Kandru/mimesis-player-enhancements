@@ -1,6 +1,3 @@
-using MimesisPlayerEnhancement.Ui;
-using UnityEngine;
-
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal sealed class SaveSlotDisplayInfo

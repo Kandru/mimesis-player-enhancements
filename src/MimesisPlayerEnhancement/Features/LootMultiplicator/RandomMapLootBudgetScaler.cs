@@ -39,7 +39,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return vanillaBudget;
             }
 
-            int scaled = LootMultiplierResolver.ScaleCount(vanillaBudget, combined);
+            int scaled = ScalingMath.ScaleCount(vanillaBudget, combined);
             LootMultiplicatorLog.DebugRandomPoolBudget(
                 vanillaBudget,
                 scaled,

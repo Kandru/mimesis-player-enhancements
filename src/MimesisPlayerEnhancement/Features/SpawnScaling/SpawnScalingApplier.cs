@@ -180,7 +180,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     continue;
                 }
 
-                int bonusWaves = Math.Max(0, SpawnMultiplierResolver.ScaleCount(1, groupMultiplier.Value) - 1);
+                int bonusWaves = Math.Max(0, ScalingMath.ScaleCount(1, groupMultiplier.Value) - 1);
                 state.SetBonusGroupWaves(groupData.GroupID, bonusWaves);
                 configured++;
 
@@ -220,11 +220,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             bool scaled = false;
 
-            if (ReflectionFieldCache.GetField(spawnData, "StackCount") is { } stackCountField)
+            if (SpawnDataFieldScaler.TryScaleStackCount(spawnData, multiplier, out int stackBefore, out int stackAfter))
             {
-                int stackBefore = (int)(stackCountField.GetValue(spawnData) ?? 0);
-                int stackAfter = SpawnMultiplierResolver.ScaleCountWithImplicitBase(stackBefore, multiplier, implicitWhenZero: 1);
-                stackCountField.SetValue(spawnData, stackAfter);
                 SpawnScalingLog.DebugFieldScaled(
                     $"spawnPoint[{masterId}].stackCount ({entityName})",
                     stackBefore,
@@ -233,20 +230,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 scaled = true;
             }
 
-            if (ReflectionFieldCache.GetField(spawnData, "MaxRespawnCount") is { } maxRespawnField)
+            if (SpawnDataFieldScaler.TryScaleMaxRespawnCount(spawnData, multiplier, out int respawnBefore, out int respawnAfter))
             {
-                int respawnBefore = (int)(maxRespawnField.GetValue(spawnData) ?? 0);
-                if (respawnBefore > 0)
-                {
-                    int respawnAfter = SpawnMultiplierResolver.ScaleCount(respawnBefore, multiplier);
-                    maxRespawnField.SetValue(spawnData, respawnAfter);
-                    SpawnScalingLog.DebugFieldScaled(
-                        $"spawnPoint[{masterId}].maxRespawn ({entityName})",
-                        respawnBefore,
-                        respawnAfter,
-                        multiplier);
-                    scaled = true;
-                }
+                SpawnScalingLog.DebugFieldScaled(
+                    $"spawnPoint[{masterId}].maxRespawn ({entityName})",
+                    respawnBefore,
+                    respawnAfter,
+                    multiplier);
+                scaled = true;
             }
 
             if (scaled)
@@ -261,7 +252,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static int ScaleField(object target, System.Reflection.FieldInfo field, float multiplier, string label)
         {
             int before = (int)(field.GetValue(target) ?? 0);
-            int after = SpawnMultiplierResolver.ScaleCount(before, multiplier);
+            int after = ScalingMath.ScaleCount(before, multiplier);
             field.SetValue(target, after);
             SpawnScalingLog.DebugFieldScaled(label, before, after, multiplier);
             return after;

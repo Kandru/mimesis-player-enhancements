@@ -93,15 +93,5 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         {
             return GetEffectiveMultiplier(source, ItemTypeLookup.GetItemType(masterId), playerCount, masterId);
         }
-
-        internal static int ScaleCount(int vanilla, float multiplier)
-        {
-            return ScalingMath.ScaleCount(vanilla, multiplier);
-        }
-
-        internal static int ScaleCountWithImplicitBase(int vanilla, float multiplier, int implicitWhenZero)
-        {
-            return ScalingMath.ScaleCountWithImplicitBase(vanilla, multiplier, implicitWhenZero);
-        }
     }
 }

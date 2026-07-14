@@ -56,7 +56,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             int baseCount = itemCount > 0 ? itemCount : 1;
-            int scaled = LootMultiplierResolver.ScaleCount(baseCount, multiplier);
+            int scaled = ScalingMath.ScaleCount(baseCount, multiplier);
             if (scaled == itemCount)
             {
                 return false;
