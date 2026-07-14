@@ -185,6 +185,14 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableFpsUi { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFpsUiInventoryNetWorth { get; internal set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnablePrivacy { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> BlockReluTelemetry { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> BlockReplayUpload { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> BlockReplayRecording { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> BlockCrashReports { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> StripCrashReportMetadata { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> BlockKraftonGppSdk { get; internal set; } = null!;
+
         private static readonly List<MelonPreferences_Entry<float>> FloatEntries = [];
 
         /// <summary>Registers a float entry for NaN/precision sanitizing and TOML normalization.</summary>
@@ -201,6 +209,7 @@ namespace MimesisPlayerEnhancement
 
             MainCategory = CreateCategory(MainCategoryId);
             UiConfig.CreateCategory();
+            PrivacyConfig.CreateCategory();
             MorePlayersConfig.CreateCategory();
             MoreVoicesConfig.CreateCategory();
             PersistenceConfig.CreateCategory();
@@ -241,6 +250,7 @@ namespace MimesisPlayerEnhancement
             WeatherConfig.CreateEntries();
             WebDashboardConfig.CreateEntries();
             UiConfig.CreateEntries();
+            PrivacyConfig.CreateEntries();
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);
@@ -264,6 +274,7 @@ namespace MimesisPlayerEnhancement
             WeatherConfig.WireValidation(logger);
             WebDashboardConfig.WireValidation(logger);
             UiConfig.WireValidation(logger);
+            PrivacyConfig.WireValidation();
             EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(EnableDebugLogging));
 
             RegisterFloatEntries();

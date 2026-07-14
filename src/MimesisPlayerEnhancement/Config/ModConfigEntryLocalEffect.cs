@@ -1,6 +1,7 @@
 namespace MimesisPlayerEnhancement
 {
     using System.Collections.Generic;
+    using MimesisPlayerEnhancement.Features.Privacy;
     using MimesisPlayerEnhancement.Features.UserInterface;
 
     /// <summary>
@@ -28,6 +29,13 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "EnableFloatingDetoxIndicators"),
                 (UiConfig.SectionId, "EnableFpsUi"),
                 (UiConfig.SectionId, "EnableFpsUiInventoryNetWorth"),
+                (PrivacyConfig.SectionId, "EnablePrivacy"),
+                (PrivacyConfig.SectionId, "BlockReluTelemetry"),
+                (PrivacyConfig.SectionId, "BlockReplayUpload"),
+                (PrivacyConfig.SectionId, "BlockReplayRecording"),
+                (PrivacyConfig.SectionId, "BlockCrashReports"),
+                (PrivacyConfig.SectionId, "StripCrashReportMetadata"),
+                (PrivacyConfig.SectionId, "BlockKraftonGppSdk"),
                 (PlayerTuningSectionId, "DisablePlayerCollision"),
             };
 

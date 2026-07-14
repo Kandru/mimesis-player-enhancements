@@ -49,6 +49,10 @@
       <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UniTask" Condition="Exists('$(GameAssemblyPath)/UniTask.dll')">
+      <HintPath>$(GameAssemblyPath)/UniTask.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="FishNet.Runtime">
       <HintPath>$(GameAssemblyPath)/FishNet.Runtime.dll</HintPath>
       <Private>false</Private>

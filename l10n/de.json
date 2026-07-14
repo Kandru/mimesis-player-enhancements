@@ -70,6 +70,44 @@
         "description": "Zeigt den Gesamt-Verkaufswert aller Gegenstände im Inventar oberhalb der Hotbar an, im Stil der Gewichtsanzeige darunter. Unabhängig vom FPS-Vital-HUD."
       }
     },
+    "MimesisPlayerEnhancement_Privacy": {
+      "_section": "Datenschutz",
+      "_description": "Blockiert automatische ausgehende Daten von deinem Spielclient. Jeder Spieler steuert das lokal. Feedback, das du selbst absendest, wird nie blockiert.",
+      "_groups": {
+        "telemetry": "Relu-Telemetrie",
+        "replay": "Replay-Dateien",
+        "crashReports": "Absturzberichte",
+        "thirdParty": "Drittanbieter-Dienste"
+      },
+      "EnablePrivacy": {
+        "title": "Datenschutz-Kontrollen aktivieren",
+        "description": "Wenn aktiv, blockieren die Optionen unten automatische Uploads und Tracking. Wenn aus, bleibt das Vanilla-Verhalten unverändert."
+      },
+      "BlockReluTelemetry": {
+        "title": "Relu-Telemetrie blockieren",
+        "description": "Stoppt Sitzungs-Logs (Login, Host, Join, Tram) und Gameplay-Event-Logs an mimesisapi.relugameservice.com."
+      },
+      "BlockReplayUpload": {
+        "title": "Replay-Upload blockieren",
+        "description": "Verhindert das Hochladen von Replay-Dateien an Relu-Speicher, inkl. Zufallsstichproben, Quit/Crash-Uploads und Feedback-Replay-Anhänge."
+      },
+      "BlockReplayRecording": {
+        "title": "Replay-Aufzeichnung blockieren",
+        "description": "Verhindert das Erstellen von Replay-Dateien. Stoppt Sprach- und Netzwerkaufzeichnung und stellt sicher, dass Feedback kein Replay anhängen kann."
+      },
+      "BlockCrashReports": {
+        "title": "Unity-Absturzberichte blockieren",
+        "description": "Deaktiviert Unity-Absturzberichte vollständig."
+      },
+      "StripCrashReportMetadata": {
+        "title": "Absturzbericht-Metadaten entfernen",
+        "description": "Wenn Absturzberichte noch aktiv sind, Metadaten wie Nickname, Sitzungs-ID und Dungeon-Seed ignorieren. Ausgeblendet, solange Absturzberichte blockiert sind."
+      },
+      "BlockKraftonGppSdk": {
+        "title": "Krafton-GPP-SDK blockieren",
+        "description": "Überspringt den Krafton-Creator-Code-SDK-Login beim Start."
+      }
+    },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
       "_description": "Randomisiere Tram-Dungeon-Würfe, Layout-Flows, Kartenvarianten und prozeduralen Seed. Nur Host.",

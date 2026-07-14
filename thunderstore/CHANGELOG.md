@@ -2,6 +2,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.11
 - improvement: add another button to the items overlay to allow giving multiple items without re-opening the items overlay
+- draft: added privacy settings to disallow the game to send data to anything else then steam
 
 ## 26.7.10
 - improvement: further optimized savegame data (reduced files)

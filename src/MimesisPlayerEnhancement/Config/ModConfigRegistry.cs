@@ -357,7 +357,8 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
-            return string.Equals(sectionId, UiConfig.SectionId, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(sectionId, UiConfig.SectionId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sectionId, PrivacyConfig.SectionId, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)

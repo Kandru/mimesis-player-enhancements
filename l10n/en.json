@@ -70,6 +70,44 @@
         "description": "Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD."
       }
     },
+    "MimesisPlayerEnhancement_Privacy": {
+      "_section": "Privacy",
+      "_description": "Block automatic outbound data from your game client. Each player controls these locally. Feedback reports you submit yourself are never blocked.",
+      "_groups": {
+        "telemetry": "Relu telemetry",
+        "replay": "Replay files",
+        "crashReports": "Crash reports",
+        "thirdParty": "Third-party services"
+      },
+      "EnablePrivacy": {
+        "title": "Enable Privacy Controls",
+        "description": "When enabled, the options below block automatic uploads and tracking. When disabled, vanilla game behavior is unchanged."
+      },
+      "BlockReluTelemetry": {
+        "title": "Block Relu Telemetry",
+        "description": "Stop session lifecycle logs (login, host, join, tram) and gameplay event logs sent to mimesisapi.relugameservice.com."
+      },
+      "BlockReplayUpload": {
+        "title": "Block Replay Upload",
+        "description": "Prevent replay files from being uploaded to Relu storage, including random sampling, quit/crash uploads, and feedback replay attachments."
+      },
+      "BlockReplayRecording": {
+        "title": "Block Replay Recording",
+        "description": "Prevent replay files from being created at all. Stops voice and network capture for replays and ensures feedback cannot attach a replay."
+      },
+      "BlockCrashReports": {
+        "title": "Block Unity Crash Reports",
+        "description": "Disable Unity crash report uploads entirely."
+      },
+      "StripCrashReportMetadata": {
+        "title": "Strip Crash Report Metadata",
+        "description": "When crash reports are still enabled, ignore metadata such as nickname, session ID, and dungeon seed. Hidden while crash reports are blocked."
+      },
+      "BlockKraftonGppSdk": {
+        "title": "Block Krafton GPP SDK",
+        "description": "Skip Krafton creator-code SDK login on startup."
+      }
+    },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
       "_description": "Randomize tram dungeon picks, layout flows, map variants, and procedural seed. Host only.",

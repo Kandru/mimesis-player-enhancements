@@ -27,7 +27,7 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 | Scope | Sections / keys |
 |-------|-----------------|
-| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (debug logging only), `[MimesisPlayerEnhancement_Ui]`, `[MimesisPlayerEnhancement_WebDashboard]` |
+| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (debug logging only), `[MimesisPlayerEnhancement_Ui]`, `[MimesisPlayerEnhancement_Privacy]`, `[MimesisPlayerEnhancement_WebDashboard]` |
 | **Save-scoped** | All other feature sections |
 
 User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav` beside vanilla saves (Steam Auto-Cloud).
@@ -38,6 +38,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 |---------|---------|-------|
 | [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
 | [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, world health bars, damage numbers | Local UI |
+| [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local client |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
 | [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
@@ -99,6 +100,20 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
+
+## Privacy — `[MimesisPlayerEnhancement_Privacy]`
+
+**Local client.** Global-only preferences that block automatic outbound data from your game install. Not available in per-save override UI or quick presets. User-initiated feedback/bug reports are never blocked.
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `EnablePrivacy` | bool | `false` | — | Master toggle. When off, vanilla outbound behavior is unchanged. |
+| `BlockReluTelemetry` | bool | `true` | — | Block session lifecycle logs and gameplay event logs to `mimesisapi.relugameservice.com:22226`. |
+| `BlockReplayUpload` | bool | `true` | — | Block replay file uploads to Relu storage (random sampling, quit/crash paths, feedback replay attachments). |
+| `BlockReplayRecording` | bool | `true` | — | Prevent replay files from being created. Stops voice/network capture and prevents feedback replay attachments. |
+| `BlockCrashReports` | bool | `true` | — | Disable Unity crash report uploads. |
+| `StripCrashReportMetadata` | bool | `true` | — | When crash reports remain enabled, ignore `CrashReportHandler.SetUserMetadata` calls. |
+| `BlockKraftonGppSdk` | bool | `true` | — | Skip Krafton GPP SDK initialization (creator codes). |
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
@@ -484,6 +499,15 @@ FloatingDamageDurationSeconds = 2.0
 EnableFloatingDetoxIndicators = true
 EnableFpsUi = true
 EnableFpsUiInventoryNetWorth = true
+
+[MimesisPlayerEnhancement_Privacy]
+EnablePrivacy = false
+BlockReluTelemetry = true
+BlockReplayUpload = true
+BlockReplayRecording = true
+BlockCrashReports = true
+StripCrashReportMetadata = true
+BlockKraftonGppSdk = true
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false

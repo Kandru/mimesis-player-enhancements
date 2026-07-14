@@ -42,6 +42,27 @@ namespace MimesisPlayerEnhancement
                 }
             }
 
+            if (string.Equals(section.Id, "MimesisPlayerEnhancement_Weather", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(entry.Key, "DisableRandomWeather", StringComparison.Ordinal))
+            {
+                WebDashboardConfigEntryDto? weatherMode = FindEntry(section, "WeatherMode");
+                if (weatherMode != null
+                    && string.Equals(weatherMode.Value, "Vanilla", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            if (string.Equals(section.Id, PrivacyConfig.SectionId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(entry.Key, "StripCrashReportMetadata", StringComparison.Ordinal))
+            {
+                WebDashboardConfigEntryDto? blockCrashReports = FindEntry(section, "BlockCrashReports");
+                if (blockCrashReports != null && ParseBool(blockCrashReports.Value))
+                {
+                    return false;
+                }
+            }
+
             return IsDependencyChainVisible(section, entry.Key, []);
         }
 

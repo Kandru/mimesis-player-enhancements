@@ -244,6 +244,19 @@ namespace MimesisPlayerEnhancement
                 };
             }
 
+            if (sectionId == PrivacyConfig.SectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["BlockReluTelemetry"] = "telemetry",
+                    ["BlockReplayUpload"] = "replay",
+                    ["BlockReplayRecording"] = "replay",
+                    ["BlockCrashReports"] = "crashReports",
+                    ["StripCrashReportMetadata"] = "crashReports",
+                    ["BlockKraftonGppSdk"] = "thirdParty",
+                };
+            }
+
             return new Dictionary<string, string>(StringComparer.Ordinal);
         }
 

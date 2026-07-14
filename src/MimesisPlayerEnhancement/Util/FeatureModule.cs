@@ -113,6 +113,8 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("Ui", UiPatches.Apply,
                 syncFromConfig: UiRuntime.RefreshFromConfig,
                 onUpdate: UiRuntime.OnUpdate),
+            new FeatureModule("Privacy", PrivacyPatches.Apply,
+                syncFromConfig: PrivacyRuntime.RefreshFromConfig),
             new FeatureModule("PlayerTuning", PlayerTuningPatches.Apply,
                 syncFromConfig: PlayerTuningApplier.RefreshFromConfig,
                 onDeinitialize: PlayerTuningApplier.RestoreOnShutdown),
