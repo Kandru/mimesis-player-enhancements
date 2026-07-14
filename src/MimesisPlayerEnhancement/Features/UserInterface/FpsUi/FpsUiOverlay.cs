@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Reflection;
 using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {
@@ -12,11 +14,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private const string Feature = "Ui";
         private const string OverlayRootName = "MPE_FpsVitals";
         private const float LayoutGapPixels = 20f;
-        private const float LabelWidthPixels = 112f;
+        private const float LabelWidthPixels = 132f;
         private const float HealthFontSize = 50f;
         private const float ToxicFontSize = 30f;
+        private const float ToxicIconWidthPixels = 22f;
+        private const float ToxicRowSpacingPixels = 5f;
         private const float HealthNudgeDownPixels = 4f;
         private const float ToxicNudgeUpPixels = 4f;
+
+        private static readonly Color32 HealthLivingColor = new(255, 80, 80, 255);
+        private static readonly Color32 HealthDeadColor = new(180, 50, 50, 255);
+        private static readonly Color32 ToxicPercentGreen = new(120, 220, 120, 255);
+        private static readonly Color32 ToxicPercentYellowGreen = new(180, 230, 120, 255);
+        private static readonly Color32 ToxicPercentOrange = new(255, 210, 80, 255);
+        private static readonly Color32 ToxicPercentRed = new(255, 90, 90, 255);
 
         private static readonly PropertyInfo? CurrencyTextProperty =
             AccessTools.Property(typeof(UIPrefab_InGame), "UE_Currency");
@@ -24,14 +35,22 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static readonly PropertyInfo? KillCountTextProperty =
             AccessTools.Property(typeof(UIPrefab_InGame), "UE_KillCount");
 
+        private static readonly FieldInfo? OxyGaugeField =
+            AccessTools.Field(typeof(UIPrefab_InGame), "oxyGauge");
+
+        private static readonly FieldInfo? IconSpritesField =
+            AccessTools.Field(typeof(UIPrefab_ProgressBar), "iconSprites");
+
         private static UIPrefab_InGame? _ingameUi;
         private static SessionState _state = new();
         private static GameObject? _overlayRoot;
         private static RectTransform? _healthRect;
         private static RectTransform? _toxicRect;
         private static Component? _healthLabel;
-        private static Component? _toxicLabel;
+        private static Component? _toxicPercentLabel;
+        private static Image? _toxicIconImage;
         private static bool _loggedOverlayFailure;
+        private static bool _loggedToxicIconFailure;
 
         internal static bool IsEnabled() => ModConfig.EnableFpsUi.Value;
 
@@ -114,7 +133,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             long displayHp = isDead ? 0L : curr;
             ModUiText.SetText(_healthLabel, displayHp.ToString());
-            ModUiText.SetColor(_healthLabel, ResolveHealthColor(curr, maxHp, isDead));
+            ModUiText.SetColor(_healthLabel, ResolveHealthColor(isDead));
         }
 
         internal static void UpdateConta(UIPrefab_InGame ingameUi, long curr, long maxConta)
@@ -147,14 +166,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 UpdateOverlayVisibility();
             }
 
-            if (_toxicLabel == null)
+            if (_toxicPercentLabel == null)
             {
                 return;
             }
 
             float percent = maxConta <= 0L ? 0f : (float)curr / maxConta * 100f;
-            ModUiText.SetText(_toxicLabel, $"{percent:F0}%");
-            ModUiText.SetColor(_toxicLabel, ResolveToxicColor(percent));
+            ModUiText.SetText(_toxicPercentLabel, $"{percent:F0}%");
+            ModUiText.SetColor(_toxicPercentLabel, ResolveToxicPercentColor(percent));
         }
 
         internal static void RefreshFromConfig()
@@ -270,7 +289,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static bool TryEnsureOverlay(UIPrefab_InGame ingameUi)
         {
             if (_overlayRoot != null && _healthRect != null && _toxicRect != null
-                && _healthLabel != null && _toxicLabel != null)
+                && _healthLabel != null && _toxicPercentLabel != null)
             {
                 return true;
             }
@@ -294,13 +313,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             ModUiText.ConfigureTextLayout(_healthLabel, wordWrap: false, ModUiText.OverflowOverflow);
             StretchTextToParent(_healthLabel);
 
-            GameObject toxicGo = ModUiLayout.CreateChild("Toxic", _overlayRoot.transform);
-            _toxicRect = toxicGo.GetComponent<RectTransform>();
+            GameObject toxicRowGo = ModUiLayout.CreateChild("ToxicRow", _overlayRoot.transform);
+            _toxicRect = toxicRowGo.GetComponent<RectTransform>();
             _toxicRect.localScale = Vector3.one;
-            _toxicLabel = ModUiFactory.AddText(toxicGo, assets, "0%", ToxicFontSize, ModUiFontStyle.Normal);
-            ModUiText.SetTopRightAlignment(_toxicLabel);
-            ModUiText.ConfigureTextLayout(_toxicLabel, wordWrap: false, ModUiText.OverflowOverflow);
-            StretchTextToParent(_toxicLabel);
+
+            HorizontalLayoutGroup toxicLayout = toxicRowGo.AddComponent<HorizontalLayoutGroup>();
+            toxicLayout.spacing = ToxicRowSpacingPixels;
+            ModUiLayout.SetEnumProperty(toxicLayout, "childAlignment", 2);
+            toxicLayout.childControlWidth = true;
+            toxicLayout.childControlHeight = true;
+            toxicLayout.childForceExpandWidth = false;
+            toxicLayout.childForceExpandHeight = true;
+
+            GameObject toxicIconGo = ModUiLayout.CreateChild("ToxicIcon", toxicRowGo.transform);
+            ModUiLayout.PrepareLayoutGroupChild(toxicIconGo.GetComponent<RectTransform>());
+            LayoutElement iconLayout = toxicIconGo.AddComponent<LayoutElement>();
+            iconLayout.preferredWidth = ToxicIconWidthPixels;
+            iconLayout.flexibleWidth = 0f;
+            _toxicIconImage = toxicIconGo.AddComponent<Image>();
+            _toxicIconImage.preserveAspect = true;
+            _toxicIconImage.raycastTarget = false;
+            Sprite? toxicIconSprite = TryCaptureToxicIconSprite(ingameUi);
+            if (toxicIconSprite != null)
+            {
+                _toxicIconImage.sprite = toxicIconSprite;
+                _toxicIconImage.color = Color.white;
+            }
+            else
+            {
+                _toxicIconImage.gameObject.SetActive(false);
+                LogToxicIconFailureOnce("vanilla oxy gauge icon unavailable");
+            }
+
+            GameObject toxicPercentGo = ModUiLayout.CreateChild("ToxicPercent", toxicRowGo.transform);
+            ModUiLayout.PrepareLayoutGroupChild(toxicPercentGo.GetComponent<RectTransform>());
+            LayoutElement percentLayout = toxicPercentGo.AddComponent<LayoutElement>();
+            percentLayout.flexibleWidth = 1f;
+            _toxicPercentLabel = ModUiFactory.AddText(toxicPercentGo, assets, "0%", ToxicFontSize, ModUiFontStyle.Normal);
+            ModUiText.SetTopRightAlignment(_toxicPercentLabel);
+            ModUiText.ConfigureTextLayout(_toxicPercentLabel, wordWrap: false, ModUiText.OverflowOverflow);
+            StretchTextToParent(_toxicPercentLabel);
 
             _overlayRoot.SetActive(false);
             return true;
@@ -317,7 +369,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _healthRect = null;
             _toxicRect = null;
             _healthLabel = null;
-            _toxicLabel = null;
+            _toxicPercentLabel = null;
+            _toxicIconImage = null;
         }
 
         private static void UpdateOverlayVisibility()
@@ -428,28 +481,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
         }
 
-        private static Color ResolveHealthColor(long curr, long maxHp, bool isDead)
-        {
-            if (isDead)
-            {
-                return new Color32(180, 50, 50, 255);
-            }
+        private static Color ResolveHealthColor(bool isDead) =>
+            isDead ? HealthDeadColor : HealthLivingColor;
 
-            float ratio = maxHp <= 0L ? 0f : (float)curr / maxHp;
-            return ratio > 0.6f
-                ? new Color32(220, 255, 220, 255)
-                : ratio > 0.3f
-                    ? new Color32(255, 220, 80, 255)
-                    : new Color32(255, 80, 80, 255);
+        private static Color ResolveToxicPercentColor(float percent)
+        {
+            int tier = Mathf.Clamp((int)(percent / 10f), 0, 9);
+            return tier switch
+            {
+                <= 2 => ToxicPercentGreen,
+                <= 5 => ToxicPercentYellowGreen,
+                <= 7 => ToxicPercentOrange,
+                _ => ToxicPercentRed,
+            };
         }
 
-        private static Color ResolveToxicColor(float percent) => percent switch
+        private static Sprite? TryCaptureToxicIconSprite(UIPrefab_InGame ingameUi)
         {
-            <= 10f => new Color32(120, 220, 200, 255),
-            <= 40f => new Color32(180, 230, 120, 255),
-            <= 70f => new Color32(255, 210, 80, 255),
-            _ => new Color32(255, 90, 90, 255),
-        };
+            if (OxyGaugeField?.GetValue(ingameUi) is not UIPrefab_ProgressBar oxyGauge)
+            {
+                return null;
+            }
+
+            if (IconSpritesField?.GetValue(oxyGauge) is not IList sprites || sprites.Count == 0)
+            {
+                return null;
+            }
+
+            return sprites[0] as Sprite;
+        }
+
+        private static void LogToxicIconFailureOnce(string reason)
+        {
+            if (_loggedToxicIconFailure)
+            {
+                return;
+            }
+
+            _loggedToxicIconFailure = true;
+            ModLog.Warn(Feature, $"FPS UI toxic icon unavailable — {reason}");
+        }
 
         private static void SetActive(GameObject? go, bool active)
         {
