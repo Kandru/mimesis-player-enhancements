@@ -55,7 +55,7 @@
     }
   }
 
-  async function submit() {
+  async function submit(closeAfter = false) {
     if (!canSubmit) return;
     const { itemId, percent } = parseItemSelection(selectionKey);
     if (!itemId) return;
@@ -70,7 +70,7 @@
 
       if (failures.length === 0) {
         dashboard.showToast(t('dashboard.give_item_result', { count: successes }));
-        open = false;
+        if (closeAfter) open = false;
         return;
       }
 
@@ -142,8 +142,11 @@
         <button type="button" class="btn btn-danger" disabled={submitting} onclick={close}>
           {t('dashboard.dialog_cancel')}
         </button>
-        <button type="button" class="btn btn-success" disabled={!canSubmit} onclick={submit}>
+        <button type="button" class="btn btn-success" disabled={!canSubmit} onclick={() => submit()}>
           {t('dashboard.give_item_submit')}
+        </button>
+        <button type="button" class="btn btn-success" disabled={!canSubmit} onclick={() => submit(true)}>
+          {t('dashboard.give_item_submit_and_close')}
         </button>
       </div>
     </div>

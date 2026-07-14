@@ -1174,6 +1174,7 @@
     "give_item_recipients": "Recipients",
     "give_item_select": "Item",
     "give_item_submit": "Give",
+    "give_item_submit_and_close": "Give & close",
     "give_item_none_selected": "Select at least one player",
     "give_item_result": "Gave item to {count} player(s)",
     "late_join_prefix": "Late join: {label}",

@@ -1174,6 +1174,7 @@
     "give_item_recipients": "Empfänger",
     "give_item_select": "Gegenstand",
     "give_item_submit": "Geben",
+    "give_item_submit_and_close": "Geben & schließen",
     "give_item_none_selected": "Mindestens einen Spieler auswählen",
     "give_item_result": "Gegenstand an {count} Spieler vergeben",
     "late_join_prefix": "Spätbeitritt: {label}",
