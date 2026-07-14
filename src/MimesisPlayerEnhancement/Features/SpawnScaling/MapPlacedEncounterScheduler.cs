@@ -190,7 +190,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            ScheduleEncounter(room, spawnData, spawnData.MasterID, creditConsumed);
+            ScheduleEncounter(room, spawnData, spawnData.MasterID);
         }
 
         internal static void ProcessPendingEncounters()
@@ -199,6 +199,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 || !SceneScopedConfigGate.Spawn.EnableSpawnScaling
                 || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
+                return;
+            }
+
+            // Bonus encounters are only valid while a dungeon run is active; drop leftovers
+            // so they cannot spawn into a stale DungeonRoom from the tram or maintenance.
+            if (SceneScopedConfigGate.ActiveKind != SceneScopeKind.Dungeon)
+            {
+                ClearPendingEncounters();
                 return;
             }
 
@@ -223,7 +231,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     if (ModConfig.EnableDebugLogging.Value)
                     {
                         ModLog.Debug(Feature, $"Bonus encounter waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
-                            $"players within {ResolveMinPlayerDistanceMeters(pending.Room):0.#}m");
+                            $"players within {ResolveRoomConfig(pending.Room).MapPlacedEncounterMinPlayerDistanceMeters:0.#}m");
                     }
 
                     DeferNextAttempt(i, pending, now);
@@ -348,11 +356,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
         }
 
-        private static void ScheduleEncounter(
-            DungeonRoom room,
-            SpawnedActorData spawnData,
-            int masterId,
-            bool creditConsumed)
+        private static void ScheduleEncounter(DungeonRoom room, SpawnedActorData spawnData, int masterId)
         {
             foreach (PendingEncounterSpawn pending in PendingEncounters)
             {
@@ -362,19 +366,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
             }
 
-            (float minDelay, float maxDelay) = ResolveEncounterDelays(room);
+            SpawnScalingSceneConfig config = ResolveRoomConfig(room);
+            float minDelay = config.MapPlacedEncounterDelayMinSeconds;
+            float maxDelay = config.MapPlacedEncounterDelayMaxSeconds;
             float delay = minDelay >= maxDelay ? minDelay : UnityEngine.Random.Range(minDelay, maxDelay);
-            long spawnWaitMs = spawnData.SpawnWaitTime;
-            if (spawnWaitMs > 0)
+            if (spawnData.SpawnWaitTime > 0)
             {
-                float spawnWaitSeconds = spawnWaitMs / 1000f;
-                if (spawnWaitSeconds > delay)
-                {
-                    delay = spawnWaitSeconds;
-                }
+                delay = Math.Max(delay, spawnData.SpawnWaitTime / 1000f);
             }
 
-            PendingEncounters.Add(new PendingEncounterSpawn(room, spawnData, masterId, Time.time + delay, creditConsumed));
+            PendingEncounters.Add(new PendingEncounterSpawn(room, spawnData, masterId, Time.time + delay));
 
             if (ModConfig.EnableDebugLogging.Value)
             {
@@ -388,27 +389,17 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             PendingEncounters[index] = pending.WithNextAttemptAt(now + EncounterSpawnTiming.RetryIntervalSeconds);
         }
 
-        private static (float MinDelay, float MaxDelay) ResolveEncounterDelays(DungeonRoom room)
-        {
-            if (RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state) && state.HasSnapshot)
-            {
-                return (state.Snapshot.MapPlacedEncounterDelayMinSeconds, state.Snapshot.MapPlacedEncounterDelayMaxSeconds);
-            }
-
-            SpawnScalingSceneConfig spawn = SceneScopedConfigGate.Spawn;
-            return (spawn.MapPlacedEncounterDelayMinSeconds, spawn.MapPlacedEncounterDelayMaxSeconds);
-        }
-
-        private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
+        /// <summary>Room snapshot when one exists, otherwise the live scene config.</summary>
+        private static SpawnScalingSceneConfig ResolveRoomConfig(DungeonRoom? room)
         {
             if (room != null
                 && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state)
                 && state.HasSnapshot)
             {
-                return state.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+                return state.Snapshot;
             }
 
-            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
+            return SceneScopedConfigGate.Spawn;
         }
 
         private static bool TryFindRoomState(
@@ -437,14 +428,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnedActorData data,
                 int masterId,
                 float executeAt,
-                bool creditConsumed)
+                float? nextAttemptAt = null)
             {
                 Room = room;
                 Data = data;
                 MasterId = masterId;
                 ExecuteAt = executeAt;
-                NextAttemptAt = executeAt;
-                CreditConsumed = creditConsumed;
+                NextAttemptAt = nextAttemptAt ?? executeAt;
             }
 
             internal DungeonRoom Room { get; }
@@ -457,27 +447,9 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             internal float NextAttemptAt { get; }
 
-            internal bool CreditConsumed { get; }
-
             internal PendingEncounterSpawn WithNextAttemptAt(float nextAttemptAt)
             {
-                return new PendingEncounterSpawn(Room, Data, MasterId, ExecuteAt, CreditConsumed, nextAttemptAt);
-            }
-
-            private PendingEncounterSpawn(
-                DungeonRoom room,
-                SpawnedActorData data,
-                int masterId,
-                float executeAt,
-                bool creditConsumed,
-                float nextAttemptAt)
-            {
-                Room = room;
-                Data = data;
-                MasterId = masterId;
-                ExecuteAt = executeAt;
-                NextAttemptAt = nextAttemptAt;
-                CreditConsumed = creditConsumed;
+                return new PendingEncounterSpawn(Room, Data, MasterId, ExecuteAt, nextAttemptAt);
             }
         }
     }

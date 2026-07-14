@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     {
         private const string Feature = "SpawnScaling";
 
-        internal static string FormatPosition(Vector3 pos)
+        private static string FormatPosition(Vector3 pos)
         {
             return $"({pos.x:0.0}, {pos.y:0.0}, {pos.z:0.0})";
         }

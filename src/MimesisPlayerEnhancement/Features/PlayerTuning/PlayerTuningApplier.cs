@@ -27,6 +27,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         private static readonly FieldInfo? VPlayerDictField =
             AccessTools.Field(typeof(IVroom), "_vPlayerDict");
 
+        private static readonly FieldInfo? StatManagerField =
+            AccessTools.Field(typeof(StatController), "StatManager");
+
         private static bool _vanillaCached;
         private static int _vanillaMaxCarryWeight;
         private static long _vanillaRunStaminaConsumeValue;
@@ -65,23 +68,13 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             }
         }
 
-        internal static long ScaleMoveSpeed(long vanilla)
-        {
-            return ScalingMath.ScaleCount((int)vanilla, PlayerTuningResolver.MoveSpeedMultiplier);
-        }
-
-        internal static long ScaleMaxStamina(long vanilla)
-        {
-            return ScalingMath.ScaleCount((int)vanilla, PlayerTuningResolver.MaxStaminaMultiplier);
-        }
-
-        internal static int GetEffectiveMaxCarryWeight()
+        private static int GetEffectiveMaxCarryWeight()
         {
             EnsureVanillaCached();
             return ScalingMath.ScaleCount(_vanillaMaxCarryWeight, PlayerTuningResolver.MaxCarryWeightMultiplier);
         }
 
-        internal static int ComputeMoveSpeedDecreaseRateByWeight(int totalWeight)
+        private static int ComputeMoveSpeedDecreaseRateByWeight(int totalWeight)
         {
             if (totalWeight <= 0)
             {
@@ -290,7 +283,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
                 try
                 {
-                    player.StatControlUnit?.LoadStats(reload: true);
+                    ReloadImmutableStats(player);
                     player.InventoryControlUnit?.OnChangeInventory();
                     count++;
                 }
@@ -301,6 +294,26 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             }
 
             return count;
+        }
+
+        // Must NOT call StatController.LoadStats(reload: true) here: it runs
+        // StatManager.InitMutableStats, which re-adds the room's PlayerTransitionData conta
+        // (IncreaseConta adds instead of setting) and resets HP to a stale snapshot. Repeated
+        // config changes would ratchet conta to max, killing the player and spawning a mimic.
+        // Instead re-run only the immutable/mapped stat loads so the MappedStats Harmony
+        // postfix re-applies the tuning multipliers without touching HP/conta/stamina.
+        private static void ReloadImmutableStats(VPlayer player)
+        {
+            if (player.StatControlUnit is not StatController statController
+                || StatManagerField?.GetValue(statController) is not StatManager statManager)
+            {
+                return;
+            }
+
+            statManager.LoadMappedStat();
+            statManager.LoadEventStats();
+            statManager.LoadImmutableStats();
+            statManager.SyncImmutableStats();
         }
     }
 }

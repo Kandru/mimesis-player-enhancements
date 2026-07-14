@@ -30,24 +30,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal int NextMimicWavePeriodMs { get; set; }
 
-        internal int SlotCount => _slots.Count;
-
-        internal bool HasCredits
-        {
-            get
-            {
-                foreach (int credits in _remainingCreditsByMasterId.Values)
-                {
-                    if (credits > 0)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-
         internal void RegisterSlot(int markerId, FixedSpawnedActorData data)
         {
             _slots.Add(new EncounterSlot(markerId, data));
