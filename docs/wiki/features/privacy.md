@@ -2,9 +2,7 @@
 
 **Scope:** Your game only (local) · **Config:** [`MimesisPlayerEnhancement_Privacy`](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)
 
-Mimesis sends some data to servers that are not required to play with friends. The in-game privacy policy do not seem to not turn these automatic uploads off. This feature lets you block them.
-
-User-initiated feedback and bug reports are **never** blocked — the wiki explains what they send so you can decide before submitting.
+Mimesis seems to send some data to servers that are not required to play with friends. The in-game privacy policy do not seem to not turn these automatic uploads off either. This feature lets you block them for your piece of mind.
 
 ## What the vanilla game sends (without this mod)
 
@@ -16,7 +14,7 @@ User-initiated feedback and bug reports are **never** blocked — the wiki expla
 | Host creates a tram / join room / enter tram / open public lobby | Similar milestone logs tied to your session |
 | End of dungeon or maintenance transitions | Detailed gameplay diary: deaths, loot, HP, contamination, scraps collected, shop purchases, session economics |
 
-### Replay storage (same company, port 22443)
+### Replay storage (`mimesisapi.relugameservice.com`)
 
 | When | What leaves your PC |
 |------|---------------------|
@@ -34,7 +32,7 @@ Only when **you** open the in-game feedback form and submit it:
 - Zipped `player.log` files (the game scans for mod loaders)
 - Optional replay file attachment
 
-**This mod never blocks feedback submission.**
+**This mod does NOT block feedback submission.**
 
 ### Unity crash reports
 
@@ -45,7 +43,7 @@ Only when the game crashes:
 
 ### Krafton creator-code service
 
-On every launch the game logs into Krafton GPP over Steam (for creator codes).
+On every launch the game logs into Krafton GPP over Steam (for creator codes). If you disable this you cannot use the custom skins.
 
 ### What is NOT covered here
 
@@ -66,12 +64,6 @@ On every launch the game logs into Krafton GPP over Steam (for creator codes).
 
 ## Feedback and bug reports (your choice)
 
-The feedback UI is intentional: nothing is sent until you submit. Privacy toggles do not block text, logs, or metadata in a feedback report.
-
-If `BlockReplayRecording` is on, no replay file exists to attach. If `BlockReplayUpload` is on, replay uploads are blocked even when old replay files remain on disk.
-
-## What accepting the in-game privacy policy does
-
-It only stores a local yes/no preference. It does **not** stop the automatic uploads listed above.
+If `BlockReplayRecording` is on, no replay file exists to attach to the feedback report. If `BlockReplayUpload` is on, replay uploads are blocked even when old replay files remain on disk. If you experience issues with the game first disable this (and other) mods, check again and submit feedback.
 
 **Full config keys →** [Privacy](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)
