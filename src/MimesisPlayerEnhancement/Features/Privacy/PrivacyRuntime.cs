@@ -76,9 +76,12 @@ namespace MimesisPlayerEnhancement.Features.Privacy
             if (!IsPrivacyEnabled)
             {
                 PrivacyCrashReportHelper.SetEnabled(true);
+                ReluTelemetryGate.SyncActiveHandler();
                 ResetLogFlags();
                 return;
             }
+
+            ReluTelemetryGate.SyncActiveHandler();
 
             bool blockCrashReports = ShouldBlockCrashReports();
             PrivacyCrashReportHelper.SetEnabled(!blockCrashReports);

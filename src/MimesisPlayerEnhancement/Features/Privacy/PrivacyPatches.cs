@@ -23,7 +23,8 @@ namespace MimesisPlayerEnhancement.Features.Privacy
         {
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
-                ("EnqueueAPI/APIRequestHandler", AccessTools.Method(typeof(APIRequestHandler), nameof(APIRequestHandler.EnqueueAPI))),
+                ("Awake/APIRequestHandler", AccessTools.Method(typeof(APIRequestHandler), "Awake")),
+                ("Update/APIRequestHandler", AccessTools.Method(typeof(APIRequestHandler), "Update")),
                 ("SetRecordMode/ReplaySharedData", AccessTools.Method(typeof(ReplaySharedData), nameof(ReplaySharedData.SetRecordMode))),
                 ("UseRecord/ReplayRecorder", AccessTools.PropertyGetter(typeof(ReplayRecorder), nameof(ReplayRecorder.UseRecord))),
                 ("ReadyRecording/ReplayRecorder", AccessTools.Method(typeof(ReplayRecorder), nameof(ReplayRecorder.ReadyRecording))),
