@@ -48,8 +48,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
         }
 
-        internal bool HasTrackedSlots => _slots.Count > 0 || HasCredits;
-
         internal void RegisterSlot(int markerId, FixedSpawnedActorData data)
         {
             _slots.Add(new EncounterSlot(markerId, data));
@@ -161,11 +159,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static bool TryGet(DungeonRoom room, out RoomSpawnScalingState state)
         {
             return States.TryGet(room, out state);
-        }
-
-        internal static void Register(DungeonRoom room, RoomSpawnScalingState state)
-        {
-            States.Register(room, state);
         }
 
         internal static IEnumerable<KeyValuePair<DungeonRoom, RoomSpawnScalingState>> EnumerateAll()

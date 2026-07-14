@@ -17,23 +17,40 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static readonly MethodInfo? GetAllSpecialMonsterSpawnPointsMethod =
             AccessTools.Method(typeof(DynamicDataManager), "GetAllSpecialMonsterSpawnPoints");
 
-        internal static IEnumerable<MapMarker_CreatureSpawnPoint> GetAllCreatureSpawnMarkers()
+        internal static Dictionary<int, List<MapMarker_CreatureSpawnPoint>> CollectByMasterId()
         {
+            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> byMasterId = [];
+
             if (Hub.s == null
                 || HubDynamicDataManProperty?.GetValue(Hub.s) is not DynamicDataManager dynamicDataMan)
             {
-                yield break;
+                return byMasterId;
             }
 
             foreach (MapMarker_CreatureSpawnPoint marker in EnumerateMarkers(dynamicDataMan, GetAllMonsterSpawnPointsMethod))
             {
-                yield return marker;
+                AddMarker(byMasterId, marker);
             }
 
             foreach (MapMarker_CreatureSpawnPoint marker in EnumerateMarkers(dynamicDataMan, GetAllSpecialMonsterSpawnPointsMethod))
             {
-                yield return marker;
+                AddMarker(byMasterId, marker);
             }
+
+            return byMasterId;
+        }
+
+        private static void AddMarker(
+            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> byMasterId,
+            MapMarker_CreatureSpawnPoint marker)
+        {
+            if (!byMasterId.TryGetValue(marker.masterID, out List<MapMarker_CreatureSpawnPoint>? list))
+            {
+                list = [];
+                byMasterId[marker.masterID] = list;
+            }
+
+            list.Add(marker);
         }
 
         private static IEnumerable<MapMarker_CreatureSpawnPoint> EnumerateMarkers(

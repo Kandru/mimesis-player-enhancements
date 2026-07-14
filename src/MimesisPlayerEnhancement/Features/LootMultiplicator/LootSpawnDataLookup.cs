@@ -16,7 +16,9 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void RebuildIndex(DungeonRoom room)
         {
-            Dictionary<int, SpawnedActorData> index = [];
+            Dictionary<int, SpawnedActorData> index =
+                IndexByRoom.GetOrCreate(room, () => new Dictionary<int, SpawnedActorData>());
+            index.Clear();
 
             if (SpawnedActorDatasField.GetValue(room) is IDictionary spawnDatas)
             {
@@ -30,8 +32,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     index[candidate.Index] = candidate;
                 }
             }
-
-            IndexByRoom.Register(room, index);
         }
 
         internal static bool TryFindByMarkerIndex(DungeonRoom room, int markerIndex, out SpawnedActorData? spawnData)

@@ -89,12 +89,6 @@ namespace MimesisPlayerEnhancement.Util
             return false;
         }
 
-        internal void Register(DungeonRoom room, T state)
-        {
-            _states.Add(room, state);
-            Track(room);
-        }
-
         internal IEnumerable<KeyValuePair<DungeonRoom, T>> EnumerateAll()
         {
             PruneDead();

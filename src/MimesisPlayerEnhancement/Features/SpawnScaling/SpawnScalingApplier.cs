@@ -183,11 +183,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     $"id={groupData.GroupID}, {groupMultiplier.Value:0.##}× (bonusWaves={bonusWaves})");
             }
 
-            if (configured > 0)
-            {
-                RoomSpawnScalingRegistry.Register(room, state);
-            }
-
             return configured;
         }
 

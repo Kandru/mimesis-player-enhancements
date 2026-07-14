@@ -73,6 +73,9 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
             }
 
+            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> markersByMasterId =
+                CreatureSpawnMarkerAccess.CollectByMasterId();
+
             foreach (KeyValuePair<int, List<RoomSpawnScalingState.EncounterSlot>> group in state.GroupSlotsByMasterId())
             {
                 int masterId = group.Key;
@@ -96,14 +99,15 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
 
                 List<MapMarker_CreatureSpawnPoint> unusedMarkers = [];
-                foreach (MapMarker_CreatureSpawnPoint marker in CreatureSpawnMarkerAccess.GetAllCreatureSpawnMarkers())
+                if (markersByMasterId.TryGetValue(masterId, out List<MapMarker_CreatureSpawnPoint>? markers))
                 {
-                    if (marker.masterID != masterId || usedMarkerIds.Contains(marker.ID))
+                    foreach (MapMarker_CreatureSpawnPoint marker in markers)
                     {
-                        continue;
+                        if (!usedMarkerIds.Contains(marker.ID))
+                        {
+                            unusedMarkers.Add(marker);
+                        }
                     }
-
-                    unusedMarkers.Add(marker);
                 }
 
                 int registered = RegisterUnusedMarkers(room, state, spawnDatas, unusedMarkers, need);
@@ -112,11 +116,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
                 ModLog.Info(Feature, $"Map-placed encounter scaling — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
                     $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={registered}, credits={remainingCredits})");
-            }
-
-            if (state.HasTrackedSlots)
-            {
-                RoomSpawnScalingRegistry.Register(room, state);
             }
         }
 

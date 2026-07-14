@@ -91,7 +91,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             int playerCount = room.GetMemberCount();
             LootMultiplicatorSceneConfig lootConfig = SceneScopedConfigGate.Loot;
-            RoomState state = new(room, lootConfig);
+            RoomState state = RoomStates.GetOrCreate(room, () => new RoomState(room, lootConfig));
 
             foreach (DictionaryEntry entry in spawnDatas)
             {
@@ -156,11 +156,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
                 ModLog.Info(Feature, $"Fixed loot scaling — type={itemType}, master={masterId}, " +
                     $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={activated}, respawnQuota={remainingQuota})");
-            }
-
-            if (state.HasQuotas || state.SlotCount > 0)
-            {
-                RoomStates.Register(room, state);
             }
 
             LootSpawnDataLookup.RebuildIndex(room);

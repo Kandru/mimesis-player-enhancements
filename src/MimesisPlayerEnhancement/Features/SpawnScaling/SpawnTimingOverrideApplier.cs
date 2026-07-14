@@ -95,7 +95,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             };
 
             state.TimingOverrides = overrides;
-            RoomSpawnScalingRegistry.Register(room, state);
         }
 
         private static int ScaleTimingCount(int vanilla, float multiplier)
