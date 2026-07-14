@@ -54,12 +54,20 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
         internal static void OnPassThroughActorConfigured(ProtoActor actor)
         {
+            // When pass-through is off, vanilla actor setup already leaves the collider in the
+            // correct state — RefreshFromConfig handles reverts on toggle-off. Skip the
+            // reflection-based collider access on this per-actor lifecycle path.
+            if (!ShouldDisable)
+            {
+                return;
+            }
+
             TryApplyToActor(actor);
         }
 
         internal static void OnPassThroughActorConfigured(ProtoActor actor, int masterId)
         {
-            if (!IsMimicMasterId(masterId))
+            if (!ShouldDisable || !IsMimicMasterId(masterId))
             {
                 return;
             }

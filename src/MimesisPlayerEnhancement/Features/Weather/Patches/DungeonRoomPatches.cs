@@ -79,9 +79,21 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
     [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
     internal static class DungeonRoomOnUpdatePatch
     {
+        private const string Feature = "Weather";
+
+        // Runs every dungeon frame — only maintain the time context when a weather
+        // override (or the realtime tram clock) can actually consume it.
+        private static bool IsContextNeeded =>
+            WeatherResolver.IsFeatureEnabled || ModConfig.EnableRealtimeTramClock.Value;
+
         [HarmonyPrefix]
         public static void Prefix(DungeonRoom __instance)
         {
+            if (!IsContextNeeded)
+            {
+                return;
+            }
+
             WeatherTimeContext.Enter(__instance);
         }
 
@@ -95,6 +107,11 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         [HarmonyPostfix]
         public static void Postfix(DungeonRoom __instance)
         {
+            if (!IsContextNeeded)
+            {
+                return;
+            }
+
             WeatherTramClockSync.TrySyncFromUpdate(__instance);
         }
     }

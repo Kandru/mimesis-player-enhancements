@@ -135,7 +135,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 
             try
             {
-                long[] idsToRemove = MoreVoicesPatchHelpers._lastRemovalIds?.ToArray() ?? [];
+                long[] idsToRemove = MoreVoicesPatchHelpers._lastRemovalIds is { Count: > 0 } removalIds
+                    ? [.. removalIds]
+                    : [];
                 MoreVoicesPatchHelpers.BroadcastNewEventWithRemovalMethod.Invoke(__instance, [speechEvent, idsToRemove]);
             }
             catch (Exception ex)
