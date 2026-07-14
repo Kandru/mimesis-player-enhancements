@@ -16,28 +16,27 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 
                 if (!MimesisSaveManager.IsHost())
                 {
-                    if (ModConfig.EnablePersistence.Value)
-                    {
-                        ModLog.Debug(Feature, $"Archive started (non-host) — {VoiceEventStats.DescribePlayerBrief(__instance)}");
-                    }
-
+                    ModLog.Debug(Feature, $"Archive started (non-host) — {VoiceEventStats.DescribePlayerBrief(__instance)}");
                     return;
                 }
 
                 int slotId = MimesisSaveManager.GetCurrentSaveSlotId();
                 if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
                 {
-                    if (ModConfig.EnablePersistence.Value)
-                    {
-                        ModLog.Debug(Feature, $"Archive started outside save slot — {VoiceEventStats.DescribePlayerBrief(__instance)}");
-                    }
-
+                    ModLog.Debug(Feature, $"Archive started outside save slot — {VoiceEventStats.DescribePlayerBrief(__instance)}");
                     return;
+                }
+
+                EnsurePoolLoaded(slotId);
+
+                if (__instance.IsLocal)
+                {
+                    SpeechEventPoolManager.SetLocalArchive(__instance);
                 }
 
                 if (ModConfig.EnablePersistence.Value)
                 {
-                    HandlePersistence(__instance, slotId);
+                    PersistenceRuntime.TryRestoreArchive(__instance, slotId);
                 }
 
                 if (ModConfig.EnableStatistics.Value
@@ -54,28 +53,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
             {
                 PlayerLifecycleCoordinator.FinishArchiveConnect(__instance);
             }
-        }
-
-        private static void HandlePersistence(SpeechEventArchive __instance, int slotId)
-        {
-            EnsurePoolLoaded(slotId);
-
-            if (__instance.IsLocal)
-            {
-                SpeechEventPoolManager.SetLocalArchive(__instance);
-            }
-
-            if (__instance.events == null)
-            {
-                ModLog.Warn(Feature, $"Player archive has no event list — {VoiceEventStats.DescribePlayer(__instance)}");
-                return;
-            }
-
-            SpeechEventPoolManager.ArchiveRestoreOutcome outcome = SpeechEventPoolManager.TryRestoreToArchive(__instance);
-            SpeechEventPoolManager.ApplyRestoreOutcome(__instance, outcome);
-
-            (int pendingCount, int injectedCount) = SpeechEventPoolManager.GetCounts();
-            ModLog.Debug(Feature, $"Archive detail — slot={slotId} poolState={pendingCount}P/{injectedCount}I disconnectedCache={SpeechEventPoolManager.DisconnectedCacheCount}");
         }
 
         internal static PersistenceConnectOutcome BuildConnectOutcome(

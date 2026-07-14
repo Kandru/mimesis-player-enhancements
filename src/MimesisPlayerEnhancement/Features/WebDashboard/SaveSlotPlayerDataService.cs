@@ -51,19 +51,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion: true);
             }
 
-            int voiceRemoved = 0;
-            if (ModConfig.EnablePersistence.Value)
+            int voiceRemoved = SpeechEventPoolManager.RemovePlayer(steamId);
+            try
             {
-                voiceRemoved = SpeechEventPoolManager.RemovePlayer(steamId);
-                try
-                {
-                    MimesisSaveManager.SaveMimesisData(slotId);
-                    PersistenceWriteQueue.FlushAllSync();
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Speech sidecar rewrite after delete failed — {ex.Message}");
-                }
+                MimesisSaveManager.SaveMimesisData(slotId);
+                PersistenceWriteQueue.FlushAllSync();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Speech sidecar rewrite after delete failed — {ex.Message}");
             }
 
             if (!hadStatistics && !hadRosterEntry && voiceRemoved == 0)

@@ -185,28 +185,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static string? TryResolveVoiceId(ulong steamId)
         {
-            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            if (SpeechEventPoolManager.TryResolveVoiceIdForSteam(steamId, out string? voiceId))
             {
-                try
-                {
-                    if (string.IsNullOrEmpty(archive.PlayerId))
-                    {
-                        continue;
-                    }
-
-                    ulong archiveSteamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
-                    if (archiveSteamId == steamId)
-                    {
-                        return archive.PlayerId;
-                    }
-                }
-                catch
-                {
-                    /* archive may be tearing down */
-                }
+                return voiceId;
             }
 
-            return SaveSlotDocumentStore.TryGetVoiceId(SaveSlotDocumentStore.LoadedSlotId, steamId, out string? voiceId)
+            return SaveSlotDocumentStore.TryGetVoiceId(SaveSlotDocumentStore.LoadedSlotId, steamId, out voiceId)
                 ? voiceId
                 : null;
         }

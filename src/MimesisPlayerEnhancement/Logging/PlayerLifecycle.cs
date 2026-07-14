@@ -303,8 +303,7 @@ namespace MimesisPlayerEnhancement
 
         private static bool ShouldDeferDisconnectForPersistence(ulong steamId)
         {
-            return ModConfig.EnablePersistence.Value
-                   && MimesisSaveManager.IsHost()
+            return MimesisSaveManager.IsHost()
                    && steamId != GameSessionAccess.GetLocalSteamId();
         }
 

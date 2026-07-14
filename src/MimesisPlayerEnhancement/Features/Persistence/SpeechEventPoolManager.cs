@@ -123,7 +123,21 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static void SyncVoiceMappingsToDocument()
         {
-            SaveSlotDocumentStore.SyncVoiceMappingsFromRuntime(BuildPlayerMapping());
+            Dictionary<ulong, string> mapping = BuildPlayerMapping();
+            if (mapping.Count == 0 && _pool.Count > 0)
+            {
+                ModLog.Warn(
+                    Feature,
+                    $"No Steam→VoiceId mappings to persist despite {_pool.Count} pooled voice events — restore will fail on next load");
+            }
+
+            SaveSlotDocumentStore.SyncVoiceMappingsFromRuntime(mapping);
+        }
+
+        internal static bool TryResolveVoiceIdForSteam(ulong steamId, out string? voiceId)
+        {
+            voiceId = ResolveSaveVoiceIdForSteam(steamId);
+            return !string.IsNullOrEmpty(voiceId);
         }
 
         public static bool AwaitingVoiceUuid(SpeechEventArchive archive) =>
@@ -287,6 +301,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         ev.PlayerName = playerId;
                     }
 
+                    ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
+                    if (steamId != 0)
+                    {
+                        _steamToDissonance[steamId] = playerId;
+                    }
+
                     LogVoiceUuidRemap(brief, claimed.Count, savedVoiceId, playerId);
                 }
                 else if (archive != null)
@@ -392,6 +412,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ulong steamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
                     if (steamId != 0)
                     {
+                        _steamToDissonance[steamId] = newPlayerId;
                         string displayName = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
                         _ = SaveSlotDocumentStore.UpsertPlayer(steamId, displayName, newPlayerId);
                     }
@@ -994,24 +1015,16 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         private static Dictionary<ulong, string> BuildPlayerMapping()
         {
             Dictionary<ulong, string> mapping = [];
+            HashSet<ulong> steamIds = [];
 
             foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
             {
                 try
                 {
-                    string pid = archive.PlayerId;
-                    long uid = archive.PlayerUID;
-                    bool isLocal = archive.IsLocal;
-
-                    if (string.IsNullOrEmpty(pid))
-                    {
-                        continue;
-                    }
-
-                    ulong steamId = GameSessionAccess.ResolveSteamId(uid, isLocal);
+                    ulong steamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
                     if (steamId != 0)
                     {
-                        mapping[steamId] = pid;
+                        _ = steamIds.Add(steamId);
                     }
                 }
                 catch (Exception archEx)
@@ -1020,12 +1033,110 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
             }
 
-            foreach (KeyValuePair<ulong, string> kvp in GetDisconnectedPlayerMappings())
+            foreach (ulong steamId in _steamToDissonance.Keys)
             {
-                mapping.TryAdd(kvp.Key, kvp.Value);
+                _ = steamIds.Add(steamId);
+            }
+
+            foreach (ulong steamId in _disconnectedPlayerMappings.Keys)
+            {
+                _ = steamIds.Add(steamId);
+            }
+
+            GameSessionInfo? sessionInfo = GameSessionAccess.TryGetGameSessionInfo();
+            if (sessionInfo?.TotalPlayerSteamIDs != null)
+            {
+                foreach (ulong steamId in sessionInfo.TotalPlayerSteamIDs.Keys)
+                {
+                    if (steamId != 0)
+                    {
+                        _ = steamIds.Add(steamId);
+                    }
+                }
+            }
+
+            foreach (ulong steamId in steamIds)
+            {
+                string? voiceId = ResolveSaveVoiceIdForSteam(steamId);
+                if (!string.IsNullOrEmpty(voiceId))
+                {
+                    mapping[steamId] = voiceId;
+                }
             }
 
             return mapping;
+        }
+
+        private static string? ResolveSaveVoiceIdForSteam(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return null;
+            }
+
+            string? liveArchiveVoiceId = null;
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                try
+                {
+                    ulong archiveSteamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
+                    if (archiveSteamId != steamId)
+                    {
+                        continue;
+                    }
+
+                    string pid = archive.PlayerId;
+                    if (!string.IsNullOrEmpty(pid))
+                    {
+                        liveArchiveVoiceId = pid;
+                        if (_byPlayerName.ContainsKey(pid))
+                        {
+                            return pid;
+                        }
+                    }
+
+                    List<SpeechEvent> archiveEvents = [];
+                    HashSet<long> seenIds = [];
+                    if (SpeechEventInjector.CollectFromArchive(archive, seenIds, archiveEvents) > 0)
+                    {
+                        string? dominantVoiceId = ResolveDominantPlayerName(archiveEvents);
+                        if (!string.IsNullOrEmpty(dominantVoiceId))
+                        {
+                            return dominantVoiceId;
+                        }
+                    }
+                }
+                catch
+                {
+                    /* archive may be tearing down */
+                }
+            }
+
+            foreach (string playerName in ResolvePlayerNamesForSteam(steamId))
+            {
+                if (_byPlayerName.ContainsKey(playerName))
+                {
+                    return playerName;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(liveArchiveVoiceId))
+            {
+                return liveArchiveVoiceId;
+            }
+
+            if (_steamToDissonance.TryGetValue(steamId, out string? mapped) && !string.IsNullOrEmpty(mapped))
+            {
+                return mapped;
+            }
+
+            if (_disconnectedPlayerMappings.TryGetValue(steamId, out string? disconnected)
+                && !string.IsNullOrEmpty(disconnected))
+            {
+                return disconnected;
+            }
+
+            return null;
         }
 
         private static HashSet<string> ResolveMatchedPlayerNames(

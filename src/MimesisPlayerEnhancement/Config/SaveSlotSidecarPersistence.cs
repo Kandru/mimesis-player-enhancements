@@ -73,6 +73,8 @@ namespace MimesisPlayerEnhancement
 
             bool waitForCompletion = !isAutoSave;
 
+            SpeechEventPoolManager.ProcessDeferredUpdates();
+
             SaveSlotPlayerSync.FinalizeConnectedPlayersForSave(slotId, playerNames);
             SpeechEventPoolManager.SyncVoiceMappingsToDocument();
             MimesisSaveManager.SaveMimesisData(slotId);
@@ -115,6 +117,8 @@ namespace MimesisPlayerEnhancement
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
             if (activeSlotId >= 0)
             {
+                SpeechEventPoolManager.ProcessDeferredUpdates();
+
                 SpeechEventPoolManager.SyncVoiceMappingsToDocument();
 
                 StatisticsTracker.PersistLoadedSlot(waitForCompletion: true);

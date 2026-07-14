@@ -80,9 +80,9 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("SaveSlotSidecar", SaveSlotSidecarPersistencePatches.Apply),
             new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
                 onDeinitialize: VoicePerformanceRuntime.ClearAll),
-            new FeatureModule("Persistence", PersistencePatches.Apply, onUpdate: () =>
-            {
-                if (ModConfig.EnablePersistence.Value) { SpeechEventPoolManager.ProcessDeferredUpdates(); } },
+            new FeatureModule("Persistence", PersistencePatches.Apply,
+                syncFromConfig: PersistenceRuntime.RefreshFromConfig,
+                onUpdate: SpeechEventPoolManager.ProcessDeferredUpdates,
                 onDeinitialize: PersistenceWriteQueue.FlushAllSync),
             new FeatureModule("Statistics", StatisticsPatches.Apply,
                 syncFromConfig: StatisticsTracker.RefreshFromConfig,

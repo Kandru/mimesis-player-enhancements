@@ -11,11 +11,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
             SpeechEventArchiveRegistry.Unregister(__instance);
             PlayerLifecycleCoordinator.ClearConnectState(__instance);
 
-            if (!ModConfig.EnablePersistence.Value)
-            {
-                return;
-            }
-
             try
             {
                 if (!MimesisSaveManager.IsHost())
