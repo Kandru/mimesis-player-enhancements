@@ -425,11 +425,11 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
-**Host process.** Serves a local HTTP dashboard from the game process. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). On by default — set `EnableWebDashboard = false` in the cfg file to turn it off. Available whenever the game is running with the web dashboard enabled (not only during an active session).
+**Host process.** Serves a local HTTP dashboard from the game process. The mod always attempts to start it on game launch and config reload. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). If the configured port is already in use, the mod tries the next 20 ports automatically. If none are free, the dashboard does not run and a red error is logged. Available whenever the game is running (not only during an active session).
 
-**Management menu button:** While the dashboard server is running, a yellow **Management** button appears on the main menu and the ESC menu (between Settings and Quit). Clicking it opens the dashboard in the Steam overlay browser, falling back to the system browser when the overlay is unavailable. The button disappears automatically when `EnableWebDashboard` is turned off — no separate toggle.
+**Management menu button:** While the dashboard server is running, a yellow **Management** button appears on the main menu and the ESC menu (between Settings and Quit). Clicking it opens the dashboard in the Steam overlay browser, falling back to the system browser when the overlay is unavailable. The button opens the **actual** bound URL (which may differ from the configured port when a fallback port was used). The button disappears when the server is not running.
 
-**Dashboard UI:** The Web Dashboard section is **not shown** in the dashboard settings UI, and the dashboard API rejects writes to `EnableWebDashboard`, listen address, and port. Edit those keys in `MimesisPlayerEnhancement.cfg` only — this prevents disabling the dashboard from inside the dashboard itself.
+**Dashboard UI:** The Web Dashboard section is **not shown** in the dashboard settings UI, and the dashboard API rejects writes to listen address and port. Edit those keys in `MimesisPlayerEnhancement.cfg` only. The saved `WebDashboardListenPort` is always the preferred starting port — it is never overwritten when a fallback port is used.
 
 **Views:**
 
@@ -453,9 +453,8 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableWebDashboard` | bool | `true` | — | Turn the local web dashboard on or off. |
 | `WebDashboardListenAddress` | string | `127.0.0.1` | — | HTTP bind address. Use `127.0.0.1` for local-only access. |
-| `WebDashboardListenPort` | int | `8001` | `1`–`65535` | TCP port for the web dashboard. Listen address and port changes take effect when the config reloads (the HTTP server restarts). |
+| `WebDashboardListenPort` | int | `8001` | `1`–`65535` | Preferred TCP port for the web dashboard. If busy, the mod tries the next 20 ports. Listen address and port changes take effect when the config reloads (the HTTP server restarts). |
 
 ---
 
@@ -565,7 +564,6 @@ RandomizeDungeonPick = true
 DungeonPickPoolMode = "WidenVanilla"
 
 [MimesisPlayerEnhancement_WebDashboard]
-EnableWebDashboard = true
 WebDashboardListenAddress = "127.0.0.1"
 WebDashboardListenPort = 8001
 ```

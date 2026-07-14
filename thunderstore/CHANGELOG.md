@@ -5,6 +5,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: fail silently when mod does not match game version to avoid getting flagged in the Thunderstore (and require a manual approval each time)
 - fix: late-joiner should now also record voices instantly
 - fix: client damage view was doubled
+- improvement: always enable the webinterface, include a fallback in case the port is used
 - draft: further improve FPS overlay
 
 ## 26.7.9

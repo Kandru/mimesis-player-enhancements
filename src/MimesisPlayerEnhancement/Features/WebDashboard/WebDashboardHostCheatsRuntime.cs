@@ -379,7 +379,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static bool CanApplyCheatsForPlayer(VPlayer player, out string? errorMessage)
         {
             errorMessage = null;
-            if (!ModConfig.EnableWebDashboard.Value)
+            if (!WebDashboardServer.IsRunning)
             {
                 errorMessage = WebDashboardL10n.Get("api.web_dashboard_disabled");
                 return false;

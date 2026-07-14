@@ -18,10 +18,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void CreateEntries()
         {
-            ModConfig.EnableWebDashboard = ModConfig.CreateTrackedEntry(_category,
-                "EnableWebDashboard",
-                true);
-
             ModConfig.WebDashboardListenAddress = ModConfig.CreateTrackedEntry(_category,
                 "WebDashboardListenAddress",
                 "127.0.0.1");
@@ -33,7 +29,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
-            ModConfig.EnableWebDashboard.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableWebDashboard));
             ModConfig.WebDashboardListenAddress.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.WebDashboardListenAddress));
             ModConfig.WebDashboardListenPort.OnEntryValueChanged.Subscribe((_, value) =>
             {

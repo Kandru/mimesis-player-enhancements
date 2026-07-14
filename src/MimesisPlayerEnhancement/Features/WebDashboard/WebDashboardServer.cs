@@ -6,6 +6,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal static class WebDashboardServer
     {
         private const string Feature = "WebDashboard";
+        private const int PortFallbackCount = 20;
 
         private static HttpListener? _listener;
         private static Thread? _listenerThread;
@@ -14,6 +15,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static bool _syncDeferred;
         private static string _listenUrl = "";
 
+        internal static bool IsRunning => _running;
         internal static bool IsShuttingDown => _shuttingDown;
 
         internal static void Apply(HarmonyLib.Harmony harmony)
@@ -46,34 +48,28 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void ApplySyncFromConfig()
         {
-            if (!ModConfig.EnableWebDashboard.Value)
-            {
-                Stop();
-                return;
-            }
-
             string address = ModConfig.WebDashboardListenAddress.Value?.Trim() ?? "127.0.0.1";
-            int port = ModConfig.WebDashboardListenPort.Value;
-            if (port is < 1 or > 65535)
+            int configuredPort = ModConfig.WebDashboardListenPort.Value;
+            if (configuredPort is < 1 or > 65535)
             {
-                ModLog.Warn(Feature, $"Invalid port {port}; web dashboard not started.");
+                ModLog.Warn(Feature, $"Invalid port {configuredPort}; web dashboard not started.");
                 Stop();
                 return;
             }
 
             if (!IsLoopback(address))
             {
-                ModLog.Warn(Feature, $"Binding to {address}:{port} exposes the dashboard on the network. Use 127.0.0.1 unless you trust your LAN.");
+                ModLog.Warn(Feature, $"Binding to {address}:{configuredPort} exposes the dashboard on the network. Use 127.0.0.1 unless you trust your LAN.");
             }
 
-            string prefix = $"http://{address}:{port}/";
-            if (string.Equals(prefix, _listenUrl, StringComparison.OrdinalIgnoreCase) && _running)
+            string configuredPrefix = BuildPrefix(address, configuredPort);
+            if (string.Equals(configuredPrefix, _listenUrl, StringComparison.OrdinalIgnoreCase) && _running)
             {
                 return;
             }
 
             Stop();
-            Start(prefix);
+            TryStartWithPortFallback(address, configuredPort);
         }
 
         internal static void OnUpdate()
@@ -134,7 +130,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardHostCheatsQueue.CancelPending();
         }
 
-        private static void Start(string prefix)
+        private static void TryStartWithPortFallback(string address, int configuredPort)
         {
             if (_shuttingDown)
             {
@@ -147,36 +143,77 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            WebDashboardSseHub.Start();
+            int maxPort = Math.Min(configuredPort + PortFallbackCount, 65535);
+            for (int port = configuredPort; port <= maxPort; port++)
+            {
+                string prefix = BuildPrefix(address, port);
+                if (TryBindPrefix(prefix, out HttpListener listener))
+                {
+                    StartBoundListener(listener, prefix, configuredPort);
+                    return;
+                }
+            }
 
+            int rangeEnd = Math.Min(configuredPort + PortFallbackCount, 65535);
+            ModLog.Error(Feature, $"No free port in range {configuredPort}–{rangeEnd} on {address}; web dashboard not started.");
+            Stop();
+        }
+
+        private static void StartBoundListener(HttpListener listener, string prefix, int configuredPort)
+        {
+            _listener = listener;
+            _listenUrl = prefix;
+            _running = true;
+
+            WebDashboardSseHub.Start();
+            WebDashboardSnapshotCache.MarkDirty();
+            WebDashboardSnapshotCache.Refresh(_listenUrl);
+
+            _listenerThread = new Thread(ListenLoop)
+            {
+                IsBackground = true,
+                Name = "MimesisWebDashboard",
+            };
+            _listenerThread.Start();
+
+            ThreadPool.QueueUserWorkItem(_ => WebDashboardSettingsCache.WarmGlobal());
+
+            ManagementMenuButton.SyncVisibility(dashboardRunning: true, _listenUrl);
+
+            string listenUrl = _listenUrl.TrimEnd('/');
+            if (TryGetPortFromPrefix(prefix, out int boundPort) && boundPort != configuredPort)
+            {
+                ModLog.Info(Feature, $"Listening at {listenUrl} (configured port {configuredPort} was unavailable)");
+            }
+            else
+            {
+                ModLog.Info(Feature, $"Listening at {listenUrl}");
+            }
+        }
+
+        private static bool TryBindPrefix(string prefix, out HttpListener listener)
+        {
+            listener = new HttpListener();
+            listener.Prefixes.Add(prefix);
             try
             {
-                HttpListener listener = new();
-                listener.Prefixes.Add(prefix);
                 listener.Start();
-                _listener = listener;
-                _listenUrl = prefix;
-                _running = true;
-                WebDashboardSnapshotCache.MarkDirty();
-                WebDashboardSnapshotCache.Refresh(_listenUrl);
-
-                _listenerThread = new Thread(ListenLoop)
-                {
-                    IsBackground = true,
-                    Name = "MimesisWebDashboard",
-                };
-                _listenerThread.Start();
-
-                ThreadPool.QueueUserWorkItem(_ => WebDashboardSettingsCache.WarmGlobal());
-
-                ManagementMenuButton.SyncVisibility(dashboardRunning: true, _listenUrl);
-
-                ModLog.Info(Feature, $"Listening at {_listenUrl.TrimEnd('/')}");
+                return true;
             }
             catch (Exception ex)
             {
-                ModLog.Error(Feature, $"Failed to start HTTP listener at {prefix}: {ex.Message}");
-                Stop();
+                ModLog.Debug(Feature, $"Bind failed at {prefix.TrimEnd('/')} — {ex.Message}");
+                try
+                {
+                    listener.Close();
+                }
+                catch
+                {
+                    /* probe failed */
+                }
+
+                listener = null!;
+                return false;
             }
         }
 
@@ -232,6 +269,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
                 }
             }
+        }
+
+        private static string BuildPrefix(string address, int port)
+        {
+            return $"http://{address}:{port}/";
+        }
+
+        private static bool TryGetPortFromPrefix(string prefix, out int port)
+        {
+            port = 0;
+            if (!Uri.TryCreate(prefix, UriKind.Absolute, out Uri? uri))
+            {
+                return false;
+            }
+
+            port = uri.Port;
+            return true;
         }
 
         private static bool IsLoopback(string address)

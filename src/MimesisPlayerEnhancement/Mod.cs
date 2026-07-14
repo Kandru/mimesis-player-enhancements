@@ -217,10 +217,7 @@ namespace MimesisPlayerEnhancement
                 $", PlayerTuning={ModConfig.EnablePlayerTuning.Value}, " +
                 $"DungeonRandomizer={ModConfig.EnableDungeonRandomizer.Value}, " +
                 $"Ui=(saveSlots={ModConfig.EnableExtendedSaveSlots.Value}, spectatorList={ModConfig.EnableExtendedSpectatorPlayerList.Value}, inGameMenuPlayerList={ModConfig.EnableExtendedInGameMenuPlayerList.Value})" +
-                $", WebDashboard={ModConfig.EnableWebDashboard.Value}" +
-                (ModConfig.EnableWebDashboard.Value
-                    ? $" ({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})"
-                    : "") +
+                $", WebDashboard=({ModConfig.WebDashboardListenAddress.Value}:{ModConfig.WebDashboardListenPort.Value})" +
                 $", DebugLogging={ModConfig.EnableDebugLogging.Value}";
         }
     }

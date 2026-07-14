@@ -88,7 +88,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 JoinAnytimeConnectingTracker.TryPromoteIfReady(player);
             }
 
-            if (ModConfig.EnableWebDashboard.Value)
+            if (WebDashboardServer.IsRunning)
             {
                 WebDashboardSnapshotCache.MarkDirty();
             }

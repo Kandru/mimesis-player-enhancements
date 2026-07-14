@@ -647,10 +647,6 @@
     "MimesisPlayerEnhancement_WebDashboard": {
       "_section": "Web Dashboard",
       "_description": "Browser view for players, stats, settings, and moderation while the game runs.",
-      "EnableWebDashboard": {
-        "title": "Enable Web Dashboard",
-        "description": "Serve a local web UI for connected players and host moderation. Default bind is loopback only."
-      },
       "WebDashboardListenAddress": {
         "title": "Listen Address",
         "description": "HTTP bind address. Use 127.0.0.1 for local-only access."
@@ -836,7 +832,7 @@
     "player_noclip_enabled": "Noclip enabled.",
     "player_noclip_disabled": "Noclip disabled.",
     "invalid_host_cheats_request": "Invalid host cheats request.",
-    "web_dashboard_disabled": "Web dashboard is disabled.",
+    "web_dashboard_disabled": "Web dashboard is not running.",
     "session_manager_unavailable": "Session manager unavailable.",
     "host_context_unavailable": "Host player context unavailable.",
     "session_id_unavailable": "Session ID unavailable.",
