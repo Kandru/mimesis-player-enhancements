@@ -8,6 +8,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         [HarmonyPostfix]
         public static void Postfix(SpawnedActorData __instance)
         {
+            // Runs on every actor death — skip entirely when spawn scaling is off.
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+            {
+                return;
+            }
+
             try
             {
                 MapPlacedEncounterScheduler.OnActorDead(__instance);

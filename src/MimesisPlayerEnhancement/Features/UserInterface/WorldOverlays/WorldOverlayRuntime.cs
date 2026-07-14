@@ -159,6 +159,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 || (WorldOverlayGate.DetoxIndicatorsEnabled && DetoxFloaters.HasActiveFloaters);
         }
 
+        private static Camera? _cachedFallbackCamera;
+
         private static Camera? ResolveCamera()
         {
             if (Camera.main != null)
@@ -166,8 +168,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return Camera.main;
             }
 
+            // Cache the fallback camera — Camera.allCameras allocates a new array per call.
+            if (_cachedFallbackCamera != null)
+            {
+                return _cachedFallbackCamera;
+            }
+
             Camera[] cameras = Camera.allCameras;
-            return cameras.Length > 0 ? cameras[0] : null;
+            _cachedFallbackCamera = cameras.Length > 0 ? cameras[0] : null;
+            return _cachedFallbackCamera;
         }
     }
 }

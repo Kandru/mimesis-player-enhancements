@@ -115,28 +115,6 @@ namespace MimesisPlayerEnhancement.Util
             return GetOptional($"config.{sectionId}.{key}.options.{value}", locale);
         }
 
-        internal static bool TryGetLocaleJson(string locale, out string json)
-        {
-            EnsureInitialized();
-            json = "";
-
-            locale = GameLocaleAccess.NormalizeLanguageCode(locale);
-            if (!LocaleRoots.TryGetValue(locale, out JObject? root) || root == null)
-            {
-                if (!string.Equals(locale, DefaultLocale, StringComparison.OrdinalIgnoreCase)
-                    && LocaleRoots.TryGetValue(DefaultLocale, out root)
-                    && root != null)
-                {
-                    json = root.ToString(Newtonsoft.Json.Formatting.None);
-                    return true;
-                }
-
-                return false;
-            }
-
-            json = root.ToString(Newtonsoft.Json.Formatting.None);
-            return true;
-        }
 
         private static void EnsureInitialized()
         {

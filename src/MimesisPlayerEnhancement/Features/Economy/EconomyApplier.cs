@@ -2,6 +2,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyApplier
     {
+        private const string Feature = "Economy";
+
         private static int _scrapScaleFrame = -1;
         private static int _scrapScalePlayerCount = SessionPlayerCountHelper.VanillaPlayerBaseline;
         private static float _scrapEffectiveMultiplier = FeatureToggleGate.NeutralMultiplier;
@@ -37,8 +39,9 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 value = excel.Consts.C_InitialMoney;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                ModLog.Warn(Feature, $"Vanilla initial money unavailable — startup money scaling skipped — {ex.Message}");
                 return false;
             }
         }

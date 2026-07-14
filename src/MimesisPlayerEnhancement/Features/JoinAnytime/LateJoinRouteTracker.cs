@@ -172,17 +172,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return count;
         }
 
-        internal static IEnumerable<long> GetActiveRouteUids()
-        {
-            foreach (RouteState state in StatesByUid.Values)
-            {
-                if (state.Phase is LateJoinRoutePhase.InMaintenance or LateJoinRoutePhase.AwaitingClient)
-                {
-                    yield return state.Uid;
-                }
-            }
-        }
-
         internal static void ApplyDashboardFields(WebDashboard.Models.WebDashboardPlayerDto dto, SessionContext? context)
         {
             if (!ModConfig.EnableJoinAnytime.Value || dto.IsHost || dto.PlayerUid == 0)

@@ -91,46 +91,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return span;
         }
 
-        internal static int ResolveFloorIndexFromWorldY(float worldY, IReadOnlyList<HeightLayer> layers)
-        {
-            if (layers.Count == 0)
-            {
-                return 0;
-            }
-
-            int bestIndex = layers[0].Index;
-            float bestDistance = float.MaxValue;
-            foreach (HeightLayer layer in layers)
-            {
-                if (worldY >= layer.MinY - 0.5f && worldY <= layer.MaxY + 0.5f)
-                {
-                    return layer.Index;
-                }
-
-                float centerY = (layer.MinY + layer.MaxY) * 0.5f;
-                float distance = Mathf.Abs(worldY - centerY);
-                if (distance < bestDistance)
-                {
-                    bestDistance = distance;
-                    bestIndex = layer.Index;
-                }
-            }
-
-            return bestIndex;
-        }
-
-        internal static List<List<Tile>> ClusterTilesByHeightLegacy(IReadOnlyList<Tile> tiles)
-        {
-            List<HeightLayer> layers = ClusterTilesByHeight(tiles);
-            List<List<Tile>> legacy = [];
-            foreach (HeightLayer layer in layers)
-            {
-                legacy.Add(layer.Tiles);
-            }
-
-            return legacy;
-        }
-
         internal static WebDashboardMinimapDungeonGraph ExtractSubgraph(
             WebDashboardMinimapDungeonGraph source,
             IReadOnlyList<Tile> layerTiles)

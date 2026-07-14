@@ -126,25 +126,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             TryOpenVanillaNewTram();
         }
 
-        internal static void OpenPicker()
-        {
-            if (!IsActive)
-            {
-                return;
-            }
-
-            if (!TryEnsurePanelReady())
-            {
-                ModLog.Warn(Feature, "Save picker is not ready; could not open.");
-                return;
-            }
-
-            if (_panel!.TryOpen())
-            {
-                ModLog.Info(Feature, "Save picker opened.");
-            }
-        }
-
         private static void RefreshMenuMode()
         {
             if (IsActive)

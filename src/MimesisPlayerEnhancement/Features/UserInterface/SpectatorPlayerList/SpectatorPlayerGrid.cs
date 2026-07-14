@@ -333,9 +333,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             List<Tuple<int, bool, bool, bool>> actorsInfo,
             int maxVisible)
         {
-            List<(Tuple<int, bool, bool, bool> Actor, int Index, string Name)> indexed = actorsInfo
-                .Select((actor, index) => (actor, index, ResolveActorDisplayName(actor.Item1)))
-                .ToList();
+            List<(Tuple<int, bool, bool, bool> Actor, int Index, string Name)> indexed = new(actorsInfo.Count);
+            for (int index = 0; index < actorsInfo.Count; index++)
+            {
+                Tuple<int, bool, bool, bool> actor = actorsInfo[index];
+                indexed.Add((actor, index, ResolveActorDisplayName(actor.Item1)));
+            }
 
             indexed.Sort(static (left, right) =>
             {
@@ -354,7 +357,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 return left.Index.CompareTo(right.Index);
             });
 
-            return indexed.Take(maxVisible).Select(entry => entry.Actor).ToList();
+            int visibleCount = Math.Min(maxVisible, indexed.Count);
+            List<Tuple<int, bool, bool, bool>> visible = new(visibleCount);
+            for (int index = 0; index < visibleCount; index++)
+            {
+                visible.Add(indexed[index].Actor);
+            }
+
+            return visible;
         }
 
         private static string ResolveActorDisplayName(int actorId) =>

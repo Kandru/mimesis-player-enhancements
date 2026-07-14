@@ -2,7 +2,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
 {
     internal static class MimicVoiceTuningLog
     {
-        private const string Feature = "MimicVoiceTuning";
+        private const string Feature = "MimicTuning";
 
         internal static void DebugChanceRollSkipped()
         {

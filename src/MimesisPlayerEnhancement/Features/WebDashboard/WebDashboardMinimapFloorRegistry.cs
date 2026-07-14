@@ -11,13 +11,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         }
 
         private static readonly List<FloorLayerEntry> Layers = [];
-        private static readonly Dictionary<string, List<int>> TileFloorSpanById = [];
         private static readonly Dictionary<int, string> AreaIdByFloorIndex = [];
 
         internal static void Clear()
         {
             Layers.Clear();
-            TileFloorSpanById.Clear();
             AreaIdByFloorIndex.Clear();
         }
 
@@ -31,16 +29,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 MaxY = maxY,
             });
             AreaIdByFloorIndex[floorIndex] = areaId;
-        }
-
-        internal static void RegisterTileFloorSpan(string tileId, IReadOnlyList<int> floorSpan)
-        {
-            if (floorSpan.Count == 0)
-            {
-                return;
-            }
-
-            TileFloorSpanById[tileId] = [.. floorSpan];
         }
 
         internal static int ResolveFloorIndex(float worldY, string areaId)
@@ -81,11 +69,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             return matchedArea ? bestIndex : 0;
-        }
-
-        internal static IReadOnlyList<int> TryGetTileFloorSpan(string tileId)
-        {
-            return TileFloorSpanById.TryGetValue(tileId, out List<int>? span) ? span : [];
         }
 
         internal static string? TryGetAreaIdForFloor(int floorIndex)

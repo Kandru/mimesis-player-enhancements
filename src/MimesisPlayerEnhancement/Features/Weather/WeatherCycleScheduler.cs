@@ -4,14 +4,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
     {
         private const string Feature = "Weather";
 
-        internal static void StartCycle(DungeonRoom room)
-        {
-            WeatherRoomState state = WeatherRoomAccess.GetOrCreateState(room);
-            state.CycleIndex = 0;
-            state.CycleActive = true;
-            ApplyCurrentCycleStep(room, state, scheduleNext: true);
-        }
-
         internal static void Stop(DungeonRoom room)
         {
             WeatherRoomState state = WeatherRoomAccess.GetOrCreateState(room);

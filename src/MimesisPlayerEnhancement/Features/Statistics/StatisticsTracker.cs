@@ -798,28 +798,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         }
 
         /// <summary>
-        /// Drops an in-memory statistics document that was never fully connected this session.
-        /// </summary>
-        internal static void RemovePlayerIfNeverConnected(ulong steamId)
-        {
-            if (steamId == 0 || _connectedSince.ContainsKey(steamId))
-            {
-                return;
-            }
-
-            if (!_players.Remove(steamId))
-            {
-                return;
-            }
-
-            StatisticsVoiceCounter.RemoveBaseline(steamId);
-            StatisticsMessages.ClearPlayerRuntimeState(steamId);
-            BumpRevision();
-            WebDashboardSnapshotCache.MarkDirty();
-            ModLog.Debug(Feature, $"Removed incomplete-connect statistics — steamId={steamId}");
-        }
-
-        /// <summary>
         /// Clears a prematurely registered connection that never reached fully-ready state.
         /// </summary>
         internal static void AbandonIncompleteConnection(ulong steamId)

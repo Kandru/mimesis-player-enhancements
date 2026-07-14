@@ -39,7 +39,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(SessionContext __instance)
         {
+            // Host status is consumed mod-wide (host-only gating) — always invalidate.
             HostStatusCache.Invalidate();
+
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
             JoinAnytimeConnectingTracker.OnServerLogin(__instance);
             JoinAnytimeLobbyController.OnSessionRosterChanged();
         }
@@ -76,6 +83,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
             JoinAnytimeLobbyController.OnSessionRosterChanged();
         }
     }
@@ -102,6 +114,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(VPlayer __instance)
         {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
             JoinAnytimeConnectingTracker.OnServerPlayerCreated(__instance);
         }
     }
@@ -112,6 +129,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPostfix]
         private static void Postfix(VPlayer __instance)
         {
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                return;
+            }
+
             JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
             JoinAnytimeLobbyController.OnSessionRosterChanged();
         }

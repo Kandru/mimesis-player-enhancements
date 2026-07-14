@@ -90,13 +90,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
                 return Vector3.zero;
             }
 
-            FieldInfo posVectorField = spawnData.GetType().GetField("PosVector", SpawnScalingPatchHelpers.InstanceFlags);
+            FieldInfo? posVectorField = ReflectionFieldCache.GetField(spawnData, "PosVector");
             if (posVectorField?.GetValue(spawnData) is Vector3 posVector)
             {
                 return posVector;
             }
 
-            FieldInfo posField = spawnData.GetType().GetField("Pos", SpawnScalingPatchHelpers.InstanceFlags);
+            FieldInfo? posField = ReflectionFieldCache.GetField(spawnData, "Pos");
             return posField?.GetValue(spawnData) is PosWithRot posWithRot ? posWithRot.pos : Vector3.zero;
         }
     }

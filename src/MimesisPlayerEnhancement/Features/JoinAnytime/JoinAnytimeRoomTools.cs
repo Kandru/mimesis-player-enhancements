@@ -171,23 +171,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return true;
         }
 
-        internal static string GetSceneNameFromMapId(int mapMasterId)
-        {
-            if (mapMasterId == 0)
-            {
-                return string.Empty;
-            }
-
-            if (HubGameDataAccess.Excel is not ExcelDataManager excel)
-            {
-                ModLog.Warn(Feature, "GetSceneNameFromMapId failed — dataman unavailable");
-                return string.Empty;
-            }
-
-            MapMasterInfo? mapInfo = excel.GetMapInfo(mapMasterId);
-            return mapInfo?.SceneName ?? string.Empty;
-        }
-
         internal static int ResolvePickedMapId(IVroom? room)
         {
             if (room is DungeonRoom dungeonRoom && dungeonRoom.PickedMapID != 0)

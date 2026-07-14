@@ -8,6 +8,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         [HarmonyPostfix]
         public static void Postfix(DungeonRoom __instance)
         {
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+            {
+                return;
+            }
+
             try
             {
                 SpawnScalingApplier.EnsureApplied(__instance);
@@ -28,11 +33,23 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         [ThreadStatic]
         private static ManageSpawnDataSnapshot? _snapshot;
 
+        [ThreadStatic]
+        private static bool _began;
+
         [HarmonyPrefix]
         public static void Prefix(DungeonRoom __instance)
         {
+            // ManageSpawnData is a dungeon hot path — skip all bookkeeping when scaling is off.
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+            {
+                _snapshot = null;
+                _began = false;
+                return;
+            }
+
             try
             {
+                _began = true;
                 _snapshot = PeriodicSpawnWaitApplier.CaptureSnapshot(__instance);
                 SpawnTimingOverrideApplier.BeginManageSpawnData(__instance);
             }
@@ -61,10 +78,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         [HarmonyFinalizer]
         public static void Finalizer(DungeonRoom __instance)
         {
+            if (!_began)
+            {
+                return;
+            }
+
             try
             {
                 SpawnTimingOverrideApplier.EndManageSpawnData(__instance);
                 _snapshot = null;
+                _began = false;
             }
             catch (Exception ex)
             {

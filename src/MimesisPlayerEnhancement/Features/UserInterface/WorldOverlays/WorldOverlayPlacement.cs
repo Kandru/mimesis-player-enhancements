@@ -60,25 +60,52 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             return actor.transform.position + Vector3.up * (fallbackHeight * heightRatio);
         }
 
+        private sealed class ActorComponentCache
+        {
+            internal bool CapsuleResolved;
+            internal object? Capsule;
+            internal bool ControllerResolved;
+            internal object? Controller;
+        }
+
+        // Per-actor component cache — reflection Invoke per placement is too expensive on the
+        // per-frame overlay path. Weak table entries die with the actor.
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ProtoActor, ActorComponentCache> ComponentCache = new();
+
         private static bool TryGetCapsuleMetrics(ProtoActor actor, out Vector3 worldCenter, out float height)
         {
             worldCenter = default;
             height = 0f;
 
-            object? capsule = GetComponent(CapsuleColliderType, actor);
-            if (capsule != null && TryReadCapsuleMetrics(capsule, actor, out worldCenter, out height))
+            ActorComponentCache cache = ComponentCache.GetOrCreateValue(actor);
+
+            if (!cache.CapsuleResolved || IsDestroyed(cache.Capsule))
+            {
+                cache.Capsule = GetComponent(CapsuleColliderType, actor);
+                cache.CapsuleResolved = true;
+            }
+
+            if (cache.Capsule != null && TryReadCapsuleMetrics(cache.Capsule, actor, out worldCenter, out height))
             {
                 return true;
             }
 
-            object? controller = GetComponent(CharacterControllerType, actor);
-            if (controller != null && TryReadControllerMetrics(controller, actor, out worldCenter, out height))
+            if (!cache.ControllerResolved || IsDestroyed(cache.Controller))
+            {
+                cache.Controller = GetComponent(CharacterControllerType, actor);
+                cache.ControllerResolved = true;
+            }
+
+            if (cache.Controller != null && TryReadControllerMetrics(cache.Controller, actor, out worldCenter, out height))
             {
                 return true;
             }
 
             return false;
         }
+
+        private static bool IsDestroyed(object? component) =>
+            component is UnityEngine.Object unityObject && unityObject == null;
 
         private static bool TryReadCapsuleMetrics(
             object capsule,

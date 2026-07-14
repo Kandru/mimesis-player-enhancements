@@ -20,81 +20,6 @@ namespace MimesisPlayerEnhancement
     /// </summary>
     internal static class ModConfigEntryDependencies
     {
-        internal static bool IsEntryVisible(
-            WebDashboardConfigSectionDto section,
-            WebDashboardConfigEntryDto entry)
-        {
-            if (section.FeatureToggle != null
-                && !string.Equals(entry.Key, section.FeatureToggle.Key, StringComparison.Ordinal)
-                && !ParseBool(section.FeatureToggle.Value))
-            {
-                return false;
-            }
-
-            if (string.Equals(section.Id, "MimesisPlayerEnhancement_LootMultiplicator", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(entry.Key, "AutoScaleMapLootBudgetForFilter", StringComparison.Ordinal))
-            {
-                WebDashboardConfigEntryDto? filterMode = FindEntry(section, "LootItemFilterMode");
-                if (filterMode != null
-                    && string.Equals(filterMode.Value, "All", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            if (string.Equals(section.Id, "MimesisPlayerEnhancement_Weather", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(entry.Key, "DisableRandomWeather", StringComparison.Ordinal))
-            {
-                WebDashboardConfigEntryDto? weatherMode = FindEntry(section, "WeatherMode");
-                if (weatherMode != null
-                    && string.Equals(weatherMode.Value, "Vanilla", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-
-            if (string.Equals(section.Id, PrivacyConfig.SectionId, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(entry.Key, "StripCrashReportMetadata", StringComparison.Ordinal))
-            {
-                WebDashboardConfigEntryDto? blockCrashReports = FindEntry(section, "BlockCrashReports");
-                if (blockCrashReports != null && ParseBool(blockCrashReports.Value))
-                {
-                    return false;
-                }
-            }
-
-            return IsDependencyChainVisible(section, entry.Key, []);
-        }
-
-        private static bool IsDependencyChainVisible(
-            WebDashboardConfigSectionDto section,
-            string key,
-            HashSet<string> visited)
-        {
-            if (!visited.Add(key))
-            {
-                return true;
-            }
-
-            if (!TryGetDependency(section.Id, key, out ModConfigEntryDependency dependency))
-            {
-                return true;
-            }
-
-            WebDashboardConfigEntryDto? parent = FindEntry(section, dependency.DependsOnKey);
-            if (parent == null)
-            {
-                return true;
-            }
-
-            if (!MatchesDependency(parent, dependency.DependsOnValue))
-            {
-                return false;
-            }
-
-            return IsDependencyChainVisible(section, dependency.DependsOnKey, visited);
-        }
-
         internal static void ApplyToEntry(WebDashboardConfigSectionDto section, WebDashboardConfigEntryDto entry)
         {
             if (!TryGetDependency(section.Id, entry.Key, out ModConfigEntryDependency dependency))
@@ -105,43 +30,6 @@ namespace MimesisPlayerEnhancement
             entry.DependsOnKey = dependency.DependsOnKey;
             entry.DependsOnValue = dependency.DependsOnValue;
         }
-
-        private static WebDashboardConfigEntryDto? FindEntry(WebDashboardConfigSectionDto section, string key)
-        {
-            if (section.FeatureToggle != null
-                && string.Equals(section.FeatureToggle.Key, key, StringComparison.Ordinal))
-            {
-                return section.FeatureToggle;
-            }
-
-            foreach (WebDashboardConfigEntryDto candidate in section.Entries)
-            {
-                if (string.Equals(candidate.Key, key, StringComparison.Ordinal))
-                {
-                    return candidate;
-                }
-            }
-
-            return null;
-        }
-
-        private static bool MatchesDependency(WebDashboardConfigEntryDto parent, string? expectedValue)
-        {
-            if (string.IsNullOrWhiteSpace(expectedValue))
-            {
-                return ParseBool(parent.Value);
-            }
-
-            if (string.Equals(expectedValue, ">0", StringComparison.Ordinal))
-            {
-                return int.TryParse(parent.Value, out int value) && value > 0;
-            }
-
-            return string.Equals(parent.Value, expectedValue, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool ParseBool(string? value) =>
-            bool.TryParse(value, out bool parsed) && parsed;
 
         private static bool TryGetDependency(string sectionId, string key, out ModConfigEntryDependency dependency)
         {

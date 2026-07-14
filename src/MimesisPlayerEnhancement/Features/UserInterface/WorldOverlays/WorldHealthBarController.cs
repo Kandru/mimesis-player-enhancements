@@ -132,10 +132,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             if (!WorldOverlayHpTracker.TryGetDisplay(actor, out long hp, out long maxHp))
             {
-                active.Widget.SetFillPercent(0f);
-                ModUiText.SetText(active.Widget.TextComponent, "--");
+                if (active.DisplayedHp != -1 || active.DisplayedMaxHp != -1)
+                {
+                    active.DisplayedHp = -1;
+                    active.DisplayedMaxHp = -1;
+                    active.Widget.SetFillPercent(0f);
+                    ModUiText.SetText(active.Widget.TextComponent, "--");
+                }
+
                 return;
             }
+
+            // Rebuild the label string only when values change (runs per bar per frame).
+            if (hp == active.DisplayedHp && maxHp == active.DisplayedMaxHp)
+            {
+                return;
+            }
+
+            active.DisplayedHp = hp;
+            active.DisplayedMaxHp = maxHp;
 
             float percent = Mathf.Clamp01((float)hp / maxHp);
 
@@ -185,6 +200,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             internal int ActorId;
             internal float ExpiresAt;
             internal float HitFlashUntil;
+            internal long DisplayedHp = long.MinValue;
+            internal long DisplayedMaxHp = long.MinValue;
         }
     }
 }

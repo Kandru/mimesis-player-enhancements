@@ -45,6 +45,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void DebugFieldScaled(string label, int before, int after, float multiplier)
         {
+            // Early-return before building strings — called for every scaled field on Apply().
+            if (!ModConfig.EnableDebugLogging.Value)
+            {
+                return;
+            }
+
             if (before == after)
             {
                 ModLog.Debug(Feature, $"{label} unchanged at {before} ({multiplier:0.##}×)");

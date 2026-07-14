@@ -602,12 +602,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return [.. StatisticsTracker.GetConnectedSteamIds()];
         }
 
-        private static List<WebDashboardPlayerDto> ClonePlayers(IReadOnlyList<WebDashboardPlayerDto> players) =>
-            players.Count == 0 ? [] : [.. players];
-
-        private static List<ulong> CloneSteamIds(IReadOnlyList<ulong> steamIds) =>
-            steamIds.Count == 0 ? [] : [.. steamIds];
-
         private static List<WebDashboardMinimapMarkerDto> CloneMarkers(
             IReadOnlyList<WebDashboardMinimapMarkerDto> markers) =>
             markers.Count == 0 ? [] : [.. markers];

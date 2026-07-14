@@ -15,8 +15,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private const int MinimumUsableSaveDataVersion = 1;
 
-        internal static UnityEngine.Color DefaultTextColor => ModUiAssets.DefaultTextColor;
-
         internal static SaveSlotDisplayInfo Format(MMSaveGameData data)
         {
             string dateText = data.RegDateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
@@ -67,11 +65,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             }
 
             return "<color=#00000000>" + info.VersionCheckText + "</color> " + info.BaseText;
-        }
-
-        internal static void ApplyDefaultTextColor(Component? textComponent)
-        {
-            ModUiText.SetColor(textComponent, DefaultTextColor);
         }
 
         private static string BuildVersionCheckPrefix(string versionCheckText, bool isRed)

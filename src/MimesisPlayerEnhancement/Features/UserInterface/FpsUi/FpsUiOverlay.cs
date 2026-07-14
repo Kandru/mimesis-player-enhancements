@@ -54,6 +54,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static bool _loggedOverlayFailure;
         private static bool _loggedToxicIconFailure;
 
+        // Per-frame layout state — avoids rect rewrites and corner-array allocations while stable.
+        private static readonly Vector3[] _cornersBuffer = new Vector3[4];
+        private static Vector2 _lastMeasuredLeft = new(float.NaN, float.NaN);
+        private static Vector2 _lastMeasuredTop;
+        private static Vector2 _lastMeasuredBottom;
+
         internal static bool IsEnabled() => ModConfig.EnableFpsUi.Value;
 
         internal static void NotifyInventoryShown()
@@ -67,8 +73,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             Activate();
             RefreshLayout();
         }
-
-        internal static void ScheduleLayoutRetry() => RefreshLayout();
 
         internal static void OnUpdate()
         {
@@ -276,6 +280,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            // Skip the rect rewrites (and layout dirtying) while inventory geometry is stable.
+            if (leftLocal == _lastMeasuredLeft && topLocal == _lastMeasuredTop && bottomLocal == _lastMeasuredBottom)
+            {
+                return;
+            }
+
+            _lastMeasuredLeft = leftLocal;
+            _lastMeasuredTop = topLocal;
+            _lastMeasuredBottom = bottomLocal;
+
             float x = leftLocal.x - LayoutGapPixels;
 
             _toxicRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -375,6 +389,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _healthLabel = null;
             _toxicPercentLabel = null;
             _toxicIconImage = null;
+            _lastMeasuredLeft = new Vector2(float.NaN, float.NaN);
             if (_toxicIconSprite != null)
             {
                 UnityEngine.Object.Destroy(_toxicIconSprite);
@@ -416,7 +431,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
-            Vector3[] corners = new Vector3[4];
+            Vector3[] corners = _cornersBuffer;
             anchorRect.GetWorldCorners(corners);
 
             RectTransform overlayRect = _overlayRoot.GetComponent<RectTransform>();

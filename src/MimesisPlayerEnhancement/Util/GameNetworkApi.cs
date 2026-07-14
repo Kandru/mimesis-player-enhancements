@@ -88,14 +88,6 @@ namespace MimesisPlayerEnhancement.Util
             return hubType?.GetProperty("s", StaticFlags)?.GetValue(null);
         }
 
-        public static object? GetVRoomManager()
-        {
-            Type? hubType = GetGameAssembly()?.GetType("Hub");
-            object? hub = GetHub();
-            return hubType == null || hub == null
-                ? null
-                : (hubType.GetProperty("VRoomManager", BindingFlags.Public | BindingFlags.Instance)?.GetValue(hub));
-        }
     }
 
     /// <summary>

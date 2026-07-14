@@ -96,22 +96,6 @@ namespace MimesisPlayerEnhancement.Ui
             SetAlignment(textComponent, TextAlignment.BottomRight);
         }
 
-        internal static void ConfigureHudLabel(Component? textComponent, bool alignTop)
-        {
-            if (alignTop)
-            {
-                SetTopRightAlignment(textComponent);
-            }
-            else
-            {
-                SetBottomRightAlignment(textComponent);
-            }
-
-            ConfigureTextLayout(textComponent, wordWrap: false, OverflowOverflow);
-            ConfigureTightSingleLine(textComponent);
-            ModUiLayout.StretchTextToParent(textComponent);
-        }
-
         private static bool TrySetAlignmentByName(Component? textComponent, string alignmentName)
         {
             if (textComponent == null)

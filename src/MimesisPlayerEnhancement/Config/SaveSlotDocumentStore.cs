@@ -172,26 +172,6 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        internal static void SetSettingsProfile(SaveConfigProfileState profile)
-        {
-            if (_loadedSlotId < 0)
-            {
-                return;
-            }
-
-            lock (Gate)
-            {
-                SaveConfigProfileState normalized = CloneProfile(profile);
-                if (ProfilesEqual(_document.SettingsProfile, normalized))
-                {
-                    return;
-                }
-
-                _document.SettingsProfile = normalized;
-                _dirty = true;
-            }
-        }
-
         internal static Dictionary<string, Dictionary<string, string>> GetConfigOverridesCopy()
         {
             lock (Gate)
@@ -503,20 +483,6 @@ namespace MimesisPlayerEnhancement
 
                 _dirty = true;
                 return true;
-            }
-        }
-
-        internal static bool TryGetPlayerEntry(ulong steamId, out SaveSlotPlayerEntry? entry)
-        {
-            entry = null;
-            if (_loadedSlotId < 0 || steamId == 0)
-            {
-                return false;
-            }
-
-            lock (Gate)
-            {
-                return TryGetPlayerEntryLocked(steamId, out entry);
             }
         }
 
@@ -835,13 +801,6 @@ namespace MimesisPlayerEnhancement
             }
 
             return clone.Count > 0 ? clone : null;
-        }
-
-        private static bool ProfilesEqual(SaveConfigProfileState a, SaveConfigProfileState b)
-        {
-            return a.Mode == b.Mode
-                && a.PresetId == b.PresetId
-                && a.PresetRevision == b.PresetRevision;
         }
 
         private static bool OverridesEqual(

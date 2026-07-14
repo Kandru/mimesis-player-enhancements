@@ -94,13 +94,32 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         /// <summary>
         /// Replaces the game's <c>UpdatePlayerInfos</c> coroutine so mod toasts can use a longer display time.
+        /// Returns null when the required UI fields cannot be resolved so callers can fall back to vanilla.
         /// </summary>
-        internal static IEnumerator RunExtendedPlayerEnterInfoUpdates(UIPrefab_PlayerEnterInfo ui)
+        internal static IEnumerator? TryCreateExtendedPlayerEnterInfoUpdates(UIPrefab_PlayerEnterInfo ui)
         {
-            IList currentDisplayed = GetListField(ui, "currentDisplayed")!;
-            IList displayStartTimeMilliSec = GetListField(ui, "displayStartTimeMilliSec")!;
-            IList isEnteringFlags = GetListField(ui, "isEnteringFlags")!;
-            IList playerInfos = GetListField(ui, "PlayerInfos")!;
+            // Resolve fields eagerly (iterator bodies run lazily) so a reflection miss
+            // falls back to the vanilla coroutine instead of failing mid-frame.
+            IList? currentDisplayed = GetListField(ui, "currentDisplayed");
+            IList? displayStartTimeMilliSec = GetListField(ui, "displayStartTimeMilliSec");
+            IList? isEnteringFlags = GetListField(ui, "isEnteringFlags");
+            IList? playerInfos = GetListField(ui, "PlayerInfos");
+            if (currentDisplayed == null || displayStartTimeMilliSec == null || isEnteringFlags == null || playerInfos == null)
+            {
+                ModLog.Warn(Feature, "Extended toast coroutine unavailable — UIPrefab_PlayerEnterInfo fields not found");
+                return null;
+            }
+
+            return RunExtendedPlayerEnterInfoUpdates(ui, currentDisplayed, displayStartTimeMilliSec, isEnteringFlags, playerInfos);
+        }
+
+        private static IEnumerator RunExtendedPlayerEnterInfoUpdates(
+            UIPrefab_PlayerEnterInfo ui,
+            IList currentDisplayed,
+            IList displayStartTimeMilliSec,
+            IList isEnteringFlags,
+            IList playerInfos)
+        {
             long fadeOutMs = ui.fadeOutDisplayTimeMilliSec;
 
             Color enterColor1 = (Color)EnterColor1Field.GetValue(ui)!;
@@ -255,11 +274,24 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
+        private static readonly Dictionary<string, FieldInfo?> ListFieldCache = [];
+
         private static IList? GetListField(object target, string fieldName)
         {
-            FieldInfo? field = target.GetType().GetField(fieldName, InstanceMemberFlags);
+            if (!ListFieldCache.TryGetValue(fieldName, out FieldInfo? field))
+            {
+                field = target.GetType().GetField(fieldName, InstanceMemberFlags);
+                ListFieldCache[fieldName] = field;
+            }
+
             return field?.GetValue(target) as IList;
         }
+
+        private static bool _timeUtilReflectionResolved;
+        private static PropertyInfo? _timeUtilProperty;
+        private static FieldInfo? _timeUtilField;
+        private static MethodInfo? _getTickMethod;
+        private static bool _loggedTickFallback;
 
         private static long GetCurrentTickMilliSec()
         {
@@ -270,23 +302,37 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
 
-                object? timeUtil = typeof(Hub).GetProperty("timeutil", InstanceMemberFlags)?.GetValue(Hub.s)
-                                   ?? typeof(Hub).GetField("timeutil", InstanceMemberFlags)?.GetValue(Hub.s);
+                if (!_timeUtilReflectionResolved)
+                {
+                    _timeUtilProperty = typeof(Hub).GetProperty("timeutil", InstanceMemberFlags);
+                    _timeUtilField = typeof(Hub).GetField("timeutil", InstanceMemberFlags);
+                    _timeUtilReflectionResolved = true;
+                }
+
+                object? timeUtil = _timeUtilProperty?.GetValue(Hub.s) ?? _timeUtilField?.GetValue(Hub.s);
                 if (timeUtil == null)
                 {
                     return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
 
-                MethodInfo? getTick = timeUtil.GetType().GetMethod(
+                _getTickMethod ??= timeUtil.GetType().GetMethod(
                     "GetCurrentTickMilliSec",
                     InstanceMemberFlags,
                     null,
                     Type.EmptyTypes,
                     null);
-                return getTick == null ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : Convert.ToInt64(getTick.Invoke(timeUtil, null));
+                return _getTickMethod == null
+                    ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    : Convert.ToInt64(_getTickMethod.Invoke(timeUtil, null));
             }
-            catch
+            catch (Exception ex)
             {
+                if (!_loggedTickFallback)
+                {
+                    _loggedTickFallback = true;
+                    ModLog.Warn(Feature, $"Game tick unavailable — falling back to UTC clock for toast timing — {ex.Message}");
+                }
+
                 return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             }
         }

@@ -138,19 +138,31 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
             try
             {
                 SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, MorePlayersPatchHelpers.GetMaxPlayers());
+            }
+            catch (Exception ex)
+            {
+                // Lobby request never left — safe to let vanilla CreateLobby run instead.
+                ModLog.Warn(Feature, $"Steam lobby creation patch error: {ex.Message}");
+                return true;
+            }
+
+            try
+            {
                 if (!isRetryAttempt)
                 {
                     PlayerPrefs.SetInt("TempLobbyIsOpen", isOpenForRandomMatch ? 1 : 0);
                 }
 
                 ModLog.Info(Feature, $"Steam lobby created — maxPlayers={MorePlayersPatchHelpers.GetMaxPlayers()}, openForMatchmaking={isOpenForRandomMatch}, retry={isRetryAttempt}.");
-                return false;
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"Steam lobby creation patch error: {ex.Message}");
-                return true;
+                // The lobby request was already sent — do NOT fall through to vanilla,
+                // or a second lobby would be created.
+                ModLog.Warn(Feature, $"Steam lobby post-create bookkeeping failed: {ex.Message}");
             }
+
+            return false;
         }
     }
 }

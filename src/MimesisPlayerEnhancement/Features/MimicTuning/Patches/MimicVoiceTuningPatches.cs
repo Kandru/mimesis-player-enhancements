@@ -6,7 +6,9 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     internal static class MimicVoiceTuningPatches
     {
-        private const string Feature = "MimicVoiceTuning";
+        private const string Feature = "MimicTuning";
+
+        private static bool _loggedLastVoiceTimeMiss;
 
         private static readonly MethodInfo RollResponseDelaySecondsMethod =
             AccessTools.Method(typeof(MimicVoiceTuningResolver), nameof(MimicVoiceTuningResolver.RollResponseDelaySeconds));
@@ -44,6 +46,12 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 
                     if (!MimicVoiceTuningPatchSupport.TryGetLastMimicVoiceTime(__instance, out float lastTime))
                     {
+                        if (!_loggedLastVoiceTimeMiss)
+                        {
+                            _loggedLastVoiceTimeMiss = true;
+                            ModLog.Warn(Feature, "Last mimic voice time unavailable — custom voice tuning falls back to vanilla");
+                        }
+
                         return true;
                     }
 

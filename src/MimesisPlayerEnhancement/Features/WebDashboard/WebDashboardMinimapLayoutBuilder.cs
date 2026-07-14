@@ -218,7 +218,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     }
 
                     string tileId = $"tile-{entry.Value}";
-                    WebDashboardMinimapFloorRegistry.RegisterTileFloorSpan(tileId, span);
                     foreach (WebDashboardMinimapTileDto tileDto in area.Tiles)
                     {
                         if (tileDto.Id != tileId)
@@ -617,11 +616,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             layout.PointsOfInterest = WebDashboardMinimapPoiCollector.CollectForLayout(main, bounds);
 
             return layout;
-        }
-
-        private static WebDashboardMinimapLayoutDto BuildHubLayout(GameMainBase? main, string sceneLabel)
-        {
-            return BuildOpenAreaLayout(main, sceneLabel, "hub");
         }
 
         private static string ResolveDefaultAreaId(List<WebDashboardMinimapAreaDto> areas)

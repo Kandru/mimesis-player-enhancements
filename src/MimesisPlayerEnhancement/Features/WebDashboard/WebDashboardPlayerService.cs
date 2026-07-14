@@ -7,12 +7,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardPlayerService
     {
-        internal static List<WebDashboardPlayerDto> CollectPlayers()
-        {
-            List<WebDashboardPlayerDto> live = CollectLivePlayers();
-            return WebDashboardPlayerListMerger.MergePlayerLists(live, WebDashboardOfflinePlayerCache.GetCached());
-        }
-
         internal static List<WebDashboardPlayerDto> CollectLivePlayers()
         {
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];

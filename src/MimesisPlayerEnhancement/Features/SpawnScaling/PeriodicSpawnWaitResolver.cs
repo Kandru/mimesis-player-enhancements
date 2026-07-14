@@ -37,11 +37,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return config.EnableSpawnScaling && GetMode(config) != PeriodicSpawnWaitMode.Vanilla;
         }
 
-        internal static bool ShouldApplyHostWaitOverrides()
-        {
-            return IsWaitModeActive() && HostApplyGate.ShouldApplyHostOnlyFeature();
-        }
-
         internal static float RollInitialWaitSeconds()
         {
             return RollInitialWaitSeconds(SceneScopedConfigGate.Spawn);

@@ -7,20 +7,6 @@ namespace MimesisPlayerEnhancement
     {
         private const string Feature = "QuickSettings";
 
-        internal static bool TryApplyPreset(string presetId, out string? error)
-        {
-            error = null;
-            if (!QuickSettingsCatalog.TryResolvePreset(presetId, out QuickSettingPreset preset))
-            {
-                error = ModL10n.Get("api.quick_preset_not_found");
-                return false;
-            }
-
-            ApplyPresetValues(preset.Values);
-            ModLog.Info(Feature, $"Applied quick preset — id={presetId}, revision={preset.Revision}");
-            return true;
-        }
-
         internal static void ResetSaveOverrideableToDefaults()
         {
             if (!ModConfig.IsInitialized)

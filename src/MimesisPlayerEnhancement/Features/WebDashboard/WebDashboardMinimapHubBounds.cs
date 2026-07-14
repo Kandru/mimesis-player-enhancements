@@ -42,11 +42,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return TryBuildOpenAreaBounds(main, "maintenance");
         }
 
-        internal static WebDashboardMinimapBoundsDto TryBuildTramBounds(GameMainBase? main)
-        {
-            return TryBuildOpenAreaBounds(main, "tram");
-        }
-
         internal static bool TryGetTramLocalBounds(
             GameMainBase? main,
             out float centerX,
@@ -137,17 +132,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             // Tram markers live in BGRoot-local space where the tram is axis-aligned.
             return 0f;
-        }
-
-        internal static bool TryGetTramWorldBounds(
-            GameMainBase? main,
-            out float centerX,
-            out float centerZ,
-            out float spanX,
-            out float spanZ,
-            out float yaw)
-        {
-            return TryGetTramLocalBounds(main, out centerX, out centerZ, out spanX, out spanZ, out yaw);
         }
 
         private static WebDashboardMinimapBoundsDto TryBuildLocalSceneBounds(
