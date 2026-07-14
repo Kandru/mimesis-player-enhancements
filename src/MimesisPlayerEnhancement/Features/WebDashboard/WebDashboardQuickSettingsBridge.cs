@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             SaveConfigProfileState profile = slotId == SaveSlotConfigStore.ActiveSlotId
                 ? SaveSlotConfigStore.ActiveProfile
-                : SaveSlotConfigProfile.TryReadFromDisk(slotId);
+                : SaveSlotConfigProfile.TryReadProfileForSlot(slotId);
 
             return new WebDashboardSaveProfileResponseDto
             {
@@ -241,7 +241,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             SaveConfigProfileState profile = slotId == SaveSlotConfigStore.ActiveSlotId
                 ? SaveSlotConfigStore.ActiveProfile
-                : SaveSlotConfigProfile.TryReadFromDisk(slotId);
+                : SaveSlotConfigProfile.TryReadProfileForSlot(slotId);
 
             return new WebDashboardSaveProfileResponseDto
             {

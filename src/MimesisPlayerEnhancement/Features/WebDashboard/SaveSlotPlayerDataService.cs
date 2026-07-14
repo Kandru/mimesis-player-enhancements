@@ -44,8 +44,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 StatisticsTracker.RemovePlayer(steamId, waitForCompletion: true);
             }
 
-            bool hadName = WebDashboardPlayerNameStore.TryGetName(slotId, steamId) != null;
-            WebDashboardPlayerNameStore.ForgetName(slotId, steamId, waitForCompletion: true);
+            bool hadRosterEntry = SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
+            if (hadRosterEntry)
+            {
+                SaveSlotDocumentStore.RemovePlayer(steamId);
+                SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion: true);
+            }
 
             int voiceRemoved = 0;
             if (ModConfig.EnablePersistence.Value)
@@ -62,7 +66,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            if (!hadStatistics && !hadName && voiceRemoved == 0)
+            if (!hadStatistics && !hadRosterEntry && voiceRemoved == 0)
             {
                 return Fail(L("player_delete_not_found"));
             }

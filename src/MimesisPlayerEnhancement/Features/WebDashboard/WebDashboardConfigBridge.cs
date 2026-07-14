@@ -43,12 +43,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
             }
 
-            string? overridePath = SaveSlotConfigStore.GetOverrideFilePath(slotId);
+            string? documentPath = SaveSlotDocumentStore.GetDocumentPath(slotId);
             if (!ModConfig.IsInitialized)
             {
                 return new WebDashboardSettingsDto
                 {
-                    ConfigPath = overridePath ?? "",
+                    ConfigPath = documentPath ?? "",
                     ConfigVersion = ModConfig.Version,
                     SaveSlotId = slotId,
                     Scope = "save",
@@ -57,7 +57,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             return new WebDashboardSettingsDto
             {
-                ConfigPath = overridePath ?? "",
+                ConfigPath = documentPath ?? "",
                 ConfigVersion = ModConfig.Version,
                 SaveSlotId = slotId,
                 Scope = "save",
@@ -65,7 +65,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Profile = WebDashboardQuickSettingsBridge.ToProfileDto(
                     slotId == SaveSlotConfigStore.ActiveSlotId
                         ? SaveSlotConfigStore.ActiveProfile
-                        : SaveSlotConfigProfile.TryReadFromDisk(slotId)),
+                        : SaveSlotConfigProfile.TryReadProfileForSlot(slotId)),
             };
         }
 

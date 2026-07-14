@@ -14,6 +14,6 @@ Joiners can connect whenever you are not inside a dungeon (maintenance, tram, et
 
 `JoinConnectionGraceSeconds` blocks tram departure after a player connects while they finish loading. Players who do not become ready in time are kicked — the host is never kicked.
 
-Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run. Lobby title and public/private preference are saved with the game (per save).
+Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run. Lobby title and public/private preference are saved with the game in `MMGameData{N}.mpe-slot.sav` (per save).
 
 **Full config keys →** [Join Anytime](../CONFIG.md#join-anytime--mimesisplayerenhancement_joinanytime)

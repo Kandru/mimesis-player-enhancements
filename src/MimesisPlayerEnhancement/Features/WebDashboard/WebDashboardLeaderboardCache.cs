@@ -153,7 +153,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 cloned.Add(new PlayerStatisticsDocument
                 {
                     SteamId = player.SteamId,
-                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
                         saveSlotId,
                         player.SteamId,
                         player.DisplayName),

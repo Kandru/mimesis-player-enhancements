@@ -69,7 +69,7 @@ Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `s
 
 - File: `UserData/MimesisPlayerEnhancement.cfg` (MelonPreferences TOML, separate from vanilla MelonLoader prefs).
 - Global toggles/values: `[MimesisPlayerEnhancement]` and `[MimesisPlayerEnhancement_{FeatureName}]`.
-- Per-save overrides: `SaveSlotConfigStore` + sidecar `.mpe-overrides.sav` (web dashboard); loaded at save load, flushed on vanilla save.
+- Per-save overrides: `SaveSlotConfigStore` runtime apply + `SaveSlotDocumentStore` (`MMGameData{N}.mpe-slot.sav`); loaded at save load, flushed on vanilla save.
 - Runtime edits: `GlobalConfigStore` (global) or `SaveSlotConfigStore` (per slot); `ModConfig.Changed` triggers selective `SyncFromConfig`.
 - **Scene-boundary apply:** DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling read frozen config snapshots for the current scene. Mid-scene edits (e.g. web dashboard) defer until the scene ends (maintenance, tram, dungeon, or deathmatch). Turning a master `Enable*` toggle **off** still applies immediately. See `Util/SceneScopedConfigGate.cs`.
 
@@ -121,13 +121,13 @@ Files beside vanilla saves: `MMGameData{N}.mpe-{kind}.sav` (see `SaveSidecarPath
 
 | Suffix | Feature | Runtime / flush |
 |--------|---------|-----------------|
+| `slot` | Unified mod document (lobby, settings profile, config overrides, player roster) | `SaveSlotDocumentStore`; `SaveSlotSidecarPersistence` |
 | `stats` | Statistics | `StatisticsTracker`; `SaveSlotSidecarPersistence` |
-| `overrides` | Per-save config | `SaveSlotConfigStore` |
-| `names` | Web dashboard display names | `WebDashboardPlayerNameStore` |
-| `lobby` | Join Anytime lobby | `JoinAnytimeLobbyStore` |
-| `speech`, `speech-meta`, `speech-mapping` | Persistence (voice lines) | `MimesisSaveManager` / `PersistenceWriteQueue` |
+| `speech` | Persistence (voice binary, MPEV) | `MimesisSaveManager` / `PersistenceWriteQueue` |
 
-**Coordinated lifecycle** (`SaveSlotSidecarPersistence` — stats, overrides, names, lobby):
+Account-wide: `MMGameData.mpe-quick-presets.sav` (quick settings preset catalog).
+
+**Coordinated lifecycle** (`SaveSlotSidecarPersistence` — stats + slot document):
 
 | Phase | Behavior |
 |-------|----------|
@@ -137,7 +137,7 @@ Files beside vanilla saves: `MMGameData{N}.mpe-{kind}.sav` (see `SaveSidecarPath
 | **Session end** | `SessionJoined` false → `OnSessionEnded` clears runtime state, reloads global config (**no disk write**) |
 | **Mod unload** | Statistics `onDeinitialize` → `FlushAllSync`; Persistence → `PersistenceWriteQueue.FlushAllSync` |
 
-Persistence voice sidecars load/save through the Persistence feature (`SpeechEventPoolManager`, `MaintenanceRoom` save patch). The web dashboard reads in-memory stores during gameplay; leaderboard JSON rebuilds when `StatisticsTracker.Revision` changes.
+Persistence voice binary loads/saves through the Persistence feature (`SpeechEventPoolManager`, `MaintenanceRoom` save patch). Player voice IDs live in the slot document (`players[steamId].voiceId`). The web dashboard reads in-memory stores during gameplay; leaderboard JSON rebuilds when `StatisticsTracker.Revision` changes.
 
 ## Host-only and session access
 

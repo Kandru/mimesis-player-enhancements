@@ -9,7 +9,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     internal static class SpeechEventFileStore
     {
         private const string Feature = "Persistence";
-        private const int MetadataVersion = 3;
 
         private static readonly byte[] FileMagic = Encoding.ASCII.GetBytes("MPEV");
         private const int FileFormatVersion = 3;
@@ -24,49 +23,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 && (File.Exists(filePath) || File.Exists(filePath + ".bak"));
         }
 
-        internal static int TryGetSavedSpeechEventCount(int slotId)
-        {
-            int fromMetadata = TryReadSpeechCountFromMetadata(slotId);
-            if (fromMetadata > 0)
-            {
-                return fromMetadata;
-            }
-
-            return TryReadSpeechCountFromBinary(slotId);
-        }
-
-        private static int TryReadSpeechCountFromMetadata(int slotId)
-        {
-            string? metaPath = SaveSidecarPaths.GetSpeechMetadataPath(slotId);
-            if (string.IsNullOrEmpty(metaPath))
-            {
-                return 0;
-            }
-
-            string? json = AtomicFileIO.ReadText(metaPath, Feature);
-            if (string.IsNullOrEmpty(json))
-            {
-                return 0;
-            }
-
-            const string marker = "\"speechCount\":";
-            int markerIndex = json.IndexOf(marker, StringComparison.Ordinal);
-            if (markerIndex < 0)
-            {
-                return 0;
-            }
-
-            int start = markerIndex + marker.Length;
-            int end = start;
-            while (end < json.Length && (char.IsDigit(json[end]) || json[end] == '-'))
-            {
-                end++;
-            }
-
-            return end > start && int.TryParse(json.Substring(start, end - start), out int count) && count > 0
-                ? count
-                : 0;
-        }
+        internal static int TryGetSavedSpeechEventCount(int slotId) => TryReadSpeechCountFromBinary(slotId);
 
         private static int TryReadSpeechCountFromBinary(int slotId)
         {
@@ -130,7 +87,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         internal static SpeechEventSaveSnapshot Serialize(int slotId, List<SpeechEvent> speechEvents)
         {
             string? speechPath = SaveSidecarPaths.GetSpeechPath(slotId);
-            string? metadataPath = SaveSidecarPaths.GetSpeechMetadataPath(slotId);
             byte[]? speechBytes = null;
             int serializedCount = 0;
             long totalAudioBytes = 0;
@@ -176,8 +132,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             {
                 SpeechPath = speechPath ?? string.Empty,
                 SpeechBytes = speechBytes,
-                MetadataPath = metadataPath ?? string.Empty,
-                MetadataJson = $"{{\"version\":{MetadataVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"speechCount\":{serializedCount}}}",
                 SerializedCount = serializedCount,
             };
         }

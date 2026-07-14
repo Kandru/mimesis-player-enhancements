@@ -1,5 +1,11 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.10
+- improvement: further optimized savegame data (reduced files)
+- fix: fail silently when mod does not match game version to avoid getting flagged in the Thunderstore (and require a manual approval each time)
+- fix: late-joiner should now also record voices instantly
+- fix: client damage view was doubled
+
 ## 26.7.9
 - minor webinterface bug fixes
 - minimap refactor

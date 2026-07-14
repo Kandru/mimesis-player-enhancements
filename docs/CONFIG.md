@@ -19,7 +19,7 @@ The game reloads this file while running. Most settings apply immediately or on 
 
 Each feature section has a master toggle (where applicable) plus feature-specific options.
 
-**Per-save overrides:** The web dashboard can edit global defaults (written to `MimesisPlayerEnhancement.cfg` immediately) and per-save-game overrides (`MMGameData{N}.mpe-overrides.sav`, loaded at save load, applied live in memory, written on vanilla save).
+**Per-save overrides:** The web dashboard can edit global defaults (written to `MimesisPlayerEnhancement.cfg` immediately) and per-save-game overrides (stored in `MMGameData{N}.mpe-slot.sav` under `configOverrides`, loaded at save load, applied live in memory, written on vanilla save).
 
 **Quick settings:** Each save slot can use global defaults, a built-in/user quick preset, or fully custom overrides.
 
@@ -461,7 +461,7 @@ A continuous brightness slider is not available host-only; pick a preset above f
 
 ## Obsolete config cleanup
 
-On mod load, unknown sections and keys are removed from `MimesisPlayerEnhancement.cfg` and per-save override sidecars. Settings that were renamed or moved are **not** migrated — they are deleted and the registered default applies until you set the new key.
+On mod load, unknown sections and keys are removed from `MimesisPlayerEnhancement.cfg` and per-save override entries in `mpe-slot.sav`. Settings that were renamed or moved are **not** migrated — they are deleted and the registered default applies until you set the new key.
 
 ---
 

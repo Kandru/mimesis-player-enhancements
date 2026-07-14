@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         {
             List<string> parts = [];
 
-            SaveConfigProfileState profile = SaveSlotConfigProfile.TryReadFromDisk(slotId);
+            SaveConfigProfileState profile = SaveSlotConfigProfile.TryReadProfileForSlot(slotId);
             parts.Add(SaveSlotConfigProfile.GetDisplayLabel(profile));
 
             LeaderboardDocument? leaderboard = LoadLeaderboard(slotId);

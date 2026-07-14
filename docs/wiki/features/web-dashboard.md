@@ -11,7 +11,7 @@ Default URL: `http://127.0.0.1:8001/`
 | View | Who can see it | What it shows |
 |------|----------------|---------------|
 | **Global Settings** | Host or idle (no session) | Global defaults; written to disk immediately |
-| **Settings** | Host in an active save | Per-save overrides; applied live; written on vanilla save |
+| **Settings** | Host in an active save | Per-save overrides (in `mpe-slot.sav`); applied live; written on vanilla save |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, ban status |
 | **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs |
 | **Leaderboard** | Host only | Per-save stats leaderboard (requires **Statistics**) |

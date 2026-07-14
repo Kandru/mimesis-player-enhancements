@@ -95,14 +95,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             try
             {
+                SpeechEventPoolManager.SyncVoiceMappingsToDocument();
                 List<SpeechEvent> speechEvents = CollectAllSpeechEvents();
-                if (!SpeechEventPoolManager.TryBuildPlayerMappingJson(slotId, out string playerMappingPath, out string playerMappingJson))
-                {
-                    ModLog.Warn(Feature, "Skip save: player mapping path unavailable.");
-                    return;
-                }
-
-                PersistenceWriteQueue.EnqueueSave(slotId, speechEvents, playerMappingPath, playerMappingJson);
+                PersistenceWriteQueue.EnqueueSave(slotId, speechEvents);
             }
             catch (Exception ex)
             {
@@ -126,12 +121,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             {
                 SaveSidecarPaths.DeleteSidecars(
                     slotId,
-                    SidecarKind.Speech,
-                    SidecarKind.SpeechMetadata,
-                    SidecarKind.SpeechMapping,
-                    SidecarKind.Overrides,
-                    SidecarKind.PlayerNames,
-                    SidecarKind.Lobby);
+                    SidecarKind.SlotDocument,
+                    SidecarKind.Speech);
             }
             catch (Exception ex)
             {

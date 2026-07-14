@@ -343,7 +343,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = steamId,
                 PlayerUid = playerUid,
-                DisplayName = ResolveDisplayNameCore(null, steamId, playerUid, nameCache, actorLookup),
+                DisplayName = ResolveDisplayNameCore(matchedContext, steamId, playerUid, nameCache, actorLookup),
                 IsHost = isHost,
                 IsLocal = isLocal,
                 IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -358,7 +358,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             EnrichPlayerDto(dto, sessionManager, matchedContext, actorLookup);
-            return dto;
+            return ShouldIncludeLivePlayer(dto) ? dto : null;
+        }
+
+        private static bool ShouldIncludeLivePlayer(WebDashboardPlayerDto dto)
+        {
+            if (IsUsableName(dto.DisplayName, dto.SteamId))
+            {
+                return true;
+            }
+
+            if (GameSessionAccess.IsSteamIdRegisteredInSession(dto.SteamId))
+            {
+                return true;
+            }
+
+            int saveSlotId = WebDashboardGameState.GetSaveSlotId();
+            return SaveSlotDocumentStore.TryGetName(saveSlotId, dto.SteamId, out _);
         }
 
         private static void MergeOfflineStatisticsPlayers(
@@ -383,7 +399,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardPlayerDto dto = new()
                 {
                     SteamId = player.SteamId,
-                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
                         saveSlotId,
                         player.SteamId,
                         player.DisplayName),
@@ -476,7 +492,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 EnrichPlayerDto(dto, sessionManager, context, actorLookup);
-                return dto;
+                return ShouldIncludeLivePlayer(dto) ? dto : null;
             }
             catch
             {
@@ -586,7 +602,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 saveSlotId = WebDashboardGameState.GetSaveSlotId();
             }
 
-            string? remembered = WebDashboardPlayerNameStore.TryGetName(saveSlotId, steamId);
+            string? remembered = SaveSlotDocumentStore.TryGetName(saveSlotId, steamId, out string? fromDoc)
+                ? fromDoc
+                : null;
             if (IsUsableName(remembered, steamId))
             {
                 return remembered!;
@@ -596,8 +614,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return localNick != null && LocalPlayerHelper.IsLocalSteamId(steamId) ? localNick : steamId.ToString();
         }
 
-        // Keeps the live statistics document and the name sidecar current so offline views
-        // and later sessions show the latest known name after a player reconnects.
+        // Keeps the slot document and live statistics document current after a player reconnects.
         private static void PersistDisplayName(WebDashboardPlayerDto dto)
         {
             if (!IsUsableName(dto.DisplayName, dto.SteamId))
@@ -610,10 +627,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            bool nameChanged = WebDashboardPlayerNameStore.RememberName(
-                WebDashboardGameState.GetSaveSlotId(),
-                dto.SteamId,
-                dto.DisplayName);
+            bool nameChanged = SaveSlotDocumentStore.UpsertPlayer(dto.SteamId, dto.DisplayName);
 
             if (ModConfig.EnableStatistics.Value
                 && StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is PlayerStatisticsDocument doc

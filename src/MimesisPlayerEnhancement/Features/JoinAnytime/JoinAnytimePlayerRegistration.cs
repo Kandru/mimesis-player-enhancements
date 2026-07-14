@@ -10,11 +10,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private const string Feature = "JoinAnytime";
 
         private static readonly HashSet<long> FullyReadyUids = [];
+        private static readonly HashSet<ulong> DeferredSteamIds = [];
         private static readonly Dictionary<long, bool> HadStoredStatsBeforeConnect = [];
 
         internal static void Reset()
         {
             FullyReadyUids.Clear();
+            DeferredSteamIds.Clear();
             HadStoredStatsBeforeConnect.Clear();
         }
 
@@ -27,6 +29,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             HadStoredStatsBeforeConnect[playerUid] = steamId != 0
                 && StatisticsTracker.TryGetPlayerDocument(steamId) != null;
+
+            if (steamId != 0)
+            {
+                _ = DeferredSteamIds.Add(steamId);
+            }
         }
 
         internal static bool ShouldDeferRegistration(long playerUid)
@@ -64,6 +71,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (steamId == 0)
             {
                 return false;
+            }
+
+            if (steamId != 0 && DeferredSteamIds.Contains(steamId))
+            {
+                return true;
             }
 
             return ShouldDeferRegistration(ResolvePlayerUidFromSteamId(steamId));
@@ -109,7 +121,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _ = HadStoredStatsBeforeConnect.Remove(uid);
 
             ulong steamId = GameSessionAccess.ResolveSteamId(player.UID, player.IsHost);
-
             if (steamId == 0)
             {
                 ModLog.Debug(Feature, $"Registration complete deferred — uid={uid}, steamId unresolved");
@@ -122,6 +133,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 ModLog.Debug(Feature, $"Registration complete deferred — uid={uid}, no save slot");
                 return;
+            }
+
+            _ = DeferredSteamIds.Remove(steamId);
+
+            string displayName = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
+            string? voiceId = TryResolveVoiceId(steamId);
+            if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
+            {
+                SaveSlotDocumentStore.UpsertPlayer(steamId, displayName, voiceId);
             }
 
             StatisticsTracker.OnPlayerRegistered(steamId, slotId);
@@ -152,12 +172,43 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            _ = DeferredSteamIds.Remove(steamId);
+
             if (!hadPriorStats)
             {
-                StatisticsTracker.RemovePlayerIfNeverConnected(steamId);
+                StatisticsTracker.AbandonIncompleteConnection(steamId);
+                SaveSlotDocumentStore.RemovePlayer(steamId);
             }
 
             ModLog.Info(Feature, $"Abandoned incomplete join — uid={playerUid}, steamId={steamId}");
+        }
+
+        private static string? TryResolveVoiceId(ulong steamId)
+        {
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(archive.PlayerId))
+                    {
+                        continue;
+                    }
+
+                    ulong archiveSteamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
+                    if (archiveSteamId == steamId)
+                    {
+                        return archive.PlayerId;
+                    }
+                }
+                catch
+                {
+                    /* archive may be tearing down */
+                }
+            }
+
+            return SaveSlotDocumentStore.TryGetVoiceId(SaveSlotDocumentStore.LoadedSlotId, steamId, out string? voiceId)
+                ? voiceId
+                : null;
         }
     }
 }

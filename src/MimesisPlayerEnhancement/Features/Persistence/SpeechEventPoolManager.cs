@@ -109,9 +109,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 list.Add(ev.Id);
             }
 
-            LoadPlayerMapping(slotId);
+            LoadVoiceMappingsFromDocument(slotId);
 
             ModLog.Debug(Feature, $"Loaded {_pool.Count} events for slot {slotId} ({_steamToDissonance.Count} SteamID mappings)");
+        }
+
+        public static void SyncVoiceMappingsToDocument()
+        {
+            SaveSlotDocumentStore.SyncVoiceMappingsFromRuntime(BuildPlayerMapping());
         }
 
         public static bool AwaitingVoiceUuid(SpeechEventArchive archive) =>
@@ -637,34 +642,15 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             _localArchive = null;
         }
 
-        public static bool TryBuildPlayerMappingJson(
-            int slotId,
-            out string filePath,
-            out string json)
+        private static void LoadVoiceMappingsFromDocument(int slotId)
         {
-            filePath = string.Empty;
-            json = string.Empty;
+            _steamToDissonance.Clear();
+            SaveSlotDocumentStore.ApplyVoiceMappingsToRuntime((steamId, voiceId) =>
+            {
+                _steamToDissonance[steamId] = voiceId;
+            });
 
-            string? mappingPath = SaveSidecarPaths.GetSpeechMappingPath(slotId);
-            if (string.IsNullOrEmpty(mappingPath))
-            {
-                ModLog.Warn(Feature, "TryBuildPlayerMappingJson: sidecar path is null/empty!");
-                return false;
-            }
-
-            try
-            {
-                Dictionary<ulong, string> mapping = BuildPlayerMapping();
-                filePath = mappingPath;
-                json = ModJson.Serialize(mapping);
-                ModLog.Debug(Feature, $"Built player mapping: {mapping.Count} entries -> {filePath}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ModLog.Error(Feature, $"TryBuildPlayerMappingJson FAILED: {ex}");
-                return false;
-            }
+            ModLog.Debug(Feature, $"Loaded player voice mappings from slot document: {_steamToDissonance.Count} entries (slot={slotId})");
         }
 
         /// <summary>
@@ -1014,44 +1000,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             return mapping;
-        }
-
-        private static void LoadPlayerMapping(int slotId)
-        {
-            _steamToDissonance.Clear();
-
-            string? filePath = SaveSidecarPaths.GetSpeechMappingPath(slotId);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return;
-            }
-
-            string? json = AtomicFileIO.ReadText(filePath, Feature);
-            if (string.IsNullOrEmpty(json))
-            {
-                ModLog.Debug(Feature, $"No player mapping sidecar at {filePath}");
-                return;
-            }
-
-            try
-            {
-                Dictionary<ulong, string>? mapping = ModJson.Deserialize<Dictionary<ulong, string>>(json);
-                if (mapping == null)
-                {
-                    return;
-                }
-
-                foreach (KeyValuePair<ulong, string> kvp in mapping)
-                {
-                    _steamToDissonance[kvp.Key] = kvp.Value;
-                }
-
-                ModLog.Debug(Feature, $"Loaded player mapping: {_steamToDissonance.Count} entries");
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"LoadPlayerMapping: {ex.Message}");
-            }
         }
 
         private static HashSet<string> ResolveMatchedPlayerNames(

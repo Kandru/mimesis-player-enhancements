@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 leaderboard.Entries.Add(new LeaderboardEntry
                 {
                     SteamId = player.SteamId,
-                    DisplayName = WebDashboardPlayerNameStore.ResolveDisplayName(
+                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
                         slotId,
                         player.SteamId,
                         player.DisplayName),

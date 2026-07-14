@@ -153,5 +153,15 @@ namespace MimesisPlayerEnhancement.Util
         {
             return TryGetGameSessionInfo()?.PlayReportManager;
         }
+
+        internal static bool IsSteamIdRegisteredInSession(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return false;
+            }
+
+            return TryGetGameSessionInfo()?.TotalPlayerSteamIDs?.ContainsKey(steamId) == true;
+        }
     }
 }

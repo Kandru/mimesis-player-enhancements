@@ -4,18 +4,14 @@ namespace MimesisPlayerEnhancement
 {
     internal enum SidecarKind
     {
+        SlotDocument,
         Speech,
-        SpeechMetadata,
-        SpeechMapping,
-        Overrides,
         Statistics,
-        PlayerNames,
-        Lobby,
     }
 
     /// <summary>
     /// Paths for per-save-slot sidecar files beside vanilla saves: MMGameData{N}.mpe-{kind}.sav
-    /// Used by persistence, statistics, and per-save config overrides. Matches Steam Auto-Cloud MMGameData*.sav sync pattern.
+    /// Used by persistence, statistics, and per-save slot document. Matches Steam Auto-Cloud MMGameData*.sav sync pattern.
     /// </summary>
     internal static class SaveSidecarPaths
     {
@@ -57,13 +53,9 @@ namespace MimesisPlayerEnhancement
             return Path.Combine(saveFolder, stem + SidecarInfix + kind + SidecarExtension);
         }
 
+        internal static string? GetSlotDocumentPath(int slotId) => GetSidecarPath(slotId, "slot");
+
         internal static string? GetSpeechPath(int slotId) => GetSidecarPath(slotId, "speech");
-
-        internal static string? GetSpeechMetadataPath(int slotId) => GetSidecarPath(slotId, "speech-meta");
-
-        internal static string? GetSpeechMappingPath(int slotId) => GetSidecarPath(slotId, "speech-mapping");
-
-        internal static string? GetOverridesPath(int slotId) => GetSidecarPath(slotId, "overrides");
 
         /// <summary>
         /// Account-level user quick presets (not tied to a save slot). Uses MMGameData*.sav for Steam Auto-Cloud.
@@ -80,10 +72,6 @@ namespace MimesisPlayerEnhancement
         }
 
         internal static string? GetStatisticsPath(int slotId) => GetSidecarPath(slotId, "stats");
-
-        internal static string? GetPlayerNamesPath(int slotId) => GetSidecarPath(slotId, "names");
-
-        internal static string? GetLobbyPath(int slotId) => GetSidecarPath(slotId, "lobby");
 
         internal static IEnumerable<string> EnumerateSidecarFiles(int slotId, SidecarKind? filter = null)
         {
@@ -132,12 +120,8 @@ namespace MimesisPlayerEnhancement
             return filter switch
             {
                 SidecarKind.Speech => fileName.Equals(prefix + "speech" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
-                SidecarKind.SpeechMetadata => fileName.Equals(prefix + "speech-meta" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
-                SidecarKind.SpeechMapping => fileName.Equals(prefix + "speech-mapping" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
-                SidecarKind.Overrides => fileName.Equals(prefix + "overrides" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
+                SidecarKind.SlotDocument => fileName.Equals(prefix + "slot" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 SidecarKind.Statistics => fileName.Equals(prefix + "stats" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
-                SidecarKind.PlayerNames => fileName.Equals(prefix + "names" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
-                SidecarKind.Lobby => fileName.Equals(prefix + "lobby" + SidecarExtension, StringComparison.OrdinalIgnoreCase),
                 _ => false,
             };
         }

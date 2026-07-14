@@ -51,17 +51,15 @@ namespace MimesisPlayerEnhancement
             return state;
         }
 
-        internal static SaveConfigProfileState TryReadFromDisk(int slotId)
+        internal static SaveConfigProfileState TryReadProfileForSlot(int slotId)
         {
-            string? filePath = SaveSlotConfigStore.GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath))
+            if (SaveSlotDocumentStore.TryReadFromDisk(slotId, out Config.Models.SaveSlotDocument? document)
+                && document != null)
             {
-                return new SaveConfigProfileState();
+                return document.SettingsProfile;
             }
 
-            string? text = AtomicFileIO.ReadText(filePath, "SaveSlotConfigProfile");
-            SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
-            return Parse(doc);
+            return new SaveConfigProfileState();
         }
 
         internal static string GetDisplayLabel(SaveConfigProfileState profile)

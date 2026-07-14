@@ -16,16 +16,15 @@ namespace MimesisPlayerEnhancement
             }
 
             StatisticsTracker.LoadForSlot(slotId);
+            SaveSlotDocumentStore.LoadForSlot(slotId);
             SaveSlotConfigStore.LoadForSlot(slotId);
-            WebDashboardPlayerNameStore.LoadForSlot(slotId);
-            JoinAnytimeLobbyStore.LoadForSlot(slotId);
-            JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
+            Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
 
             int statsPlayers = StatisticsTracker.GetCachedPlayerDocumentsView().Count;
-            int nameCount = WebDashboardPlayerNameStore.LoadedNameCount;
+            int rosterPlayers = SaveSlotDocumentStore.LoadedPlayerCount;
             ModLog.Info(
                 Feature,
-                $"Loaded slot sidecars for save slot {slotId} — stats={statsPlayers}, names={nameCount}.");
+                $"Loaded slot sidecars for save slot {slotId} — stats={statsPlayers}, roster={rosterPlayers}.");
 
             WebDashboardOfflinePlayerCache.RebuildSync(StatisticsTracker.Revision);
             WebDashboardSnapshotCache.MarkDirty();
@@ -68,9 +67,8 @@ namespace MimesisPlayerEnhancement
 
             StatisticsTracker.OnGameSaved(slotId);
             SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
-            WebDashboardPlayerNameStore.FlushToDisk(slotId, waitForCompletion: false);
-            JoinAnytimeLobbyStore.CaptureFromController(slotId);
-            JoinAnytimeLobbyStore.FlushToDisk(slotId, waitForCompletion: false);
+            SaveSlotDocumentStore.CaptureLobbyFromController(slotId);
+            SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion: false);
             ModLog.Debug(Feature, $"Queued slot sidecar flush for save slot {slotId}.");
         }
 
@@ -78,9 +76,8 @@ namespace MimesisPlayerEnhancement
         {
             StatisticsTracker.OnSessionEnded();
             SaveSlotConfigStore.ClearRuntimeToGlobal();
-            WebDashboardPlayerNameStore.Clear();
-            JoinAnytimeLobbyStore.Clear();
-            JoinAnytimeLobbyController.OnSessionEnded();
+            SaveSlotDocumentStore.Clear();
+            Features.JoinAnytime.JoinAnytimeLobbyController.OnSessionEnded();
         }
 
         internal static void FlushAllSync()
@@ -90,9 +87,8 @@ namespace MimesisPlayerEnhancement
             {
                 StatisticsTracker.PersistLoadedSlot(waitForCompletion: true);
                 SaveSlotConfigStore.FlushToDisk(activeSlotId, waitForCompletion: true);
-                WebDashboardPlayerNameStore.FlushToDisk(activeSlotId, waitForCompletion: true);
-                JoinAnytimeLobbyStore.CaptureFromController(activeSlotId);
-                JoinAnytimeLobbyStore.FlushToDisk(activeSlotId, waitForCompletion: true);
+                SaveSlotDocumentStore.CaptureLobbyFromController(activeSlotId);
+                SaveSlotDocumentStore.FlushToDisk(activeSlotId, waitForCompletion: true);
             }
 
             StatisticsStore.FlushAllSync();

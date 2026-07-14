@@ -139,7 +139,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             PlayerStatisticsDocument doc = GetOrCreatePlayer(steamId);
             doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
-            WebDashboardPlayerNameStore.RememberName(slotId, steamId, doc.DisplayName);
+            if (SaveSlotDocumentStore.IsUsableName(doc.DisplayName, steamId))
+            {
+                SaveSlotDocumentStore.UpsertPlayer(steamId, doc.DisplayName);
+            }
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
 
@@ -197,9 +200,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
 
             doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
-            if (_loadedSlotId >= 0)
+            if (_loadedSlotId >= 0 && SaveSlotDocumentStore.IsUsableName(doc.DisplayName, steamId))
             {
-                WebDashboardPlayerNameStore.RememberName(_loadedSlotId, steamId, doc.DisplayName);
+                SaveSlotDocumentStore.UpsertPlayer(steamId, doc.DisplayName);
             }
 
             FlushConnectedTime(steamId, doc);
@@ -814,6 +817,30 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             BumpRevision();
             WebDashboardSnapshotCache.MarkDirty();
             ModLog.Debug(Feature, $"Removed incomplete-connect statistics — steamId={steamId}");
+        }
+
+        /// <summary>
+        /// Clears a prematurely registered connection that never reached fully-ready state.
+        /// </summary>
+        internal static void AbandonIncompleteConnection(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return;
+            }
+
+            _ = _connectedSince.Remove(steamId);
+
+            if (!_players.Remove(steamId))
+            {
+                return;
+            }
+
+            StatisticsVoiceCounter.RemoveBaseline(steamId);
+            StatisticsMessages.ClearPlayerRuntimeState(steamId);
+            BumpRevision();
+            WebDashboardSnapshotCache.MarkDirty();
+            ModLog.Debug(Feature, $"Abandoned incomplete connection statistics — steamId={steamId}");
         }
 
         internal static bool TryGetLoadedSlotId(out int slotId)

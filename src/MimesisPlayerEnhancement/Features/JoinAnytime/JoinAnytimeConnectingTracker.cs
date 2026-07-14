@@ -36,6 +36,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            ulong steamId = context.SteamID;
+            if (steamId != 0 && !GameSessionAccess.IsSteamIdRegisteredInSession(steamId))
+            {
+                ModLog.Debug(Feature, $"Connecting tracker — skipped rejected login steamId={steamId}");
+                return;
+            }
+
             long uid = context.GetPlayerUID();
             if (uid == 0)
             {
@@ -43,7 +50,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             RegisterPending(uid, context.GetSessionID());
-            JoinAnytimePlayerRegistration.NoteDeferredConnect(uid, context.PlayerInfoSnapshot?.SteamID ?? 0);
+            JoinAnytimePlayerRegistration.NoteDeferredConnect(uid, steamId != 0 ? steamId : context.PlayerInfoSnapshot?.SteamID ?? 0);
             LateJoinManager.OnPlayerRegistered(uid);
             ModLog.Debug(Feature, $"Connecting tracker — registered uid={uid}, deadline={GraceSeconds}s");
         }

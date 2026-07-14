@@ -3,8 +3,7 @@ using MimesisPlayerEnhancement.Config.QuickSettings;
 namespace MimesisPlayerEnhancement
 {
     /// <summary>
-    /// Sparse per-save-slot config overrides stored as a Steam-cloud sidecar beside vanilla saves.
-    /// Keys matching global values are omitted automatically.
+    /// Runtime per-save-slot config overrides. Persisted inside the unified slot document.
     /// </summary>
     internal static class SaveSlotConfigStore
     {
@@ -21,11 +20,6 @@ namespace MimesisPlayerEnhancement
 
         internal static SaveConfigProfileState ActiveProfile => _runtimeProfile;
 
-        internal static string? GetOverrideFilePath(int slotId)
-        {
-            return SaveSidecarPaths.GetOverridesPath(slotId);
-        }
-
         internal static void LoadForSlot(int slotId)
         {
             if (!ModConfig.IsInitialized || !MimesisSaveManager.IsValidSaveSlotId(slotId))
@@ -39,8 +33,8 @@ namespace MimesisPlayerEnhancement
             {
                 ModConfig.ReloadGlobalFromFile();
                 _activeSlotId = slotId;
-                _runtimeDoc = ReadOverridesFromDisk(slotId);
-                _runtimeProfile = SaveSlotConfigProfile.Parse(_runtimeDoc);
+                _runtimeDoc = SaveSlotDocumentStore.BuildRuntimeConfigDoc();
+                _runtimeProfile = SaveSlotDocumentStore.GetSettingsProfile();
                 _dirty = false;
                 ApplyActiveProfile(slotId);
                 ModConfig.SanitizeFloatEntries();
@@ -180,7 +174,7 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
-            if (GetOverrideFilePath(slotId) == null)
+            if (SaveSlotDocumentStore.GetDocumentPath(slotId) == null)
             {
                 error = ModL10n.Get("api.save_slot_path_unavailable");
                 return false;
@@ -256,16 +250,9 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return;
-            }
-
-            if (SaveDocument(slotId, filePath, _runtimeDoc, waitForCompletion))
-            {
-                _dirty = false;
-            }
+            SaveSlotDocumentStore.WriteRuntimeConfigDoc(_runtimeDoc, _runtimeProfile);
+            SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion);
+            _dirty = false;
         }
 
         internal static void ClearRuntimeToGlobal()
@@ -365,25 +352,6 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        private static SparseTomlConfig.Document ReadOverridesFromDisk(int slotId)
-        {
-            string? filePath = GetOverrideFilePath(slotId);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return new SparseTomlConfig.Document();
-            }
-
-            string? text = AtomicFileIO.ReadText(filePath, Feature);
-            SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
-            if (ModConfig.IsInitialized
-                && SparseTomlConfig.PurgeUnregisteredEntries(doc, allowProfileSection: true))
-            {
-                _ = SaveDocument(slotId, filePath, doc, waitForCompletion: true);
-            }
-
-            return doc;
-        }
-
         private static void ApplyGameplayDoc(SparseTomlConfig.Document doc, int slotId)
         {
             foreach (string sectionId in doc.SectionOrder)
@@ -412,34 +380,6 @@ namespace MimesisPlayerEnhancement
 
                     ModLog.Warn(Feature, $"Skipped invalid override {sectionId}/{pair.Key} for slot {slotId}.");
                 }
-            }
-        }
-
-        private static bool SaveDocument(
-            int slotId,
-            string filePath,
-            SparseTomlConfig.Document doc,
-            bool waitForCompletion = false)
-        {
-            try
-            {
-                if (SparseTomlConfig.IsEmpty(doc))
-                {
-                    BackgroundFileWriteQueue.EnqueueDelete(filePath, Feature, waitForCompletion);
-                    return true;
-                }
-
-                BackgroundFileWriteQueue.EnqueueText(
-                    filePath,
-                    SparseTomlConfig.Serialize(doc),
-                    Feature,
-                    waitForCompletion);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ModLog.Error(Feature, $"SaveDocument slot {slotId}: {ex.Message}");
-                return false;
             }
         }
 

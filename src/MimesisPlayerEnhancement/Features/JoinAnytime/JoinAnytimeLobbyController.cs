@@ -133,7 +133,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             EnsureSidecarLoadedForActiveSlot();
 
             int slotId = GameSessionAccess.GetSaveSlotId();
-            if (!JoinAnytimeLobbyStore.HasPersistedPublicPreference(slotId) && isOpenForRandomMatch)
+            if (!SaveSlotDocumentStore.HasPersistedPublicPreference(slotId) && isOpenForRandomMatch)
             {
                 SetHostWantsPublicMatchmaking(true);
             }
@@ -633,20 +633,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _hostWantsPublicMatchmaking = false;
 
             if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
-                || !JoinAnytimeLobbyStore.TryReadSidecarForSlot(slotId, out JoinAnytimeLobbySidecarData? data)
-                || data == null)
+                || !SaveSlotDocumentStore.TryReadFromDisk(slotId, out Config.Models.SaveSlotDocument? data)
+                || data?.Lobby == null)
             {
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(data.BaseLobbyName))
+            if (!string.IsNullOrWhiteSpace(data.Lobby.BaseLobbyName))
             {
-                _baseLobbyName = data.BaseLobbyName.Trim();
+                _baseLobbyName = data.Lobby.BaseLobbyName.Trim();
             }
 
-            if (data.IsPublicLobby.HasValue)
+            if (data.Lobby.IsPublicLobby.HasValue)
             {
-                _hostWantsPublicMatchmaking = data.IsPublicLobby.Value;
+                _hostWantsPublicMatchmaking = data.Lobby.IsPublicLobby.Value;
             }
         }
 
@@ -667,10 +667,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             int slotId = GameSessionAccess.GetSaveSlotId();
             if (MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
-                string? fromSidecar = JoinAnytimeLobbyStore.TryReadBaseLobbyNameForSlot(slotId);
-                if (!string.IsNullOrWhiteSpace(fromSidecar))
+                string? fromDocument = SaveSlotDocumentStore.TryReadLobbyNameForSlot(slotId);
+                if (!string.IsNullOrWhiteSpace(fromDocument))
                 {
-                    _baseLobbyName = fromSidecar;
+                    _baseLobbyName = fromDocument;
                     return;
                 }
             }
@@ -718,7 +718,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            JoinAnytimeLobbyStore.RememberRuntimeState(slotId, baseLobbyName, isPublicLobby);
+            SaveSlotDocumentStore.RememberLobbyRuntimeState(slotId, baseLobbyName, isPublicLobby);
         }
 
         private static void EnsureSidecarLoadedForActiveSlot()
