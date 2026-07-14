@@ -111,6 +111,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             LoadVoiceMappingsFromDocument(slotId);
 
+            if (_pool.Count > 0 && _steamToDissonance.Count == 0)
+            {
+                ModLog.Warn(
+                    Feature,
+                    $"Voice pool loaded but no Steam→VoiceId mappings — restore will fail until mappings are saved (slot={slotId}, events={_pool.Count})");
+            }
+
             ModLog.Debug(Feature, $"Loaded {_pool.Count} events for slot {slotId} ({_steamToDissonance.Count} SteamID mappings)");
         }
 
@@ -379,6 +386,20 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 LogVoiceUuidRemap(VoiceEventStats.DescribePlayerBrief(archive), events.Count, oldVoiceId, newPlayerId);
                 _ = _awaitingVoiceUuid.Remove(archive);
                 _deferredNameUpdates.RemoveAt(i);
+
+                try
+                {
+                    ulong steamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
+                    if (steamId != 0)
+                    {
+                        string displayName = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
+                        _ = SaveSlotDocumentStore.UpsertPlayer(steamId, displayName, newPlayerId);
+                    }
+                }
+                catch
+                {
+                    /* archive may be tearing down */
+                }
 
                 PlayerLifecycleCoordinator.TryFlushConnect(archive);
             }
@@ -849,6 +870,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             {
                 HashSet<string> poolNames = ResolveMatchedPlayerNames(playerId, playerUID, isLocal);
                 if (poolNames.Count > 0)
+                {
+                    return true;
+                }
+
+                if (string.IsNullOrEmpty(playerId) && playerUID != 0)
                 {
                     return true;
                 }

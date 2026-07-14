@@ -95,7 +95,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             try
             {
-                SpeechEventPoolManager.SyncVoiceMappingsToDocument();
                 List<SpeechEvent> speechEvents = CollectAllSpeechEvents();
                 PersistenceWriteQueue.EnqueueSave(slotId, speechEvents);
             }

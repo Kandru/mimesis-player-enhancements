@@ -437,7 +437,14 @@ namespace MimesisPlayerEnhancement
 
         internal static bool UpsertPlayer(ulong steamId, string displayName, string? voiceId = null)
         {
-            if (_loadedSlotId < 0 || steamId == 0 || !IsUsableName(displayName, steamId))
+            if (_loadedSlotId < 0 || steamId == 0)
+            {
+                return false;
+            }
+
+            bool hasUsableName = IsUsableName(displayName, steamId);
+            bool hasVoiceId = !string.IsNullOrWhiteSpace(voiceId);
+            if (!hasUsableName && !hasVoiceId)
             {
                 return false;
             }
@@ -452,12 +459,16 @@ namespace MimesisPlayerEnhancement
                     _document.Players[key] = entry;
                 }
 
-                bool changed = entry.DisplayName != displayName;
-                entry.DisplayName = displayName;
-
-                if (!string.IsNullOrWhiteSpace(voiceId) && entry.VoiceId != voiceId)
+                bool changed = false;
+                if (hasUsableName && entry.DisplayName != displayName)
                 {
-                    entry.VoiceId = voiceId;
+                    entry.DisplayName = displayName;
+                    changed = true;
+                }
+
+                if (hasVoiceId && entry.VoiceId != voiceId)
+                {
+                    entry.VoiceId = voiceId!;
                     changed = true;
                 }
 
@@ -467,33 +478,6 @@ namespace MimesisPlayerEnhancement
                 }
 
                 return changed;
-            }
-        }
-
-        internal static bool UpsertVoiceId(ulong steamId, string voiceId)
-        {
-            if (_loadedSlotId < 0 || steamId == 0 || string.IsNullOrWhiteSpace(voiceId))
-            {
-                return false;
-            }
-
-            lock (Gate)
-            {
-                _document.Players ??= [];
-                string key = steamId.ToString();
-                if (!_document.Players.TryGetValue(key, out SaveSlotPlayerEntry? entry))
-                {
-                    return false;
-                }
-
-                if (entry.VoiceId == voiceId)
-                {
-                    return false;
-                }
-
-                entry.VoiceId = voiceId;
-                _dirty = true;
-                return true;
             }
         }
 
@@ -584,7 +568,19 @@ namespace MimesisPlayerEnhancement
                     string key = kvp.Key.ToString();
                     if (!_document.Players.TryGetValue(key, out SaveSlotPlayerEntry? entry))
                     {
-                        continue;
+                        entry = new SaveSlotPlayerEntry();
+                        _document.Players[key] = entry;
+                    }
+
+                    string displayName = entry.DisplayName;
+                    if (!IsUsableName(displayName, kvp.Key))
+                    {
+                        displayName = StatisticsDisplayNameResolver.Resolve(kvp.Key, displayName);
+                        if (IsUsableName(displayName, kvp.Key) && entry.DisplayName != displayName)
+                        {
+                            entry.DisplayName = displayName;
+                            _dirty = true;
+                        }
                     }
 
                     if (entry.VoiceId != kvp.Value)

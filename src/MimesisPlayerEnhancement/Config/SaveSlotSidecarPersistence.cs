@@ -1,3 +1,5 @@
+using MimesisPlayerEnhancement.Features.Persistence.Patches;
+
 namespace MimesisPlayerEnhancement
 {
     /// <summary>
@@ -18,6 +20,11 @@ namespace MimesisPlayerEnhancement
             StatisticsTracker.LoadForSlot(slotId);
             SaveSlotDocumentStore.LoadForSlot(slotId);
             SaveSlotConfigStore.LoadForSlot(slotId);
+            if (ModConfig.EnablePersistence.Value)
+            {
+                SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
+            }
+
             Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
 
             int statsPlayers = StatisticsTracker.GetCachedPlayerDocumentsView().Count;
@@ -65,6 +72,11 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            if (ModConfig.EnablePersistence.Value)
+            {
+                SpeechEventPoolManager.SyncVoiceMappingsToDocument();
+            }
+
             StatisticsTracker.OnGameSaved(slotId);
             SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
             SaveSlotDocumentStore.CaptureLobbyFromController(slotId);
@@ -85,6 +97,11 @@ namespace MimesisPlayerEnhancement
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
             if (activeSlotId >= 0)
             {
+                if (ModConfig.EnablePersistence.Value)
+                {
+                    SpeechEventPoolManager.SyncVoiceMappingsToDocument();
+                }
+
                 StatisticsTracker.PersistLoadedSlot(waitForCompletion: true);
                 SaveSlotConfigStore.FlushToDisk(activeSlotId, waitForCompletion: true);
                 SaveSlotDocumentStore.CaptureLobbyFromController(activeSlotId);
