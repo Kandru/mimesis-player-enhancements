@@ -2,6 +2,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.11
 - improvement: add another button to the items overlay to allow giving multiple items without re-opening the items overlay
+- fix: double config sync - global config only will be saved when closing the game properly
 - draft: added privacy settings to disallow the game to send data to anything else then steam
 - code cleanup (may leads to issues further down the road, we will see)
 

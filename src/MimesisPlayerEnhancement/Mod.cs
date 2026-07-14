@@ -14,6 +14,7 @@ namespace MimesisPlayerEnhancement
         private float _nextEncounterSpawnProcessTime;
         private float _nextLocaleRefreshTime;
         private bool _isInitializing;
+        private static bool _globalConfigFlushed;
 
         public override void OnInitializeMelon()
         {
@@ -51,6 +52,7 @@ namespace MimesisPlayerEnhancement
         private static void OnApplicationQuitting()
         {
             WebDashboardServer.PrepareApplicationQuit();
+            FlushGlobalConfigOnShutdown();
         }
 
         public override void OnPreferencesSaved(string filepath)
@@ -116,6 +118,7 @@ namespace MimesisPlayerEnhancement
         public override void OnDeinitializeMelon()
         {
             Application.quitting -= OnApplicationQuitting;
+            FlushGlobalConfigOnShutdown();
 
             foreach (IFeatureModule module in FeatureModules.All)
             {
@@ -134,6 +137,17 @@ namespace MimesisPlayerEnhancement
         private static bool IsOurConfigFile(string filepath)
         {
             return string.Equals(filepath, ModConfig.FilePath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void FlushGlobalConfigOnShutdown()
+        {
+            if (_globalConfigFlushed)
+            {
+                return;
+            }
+
+            _globalConfigFlushed = true;
+            ModConfig.FlushGlobalToDisk();
         }
 
         private void SyncFromConfig(ModConfigChangeInfo change)

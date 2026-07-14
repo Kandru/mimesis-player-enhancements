@@ -7,10 +7,15 @@ namespace MimesisPlayerEnhancement
     /// Direct read/write of the global mod config file (<see cref="ModConfig.FilePath"/>).
     /// Web dashboard global updates use this instead of MelonLoader SaveToFile so values
     /// persist reliably while save-slot overrides may be active in memory.
+    /// Runtime changes are kept in a pending in-memory document and flushed on game quit.
     /// </summary>
     internal static class GlobalConfigStore
     {
         private const string Feature = "GlobalConfig";
+
+        private static SparseTomlConfig.Document? _pendingDoc;
+        private static bool _pendingDocLoaded;
+        private static bool _dirty;
 
         internal static SparseTomlConfig.Document Load()
         {
@@ -30,6 +35,7 @@ namespace MimesisPlayerEnhancement
             out string? error,
             bool waitForCompletion = false)
         {
+            _ = waitForCompletion;
             error = null;
 
             if (!ModConfig.IsInitialized)
@@ -51,7 +57,8 @@ namespace MimesisPlayerEnhancement
             }
 
             string defaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry);
-            SparseTomlConfig.Document doc = Load();
+            EnsurePendingDoc();
+            SparseTomlConfig.Document doc = _pendingDoc!;
 
             if (ModConfigRegistry.RawValuesEqual(sectionId, key, normalized, defaultValue))
             {
@@ -63,15 +70,61 @@ namespace MimesisPlayerEnhancement
                 doc.Sections[sectionId][key] = normalized;
             }
 
-            return SaveDocument(doc, out error, waitForCompletion);
+            _dirty = true;
+            return true;
         }
 
-        private static bool SaveDocument(
-            SparseTomlConfig.Document doc,
-            out string? error,
-            bool waitForCompletion = false)
+        /// <summary>
+        /// Rebuild the pending sparse document from all current in-memory preference values.
+        /// </summary>
+        internal static void RebuildPendingFromMemory()
         {
-            error = null;
+            if (!ModConfig.IsInitialized || SaveSlotConfigStore.IsApplyingOverrides)
+            {
+                return;
+            }
+
+            SparseTomlConfig.Document doc = new();
+            foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
+            {
+                foreach (string key in ModConfigRegistry.GetEntryOrder(sectionId))
+                {
+                    if (!ModConfigRegistry.TryGetEntry(sectionId, key, out MelonPreferences_Entry? entry) || entry == null)
+                    {
+                        continue;
+                    }
+
+                    string current = ModConfigRegistry.FormatEntryValue(entry);
+                    string defaultValue = ModConfigRegistry.FormatEntryDefaultValue(entry);
+                    if (ModConfigRegistry.RawValuesEqual(sectionId, key, current, defaultValue))
+                    {
+                        continue;
+                    }
+
+                    EnsureSection(doc, sectionId);
+                    doc.Sections[sectionId][key] = current;
+                }
+            }
+
+            _pendingDoc = doc;
+            _pendingDocLoaded = true;
+            _dirty = true;
+        }
+
+        internal static void FlushToDisk(bool waitForCompletion = true)
+        {
+            _ = waitForCompletion;
+
+            if (!_dirty || !ModConfig.IsInitialized || string.IsNullOrEmpty(ModConfig.FilePath))
+            {
+                return;
+            }
+
+            if (!_pendingDocLoaded || _pendingDoc == null)
+            {
+                _dirty = false;
+                return;
+            }
 
             try
             {
@@ -81,30 +134,35 @@ namespace MimesisPlayerEnhancement
                     _ = Directory.CreateDirectory(directory);
                 }
 
-                if (SparseTomlConfig.IsEmpty(doc) && File.Exists(ModConfig.FilePath))
+                if (SparseTomlConfig.IsEmpty(_pendingDoc) && File.Exists(ModConfig.FilePath))
                 {
-                    BackgroundFileWriteQueue.EnqueueDelete(ModConfig.FilePath, Feature, waitForCompletion);
-                    return true;
+                    AtomicFileIO.Delete(ModConfig.FilePath, Feature);
+                }
+                else if (!SparseTomlConfig.IsEmpty(_pendingDoc))
+                {
+                    AtomicFileIO.WriteText(
+                        ModConfig.FilePath,
+                        SparseTomlConfig.Serialize(_pendingDoc),
+                        Feature);
                 }
 
-                if (SparseTomlConfig.IsEmpty(doc))
-                {
-                    return true;
-                }
-
-                BackgroundFileWriteQueue.EnqueueText(
-                    ModConfig.FilePath,
-                    SparseTomlConfig.Serialize(doc),
-                    Feature,
-                    waitForCompletion);
-                return true;
+                _dirty = false;
             }
             catch (Exception ex)
             {
-                error = ex.Message;
-                ModLog.Error(Feature, $"SaveDocument: {ex.Message}");
-                return false;
+                ModLog.Error(Feature, $"FlushToDisk: {ex.Message}");
             }
+        }
+
+        private static void EnsurePendingDoc()
+        {
+            if (_pendingDocLoaded)
+            {
+                return;
+            }
+
+            _pendingDoc = Load();
+            _pendingDocLoaded = true;
         }
 
         private static void EnsureSection(SparseTomlConfig.Document doc, string sectionId)

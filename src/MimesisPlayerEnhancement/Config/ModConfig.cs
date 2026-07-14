@@ -295,6 +295,12 @@ namespace MimesisPlayerEnhancement
             ModConfigRegistry.SaveToFile();
         }
 
+        /// <summary>Flush deferred global config changes to disk. Called on game quit.</summary>
+        internal static void FlushGlobalToDisk()
+        {
+            GlobalConfigStore.FlushToDisk();
+        }
+
         /// <summary>Reload in-memory entries from the global config file on disk.</summary>
         internal static void ReloadGlobalFromFile()
         {

@@ -253,7 +253,7 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            ModConfig.MainCategory.SaveToFile(false);
+            GlobalConfigStore.RebuildPendingFromMemory();
         }
 
         internal static void NotifyRuntimeChange()
