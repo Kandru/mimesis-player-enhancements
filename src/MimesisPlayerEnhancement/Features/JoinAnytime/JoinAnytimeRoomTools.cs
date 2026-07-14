@@ -220,7 +220,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             waitingRoom = TryGetWaitingRoom(vroomManager);
             if (waitingRoom != null)
             {
-                PrepareWaitingRoomForEnter(vroomManager);
+                PrepareWaitingRoomForEnter(vroomManager, force: true);
                 return true;
             }
 
@@ -245,7 +245,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else
             {
-                PrepareWaitingRoomForEnter(vroomManager);
+                PrepareWaitingRoomForEnter(vroomManager, force: true);
             }
 
             return waitingRoom != null;

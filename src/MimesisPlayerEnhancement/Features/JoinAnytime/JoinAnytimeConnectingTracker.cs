@@ -159,6 +159,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
+                if (IsRoutingInProgress(pending.Uid))
+                {
+                    continue;
+                }
+
                 if (now >= pending.Deadline)
                 {
                     timedOut.Add(entry.Key);
@@ -180,6 +185,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 RemovePending(uid);
 
                 if (ShouldIgnoreUid(uid))
+                {
+                    continue;
+                }
+
+                if (IsRoutingInProgress(uid))
                 {
                     continue;
                 }
@@ -255,13 +265,20 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            LateJoinRoutePhase phase = LateJoinRouteTracker.GetPhase(player.UID);
+
             return pdata?.main switch
             {
                 MaintenanceScene => player.VRoom is MaintenanceRoom,
-                InTramWaitingScene or GamePlayScene =>
-                    player.VRoom is VWaitingRoom && LateJoinManager.HasPreGameStateBeenSent(player.UID),
+                InTramWaitingScene or GamePlayScene => phase == LateJoinRoutePhase.InWaitingRoom,
                 _ => true,
             };
+        }
+
+        private static bool IsRoutingInProgress(long uid)
+        {
+            LateJoinRoutePhase phase = LateJoinRouteTracker.GetPhase(uid);
+            return phase is LateJoinRoutePhase.InMaintenance or LateJoinRoutePhase.AwaitingClient;
         }
 
         private static void KickTimedOutPlayer(PendingConnection pending)

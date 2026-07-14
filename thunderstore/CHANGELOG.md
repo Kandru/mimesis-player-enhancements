@@ -11,6 +11,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: client damage view was doubled
 - improvement: always enable the webinterface, include a fallback in case the port is used
 - draft: further improve FPS overlay
+- draft: join anytime still did fail for some reason. Hopefully it works reliably now
 
 ## 26.7.9
 - minor webinterface bug fixes

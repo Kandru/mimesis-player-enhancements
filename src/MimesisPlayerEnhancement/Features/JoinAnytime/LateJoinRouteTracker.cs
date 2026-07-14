@@ -51,7 +51,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 state.SetPhase(LateJoinRoutePhase.InWaitingRoom);
             }
-            else if (player.VRoom is MaintenanceRoom)
+            else if (player.VRoom is MaintenanceRoom && state.Phase != LateJoinRoutePhase.AwaitingClient)
             {
                 state.SetPhase(ShouldRouteToTram()
                     ? LateJoinRoutePhase.InMaintenance
@@ -108,6 +108,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        internal static void SetRoutePending(long uid, bool pending)
+        {
+            GetOrCreate(uid).RoutePending = pending;
+        }
+
+        internal static bool IsRoutePending(long uid) =>
+            StatesByUid.TryGetValue(uid, out RouteState? state) && state.RoutePending;
+
         internal static void RecordAttempt(long uid)
         {
             RouteState state = GetOrCreate(uid);
@@ -127,8 +135,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static bool HasCompletedServerRoute(long uid) =>
             StatesByUid.TryGetValue(uid, out RouteState? state)
             && state.Phase is LateJoinRoutePhase.AwaitingClient or LateJoinRoutePhase.InWaitingRoom;
-
-        internal static bool HasPreGameStateBeenSent(long uid) => HasCompletedServerRoute(uid);
 
         internal static LateJoinRoutePhase GetPhase(long uid) =>
             StatesByUid.TryGetValue(uid, out RouteState? state) ? state.Phase : LateJoinRoutePhase.None;
@@ -166,15 +172,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return count;
         }
 
-        internal static IEnumerable<long> GetUidsNeedingLimboResend()
+        internal static IEnumerable<long> GetActiveRouteUids()
         {
             foreach (RouteState state in StatesByUid.Values)
             {
-                if (state.MaintenanceActorId == 0)
-                {
-                    continue;
-                }
-
                 if (state.Phase is LateJoinRoutePhase.InMaintenance or LateJoinRoutePhase.AwaitingClient)
                 {
                     yield return state.Uid;
@@ -281,6 +282,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             internal int AttemptCount { get; private set; }
 
+            internal bool RoutePending { get; set; }
+
             internal void SetPhase(LateJoinRoutePhase phase)
             {
                 Phase = phase;
@@ -290,6 +293,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     LastAttemptTime = 0f;
                     AttemptCount = 0;
                     MaintenanceActorId = 0;
+                    RoutePending = false;
                 }
             }
 
