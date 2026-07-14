@@ -29,7 +29,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 ("SetDungeonState/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "SetDungeonState")),
                 ("Revive/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.Revive))),
                 ("OnRegistPlayer/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.OnRegistPlayer))),
-                ("Delete/PlatformMgr", AccessTools.Method(typeof(PlatformMgr), nameof(PlatformMgr.Delete))),
                 ("OnUnregistPlayer/VWorld", AccessTools.Method(typeof(VWorld), nameof(VWorld.OnUnregistPlayer))),
                 ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(Mimic.Voice.SpeechSystem.SpeechEventArchive), "OnStartClient")),
                 ("AddPlayerInfo/UIPrefab_PlayerEnterInfo", AccessTools.Method(typeof(UIPrefab_PlayerEnterInfo), nameof(UIPrefab_PlayerEnterInfo.AddPlayerInfo))),

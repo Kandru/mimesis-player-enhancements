@@ -10,11 +10,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
         [HarmonyPostfix]
         public static void Postfix(string fileName)
         {
-            if (!ModConfig.EnablePersistence.Value)
-            {
-                return;
-            }
-
             try
             {
                 if (string.IsNullOrEmpty(fileName) || !fileName.StartsWith("MMGameData", StringComparison.OrdinalIgnoreCase))
@@ -25,8 +20,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 string slotStr = Path.GetFileNameWithoutExtension(fileName).Replace("MMGameData", "");
                 if (int.TryParse(slotStr, out int slotId) && MMSaveGameData.CheckSaveSlotID(slotId, true))
                 {
-                    MimesisSaveManager.DeleteMimesisData(slotId);
-                    ModLog.Info(Feature, $"Deleted persisted voice data for slot {slotId}.");
+                    SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
+                    ModLog.Info(Feature, $"Deleted all mod files for slot {slotId}.");
                 }
             }
             catch (Exception ex)

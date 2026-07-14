@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         public static void LoadForSlot(int slotId)
         {
-            if (!ModConfig.EnableStatistics.Value || !MimesisSaveManager.IsValidSaveSlotId(slotId))
+            if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 return;
             }
@@ -559,14 +559,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             IncrementCounter(steamId, counters => counters.Revives++);
         }
 
-        public static void OnGameSaved(int slotId)
+        public static void OnGameSaved(int slotId, bool waitForCompletion = false)
         {
             if (!MimesisSaveManager.IsHost())
-            {
-                return;
-            }
-
-            if (!ModConfig.EnableStatistics.Value)
             {
                 return;
             }
@@ -576,7 +571,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            PersistLoadedSlot(waitForCompletion: false);
+            PersistLoadedSlot(waitForCompletion);
             ModLog.Debug(Feature, $"Statistics queued on game save for slot {slotId}.");
         }
 

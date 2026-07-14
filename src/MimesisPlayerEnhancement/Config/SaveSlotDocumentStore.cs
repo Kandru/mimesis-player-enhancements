@@ -90,35 +90,53 @@ namespace MimesisPlayerEnhancement
                     return;
                 }
 
-                string? path = GetDocumentPath(slotId);
-                if (string.IsNullOrEmpty(path))
+                WriteSnapshotToDisk(slotId, waitForCompletion);
+            }
+        }
+
+        internal static void ForceFlushToDisk(int slotId, bool waitForCompletion = false)
+        {
+            if (slotId < 0 || slotId != _loadedSlotId)
+            {
+                return;
+            }
+
+            lock (Gate)
+            {
+                WriteSnapshotToDisk(slotId, waitForCompletion);
+            }
+        }
+
+        private static void WriteSnapshotToDisk(int slotId, bool waitForCompletion)
+        {
+            string? path = GetDocumentPath(slotId);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            try
+            {
+                SaveSlotDocument snapshot = CloneDocument(_document);
+                snapshot.Version = SaveSlotDocument.CurrentVersion;
+                if (!HasPersistedContent(snapshot))
                 {
-                    return;
+                    BackgroundFileWriteQueue.EnqueueDelete(path, Feature, waitForCompletion);
+                }
+                else
+                {
+                    BackgroundFileWriteQueue.EnqueueText(
+                        path,
+                        ModJson.Serialize(snapshot),
+                        Feature,
+                        waitForCompletion);
                 }
 
-                try
-                {
-                    SaveSlotDocument snapshot = CloneDocument(_document);
-                    snapshot.Version = SaveSlotDocument.CurrentVersion;
-                    if (!HasPersistedContent(snapshot))
-                    {
-                        BackgroundFileWriteQueue.EnqueueDelete(path, Feature, waitForCompletion);
-                    }
-                    else
-                    {
-                        BackgroundFileWriteQueue.EnqueueText(
-                            path,
-                            ModJson.Serialize(snapshot),
-                            Feature,
-                            waitForCompletion);
-                    }
-
-                    _dirty = false;
-                }
-                catch (Exception ex)
-                {
-                    ModLog.Warn(Feature, $"Failed to save slot document — {ex.Message}");
-                }
+                _dirty = false;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Failed to save slot document — {ex.Message}");
             }
         }
 

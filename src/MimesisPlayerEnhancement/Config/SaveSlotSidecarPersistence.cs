@@ -20,10 +20,7 @@ namespace MimesisPlayerEnhancement
             StatisticsTracker.LoadForSlot(slotId);
             SaveSlotDocumentStore.LoadForSlot(slotId);
             SaveSlotConfigStore.LoadForSlot(slotId);
-            if (ModConfig.EnablePersistence.Value)
-            {
-                SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
-            }
+            SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
 
             Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
 
@@ -65,23 +62,44 @@ namespace MimesisPlayerEnhancement
             OnSaveSlotLoaded(slotId);
         }
 
-        internal static void OnGameSaved(int slotId)
+        internal static void OnGameSaved(int slotId, IReadOnlyList<string>? playerNames, bool isAutoSave)
         {
             if (!MimesisSaveManager.IsHost() || !MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 return;
             }
 
-            if (ModConfig.EnablePersistence.Value)
+            EnsureSlotBoundForSave(slotId);
+
+            bool waitForCompletion = !isAutoSave;
+
+            SaveSlotPlayerSync.FinalizeConnectedPlayersForSave(slotId, playerNames);
+            SpeechEventPoolManager.SyncVoiceMappingsToDocument();
+            MimesisSaveManager.SaveMimesisData(slotId);
+
+            StatisticsTracker.OnGameSaved(slotId, waitForCompletion);
+            SaveSlotConfigStore.ForceFlushToDisk(slotId, waitForCompletion);
+            SaveSlotDocumentStore.CaptureLobbyFromController(slotId);
+            SaveSlotDocumentStore.ForceFlushToDisk(slotId, waitForCompletion);
+
+            if (waitForCompletion)
             {
-                SpeechEventPoolManager.SyncVoiceMappingsToDocument();
+                PersistenceWriteQueue.FlushAllSync();
+                BackgroundFileWriteQueue.FlushAllSync();
             }
 
-            StatisticsTracker.OnGameSaved(slotId);
-            SaveSlotConfigStore.FlushToDisk(slotId, waitForCompletion: false);
-            SaveSlotDocumentStore.CaptureLobbyFromController(slotId);
-            SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion: false);
-            ModLog.Debug(Feature, $"Queued slot sidecar flush for save slot {slotId}.");
+            ModLog.Info(Feature, $"Persisted slot sidecars for save slot {slotId} (auto={isAutoSave}).");
+        }
+
+        private static void EnsureSlotBoundForSave(int slotId)
+        {
+            if (SaveSlotDocumentStore.LoadedSlotId == slotId && SaveSlotConfigStore.ActiveSlotId == slotId)
+            {
+                return;
+            }
+
+            ModLog.Info(Feature, $"Late-binding sidecar stores for save slot {slotId} at save time.");
+            OnSaveSlotLoaded(slotId);
         }
 
         internal static void OnSessionEnded()
@@ -97,17 +115,15 @@ namespace MimesisPlayerEnhancement
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
             if (activeSlotId >= 0)
             {
-                if (ModConfig.EnablePersistence.Value)
-                {
-                    SpeechEventPoolManager.SyncVoiceMappingsToDocument();
-                }
+                SpeechEventPoolManager.SyncVoiceMappingsToDocument();
 
                 StatisticsTracker.PersistLoadedSlot(waitForCompletion: true);
-                SaveSlotConfigStore.FlushToDisk(activeSlotId, waitForCompletion: true);
+                SaveSlotConfigStore.ForceFlushToDisk(activeSlotId, waitForCompletion: true);
                 SaveSlotDocumentStore.CaptureLobbyFromController(activeSlotId);
-                SaveSlotDocumentStore.FlushToDisk(activeSlotId, waitForCompletion: true);
+                SaveSlotDocumentStore.ForceFlushToDisk(activeSlotId, waitForCompletion: true);
             }
 
+            PersistenceWriteQueue.FlushAllSync();
             StatisticsStore.FlushAllSync();
             BackgroundFileWriteQueue.FlushAllSync();
         }

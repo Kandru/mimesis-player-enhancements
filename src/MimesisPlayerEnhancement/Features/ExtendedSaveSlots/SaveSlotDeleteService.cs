@@ -19,12 +19,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             bool deleted = method.Invoke(mainMenu, [slotId]) is true;
 
-            MimesisSaveManager.DeleteMimesisData(slotId);
-
-            if (ModConfig.EnableStatistics.Value)
-            {
-                StatisticsStore.DeleteStatisticsData(slotId);
-            }
+            SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
 
             if (deleted)
             {

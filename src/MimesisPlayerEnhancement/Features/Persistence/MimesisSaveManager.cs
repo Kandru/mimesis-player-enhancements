@@ -118,10 +118,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             try
             {
-                SaveSidecarPaths.DeleteSidecars(
-                    slotId,
-                    SidecarKind.SlotDocument,
-                    SidecarKind.Speech);
+                SaveSidecarPaths.DeleteAllFilesForSlot(slotId);
             }
             catch (Exception ex)
             {

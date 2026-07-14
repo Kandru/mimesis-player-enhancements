@@ -108,6 +108,48 @@ namespace MimesisPlayerEnhancement
             }
         }
 
+        /// <summary>
+        /// Deletes every file for a save slot stem (vanilla + all mpe-* sidecars + .bak/.tmp).
+        /// Preserves account-wide MMGameData.mpe-quick-presets.sav.
+        /// </summary>
+        internal static void DeleteAllFilesForSlot(int slotId, string logFeature = "SaveSlotSidecar")
+        {
+            string? saveFolder = GetSaveFolderPath();
+            string? stem = GetSaveFileStem(slotId);
+            if (string.IsNullOrEmpty(saveFolder) || string.IsNullOrEmpty(stem) || !Directory.Exists(saveFolder))
+            {
+                return;
+            }
+
+            string? quickPresetsPath = GetUserQuickPresetsPath();
+            HashSet<string> basePaths = new(StringComparer.OrdinalIgnoreCase);
+            foreach (string file in Directory.GetFiles(saveFolder, stem + "*"))
+            {
+                string basePath = file;
+                if (basePath.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+                {
+                    basePath = basePath[..^4];
+                }
+                else if (basePath.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase))
+                {
+                    basePath = basePath[..^4];
+                }
+
+                if (!string.IsNullOrEmpty(quickPresetsPath)
+                    && string.Equals(basePath, quickPresetsPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                _ = basePaths.Add(basePath);
+            }
+
+            foreach (string basePath in basePaths)
+            {
+                AtomicFileIO.Delete(basePath, logFeature);
+            }
+        }
+
         private static bool MatchesFilter(string filePath, string stem, SidecarKind filter)
         {
             string fileName = Path.GetFileName(filePath);

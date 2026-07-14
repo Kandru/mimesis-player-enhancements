@@ -100,7 +100,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             try
             {
                 InvalidateLoadCache(slotId);
-                SaveSidecarPaths.DeleteSidecars(slotId, SidecarKind.Statistics);
+                SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
                 ModLog.Info(Feature, $"Deleted statistics data for slot {slotId}.");
             }
             catch (Exception ex)

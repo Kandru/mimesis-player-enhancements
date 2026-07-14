@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement
                     return;
                 }
 
-                SaveSlotSidecarPersistence.OnGameSaved(saveSlotID);
+                SaveSlotSidecarPersistence.OnGameSaved(saveSlotID, playerNames, isAutoSave);
             }
         }
     }

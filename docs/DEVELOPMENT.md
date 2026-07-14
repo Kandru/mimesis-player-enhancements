@@ -131,13 +131,14 @@ Account-wide: `MMGameData.mpe-quick-presets.sav` (quick settings preset catalog)
 
 | Phase | Behavior |
 |-------|----------|
-| **Save load** | `GameSessionInfoLoadPatches` → `OnSaveSlotLoaded`; `SaveSlotConfigLifecycle` retries via `EnsureSaveSlotLoaded` if host was not ready |
+| **Save load** | `GameSessionInfoLoadPatches` → `OnSaveSlotLoaded` (always loads all sidecar kinds); `SaveSlotConfigLifecycle` retries via `EnsureSaveSlotLoaded` if host was not ready |
 | **Gameplay** | In-memory only; stores mark dirty on change |
-| **Vanilla save** | `MaintenanceRoom.SaveGameData` success → `OnGameSaved` flushes dirty sidecars |
+| **Vanilla save** | `MaintenanceRoom.SaveGameData` success → `OnGameSaved` always binds slot, syncs players, and flushes all sidecars (sync on manual save) |
 | **Session end** | `SessionJoined` false → `OnSessionEnded` clears runtime state, reloads global config (**no disk write**) |
-| **Mod unload** | Statistics `onDeinitialize` → `FlushAllSync`; Persistence → `PersistenceWriteQueue.FlushAllSync` |
+| **Mod unload** | `FlushAllSync` writes all active sidecars synchronously |
+| **Delete** | `DeleteAllFilesForSlot` removes every `MMGameData{N}*` file (vanilla + sidecars + `.bak`/`.tmp`); account-wide quick-presets preserved |
 
-Persistence voice binary loads/saves through the Persistence feature (`SpeechEventPoolManager`, `MaintenanceRoom` save patch). Player voice IDs live in the slot document (`players[steamId].voiceId`). The web dashboard reads in-memory stores during gameplay; leaderboard JSON rebuilds when `StatisticsTracker.Revision` changes.
+Feature toggles (`EnablePersistence`, `EnableStatistics`, etc.) gate **runtime behavior** only — disk load/save/delete for sidecars is unconditional.
 
 ## Host-only and session access
 

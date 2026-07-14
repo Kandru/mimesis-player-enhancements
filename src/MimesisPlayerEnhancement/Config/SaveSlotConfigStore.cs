@@ -255,6 +255,18 @@ namespace MimesisPlayerEnhancement
             _dirty = false;
         }
 
+        internal static void ForceFlushToDisk(int slotId, bool waitForCompletion = false)
+        {
+            if (slotId != _activeSlotId)
+            {
+                return;
+            }
+
+            SaveSlotDocumentStore.WriteRuntimeConfigDoc(_runtimeDoc, _runtimeProfile);
+            SaveSlotDocumentStore.ForceFlushToDisk(slotId, waitForCompletion);
+            _dirty = false;
+        }
+
         internal static void ClearRuntimeToGlobal()
         {
             _activeSlotId = -1;
