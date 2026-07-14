@@ -102,6 +102,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
 
                 float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(spawnInfo.MasterID, playerCount);
+                if (multiplier <= FeatureToggleGate.NeutralMultiplier)
+                {
+                    continue;
+                }
+
                 SpawnCategory category = SpawnCategoryLookup.GetCategory(spawnInfo.MasterID);
                 string entityName = MonsterTypeLookup.GetDisplayName(spawnInfo.MasterID);
 
@@ -170,7 +175,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     }
                 }
 
-                if (groupMultiplier == null)
+                if (groupMultiplier == null || groupMultiplier.Value <= FeatureToggleGate.NeutralMultiplier)
                 {
                     continue;
                 }
@@ -206,6 +211,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
             float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount);
+            if (multiplier <= FeatureToggleGate.NeutralMultiplier)
+            {
+                return false;
+            }
+
             string entityName = MonsterTypeLookup.GetDisplayName(masterId);
 
             bool scaled = false;

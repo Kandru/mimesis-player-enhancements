@@ -146,6 +146,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             string context,
             bool scaleStackCount)
         {
+            if (multiplier <= FeatureToggleGate.NeutralMultiplier)
+            {
+                return false;
+            }
+
             bool scaled = false;
             int stackBefore = 0;
             int stackAfter = 0;

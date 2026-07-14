@@ -56,8 +56,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             int playerCount = room.GetMemberCount();
-            RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
             SpawnScalingSceneConfig config = SceneScopedConfigGate.Spawn;
+
+            if (!NeedsMapPlacedEncounterScaling(spawnDatas, playerCount, config))
+            {
+                return;
+            }
+
+            RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
             state.SetSnapshot(config);
 
             foreach (DictionaryEntry entry in spawnDatas)
@@ -73,8 +79,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 }
             }
 
-            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> markersByMasterId =
-                CreatureSpawnMarkerAccess.CollectByMasterId();
+            Dictionary<int, List<MapMarker_CreatureSpawnPoint>>? markersByMasterId = null;
 
             foreach (KeyValuePair<int, List<RoomSpawnScalingState.EncounterSlot>> group in state.GroupSlotsByMasterId())
             {
@@ -89,6 +94,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 {
                     continue;
                 }
+
+                markersByMasterId ??= CreatureSpawnMarkerAccess.CollectByMasterId();
 
                 string entityName = MonsterTypeLookup.GetDisplayName(masterId);
                 HashSet<int> usedMarkerIds = [];
@@ -117,6 +124,37 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 ModLog.Info(Feature, $"Map-placed encounter scaling — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
                     $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={registered}, credits={remainingCredits})");
             }
+        }
+
+        private static bool NeedsMapPlacedEncounterScaling(
+            IDictionary spawnDatas,
+            int playerCount,
+            SpawnScalingSceneConfig config)
+        {
+            Dictionary<int, int> countsByMasterId = [];
+
+            foreach (DictionaryEntry entry in spawnDatas)
+            {
+                if (entry.Value is not FixedSpawnedActorData spawnData || !IsMapPlacedCreature(spawnData))
+                {
+                    continue;
+                }
+
+                int masterId = spawnData.MasterID;
+                countsByMasterId[masterId] = countsByMasterId.GetValueOrDefault(masterId) + 1;
+            }
+
+            foreach (KeyValuePair<int, int> entry in countsByMasterId)
+            {
+                SpawnCategory category = SpawnCategoryLookup.GetCategory(entry.Key);
+                float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);
+                if (SpawnMultiplierResolver.ScaleCount(entry.Value, multiplier) > entry.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal static void OnActorDead(SpawnedActorData spawnData)

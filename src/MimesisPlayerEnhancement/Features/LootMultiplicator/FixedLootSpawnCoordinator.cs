@@ -91,6 +91,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             int playerCount = room.GetMemberCount();
             LootMultiplicatorSceneConfig lootConfig = SceneScopedConfigGate.Loot;
+
+            if (!NeedsFixedLootScaling(spawnDatas, playerCount, lootConfig))
+            {
+                LootSpawnDataLookup.RebuildIndex(room);
+                return;
+            }
+
             RoomState state = RoomStates.GetOrCreate(room, () => new RoomState(room, lootConfig));
 
             foreach (DictionaryEntry entry in spawnDatas)
@@ -159,6 +166,52 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             LootSpawnDataLookup.RebuildIndex(room);
+        }
+
+        private static bool NeedsFixedLootScaling(
+            IDictionary spawnDatas,
+            int playerCount,
+            LootMultiplicatorSceneConfig lootConfig)
+        {
+            Dictionary<int, int> countsByMasterId = [];
+
+            foreach (DictionaryEntry entry in spawnDatas)
+            {
+                if (entry.Value is not FixedSpawnedActorData spawnData)
+                {
+                    continue;
+                }
+
+                if (!spawnData.MarkerType.Equals(MapMarkerType.LootingObject))
+                {
+                    continue;
+                }
+
+                int masterId = spawnData.MasterID;
+                if (masterId <= 0)
+                {
+                    continue;
+                }
+
+                countsByMasterId[masterId] = countsByMasterId.GetValueOrDefault(masterId) + 1;
+            }
+
+            foreach (KeyValuePair<int, int> entry in countsByMasterId)
+            {
+                ItemType itemType = ItemTypeLookup.GetItemType(entry.Key);
+                float multiplier = LootMultiplierResolver.GetEffectiveMultiplier(
+                    LootSource.Map,
+                    itemType,
+                    playerCount,
+                    entry.Key,
+                    lootConfig);
+                if (LootMultiplierResolver.ScaleCount(entry.Value, multiplier) > entry.Value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal static void OnActorDead(SpawnedActorData spawnData)
