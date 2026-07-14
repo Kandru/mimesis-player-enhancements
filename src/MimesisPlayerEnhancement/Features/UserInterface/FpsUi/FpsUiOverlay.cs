@@ -17,8 +17,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private const float LabelWidthPixels = 132f;
         private const float HealthFontSize = 50f;
         private const float ToxicFontSize = 30f;
-        private const float ToxicIconWidthPixels = 22f;
-        private const float ToxicRowSpacingPixels = 5f;
+        private const float ToxicPercentWidthPixels = 72f;
+        private const float ToxicIconHeightPixels = ToxicFontSize * 0.85f;
+        private const float ToxicRowSpacingPixels = 4f;
         private const float HealthNudgeDownPixels = 4f;
         private const float ToxicNudgeUpPixels = 4f;
 
@@ -49,6 +50,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static Component? _healthLabel;
         private static Component? _toxicPercentLabel;
         private static Image? _toxicIconImage;
+        private static Sprite? _toxicIconSprite;
         private static bool _loggedOverlayFailure;
         private static bool _loggedToxicIconFailure;
 
@@ -172,8 +174,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             float percent = maxConta <= 0L ? 0f : (float)curr / maxConta * 100f;
-            ModUiText.SetText(_toxicPercentLabel, $"{percent:F0}%");
+            float displayPercent = Mathf.Min(percent, 100f);
+            string toxicText = displayPercent >= 100f ? "100%" : $"{displayPercent:F1}%";
+            ModUiText.SetText(_toxicPercentLabel, toxicText);
             ModUiText.SetColor(_toxicPercentLabel, ResolveToxicPercentColor(percent));
+            ApplyToxicIcon(ingameUi, percent);
         }
 
         internal static void RefreshFromConfig()
@@ -284,6 +289,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _healthRect.pivot = new Vector2(1f, 0f);
             _healthRect.anchoredPosition = new Vector2(x, bottomLocal.y - HealthNudgeDownPixels);
             _healthRect.sizeDelta = new Vector2(LabelWidthPixels, HealthFontSize);
+
+            ApplyToxicRowLayoutSettings();
+        }
+
+        private static void ApplyToxicRowLayoutSettings()
+        {
+            if (_toxicRect == null || !_toxicRect.TryGetComponent<HorizontalLayoutGroup>(out HorizontalLayoutGroup toxicLayout))
+            {
+                return;
+            }
+
+            ModUiLayout.SetEnumProperty(toxicLayout, "childAlignment", 8);
+            toxicLayout.childForceExpandWidth = false;
+            toxicLayout.childForceExpandHeight = false;
         }
 
         private static bool TryEnsureOverlay(UIPrefab_InGame ingameUi)
@@ -291,6 +310,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             if (_overlayRoot != null && _healthRect != null && _toxicRect != null
                 && _healthLabel != null && _toxicPercentLabel != null)
             {
+                TryEnsureToxicIcon(ingameUi);
                 return true;
             }
 
@@ -319,40 +339,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             HorizontalLayoutGroup toxicLayout = toxicRowGo.AddComponent<HorizontalLayoutGroup>();
             toxicLayout.spacing = ToxicRowSpacingPixels;
-            ModUiLayout.SetEnumProperty(toxicLayout, "childAlignment", 2);
+            ModUiLayout.SetEnumProperty(toxicLayout, "childAlignment", 8);
             toxicLayout.childControlWidth = true;
             toxicLayout.childControlHeight = true;
             toxicLayout.childForceExpandWidth = false;
-            toxicLayout.childForceExpandHeight = true;
-
-            GameObject toxicIconGo = ModUiLayout.CreateChild("ToxicIcon", toxicRowGo.transform);
-            ModUiLayout.PrepareLayoutGroupChild(toxicIconGo.GetComponent<RectTransform>());
-            LayoutElement iconLayout = toxicIconGo.AddComponent<LayoutElement>();
-            iconLayout.preferredWidth = ToxicIconWidthPixels;
-            iconLayout.flexibleWidth = 0f;
-            _toxicIconImage = toxicIconGo.AddComponent<Image>();
-            _toxicIconImage.preserveAspect = true;
-            _toxicIconImage.raycastTarget = false;
-            Sprite? toxicIconSprite = TryCaptureToxicIconSprite(ingameUi);
-            if (toxicIconSprite != null)
-            {
-                _toxicIconImage.sprite = toxicIconSprite;
-                _toxicIconImage.color = Color.white;
-            }
-            else
-            {
-                _toxicIconImage.gameObject.SetActive(false);
-                LogToxicIconFailureOnce("vanilla oxy gauge icon unavailable");
-            }
+            toxicLayout.childForceExpandHeight = false;
 
             GameObject toxicPercentGo = ModUiLayout.CreateChild("ToxicPercent", toxicRowGo.transform);
             ModUiLayout.PrepareLayoutGroupChild(toxicPercentGo.GetComponent<RectTransform>());
             LayoutElement percentLayout = toxicPercentGo.AddComponent<LayoutElement>();
-            percentLayout.flexibleWidth = 1f;
-            _toxicPercentLabel = ModUiFactory.AddText(toxicPercentGo, assets, "0%", ToxicFontSize, ModUiFontStyle.Normal);
+            percentLayout.preferredWidth = ToxicPercentWidthPixels;
+            percentLayout.preferredHeight = ToxicFontSize;
+            percentLayout.flexibleWidth = 0f;
+            _toxicPercentLabel = ModUiFactory.AddText(toxicPercentGo, assets, "0.0%", ToxicFontSize, ModUiFontStyle.Normal);
             ModUiText.SetTopRightAlignment(_toxicPercentLabel);
             ModUiText.ConfigureTextLayout(_toxicPercentLabel, wordWrap: false, ModUiText.OverflowOverflow);
             StretchTextToParent(_toxicPercentLabel);
+
+            TryEnsureToxicIcon(ingameUi);
 
             _overlayRoot.SetActive(false);
             return true;
@@ -371,6 +375,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _healthLabel = null;
             _toxicPercentLabel = null;
             _toxicIconImage = null;
+            if (_toxicIconSprite != null)
+            {
+                UnityEngine.Object.Destroy(_toxicIconSprite);
+                _toxicIconSprite = null;
+            }
         }
 
         private static void UpdateOverlayVisibility()
@@ -496,19 +505,141 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             };
         }
 
-        private static Sprite? TryCaptureToxicIconSprite(UIPrefab_InGame ingameUi)
+        private static void TryEnsureToxicIcon(UIPrefab_InGame ingameUi)
         {
-            if (OxyGaugeField?.GetValue(ingameUi) is not UIPrefab_ProgressBar oxyGauge)
+            if (_toxicRect == null || _toxicIconImage != null)
             {
-                return null;
+                return;
             }
 
-            if (IconSpritesField?.GetValue(oxyGauge) is not IList sprites || sprites.Count == 0)
+            if (TryGetOxyGauge(ingameUi) is not UIPrefab_ProgressBar oxyGauge)
             {
-                return null;
+                LogToxicIconFailureOnce("oxyGauge reference missing on in-game UI");
+                return;
             }
 
-            return sprites[0] as Sprite;
+            float percent = _state.LastMaxConta <= 0L
+                ? 0f
+                : (float)_state.LastConta / _state.LastMaxConta * 100f;
+            Sprite? sprite = TryResolveToxicIconSprite(oxyGauge, percent);
+            if (sprite == null)
+            {
+                LogToxicIconFailureOnce("iconSprites list empty or unavailable on oxy gauge");
+                return;
+            }
+
+            float height = ToxicIconHeightPixels;
+            float width = height * (sprite.rect.width / Mathf.Max(1f, sprite.rect.height));
+
+            GameObject slotGo = ModUiLayout.CreateChild("ToxicIcon", _toxicRect);
+            ModUiLayout.PrepareLayoutGroupChild(slotGo.GetComponent<RectTransform>());
+            LayoutElement slotLayout = slotGo.AddComponent<LayoutElement>();
+            slotLayout.preferredWidth = width;
+            slotLayout.preferredHeight = height;
+
+            GameObject visualGo = ModUiLayout.CreateChild("IconVisual", slotGo.transform);
+            RectTransform visualRect = visualGo.GetComponent<RectTransform>();
+            visualRect.anchorMin = new Vector2(0.5f, 0f);
+            visualRect.anchorMax = new Vector2(0.5f, 0f);
+            visualRect.pivot = new Vector2(0.5f, 0f);
+
+            _toxicIconImage = visualGo.AddComponent<Image>();
+            _toxicIconImage.color = Color.white;
+            _toxicIconImage.preserveAspect = true;
+            _toxicIconImage.raycastTarget = false;
+            ApplyToxicIconSprite(sprite);
+        }
+
+        private static UIPrefab_ProgressBar? TryGetOxyGauge(UIPrefab_InGame ingameUi)
+        {
+            if (OxyGaugeField?.GetValue(ingameUi) is UIPrefab_ProgressBar gauge)
+            {
+                return gauge;
+            }
+
+            return ingameUi.GetComponentInChildren<UIPrefab_ProgressBar>(true);
+        }
+
+        private static Sprite? TryResolveToxicIconSprite(UIPrefab_ProgressBar oxyGauge, float percent)
+        {
+            int tier = Mathf.Clamp((int)(percent / 10f), 0, 9);
+            if (IconSpritesField?.GetValue(oxyGauge) is IList sprites && sprites.Count > 0)
+            {
+                return sprites[Mathf.Min(tier, sprites.Count - 1)] as Sprite;
+            }
+
+            return null;
+        }
+
+        private static void ApplyToxicIconSprite(Sprite source)
+        {
+            if (_toxicIconImage == null)
+            {
+                return;
+            }
+
+            if (_toxicIconImage.sprite == _toxicIconSprite && _toxicIconSprite != null)
+            {
+                _toxicIconImage.gameObject.SetActive(true);
+                return;
+            }
+
+            if (_toxicIconSprite != null)
+            {
+                UnityEngine.Object.Destroy(_toxicIconSprite);
+            }
+
+            try
+            {
+                _toxicIconSprite = Sprite.Create(
+                    source.texture,
+                    source.textureRect,
+                    new Vector2(0.5f, 0.5f),
+                    source.pixelsPerUnit);
+                _toxicIconImage.sprite = _toxicIconSprite;
+            }
+            catch
+            {
+                _toxicIconSprite = null;
+                _toxicIconImage.sprite = source;
+            }
+
+            _toxicIconImage.SetNativeSize();
+            float nativeHeight = _toxicIconImage.rectTransform.sizeDelta.y;
+            if (nativeHeight > 0f)
+            {
+                float scale = ToxicIconHeightPixels / nativeHeight;
+                _toxicIconImage.rectTransform.localScale = new Vector3(scale, scale, 1f);
+            }
+
+            _toxicIconImage.gameObject.SetActive(true);
+        }
+
+        private static void ApplyToxicIcon(UIPrefab_InGame ingameUi, float percent)
+        {
+            if (_toxicIconImage == null)
+            {
+                TryEnsureToxicIcon(ingameUi);
+            }
+
+            if (_toxicIconImage == null)
+            {
+                return;
+            }
+
+            if (TryGetOxyGauge(ingameUi) is not UIPrefab_ProgressBar oxyGauge)
+            {
+                return;
+            }
+
+            Sprite? sprite = TryResolveToxicIconSprite(oxyGauge, percent);
+            if (sprite == null)
+            {
+                _toxicIconImage.gameObject.SetActive(false);
+                return;
+            }
+
+            ApplyToxicIconSprite(sprite);
         }
 
         private static void LogToxicIconFailureOnce(string reason)
