@@ -26,20 +26,20 @@ Most features only need to be installed on the **host** — friends can join wit
 |---------|--------------|-------------------|
 | [More Players](docs/wiki/features/more-players.md) | Play with larger groups beyond the four-player limit | Host only |
 | [More Voices](docs/wiki/features/more-voices.md) | Let mimics remember many more player voice lines | Host only |
-| [Persistence](docs/wiki/features/persistence.md) | Keep mimic voice recordings when you save and load | Host only |
+| [Persistence](docs/wiki/features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
 | [Join Anytime](docs/wiki/features/join-anytime.md) | Let friends join after you've already started | Host only |
 | [User Interface](docs/wiki/features/user-interface.md) | Extended save picker, HUD overlays, toast duration | Your game only |
 | [Statistics](docs/wiki/features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
 | [Web Dashboard](docs/wiki/features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
 | [Player Announcements](docs/wiki/features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |
 | [Spawn Scaling](docs/wiki/features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host only |
-| [Loot Multiplicator](docs/wiki/features/loot-multiplicator.md) | More or less loot on the map and from enemy drops | Host only |
+| [Loot Multiplicator](docs/wiki/features/loot-multiplicator.md) | More or less loot on the map | Host only |
 | [Economy](docs/wiki/features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
-| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra shift time when you have more players | Host only |
-| [Mimic Tuning](docs/wiki/features/mimic-tuning.md) | Tune mimic voice frequency, inventory-copy bias, and possession timing | Host only |
+| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
+| [Mimic Tuning](docs/wiki/features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | [Player Tuning](docs/wiki/features/player-tuning.md) | Change movement speed, stamina, and carry weight | Host only |
 | [Dungeon Randomizer](docs/wiki/features/dungeon-randomizer.md) | Randomize which dungeons appear and how they are laid out | Host only |
-| [Weather](docs/wiki/features/weather.md) | Fixed, cycling, or vanilla weather plus synced start time for lighting | Host only |
+| [Weather](docs/wiki/features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
 

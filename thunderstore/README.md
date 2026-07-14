@@ -18,20 +18,20 @@ Most features only need to be installed on the **host** — friends can join wit
 |---------|--------------|-------------------|
 | **More Players** | Play with larger groups beyond the four-player limit | Host only |
 | **More Voices** | Let mimics remember many more player voice lines | Host only |
-| **Persistence** | Keep mimic voice recordings when you save and load | Host only |
+| **Persistence** | Keep mimic voice recordings across gaming sessions | Host only |
 | **Join Anytime** | Let friends join after you've already started | Host only |
-| **User Interface** | Extended save picker, spectator death list layout, toast duration | Your game only |
+| **User Interface** | Extended save picker, HUD overlays, toast duration | Your game only |
 | **Statistics** | Track deaths, kills, play time, and more per save | Host only |
 | **Web Dashboard** | Browser view for players, stats, settings, and moderation | Host only |
 | **Player Announcements** | On-screen tips for dungeon settings, bosses, and death stats | Host only |
 | **Spawn Scaling** | More or fewer enemies and traps in dungeons | Host only |
-| **Loot Multiplicator** | More or less loot on the map and from enemy drops | Host only |
-| **Economy** | Adjust starting cash, quotas, scrap value, shop prices, and optional currency retention | Host only |
-| **Dungeon Time** | Extra shift time when you have more players | Host only |
-| **Mimic Tuning** | Tune mimic voice frequency, inventory-copy bias, and dead-player possession timing | Host only |
+| **Loot Multiplicator** | More or less loot on the map | Host only |
+| **Economy** | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
+| **Dungeon Time** | Extra time inside the dungeon when you have more players | Host only |
+| **Mimic Tuning** | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | **Player Tuning** | Change movement speed, stamina, and carry weight | Host only |
 | **Dungeon Randomizer** | Randomize which dungeons appear and how they are laid out | Host only |
-| **Weather** | Fixed, cycling, or vanilla weather plus synced start time for lighting | Host only |
+| **Weather** | Fixed, cycling, or vanilla weather | Host only |
 
 ### More Players
 
