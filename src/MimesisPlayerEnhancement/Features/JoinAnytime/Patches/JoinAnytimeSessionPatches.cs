@@ -113,7 +113,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Postfix(VPlayer __instance)
         {
             JoinAnytimeConnectingTracker.OnLevelLoadCompleted(__instance);
-            LateJoinManager.OnLevelLoadCompleted(__instance);
             JoinAnytimeLobbyController.OnSessionRosterChanged();
         }
     }

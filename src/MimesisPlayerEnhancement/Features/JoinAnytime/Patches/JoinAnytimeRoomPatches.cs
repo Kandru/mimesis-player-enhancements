@@ -95,6 +95,26 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    /// <summary>
+    /// Route after SyncEnterRoom sends AllMemberEnterRoomSig — client needs that flag before
+    /// MoveToWaitingRoomSig (CycleCount != 0 waits on EnteringCompleteAll in MaintenanceScene).
+    /// </summary>
+    [HarmonyPatch]
+    internal static class IVroomOnAllMemberEnteredLateJoinPatch
+    {
+        private static System.Reflection.MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(IVroom), "OnAllMemberEntered");
+
+        [HarmonyPostfix]
+        private static void Postfix(IVroom __instance)
+        {
+            if (__instance is MaintenanceRoom)
+            {
+                LateJoinManager.OnMaintenanceAllMembersEntered(__instance);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))]
     internal static class VRoomManagerEnterMaintenenceRoomPatch
     {

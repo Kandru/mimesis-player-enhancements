@@ -73,13 +73,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             send(new MoveToWaitingRoomSig());
 
-            if (player?.VRoom is MaintenanceRoom maintenanceRoom)
+            if (player?.VRoom is MaintenanceRoom)
             {
                 int actorId = player.ObjectID;
                 LateJoinRouteTracker.RecordMaintenanceActorId(uid, actorId);
                 send(new LeaveRoomSig { actorID = actorId });
                 JoinAnytimeRoomTools.ReleaseLateJoinerFromMaintenance(player);
-                maintenanceRoom.GetCommandExecutor()?.Execute();
             }
             else if (LateJoinRouteTracker.TryGetMaintenanceActorId(uid, out int actorId))
             {
