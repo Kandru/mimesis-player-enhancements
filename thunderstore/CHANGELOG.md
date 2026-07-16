@@ -1,6 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.11
+Whoop Whoop! We're making it towards a beta-release :) - please support my work if you like this mod!
+
 - feature: replace health bar with health glow
 - improvement: add another button to the items overlay to allow giving multiple items without re-opening the items overlay
 - improvement: properly highlight customized settings and categories
