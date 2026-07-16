@@ -151,11 +151,11 @@
   {/if}
 
   {#if dashboard.loadingSettings && !settings}
-    <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-300">{t('dashboard.loading')}</p>
   {:else if !settings}
-    <p class="text-sm text-gray-500">{t('dashboard.settings_unavailable')}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-300">{t('dashboard.settings_unavailable')}</p>
   {:else if sections.length === 0}
-    <p class="text-sm text-gray-500">{t('dashboard.settings_no_results')}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-300">{t('dashboard.settings_no_results')}</p>
   {:else}
     <div class="settings-layout">
       <nav class="settings-nav" aria-label={t('dashboard.settings_sections_nav')}>

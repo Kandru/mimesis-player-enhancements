@@ -140,7 +140,7 @@
 </script>
 
 <div class="space-y-6">
-  <p class="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.settings_intro_profile')}</p>
+  <p class="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.settings_intro_profile')}</p>
 
   {#if profile?.label}
     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -149,7 +149,7 @@
   {/if}
 
   {#if dashboard.loadingSaveProfile}
-    <p class="text-sm text-gray-500">{t('dashboard.loading')}</p>
+    <p class="text-sm text-gray-500 dark:text-gray-300">{t('dashboard.loading')}</p>
   {:else}
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <button
@@ -167,7 +167,7 @@
         >
           <div class="font-semibold">{preset.name}</div>
           {#if preset.description}
-            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">{preset.description}</div>
+            <div class="mt-1 text-xs text-gray-500 dark:text-gray-300">{preset.description}</div>
           {/if}
         </button>
       {/each}
@@ -181,7 +181,7 @@
             onclick={() => applyMode('quick', preset.id)}
           >
             <div class="font-semibold">{preset.name}</div>
-            <div class="text-xs text-gray-500">{t('dashboard.quick_preset_user')}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-300">{t('dashboard.quick_preset_user')}</div>
           </button>
           <button
             type="button"
@@ -239,7 +239,7 @@
         </button>
         {#if userPresets.length > 0}
           <label class="flex flex-col gap-1 text-sm">
-            <span class="text-gray-600 dark:text-gray-400">{t('dashboard.quick_preset_overwrite')}</span>
+            <span class="text-gray-600 dark:text-gray-300">{t('dashboard.quick_preset_overwrite')}</span>
             <div class="flex flex-wrap gap-2">
               <select class="input min-w-40" bind:value={overwritePresetId}>
                 {#each userPresets as preset (preset.id)}
@@ -270,7 +270,7 @@
       <h3 class="mb-2 font-semibold">
         {dashboard.shareModalMode === 'export' ? t('dashboard.quick_export') : t('dashboard.quick_import')}
       </h3>
-      <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+      <p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
         {dashboard.shareModalMode === 'export' ? t('dashboard.quick_export_help') : t('dashboard.quick_import_help')}
       </p>
       <textarea
@@ -312,7 +312,7 @@
           ? t('dashboard.quick_preset_save_new')
           : t('dashboard.quick_preset_overwrite')}
       </h3>
-      <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+      <p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
         {presetSaveMode === 'new'
           ? t('dashboard.quick_preset_name_prompt')
           : t('dashboard.quick_preset_overwrite_prompt')}

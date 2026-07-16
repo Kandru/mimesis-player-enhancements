@@ -13,6 +13,8 @@
   --surface: #f9fafb;
   --surface-muted: #f2f4f7;
   --border: #d0d5dd;
+  --text-muted: #667085;
+  --text-subtle: #98a2b3;
   --dev-verify-backdrop: rgb(15 23 42 / 0.5);
   --dev-verify-bg: #f8fafc;
   --dev-verify-border: rgb(70 95 255 / 0.35);
@@ -38,6 +40,8 @@
   --surface: #1a2234;
   --surface-muted: #101828;
   --border: #344054;
+  --text-muted: #d0d5dd;
+  --text-subtle: #b8c0cc;
   --dev-verify-backdrop: rgb(0 0 0 / 0.72);
   --dev-verify-bg: #0b1020;
   --dev-verify-border: rgb(34 211 238 / 0.35);
@@ -1303,14 +1307,14 @@ body.dev-verify-shake {
 .settings-panel-intro {
   margin-top: 0.25rem;
   font-size: 0.8125rem;
-  color: #667085;
+  color: var(--text-muted);
 }
 
 .settings-panel-path {
   margin-top: 0.5rem;
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.6875rem;
-  color: #98a2b3;
+  color: var(--text-subtle);
   word-break: break-all;
 }
 
@@ -1348,7 +1352,7 @@ body.dev-verify-shake {
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.4;
-  color: #667085;
+  color: var(--text-muted);
 }
 
 .settings-entries {
@@ -1372,12 +1376,11 @@ body.dev-verify-shake {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: #667085;
+  color: var(--text-muted);
 }
 
 .dark .settings-entry-group-title {
   background: rgba(255, 255, 255, 0.03);
-  color: #98a2b3;
 }
 
 .settings-entry {
@@ -1443,7 +1446,7 @@ body.dev-verify-shake {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
   line-height: 1.4;
-  color: #667085;
+  color: var(--text-muted);
 }
 
 .settings-entry-control {
@@ -1455,7 +1458,7 @@ body.dev-verify-shake {
 .settings-entry-hint {
   margin: 0.375rem 0 0;
   font-size: 0.6875rem;
-  color: #98a2b3;
+  color: var(--text-subtle);
 }
 
 .settings-guest-banner {

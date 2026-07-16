@@ -65,7 +65,7 @@
         <span class="badge bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">{t('dashboard.settings_overridden')}</span>
       {/if}
       {#if !editable}
-        <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" title={featureOff ? t('dashboard.settings_feature_disabled_hint') : t('dashboard.settings_host_only_hint')}>
+        <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300" title={featureOff ? t('dashboard.settings_feature_disabled_hint') : t('dashboard.settings_host_only_hint')}>
           {featureOff ? t('dashboard.settings_feature_disabled') : t('dashboard.settings_host_only')}
         </span>
       {/if}
