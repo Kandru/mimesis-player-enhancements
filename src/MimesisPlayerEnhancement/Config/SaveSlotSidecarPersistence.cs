@@ -20,6 +20,7 @@ namespace MimesisPlayerEnhancement
             PlayerRegistry.LoadForSlot(slotId);
             SaveSlotDocumentStore.LoadForSlot(slotId);
             SaveSlotConfigStore.LoadForSlot(slotId);
+            SpeechEventArchivePatches.InvalidatePoolLoaded();
             SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
 
             Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);

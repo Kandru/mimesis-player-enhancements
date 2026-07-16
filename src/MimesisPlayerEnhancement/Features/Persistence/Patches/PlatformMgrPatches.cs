@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 if (int.TryParse(slotStr, out int slotId) && MMSaveGameData.CheckSaveSlotID(slotId, true))
                 {
                     SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
+                    SpeechEventArchivePatches.InvalidatePoolLoaded();
                     ModLog.Info(Feature, $"Deleted all mod files for slot {slotId}.");
                 }
             }

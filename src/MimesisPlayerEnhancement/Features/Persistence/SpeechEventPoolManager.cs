@@ -160,6 +160,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             Reset();
+            SpeechEventArchivePatches.InvalidatePoolLoaded();
         }
 
         internal static bool TryResolveVoiceIdForSteam(ulong steamId, out string? voiceId)

@@ -100,11 +100,20 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 $"No matching saved voices while disconnect cache holds entries — {VoiceEventStats.DescribePlayerBrief(archive)}");
         }
 
+        internal static void InvalidatePoolLoaded()
+        {
+            _poolLoadedForSlot = -999;
+        }
+
         internal static void EnsurePoolLoaded(int slotId)
         {
             if (slotId == _poolLoadedForSlot)
             {
-                return;
+                // Pool may have been reset after save (e.g. returning to menu) while disk now has data.
+                if (SpeechEventPoolManager.TotalCount > 0 || !MimesisSaveManager.HasMimesisData(slotId))
+                {
+                    return;
+                }
             }
 
             _poolLoadedForSlot = slotId;
