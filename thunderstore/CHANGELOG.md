@@ -1,5 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.13
+- fix: FPS UI layout timing
+
 ## 26.7.12
 - feature: dungeon map flavor system — 24 curated seed styles (Compact, Labyrinth, etc.)
 - fix: dungeon seed changes now apply before network sync

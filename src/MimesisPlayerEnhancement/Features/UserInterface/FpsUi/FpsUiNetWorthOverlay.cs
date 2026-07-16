@@ -97,7 +97,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            RefreshLayout();
+            if (!RefreshLayout())
+            {
+                _labelRoot?.SetActive(false);
+                ReleaseWidget(preserveTotals: true);
+                return;
+            }
+
             ApplyTotal(_resolvedTotal == UnsetTotal ? 0 : _resolvedTotal);
             _labelRoot!.SetActive(true);
         }
@@ -186,11 +192,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             return true;
         }
 
-        private static void RefreshLayout()
+        private static bool RefreshLayout()
         {
             if (!HasValidWidget())
             {
-                return;
+                return false;
             }
 
             UIPrefab_Inventory? inventoryUi = FpsUiInventoryLayoutHelper.TryGetInventoryUi();
@@ -202,16 +208,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             RectTransform? cloneRect = _labelRoot!.GetComponent<RectTransform>();
             if (sourceRow == null || cloneRect == null)
             {
-                return;
+                return false;
             }
 
-            FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
+            return FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
                 sourceRow,
                 cloneRect,
                 TopEdgeNudgePixels);
         }
 
-        private static void ReleaseWidget()
+        private static void ReleaseWidget(bool preserveTotals = false)
         {
             if (_labelRoot != null)
             {
@@ -220,8 +226,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             _labelRoot = null;
             _label = null;
-            _resolvedTotal = UnsetTotal;
-            _displayedTotal = UnsetTotal;
+            if (!preserveTotals)
+            {
+                _resolvedTotal = UnsetTotal;
+                _displayedTotal = UnsetTotal;
+            }
+            else
+            {
+                _displayedTotal = UnsetTotal;
+            }
         }
 
         private static void ApplyTotal(int total)

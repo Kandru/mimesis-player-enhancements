@@ -22,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private const float ToxicRowSpacingPixels = 4f;
         private const float HealthNudgeDownPixels = 4f;
         private const float ToxicNudgeUpPixels = 4f;
+        private const float MinInventoryFrameHeightPixels = 10f;
 
         private static readonly Color32 HealthLivingColor = new(255, 80, 80, 255);
         private static readonly Color32 HealthDeadColor = new(180, 50, 50, 255);
@@ -69,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            InvalidateMeasurementCache();
             ResolveIngameUi();
             Activate();
             RefreshLayout();
@@ -97,6 +99,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            InvalidateMeasurementCache();
             _ingameUi = ingameUi;
             Activate();
         }
@@ -280,6 +283,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
+            if (!IsPlausibleInventoryMeasurement(topLocal, bottomLocal))
+            {
+                return;
+            }
+
             // Skip the rect rewrites (and layout dirtying) while inventory geometry is stable.
             if (leftLocal == _lastMeasuredLeft && topLocal == _lastMeasuredTop && bottomLocal == _lastMeasuredBottom)
             {
@@ -305,6 +313,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _healthRect.sizeDelta = new Vector2(LabelWidthPixels, HealthFontSize);
 
             ApplyToxicRowLayoutSettings();
+        }
+
+        private static void InvalidateMeasurementCache()
+        {
+            _lastMeasuredLeft = new Vector2(float.NaN, float.NaN);
+        }
+
+        private static bool IsPlausibleInventoryMeasurement(Vector2 topLocal, Vector2 bottomLocal)
+        {
+            return topLocal.y > bottomLocal.y
+                && topLocal.y - bottomLocal.y >= MinInventoryFrameHeightPixels;
         }
 
         private static void ApplyToxicRowLayoutSettings()
