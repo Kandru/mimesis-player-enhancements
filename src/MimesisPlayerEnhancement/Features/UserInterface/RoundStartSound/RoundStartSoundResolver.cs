@@ -64,6 +64,37 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             return options;
         }
 
+        internal static string GetDefaultVariantOptionValue()
+        {
+            IReadOnlyList<string> options = ListVariantOptionValues();
+            return options.Count > 0 ? options[0] : "";
+        }
+
+        internal static string NormalizeVariantOptionValue(string? value)
+        {
+            IReadOnlyList<string> options = ListVariantOptionValues();
+            if (options.Count == 0)
+            {
+                return value?.Trim() ?? "";
+            }
+
+            string trimmed = value?.Trim() ?? "";
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                return options[0];
+            }
+
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (string.Equals(options[i], trimmed, StringComparison.OrdinalIgnoreCase))
+                {
+                    return options[i];
+                }
+            }
+
+            return options[0];
+        }
+
         internal static string FormatVariantDisplayName(string optionValue)
         {
             if (string.IsNullOrWhiteSpace(optionValue))

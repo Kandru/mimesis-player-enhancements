@@ -98,7 +98,7 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableFpsUi` | bool | `true` | — | Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged. |
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 | `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Client-only. |
-| `RoundStartSoundVariant` | string | `vanilla` | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. |
+| `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 

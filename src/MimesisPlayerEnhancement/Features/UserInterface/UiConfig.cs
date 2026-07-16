@@ -1,4 +1,5 @@
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -61,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.RoundStartSoundVariant = ModConfig.CreateTrackedEntry(_category,
                 "RoundStartSoundVariant",
-                "vanilla");
+                RoundStartSoundResolver.GetDefaultVariantOptionValue());
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -98,6 +99,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnRoundStartSoundModeChanged(logger, value));
             ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundVariantChanged(logger, value));
+
+            SanitizeRoundStartSoundVariant(logger);
         }
 
         internal static void RegisterFloatEntries()
@@ -141,14 +144,40 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         private static void OnRoundStartSoundVariantChanged(MelonLogger.Instance logger, string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            string normalized = RoundStartSoundResolver.NormalizeVariantOptionValue(value);
+            string current = value?.Trim() ?? "";
+            if (!string.Equals(current, normalized, StringComparison.Ordinal))
             {
-                logger.Warning("RoundStartSoundVariant must not be empty; resetting to vanilla.");
-                ModConfig.RoundStartSoundVariant.Value = "vanilla";
+                if (!string.IsNullOrEmpty(current))
+                {
+                    logger.Warning(
+                        $"RoundStartSoundVariant must match an embedded variant; resetting to {normalized}.");
+                }
+
+                ModConfig.RoundStartSoundVariant.Value = normalized;
                 return;
             }
 
             ModConfig.NotifyChanged(ModConfig.RoundStartSoundVariant);
+        }
+
+        private static void SanitizeRoundStartSoundVariant(MelonLogger.Instance logger)
+        {
+            string normalized = RoundStartSoundResolver.NormalizeVariantOptionValue(
+                ModConfig.RoundStartSoundVariant.Value);
+            string current = ModConfig.RoundStartSoundVariant.Value?.Trim() ?? "";
+            if (string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+            {
+                logger.Warning(
+                    $"RoundStartSoundVariant '{current}' is not available; resetting to {normalized}.");
+            }
+
+            ModConfig.RoundStartSoundVariant.Value = normalized;
         }
 
         private static bool ContainsIgnoreCase(string[] values, string? candidate)

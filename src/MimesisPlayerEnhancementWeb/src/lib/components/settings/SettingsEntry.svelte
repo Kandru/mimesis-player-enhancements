@@ -48,6 +48,20 @@
   );
 
   const boolChecked = $derived(entry.value === 'true' || entry.value === 'True');
+  const selectValue = $derived.by(() => {
+    if (entry.inputKind !== 'Select') {
+      return entry.value;
+    }
+
+    const options = entry.selectOptions;
+    if (options.length === 0) {
+      return entry.value;
+    }
+
+    return options.some((option) => option.value === entry.value)
+      ? entry.value
+      : options[0].value;
+  });
   const featureOff = $derived(!featureEnabled(section, settings));
   const hostReadOnlyHint = $derived(
     !editable && !featureOff && !entry.hasLocalEffect ? t('dashboard.settings_host_only_hint') : undefined,
@@ -84,7 +98,7 @@
         onchange={(checked) => onsave(checked ? 'true' : 'false')}
       />
     {:else if entry.inputKind === 'Select'}
-      <select id="{section.id}-{entry.key}" class="input max-w-md" value={entry.value} disabled={!editable || isSaving} onchange={onChange}>
+      <select id="{section.id}-{entry.key}" class="input max-w-md" value={selectValue} disabled={!editable || isSaving} onchange={onChange}>
         {#each entry.selectOptions as opt (opt.value)}
           <option value={opt.value}>{opt.label}</option>
         {/each}
