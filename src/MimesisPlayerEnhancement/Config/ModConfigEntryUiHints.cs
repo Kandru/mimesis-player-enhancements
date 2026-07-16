@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement
             {
                 [(LootSectionId, "LootItemFilterMode")] = ["All", "AllowlistOnly", "BlocklistOnly"],
                 [(DungeonSectionId, "DungeonPickPoolMode")] = ["WidenVanilla", "AllActiveUniform"],
-                [(DungeonSectionId, "DungeonSeedFlavor")] = DungeonSeedFlavorNames.All,
+                [(DungeonSectionId, "DungeonSeedFlavor")] = DungeonSeedFlavorUtil.AllNames,
                 [(WeatherSectionId, "WeatherMode")] = ["Vanilla", "Fixed", "Cycle"],
                 [(WeatherSectionId, "FixedWeatherPreset")] = ["Sunny", "Rain", "HeavyRain", "Squall"],
                 [(WeatherSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
@@ -184,7 +184,6 @@ namespace MimesisPlayerEnhancement
                     ["DungeonBlocklist"] = "dungeonPick",
                     ["IgnoreDungeonExcludeList"] = "dungeonPick",
                     ["DungeonSeedFlavor"] = "dungeonSeed",
-                    ["RandomizeLayoutFlow"] = "dungeonLayoutAdvanced",
                 };
             }
 

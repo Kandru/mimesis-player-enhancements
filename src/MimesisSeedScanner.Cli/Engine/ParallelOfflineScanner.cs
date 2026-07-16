@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using MimesisSeedScanner;
+using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 
 namespace MimesisSeedScanner.Cli.Engine
 {
@@ -247,15 +247,15 @@ namespace MimesisSeedScanner.Cli.Engine
                     var trackerByFlavor = existingFlow.Flavors.ToDictionary(
                         flavor => flavor.Flavor,
                         StringComparer.Ordinal);
-                    trackersByFlow[flow.FlowId] = SeedScoring.CuratedFlavors
-                        .Select(flavor => trackerByFlavor.TryGetValue(flavor, out FlavorScanCheckpoint? checkpoint)
+                    trackersByFlow[flow.FlowId] = DungeonSeedFlavorUtil.Curated
+                        .Select(flavor => trackerByFlavor.TryGetValue(flavor.ToString(), out FlavorScanCheckpoint? checkpoint)
                             ? FlavorSeedTracker.FromCheckpoint(checkpoint)
                             : new FlavorSeedTracker(flavor))
                         .ToArray();
                 }
                 else
                 {
-                    trackersByFlow[flow.FlowId] = SeedScoring.CuratedFlavors
+                    trackersByFlow[flow.FlowId] = DungeonSeedFlavorUtil.Curated
                         .Select(flavor => new FlavorSeedTracker(flavor))
                         .ToArray();
                 }

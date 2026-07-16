@@ -1,4 +1,3 @@
-using MimesisSeedScanner;
 using Newtonsoft.Json;
 
 namespace MimesisSeedScanner.Mod

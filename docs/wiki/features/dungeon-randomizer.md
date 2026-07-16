@@ -34,6 +34,8 @@ Replaces the old `RandomizeDungeonSeed` toggle. Controls how the host picks the 
 - **`Vanilla`** — the host uses the game's normal random seed roll. No curated bias.
 - **Any other flavor** — before the seed is sent to players, the host replaces it with a random pick from **up to 500 precomputed seeds** for that dungeon's DunGen flow (e.g. all Factory Sector 1 layouts share one pool). Pools are baked into the mod and refreshed by a developer tool when the game updates — not editable in settings. When more than 500 seeds qualify for a flavor, 500 are chosen at random during the scan merge.
 
+Config and TOML use the **enum name** (`Compact`, `DeepMaze`, …). Human-readable labels in the web dashboard come from `l10n` (`en.json` / `de.json`). To add a flavor: add an enum member in `DungeonSeedFlavor`, add matching `options` keys in both locale files, then rescan and regenerate pools.
+
 Flavors only affect **layout shape** (room count, branching, connectivity, footprint). They do not change enemy counts, loot tables, weather, or quota. Room counts stay within each dungeon flow's designed min/max; flavors pick the best examples inside those bounds.
 
 ### Size & footprint
@@ -247,12 +249,6 @@ Closest to the **median** room count, branch score, and connection count across 
 **Feels like:** a typical dungeon for that flow — no strong bias toward any extreme.
 
 **Unlike `Vanilla`:** still curated from pre-tested seeds; avoids outlier layouts rather than using a fully random game roll.
-
-## Layout flow (advanced)
-
-`RandomizeLayoutFlow` swaps which DunGen flow asset is used inside a dungeon, picked uniformly instead of vanilla weights.
-
-**Multiplayer warning:** this runs during local map load and uses non-synced randomness. It can cause **different layouts on host vs clients**. Prefer **map flavor** for layout control in co-op. Leave `RandomizeLayoutFlow` off unless you understand the risk.
 
 ## Multiplayer notes
 

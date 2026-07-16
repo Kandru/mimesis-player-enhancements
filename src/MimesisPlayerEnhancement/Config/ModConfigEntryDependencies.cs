@@ -185,9 +185,6 @@ namespace MimesisPlayerEnhancement
                 case "DungeonSeedFlavor":
                     dependency = new ModConfigEntryDependency("EnableDungeonRandomizer");
                     return true;
-                case "RandomizeLayoutFlow":
-                    dependency = new ModConfigEntryDependency("EnableDungeonRandomizer");
-                    return true;
                 default:
                     return false;
             }

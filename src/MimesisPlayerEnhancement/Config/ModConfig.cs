@@ -152,7 +152,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> DungeonAllowlist { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> DungeonBlocklist { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> IgnoreDungeonExcludeList { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> RandomizeLayoutFlow { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeMapVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> DungeonSeedFlavor { get; internal set; } = null!;
 

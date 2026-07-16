@@ -1,7 +1,3 @@
-using HarmonyLib;
-using MimesisSeedScanner;
-using UnityEngine;
-
 [assembly: MelonInfo(typeof(MimesisSeedScanner.Mod.SeedScannerMod), "Mimesis Seed Scanner", "1.0.0", "Mimesis")]
 [assembly: MelonGame("ReLUGames", "MIMESIS")]
 

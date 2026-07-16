@@ -1,12 +1,11 @@
 using System.Globalization;
 using System.Text;
+using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 
 namespace MimesisSeedScanner
 {
     public static class SeedPoolCodeGenerator
     {
-        private static readonly HashSet<string> CuratedFlavors = new(CuratedFlavorNames.All, StringComparer.Ordinal);
-
         public static string Generate(SeedScanDocument document)
         {
             var builder = new StringBuilder();
@@ -43,7 +42,8 @@ namespace MimesisSeedScanner
                         continue;
                     }
 
-                    if (!CuratedFlavors.Contains(flavorResult.Flavor))
+                    if (!DungeonSeedFlavorUtil.TryParse(flavorResult.Flavor, out DungeonSeedFlavor parsedFlavor)
+                        || parsedFlavor == DungeonSeedFlavor.Vanilla)
                     {
                         continue;
                     }
@@ -52,7 +52,7 @@ namespace MimesisSeedScanner
                     builder.Append("                case (\"")
                         .Append(Escape(flow.FlowId))
                         .Append("\", DungeonSeedFlavor.")
-                        .Append(flavorResult.Flavor)
+                        .Append(parsedFlavor)
                         .Append("):\n                    pool = new[] { ")
                         .Append(seeds)
                         .AppendLine(" };");

@@ -135,10 +135,6 @@
         "title": "Ignore Dungeon Exclude List",
         "description": "When using WidenVanilla, do not exclude recently played dungeons from the tram roll."
       },
-      "RandomizeLayoutFlow": {
-        "title": "Randomize Layout Flow",
-        "description": "Pick DunGen layout flows uniformly instead of vanilla weights. Multiplayer warning: runs on each client and can desync layouts — prefer Map Flavor for co-op."
-      },
       "RandomizeMapVariant": {
         "title": "Randomize Map Variant",
         "description": "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection."

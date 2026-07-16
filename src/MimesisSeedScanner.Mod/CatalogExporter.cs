@@ -1,7 +1,6 @@
 using DunGen;
 using DunGen.Graph;
 using DunGen.Tags;
-using MimesisSeedScanner;
 using UnityEngine;
 
 namespace MimesisSeedScanner.Mod

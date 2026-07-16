@@ -1,5 +1,3 @@
-using MimesisSeedScanner;
-
 namespace MimesisSeedScanner.Cli.Engine
 {
     internal static class OfflineBranchCountHelper

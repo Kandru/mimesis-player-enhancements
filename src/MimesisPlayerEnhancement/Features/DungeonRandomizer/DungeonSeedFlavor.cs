@@ -1,6 +1,8 @@
+using System.Linq;
+
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
-    internal enum DungeonSeedFlavor
+    public enum DungeonSeedFlavor
     {
         Vanilla,
         Compact,
@@ -27,5 +29,21 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
         DeepMaze,
         Reliable,
         Balanced,
+    }
+
+    public static class DungeonSeedFlavorUtil
+    {
+        public static readonly string[] AllNames = Enum.GetNames(typeof(DungeonSeedFlavor));
+
+        public static readonly DungeonSeedFlavor[] Curated =
+            Enum.GetValues(typeof(DungeonSeedFlavor)).Cast<DungeonSeedFlavor>()
+                .Where(flavor => flavor != DungeonSeedFlavor.Vanilla)
+                .ToArray();
+
+        public static bool TryParse(string? value, out DungeonSeedFlavor flavor) =>
+            Enum.TryParse(value, ignoreCase: true, out flavor)
+            && Enum.IsDefined(typeof(DungeonSeedFlavor), flavor);
+
+        public static string ToConfigValue(DungeonSeedFlavor flavor) => flavor.ToString();
     }
 }

@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\MimesisPlayerEnhancement\Features\DungeonRandomizer\DungeonSeedFlavor.cs" Link="Shared\DungeonSeedFlavor.cs" />
     <Compile Include="..\MimesisSeedScanner\BakedCatalog.cs" Link="Shared\BakedCatalog.cs" />
-    <Compile Include="..\MimesisSeedScanner\CuratedFlavorNames.cs" Link="Shared\CuratedFlavorNames.cs" />
     <Compile Include="..\MimesisSeedScanner\FlavorSeedTracker.cs" Link="Shared\FlavorSeedTracker.cs" />
     <Compile Include="..\MimesisSeedScanner\GenerationMetrics.cs" Link="Shared\GenerationMetrics.cs" />
     <Compile Include="..\MimesisSeedScanner\PoolSelector.cs" Link="Shared\PoolSelector.cs" />

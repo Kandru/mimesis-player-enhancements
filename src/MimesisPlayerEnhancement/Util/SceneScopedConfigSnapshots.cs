@@ -317,10 +317,8 @@ namespace MimesisPlayerEnhancement.Util
             string dungeonAllowlist,
             string dungeonBlocklist,
             bool ignoreDungeonExcludeList,
-            bool randomizeLayoutFlow,
             bool randomizeMapVariant,
-            string dungeonSeedFlavor,
-            DungeonSeedFlavor parsedDungeonSeedFlavor)
+            DungeonSeedFlavor seedFlavor)
         {
             EnableDungeonRandomizer = enableDungeonRandomizer;
             RandomizeDungeonPick = randomizeDungeonPick;
@@ -328,10 +326,8 @@ namespace MimesisPlayerEnhancement.Util
             DungeonAllowlist = dungeonAllowlist;
             DungeonBlocklist = dungeonBlocklist;
             IgnoreDungeonExcludeList = ignoreDungeonExcludeList;
-            RandomizeLayoutFlow = randomizeLayoutFlow;
             RandomizeMapVariant = randomizeMapVariant;
-            DungeonSeedFlavor = dungeonSeedFlavor;
-            ParsedDungeonSeedFlavor = parsedDungeonSeedFlavor;
+            SeedFlavor = seedFlavor;
         }
 
         internal bool EnableDungeonRandomizer { get; }
@@ -346,20 +342,16 @@ namespace MimesisPlayerEnhancement.Util
 
         internal bool IgnoreDungeonExcludeList { get; }
 
-        internal bool RandomizeLayoutFlow { get; }
-
         internal bool RandomizeMapVariant { get; }
 
-        internal string DungeonSeedFlavor { get; }
-
-        internal DungeonSeedFlavor ParsedDungeonSeedFlavor { get; }
+        internal DungeonSeedFlavor SeedFlavor { get; }
 
         internal static DungeonRandomizerSceneConfig CaptureFromModConfig()
         {
             string dungeonSeedFlavor = ModConfig.DungeonSeedFlavor.Value ?? "Vanilla";
-            if (!DungeonSeedFlavorNames.TryParse(dungeonSeedFlavor, out Features.DungeonRandomizer.DungeonSeedFlavor parsedDungeonSeedFlavor))
+            if (!DungeonSeedFlavorUtil.TryParse(dungeonSeedFlavor, out DungeonSeedFlavor seedFlavor))
             {
-                parsedDungeonSeedFlavor = Features.DungeonRandomizer.DungeonSeedFlavor.Vanilla;
+                seedFlavor = DungeonSeedFlavor.Vanilla;
             }
 
             return new DungeonRandomizerSceneConfig(
@@ -369,10 +361,8 @@ namespace MimesisPlayerEnhancement.Util
                 ModConfig.DungeonAllowlist.Value ?? "",
                 ModConfig.DungeonBlocklist.Value ?? "",
                 ModConfig.IgnoreDungeonExcludeList.Value,
-                ModConfig.RandomizeLayoutFlow.Value,
                 ModConfig.RandomizeMapVariant.Value,
-                dungeonSeedFlavor,
-                parsedDungeonSeedFlavor);
+                seedFlavor);
         }
     }
 }

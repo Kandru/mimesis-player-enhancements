@@ -1,4 +1,3 @@
-using MimesisSeedScanner;
 using MimesisSeedScanner.Cli.Engine;
 using Newtonsoft.Json;
 

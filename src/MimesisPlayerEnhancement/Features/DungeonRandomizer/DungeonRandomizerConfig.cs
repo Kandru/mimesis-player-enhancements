@@ -42,10 +42,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 "IgnoreDungeonExcludeList",
                 true);
 
-            ModConfig.RandomizeLayoutFlow = ModConfig.CreateTrackedEntry(_category,
-                "RandomizeLayoutFlow",
-                false);
-
             ModConfig.RandomizeMapVariant = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeMapVariant",
                 true);
@@ -70,14 +66,13 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             ModConfig.DungeonAllowlist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.DungeonAllowlist));
             ModConfig.DungeonBlocklist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.DungeonBlocklist));
             ModConfig.IgnoreDungeonExcludeList.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.IgnoreDungeonExcludeList));
-            ModConfig.RandomizeLayoutFlow.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.RandomizeLayoutFlow));
             ModConfig.RandomizeMapVariant.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.RandomizeMapVariant));
             ModConfig.DungeonSeedFlavor.OnEntryValueChanged.Subscribe((_, value) => OnDungeonSeedFlavorChanged(logger, value));
         }
 
         private static void OnDungeonSeedFlavorChanged(MelonLogger.Instance logger, string value)
         {
-            if (!DungeonSeedFlavorNames.TryParse(value, out _))
+            if (!DungeonSeedFlavorUtil.TryParse(value, out _))
             {
                 logger.Warning($"DungeonSeedFlavor must be a known flavor name; resetting to Vanilla.");
                 ModConfig.DungeonSeedFlavor.Value = "Vanilla";

@@ -1,3 +1,5 @@
+using MimesisPlayerEnhancement.Features.DungeonRandomizer;
+
 namespace MimesisSeedScanner
 {
     /// <summary>
@@ -8,21 +10,23 @@ namespace MimesisSeedScanner
     {
         public const int DefaultReservoirCapacity = 5000;
 
-        private readonly string _flavor;
+        private readonly DungeonSeedFlavor _flavor;
         private readonly int _capacity;
         private readonly List<(int Seed, GenerationMetrics Metrics)> _entries = [];
 
-        public FlavorSeedTracker(string flavor, int capacity = DefaultReservoirCapacity)
+        public FlavorSeedTracker(DungeonSeedFlavor flavor, int capacity = DefaultReservoirCapacity)
         {
             _flavor = flavor;
             _capacity = capacity;
         }
 
-        public string Flavor => _flavor;
+        public string Flavor => _flavor.ToString();
+
+        internal DungeonSeedFlavor FlavorValue => _flavor;
 
         public void Consider(int seed, GenerationMetrics metrics)
         {
-            if (metrics.GenerationFailed && _flavor is not ("Reliable" or "StableCompact"))
+            if (metrics.GenerationFailed && _flavor is not (DungeonSeedFlavor.Reliable or DungeonSeedFlavor.StableCompact))
             {
                 return;
             }
@@ -68,7 +72,7 @@ namespace MimesisSeedScanner
         public FlavorScanCheckpoint ToCheckpoint() =>
             new()
             {
-                Flavor = _flavor,
+                Flavor = Flavor,
                 Candidates = _entries
                     .Select(entry => new SeedMetricsCheckpoint
                     {
@@ -80,7 +84,12 @@ namespace MimesisSeedScanner
 
         public static FlavorSeedTracker FromCheckpoint(FlavorScanCheckpoint checkpoint, int capacity = DefaultReservoirCapacity)
         {
-            var tracker = new FlavorSeedTracker(checkpoint.Flavor, capacity);
+            if (!DungeonSeedFlavorUtil.TryParse(checkpoint.Flavor, out DungeonSeedFlavor flavor))
+            {
+                throw new InvalidOperationException($"Unknown flavor in checkpoint: '{checkpoint.Flavor}'");
+            }
+
+            var tracker = new FlavorSeedTracker(flavor, capacity);
             foreach (SeedMetricsCheckpoint candidate in checkpoint.Candidates)
             {
                 tracker.RestoreCandidate(candidate.Seed, SeedMetricsMapper.FromDto(candidate.Metrics));

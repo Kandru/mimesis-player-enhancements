@@ -1,3 +1,5 @@
+using MimesisPlayerEnhancement.Features.DungeonRandomizer;
+
 namespace MimesisSeedScanner
 {
     public static class PoolSelector
@@ -8,7 +10,7 @@ namespace MimesisSeedScanner
         /// Selects up to poolSize seeds from candidates using percentile qualification and random sampling.
         /// </summary>
         public static List<int> SelectPool(
-            string flavor,
+            DungeonSeedFlavor flavor,
             IReadOnlyList<(int Seed, GenerationMetrics Metrics)> candidates,
             int poolSize,
             int selectionSeed = DefaultPoolSelectionSeed)
@@ -36,7 +38,7 @@ namespace MimesisSeedScanner
                 return qualified;
             }
 
-            var random = new RandomStream(selectionSeed ^ flavor.GetHashCode(StringComparison.Ordinal));
+            var random = new RandomStream(selectionSeed ^ flavor.ToString().GetHashCode(StringComparison.Ordinal));
             var selected = new List<int>(poolSize);
             var remaining = new List<int>(qualified);
             while (selected.Count < poolSize && remaining.Count > 0)

@@ -3,6 +3,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
     internal static class DungeonRandomizerLog
     {
         private const string Feature = "DungeonRandomizer";
+        private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
 
         internal static void InfoDungeonPick(int vanillaResult, int picked, DungeonPickPoolMode mode, int poolSize)
         {
@@ -15,17 +16,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             ModLog.Info(
                 Feature,
                 $"Dungeon pick ({mode}): {vanillaResult} -> {picked} (pool={poolSize})");
-        }
-
-        internal static void InfoLayoutFlowChanged(int dungeonId, string vanillaFlow, string flowName)
-        {
-            if (string.Equals(vanillaFlow, flowName, System.StringComparison.Ordinal))
-            {
-                ModLog.Debug(Feature, $"Layout flow: dungeon {dungeonId} unchanged at '{vanillaFlow}'");
-                return;
-            }
-
-            ModLog.Info(Feature, $"Layout flow — dungeon {dungeonId}: '{vanillaFlow}' -> '{flowName}'");
         }
 
         internal static void InfoMapVariantChanged(int dungeonId, int vanillaMapId, int mapId)
@@ -46,9 +36,15 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             int curatedSeed,
             int poolSize)
         {
+            string flavorLabel = ModL10n.GetConfigSelectOptionLabel(
+                DungeonSectionId,
+                "DungeonSeedFlavor",
+                DungeonSeedFlavorUtil.ToConfigValue(flavor))
+                ?? flavor.ToString();
+
             ModLog.Info(
                 Feature,
-                $"Dungeon seed flavor {flavor} — flow '{flowId}', pool={poolSize}, {vanillaSeed} -> {curatedSeed}");
+                $"Dungeon seed flavor {flavorLabel} — flow '{flowId}', pool={poolSize}, {vanillaSeed} -> {curatedSeed}");
         }
     }
 }

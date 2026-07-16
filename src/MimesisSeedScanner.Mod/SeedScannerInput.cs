@@ -1,6 +1,4 @@
-using System.Reflection;
 using HarmonyLib;
-using MelonLoader;
 
 namespace MimesisSeedScanner.Mod
 {

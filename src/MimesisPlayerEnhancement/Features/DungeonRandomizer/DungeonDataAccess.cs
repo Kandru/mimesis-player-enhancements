@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
@@ -83,19 +82,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             }
 
             dungeonId = pool[UnityEngine.Random.Range(0, pool.Count)];
-            return true;
-        }
-
-        internal static bool TryPickUniformLayoutFlow(DungeonMasterInfo info, out string flowName)
-        {
-            flowName = string.Empty;
-            ImmutableDictionary<string, int> candidates = info.DungenCandidates;
-            if (candidates.Count == 0)
-            {
-                return false;
-            }
-
-            flowName = candidates.Keys.ElementAt(UnityEngine.Random.Range(0, candidates.Count));
             return true;
         }
 

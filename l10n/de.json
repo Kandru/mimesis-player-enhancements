@@ -135,10 +135,6 @@
         "title": "Dungeon-Ausschlussliste ignorieren",
         "description": "Bei WidenVanilla kürzlich gespielte Dungeons nicht vom Tram-Wurf ausschließen."
       },
-      "RandomizeLayoutFlow": {
-        "title": "Layout-Flow randomisieren",
-        "description": "DunGen-Layout-Flows gleichmäßig statt Vanilla-Gewichten wählen. Multiplayer-Warnung: läuft auf jedem Client und kann Layouts desynchronisieren — für Koop Map-Flavor bevorzugen."
-      },
       "RandomizeMapVariant": {
         "title": "Map-Variante randomisieren",
         "description": "Map-Varianten gleichmäßig aus den MapIDs jedes Dungeons wählen statt Vanilla-Auswahl."

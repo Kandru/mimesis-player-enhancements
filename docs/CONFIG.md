@@ -373,7 +373,6 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | **Dungeon pick** | Which dungeon master ID appears on the tram roll |
 | **Map variant** | Which map ID is chosen from the dungeon's `MapIDs` |
 | **Map flavor** | Curated procedural seed (`DungeonSeedFlavor`) synced to all players |
-| **Layout flow** | (Advanced) DunGen flow asset swap — **multiplayer desync risk** |
 
 **Pool modes** (`DungeonPickPoolMode`):
 
@@ -392,8 +391,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | `DungeonAllowlist` | string | `""` | — | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |
 | `DungeonBlocklist` | string | `""` | — | Comma-separated dungeon master IDs to exclude. |
 | `IgnoreDungeonExcludeList` | bool | `true` | — | With `WidenVanilla`, do not exclude recently played dungeons from the tram roll. |
-| `DungeonSeedFlavor` | string | `Vanilla` | See [wiki](./wiki/features/dungeon-randomizer.md) | Curated procedural seed style. Non-`Vanilla` picks from up to 500 baked seeds per layout flow (synced via network). Replaces removed `RandomizeDungeonSeed`. |
-| `RandomizeLayoutFlow` | bool | `false` | — | Pick DunGen layout flows uniformly. **Can desync multiplayer layouts** — prefer `DungeonSeedFlavor`. |
+| `DungeonSeedFlavor` | string | `Vanilla` | See [wiki](./wiki/features/dungeon-randomizer.md) | Curated procedural seed style. Config value is the enum name (`Compact`, `Maze`, …). Web dashboard labels come from l10n. Non-`Vanilla` picks from up to 500 baked seeds per layout flow (synced via network). |
 | `RandomizeMapVariant` | bool | `true` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`

@@ -4,23 +4,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
     {
         private const string Feature = "DungeonRandomizer";
 
-        internal static string? ResolveLayoutFlow(DungeonMasterInfo info, string vanillaFlow)
-        {
-            if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeLayoutFlow)
-            {
-                return null;
-            }
-
-            if (!DungeonDataAccess.TryPickUniformLayoutFlow(info, out string flowName))
-            {
-                ModLog.Debug(Feature, $"Layout flow: no candidates for dungeon {info.ID}; keeping '{vanillaFlow}'");
-                return null;
-            }
-
-            DungeonRandomizerLog.InfoLayoutFlowChanged(info.ID, vanillaFlow, flowName);
-            return flowName;
-        }
-
         internal static int? ResolveMapId(DungeonMasterInfo info, int vanillaMapId)
         {
             if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeMapVariant)

@@ -1,4 +1,4 @@
-using MimesisSeedScanner;
+using MimesisPlayerEnhancement.Features.DungeonRandomizer;
 using Newtonsoft.Json;
 
 namespace MimesisSeedScanner.Cli.Engine
@@ -51,7 +51,7 @@ namespace MimesisSeedScanner.Cli.Engine
 
             foreach (string flowId in flowIds)
             {
-                var trackers = SeedScoring.CuratedFlavors
+                var trackers = DungeonSeedFlavorUtil.Curated
                     .Select(flavor => new FlavorSeedTracker(flavor))
                     .ToArray();
 
@@ -89,7 +89,7 @@ namespace MimesisSeedScanner.Cli.Engine
                     {
                         Flavor = tracker.Flavor,
                         Seeds = PoolSelector.SelectPool(
-                            tracker.Flavor,
+                            tracker.FlavorValue,
                             tracker.GetCandidates(),
                             poolSize),
                     });
