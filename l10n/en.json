@@ -20,7 +20,7 @@
         "extendedSaveSlots": "Extended save slots",
         "extendedSpectatorList": "Spectator player list",
         "extendedInGameMenuPlayerList": "In-game menu player list",
-        "worldHealthGlow": "World health glow",
+        "damageHealthGlow": "Damage health outline",
         "floatingDamage": "Floating damage numbers",
         "floatingDetox": "Floating detox indicators",
         "fpsUi": "FPS UI"
@@ -41,13 +41,9 @@
         "title": "Enable Extended In-Game Menu Player List",
         "description": "Pin the join-code button to the top of the ESC menu player column, stretch the player list to fill remaining vertical space, and show a scrollbar when rows overflow."
       },
-      "EnableWorldHealthGlow": {
-        "title": "Enable World Health Glow",
-        "description": "Show a world-space health glow around other players, mimics, and monsters for a few seconds after they take damage. Color shifts from green (full health) to red (low health). Never shown on your own avatar."
-      },
-      "WorldHealthGlowDurationSeconds": {
-        "title": "World Health Glow Duration (seconds)",
-        "description": "How long the world health glow stays visible after an entity takes damage."
+      "EnableDamageHealthGlow": {
+        "title": "Enable Damage Health Outline",
+        "description": "Tint other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fade out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar."
       },
       "EnableFloatingDamageNumbers": {
         "title": "Enable Floating Damage Numbers",

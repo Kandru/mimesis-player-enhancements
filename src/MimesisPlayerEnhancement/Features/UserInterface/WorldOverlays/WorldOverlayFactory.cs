@@ -8,7 +8,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     internal sealed class WorldOverlayFactory
     {
         private const float CanvasScale = 0.01f;
-        private const float GlowSize = 140f;
         internal const float FloaterScale = 0.5f;
 
         private static readonly Color DamageTextColor = new(1f, 0.35f, 0.35f, 1f);
@@ -18,11 +17,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static readonly Type? GraphicRaycasterType = Type.GetType("UnityEngine.UI.GraphicRaycaster, UnityEngine.UI");
 
         private static WorldOverlayFactory? _instance;
-        private static Sprite? _glowSprite;
 
         private readonly GameObject _rootObject;
         private readonly Transform _rootTransform;
-        private readonly Stack<HealthGlowWidget> _healthGlowPool = new();
         private readonly Stack<FloaterWidget> _floaterPool = new();
 
         internal static WorldOverlayFactory Instance => _instance ??= new WorldOverlayFactory();
@@ -60,26 +57,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             _rootObject.SetActive(active);
         }
 
-        internal HealthGlowWidget RentHealthGlow()
-        {
-            if (_healthGlowPool.TryPop(out HealthGlowWidget? widget))
-            {
-                widget.Root.SetActive(true);
-                widget.RootTransform.localScale = Vector3.one;
-                return widget;
-            }
-
-            return CreateHealthGlow();
-        }
-
-        internal void ReturnHealthGlow(HealthGlowWidget widget)
-        {
-            widget.Root.SetActive(false);
-            widget.Actor = null;
-            widget.RootTransform.localScale = Vector3.one;
-            _healthGlowPool.Push(widget);
-        }
-
         internal FloaterWidget RentFloater(float displayScale = 1f)
         {
             FloaterWidget widget;
@@ -106,15 +83,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal void TearDownAllPooled()
         {
-            while (_healthGlowPool.Count > 0)
-            {
-                HealthGlowWidget widget = _healthGlowPool.Pop();
-                if (widget.Root != null)
-                {
-                    UnityEngine.Object.Destroy(widget.Root);
-                }
-            }
-
             while (_floaterPool.Count > 0)
             {
                 FloaterWidget widget = _floaterPool.Pop();
@@ -125,64 +93,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             }
 
             _rootObject.SetActive(false);
-        }
-
-        private HealthGlowWidget CreateHealthGlow()
-        {
-            GameObject root = new("HealthGlow");
-            root.transform.SetParent(_rootTransform, false);
-
-            RectTransform rootRect = root.AddComponent<RectTransform>();
-            rootRect.sizeDelta = new Vector2(GlowSize, GlowSize);
-
-            Image glow = root.AddComponent<Image>();
-            glow.sprite = GetGlowSprite();
-            glow.color = new Color(0.2f, 1f, 0.2f, 0.85f);
-            glow.raycastTarget = false;
-
-            DisableRaycast(root);
-
-            return new HealthGlowWidget
-            {
-                Root = root,
-                RootTransform = rootRect,
-                GlowImage = glow,
-            };
-        }
-
-        private static Sprite GetGlowSprite()
-        {
-            if (_glowSprite != null)
-            {
-                return _glowSprite;
-            }
-
-            const int size = 64;
-            Texture2D texture = new(size, size, TextureFormat.RGBA32, mipChain: false);
-            Vector2 center = new(size * 0.5f, size * 0.5f);
-            float radius = size * 0.5f;
-            Color[] pixels = new Color[size * size];
-
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    float dist = Vector2.Distance(new Vector2(x, y), center) / radius;
-                    float alpha = Mathf.Clamp01(1f - dist);
-                    alpha *= alpha;
-                    pixels[(y * size) + x] = new Color(1f, 1f, 1f, alpha);
-                }
-            }
-
-            texture.SetPixels(pixels);
-            texture.Apply();
-
-            _glowSprite = Sprite.Create(
-                texture,
-                new Rect(0f, 0f, size, size),
-                new Vector2(0.5f, 0.5f),
-                100f);
-            return _glowSprite;
         }
 
         private FloaterWidget CreateFloater()
@@ -236,14 +146,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             }
 
             property.SetValue(component, Enum.ToObject(enumType, value), null);
-        }
-
-        internal sealed class HealthGlowWidget
-        {
-            internal GameObject Root = null!;
-            internal RectTransform RootTransform = null!;
-            internal Image GlowImage = null!;
-            internal ProtoActor? Actor;
         }
 
         internal sealed class FloaterWidget

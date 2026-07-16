@@ -6,8 +6,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     internal static class WorldOverlayPlacement
     {
-        private const float HipHeightRatio = 0.52f;
-        private const float HealthGlowForwardOffset = 0.6f;
         private const float FloaterForwardOffset = 0.4f;
 
         private static readonly Type? CapsuleColliderType =
@@ -35,12 +33,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         private static readonly PropertyInfo? ControllerCenterProperty =
             CharacterControllerType != null ? AccessTools.Property(CharacterControllerType, "center") : null;
-
-        internal static Vector3 ResolveHealthGlowWorldPosition(ProtoActor actor)
-        {
-            Vector3 anchor = ResolveCapsuleAnchor(actor, HipHeightRatio);
-            return OffsetTowardLocalViewer(actor, anchor, HealthGlowForwardOffset);
-        }
 
         internal static Vector3 ResolveFloaterWorldPosition(ProtoActor actor, float heightRatio = 0.58f)
         {

@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static readonly Color DamageTextColor = new(1f, 0.25f, 0.25f, 1f);
         private static readonly Color DetoxTextColor = new(0.25f, 0.9f, 0.3f, 1f);
 
-        private static readonly WorldHealthGlowController HealthGlows = new();
+        private static readonly DamageHealthGlowController DamageHealthGlows = new();
         private static readonly FloatingTextOverlayController DamageFloaters = new(
             () => WorldOverlayGate.DamageNumbersEnabled,
             WorldOverlayGate.IsDamageOverlayTarget,
@@ -34,12 +34,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return;
             }
 
-            Camera? camera = ResolveCamera();
-            if (WorldOverlayGate.HealthGlowEnabled)
+            if (WorldOverlayGate.DamageHealthGlowEnabled)
             {
-                HealthGlows.Tick(camera);
+                DamageHealthGlows.Tick();
             }
 
+            Camera? camera = ResolveCamera();
             if (WorldOverlayGate.DamageNumbersEnabled)
             {
                 DamageFloaters.Tick(camera);
@@ -60,9 +60,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         internal static void RefreshFromConfig()
         {
             WorldOverlayGate.RefreshCache();
-            if (!WorldOverlayGate.HealthGlowEnabled)
+            if (!WorldOverlayGate.DamageHealthGlowEnabled)
             {
-                HealthGlows.TearDown();
+                DamageHealthGlows.TearDown();
             }
 
             if (!WorldOverlayGate.DamageNumbersEnabled)
@@ -84,6 +84,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             RefreshActiveFlag();
         }
 
+        internal static void NotifyDamaged(ProtoActor actor, long hp, long maxHp)
+        {
+            DamageHealthGlows.NotifyDamaged(actor, hp, maxHp);
+            RefreshActiveFlag();
+        }
+
+        internal static void NotifyKilled(ProtoActor actor)
+        {
+            DamageHealthGlows.NotifyKilled(actor);
+            RefreshActiveFlag();
+        }
+
+        internal static void ReleaseDamageGlowForDespawn(ProtoActor actor)
+        {
+            DamageHealthGlows.ReleaseForDespawn(actor);
+            RefreshActiveFlag();
+        }
+
         internal static void NotifyHitDamage(ProtoActor victim, long damage)
         {
             if (damage <= 0 || !WorldOverlayGate.IsWorldDamageTarget(victim))
@@ -91,8 +109,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return;
             }
 
-            WorldOverlayHpTracker.ApplyDamage(victim, damage);
-            NotifyEntityDamaged(victim, damage);
+            DamageHealthGlows.NotifyDamagedFromHit(victim, damage);
+
+            if (WorldOverlayGate.DamageNumbersEnabled && WorldOverlayGate.IsDamageOverlayTarget(victim))
+            {
+                DamageFloaters.Spawn(
+                    victim,
+                    $"-{damage}",
+                    DamageTextColor,
+                    displayScale: WorldOverlayFactory.FloaterScale);
+            }
+
+            RefreshActiveFlag();
         }
 
         internal static void NotifyContaReduced(ProtoActor actor, long previousConta, long newConta, long maxConta)
@@ -119,33 +147,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             RefreshActiveFlag();
         }
 
-        private static void NotifyEntityDamaged(ProtoActor actor, long damage)
-        {
-            if (WorldOverlayGate.HealthGlowEnabled && WorldOverlayGate.IsWorldDamageTarget(actor))
-            {
-                HealthGlows.NotifyDamaged(actor, damage);
-            }
-
-            if (WorldOverlayGate.DamageNumbersEnabled
-                && damage > 0
-                && WorldOverlayGate.IsDamageOverlayTarget(actor))
-            {
-                DamageFloaters.Spawn(
-                    actor,
-                    $"-{damage}",
-                    DamageTextColor,
-                    displayScale: WorldOverlayFactory.FloaterScale);
-            }
-
-            RefreshActiveFlag();
-        }
-
         private static void TearDownAll()
         {
-            HealthGlows.TearDown();
+            DamageHealthGlows.TearDown();
             DamageFloaters.TearDown();
             DetoxFloaters.TearDown();
-            WorldOverlayHpTracker.Clear();
             WorldOverlayVisibility.ClearCache();
             WorldOverlayFactory.Instance.SetRootActive(false);
             _hasActiveOverlays = false;
@@ -154,7 +160,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static void RefreshActiveFlag()
         {
             _hasActiveOverlays =
-                (WorldOverlayGate.HealthGlowEnabled && HealthGlows.HasActiveGlows)
+                (WorldOverlayGate.DamageHealthGlowEnabled && DamageHealthGlows.HasActiveDamageGlows)
                 || (WorldOverlayGate.DamageNumbersEnabled && DamageFloaters.HasActiveFloaters)
                 || (WorldOverlayGate.DetoxIndicatorsEnabled && DetoxFloaters.HasActiveFloaters);
         }

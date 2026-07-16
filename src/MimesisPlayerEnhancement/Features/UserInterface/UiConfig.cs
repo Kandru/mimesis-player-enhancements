@@ -6,8 +6,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
     {
         internal const string SectionId = "MimesisPlayerEnhancement_Ui";
 
-        private const float MinWorldHealthGlowDurationSeconds = 1f;
-        private const float MaxWorldHealthGlowDurationSeconds = 5f;
         private const float MinFloatingDamageDurationSeconds = 1f;
         private const float MaxFloatingDamageDurationSeconds = 3f;
 
@@ -36,13 +34,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "EnableExtendedInGameMenuPlayerList",
                 true);
 
-            ModConfig.EnableWorldHealthGlow = ModConfig.CreateTrackedEntry(_category,
-                "EnableWorldHealthGlow",
+            ModConfig.EnableDamageHealthGlow = ModConfig.CreateTrackedEntry(_category,
+                "EnableDamageHealthGlow",
                 true);
-
-            ModConfig.WorldHealthGlowDurationSeconds = ModConfig.CreateTrackedEntry(_category,
-                "WorldHealthGlowDurationSeconds",
-                4f);
 
             ModConfig.EnableFloatingDamageNumbers = ModConfig.CreateTrackedEntry(_category,
                 "EnableFloatingDamageNumbers",
@@ -85,10 +79,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableExtendedInGameMenuPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedInGameMenuPlayerList));
 
-            ModConfig.EnableWorldHealthGlow.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableWorldHealthGlow));
-            ModConfig.WorldHealthGlowDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnWorldHealthGlowDurationChanged(logger, value));
+            ModConfig.EnableDamageHealthGlow.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableDamageHealthGlow));
             ModConfig.EnableFloatingDamageNumbers.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDamageNumbers));
             ModConfig.FloatingDamageDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
@@ -104,29 +96,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.ModToastDurationSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.WorldHealthGlowDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.FloatingDamageDurationSeconds);
-        }
-
-        private static void OnWorldHealthGlowDurationChanged(MelonLogger.Instance logger, float value)
-        {
-            if (value < MinWorldHealthGlowDurationSeconds)
-            {
-                logger.Warning(
-                    $"WorldHealthGlowDurationSeconds must be at least {MinWorldHealthGlowDurationSeconds}; resetting.");
-                ModConfig.WorldHealthGlowDurationSeconds.Value = MinWorldHealthGlowDurationSeconds;
-                return;
-            }
-
-            if (value > MaxWorldHealthGlowDurationSeconds)
-            {
-                logger.Warning(
-                    $"WorldHealthGlowDurationSeconds must be at most {MaxWorldHealthGlowDurationSeconds}; resetting.");
-                ModConfig.WorldHealthGlowDurationSeconds.Value = MaxWorldHealthGlowDurationSeconds;
-                return;
-            }
-
-            ModConfig.NotifyChanged(ModConfig.WorldHealthGlowDurationSeconds);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)

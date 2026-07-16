@@ -4,16 +4,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     internal static class WorldOverlayGate
     {
-        internal static bool HealthGlowEnabled { get; private set; } = true;
+        internal static bool DamageHealthGlowEnabled { get; private set; } = true;
         internal static bool DamageNumbersEnabled { get; private set; } = true;
         internal static bool DetoxIndicatorsEnabled { get; private set; } = true;
 
         internal static bool AnyOverlayEnabled =>
-            HealthGlowEnabled || DamageNumbersEnabled || DetoxIndicatorsEnabled;
+            DamageHealthGlowEnabled || DamageNumbersEnabled || DetoxIndicatorsEnabled;
 
         internal static void RefreshCache()
         {
-            HealthGlowEnabled = ModConfig.EnableWorldHealthGlow?.Value ?? false;
+            DamageHealthGlowEnabled = ModConfig.EnableDamageHealthGlow?.Value ?? false;
             DamageNumbersEnabled = ModConfig.EnableFloatingDamageNumbers?.Value ?? false;
             DetoxIndicatorsEnabled = ModConfig.EnableFloatingDetoxIndicators?.Value ?? false;
         }

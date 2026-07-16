@@ -20,7 +20,7 @@
         "extendedSaveSlots": "Erweiterte Save-Slots",
         "extendedSpectatorList": "Spectator-Spielerliste",
         "extendedInGameMenuPlayerList": "Ingame-Menü-Spielerliste",
-        "worldHealthGlow": "Welt-Gesundheitsglühen",
+        "damageHealthGlow": "Schadens-Gesundheitsumriss",
         "floatingDamage": "Schwebende Schadenszahlen",
         "floatingDetox": "Schwebende Detox-Indikatoren",
         "fpsUi": "FPS-UI"
@@ -41,13 +41,9 @@
         "title": "Erweiterte Ingame-Menü-Spielerliste aktivieren",
         "description": "Setzt den Join-Code-Button oben in die ESC-Menü-Spaltersäule, dehnt die Spielerliste auf die verbleibende Höhe aus und zeigt eine Scrollleiste, wenn die Zeilen nicht mehr passen."
       },
-      "EnableWorldHealthGlow": {
-        "title": "Welt-Gesundheitsglühen aktivieren",
-        "description": "Zeigt ein weltweites Gesundheitsglühen um andere Spieler, Mimics und Monster für einige Sekunden nach erlittenem Schaden. Die Farbe wechselt von Grün (volle Gesundheit) zu Rot (niedrige Gesundheit). Nie auf dem eigenen Avatar."
-      },
-      "WorldHealthGlowDurationSeconds": {
-        "title": "Welt-Gesundheitsglühen-Dauer (Sekunden)",
-        "description": "Wie lange das Welt-Gesundheitsglühen nach erlittenem Schaden sichtbar bleibt."
+      "EnableDamageHealthGlow": {
+        "title": "Schadens-Gesundheitsumriss aktivieren",
+        "description": "Färbt andere Spieler, Mimics und Monster eine Sekunde lang nach erlittenem Schaden mit einem gesundheitsgetönten Leuchten und blendet es danach aus. Die Farbe wechselt von Grün (volle Gesundheit) zu Rot (niedrige Gesundheit); Tötungen nutzen ein blutrotes Rot. Nie auf dem eigenen Avatar."
       },
       "EnableFloatingDamageNumbers": {
         "title": "Schwebende Schadenszahlen aktivieren",

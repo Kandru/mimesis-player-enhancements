@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         [HarmonyPostfix]
         private static void Postfix(GameMainBase __instance, FieldHitTargetSig sig)
         {
-            if (!WorldOverlayGate.HealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
+            if (!WorldOverlayGate.DamageHealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
             {
                 return;
             }
@@ -40,7 +40,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         [HarmonyPostfix]
         private static void Postfix(GameMainBase __instance, ProjectileHitTargetSig sig)
         {
-            if (!WorldOverlayGate.HealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
+            if (!WorldOverlayGate.DamageHealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
             {
                 return;
             }

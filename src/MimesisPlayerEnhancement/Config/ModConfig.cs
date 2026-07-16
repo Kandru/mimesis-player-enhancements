@@ -177,8 +177,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableExtendedSaveSlots { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedSpectatorPlayerList { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableExtendedInGameMenuPlayerList { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> EnableWorldHealthGlow { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> WorldHealthGlowDurationSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableDamageHealthGlow { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFloatingDamageNumbers { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> FloatingDamageDurationSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFloatingDetoxIndicators { get; internal set; } = null!;

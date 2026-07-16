@@ -37,7 +37,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | Section | Feature | Scope |
 |---------|---------|-------|
 | [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
-| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, world health glow, damage numbers | Local UI |
+| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers | Local UI |
 | [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local client |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
@@ -63,7 +63,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time, Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
 | **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
-| **Global UI** | Extended save picker, spectator list layout, toast duration, world health glow, floating damage numbers |
+| **Global UI** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers |
 
 ---
 
@@ -91,8 +91,7 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
 | `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
 | `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Show the ESC menu player list in a right-side overlay (join-code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls. Independent of More Players. |
-| `EnableWorldHealthGlow` | bool | `true` | — | Show a world-space health glow around other players, mimics, and monsters for a few seconds after they take damage. Color shifts from green (full health) to red (low health). Never shown on your own avatar. |
-| `WorldHealthGlowDurationSeconds` | float | `4.0` | `1`–`5` | How long the world health glow stays visible after an entity takes damage. |
+| `EnableDamageHealthGlow` | bool | `true` | — | Tint other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fade out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
 | `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage and detox indicators remain visible. |
 | `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. |
@@ -492,8 +491,7 @@ ModToastDurationSeconds = 5.0
 EnableExtendedSaveSlots = true
 EnableExtendedSpectatorPlayerList = true
 EnableExtendedInGameMenuPlayerList = true
-EnableWorldHealthGlow = true
-WorldHealthGlowDurationSeconds = 4.0
+EnableDamageHealthGlow = true
 EnableFloatingDamageNumbers = true
 FloatingDamageDurationSeconds = 2.0
 EnableFloatingDetoxIndicators = true
