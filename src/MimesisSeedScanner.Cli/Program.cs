@@ -25,6 +25,11 @@ namespace MimesisSeedScanner.Cli
                 return ScanCommand.Run(commandArgs);
             }
 
+            if (string.Equals(command, "merge", StringComparison.OrdinalIgnoreCase))
+            {
+                return MergeCommand.Run(commandArgs);
+            }
+
             if (string.Equals(command, "verify", StringComparison.OrdinalIgnoreCase))
             {
                 return VerifyCommand.Run(commandArgs);
@@ -77,6 +82,8 @@ namespace MimesisSeedScanner.Cli
             Console.WriteLine("       [--max-seed N] (default: int.MaxValue) [--pool-size N] (default: 500)");
             Console.WriteLine("       [--seed-stride N] (default: 100000) [--threads N]");
             Console.WriteLine("       [--time-budget 4h|30m|3600s] [--shard-dir path]");
+            Console.WriteLine("  merge [--shard-dir seed-scan-shards] [--output seed-scan-results.json]");
+            Console.WriteLine("        Merge thread shard checkpoints into final scan JSON (no re-scan).");
             Console.WriteLine("  codegen <seed-scan-results.json> [--output DungeonSeedPools.Generated.cs]");
             Console.WriteLine("  verify --catalog scan-catalog.json --flow FlowId --seeds 1,2,3");
         }

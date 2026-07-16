@@ -80,7 +80,8 @@ namespace MimesisSeedScanner.Cli.Engine
 
         internal long GenerationsCompleted => _states.Sum(s => s.GenerationsCompleted);
 
-        internal long TotalGenerations => (long)CountStridedSeeds(1, _maxSeed, _seedStride) * _flows.Count;
+        internal long TotalGenerations =>
+            ComputeTotalGenerations(_maxSeed, _seedStride, _flows.Count);
 
         internal double OverallGenerationsPerSecond(double elapsedSeconds)
         {
@@ -138,21 +139,16 @@ namespace MimesisSeedScanner.Cli.Engine
 
                 state.SeedsCompleted = resumeShard?.SeedsCompleted ?? 0;
                 state.GenerationsCompleted = resumeShard?.GenerationsCompleted ?? 0;
-                int seed = state.SeedStart;
-                if (state.SeedsCompleted > 0)
-                {
-                    seed = NthStridedSeed(state.SeedStart, _seedStride, state.SeedsCompleted);
-                }
-
-                DateTime lastSaveAt = DateTime.UtcNow;
                 int completedInRange = state.SeedsCompleted;
-                while (seed < state.SeedEndExclusive)
+                DateTime lastSaveAt = DateTime.UtcNow;
+                while (completedInRange < seedsInRange)
                 {
                     if (_timeBudget.HasValue && stopwatch.Elapsed >= _timeBudget.Value)
                     {
                         break;
                     }
 
+                    int seed = NthStridedSeed(state.SeedStart, _seedStride, completedInRange);
                     foreach (BakedFlow flow in _flows)
                     {
                         try
@@ -180,20 +176,19 @@ namespace MimesisSeedScanner.Cli.Engine
 
                     completedInRange++;
                     state.SeedsCompleted = completedInRange;
-                    seed += _seedStride;
 
                     bool shouldSave = completedInRange % SaveEverySeeds == 0
                         || DateTime.UtcNow - lastSaveAt >= SaveInterval;
                     if (shouldSave)
                     {
-                        bool complete = seed >= state.SeedEndExclusive;
+                        bool complete = completedInRange >= seedsInRange;
                         UpdateShard(shard, state, trackersByFlow, completedInRange, complete);
                         ScanShardMerger.SaveShard(shard);
                         lastSaveAt = DateTime.UtcNow;
                     }
                 }
 
-                bool isComplete = seed >= state.SeedEndExclusive;
+                bool isComplete = completedInRange >= seedsInRange;
                 UpdateShard(shard, state, trackersByFlow, completedInRange, isComplete);
                 ScanShardMerger.SaveShard(shard);
                 state.Shard = shard;
@@ -207,6 +202,9 @@ namespace MimesisSeedScanner.Cli.Engine
                 state.IsComplete = true;
             }
         }
+
+        internal static long ComputeTotalGenerations(int maxSeed, int seedStride, int flowCount) =>
+            (long)CountStridedSeeds(1, maxSeed, seedStride) * flowCount;
 
         private ThreadShardDocument? TryLoadResumeShard(int threadId, ParallelScanWorkerState state)
         {

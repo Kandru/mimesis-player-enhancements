@@ -51,6 +51,18 @@ dotnet run --project src/MimesisSeedScanner.Cli -- scan \
 - Top candidates per flavor kept in memory; merge applies percentile cut + random sample of `--pool-size`
 - **24 curated flavors** (see wiki)
 
+### `merge`
+
+Combine resumable thread shard files into one `seed-scan-results.json` without re-scanning:
+
+```bash
+dotnet run --project src/MimesisSeedScanner.Cli -- merge \
+  --shard-dir seed-scan-shards \
+  --output seed-scan-results.json
+```
+
+Use this after a completed scan, or after **Ctrl+C** once you have enough shard data. Merge picks up to `--pool-size` (default 500) seeds per flavor per flow from all shard candidates.
+
 ### `codegen`
 
 ```bash

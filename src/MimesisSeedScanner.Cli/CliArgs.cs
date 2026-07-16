@@ -21,6 +21,12 @@ namespace MimesisSeedScanner.Cli
             return int.TryParse(value, out int parsed) ? parsed : defaultValue;
         }
 
+        internal static int? TryGetInt(string[] args, string name)
+        {
+            string? value = Get(args, name);
+            return int.TryParse(value, out int parsed) ? parsed : null;
+        }
+
         internal static TimeSpan? GetTimeBudget(string[] args, string name)
         {
             string? value = Get(args, name);

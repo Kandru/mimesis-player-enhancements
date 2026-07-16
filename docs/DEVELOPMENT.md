@@ -169,12 +169,46 @@ dotnet run --project src/MimesisSeedScanner.Cli -- scan \
   --time-budget 4h \
   --output seed-scan-results.json
 
-# 4. Codegen into the main mod
+# 4. Merge (if you stopped early or only have shard files) OR use scan output directly
+dotnet run --project src/MimesisSeedScanner.Cli -- merge \
+  --shard-dir seed-scan-shards \
+  --output seed-scan-results.json
+
+# 5. Codegen into the main mod
 ./scripts/generate-dungeon-seeds.sh seed-scan-results.json
 
-# 5. Rebuild main mod
+# 6. Rebuild main mod
 SKIP_WEB_BUILD=true ./scripts/build.sh
 ```
+
+If `scan` runs to completion, it writes `seed-scan-results.json` automatically and you can skip step 4.
+
+### Merge shards without re-scanning
+
+Thread checkpoints live in `--shard-dir` as `seed-scan-results.thread-*.json` (one per worker). They hold top candidate seeds per flavor per flow and can be large (hundreds of MB each).
+
+Use **`merge`** when:
+
+- You stopped a scan with **Ctrl+C** (or a time budget) and want final pools from existing shards
+- `scan` already finished writing shards but you only need to regenerate `seed-scan-results.json` / codegen
+
+```bash
+dotnet run --project src/MimesisSeedScanner.Cli -- merge \
+  --shard-dir seed-scan-shards \
+  --output seed-scan-results.json
+
+./scripts/generate-dungeon-seeds.sh seed-scan-results.json
+```
+
+Merge scores all shard candidates and picks up to `--pool-size` (default **500**) seeds per flavor per DunGen flow. You do **not** need 100% scan completion — partial shards are enough if each flavor already has many candidates.
+
+### Scan stuck past 100%?
+
+With default `--max-seed 2147483647` and `--seed-stride 100000`, older CLI builds could hit an **`int` overflow** in the seed loop after the last valid strided seed. Progress keeps climbing (101%, 102%, …) and the process never exits.
+
+**Workaround:** stop with **Ctrl+C**, then run **`merge`** on the shard directory (see above). Shards saved every ~250 seeds still contain usable candidate data.
+
+This overflow is fixed in current `MimesisSeedScanner.Cli` (index-based iteration). Rebuild the CLI before resuming a full-range scan.
 
 ### CLI scan options
 
@@ -189,6 +223,13 @@ SKIP_WEB_BUILD=true ./scripts/build.sh
 | `--shard-dir` | `seed-scan-shards/` | Checkpoint directory for resume |
 
 Shard checkpoints allow interrupted scans to resume. Delete `seed-scan-shards/` to start fresh with new parameters.
+
+| Command | Purpose |
+|---------|---------|
+| `scan` | Run or resume headless generation; writes shard checkpoints and (when finished) `seed-scan-results.json` |
+| `merge` | Combine shard files into `seed-scan-results.json` without re-scanning |
+| `codegen` | Emit `DungeonSeedPools.Generated.cs` from merged JSON |
+| `verify` | Spot-check offline generator metrics for specific seeds |
 
 ### Verify layouts
 
