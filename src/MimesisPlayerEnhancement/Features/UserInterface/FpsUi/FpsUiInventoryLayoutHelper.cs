@@ -18,6 +18,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static readonly PropertyInfo? InvenFrame1Property =
             AccessTools.Property(typeof(UIPrefab_Inventory), "UE_InvenFrame1");
 
+        private static readonly PropertyInfo? InvenFrame2Property =
+            AccessTools.Property(typeof(UIPrefab_Inventory), "UE_InvenFrame2");
+
+        private static readonly PropertyInfo? InvenFrame3Property =
+            AccessTools.Property(typeof(UIPrefab_Inventory), "UE_InvenFrame3");
+
+        private static readonly PropertyInfo? InvenFrame4Property =
+            AccessTools.Property(typeof(UIPrefab_Inventory), "UE_InvenFrame4");
+
         internal static UIPrefab_Inventory? TryGetInventoryUi()
         {
             if (Hub.Main == null || InventoryUiField == null)
@@ -131,8 +140,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             float topNudgePixels = 0f)
         {
             RectTransform? strip = sourceRow.parent as RectTransform;
-            RectTransform? inventoryFrame = TryGetInventoryFrame();
-            if (strip == null || inventoryFrame == null)
+            if (strip == null)
             {
                 return false;
             }
@@ -142,7 +150,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
-            if (!TryMeasureBoundsInParent(strip, inventoryFrame, out _, out _, out float frameMinY, out float frameMaxY))
+            if (!TryMeasureInventoryChromeBounds(strip, sourceRow, out float frameMinY, out float frameMaxY))
             {
                 return false;
             }
@@ -166,8 +174,100 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             target.sizeDelta = Vector2.zero;
             target.offsetMin = new Vector2(rowMinX - stripRect.xMin, placedMinY - stripRect.yMin);
             target.offsetMax = new Vector2(rowMaxX - stripRect.xMin, placedMaxY - stripRect.yMin);
+            IgnoreLayoutDrivers(target.gameObject);
             target.SetAsLastSibling();
+
+            Component? weightText = TryGetWeightText(TryGetInventoryUi());
+            if (weightText?.transform is RectTransform weightRect)
+            {
+                return IsRowAboveRow(strip, target, weightRect);
+            }
+
             return true;
+        }
+
+        internal static void IgnoreLayoutDrivers(GameObject root)
+        {
+            foreach (LayoutElement element in root.GetComponentsInChildren<LayoutElement>(true))
+            {
+                element.ignoreLayout = true;
+            }
+        }
+
+        internal static bool IsRowAboveRow(
+            RectTransform parent,
+            RectTransform above,
+            RectTransform below,
+            float minGapPixels = 1f)
+        {
+            if (!TryMeasureBoundsInParent(parent, above, out float _, out float _, out float aboveMinY, out float _)
+                || !TryMeasureBoundsInParent(parent, below, out float _, out float _, out float _, out float belowMaxY))
+            {
+                return false;
+            }
+
+            return aboveMinY >= belowMaxY - minGapPixels;
+        }
+
+        /// <summary>
+        /// Vertical chrome for mirror padding: hotbar slot tops plus the kg row at the bottom.
+        /// Avoids <c>rootNode</c>, which stretches to the full HUD canvas and skews Y placement.
+        /// </summary>
+        internal static bool TryMeasureInventoryChromeBounds(
+            RectTransform strip,
+            RectTransform sourceRow,
+            out float frameMinY,
+            out float frameMaxY)
+        {
+            frameMinY = float.PositiveInfinity;
+            frameMaxY = float.NegativeInfinity;
+            bool measuredHotbar = false;
+
+            UIPrefab_Inventory? inventoryUi = TryGetInventoryUi();
+            if (inventoryUi != null)
+            {
+                foreach (PropertyInfo? frameProperty in new[]
+                         {
+                             InvenFrame1Property,
+                             InvenFrame2Property,
+                             InvenFrame3Property,
+                             InvenFrame4Property,
+                         })
+                {
+                    if (frameProperty?.GetValue(inventoryUi) is not Image frameImage)
+                    {
+                        continue;
+                    }
+
+                    RectTransform frameRect = frameImage.rectTransform;
+                    if (!TryMeasureBoundsInParent(strip, frameRect, out float _, out float _, out float minY, out float maxY))
+                    {
+                        continue;
+                    }
+
+                    frameMinY = Mathf.Min(frameMinY, minY);
+                    frameMaxY = Mathf.Max(frameMaxY, maxY);
+                    measuredHotbar = true;
+                }
+            }
+
+            if (!TryMeasureBoundsInParent(strip, sourceRow, out float _, out float _, out float rowMinY, out float _))
+            {
+                return measuredHotbar;
+            }
+
+            if (measuredHotbar)
+            {
+                // Top edge follows the hotbar; bottom edge includes the kg row below it.
+                frameMinY = Mathf.Min(frameMinY, rowMinY);
+            }
+            else
+            {
+                frameMinY = rowMinY;
+                frameMaxY = rowMinY;
+            }
+
+            return frameMaxY > frameMinY;
         }
 
         internal static bool TryMeasureBoundsInParent(

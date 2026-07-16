@@ -18,10 +18,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static int _displayedTotal = UnsetTotal;
         private static bool _loggedEnsureFailure;
 
-        // Last applied source-row geometry — skips per-frame relayout while stable.
-        private static Vector3 _lastRowPosition = new(float.NaN, float.NaN, float.NaN);
-        private static Vector2 _lastRowSize;
-
         internal static bool IsEnabled() => ModConfig.EnableFpsUiInventoryNetWorth.Value;
 
         internal static void NotifyInventoryShown()
@@ -185,6 +181,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             CopyTextStyle(weightText, _label);
+            FpsUiInventoryLayoutHelper.IgnoreLayoutDrivers(_labelRoot);
             _displayedTotal = UnsetTotal;
             return true;
         }
@@ -208,14 +205,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            if (sourceRow.position == _lastRowPosition && sourceRow.rect.size == _lastRowSize)
-            {
-                return;
-            }
-
-            _lastRowPosition = sourceRow.position;
-            _lastRowSize = sourceRow.rect.size;
-
             FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
                 sourceRow,
                 cloneRect,
@@ -233,7 +222,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             _label = null;
             _resolvedTotal = UnsetTotal;
             _displayedTotal = UnsetTotal;
-            _lastRowPosition = new Vector3(float.NaN, float.NaN, float.NaN);
         }
 
         private static void ApplyTotal(int total)
