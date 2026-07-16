@@ -155,7 +155,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## Statistics — `[MimesisPlayerEnhancement_Statistics]`
 
-**Host-only.** Track session stats and a per-save-game leaderboard (deaths, kills, voice events, play time, and more). Stats load from disk when a save is loaded, stay in memory during gameplay, and are written on vanilla save (including auto-save).
+**Host-only.** Track session stats and a per-save-game statistics page (current-run leaderboard, per-zone breakdown, train value credited to first item carrier, combat breakdowns, trap deaths, dungeon exit outcomes, and all-time totals). Run-scoped stats reset when the party restarts at zone 1; `RunRestarts` is tracked per player. Stats load from disk when a save is loaded, stay in memory during gameplay, and are written on vanilla save (including auto-save).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

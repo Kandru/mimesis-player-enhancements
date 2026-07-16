@@ -21,7 +21,14 @@ export interface ChangelogAcknowledgeResult {
   lastSeenModVersion: string;
 }
 
-export interface SessionStatsDto {
+export interface EntityCountEntryDto {
+  key: string;
+  displayName: string;
+  localizationKey?: string;
+  count: number;
+}
+
+export interface StatCountersDto {
   currencyEarned?: number;
   survivalDeaths?: number;
   survivalWins?: number;
@@ -34,9 +41,26 @@ export interface SessionStatsDto {
   damageToFriend?: number;
   friendsKilled?: number;
   totalConnectedSeconds?: number;
+  trainValueDeposited?: number;
+  trapDeaths?: number;
+  killedByPlayers?: number;
+  dungeonExitsAlive?: number;
+  dungeonExitsDead?: number;
+  medianLifetimeMs?: number | null;
+  score?: number;
   monsterKills?: Record<string, number>;
   deathsByMonster?: Record<string, number>;
   deathsByTrap?: Record<string, number>;
+  monsterKillBreakdown?: EntityCountEntryDto[];
+  deathsByMonsterBreakdown?: EntityCountEntryDto[];
+  deathsByTrapBreakdown?: EntityCountEntryDto[];
+}
+
+export interface SessionStatsDto extends StatCountersDto {}
+
+export interface ZoneStatsDto {
+  zone: number;
+  totals: StatCountersDto;
 }
 
 export interface PlayerDto {
@@ -53,6 +77,7 @@ export interface PlayerDto {
   voiceLineCount: number;
   currentSession?: SessionStatsDto;
   totalStats?: SessionStatsDto;
+  runStats?: SessionStatsDto;
   activityState?: string;
   activityDetail?: string;
   health?: number;
@@ -68,8 +93,36 @@ export interface PlayerDto {
 
 export interface LeaderboardDto {
   saveSlotId: number;
+  currentZone?: number;
   connectedSteamIds: string[];
-  entries: Array<{ steamId: string; displayName: string; [key: string]: unknown }>;
+  serverTotals?: StatCountersDto;
+  zoneSummaries?: ZoneStatsDto[];
+  entries: Array<{
+    steamId: string;
+    displayName: string;
+    score?: number;
+    allTimeScore?: number;
+    runRestarts?: number;
+    run?: StatCountersDto;
+    allTime?: StatCountersDto;
+    zones?: Record<string, StatCountersDto>;
+    [key: string]: unknown;
+  }>;
+}
+
+export interface RunStatsDto {
+  startedAtUtc?: string;
+  counters?: StatCountersDto;
+  zones?: Record<string, StatCountersDto>;
+}
+
+export interface PlayerStatsDto {
+  steamId: string;
+  displayName: string;
+  global: { counters: StatCountersDto; sessionsCompleted: number; runRestarts?: number };
+  currentRun?: RunStatsDto;
+  currentSession?: { counters: StatCountersDto };
+  recentSessions?: Array<Record<string, unknown>>;
 }
 
 export interface MinimapBoundsDto {
@@ -246,8 +299,9 @@ export interface ItemOptionDto {
 export interface PlayerStatsDto {
   steamId: string;
   displayName: string;
-  global: { counters: Record<string, number>; sessionsCompleted: number };
-  currentSession?: { counters: Record<string, number> };
+  global: { counters: StatCountersDto; sessionsCompleted: number; runRestarts?: number };
+  currentRun?: RunStatsDto;
+  currentSession?: { counters: StatCountersDto };
   recentSessions?: Array<Record<string, unknown>>;
 }
 

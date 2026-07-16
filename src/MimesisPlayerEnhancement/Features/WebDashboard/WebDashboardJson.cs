@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
@@ -40,8 +41,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(new LeaderboardApiResponse
             {
                 SaveSlotId = doc.SaveSlotId,
+                CurrentZone = doc.CurrentZone,
                 UpdatedAtUtc = doc.UpdatedAtUtc.ToString("O", CultureInfo.InvariantCulture),
                 ConnectedSteamIds = connected,
+                ServerTotals = MapCounters(doc.ServerTotals),
+                ZoneSummaries = MapZoneSummaries(doc.ZoneSummaries),
                 Entries = entries,
             });
         }
@@ -229,6 +233,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 TotalStats = hideOtherPlayerDetails || player.TotalStats == null
                     ? null
                     : MapSessionStats(player.TotalStats),
+                RunStats = hideOtherPlayerDetails || player.RunStats == null
+                    ? null
+                    : MapSessionStats(player.RunStats),
                 ActivityState = hideOtherPlayerDetails ? "" : player.ActivityState,
                 ActivityDetail = hideOtherPlayerDetails ? "" : player.ActivityDetail,
                 Health = hideOtherPlayerDetails ? null : player.Health,
@@ -259,10 +266,64 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 DamageToFriend = stats.DamageToFriend,
                 FriendsKilled = stats.FriendsKilled,
                 TotalConnectedSeconds = stats.TotalConnectedSeconds,
+                TrainValueDeposited = stats.TrainValueDeposited,
+                TrapDeaths = stats.TrapDeaths,
+                KilledByPlayers = stats.KilledByPlayers,
+                DungeonExitsAlive = stats.DungeonExitsAlive,
+                DungeonExitsDead = stats.DungeonExitsDead,
+                MedianLifetimeMs = stats.MedianLifetimeMs,
+                Score = stats.Score,
                 MonsterKills = stats.MonsterKills,
                 DeathsByMonster = stats.DeathsByMonster,
                 DeathsByTrap = stats.DeathsByTrap,
             };
+        }
+
+        private static StatCountersApiDto MapCounters(StatCounters counters)
+        {
+            return new StatCountersApiDto
+            {
+                CurrencyEarned = counters.CurrencyEarned,
+                SurvivalDeaths = counters.SurvivalDeaths,
+                SurvivalWins = counters.SurvivalWins,
+                SurvivalLeftBehind = counters.SurvivalLeftBehind,
+                DeathmatchDeaths = counters.DeathmatchDeaths,
+                DeathmatchWins = counters.DeathmatchWins,
+                Revives = counters.Revives,
+                MimicEncounterCount = counters.MimicEncounterCount,
+                ItemCarryCount = counters.ItemCarryCount,
+                DamageToFriend = counters.DamageToFriend,
+                FriendsKilled = counters.FriendsKilled,
+                TotalConnectedSeconds = counters.TotalConnectedSeconds,
+                TrainValueDeposited = counters.TrainValueDeposited,
+                TrapDeaths = counters.TrapDeaths,
+                KilledByPlayers = counters.KilledByPlayers,
+                DungeonExitsAlive = counters.DungeonExitsAlive,
+                DungeonExitsDead = counters.DungeonExitsDead,
+                MedianLifetimeMs = TeamValueScore.ComputeMedianLifetimeMs(counters.LifetimesOnDeathMs),
+                Score = TeamValueScore.Compute(counters),
+                MonsterKills = counters.MonsterKills,
+                DeathsByMonster = counters.DeathsByMonster,
+                DeathsByTrap = counters.DeathsByTrap,
+                MonsterKillBreakdown = StatisticsApiMapper.MapEntityCounts(counters.MonsterKills),
+                DeathsByMonsterBreakdown = StatisticsApiMapper.MapEntityCounts(counters.DeathsByMonster),
+                DeathsByTrapBreakdown = StatisticsApiMapper.MapEntityCounts(counters.DeathsByTrap),
+            };
+        }
+
+        private static List<ZoneStatsApiDto> MapZoneSummaries(IReadOnlyList<LeaderboardZoneSummary> zones)
+        {
+            List<ZoneStatsApiDto> mapped = [];
+            foreach (LeaderboardZoneSummary zone in zones)
+            {
+                mapped.Add(new ZoneStatsApiDto
+                {
+                    Zone = zone.Zone,
+                    Totals = MapCounters(zone.Totals),
+                });
+            }
+
+            return mapped;
         }
 
         private static LeaderboardEntryApiDto MapLeaderboardEntry(LeaderboardEntry entry)
@@ -271,6 +332,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = entry.SteamId.ToString(),
                 DisplayName = NormalizeApiDisplayName(entry.SteamId, entry.DisplayName),
+                Score = entry.Score,
+                AllTimeScore = entry.AllTimeScore,
                 ItemCarryCount = entry.ItemCarryCount,
                 DamageToFriend = entry.DamageToFriend,
                 FriendsKilled = entry.FriendsKilled,
@@ -285,8 +348,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 DeathmatchWins = entry.DeathmatchWins,
                 Revives = entry.Revives,
                 TotalConnectedSeconds = entry.TotalConnectedSeconds,
+                TrainValueDeposited = entry.TrainValueDeposited,
+                TrapDeaths = entry.TrapDeaths,
+                KilledByPlayers = entry.KilledByPlayers,
+                DungeonExitsAlive = entry.DungeonExitsAlive,
+                DungeonExitsDead = entry.DungeonExitsDead,
+                MedianLifetimeMs = entry.MedianLifetimeMs,
                 SessionsCompleted = entry.SessionsCompleted,
+                RunRestarts = entry.RunRestarts,
+                Run = MapCounters(entry.RunCounters),
+                AllTime = MapCounters(entry.AllTimeCounters),
+                Zones = MapPlayerZones(entry.ZoneCounters),
             };
+        }
+
+        private static Dictionary<string, StatCountersApiDto> MapPlayerZones(Dictionary<int, StatCounters> zones)
+        {
+            Dictionary<string, StatCountersApiDto> mapped = [];
+            foreach (KeyValuePair<int, StatCounters> pair in zones.OrderByDescending(static zone => zone.Key))
+            {
+                mapped[pair.Key.ToString()] = MapCounters(pair.Value);
+            }
+
+            return mapped;
         }
 
         private static PlayerStatsApiDto MapPlayerStats(PlayerStatisticsDocument doc)
@@ -300,6 +384,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 SteamId = doc.SteamId.ToString(),
                 DisplayName = displayName,
                 Global = doc.Global,
+                CurrentRun = new RunStatsApiDto
+                {
+                    StartedAtUtc = doc.CurrentRun.StartedAtUtc.ToString("O", CultureInfo.InvariantCulture),
+                    Counters = MapCounters(doc.CurrentRun.Counters),
+                    Zones = MapPlayerZones(doc.CurrentRun.Zones),
+                },
                 CurrentSession = doc.CurrentSession,
                 RecentSessions = doc.RecentSessions,
             };
@@ -338,6 +428,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public int VoiceLineCount;
             public SessionStatsApiDto? CurrentSession;
             public SessionStatsApiDto? TotalStats;
+            public SessionStatsApiDto? RunStats;
             public string ActivityState = "";
             public string ActivityDetail = "";
             public long? Health;
@@ -365,16 +456,68 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public long DamageToFriend;
             public long FriendsKilled;
             public long TotalConnectedSeconds;
+            public long TrainValueDeposited;
+            public long TrapDeaths;
+            public long KilledByPlayers;
+            public long DungeonExitsAlive;
+            public long DungeonExitsDead;
+            public long? MedianLifetimeMs;
+            public double Score;
             public Dictionary<string, long> MonsterKills = [];
             public Dictionary<string, long> DeathsByMonster = [];
             public Dictionary<string, long> DeathsByTrap = [];
         }
 
+        private sealed class StatCountersApiDto
+        {
+            public long CurrencyEarned;
+            public long SurvivalDeaths;
+            public long SurvivalWins;
+            public long SurvivalLeftBehind;
+            public long DeathmatchDeaths;
+            public long DeathmatchWins;
+            public long Revives;
+            public long MimicEncounterCount;
+            public long ItemCarryCount;
+            public long DamageToFriend;
+            public long FriendsKilled;
+            public long TotalConnectedSeconds;
+            public long TrainValueDeposited;
+            public long TrapDeaths;
+            public long KilledByPlayers;
+            public long DungeonExitsAlive;
+            public long DungeonExitsDead;
+            public long? MedianLifetimeMs;
+            public double Score;
+            public Dictionary<string, long> MonsterKills = [];
+            public Dictionary<string, long> DeathsByMonster = [];
+            public Dictionary<string, long> DeathsByTrap = [];
+            public List<EntityCountEntry> MonsterKillBreakdown = [];
+            public List<EntityCountEntry> DeathsByMonsterBreakdown = [];
+            public List<EntityCountEntry> DeathsByTrapBreakdown = [];
+        }
+
+        private sealed class ZoneStatsApiDto
+        {
+            public int Zone;
+            public StatCountersApiDto Totals = new();
+        }
+
+        private sealed class RunStatsApiDto
+        {
+            public string StartedAtUtc = "";
+            public StatCountersApiDto Counters = new();
+            public Dictionary<string, StatCountersApiDto> Zones = [];
+        }
+
         private sealed class LeaderboardApiResponse
         {
             public int SaveSlotId;
+            public int CurrentZone;
             public string UpdatedAtUtc = "";
             public List<string> ConnectedSteamIds = [];
+            public StatCountersApiDto ServerTotals = new();
+            public List<ZoneStatsApiDto> ZoneSummaries = [];
             public List<LeaderboardEntryApiDto> Entries = [];
         }
 
@@ -382,6 +525,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             public string SteamId = "";
             public string DisplayName = "";
+            public double Score;
+            public double AllTimeScore;
             public long ItemCarryCount;
             public long DamageToFriend;
             public long FriendsKilled;
@@ -396,7 +541,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public long DeathmatchWins;
             public long Revives;
             public long TotalConnectedSeconds;
+            public long TrainValueDeposited;
+            public long TrapDeaths;
+            public long KilledByPlayers;
+            public long DungeonExitsAlive;
+            public long DungeonExitsDead;
+            public long? MedianLifetimeMs;
             public int SessionsCompleted;
+            public long RunRestarts;
+            public StatCountersApiDto Run = new();
+            public StatCountersApiDto AllTime = new();
+            public Dictionary<string, StatCountersApiDto> Zones = [];
         }
 
         private sealed class PlayerStatsApiDto
@@ -405,6 +560,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             public string SteamId = "";
             public string DisplayName = "";
             public GlobalStats Global = new();
+            public RunStatsApiDto? CurrentRun;
             public SessionStats? CurrentSession;
             public List<SessionStats> RecentSessions = [];
         }

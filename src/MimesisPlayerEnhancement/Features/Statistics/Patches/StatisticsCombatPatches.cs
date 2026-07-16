@@ -16,6 +16,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         {
             StatisticsPatchGuard.Run("DungeonRoom.SetDungeonState", () =>
             {
+                if (state == DungeonState.OnPlaying)
+                {
+                    StatisticsTracker.OnDungeonStarted();
+                    return;
+                }
+
                 if (state != DungeonState.Success && state != DungeonState.Failed)
                 {
                     return;
@@ -39,10 +45,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         {
             StatisticsPatchGuard.Run(nameof(DungeonRoom.OnActorEvent), () =>
             {
-                if (args is GameActorDeadEventArgs deadArgs)
+                if (args is not GameActorDeadEventArgs deadArgs)
                 {
-                    StatisticsTracker.HandleActorDeath(__instance, deadArgs);
+                    return;
                 }
+
+                StatisticsDeathHandler.HandleActorDeath(__instance, deadArgs);
             });
         }
     }
@@ -55,10 +63,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         {
             StatisticsPatchGuard.Run(nameof(DeathMatchRoom.OnActorEvent), () =>
             {
-                if (args is GameActorDeadEventArgs deadArgs)
+                if (args is not GameActorDeadEventArgs deadArgs)
                 {
-                    StatisticsTracker.HandleActorDeath(__instance, deadArgs);
+                    return;
                 }
+
+                StatisticsDeathHandler.HandleActorDeath(__instance, deadArgs);
             });
         }
     }
@@ -71,10 +81,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         {
             StatisticsPatchGuard.Run(nameof(MaintenanceRoom.OnActorEvent), () =>
             {
-                if (args is GameActorDeadEventArgs deadArgs)
+                if (args is not GameActorDeadEventArgs deadArgs)
                 {
-                    StatisticsTracker.HandleActorDeath(__instance, deadArgs);
+                    return;
                 }
+
+                StatisticsDeathHandler.HandleActorDeath(__instance, deadArgs);
             });
         }
     }
@@ -92,7 +104,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
                     return;
                 }
 
-                StatisticsTracker.OnPlayerDying(player, sig, __instance.VRoom);
+                StatisticsDeathHandler.OnPlayerDying(player, sig, __instance.VRoom);
             });
         }
     }

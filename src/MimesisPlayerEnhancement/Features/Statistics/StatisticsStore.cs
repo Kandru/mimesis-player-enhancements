@@ -187,10 +187,33 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 Global = new GlobalStats
                 {
                     SessionsCompleted = source.Global.SessionsCompleted,
+                    RunRestarts = source.Global.RunRestarts,
                     Counters = source.Global.Counters.Clone(),
                 },
+                CurrentRun = CloneRun(source.CurrentRun),
                 CurrentSession = source.CurrentSession == null ? null : CloneSession(source.CurrentSession),
                 RecentSessions = recentSessions,
+            };
+        }
+
+        private static RunStats CloneRun(RunStats? run)
+        {
+            if (run == null)
+            {
+                return new RunStats();
+            }
+
+            Dictionary<int, StatCounters> zones = [];
+            foreach (KeyValuePair<int, StatCounters> pair in run.Zones)
+            {
+                zones[pair.Key] = pair.Value.Clone();
+            }
+
+            return new RunStats
+            {
+                StartedAtUtc = run.StartedAtUtc,
+                Counters = run.Counters.Clone(),
+                Zones = zones,
             };
         }
 
@@ -260,7 +283,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             doc.RecentSessions ??= [];
             doc.Global ??= new GlobalStats();
             doc.Global.Counters ??= new StatCounters();
+            doc.CurrentRun ??= new RunStats();
+            doc.CurrentRun.Counters ??= new StatCounters();
+            doc.CurrentRun.Zones ??= [];
             EnsureCounterDictionaries(doc.Global.Counters);
+            EnsureCounterDictionaries(doc.CurrentRun.Counters);
             if (doc.CurrentSession != null)
             {
                 doc.CurrentSession.Counters ??= new StatCounters();
@@ -273,8 +300,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 EnsureCounterDictionaries(session.Counters);
             }
 
+            foreach (KeyValuePair<int, StatCounters> zone in doc.CurrentRun.Zones)
+            {
+                EnsureCounterDictionaries(zone.Value);
+            }
+
             if (doc.Version < PlayerStatisticsDocument.CurrentVersion)
             {
+                if (doc.CurrentRun.StartedAtUtc == default)
+                {
+                    doc.CurrentRun.StartedAtUtc = DateTime.UtcNow;
+                }
+
                 doc.Version = PlayerStatisticsDocument.CurrentVersion;
             }
 

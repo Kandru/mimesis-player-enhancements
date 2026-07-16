@@ -20,7 +20,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("FlushCurrentToAccumulated/PlayReportManager", AccessTools.Method(typeof(PlayReportManager), nameof(PlayReportManager.FlushCurrentToAccumulated))),
-                ("IncreaseCurrency/PlayReportManager", AccessTools.Method(typeof(PlayReportManager), nameof(PlayReportManager.IncreaseCurrency))),
+                ("IncreaseStageCount/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.IncreaseStageCount))),
+                ("Reset/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.Reset))),
+                ("TerminateSession/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.TerminateSession))),
+                ("HandlePutIntoToilet/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.HandlePutIntoToilet))),
+                ("OnAddItemByLooting/InventoryController", AccessTools.Method(typeof(InventoryController), "OnAddItemByLooting", [typeof(ItemElement)])),
                 ("OnActorEvent/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), nameof(DungeonRoom.OnActorEvent))),
                 ("OnActorEvent/DeathMatchRoom", AccessTools.Method(typeof(DeathMatchRoom), nameof(DeathMatchRoom.OnActorEvent))),
                 ("OnActorEvent/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnActorEvent))),

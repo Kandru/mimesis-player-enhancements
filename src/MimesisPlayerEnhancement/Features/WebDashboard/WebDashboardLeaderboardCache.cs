@@ -86,9 +86,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             try
             {
-                List<PlayerStatisticsDocument> livePlayers = CloneForLeaderboard(
-                    PlayerRegistry.GetAllStatistics(),
-                    saveSlotId);
+                List<PlayerStatisticsDocument> livePlayers = [.. PlayerRegistry.GetAllStatistics()];
                 LeaderboardDocument doc = livePlayers.Count == 0
                     ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }
                     : LeaderboardBuilder.Build(saveSlotId, livePlayers);
@@ -135,53 +133,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardSnapshotCache.RequestFullPublish();
                 }
             }
-        }
-
-        private static List<PlayerStatisticsDocument> CloneForLeaderboard(
-            IReadOnlyList<PlayerStatisticsDocument> source,
-            int saveSlotId)
-        {
-            List<PlayerStatisticsDocument> cloned = [];
-            foreach (PlayerStatisticsDocument player in source)
-            {
-                if (player.SteamId == 0)
-                {
-                    continue;
-                }
-
-                StatCounters counters = player.Global.Counters;
-                cloned.Add(new PlayerStatisticsDocument
-                {
-                    SteamId = player.SteamId,
-                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
-                        saveSlotId,
-                        player.SteamId,
-                        player.DisplayName),
-                    Global = new GlobalStats
-                    {
-                        SessionsCompleted = player.Global.SessionsCompleted,
-                        Counters = new StatCounters
-                        {
-                            ItemCarryCount = counters.ItemCarryCount,
-                            DamageToFriend = counters.DamageToFriend,
-                            FriendsKilled = counters.FriendsKilled,
-                            MimicEncounterCount = counters.MimicEncounterCount,
-                            TimeInStartingVolumeMs = counters.TimeInStartingVolumeMs,
-                            CurrencyEarned = counters.CurrencyEarned,
-                            VoiceEvents = counters.VoiceEvents,
-                            SurvivalDeaths = counters.SurvivalDeaths,
-                            SurvivalWins = counters.SurvivalWins,
-                            SurvivalLeftBehind = counters.SurvivalLeftBehind,
-                            DeathmatchDeaths = counters.DeathmatchDeaths,
-                            DeathmatchWins = counters.DeathmatchWins,
-                            Revives = counters.Revives,
-                            TotalConnectedSeconds = counters.TotalConnectedSeconds,
-                        },
-                    },
-                });
-            }
-
-            return cloned;
         }
     }
 }

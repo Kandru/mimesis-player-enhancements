@@ -31,6 +31,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public long DamageToFriend;
         public long FriendsKilled;
         public long TotalConnectedSeconds;
+        public long TrainValueDeposited;
+        public long TrapDeaths;
+        public long KilledByPlayers;
+        public long DungeonExitsAlive;
+        public long DungeonExitsDead;
+        public long? MedianLifetimeMs;
+        public double Score;
         public Dictionary<string, long> MonsterKills = [];
         public Dictionary<string, long> DeathsByMonster = [];
         public Dictionary<string, long> DeathsByTrap = [];
@@ -51,6 +58,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public int VoiceLineCount;
         public WebDashboardSessionStatsDto? CurrentSession;
         public WebDashboardSessionStatsDto? TotalStats;
+        public WebDashboardSessionStatsDto? RunStats;
         public string ActivityState = "";
         public string ActivityDetail = "";
         public long? Health;

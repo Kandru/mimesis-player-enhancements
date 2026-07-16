@@ -10,8 +10,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             LeaderboardDocument leaderboard = new()
             {
                 SaveSlotId = slotId,
-                UpdatedAtUtc = System.DateTime.UtcNow,
+                CurrentZone = StatisticsRunTracker.GetCurrentZone(),
+                UpdatedAtUtc = DateTime.UtcNow,
             };
+
+            Dictionary<int, StatCounters> zoneTotals = [];
 
             foreach (PlayerStatisticsDocument player in players)
             {
@@ -20,7 +23,21 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     continue;
                 }
 
-                StatCounters c = player.Global.Counters;
+                StatCounters run = player.CurrentRun.Counters;
+                StatCounters allTime = player.Global.Counters;
+                leaderboard.ServerTotals.Add(run);
+
+                foreach (KeyValuePair<int, StatCounters> zone in player.CurrentRun.Zones)
+                {
+                    if (!zoneTotals.TryGetValue(zone.Key, out StatCounters? totals))
+                    {
+                        totals = new StatCounters();
+                        zoneTotals[zone.Key] = totals;
+                    }
+
+                    totals.Add(zone.Value);
+                }
+
                 leaderboard.Entries.Add(new LeaderboardEntry
                 {
                     SteamId = player.SteamId,
@@ -28,30 +45,62 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                         slotId,
                         player.SteamId,
                         player.DisplayName),
-                    ItemCarryCount = c.ItemCarryCount,
-                    DamageToFriend = c.DamageToFriend,
-                    FriendsKilled = c.FriendsKilled,
-                    MimicEncounterCount = c.MimicEncounterCount,
-                    TimeInStartingVolumeMs = c.TimeInStartingVolumeMs,
-                    CurrencyEarned = c.CurrencyEarned,
-                    VoiceEvents = c.VoiceEvents,
-                    SurvivalDeaths = c.SurvivalDeaths,
-                    SurvivalWins = c.SurvivalWins,
-                    SurvivalLeftBehind = c.SurvivalLeftBehind,
-                    DeathmatchDeaths = c.DeathmatchDeaths,
-                    DeathmatchWins = c.DeathmatchWins,
-                    Revives = c.Revives,
-                    TotalConnectedSeconds = c.TotalConnectedSeconds,
+                    Score = TeamValueScore.Compute(run),
+                    AllTimeScore = TeamValueScore.Compute(allTime),
+                    ItemCarryCount = run.ItemCarryCount,
+                    DamageToFriend = run.DamageToFriend,
+                    FriendsKilled = run.FriendsKilled,
+                    MimicEncounterCount = run.MimicEncounterCount,
+                    TimeInStartingVolumeMs = run.TimeInStartingVolumeMs,
+                    CurrencyEarned = run.CurrencyEarned,
+                    VoiceEvents = run.VoiceEvents,
+                    SurvivalDeaths = run.SurvivalDeaths,
+                    SurvivalWins = run.SurvivalWins,
+                    SurvivalLeftBehind = run.SurvivalLeftBehind,
+                    DeathmatchDeaths = run.DeathmatchDeaths,
+                    DeathmatchWins = run.DeathmatchWins,
+                    Revives = run.Revives,
+                    TotalConnectedSeconds = run.TotalConnectedSeconds,
+                    TrainValueDeposited = run.TrainValueDeposited,
+                    TrapDeaths = run.TrapDeaths,
+                    KilledByPlayers = run.KilledByPlayers,
+                    DungeonExitsAlive = run.DungeonExitsAlive,
+                    DungeonExitsDead = run.DungeonExitsDead,
+                    MedianLifetimeMs = TeamValueScore.ComputeMedianLifetimeMs(run.LifetimesOnDeathMs),
                     SessionsCompleted = player.Global.SessionsCompleted,
+                    RunRestarts = player.Global.RunRestarts,
+                    RunCounters = run.Clone(),
+                    AllTimeCounters = allTime.Clone(),
+                    ZoneCounters = CloneZoneCounters(player.CurrentRun.Zones),
+                });
+            }
+
+            foreach (KeyValuePair<int, StatCounters> zone in zoneTotals.OrderByDescending(static pair => pair.Key))
+            {
+                leaderboard.ZoneSummaries.Add(new LeaderboardZoneSummary
+                {
+                    Zone = zone.Key,
+                    Totals = zone.Value.Clone(),
                 });
             }
 
             leaderboard.Entries = [.. leaderboard.Entries
-                .OrderByDescending(e => e.CurrencyEarned)
-                .ThenByDescending(e => e.MimicEncounterCount)
-                .ThenByDescending(e => e.ItemCarryCount)];
+                .OrderByDescending(static entry => entry.Score)
+                .ThenByDescending(static entry => entry.TrainValueDeposited)
+                .ThenByDescending(static entry => entry.Revives)];
 
             return leaderboard;
+        }
+
+        private static Dictionary<int, StatCounters> CloneZoneCounters(Dictionary<int, StatCounters> zones)
+        {
+            Dictionary<int, StatCounters> clone = [];
+            foreach (KeyValuePair<int, StatCounters> pair in zones)
+            {
+                clone[pair.Key] = pair.Value.Clone();
+            }
+
+            return clone;
         }
     }
 }

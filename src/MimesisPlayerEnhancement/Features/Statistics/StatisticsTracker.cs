@@ -31,6 +31,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatisticsVoiceCounter.Clear();
             _nextConnectedTimeFlushTime = 0f;
             StatisticsMessages.ClearRuntimeState();
+            StatisticsRunTracker.ClearRuntimeState();
+            StatisticsDeathHandler.ClearRuntimeState();
+            TrainDepositTracker.ClearDungeonState();
         }
 
         internal static void HandleArchiveStarted(SpeechEventArchive archive, int slotId)
@@ -274,168 +277,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             WebDashboardSnapshotCache.MarkDirty();
         }
 
-        public static void OnCurrencyEarned(long amount)
-        {
-            if (!CanTrack() || amount <= 0)
-            {
-                return;
-            }
-
-            ulong hostSteam = GameSessionAccess.GetLocalSteamId();
-            if (hostSteam == 0)
-            {
-                return;
-            }
-
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(hostSteam).Statistics;
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters.CurrencyEarned += amount;
-            doc.Global.Counters.CurrencyEarned += amount;
-            PlayerRegistry.BumpRevision();
-        }
-
-        public static void OnSurvivalPlayerDeath(ulong steamId)
-        {
-            if (!CanTrack() || steamId == 0)
-            {
-                return;
-            }
-
-            IncrementCounter(steamId, counters => counters.SurvivalDeaths++);
-        }
-
-        public static void OnPlayerDying(VPlayer player, ActorDyingSig sig, IVroom room)
-        {
-            if (!CanTrack() || player == null || player.SteamID == 0 || room == null)
-            {
-                return;
-            }
-
-            if (sig.attackerActorID != 0)
-            {
-                VActor? attacker;
-                try
-                {
-                    attacker = room.FindActorByObjectID(sig.attackerActorID);
-                }
-                catch
-                {
-                    attacker = null;
-                }
-
-                if (attacker is VMonster)
-                {
-                    return;
-                }
-            }
-
-            if (!DeathAttributionHelper.TryResolveTrapDeath(player, sig, room, out TrapType trapType))
-            {
-                return;
-            }
-
-            string trapKey = StatisticsEntityNames.FormatTrapName(trapType);
-            IncrementDictionaryCounter(player.SteamID, counters => counters.DeathsByTrap, trapKey);
-        }
-
-        public static void OnMonsterKilled(ulong steamId, int monsterMasterId)
-        {
-            if (!CanTrack() || steamId == 0 || monsterMasterId <= 0)
-            {
-                return;
-            }
-
-            string monsterKey = StatisticsEntityNames.FormatMonsterName(monsterMasterId);
-            IncrementDictionaryCounter(steamId, counters => counters.MonsterKills, monsterKey);
-        }
-
-        public static void OnDeathByMonster(ulong steamId, int monsterMasterId)
-        {
-            if (!CanTrack() || steamId == 0 || monsterMasterId <= 0)
-            {
-                return;
-            }
-
-            string monsterKey = StatisticsEntityNames.FormatMonsterName(monsterMasterId);
-            IncrementDictionaryCounter(steamId, counters => counters.DeathsByMonster, monsterKey);
-        }
-
-        public static void OnFriendKilled(ulong steamId)
-        {
-            if (!CanTrack() || steamId == 0)
-            {
-                return;
-            }
-
-            IncrementCounter(steamId, counters => counters.FriendsKilled++);
-        }
-
-        public static void HandleActorDeath(IVroom room, GameActorDeadEventArgs args)
-        {
-            if (!CanTrack() || room == null || args?.Victim == null)
-            {
-                return;
-            }
-
-            if (args.Victim is VPlayer player)
-            {
-                if (room is DeathMatchRoom)
-                {
-                    OnDeathmatchPlayerDeath(player.SteamID);
-                }
-                else
-                {
-                    OnSurvivalPlayerDeath(player.SteamID);
-                }
-
-                if (args.AttackerActorID != 0)
-                {
-                    VActor? playerAttacker;
-                    try
-                    {
-                        playerAttacker = room.FindActorByObjectID(args.AttackerActorID);
-                    }
-                    catch
-                    {
-                        playerAttacker = null;
-                    }
-
-                    if (playerAttacker is VMonster killingMonster)
-                    {
-                        OnDeathByMonster(player.SteamID, killingMonster.MasterID);
-                    }
-                    else if (playerAttacker is VPlayer friendKiller
-                             && friendKiller.SteamID != player.SteamID
-                             && room is not DeathMatchRoom)
-                    {
-                        OnFriendKilled(friendKiller.SteamID);
-                    }
-                }
-
-                return;
-            }
-
-            if (args.Victim is not VMonster monster || args.AttackerActorID == 0)
-            {
-                return;
-            }
-
-            VActor? attacker;
-            try
-            {
-                attacker = room.FindActorByObjectID(args.AttackerActorID);
-            }
-            catch
-            {
-                return;
-            }
-
-            if (attacker is VPlayer killer)
-            {
-                OnMonsterKilled(killer.SteamID, monster.MasterID);
-            }
-        }
-
         public static void OnSurvivalDungeonEnded(IEnumerable<VPlayer> players)
         {
             if (!CanTrack())
@@ -450,29 +291,25 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     continue;
                 }
 
-                PlayerResultStatus status = ResolveSurvivalResultStatus(player);
-                switch (status)
+                switch (ResolveSurvivalResultStatus(player))
                 {
                     case PlayerResultStatus.Alived:
-                        IncrementCounter(player.SteamID, counters => counters.SurvivalWins++);
+                        StatisticsCounterWriter.Modify(
+                            player.SteamID,
+                            counters => counters.SurvivalWins++,
+                            notify: false);
                         break;
                     case PlayerResultStatus.Wasted:
-                        IncrementCounter(player.SteamID, counters => counters.SurvivalLeftBehind++);
+                        StatisticsCounterWriter.Modify(
+                            player.SteamID,
+                            counters => counters.SurvivalLeftBehind++,
+                            notify: false);
                         break;
                 }
             }
 
-            PlayerRegistry.BumpRevision();
-        }
-
-        public static void OnDeathmatchPlayerDeath(ulong steamId)
-        {
-            if (!CanTrack() || steamId == 0)
-            {
-                return;
-            }
-
-            IncrementCounter(steamId, counters => counters.DeathmatchDeaths++);
+            StatisticsDeathHandler.OnDungeonEnded(players, notify: false);
+            StatisticsCounterWriter.NotifyChanged();
         }
 
         public static void OnDeathmatchSurvivor(ulong steamId)
@@ -482,7 +319,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            IncrementCounter(steamId, counters => counters.DeathmatchWins++);
+            StatisticsCounterWriter.Modify(steamId, counters => counters.DeathmatchWins++);
         }
 
         public static void OnPlayerRevived(ulong steamId)
@@ -492,7 +329,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            IncrementCounter(steamId, counters => counters.Revives++);
+            StatisticsCounterWriter.Modify(steamId, counters => counters.Revives++);
+            StatisticsDeathHandler.OnPlayerRevived(steamId);
+        }
+
+        public static void OnDungeonStarted()
+        {
+            if (!CanTrack())
+            {
+                return;
+            }
+
+            StatisticsDeathHandler.OnDungeonStarted();
         }
 
         public static void OnGameSaved(int slotId, bool waitForCompletion = false)
@@ -557,60 +405,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             ProcessDeferred();
         }
 
-        private static void IncrementCounter(ulong steamId, Action<StatCounters> increment)
-        {
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters ??= new StatCounters();
-            doc.Global ??= new GlobalStats();
-            doc.Global.Counters ??= new StatCounters();
-            EnsureCounterDictionaries(doc.CurrentSession.Counters);
-            EnsureCounterDictionaries(doc.Global.Counters);
-            increment(doc.CurrentSession.Counters);
-            increment(doc.Global.Counters);
-            PlayerRegistry.BumpRevision();
-        }
-
-        private static void IncrementDictionaryCounter(
-            ulong steamId,
-            Func<StatCounters, Dictionary<string, long>> selector,
-            string key)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                return;
-            }
-
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters ??= new StatCounters();
-            doc.Global ??= new GlobalStats();
-            doc.Global.Counters ??= new StatCounters();
-            EnsureCounterDictionaries(doc.CurrentSession.Counters);
-            EnsureCounterDictionaries(doc.Global.Counters);
-            IncrementDictionaryValue(selector(doc.CurrentSession.Counters), key);
-            IncrementDictionaryValue(selector(doc.Global.Counters), key);
-            PlayerRegistry.BumpRevision();
-        }
-
-        private static void IncrementDictionaryValue(Dictionary<string, long> dictionary, string key)
-        {
-            dictionary ??= [];
-            _ = dictionary.TryGetValue(key, out long current);
-            dictionary[key] = current + 1;
-        }
-
-        private static void EnsureCounterDictionaries(StatCounters? counters)
-        {
-            if (counters == null)
-            {
-                return;
-            }
-
-            counters.MonsterKills ??= [];
-            counters.DeathsByMonster ??= [];
-            counters.DeathsByTrap ??= [];
-        }
+        private static void MergeDelta(PlayerStatisticsDocument doc, StatCounters delta) =>
+            StatisticsCounterWriter.MergeDelta(doc.SteamId, delta);
 
         private static PlayerLifecycleContribution? BuildSessionConnectContribution(
             PlayerStatisticsDocument doc,
@@ -656,13 +452,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return new PlayerLifecycleContribution("Statistics", detail);
         }
 
-        private static bool CanTrack()
-        {
-            return ModConfig.EnableStatistics.Value
-                   && PlayerRegistry.TryGetLoadedSlotId(out int slotId)
-                   && MimesisSaveManager.IsValidSaveSlotId(slotId)
-                   && MimesisSaveManager.IsHost();
-        }
+        internal static bool CanTrack() =>
+            ModConfig.EnableStatistics.Value
+            && PlayerRegistry.TryGetLoadedSlotId(out int slotId)
+            && MimesisSaveManager.IsValidSaveSlotId(slotId)
+            && MimesisSaveManager.IsHost();
+
+        internal static SessionStats CreateSession(DateTime now) => NewSession(now);
 
         internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId)
         {
@@ -805,16 +601,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             doc.CurrentSession ??= NewSession(since);
-            doc.CurrentSession.Counters.TotalConnectedSeconds += seconds;
-            doc.Global.Counters.TotalConnectedSeconds += seconds;
+            StatisticsCounterWriter.AddConnectedSeconds(steamId, seconds);
             PlayerRegistry.SetConnectedSince(steamId, DateTime.UtcNow);
         }
 
         private static void ApplyDungeonReportTotals(ulong steamId, PlayReportData report)
         {
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-
             StatCounters totals = new()
             {
                 ItemCarryCount = report.TotalItemCarryCount,
@@ -824,7 +616,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 CyclesCompleted = 1,
             };
 
-            MergeDelta(doc, totals);
+            StatisticsCounterWriter.MergeDelta(steamId, totals);
         }
 
         private static void ApplyVoiceDelta(ulong steamId, PlayerStatisticsDocument doc, Dictionary<ulong, int> voiceCounts)
@@ -835,16 +627,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters.VoiceEvents += delta;
-            doc.Global.Counters.VoiceEvents += delta;
-        }
-
-        private static void MergeDelta(PlayerStatisticsDocument doc, StatCounters delta)
-        {
-            doc.CurrentSession ??= NewSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters.Add(delta);
-            doc.Global.Counters.Add(delta);
+            StatisticsCounterWriter.Modify(steamId, counters => counters.VoiceEvents += delta);
         }
 
         internal static void SyncVoiceBaseline(SpeechEventArchive archive)

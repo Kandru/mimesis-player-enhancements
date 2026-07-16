@@ -415,6 +415,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             dto.CurrentSession = BuildSessionStatsFromDocument(doc);
             dto.TotalStats = BuildTotalStatsFromDocument(doc);
+            dto.RunStats = BuildRunStatsFromDocument(doc);
             dto.ActivityState = "offline";
             dto.ActivityDetail = string.Empty;
 
@@ -643,6 +644,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 dto.CurrentSession = BuildSessionStats(dto.SteamId);
                 dto.TotalStats = BuildTotalStats(dto.SteamId);
+                dto.RunStats = BuildRunStats(dto.SteamId);
             }
 
             if (WebDashboardGameState.IsHost() && ModConfig.EnableJoinAnytime.Value)
@@ -837,6 +839,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return BuildSessionStatsFromDocument(doc);
         }
 
+        private static WebDashboardSessionStatsDto? BuildRunStats(ulong steamId)
+        {
+            if (steamId == 0)
+            {
+                return null;
+            }
+
+            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            {
+                return null;
+            }
+
+            return BuildRunStatsFromDocument(doc);
+        }
+
         private static WebDashboardSessionStatsDto? BuildTotalStats(ulong steamId)
         {
             if (steamId == 0)
@@ -862,6 +879,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return MapCounters(doc.CurrentSession.Counters);
         }
 
+        private static WebDashboardSessionStatsDto? BuildRunStatsFromDocument(PlayerStatisticsDocument doc)
+        {
+            if (doc.CurrentRun?.Counters == null)
+            {
+                return null;
+            }
+
+            return MapCounters(doc.CurrentRun.Counters, includeScore: true);
+        }
+
         private static WebDashboardSessionStatsDto? BuildTotalStatsFromDocument(PlayerStatisticsDocument doc)
         {
             if (doc.Global?.Counters == null)
@@ -872,7 +899,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return MapCounters(doc.Global.Counters);
         }
 
-        private static WebDashboardSessionStatsDto MapCounters(StatCounters c)
+        private static WebDashboardSessionStatsDto MapCounters(StatCounters c, bool includeScore = false)
         {
             return new WebDashboardSessionStatsDto
             {
@@ -888,6 +915,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 DamageToFriend = c.DamageToFriend,
                 FriendsKilled = c.FriendsKilled,
                 TotalConnectedSeconds = c.TotalConnectedSeconds,
+                TrainValueDeposited = c.TrainValueDeposited,
+                TrapDeaths = c.TrapDeaths,
+                KilledByPlayers = c.KilledByPlayers,
+                DungeonExitsAlive = c.DungeonExitsAlive,
+                DungeonExitsDead = c.DungeonExitsDead,
+                MedianLifetimeMs = TeamValueScore.ComputeMedianLifetimeMs(c.LifetimesOnDeathMs),
+                Score = includeScore ? TeamValueScore.Compute(c) : 0,
                 MonsterKills = new Dictionary<string, long>(c.MonsterKills ?? []),
                 DeathsByMonster = new Dictionary<string, long>(c.DeathsByMonster ?? []),
                 DeathsByTrap = new Dictionary<string, long>(c.DeathsByTrap ?? []),
