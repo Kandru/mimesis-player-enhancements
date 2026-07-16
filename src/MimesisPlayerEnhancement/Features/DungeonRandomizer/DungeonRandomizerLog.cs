@@ -4,6 +4,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
     {
         private const string Feature = "DungeonRandomizer";
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
+        private const int MaxGenerationAttempts = 4;
 
         internal static void InfoDungeonPick(int vanillaResult, int picked, DungeonPickPoolMode mode, int poolSize)
         {
@@ -34,7 +35,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             string flowId,
             int vanillaSeed,
             int curatedSeed,
-            int poolSize)
+            int poolSize,
+            int skipped)
         {
             string flavorLabel = ModL10n.GetConfigSelectOptionLabel(
                 DungeonSectionId,
@@ -42,9 +44,29 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 DungeonSeedFlavorUtil.ToConfigValue(flavor))
                 ?? flavor.ToString();
 
+            string skippedSuffix = skipped > 0 ? $", skipped {skipped}" : string.Empty;
             ModLog.Info(
                 Feature,
-                $"Dungeon seed flavor {flavorLabel} — flow '{flowId}', pool={poolSize}, {vanillaSeed} -> {curatedSeed}");
+                $"Seed flavor '{flavorLabel}' applied — flow={flowId}, seed {vanillaSeed} -> {curatedSeed} (pool {poolSize}{skippedSuffix})");
         }
+
+        internal static void DebugSeedCandidateSkipped(
+            string expectedFlowId,
+            int poolIndex,
+            int candidateSeed,
+            string derivedFlowId)
+        {
+            ModLog.Debug(
+                Feature,
+                $"Seed candidate skipped — pool[{poolIndex}]={candidateSeed} re-derives flow '{derivedFlowId}' (want '{expectedFlowId}')");
+        }
+
+        internal static void DebugSeedCurationReused(int vanillaSeed, int curatedSeed) =>
+            ModLog.Debug(Feature, $"Seed curation reused — seed {vanillaSeed} -> {curatedSeed} (cached)");
+
+        internal static void WarnGenerationFailed(int attempt, int failedSeed, int nextSeed) =>
+            ModLog.WarnRed(
+                Feature,
+                $"Dungeon generation failed — attempt {attempt}/{MaxGenerationAttempts}, seed {failedSeed} -> {nextSeed} (curated seed abandoned)");
     }
 }

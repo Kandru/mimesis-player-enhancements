@@ -4,17 +4,17 @@ namespace MimesisSeedScanner
 {
     public static class PoolSelector
     {
-        public const int DefaultPoolSelectionSeed = 42;
-
         /// <summary>
-        /// Selects up to poolSize seeds from candidates using percentile qualification and random sampling.
+        /// Selects up to poolSize highest-scoring seeds from candidates.
         /// </summary>
         public static List<int> SelectPool(
             DungeonSeedFlavor flavor,
             IReadOnlyList<(int Seed, GenerationMetrics Metrics)> candidates,
             int poolSize,
-            int selectionSeed = DefaultPoolSelectionSeed)
+            int selectionSeed = 0)
         {
+            _ = selectionSeed;
+
             if (candidates.Count == 0 || poolSize <= 0)
             {
                 return [];
@@ -28,24 +28,11 @@ namespace MimesisSeedScanner
 
             scored.Sort((a, b) => b.Score.CompareTo(a.Score));
 
-            int qualifyCount = Math.Max(poolSize, (int)Math.Ceiling(scored.Count * 0.1));
-            qualifyCount = Math.Min(qualifyCount, scored.Count);
-            var qualified = scored.Take(qualifyCount).Select(entry => entry.Seed).ToList();
-
-            if (qualified.Count <= poolSize)
+            int take = Math.Min(poolSize, scored.Count);
+            var selected = new List<int>(take);
+            for (int i = 0; i < take; i++)
             {
-                qualified.Sort();
-                return qualified;
-            }
-
-            var random = new RandomStream(selectionSeed ^ flavor.ToString().GetHashCode(StringComparison.Ordinal));
-            var selected = new List<int>(poolSize);
-            var remaining = new List<int>(qualified);
-            while (selected.Count < poolSize && remaining.Count > 0)
-            {
-                int pick = random.Next(0, remaining.Count);
-                selected.Add(remaining[pick]);
-                remaining.RemoveAt(pick);
+                selected.Add(scored[i].Seed);
             }
 
             selected.Sort();

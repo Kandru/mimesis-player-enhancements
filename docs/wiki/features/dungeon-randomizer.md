@@ -32,7 +32,7 @@ The mod's **map flavor** setting does not change the dungeon type or flow asset.
 Replaces the old `RandomizeDungeonSeed` toggle. Controls how the host picks the procedural dungeon seed when a run starts.
 
 - **`Vanilla`** — the host uses the game's normal random seed roll. No curated bias.
-- **Any other flavor** — before the seed is sent to players, the host replaces it with a random pick from **up to 500 precomputed seeds** for that dungeon's DunGen flow (e.g. all Factory Sector 1 layouts share one pool). Pools are baked into the mod and refreshed by a developer tool when the game updates — not editable in settings. When more than 500 seeds qualify for a flavor, 500 are chosen at random during the scan merge.
+- **Any other flavor** — before the seed is sent to players, the host replaces it with a random pick from **up to 500 precomputed seeds** for that dungeon's DunGen flow (e.g. all Factory Sector 1 layouts share one pool). Pools are baked into the mod and refreshed by a developer tool when the game updates — not editable in settings. The merge step keeps the **top 500** seeds by flavor score (best examples, not a random sample from a wider band).
 
 Config and TOML use the **enum name** (`Compact`, `DeepMaze`, …). Human-readable labels in the web dashboard come from `l10n` (`en.json` / `de.json`). To add a flavor: add an enum member in `DungeonSeedFlavor`, add matching `options` keys in both locale files, then rescan and regenerate pools.
 
@@ -255,5 +255,7 @@ Closest to the **median** room count, branch score, and connection count across 
 - Map flavor, dungeon pick, and map variant are applied on the **host** before `MoveToDungeonSig` — all clients receive the same seed.
 - Clients do **not** need the mod for vanilla seeds; they **do** need matching game data to interpret the same seed identically.
 - If no seed pool exists yet for a flow (e.g. before the developer scanner has been run for a game version), the mod falls back to the vanilla host seed and logs a warning.
+- For dungeon masters with **multiple DunGen flow candidates**, the host only picks pool seeds that re-derive the same flow at load (`SyncRandom(seed)` → `GetRandomDungenName`). If none match, it falls back to the vanilla seed and logs a warning.
+- On rare DunGen generation failure, the game retries with `Seed++` up to **3** times (4 attempts total). The mod logs each failure in **red** when `EnableDungeonRandomizer` is on — the curated seed may be abandoned for `seed + 1`.
 
 **Full config keys →** [Dungeon Randomizer](../CONFIG.md#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer)

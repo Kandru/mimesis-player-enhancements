@@ -1,3 +1,5 @@
+using DunGen;
+
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonRandomizerPatches
@@ -27,6 +29,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 ("SendToAllPlayers/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.SendToAllPlayers), [typeof(IMsg), typeof(VActor)])),
                 ("PendMoveToDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))),
                 ("ReadyToGamePktRecording/VWorld", AccessTools.Method(typeof(VWorld), nameof(VWorld.ReadyToGamePktRecording))),
+                ("Generate/RuntimeDungeon", AccessTools.Method(typeof(RuntimeDungeon), nameof(RuntimeDungeon.Generate))),
             ]);
         }
     }

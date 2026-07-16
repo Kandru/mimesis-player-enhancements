@@ -112,6 +112,28 @@ namespace MimesisPlayerEnhancement
             MelonLogger.Warning($"[{feature}] {message}");
         }
 
+        public static void WarnRed(string feature, string message)
+        {
+            string body = $"[{feature}] {message}";
+            if (UseLegacyConsoleColors)
+            {
+                ConsoleColor previous = Console.ForegroundColor;
+                try
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    MelonLogger.Warning(body);
+                }
+                finally
+                {
+                    Console.ForegroundColor = previous;
+                }
+
+                return;
+            }
+
+            MelonLogger.Warning(body.Pastel(FailureRed));
+        }
+
         public static void Error(string feature, string message)
         {
             MelonLogger.Error($"[{feature}] {message}");
