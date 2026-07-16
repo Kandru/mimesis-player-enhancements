@@ -3,6 +3,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.13
 - fix: FPS UI layout timing
 - fix: properly wire esc menu player buttons
+- fix: voice restore
 
 ## 26.7.12
 - feature: dungeon map flavor system — 24 curated seed styles (Compact, Labyrinth, etc.)

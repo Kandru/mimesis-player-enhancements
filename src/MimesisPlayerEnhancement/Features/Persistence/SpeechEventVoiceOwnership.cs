@@ -5,19 +5,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     /// </summary>
     internal static class SpeechEventVoiceOwnership
     {
-        internal static HashSet<string> CollectValidVoiceIds(int slotId, bool requirePoolEvidence = false)
+        internal static HashSet<string> CollectValidVoiceIds(int slotId)
         {
             HashSet<string> validVoiceIds = new(StringComparer.Ordinal);
-            HashSet<string> poolVoiceIds = requirePoolEvidence ? CollectPoolVoiceIds() : [];
 
             foreach (KeyValuePair<ulong, string> kvp in PlayerRegistry.GetVoiceMappings())
             {
-                if (string.IsNullOrEmpty(kvp.Value))
-                {
-                    continue;
-                }
-
-                if (!requirePoolEvidence || poolVoiceIds.Contains(kvp.Value))
+                if (!string.IsNullOrEmpty(kvp.Value))
                 {
                     _ = validVoiceIds.Add(kvp.Value);
                 }
@@ -25,12 +19,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             SaveSlotDocumentStore.ApplyPlayerEntries((steamId, entry) =>
             {
-                if (string.IsNullOrWhiteSpace(entry.VoiceId))
-                {
-                    return;
-                }
-
-                if (!requirePoolEvidence || poolVoiceIds.Contains(entry.VoiceId))
+                if (!string.IsNullOrWhiteSpace(entry.VoiceId))
                 {
                     _ = validVoiceIds.Add(entry.VoiceId);
                 }
@@ -47,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     }
 
                     ulong steamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
-                    if (steamId != 0 && IsKnownSteamId(slotId, steamId))
+                    if (steamId != 0 && IsKnownSavePlayer(slotId, steamId))
                     {
                         _ = validVoiceIds.Add(playerId);
                     }
@@ -59,20 +48,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             return validVoiceIds;
-        }
-
-        private static HashSet<string> CollectPoolVoiceIds()
-        {
-            HashSet<string> poolVoiceIds = new(StringComparer.Ordinal);
-            foreach (SpeechEvent ev in SpeechEventPoolManager.GetPendingEvents())
-            {
-                if (!string.IsNullOrEmpty(ev.PlayerName))
-                {
-                    _ = poolVoiceIds.Add(ev.PlayerName);
-                }
-            }
-
-            return poolVoiceIds;
         }
 
         internal static bool IsOwnedVoiceId(string? playerName, HashSet<string> validVoiceIds)
@@ -107,15 +82,24 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return owned;
         }
 
-        private static bool IsKnownSteamId(int slotId, ulong steamId)
+        /// <summary>
+        /// True when the Steam ID belongs to a player recorded on this save (statistics or roster entry).
+        /// </summary>
+        internal static bool IsKnownSavePlayer(int slotId, ulong steamId)
         {
+            if (steamId == 0)
+            {
+                return false;
+            }
+
             if (PlayerRegistry.TryGetStatistics(steamId, out _))
             {
                 return true;
             }
 
             return MimesisSaveManager.IsValidSaveSlotId(slotId)
-                && SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
+                && (SaveSlotDocumentStore.TryGetName(slotId, steamId, out _)
+                    || SaveSlotDocumentStore.TryGetVoiceId(slotId, steamId, out _));
         }
     }
 }

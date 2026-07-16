@@ -337,7 +337,9 @@ namespace MimesisPlayerEnhancement.Features.Players
 
             foreach (PlayerRecord record in Records.Values)
             {
-                if (!SaveSlotDocumentStore.IsUsableName(record.DisplayName, record.SteamId))
+                bool hasUsableName = SaveSlotDocumentStore.IsUsableName(record.DisplayName, record.SteamId);
+                bool hasVoiceId = !string.IsNullOrWhiteSpace(record.VoiceId);
+                if (!hasUsableName && !hasVoiceId)
                 {
                     continue;
                 }

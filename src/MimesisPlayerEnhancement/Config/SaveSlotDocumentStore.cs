@@ -517,50 +517,6 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        internal static void SyncVoiceMappingsFromRuntime(IReadOnlyDictionary<ulong, string> mappings)
-        {
-            if (_loadedSlotId < 0)
-            {
-                return;
-            }
-
-            lock (Gate)
-            {
-                foreach (KeyValuePair<ulong, string> kvp in mappings)
-                {
-                    if (kvp.Key == 0 || string.IsNullOrWhiteSpace(kvp.Value))
-                    {
-                        continue;
-                    }
-
-                    _document.Players ??= [];
-                    string key = kvp.Key.ToString();
-                    if (!_document.Players.TryGetValue(key, out SaveSlotPlayerEntry? entry))
-                    {
-                        entry = new SaveSlotPlayerEntry();
-                        _document.Players[key] = entry;
-                    }
-
-                    string displayName = entry.DisplayName;
-                    if (!IsUsableName(displayName, kvp.Key))
-                    {
-                        displayName = StatisticsDisplayNameResolver.Resolve(kvp.Key, displayName);
-                        if (IsUsableName(displayName, kvp.Key) && entry.DisplayName != displayName)
-                        {
-                            entry.DisplayName = displayName;
-                            _dirty = true;
-                        }
-                    }
-
-                    if (entry.VoiceId != kvp.Value)
-                    {
-                        entry.VoiceId = kvp.Value;
-                        _dirty = true;
-                    }
-                }
-            }
-        }
-
         internal static bool IsUsableName(string? name, ulong steamId)
         {
             return !string.IsNullOrWhiteSpace(name) && name != steamId.ToString();

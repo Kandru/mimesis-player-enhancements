@@ -411,7 +411,7 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            if (state.ConnectedLogged || SpeechEventPoolManager.AwaitingVoiceUuid(state.Archive))
+            if (state.ConnectedLogged)
             {
                 return;
             }
