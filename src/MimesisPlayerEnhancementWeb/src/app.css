@@ -1421,6 +1421,14 @@ body.dev-verify-shake {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.settings-entry-modified {
+  background: #ffffff;
+}
+
+.dark .settings-entry-modified {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .settings-entry-disabled {
   opacity: 0.72;
 }

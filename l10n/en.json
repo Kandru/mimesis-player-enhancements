@@ -1177,8 +1177,6 @@
     "settings_no_entries": "No configuration entries found.",
     "settings_reset": "Reset",
     "settings_reset_all": "Reset all",
-    "settings_reset_global": "Reset to global",
-    "settings_reset_default": "Reset to default",
     "settings_reset_all_global_title": "Reset all to global values",
     "settings_reset_all_defaults_title": "Reset all to defaults",
     "settings_default_hint": "Default: {value}",

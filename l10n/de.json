@@ -1177,8 +1177,6 @@
     "settings_no_entries": "Keine Konfigurationseinträge gefunden.",
     "settings_reset": "Zurücksetzen",
     "settings_reset_all": "Alle zurücksetzen",
-    "settings_reset_global": "Auf global zurücksetzen",
-    "settings_reset_default": "Auf Standard zurücksetzen",
     "settings_reset_all_global_title": "Alle auf globale Werte zurücksetzen",
     "settings_reset_all_defaults_title": "Alle auf Standardwerte zurücksetzen",
     "settings_default_hint": "Standard: {value}",

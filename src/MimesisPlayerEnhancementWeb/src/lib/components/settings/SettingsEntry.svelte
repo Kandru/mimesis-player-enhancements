@@ -41,9 +41,6 @@
   const rowKey = $derived(`${section.id}/${entry.key}`);
   const isSaving = $derived(savingKey === rowKey || savingKey === `${section.id}/*`);
   const showReset = $derived(editable && entryIsModified(entry, scope));
-  const resetLabel = $derived(
-    scope === 'save' ? t('dashboard.settings_reset_global') : t('dashboard.settings_reset_default'),
-  );
   const resetTitle = $derived(
     scope === 'save' ? formatGlobalHint(entry) : formatDefaultHint(entry),
   );
@@ -53,7 +50,7 @@
 </script>
 
 <div
-  class="settings-entry {editable ? '' : 'settings-entry-readonly'} {featureOff ? 'settings-entry-disabled' : ''} {isSaving ? 'settings-entry-saving' : ''}"
+  class="settings-entry {editable ? '' : 'settings-entry-readonly'} {showReset ? 'settings-entry-modified' : ''} {featureOff ? 'settings-entry-disabled' : ''} {isSaving ? 'settings-entry-saving' : ''}"
 >
   <div class="settings-entry-main">
     <div class="settings-entry-header">
@@ -110,7 +107,7 @@
         title={resetTitle}
         onclick={() => onreset()}
       >
-        {resetLabel}
+        {t('dashboard.settings_reset')}
       </button>
     {/if}
   </div>
