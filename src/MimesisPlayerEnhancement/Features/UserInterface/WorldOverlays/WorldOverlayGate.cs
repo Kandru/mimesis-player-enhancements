@@ -6,16 +6,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     {
         internal static bool DamageHealthGlowEnabled { get; private set; } = true;
         internal static bool DamageNumbersEnabled { get; private set; } = true;
-        internal static bool DetoxIndicatorsEnabled { get; private set; } = true;
 
         internal static bool AnyOverlayEnabled =>
-            DamageHealthGlowEnabled || DamageNumbersEnabled || DetoxIndicatorsEnabled;
+            DamageHealthGlowEnabled || DamageNumbersEnabled;
 
         internal static void RefreshCache()
         {
             DamageHealthGlowEnabled = ModConfig.EnableDamageHealthGlow?.Value ?? false;
             DamageNumbersEnabled = ModConfig.EnableFloatingDamageNumbers?.Value ?? false;
-            DetoxIndicatorsEnabled = ModConfig.EnableFloatingDetoxIndicators?.Value ?? false;
         }
 
         internal static bool IsWorldDamageTarget(ProtoActor? actor)
@@ -29,15 +27,5 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         }
 
         internal static bool IsDamageOverlayTarget(ProtoActor? actor) => IsWorldDamageTarget(actor);
-
-        internal static bool IsDetoxOverlayTarget(ProtoActor? actor)
-        {
-            if (actor == null || actor.dead || actor.AmIAvatar())
-            {
-                return false;
-            }
-
-            return actor.IsPlayer() && actor.netSyncActorData.maxConta > 0;
-        }
     }
 }

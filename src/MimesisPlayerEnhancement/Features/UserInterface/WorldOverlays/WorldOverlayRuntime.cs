@@ -5,16 +5,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     internal static class WorldOverlayRuntime
     {
         private static readonly Color DamageTextColor = new(1f, 0.25f, 0.25f, 1f);
-        private static readonly Color DetoxTextColor = new(0.25f, 0.9f, 0.3f, 1f);
 
         private static readonly DamageHealthGlowController DamageHealthGlows = new();
         private static readonly FloatingTextOverlayController DamageFloaters = new(
             () => WorldOverlayGate.DamageNumbersEnabled,
             WorldOverlayGate.IsDamageOverlayTarget,
             requiresVisibility: true);
-        private static readonly FloatingTextOverlayController DetoxFloaters = new(
-            () => WorldOverlayGate.DetoxIndicatorsEnabled,
-            WorldOverlayGate.IsDetoxOverlayTarget);
 
         private static bool _hasActiveOverlays;
 
@@ -45,11 +41,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 DamageFloaters.Tick(camera);
             }
 
-            if (WorldOverlayGate.DetoxIndicatorsEnabled)
-            {
-                DetoxFloaters.Tick(camera);
-            }
-
             RefreshActiveFlag();
             if (!_hasActiveOverlays)
             {
@@ -68,11 +59,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             if (!WorldOverlayGate.DamageNumbersEnabled)
             {
                 DamageFloaters.TearDown();
-            }
-
-            if (!WorldOverlayGate.DetoxIndicatorsEnabled)
-            {
-                DetoxFloaters.TearDown();
             }
 
             if (!WorldOverlayGate.AnyOverlayEnabled)
@@ -123,35 +109,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             RefreshActiveFlag();
         }
 
-        internal static void NotifyContaReduced(ProtoActor actor, long previousConta, long newConta, long maxConta)
-        {
-            if (newConta >= previousConta || !WorldOverlayGate.IsDetoxOverlayTarget(actor))
-            {
-                return;
-            }
-
-            long reduction = previousConta - newConta;
-            int percent = maxConta > 0
-                ? (int)Math.Round(reduction * 100.0 / maxConta, MidpointRounding.AwayFromZero)
-                : 0;
-            if (percent <= 0)
-            {
-                return;
-            }
-
-            DetoxFloaters.Spawn(
-                actor,
-                $"-{percent}%",
-                DetoxTextColor,
-                displayScale: WorldOverlayFactory.FloaterScale);
-            RefreshActiveFlag();
-        }
-
         private static void TearDownAll()
         {
             DamageHealthGlows.TearDown();
             DamageFloaters.TearDown();
-            DetoxFloaters.TearDown();
             WorldOverlayVisibility.ClearCache();
             WorldOverlayFactory.Instance.SetRootActive(false);
             _hasActiveOverlays = false;
@@ -161,8 +122,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         {
             _hasActiveOverlays =
                 (WorldOverlayGate.DamageHealthGlowEnabled && DamageHealthGlows.HasActiveDamageGlows)
-                || (WorldOverlayGate.DamageNumbersEnabled && DamageFloaters.HasActiveFloaters)
-                || (WorldOverlayGate.DetoxIndicatorsEnabled && DetoxFloaters.HasActiveFloaters);
+                || (WorldOverlayGate.DamageNumbersEnabled && DamageFloaters.HasActiveFloaters);
         }
 
         private static Camera? _cachedFallbackCamera;

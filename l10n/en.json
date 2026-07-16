@@ -22,7 +22,6 @@
         "extendedInGameMenuPlayerList": "In-game menu player list",
         "damageHealthGlow": "Damage health outline",
         "floatingDamage": "Floating damage numbers",
-        "floatingDetox": "Floating detox indicators",
         "fpsUi": "FPS UI"
       },
       "ModToastDurationSeconds": {
@@ -51,11 +50,7 @@
       },
       "FloatingDamageDurationSeconds": {
         "title": "Floating Damage Duration (seconds)",
-        "description": "How long floating damage and detox indicators remain visible."
-      },
-      "EnableFloatingDetoxIndicators": {
-        "title": "Enable Floating Detox Indicators",
-        "description": "Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. Duration is configured under Floating damage numbers."
+        "description": "How long floating damage numbers remain visible."
       },
       "EnableFpsUi": {
         "title": "Enable FPS UI",

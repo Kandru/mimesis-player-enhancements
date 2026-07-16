@@ -46,10 +46,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "FloatingDamageDurationSeconds",
                 2f);
 
-            ModConfig.EnableFloatingDetoxIndicators = ModConfig.CreateTrackedEntry(_category,
-                "EnableFloatingDetoxIndicators",
-                true);
-
             ModConfig.EnableFpsUi = ModConfig.CreateTrackedEntry(_category,
                 "EnableFpsUi",
                 true);
@@ -85,8 +81,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDamageNumbers));
             ModConfig.FloatingDamageDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
                 OnFloatingDamageDurationChanged(logger, value));
-            ModConfig.EnableFloatingDetoxIndicators.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableFloatingDetoxIndicators));
             ModConfig.EnableFpsUi.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUi));
             ModConfig.EnableFpsUiInventoryNetWorth.OnEntryValueChanged.Subscribe((_, _) =>

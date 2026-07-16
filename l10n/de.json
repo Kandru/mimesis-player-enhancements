@@ -22,7 +22,6 @@
         "extendedInGameMenuPlayerList": "Ingame-Menü-Spielerliste",
         "damageHealthGlow": "Schadens-Gesundheitsumriss",
         "floatingDamage": "Schwebende Schadenszahlen",
-        "floatingDetox": "Schwebende Detox-Indikatoren",
         "fpsUi": "FPS-UI"
       },
       "ModToastDurationSeconds": {
@@ -51,11 +50,7 @@
       },
       "FloatingDamageDurationSeconds": {
         "title": "Schwebende Indikator-Dauer (Sekunden)",
-        "description": "Wie lange schwebende Schadens- und Detox-Indikatoren sichtbar bleiben."
-      },
-      "EnableFloatingDetoxIndicators": {
-        "title": "Schwebende Detox-Indikatoren aktivieren",
-        "description": "Zeigt grüne schwebende Toxizitätsreduktion (z. B. -27%), wenn ein anderer Spieler Detox-Saft trinkt. Die Dauer wird unter Schwebende Schadenszahlen eingestellt."
+        "description": "Wie lange schwebende Schadenszahlen sichtbar bleiben."
       },
       "EnableFpsUi": {
         "title": "FPS-UI aktivieren",

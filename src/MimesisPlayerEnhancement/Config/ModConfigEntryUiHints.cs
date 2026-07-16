@@ -239,7 +239,6 @@ namespace MimesisPlayerEnhancement
                     ["EnableDamageHealthGlow"] = "damageHealthGlow",
                     ["EnableFloatingDamageNumbers"] = "floatingDamage",
                     ["FloatingDamageDurationSeconds"] = "floatingDamage",
-                    ["EnableFloatingDetoxIndicators"] = "floatingDetox",
                     ["EnableFpsUi"] = "fpsUi",
                     ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
                 };

@@ -75,41 +75,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
-    [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.UpdateConta))]
-    internal static class UpdateContaPostfix
-    {
-        private const string Feature = "Ui";
-
-        [HarmonyPrefix]
-        private static void Prefix(ProtoActor __instance, out long __state)
-        {
-            __state = __instance.netSyncActorData?.conta ?? 0L;
-        }
-
-        [HarmonyPostfix]
-        private static void Postfix(ProtoActor __instance, long conta, long maxConta, long __state)
-        {
-            if (!WorldOverlayGate.DetoxIndicatorsEnabled)
-            {
-                return;
-            }
-
-            try
-            {
-                if (__state <= conta)
-                {
-                    return;
-                }
-
-                WorldOverlayRuntime.NotifyContaReduced(__instance, __state, conta, maxConta);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"UpdateConta postfix failed — {ex.Message}");
-            }
-        }
-    }
-
     [HarmonyPatch]
     internal static class HitTargetSigPostfix
     {

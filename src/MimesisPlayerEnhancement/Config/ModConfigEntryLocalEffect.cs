@@ -25,7 +25,6 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "EnableDamageHealthGlow"),
                 (UiConfig.SectionId, "EnableFloatingDamageNumbers"),
                 (UiConfig.SectionId, "FloatingDamageDurationSeconds"),
-                (UiConfig.SectionId, "EnableFloatingDetoxIndicators"),
                 (UiConfig.SectionId, "EnableFpsUi"),
                 (UiConfig.SectionId, "EnableFpsUiInventoryNetWorth"),
                 (PrivacyConfig.SectionId, "EnablePrivacy"),

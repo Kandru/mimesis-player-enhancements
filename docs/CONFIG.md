@@ -94,8 +94,7 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Show the ESC menu player list in a right-side overlay (join-code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls. Independent of More Players. |
 | `EnableDamageHealthGlow` | bool | `true` | — | Tint other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fade out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
-| `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage and detox indicators remain visible. |
-| `EnableFloatingDetoxIndicators` | bool | `true` | — | Show green floating toxicity reduction (e.g. -27%) when another player drinks detox juice. |
+| `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage numbers remain visible. |
 | `EnableFpsUi` | bool | `true` | — | Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged. |
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 
@@ -505,7 +504,6 @@ EnableExtendedInGameMenuPlayerList = true
 EnableDamageHealthGlow = true
 EnableFloatingDamageNumbers = true
 FloatingDamageDurationSeconds = 2.0
-EnableFloatingDetoxIndicators = true
 EnableFpsUi = true
 EnableFpsUiInventoryNetWorth = true
 

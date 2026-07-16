@@ -179,7 +179,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableDamageHealthGlow { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFloatingDamageNumbers { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> FloatingDamageDurationSeconds { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> EnableFloatingDetoxIndicators { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFpsUi { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFpsUiInventoryNetWorth { get; internal set; } = null!;
 

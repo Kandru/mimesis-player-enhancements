@@ -24,10 +24,6 @@ Local presentation options that do not require other players to install the mod.
 
 `EnableFloatingDamageNumbers` shows animated floating damage when other players, mimics, or monsters take damage — never on your own avatar. `FloatingDamageDurationSeconds` sets how long numbers stay visible (1–3 seconds).
 
-## Detox indicators
-
-`EnableFloatingDetoxIndicators` shows green floating toxicity reduction (e.g. -27%) when another player drinks detox juice.
-
 ## FPS UI
 
 `EnableFpsUi` replaces the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged.
