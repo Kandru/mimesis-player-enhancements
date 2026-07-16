@@ -163,6 +163,24 @@ export function canEditEntry(
   return entry.hasLocalEffect;
 }
 
+export function entryScopes(entry: ConfigEntryDto): ('host' | 'local')[] {
+  return entry.hasLocalEffect ? ['local'] : ['host'];
+}
+
+export function sectionScopes(
+  section: ConfigSectionDto,
+  settings: SettingsDto | null,
+): ('host' | 'local')[] {
+  const candidates = [
+    ...(section.featureToggle ? [section.featureToggle] : []),
+    ...section.entries,
+  ];
+  const visible = candidates.filter((entry) => entryVisible(section, entry, settings));
+  const hasLocal = visible.some((entry) => entry.hasLocalEffect);
+  const hasHost = visible.some((entry) => !entry.hasLocalEffect);
+  return [...(hasHost ? (['host'] as const) : []), ...(hasLocal ? (['local'] as const) : [])];
+}
+
 export function normalizeBoolInput(value: string) {
   return value === 'true' || value === 'True' || value === '1';
 }

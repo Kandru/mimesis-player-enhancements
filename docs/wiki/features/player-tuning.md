@@ -1,6 +1,6 @@
 # Player Tuning
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
+**Scope:** Host only · Your game only (local) · **Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
 
 Tweak how players move and survive: walk/run speed, stamina pool, sprint drain, stamina recovery, and carry weight. Changes apply to everyone in the session from the host side — joining clients do not need the mod; stats sync automatically.
 

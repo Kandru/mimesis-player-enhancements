@@ -3,6 +3,7 @@
   import { wikiArticles, wikiById, wikiOverview } from '$lib/generated/wiki';
   import type { WikiArticle } from '$lib/generated/wiki';
   import { navigate } from '$lib/utils';
+  import ScopeBadges from '$lib/components/ScopeBadges.svelte';
   import WikiArticleView from './WikiArticleView.svelte';
 
   const activeArticle = $derived.by((): WikiArticle => {
@@ -16,13 +17,6 @@
       return;
     }
     navigate(`home/${id}`);
-  }
-
-  function scopeLabel(scope: WikiArticle['scope']): string | null {
-    if (!scope) return null;
-    if (scope === 'local') return 'Local';
-    if (scope === 'host-process') return 'Host';
-    return 'Host';
   }
 </script>
 
@@ -44,9 +38,7 @@
           onclick={() => selectArticle(article.id)}
         >
           <span class="settings-nav-label">{article.title}</span>
-          {#if scopeLabel(article.scope)}
-            <span class="wiki-nav-scope">{scopeLabel(article.scope)}</span>
-          {/if}
+          <ScopeBadges scopes={article.scopes} size="sm" />
         </button>
       {/each}
     </nav>

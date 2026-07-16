@@ -4,6 +4,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - feature: replace health bar with health glow
 - improvement: add another button to the items overlay to allow giving multiple items without re-opening the items overlay
 - improvement: properly highlight customized settings and categories
+- improvement: wiki is now shown in the sidebar (still AI generated content, will re-do once the bugs are squashed)
 - fix: double config sync - global config only will be saved when closing the game properly
 - fix: save/load all data when saving or loading mod-data
 - fix: steamid / voiceid was connection was not saved properly (so voice data could not be loaded)

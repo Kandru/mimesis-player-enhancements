@@ -11,6 +11,7 @@
   ]);
 
   const globalLinks = $derived([
+    { route: 'home', label: t('dashboard.nav_wiki'), icon: 'book' },
     { route: 'global-settings', label: t('dashboard.nav_settings_global'), icon: 'globe' },
     {
       route: 'changelog',
@@ -52,7 +53,7 @@
 </script>
 
 <aside class="sidebar">
-  <button type="button" class="sidebar-brand" onclick={goHome} title={t('dashboard.home_title')}>
+  <button type="button" class="sidebar-brand" onclick={goHome} title={t('dashboard.nav_wiki')}>
     <img class="sidebar-logo" src="/img/logo.png" alt="" width="32" height="32" />
     <div class="sidebar-brand-text">
       <div class="sidebar-brand-title">{t('dashboard.brand_title')}</div>
@@ -97,7 +98,9 @@
         onclick={() => go(link.route)}
       >
         <span class="sidebar-link-icon" aria-hidden="true">
-          {#if link.icon === 'globe'}
+          {#if link.icon === 'book'}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          {:else if link.icon === 'globe'}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           {:else if link.icon === 'changelog'}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>

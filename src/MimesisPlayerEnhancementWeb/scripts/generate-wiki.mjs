@@ -44,14 +44,14 @@ function extractSubSections(markdown) {
   return sections;
 }
 
-function extractScope(markdown) {
-  const match = markdown.match(/\*\*Scope:\*\*\s*([^·]+)/);
-  if (!match) return undefined;
+function extractScopes(markdown) {
+  const match = markdown.match(/\*\*Scope:\*\*\s*([^\n]+)/);
+  if (!match) return [];
   const raw = match[1].trim().toLowerCase();
-  if (raw.includes('host process')) return 'host-process';
-  if (raw.includes('host only') || raw.includes('host')) return 'host';
-  if (raw.includes('local') || raw.includes('your game')) return 'local';
-  return undefined;
+  const scopes = [];
+  if (raw.includes('host process') || raw.includes('host only') || raw.includes('host')) scopes.push('host');
+  if (raw.includes('local') || raw.includes('your game')) scopes.push('local');
+  return [...new Set(scopes)];
 }
 
 function parseNavOrder(readmeContent) {
@@ -113,11 +113,11 @@ function addHeadingIds(html, subSections) {
 function processArticle(id, markdown) {
   const title = extractTitle(markdown);
   const subSections = extractSubSections(markdown);
-  const scope = extractScope(markdown);
+  const scopes = extractScopes(markdown);
   let html = marked.parse(markdown);
   html = rewriteLinks(html);
   html = addHeadingIds(html, subSections);
-  return { id, title, html, subSections, scope };
+  return { id, title, html, subSections, scopes };
 }
 
 function main() {
@@ -178,7 +178,7 @@ export interface WikiArticle {
   title: string;
   html: string;
   subSections: WikiSubSection[];
-  scope?: 'host' | 'local' | 'host-process';
+  scopes: ('host' | 'local')[];
 }
 
 export const wikiOverview: WikiArticle = ${JSON.stringify(overview, null, 2)};

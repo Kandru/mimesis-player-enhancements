@@ -2,6 +2,7 @@
   import Api from '$lib/api';
   import SettingsEntry from './SettingsEntry.svelte';
   import Toggle from '$lib/components/Toggle.svelte';
+  import ScopeBadges from '$lib/components/ScopeBadges.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import type { ConfigSectionDto, SettingsDto } from '$lib/types';
   import { t } from '$lib/i18n';
@@ -13,6 +14,7 @@
     sectionHasModifiedEntries,
     sectionHasVisibleEntries,
     sectionResettableEntries,
+    sectionScopes,
   } from '$lib/settings';
 
   let {
@@ -167,19 +169,24 @@
           >
             <button
               type="button"
-              class="settings-nav-label border-0 bg-transparent p-0 text-left"
+              class="settings-nav-title"
               onclick={() => selectSection(section)}
             >
               {section.title}
             </button>
-            {#if section.featureToggle}
-              <Toggle
-                checked={sectionToggleChecked(section)}
-                disabled={!sectionToggleEditable(section)}
-                label={section.title}
-                onchange={(enabled) => toggleFeature(section, enabled)}
-              />
-            {/if}
+            <div class="settings-nav-badges">
+              <ScopeBadges scopes={sectionScopes(section, settings)} size="sm" />
+            </div>
+            <div class="settings-nav-toggle">
+              {#if section.featureToggle}
+                <Toggle
+                  checked={sectionToggleChecked(section)}
+                  disabled={!sectionToggleEditable(section)}
+                  label={section.title}
+                  onchange={(enabled) => toggleFeature(section, enabled)}
+                />
+              {/if}
+            </div>
           </div>
         {/each}
       </nav>
@@ -189,7 +196,10 @@
           <section class="settings-section-card">
             <div class="settings-section-header">
               <div class="settings-section-heading">
-                <h3 class="settings-section-title">{activeSection.title}</h3>
+                <div class="settings-section-title-row">
+                  <h3 class="settings-section-title">{activeSection.title}</h3>
+                  <ScopeBadges scopes={sectionScopes(activeSection, settings)} size="sm" />
+                </div>
                 {#if activeSection.description}
                   <p class="settings-section-description">{activeSection.description}</p>
                 {/if}

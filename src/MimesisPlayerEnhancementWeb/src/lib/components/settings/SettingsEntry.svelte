@@ -1,9 +1,11 @@
 <script lang="ts">
   import type { ConfigEntryDto, ConfigSectionDto, SettingsDto } from '$lib/types';
   import Toggle from '$lib/components/Toggle.svelte';
+  import ScopeBadges from '$lib/components/ScopeBadges.svelte';
   import { t } from '$lib/i18n';
   import {
     entryIsModified,
+    entryScopes,
     featureEnabled,
     formatDefaultHint,
     formatGlobalHint,
@@ -47,6 +49,9 @@
 
   const boolChecked = $derived(entry.value === 'true' || entry.value === 'True');
   const featureOff = $derived(!featureEnabled(section, settings));
+  const hostReadOnlyHint = $derived(
+    !editable && !featureOff && !entry.hasLocalEffect ? t('dashboard.settings_host_only_hint') : undefined,
+  );
 </script>
 
 <div
@@ -55,15 +60,13 @@
   <div class="settings-entry-main">
     <div class="settings-entry-header">
       <label class="settings-entry-title" for="{section.id}-{entry.key}">{entry.title}</label>
-      {#if entry.hasLocalEffect}
-        <span class="badge badge-local" title={t('dashboard.settings_local_hint')}>{t('dashboard.settings_local_badge')}</span>
-      {/if}
+      <ScopeBadges scopes={entryScopes(entry)} size="sm" />
       {#if scope === 'save' && entry.isOverridden}
         <span class="badge bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">{t('dashboard.settings_overridden')}</span>
       {/if}
-      {#if !editable}
-        <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300" title={featureOff ? t('dashboard.settings_feature_disabled_hint') : t('dashboard.settings_host_only_hint')}>
-          {featureOff ? t('dashboard.settings_feature_disabled') : t('dashboard.settings_host_only')}
+      {#if featureOff}
+        <span class="badge bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300" title={t('dashboard.settings_feature_disabled_hint')}>
+          {t('dashboard.settings_feature_disabled')}
         </span>
       {/if}
     </div>
@@ -72,7 +75,7 @@
     {/if}
   </div>
 
-  <div class="settings-entry-actions">
+  <div class="settings-entry-actions" title={hostReadOnlyHint}>
     {#if entry.type === 'Boolean'}
       <Toggle
         checked={boolChecked}

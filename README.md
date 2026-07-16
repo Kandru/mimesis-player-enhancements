@@ -20,7 +20,7 @@ Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
 
 ## Features
 
-Most features only need to be installed on the **host** — friends can join without the mod. See the **[User Manual](docs/wiki/README.md)** for detailed explanations of each feature and sub-feature.
+Most features only need to be installed on the **host** — friends can join without the mod. See the **[Wiki](docs/wiki/README.md)** for detailed explanations of each feature and sub-feature.
 
 | Feature | What it does | Who needs the mod? |
 |---------|--------------|-------------------|
