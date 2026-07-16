@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Reflection;
 using MelonLoader;
-using ReluProtocol.C2S;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime

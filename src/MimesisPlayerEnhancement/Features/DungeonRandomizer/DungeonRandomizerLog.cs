@@ -39,9 +39,16 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             ModLog.Info(Feature, $"Map variant — dungeon {dungeonId}: {vanillaMapId} -> {mapId}");
         }
 
-        internal static void InfoSeedRolled(int vanillaSeed, int seed)
+        internal static void InfoSeedFlavorApplied(
+            DungeonSeedFlavor flavor,
+            string flowId,
+            int vanillaSeed,
+            int curatedSeed,
+            int poolSize)
         {
-            ModLog.Info(Feature, $"Dungeon seed rolled — {vanillaSeed} -> {seed}");
+            ModLog.Info(
+                Feature,
+                $"Dungeon seed flavor {flavor} — flow '{flowId}', pool={poolSize}, {vanillaSeed} -> {curatedSeed}");
         }
     }
 }

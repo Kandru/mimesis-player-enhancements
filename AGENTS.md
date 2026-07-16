@@ -11,6 +11,7 @@ When you need game source or MelonLoader APIs, **use the paths below**. Do not c
 | Game source (types, methods, call chains, constants) | **Decompiled source** | `deps/decompiled/**/*` |
 | MelonLoader APIs (logging, mod base types, loader internals) | **MimesisReflectionTool** | `src/MimesisReflectionTool/` |
 | Quick metadata lookup (optional; no file read) | **MimesisInspectionTool** | `src/MimesisInspectionTool/` |
+| Regenerate dungeon seed pools (in-game scan + codegen) | **MimesisSeedScanner** | `src/MimesisSeedScanner/` |
 | Regenerate decompiled trees after a game update | **decompile-game.sh** | `scripts/decompile-game.sh` |
 
 Inspection and reflection tools live in `src/MimesisPlayerEnhancement.sln`, build with `dotnet build`, and output to their own `bin/` folders (not `dist/`).
@@ -34,6 +35,7 @@ See each tool's README for full command reference:
 
 - [src/MimesisInspectionTool/README.md](src/MimesisInspectionTool/README.md)
 - [src/MimesisReflectionTool/README.md](src/MimesisReflectionTool/README.md)
+- [src/MimesisSeedScanner/README.md](src/MimesisSeedScanner/README.md)
 
 ### When to extend a tool vs. add a new one
 

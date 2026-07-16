@@ -147,6 +147,60 @@ Feature toggles (`EnablePersistence`, `EnableStatistics`, etc.) gate **runtime b
 
 Clients do not need this mod installed.
 
+## Updating the predefined dungeon seeds
+
+Map flavor pools (`DungeonSeedPools.Generated.cs`) are **not** edited by hand. Regenerate them when dungeon flows change (game update), flavor scoring changes, or pool size changes.
+
+### Workflow
+
+```bash
+# 1. Build the catalog-export mod
+dotnet build src/MimesisSeedScanner.Mod/MimesisSeedScanner.Mod.csproj -c Release
+cp src/MimesisSeedScanner.Mod/bin/Release/MimesisSeedScanner.dll "$MIMESIS_PATH/Mods/"
+
+# 2. In game (main menu is enough): press F10 → writes MelonLoader/UserData/scan-catalog.json
+
+# 3. Headless scan (fast — no game needed after step 2)
+dotnet run --project src/MimesisSeedScanner.Cli -- scan \
+  --catalog "$HOME/.local/share/MelonLoader/Preferences/MIMESIS/scan-catalog.json" \
+  --max-seed 2147483647 \
+  --pool-size 500 \
+  --seed-stride 100000 \
+  --time-budget 4h \
+  --output seed-scan-results.json
+
+# 4. Codegen into the main mod
+./scripts/generate-dungeon-seeds.sh seed-scan-results.json
+
+# 5. Rebuild main mod
+SKIP_WEB_BUILD=true ./scripts/build.sh
+```
+
+### CLI scan options
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `--catalog` | (required) | `scan-catalog.json` from in-game F10 export |
+| `--max-seed` | `2147483647` (`int.MaxValue`) | Exclusive upper bound; scans seeds `1 .. maxSeed-1` (full game range) |
+| `--pool-size` | `500` | Seeds kept per flavor per flow (random sample if more qualify) |
+| `--seed-stride` | `100000` | Only evaluate every Nth seed (sparse coverage of the full range) |
+| `--threads` | CPU count | Parallel worker threads |
+| `--time-budget` | none | Stop after duration (`4h`, `30m`, `3600s`); resume later from shards |
+| `--shard-dir` | `seed-scan-shards/` | Checkpoint directory for resume |
+
+Shard checkpoints allow interrupted scans to resume. Delete `seed-scan-shards/` to start fresh with new parameters.
+
+### Verify layouts
+
+```bash
+dotnet run --project src/MimesisSeedScanner.Cli -- verify \
+  --catalog scan-catalog.json --flow YourFlowId --seeds 42,100,999
+```
+
+Compare metrics against in-game generation for a few seeds after major DunGen parity changes.
+
+See also [src/MimesisSeedScanner/README.md](../src/MimesisSeedScanner/README.md) and [dungeon-randomizer wiki](./wiki/features/dungeon-randomizer.md).
+
 ## Build and deploy
 
 See [BUILD.md](BUILD.md) for bootstrap, compile, and copying the DLL into your game.

@@ -106,10 +106,10 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
-      "_description": "Randomize tram dungeon picks, layout flows, map variants, and procedural seed. Host only.",
+      "_description": "Randomize tram dungeon picks, map variants, and procedural map flavor. Host only.",
       "EnableDungeonRandomizer": {
         "title": "Enable Dungeon Randomizer",
-        "description": "Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only."
+        "description": "Randomize dungeon selection: tram dungeon pick, map variant, and curated map flavor seeds. Host only."
       },
       "RandomizeDungeonPick": {
         "title": "Randomize Dungeon Pick",
@@ -137,15 +137,42 @@
       },
       "RandomizeLayoutFlow": {
         "title": "Randomize Layout Flow",
-        "description": "Pick DunGen layout flows uniformly from each dungeon's candidates instead of using weighted vanilla rolls."
+        "description": "Pick DunGen layout flows uniformly instead of vanilla weights. Multiplayer warning: runs on each client and can desync layouts — prefer Map Flavor for co-op."
       },
       "RandomizeMapVariant": {
         "title": "Randomize Map Variant",
         "description": "Pick map variants uniformly from each dungeon's MapIDs instead of vanilla selection."
       },
-      "RandomizeDungeonSeed": {
-        "title": "Randomize Dungeon Seed",
-        "description": "Replace the procedural dungeon seed with a new random value when a dungeon is chosen."
+      "DungeonSeedFlavor": {
+        "title": "Map Flavor",
+        "description": "Curated procedural seed style. Non-Vanilla flavors pick from up to 500 pre-tested seeds per dungeon layout flow (synced to all players).",
+        "options": {
+          "Vanilla": "Vanilla — game default seed",
+          "Compact": "Compact — fewest rooms",
+          "Expansive": "Expansive — most rooms",
+          "ShortMainPath": "Short main path — shortest start-to-goal spine",
+          "LongMainPath": "Long main path — longest start-to-goal spine",
+          "Sprawling": "Sprawling — largest geographic footprint",
+          "Dense": "Dense — rooms packed in a small area",
+          "Cramped": "Cramped — many rooms in a tight footprint",
+          "Linear": "Linear — long main path, few branches",
+          "MinimalBranches": "Minimal branches — fewest side rooms",
+          "Branching": "Branching — many side paths",
+          "BroadBranches": "Broad branches — many shallow side wings",
+          "Deep": "Deep — deepest branch chains",
+          "Open": "Open — highly connected",
+          "Maze": "Maze — many dead ends",
+          "Loopy": "Loopy — circular routes between rooms",
+          "DeadEnds": "Dead ends — many stub corridors",
+          "TightCorridor": "Tight corridor — small and linear",
+          "Labyrinth": "Labyrinth — big, branchy, and deep",
+          "Honeycomb": "Honeycomb — connected in compact space",
+          "WideOpen": "Wide open — connected and spread out",
+          "StableCompact": "Stable compact — reliable and small",
+          "DeepMaze": "Deep maze — deep branches with dead ends",
+          "Reliable": "Reliable — stable generation",
+          "Balanced": "Balanced — intentionally average layout"
+        }
       }
     },
     "MimesisPlayerEnhancement_DungeonTime": {

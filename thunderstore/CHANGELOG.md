@@ -2,6 +2,8 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.12
 - draft: more-complete statistics system (still needs extensive testing)
+- feature: dungeon map flavor system — 24 curated seed styles (Compact, Labyrinth, etc.)
+- fix: dungeon seed changes now apply before network sync
 
 ## 26.7.11
 Whoop Whoop! We're making it towards a beta-release :) - please support my work if you like this mod!

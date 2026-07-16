@@ -106,10 +106,10 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
-      "_description": "Randomisiere Tram-Dungeon-Würfe, Layout-Flows, Kartenvarianten und prozeduralen Seed. Nur Host.",
+      "_description": "Randomisiere Tram-Dungeon-Würfe, Kartenvarianten und prozeduralen Map-Flavor. Nur Host.",
       "EnableDungeonRandomizer": {
         "title": "Dungeon-Randomizer aktivieren",
-        "description": "Randomisiert die Dungeon-Auswahl: Tram-Dungeon-Pick, Layout-Flow, Map-Variante und prozeduralen Seed. Nur Host."
+        "description": "Randomisiert die Dungeon-Auswahl: Tram-Dungeon-Pick, Map-Variante und kuratierte Map-Flavor-Seeds. Nur Host."
       },
       "RandomizeDungeonPick": {
         "title": "Dungeon-Pick randomisieren",
@@ -137,15 +137,42 @@
       },
       "RandomizeLayoutFlow": {
         "title": "Layout-Flow randomisieren",
-        "description": "DunGen-Layout-Flows gleichmäßig aus den Kandidaten jedes Dungeons wählen statt gewichteter Vanilla-Würfe."
+        "description": "DunGen-Layout-Flows gleichmäßig statt Vanilla-Gewichten wählen. Multiplayer-Warnung: läuft auf jedem Client und kann Layouts desynchronisieren — für Koop Map-Flavor bevorzugen."
       },
       "RandomizeMapVariant": {
         "title": "Map-Variante randomisieren",
         "description": "Map-Varianten gleichmäßig aus den MapIDs jedes Dungeons wählen statt Vanilla-Auswahl."
       },
-      "RandomizeDungeonSeed": {
-        "title": "Dungeon-Seed randomisieren",
-        "description": "Ersetzt den prozeduralen Dungeon-Seed durch einen neuen Zufallswert, wenn ein Dungeon gewählt wird."
+      "DungeonSeedFlavor": {
+        "title": "Map-Flavor",
+        "description": "Kurierter prozeduraler Seed-Stil. Nicht-Vanilla-Flavors wählen aus bis zu 500 vorgetesteten Seeds pro Layout-Flow (an alle Spieler synchronisiert).",
+        "options": {
+          "Vanilla": "Vanilla — Spiel-Standard-Seed",
+          "Compact": "Kompakt — wenigste Räume",
+          "Expansive": "Weitläufig — meiste Räume",
+          "ShortMainPath": "Kurzer Hauptpfad — kürzeste Strecke Start bis Ziel",
+          "LongMainPath": "Langer Hauptpfad — längste Strecke Start bis Ziel",
+          "Sprawling": "Zerstreut — größter geografischer Footprint",
+          "Dense": "Dicht — Räume eng beieinander",
+          "Cramped": "Beengt — viele Räume auf engem Raum",
+          "Linear": "Linear — langer Hauptpfad, wenig Verzweigungen",
+          "MinimalBranches": "Wenig Verzweigungen — wenigste Seitenräume",
+          "Branching": "Verzweigt — viele Seitenpfade",
+          "BroadBranches": "Breite Verzweigungen — viele flache Seitenflügel",
+          "Deep": "Tief — tiefste Seitenketten",
+          "Open": "Offen — stark vernetzt",
+          "Maze": "Labyrinthartig — viele Sackgassen",
+          "Loopy": "Schleifig — viele Rundwege zwischen Räumen",
+          "DeadEnds": "Sackgassen — viele Stummelkorridore",
+          "TightCorridor": "Enger Korridor — klein und linear",
+          "Labyrinth": "Labyrinth — groß, verzweigt und tief",
+          "Honeycomb": "Waben — vernetzt auf engem Raum",
+          "WideOpen": "Weit offen — vernetzt und weitläufig",
+          "StableCompact": "Stabil kompakt — zuverlässig und klein",
+          "DeepMaze": "Tiefes Labyrinth — tiefe Äste mit Sackgassen",
+          "Reliable": "Zuverlässig — stabile Generierung",
+          "Balanced": "Ausgewogen — bewusst durchschnittliches Layout"
+        }
       }
     },
     "MimesisPlayerEnhancement_DungeonTime": {

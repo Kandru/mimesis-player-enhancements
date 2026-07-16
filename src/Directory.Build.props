@@ -31,7 +31,7 @@
     <PluginsPath Condition="'$(PluginsPath)' == '' and '$(GamePath)' != ''">$(GamePath)/Mods</PluginsPath>
   </PropertyGroup>
 
-  <Target Name="ValidateReferenceAssemblies" BeforeTargets="ResolveReferences">
+    <Target Name="ValidateReferenceAssemblies" BeforeTargets="ResolveReferences" Condition="'$(IsInspectionTool)' != 'true'">
     <Error Condition="!Exists('$(GameAssemblyPath)/Assembly-CSharp.dll')"
            Text="Assembly-CSharp.dll not found at $(GameAssemblyPath). Run: ./scripts/bootstrap-deps.sh" />
     <Error Condition="'$(IsInspectionTool)' != 'true' and !Exists('$(MelonLoaderPath)/MelonLoader.dll')"

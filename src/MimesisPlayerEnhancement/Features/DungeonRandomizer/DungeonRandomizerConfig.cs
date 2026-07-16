@@ -44,21 +44,22 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
             ModConfig.RandomizeLayoutFlow = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeLayoutFlow",
-                true);
+                false);
 
             ModConfig.RandomizeMapVariant = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeMapVariant",
                 true);
 
-            ModConfig.RandomizeDungeonSeed = ModConfig.CreateTrackedEntry(_category,
-                "RandomizeDungeonSeed",
-                true);
+            ModConfig.DungeonSeedFlavor = ModConfig.CreateTrackedEntry(_category,
+                "DungeonSeedFlavor",
+                "Vanilla");
         }
 
         /// <summary>Clamps persisted values once at startup, before change handlers are wired.</summary>
         internal static void SanitizeInitialValues(MelonLogger.Instance logger)
         {
             OnDungeonPickPoolModeChanged(logger, ModConfig.DungeonPickPoolMode.Value);
+            OnDungeonSeedFlavorChanged(logger, ModConfig.DungeonSeedFlavor.Value);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -71,7 +72,19 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             ModConfig.IgnoreDungeonExcludeList.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.IgnoreDungeonExcludeList));
             ModConfig.RandomizeLayoutFlow.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.RandomizeLayoutFlow));
             ModConfig.RandomizeMapVariant.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.RandomizeMapVariant));
-            ModConfig.RandomizeDungeonSeed.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.RandomizeDungeonSeed));
+            ModConfig.DungeonSeedFlavor.OnEntryValueChanged.Subscribe((_, value) => OnDungeonSeedFlavorChanged(logger, value));
+        }
+
+        private static void OnDungeonSeedFlavorChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!DungeonSeedFlavorNames.TryParse(value, out _))
+            {
+                logger.Warning($"DungeonSeedFlavor must be a known flavor name; resetting to Vanilla.");
+                ModConfig.DungeonSeedFlavor.Value = "Vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.DungeonSeedFlavor);
         }
 
         private static void OnDungeonPickPoolModeChanged(MelonLogger.Instance logger, string value)

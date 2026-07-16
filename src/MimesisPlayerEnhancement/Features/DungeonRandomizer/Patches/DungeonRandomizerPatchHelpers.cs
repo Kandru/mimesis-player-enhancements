@@ -7,6 +7,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
         internal static bool ShouldApply =>
             HostApplyGate.ShouldApplyHostOnlyFeature(() => SceneScopedConfigGate.DungeonRandomizer.EnableDungeonRandomizer);
 
+        internal static bool ShouldCurateSeed =>
+            ShouldApply && SceneScopedConfigGate.DungeonRandomizer.ParsedDungeonSeedFlavor != DungeonSeedFlavor.Vanilla;
+
         internal static bool ShouldIgnoreRerollExcludes()
         {
             DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;

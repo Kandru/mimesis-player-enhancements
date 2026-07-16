@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>MimesisSeedScanner</AssemblyName>
+    <RootNamespace>MimesisSeedScanner.Mod</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsSeedScannerMod>true</IsSeedScannerMod>
+    <BaseOutputPath>$(MSBuildProjectDirectory)/bin/</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)$(Configuration)/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\MimesisSeedScanner\BakedCatalog.cs" Link="BakedCatalog.cs" />
+    <Compile Include="..\MimesisSeedScanner\RandomStream.cs" Link="RandomStream.cs" />
+    <Compile Include="..\MimesisSeedScanner\SeedScanDefaults.cs" Link="SeedScanDefaults.cs" />
+    <Compile Include="..\MimesisSeedScanner\SeedScanResults.cs" Link="SeedScanResults.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HarmonyX">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Collections.Immutable">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile;build</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

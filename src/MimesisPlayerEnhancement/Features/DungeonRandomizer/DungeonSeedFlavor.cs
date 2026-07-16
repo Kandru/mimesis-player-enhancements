@@ -1,0 +1,31 @@
+namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
+{
+    internal enum DungeonSeedFlavor
+    {
+        Vanilla,
+        Compact,
+        Expansive,
+        ShortMainPath,
+        LongMainPath,
+        Sprawling,
+        Dense,
+        Cramped,
+        Linear,
+        MinimalBranches,
+        Branching,
+        BroadBranches,
+        Deep,
+        Open,
+        Maze,
+        Loopy,
+        DeadEnds,
+        TightCorridor,
+        Labyrinth,
+        Honeycomb,
+        WideOpen,
+        StableCompact,
+        DeepMaze,
+        Reliable,
+        Balanced,
+    }
+}

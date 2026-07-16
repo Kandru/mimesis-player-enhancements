@@ -23,9 +23,10 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             [
                 ("PickDungeon/ExcelDataManager", AccessTools.Method(typeof(ExcelDataManager), nameof(ExcelDataManager.PickDungeon))),
                 ("RollDiceDungeon/VWaitingRoom", AccessTools.Method(typeof(VWaitingRoom), nameof(VWaitingRoom.RollDiceDungeon))),
-                ("GetRandomDungenName/DungeonMasterInfo", AccessTools.Method(typeof(DungeonMasterInfo), nameof(DungeonMasterInfo.GetRandomDungenName))),
                 ("PickMapID/DungeonMasterInfo", AccessTools.Method(typeof(DungeonMasterInfo), nameof(DungeonMasterInfo.PickMapID))),
-                ("SetNextDungeonMasterID/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.SetNextDungeonMasterID))),
+                ("SendToAllPlayers/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.SendToAllPlayers), [typeof(IMsg), typeof(VActor)])),
+                ("PendMoveToDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))),
+                ("ReadyToGamePktRecording/VWorld", AccessTools.Method(typeof(VWorld), nameof(VWorld.ReadyToGamePktRecording))),
             ]);
         }
     }

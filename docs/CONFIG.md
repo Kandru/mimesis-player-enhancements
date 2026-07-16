@@ -364,16 +364,16 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 ## Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
 
-**Host-only.** Randomizes dungeon selection at four independent layers when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on. Each layer has its own toggle so you can randomize only what you want.
+**Host-only.** Randomizes dungeon selection when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on.
 
 **Layers:**
 
 | Layer | What it affects |
 |-------|-----------------|
 | **Dungeon pick** | Which dungeon master ID appears on the tram roll |
-| **Layout flow** | DunGen procedural layout variant within a dungeon |
 | **Map variant** | Which map ID is chosen from the dungeon's `MapIDs` |
-| **Seed** | Procedural `RandomDungeonSeed` used for room generation |
+| **Map flavor** | Curated procedural seed (`DungeonSeedFlavor`) synced to all players |
+| **Layout flow** | (Advanced) DunGen flow asset swap — **multiplayer desync risk** |
 
 **Pool modes** (`DungeonPickPoolMode`):
 
@@ -386,15 +386,15 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDungeonRandomizer` | bool | `false` | — | Randomize dungeon selection: tram dungeon pick, layout flow, map variant, and procedural seed. Host only. |
+| `EnableDungeonRandomizer` | bool | `false` | — | Randomize dungeon selection: tram pick, map variant, and map flavor seeds. Host only. |
 | `RandomizeDungeonPick` | bool | `true` | — | Override tram dungeon master ID selection. |
 | `DungeonPickPoolMode` | string | `WidenVanilla` | `WidenVanilla`, `AllActiveUniform` | How the tram dungeon pool is built (see table above). |
 | `DungeonAllowlist` | string | `""` | — | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |
 | `DungeonBlocklist` | string | `""` | — | Comma-separated dungeon master IDs to exclude. |
 | `IgnoreDungeonExcludeList` | bool | `true` | — | With `WidenVanilla`, do not exclude recently played dungeons from the tram roll. |
-| `RandomizeLayoutFlow` | bool | `true` | — | Pick DunGen layout flows uniformly instead of weighted vanilla rolls. |
+| `DungeonSeedFlavor` | string | `Vanilla` | See [wiki](./wiki/features/dungeon-randomizer.md) | Curated procedural seed style. Non-`Vanilla` picks from up to 500 baked seeds per layout flow (synced via network). Replaces removed `RandomizeDungeonSeed`. |
+| `RandomizeLayoutFlow` | bool | `false` | — | Pick DunGen layout flows uniformly. **Can desync multiplayer layouts** — prefer `DungeonSeedFlavor`. |
 | `RandomizeMapVariant` | bool | `true` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
-| `RandomizeDungeonSeed` | bool | `true` | — | Replace the procedural dungeon seed when a dungeon is chosen. |
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`
 

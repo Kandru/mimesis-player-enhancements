@@ -319,7 +319,8 @@ namespace MimesisPlayerEnhancement.Util
             bool ignoreDungeonExcludeList,
             bool randomizeLayoutFlow,
             bool randomizeMapVariant,
-            bool randomizeDungeonSeed)
+            string dungeonSeedFlavor,
+            DungeonSeedFlavor parsedDungeonSeedFlavor)
         {
             EnableDungeonRandomizer = enableDungeonRandomizer;
             RandomizeDungeonPick = randomizeDungeonPick;
@@ -329,7 +330,8 @@ namespace MimesisPlayerEnhancement.Util
             IgnoreDungeonExcludeList = ignoreDungeonExcludeList;
             RandomizeLayoutFlow = randomizeLayoutFlow;
             RandomizeMapVariant = randomizeMapVariant;
-            RandomizeDungeonSeed = randomizeDungeonSeed;
+            DungeonSeedFlavor = dungeonSeedFlavor;
+            ParsedDungeonSeedFlavor = parsedDungeonSeedFlavor;
         }
 
         internal bool EnableDungeonRandomizer { get; }
@@ -348,10 +350,18 @@ namespace MimesisPlayerEnhancement.Util
 
         internal bool RandomizeMapVariant { get; }
 
-        internal bool RandomizeDungeonSeed { get; }
+        internal string DungeonSeedFlavor { get; }
+
+        internal DungeonSeedFlavor ParsedDungeonSeedFlavor { get; }
 
         internal static DungeonRandomizerSceneConfig CaptureFromModConfig()
         {
+            string dungeonSeedFlavor = ModConfig.DungeonSeedFlavor.Value ?? "Vanilla";
+            if (!DungeonSeedFlavorNames.TryParse(dungeonSeedFlavor, out Features.DungeonRandomizer.DungeonSeedFlavor parsedDungeonSeedFlavor))
+            {
+                parsedDungeonSeedFlavor = Features.DungeonRandomizer.DungeonSeedFlavor.Vanilla;
+            }
+
             return new DungeonRandomizerSceneConfig(
                 ModConfig.EnableDungeonRandomizer.Value,
                 ModConfig.RandomizeDungeonPick.Value,
@@ -361,7 +371,8 @@ namespace MimesisPlayerEnhancement.Util
                 ModConfig.IgnoreDungeonExcludeList.Value,
                 ModConfig.RandomizeLayoutFlow.Value,
                 ModConfig.RandomizeMapVariant.Value,
-                ModConfig.RandomizeDungeonSeed.Value);
+                dungeonSeedFlavor,
+                parsedDungeonSeedFlavor);
         }
     }
 }
