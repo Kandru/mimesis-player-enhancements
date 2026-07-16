@@ -24,6 +24,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool IsGodModeActive(VPlayer? player) =>
             !_roomTransitionSuspend && player != null && GodModePlayerUids.Contains(player.UID);
 
+        internal static bool ShouldFreezeConta(VCreature? creature) =>
+            creature is VPlayer player && IsGodModeActive(player);
+
         internal static bool IsNoClipActive(VPlayer? player) =>
             !_roomTransitionSuspend && player != null && NoClipPlayerUids.Contains(player.UID);
 

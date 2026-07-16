@@ -28,7 +28,7 @@ Host-only actions on the Players page: kick, ban, unban, respawn, heal, and item
 
 ## Player cheats
 
-Per-player buttons (host only): **Godmode** prevents death; **Noclip** lets that player fly with normal movement controls. Both turn off when blind mode is active or the player dies. Full noclip flight requires the target player to have this mod on their client.
+Per-player buttons (host only): **Godmode** prevents death and freezes toxicity; **Noclip** lets that player fly with normal movement controls. Both turn off when blind mode is active or the player dies. Full noclip flight requires the target player to have this mod on their client.
 
 ## Management button
 

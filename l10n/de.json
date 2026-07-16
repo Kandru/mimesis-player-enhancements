@@ -1026,7 +1026,7 @@
     "blind_mode": "Blindmodus",
     "blind_mode_title": "Lebend/Tot-Status, Gesundheit, Toxizität und Wiederbelebungs-Aktionen während Dungeon- und Deathmatch-Runs ausblenden, solange du lebst. In der Wartungshalle und Tram-Szene inaktiv. Während du tot bist vorübergehend deaktiviert, damit du die Stats anderer einsehen kannst.",
     "god_mode": "Godmode",
-    "god_mode_title": "Unverwundbarkeit für diesen Spieler umschalten.",
+    "god_mode_title": "Unverwundbarkeit und eingefrorene Toxizität für diesen Spieler umschalten.",
     "noclip": "Noclip",
     "noclip_title": "Freie Bewegung für diesen Spieler umschalten.",
     "on": "An",

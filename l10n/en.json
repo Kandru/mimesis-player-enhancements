@@ -1026,7 +1026,7 @@
     "blind_mode": "Blind mode",
     "blind_mode_title": "Hide alive/dead status, health, toxic, and respawn actions to avoid spoilers during dungeon and deathmatch runs while you are alive. Inactive in the maintenance bay and tram scene. Temporarily disabled while you are dead so you can review others' stats.",
     "god_mode": "Godmode",
-    "god_mode_title": "Toggle invulnerability for this player.",
+    "god_mode_title": "Toggle invulnerability and freeze toxicity for this player.",
     "noclip": "Noclip",
     "noclip_title": "Toggle free movement for this player.",
     "on": "On",
