@@ -8,6 +8,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         private const float MinFloatingDamageDurationSeconds = 1f;
         private const float MaxFloatingDamageDurationSeconds = 3f;
+        private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
 
         private static MelonPreferences_Category _category = null!;
 
@@ -53,6 +54,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableFpsUiInventoryNetWorth = ModConfig.CreateTrackedEntry(_category,
                 "EnableFpsUiInventoryNetWorth",
                 true);
+
+            ModConfig.RoundStartSoundMode = ModConfig.CreateTrackedEntry(_category,
+                "RoundStartSoundMode",
+                "Random");
+
+            ModConfig.RoundStartSoundVariant = ModConfig.CreateTrackedEntry(_category,
+                "RoundStartSoundVariant",
+                "vanilla");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -85,6 +94,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUi));
             ModConfig.EnableFpsUiInventoryNetWorth.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUiInventoryNetWorth));
+            ModConfig.RoundStartSoundMode.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRoundStartSoundModeChanged(logger, value));
+            ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRoundStartSoundVariantChanged(logger, value));
         }
 
         internal static void RegisterFloatEntries()
@@ -112,6 +125,43 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.NotifyChanged(ModConfig.FloatingDamageDurationSeconds);
+        }
+
+        private static void OnRoundStartSoundModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidRoundStartSoundModes, value))
+            {
+                logger.Warning("RoundStartSoundMode must be Vanilla, Random, or Specific; resetting to Random.");
+                ModConfig.RoundStartSoundMode.Value = "Random";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.RoundStartSoundMode);
+        }
+
+        private static void OnRoundStartSoundVariantChanged(MelonLogger.Instance logger, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                logger.Warning("RoundStartSoundVariant must not be empty; resetting to vanilla.");
+                ModConfig.RoundStartSoundVariant.Value = "vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.RoundStartSoundVariant);
+        }
+
+        private static bool ContainsIgnoreCase(string[] values, string? candidate)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (string.Equals(values[i], candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

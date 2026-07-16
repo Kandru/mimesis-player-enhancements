@@ -181,6 +181,8 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> FloatingDamageDurationSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFpsUi { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableFpsUiInventoryNetWorth { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> RoundStartSoundMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> RoundStartSoundVariant { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePrivacy { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> BlockReluTelemetry { get; internal set; } = null!;

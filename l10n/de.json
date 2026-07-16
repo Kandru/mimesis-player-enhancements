@@ -22,7 +22,8 @@
         "extendedInGameMenuPlayerList": "Ingame-Menü-Spielerliste",
         "damageHealthGlow": "Schadens-Gesundheitsumriss",
         "floatingDamage": "Schwebende Schadenszahlen",
-        "fpsUi": "FPS-UI"
+        "fpsUi": "FPS-UI",
+        "roundStartSound": "Dungeon-Landesound"
       },
       "ModToastDurationSeconds": {
         "title": "Mod-Nachrichtendauer (Sekunden)",
@@ -59,6 +60,24 @@
       "EnableFpsUiInventoryNetWorth": {
         "title": "Inventar-Nettowert anzeigen",
         "description": "Zeigt den Gesamt-Verkaufswert aller Gegenstände im Inventar oberhalb der Hotbar an, im Stil der Gewichtsanzeige darunter. Unabhängig vom FPS-Vital-HUD."
+      },
+      "RoundStartSoundMode": {
+        "title": "Dungeon-Landesound-Modus",
+        "description": "Ersetzt die Dungeon-Landes-Melodie direkt nach dem Tram-Stop-Stinger. Abfahrts- und End-of-Run-Hörner bleiben unverändert. Nur Client.",
+        "options": {
+          "Vanilla": "Vanilla (Spielsound)",
+          "Random": "Zufällige eingebettete Variante",
+          "Specific": "Bestimmte eingebettete Variante"
+        }
+      },
+      "RoundStartSoundVariant": {
+        "title": "Dungeon-Landesound-Variante",
+        "description": "Eingebetteter Sound bei Modus Specific. Random wählt aus allen eingebetteten Varianten.",
+        "options": {
+          "vanilla": "Vanilla-Export",
+          "variant_01": "Variante 01",
+          "variant_02": "Variante 02"
+        }
       }
     },
     "MimesisPlayerEnhancement_Privacy": {

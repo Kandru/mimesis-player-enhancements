@@ -73,6 +73,18 @@
       <HintPath>$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UnityWebRequestModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.AudioModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UnityWebRequestAudioModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="com.rlabrecque.steamworks.net" Condition="Exists('$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll')">
       <HintPath>$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll</HintPath>
       <Private>false</Private>

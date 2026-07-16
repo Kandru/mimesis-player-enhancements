@@ -28,6 +28,7 @@ namespace MimesisPlayerEnhancement
                 [(MimicTuningSectionId, "MimicVoiceTuningMode")] = ["Vanilla", "Custom"],
                 [(MimicTuningSectionId, "MimicInventoryCopyMode")] = ["Vanilla", "Custom"],
                 [(MimicTuningSectionId, "MimicInventoryCopyPickRule")] = ["MinDistance", "MaxDistance", "Random"],
+                [(UiSectionId, "RoundStartSoundMode")] = ["Vanilla", "Random", "Specific"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)
@@ -52,6 +53,12 @@ namespace MimesisPlayerEnhancement
                 return "WeatherPresetList";
             }
 
+            if (sectionId == UiSectionId
+                && string.Equals(key, "RoundStartSoundVariant", StringComparison.Ordinal))
+            {
+                return "Select";
+            }
+
             if (SelectValuesByEntry.ContainsKey((sectionId, key)))
             {
                 return "Select";
@@ -65,6 +72,13 @@ namespace MimesisPlayerEnhancement
             entry.InputKind = ResolveInputKind(sectionId, key);
             if (!string.Equals(entry.InputKind, "Select", StringComparison.Ordinal))
             {
+                return;
+            }
+
+            if (sectionId == UiSectionId
+                && string.Equals(key, "RoundStartSoundVariant", StringComparison.Ordinal))
+            {
+                entry.SelectOptions = BuildRoundStartSoundVariantOptions();
                 return;
             }
 
@@ -241,6 +255,8 @@ namespace MimesisPlayerEnhancement
                     ["FloatingDamageDurationSeconds"] = "floatingDamage",
                     ["EnableFpsUi"] = "fpsUi",
                     ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
+                    ["RoundStartSoundMode"] = "roundStartSound",
+                    ["RoundStartSoundVariant"] = "roundStartSound",
                 };
             }
 
@@ -258,6 +274,24 @@ namespace MimesisPlayerEnhancement
             }
 
             return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        private static List<WebDashboardConfigSelectOptionDto> BuildRoundStartSoundVariantOptions()
+        {
+            List<WebDashboardConfigSelectOptionDto> options = [];
+            foreach (string value in RoundStartSoundResolver.ListVariantOptionValues())
+            {
+                string? label = WebDashboardL10n.GetConfigSelectOptionLabel(UiSectionId, "RoundStartSoundVariant", value);
+                options.Add(new WebDashboardConfigSelectOptionDto
+                {
+                    Value = value,
+                    Label = string.IsNullOrWhiteSpace(label)
+                        ? RoundStartSoundResolver.FormatVariantDisplayName(value)
+                        : label,
+                });
+            }
+
+            return options;
         }
 
         private sealed class EntryKeyComparer : IEqualityComparer<(string SectionId, string Key)>

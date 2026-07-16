@@ -1,4 +1,5 @@
 using MimesisPlayerEnhancement.Features.MimicTuning;
+using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement
@@ -67,6 +68,23 @@ namespace MimesisPlayerEnhancement
             if (sectionId == "MimesisPlayerEnhancement_Weather")
             {
                 return TryGetWeatherDependency(key, out dependency);
+            }
+
+            if (sectionId == UiConfig.SectionId)
+            {
+                return TryGetUiDependency(key, out dependency);
+            }
+
+            return false;
+        }
+
+        private static bool TryGetUiDependency(string key, out ModConfigEntryDependency dependency)
+        {
+            dependency = default;
+            if (string.Equals(key, "RoundStartSoundVariant", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("RoundStartSoundMode", "Specific");
+                return true;
             }
 
             return false;

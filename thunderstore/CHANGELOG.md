@@ -1,5 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.14
+- draft: change the dungeon start sound randomly
+
 ## 26.7.13
 - fix: FPS UI layout timing
 - fix: properly wire esc menu player buttons
