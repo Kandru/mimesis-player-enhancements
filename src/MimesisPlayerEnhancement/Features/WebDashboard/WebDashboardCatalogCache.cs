@@ -28,19 +28,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static string GetItemsJson()
         {
-            EnsureItems();
             return _itemsJson ?? WebDashboardJson.SerializeItems(new List<WebDashboardItemOptionDto>());
         }
 
         internal static string GetDungeonsJson()
         {
-            EnsureDungeons();
             return _dungeonsJson ?? WebDashboardJson.SerializeDungeons(new List<WebDashboardDungeonOptionDto>());
         }
 
         private static void EnsureItems()
         {
-            if (_itemsJson != null)
+            if (_itemsJson != null || !GameLocaleAccess.IsMainThread)
             {
                 return;
             }
@@ -50,7 +48,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void EnsureDungeons()
         {
-            if (_dungeonsJson != null)
+            if (_dungeonsJson != null || !GameLocaleAccess.IsMainThread)
             {
                 return;
             }

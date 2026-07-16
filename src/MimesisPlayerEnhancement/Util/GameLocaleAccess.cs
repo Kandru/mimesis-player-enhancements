@@ -16,6 +16,15 @@ namespace MimesisPlayerEnhancement.Util
         private static volatile string _cachedLanguage = "en";
         private static int _mainThreadId;
 
+        internal static bool IsMainThread
+        {
+            get
+            {
+                int mainThreadId = _mainThreadId;
+                return mainThreadId == 0 || Environment.CurrentManagedThreadId == mainThreadId;
+            }
+        }
+
         internal static void CaptureMainThread()
         {
             _mainThreadId = Environment.CurrentManagedThreadId;
@@ -87,6 +96,11 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static string GetL10NText(string key, params object[] formattingArgs)
         {
+            if (!IsMainThread)
+            {
+                return key;
+            }
+
             if (GetL10NTextMethod != null)
             {
                 return GetL10NTextMethod.Invoke(null, [key, formattingArgs]) as string ?? key;
