@@ -104,6 +104,22 @@
         "description": "Skip Krafton creator-code SDK login on startup."
       }
     },
+    "MimesisPlayerEnhancement_Replays": {
+      "_section": "Replays",
+      "_description": "Keep local dungeon replays and play them back from the main menu. Host recording only.",
+      "EnableReplays": {
+        "title": "Enable Replays",
+        "description": "Preserve finished host dungeon recordings locally, show the Replays main-menu button, and allow playback."
+      },
+      "KeepLocalReplays": {
+        "title": "Keep Local Replays",
+        "description": "Copy finished recordings into the mod library instead of deleting them after each run."
+      },
+      "MaxStoredReplays": {
+        "title": "Max Stored Replays",
+        "description": "Maximum replay files kept in the library. Oldest entries are removed when exceeded. 0 = unlimited."
+      }
+    },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
       "_description": "Randomize tram dungeon picks, map variants, and procedural map flavor. Host only.",

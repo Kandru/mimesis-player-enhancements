@@ -10,6 +10,7 @@
 | [Join Anytime](./features/join-anytime.md) | Let friends join after you've already started | Host only |
 | [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration | Your game only |
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
+| [Replays](./features/replays.md) | Keep local dungeon replays and play them back from the main menu (spectator, seek, voice) | Your game only (host records) |
 | [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
 | [Web Dashboard](./features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
 | [Player Announcements](./features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |

@@ -191,6 +191,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> StripCrashReportMetadata { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> BlockKraftonGppSdk { get; internal set; } = null!;
 
+        public static MelonPreferences_Entry<bool> EnableReplays { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> KeepLocalReplays { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> MaxStoredReplays { get; internal set; } = null!;
+
         private static readonly List<MelonPreferences_Entry<float>> FloatEntries = [];
 
         /// <summary>Registers a float entry for NaN/precision sanitizing and TOML normalization.</summary>
@@ -223,6 +227,7 @@ namespace MimesisPlayerEnhancement
             DungeonRandomizerConfig.CreateCategory();
             WeatherConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
+            ReplaysConfig.CreateCategory();
 
             EnableDebugLogging = CreateTrackedEntry(MainCategory,
                 "EnableDebugLogging",
@@ -249,12 +254,14 @@ namespace MimesisPlayerEnhancement
             WebDashboardConfig.CreateEntries();
             UiConfig.CreateEntries();
             PrivacyConfig.CreateEntries();
+            ReplaysConfig.CreateEntries();
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);
             EconomyConfig.SanitizeInitialValues(logger);
             DungeonRandomizerConfig.SanitizeInitialValues(logger);
             WeatherConfig.SanitizeInitialValues(logger);
+            ReplaysConfig.SanitizeInitialValues(logger);
 
             MorePlayersConfig.WireValidation(logger);
             MoreVoicesConfig.WireValidation(logger);
@@ -273,6 +280,7 @@ namespace MimesisPlayerEnhancement
             WebDashboardConfig.WireValidation(logger);
             UiConfig.WireValidation(logger);
             PrivacyConfig.WireValidation();
+            ReplaysConfig.WireValidation(logger);
             EnableDebugLogging.OnEntryValueChanged.Subscribe((_, _) => NotifyChanged(EnableDebugLogging));
 
             RegisterFloatEntries();
