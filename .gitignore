@@ -34,3 +34,4 @@ references/
 .tmp-*/
 .tmp-webdashboard/
 .formatting.lock
+seed-scan-shards/
