@@ -202,6 +202,8 @@ dotnet run --project src/MimesisSeedScanner.Cli -- merge \
 
 Merge scores all shard candidates and picks up to `--pool-size` (default **500**) seeds per flavor per DunGen flow. You do **not** need 100% scan completion — partial shards are enough if each flavor already has many candidates.
 
+`merge` loads one shard at a time and prints progress (`Loading shard…`, `Merging shard…`, `Selecting pools…`). With 16 large (~400 MB) shard files, expect a few minutes of CPU time — not hours. Rebuild the CLI if an older build appears to hang at 100% CPU with no output.
+
 ### Scan stuck past 100%?
 
 With default `--max-seed 2147483647` and `--seed-stride 100000`, older CLI builds could hit an **`int` overflow** in the seed loop after the last valid strided seed. Progress keeps climbing (101%, 102%, …) and the process never exits.

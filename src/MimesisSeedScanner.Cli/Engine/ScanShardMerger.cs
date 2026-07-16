@@ -5,100 +5,46 @@ namespace MimesisSeedScanner.Cli.Engine
 {
     internal static class ScanShardMerger
     {
+        private const int MedianSampleSize = 100_000;
+
         internal static SeedScanDocument Merge(
             IReadOnlyList<ThreadShardDocument> shards,
             int maxSeed,
             int poolSize,
             int seedStride)
         {
-            var merged = new SeedScanDocument
-            {
-                MaxSeed = maxSeed,
-                PoolSize = poolSize,
-                SeedStride = seedStride,
-            };
-
-            if (shards.Count == 0)
-            {
-                return merged;
-            }
-
-            var allMetrics = new List<GenerationMetrics>();
+            var accumulator = new ShardMergeAccumulator(poolSize);
             foreach (ThreadShardDocument shard in shards)
             {
-                foreach (FlowShardCheckpoint flow in shard.Flows)
-                {
-                    foreach (FlavorScanCheckpoint flavor in flow.Flavors)
-                    {
-                        foreach (SeedMetricsCheckpoint candidate in flavor.Candidates)
-                        {
-                            allMetrics.Add(SeedMetricsMapper.FromDto(candidate.Metrics));
-                        }
-                    }
-                }
+                accumulator.AddShard(shard);
             }
 
-            BalancedMedians medians = default;
-            SeedScoring.UpdateMedians(allMetrics, ref medians);
-            BalancedMedians.Current = medians;
+            return accumulator.ToDocument(maxSeed, poolSize, seedStride);
+        }
 
-            List<string> flowIds = shards
-                .SelectMany(shard => shard.Flows)
-                .Select(flow => flow.FlowId)
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(flowId => flowId, StringComparer.Ordinal)
-                .ToList();
-
-            foreach (string flowId in flowIds)
+        internal static List<string> ListShardPaths()
+        {
+            if (!Directory.Exists(ScanShardPaths.Directory))
             {
-                var trackers = DungeonSeedFlavorUtil.Curated
-                    .Select(flavor => new FlavorSeedTracker(flavor))
-                    .ToArray();
-
-                foreach (ThreadShardDocument shard in shards)
-                {
-                    FlowShardCheckpoint? flow = shard.Flows.FirstOrDefault(
-                        entry => entry.FlowId.Equals(flowId, StringComparison.Ordinal));
-                    if (flow == null)
-                    {
-                        continue;
-                    }
-
-                    foreach (FlavorScanCheckpoint flavorCheckpoint in flow.Flavors)
-                    {
-                        FlavorSeedTracker? tracker = trackers.FirstOrDefault(
-                            entry => entry.Flavor.Equals(flavorCheckpoint.Flavor, StringComparison.Ordinal));
-                        if (tracker == null)
-                        {
-                            continue;
-                        }
-
-                        foreach (SeedMetricsCheckpoint candidate in flavorCheckpoint.Candidates)
-                        {
-                            tracker.Consider(
-                                candidate.Seed,
-                                SeedMetricsMapper.FromDto(candidate.Metrics));
-                        }
-                    }
-                }
-
-                var flowResult = new FlowSeedScanResult { FlowId = flowId };
-                foreach (FlavorSeedTracker tracker in trackers)
-                {
-                    flowResult.Flavors.Add(new FlavorSeedScanResult
-                    {
-                        Flavor = tracker.Flavor,
-                        Seeds = PoolSelector.SelectPool(
-                            tracker.FlavorValue,
-                            tracker.GetCandidates(),
-                            poolSize),
-                    });
-                }
-
-                merged.Flows.Add(flowResult);
+                return [];
             }
 
-            return merged;
+            return Directory
+                .EnumerateFiles(ScanShardPaths.Directory, "seed-scan-results.thread-*.json")
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToList();
+        }
+
+        internal static ThreadShardDocument LoadShardFile(string path)
+        {
+            string json = File.ReadAllText(path);
+            ThreadShardDocument? shard = JsonConvert.DeserializeObject<ThreadShardDocument>(json);
+            if (shard == null)
+            {
+                throw new InvalidDataException($"Shard file is empty or invalid: {path}");
+            }
+
+            return shard;
         }
 
         internal static void SaveShard(ThreadShardDocument shard)
@@ -123,8 +69,7 @@ namespace MimesisSeedScanner.Cli.Engine
 
             try
             {
-                string json = File.ReadAllText(path);
-                return JsonConvert.DeserializeObject<ThreadShardDocument>(json);
+                return LoadShardFile(path);
             }
             catch (Exception ex)
             {
@@ -135,22 +80,13 @@ namespace MimesisSeedScanner.Cli.Engine
 
         internal static List<ThreadShardDocument> LoadAllShards()
         {
-            if (!Directory.Exists(ScanShardPaths.Directory))
-            {
-                return [];
-            }
-
-            var shards = new List<ThreadShardDocument>();
-            foreach (string path in Directory.EnumerateFiles(ScanShardPaths.Directory, "seed-scan-results.thread-*.json"))
+            List<string> paths = ListShardPaths();
+            var shards = new List<ThreadShardDocument>(paths.Count);
+            foreach (string path in paths)
             {
                 try
                 {
-                    string json = File.ReadAllText(path);
-                    ThreadShardDocument? shard = JsonConvert.DeserializeObject<ThreadShardDocument>(json);
-                    if (shard != null)
-                    {
-                        shards.Add(shard);
-                    }
+                    shards.Add(LoadShardFile(path));
                 }
                 catch (Exception ex)
                 {
@@ -248,6 +184,131 @@ namespace MimesisSeedScanner.Cli.Engine
                 && !Directory.EnumerateFileSystemEntries(ScanShardPaths.Directory).Any())
             {
                 Directory.Delete(ScanShardPaths.Directory);
+            }
+        }
+
+        internal sealed class ShardMergeAccumulator
+        {
+            private readonly int _poolSize;
+            private readonly Dictionary<string, Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>>> _flows =
+                new(StringComparer.Ordinal);
+
+            private readonly List<GenerationMetrics> _medianSample = [];
+            private readonly Random _medianRandom = new(42);
+            private int _medianItemsSeen;
+
+            internal ShardMergeAccumulator(int poolSize)
+            {
+                _poolSize = poolSize;
+            }
+
+            internal void AddShard(ThreadShardDocument shard)
+            {
+                foreach (FlowShardCheckpoint flow in shard.Flows)
+                {
+                    Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>> byFlavor = GetOrCreateFlow(flow.FlowId);
+                    foreach (FlavorScanCheckpoint flavorCheckpoint in flow.Flavors)
+                    {
+                        if (!DungeonSeedFlavorUtil.TryParse(flavorCheckpoint.Flavor, out DungeonSeedFlavor flavor))
+                        {
+                            continue;
+                        }
+
+                        if (!byFlavor.TryGetValue(flavor, out Dictionary<int, GenerationMetrics>? bySeed))
+                        {
+                            continue;
+                        }
+
+                        foreach (SeedMetricsCheckpoint candidate in flavorCheckpoint.Candidates)
+                        {
+                            GenerationMetrics metrics = SeedMetricsMapper.FromDto(candidate.Metrics);
+                            MaybeSampleMedian(metrics);
+
+                            if (!bySeed.TryGetValue(candidate.Seed, out GenerationMetrics existing)
+                                || SeedScoring.IsBetter(flavor, metrics, existing))
+                            {
+                                bySeed[candidate.Seed] = metrics;
+                            }
+                        }
+                    }
+                }
+            }
+
+            internal SeedScanDocument ToDocument(int maxSeed, int poolSize, int seedStride)
+            {
+                BalancedMedians medians = default;
+                SeedScoring.UpdateMedians(_medianSample, ref medians);
+                BalancedMedians.Current = medians;
+
+                var merged = new SeedScanDocument
+                {
+                    MaxSeed = maxSeed,
+                    PoolSize = poolSize,
+                    SeedStride = seedStride,
+                };
+
+                foreach (string flowId in _flows.Keys.OrderBy(flowId => flowId, StringComparer.Ordinal))
+                {
+                    Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>> byFlavor = _flows[flowId];
+                    var flowResult = new FlowSeedScanResult { FlowId = flowId };
+                    foreach (DungeonSeedFlavor flavor in DungeonSeedFlavorUtil.Curated)
+                    {
+                        Dictionary<int, GenerationMetrics> bySeed = byFlavor[flavor];
+                        List<(int Seed, GenerationMetrics Metrics)> candidates = bySeed
+                            .Select(entry => (entry.Key, entry.Value))
+                            .ToList();
+
+                        flowResult.Flavors.Add(new FlavorSeedScanResult
+                        {
+                            Flavor = flavor.ToString(),
+                            Seeds = PoolSelector.SelectPool(flavor, candidates, _poolSize),
+                        });
+                    }
+
+                    merged.Flows.Add(flowResult);
+                }
+
+                return merged;
+            }
+
+            private Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>> GetOrCreateFlow(string flowId)
+            {
+                if (_flows.TryGetValue(flowId, out Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>>? existing))
+                {
+                    return existing;
+                }
+
+                var byFlavor = new Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>>();
+                foreach (DungeonSeedFlavor flavor in DungeonSeedFlavorUtil.Curated)
+                {
+                    byFlavor[flavor] = new Dictionary<int, GenerationMetrics>();
+                }
+
+                _flows[flowId] = byFlavor;
+                return byFlavor;
+            }
+
+            private void MaybeSampleMedian(GenerationMetrics metrics)
+            {
+                if (metrics.GenerationFailed)
+                {
+                    return;
+                }
+
+                if (_medianSample.Count < MedianSampleSize)
+                {
+                    _medianSample.Add(metrics);
+                }
+                else
+                {
+                    int replaceIndex = _medianRandom.Next(_medianItemsSeen);
+                    if (replaceIndex < MedianSampleSize)
+                    {
+                        _medianSample[replaceIndex] = metrics;
+                    }
+                }
+
+                _medianItemsSeen++;
             }
         }
     }
