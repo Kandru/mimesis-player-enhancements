@@ -51,7 +51,7 @@ namespace MimesisSeedScanner.Cli.Engine
         {
             Directory.CreateDirectory(ScanShardPaths.Directory);
             shard.LastSavedAt = DateTime.UtcNow;
-            string json = JsonConvert.SerializeObject(shard, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(shard, Formatting.None);
             string path = ScanShardPaths.ShardPath(shard.ThreadId);
             string tempPath = path + ".tmp";
             File.WriteAllText(tempPath, json);
@@ -206,29 +206,48 @@ namespace MimesisSeedScanner.Cli.Engine
             {
                 foreach (FlowShardCheckpoint flow in shard.Flows)
                 {
-                    Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>> byFlavor = GetOrCreateFlow(flow.FlowId);
-                    foreach (FlavorScanCheckpoint flavorCheckpoint in flow.Flavors)
+                    AddFlowCandidates(flow.FlowId, flow.Flavors);
+                }
+            }
+
+            internal void AddTrackers(IReadOnlyDictionary<string, FlavorSeedTracker[]> trackersByFlow)
+            {
+                foreach (KeyValuePair<string, FlavorSeedTracker[]> entry in trackersByFlow)
+                {
+                    var flavorCheckpoints = new List<FlavorScanCheckpoint>(entry.Value.Length);
+                    foreach (FlavorSeedTracker tracker in entry.Value)
                     {
-                        if (!DungeonSeedFlavorUtil.TryParse(flavorCheckpoint.Flavor, out DungeonSeedFlavor flavor))
-                        {
-                            continue;
-                        }
+                        flavorCheckpoints.Add(tracker.ToCheckpoint());
+                    }
 
-                        if (!byFlavor.TryGetValue(flavor, out Dictionary<int, GenerationMetrics>? bySeed))
-                        {
-                            continue;
-                        }
+                    AddFlowCandidates(entry.Key, flavorCheckpoints);
+                }
+            }
 
-                        foreach (SeedMetricsCheckpoint candidate in flavorCheckpoint.Candidates)
-                        {
-                            GenerationMetrics metrics = SeedMetricsMapper.FromDto(candidate.Metrics);
-                            MaybeSampleMedian(metrics);
+            private void AddFlowCandidates(string flowId, IReadOnlyList<FlavorScanCheckpoint> flavors)
+            {
+                Dictionary<DungeonSeedFlavor, Dictionary<int, GenerationMetrics>> byFlavor = GetOrCreateFlow(flowId);
+                foreach (FlavorScanCheckpoint flavorCheckpoint in flavors)
+                {
+                    if (!DungeonSeedFlavorUtil.TryParse(flavorCheckpoint.Flavor, out DungeonSeedFlavor flavor))
+                    {
+                        continue;
+                    }
 
-                            if (!bySeed.TryGetValue(candidate.Seed, out GenerationMetrics existing)
-                                || SeedScoring.IsBetter(flavor, metrics, existing))
-                            {
-                                bySeed[candidate.Seed] = metrics;
-                            }
+                    if (!byFlavor.TryGetValue(flavor, out Dictionary<int, GenerationMetrics>? bySeed))
+                    {
+                        continue;
+                    }
+
+                    foreach (SeedMetricsCheckpoint candidate in flavorCheckpoint.Candidates)
+                    {
+                        GenerationMetrics metrics = SeedMetricsMapper.FromDto(candidate.Metrics);
+                        MaybeSampleMedian(metrics);
+
+                        if (!bySeed.TryGetValue(candidate.Seed, out GenerationMetrics existing)
+                            || SeedScoring.IsBetter(flavor, metrics, existing))
+                        {
+                            bySeed[candidate.Seed] = metrics;
                         }
                     }
                 }

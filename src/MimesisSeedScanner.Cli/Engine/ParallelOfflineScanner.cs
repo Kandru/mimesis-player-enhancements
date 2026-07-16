@@ -5,8 +5,7 @@ namespace MimesisSeedScanner.Cli.Engine
 {
     internal sealed class ParallelOfflineScanner
     {
-        private const int SaveEverySeeds = 250;
-        private static readonly TimeSpan SaveInterval = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan CheckpointMinInterval = TimeSpan.FromSeconds(60);
 
         private readonly ScanCatalog _catalog;
         private readonly IReadOnlyList<BakedFlow> _flows;
@@ -14,6 +13,7 @@ namespace MimesisSeedScanner.Cli.Engine
         private readonly int _poolSize;
         private readonly int _seedStride;
         private readonly int _threadCount;
+        private readonly int _checkpointEverySeeds;
         private readonly TimeSpan? _timeBudget;
         private readonly Thread[] _threads;
         private readonly ParallelScanWorkerState[] _states;
@@ -25,7 +25,8 @@ namespace MimesisSeedScanner.Cli.Engine
             int poolSize,
             int seedStride,
             int threadCount,
-            TimeSpan? timeBudget)
+            TimeSpan? timeBudget,
+            int checkpointEverySeeds = 0)
         {
             _catalog = catalog;
             _flows = flows;
@@ -34,6 +35,7 @@ namespace MimesisSeedScanner.Cli.Engine
             _seedStride = Math.Max(1, seedStride);
             _threadCount = Math.Max(1, threadCount);
             _timeBudget = timeBudget;
+            _checkpointEverySeeds = Math.Max(0, checkpointEverySeeds);
             _threads = new Thread[_threadCount];
             _states = new ParallelScanWorkerState[_threadCount];
         }
@@ -97,12 +99,63 @@ namespace MimesisSeedScanner.Cli.Engine
             }
         }
 
-        internal SeedScanDocument MergeResults() =>
-            ScanShardMerger.Merge(
-                _states.Where(state => state.Shard != null).Select(state => state.Shard!).ToList(),
-                _maxSeed,
-                _poolSize,
-                _seedStride);
+        internal SeedScanDocument MergeResults()
+        {
+            var accumulator = new ScanShardMerger.ShardMergeAccumulator(_poolSize);
+            foreach (ParallelScanWorkerState state in _states)
+            {
+                if (state.TrackersByFlow != null)
+                {
+                    accumulator.AddTrackers(state.TrackersByFlow);
+                    continue;
+                }
+
+                if (state.Shard != null)
+                {
+                    accumulator.AddShard(state.Shard);
+                }
+            }
+
+            return accumulator.ToDocument(_maxSeed, _poolSize, _seedStride);
+        }
+
+        internal void PersistShards(Action<string>? onProgress = null)
+        {
+            foreach (ParallelScanWorkerState state in _states)
+            {
+                FinalizeShard(state);
+                if (state.Shard == null)
+                {
+                    continue;
+                }
+
+                onProgress?.Invoke($"Writing shard {state.ThreadId}…");
+                ScanShardMerger.SaveShard(state.Shard);
+            }
+        }
+
+        private void FinalizeShard(ParallelScanWorkerState state)
+        {
+            if (state.Shard != null || state.TrackersByFlow == null)
+            {
+                return;
+            }
+
+            int seedsInRange = CountStridedSeeds(state.SeedStart, state.SeedEndExclusive, state.SeedStride);
+            bool isComplete = state.SeedsCompleted >= seedsInRange;
+            var shard = new ThreadShardDocument
+            {
+                ThreadId = state.ThreadId,
+                SeedStart = state.SeedStart,
+                SeedEndExclusive = state.SeedEndExclusive,
+                MaxSeed = _maxSeed,
+                PoolSize = _poolSize,
+                SeedStride = _seedStride,
+                ThreadCount = _threadCount,
+            };
+            UpdateShard(shard, state, state.TrackersByFlow, state.SeedsCompleted, isComplete);
+            state.Shard = shard;
+        }
 
         private void RunWorker(int threadId)
         {
@@ -125,6 +178,8 @@ namespace MimesisSeedScanner.Cli.Engine
                 shard.SeedStride = _seedStride;
 
                 Dictionary<string, FlavorSeedTracker[]> trackersByFlow = CreateTrackers(resumeShard);
+                state.TrackersByFlow = trackersByFlow;
+
                 int seedsInRange = CountStridedSeeds(state.SeedStart, state.SeedEndExclusive, _seedStride);
                 if (resumeShard is { IsComplete: true } || resumeShard?.SeedsCompleted >= seedsInRange)
                 {
@@ -132,7 +187,6 @@ namespace MimesisSeedScanner.Cli.Engine
                     state.GenerationsCompleted = resumeShard?.GenerationsCompleted
                         ?? (long)seedsInRange * _flows.Count;
                     UpdateShard(shard, state, trackersByFlow, seedsInRange, isComplete: true);
-                    ScanShardMerger.SaveShard(shard);
                     state.Shard = shard;
                     return;
                 }
@@ -140,7 +194,9 @@ namespace MimesisSeedScanner.Cli.Engine
                 state.SeedsCompleted = resumeShard?.SeedsCompleted ?? 0;
                 state.GenerationsCompleted = resumeShard?.GenerationsCompleted ?? 0;
                 int completedInRange = state.SeedsCompleted;
-                DateTime lastSaveAt = DateTime.UtcNow;
+                DateTime lastCheckpointAt = DateTime.UtcNow;
+                bool checkpointsEnabled = _checkpointEverySeeds > 0;
+
                 while (completedInRange < seedsInRange)
                 {
                     if (_timeBudget.HasValue && stopwatch.Elapsed >= _timeBudget.Value)
@@ -177,21 +233,16 @@ namespace MimesisSeedScanner.Cli.Engine
                     completedInRange++;
                     state.SeedsCompleted = completedInRange;
 
-                    bool shouldSave = completedInRange % SaveEverySeeds == 0
-                        || DateTime.UtcNow - lastSaveAt >= SaveInterval;
-                    if (shouldSave)
+                    if (checkpointsEnabled
+                        && (completedInRange % _checkpointEverySeeds == 0
+                            || DateTime.UtcNow - lastCheckpointAt >= CheckpointMinInterval))
                     {
                         bool complete = completedInRange >= seedsInRange;
                         UpdateShard(shard, state, trackersByFlow, completedInRange, complete);
                         ScanShardMerger.SaveShard(shard);
-                        lastSaveAt = DateTime.UtcNow;
+                        lastCheckpointAt = DateTime.UtcNow;
                     }
                 }
-
-                bool isComplete = completedInRange >= seedsInRange;
-                UpdateShard(shard, state, trackersByFlow, completedInRange, isComplete);
-                ScanShardMerger.SaveShard(shard);
-                state.Shard = shard;
             }
             catch (Exception ex)
             {
@@ -325,6 +376,8 @@ namespace MimesisSeedScanner.Cli.Engine
             internal long GenerationsCompleted { get; set; }
 
             internal bool IsComplete { get; set; }
+
+            internal Dictionary<string, FlavorSeedTracker[]>? TrackersByFlow { get; set; }
 
             internal ThreadShardDocument? Shard { get; set; }
         }

@@ -81,6 +81,7 @@ namespace MimesisSeedScanner.Cli
             Console.WriteLine("  scan --catalog scan-catalog.json [--output seed-scan-results.json]");
             Console.WriteLine("       [--max-seed N] (default: int.MaxValue) [--pool-size N] (default: 500)");
             Console.WriteLine("       [--seed-stride N] (default: 100000) [--threads N]");
+            Console.WriteLine("       [--checkpoint-every N] (default: 0 — in RAM; set e.g. 250 to resume mid-scan)");
             Console.WriteLine("       [--time-budget 4h|30m|3600s] [--shard-dir path]");
             Console.WriteLine("  merge [--shard-dir seed-scan-shards] [--output seed-scan-results.json]");
             Console.WriteLine("        Merge thread shard checkpoints into final scan JSON (no re-scan).");

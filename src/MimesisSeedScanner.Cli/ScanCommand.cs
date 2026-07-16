@@ -15,6 +15,7 @@ namespace MimesisSeedScanner.Cli
             int poolSize = CliArgs.GetInt(args, "--pool-size", SeedScanDefaults.PoolSize);
             int seedStride = CliArgs.GetInt(args, "--seed-stride", SeedScanDefaults.SeedStride);
             int threads = CliArgs.GetInt(args, "--threads", Environment.ProcessorCount);
+            int checkpointEvery = CliArgs.GetInt(args, "--checkpoint-every", 0);
             TimeSpan? timeBudget = CliArgs.GetTimeBudget(args, "--time-budget");
 
             if (string.IsNullOrWhiteSpace(catalogPath))
@@ -49,7 +50,8 @@ namespace MimesisSeedScanner.Cli
                 poolSize,
                 seedStride,
                 threads,
-                timeBudget);
+                timeBudget,
+                checkpointEvery);
 
             if (resumeShards.Count > 0
                 && !ScanShardMerger.TryValidateResume(resumeShards, threads, maxSeed, poolSize, seedStride, out string resumeError))
@@ -66,7 +68,8 @@ namespace MimesisSeedScanner.Cli
             Console.WriteLine(
                 $"Starting scan — {threads} thread(s), {document.Catalog.Flows.Count} flow(s), "
                 + $"seeds 1..{maxSeed - 1} stride {seedStride}, pool {poolSize}."
-                + (timeBudget.HasValue ? $" Time budget: {timeBudget.Value}." : string.Empty));
+                + (timeBudget.HasValue ? $" Time budget: {timeBudget.Value}." : string.Empty)
+                + (checkpointEvery > 0 ? $" Checkpoints every {checkpointEvery} seeds." : " In-memory shards (written on interrupt)."));
 
             scanner.Start();
             var stopwatch = Stopwatch.StartNew();
@@ -81,6 +84,8 @@ namespace MimesisSeedScanner.Cli
             }
 
             scanner.Join();
+
+            Console.WriteLine("Merging results from in-memory trackers…");
             SeedScanDocument merged = scanner.MergeResults();
             merged.ScanComplete = scanner.GenerationsCompleted >= scanner.TotalGenerations;
             merged.ScanInProgress = !merged.ScanComplete;
@@ -90,9 +95,15 @@ namespace MimesisSeedScanner.Cli
             string json = JsonConvert.SerializeObject(merged, Formatting.Indented);
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
             File.WriteAllText(outputPath, json);
+
             if (merged.ScanComplete)
             {
                 ScanShardMerger.DeleteShards(threads);
+            }
+            else
+            {
+                Console.WriteLine("Writing shard checkpoints for resume…");
+                scanner.PersistShards(onProgress: Console.WriteLine);
             }
 
             Console.WriteLine($"Wrote {outputPath} ({merged.Flows.Count} flows, complete={merged.ScanComplete}).");

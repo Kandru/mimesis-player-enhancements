@@ -43,11 +43,14 @@ dotnet run --project src/MimesisSeedScanner.Cli -- scan \
   [--pool-size 500] \
   [--seed-stride 100000] \
   [--threads 16] \
+  [--checkpoint-every 0] \
   [--time-budget 4h] \
   [--shard-dir seed-scan-shards]
 ```
 
-- Parallel workers with shard checkpoints (resume after interrupt)
+- Parallel workers keep top candidates **in RAM** during the scan (no per-250-seed JSON writes by default)
+- Final merge reads trackers from memory; shard files are written **once** when the scan stops incomplete
+- Set `--checkpoint-every 250` to resume after Ctrl+C; omit for maximum scan throughput
 - Top candidates per flavor kept in memory; merge applies percentile cut + random sample of `--pool-size`
 - **24 curated flavors** (see wiki)
 

@@ -35,3 +35,4 @@ references/
 .tmp-webdashboard/
 .formatting.lock
 seed-scan-shards/
+seed-scan-results.json

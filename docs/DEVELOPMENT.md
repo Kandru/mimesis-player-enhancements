@@ -208,7 +208,7 @@ Merge scores all shard candidates and picks up to `--pool-size` (default **500**
 
 With default `--max-seed 2147483647` and `--seed-stride 100000`, older CLI builds could hit an **`int` overflow** in the seed loop after the last valid strided seed. Progress keeps climbing (101%, 102%, …) and the process never exits.
 
-**Workaround:** stop with **Ctrl+C**, then run **`merge`** on the shard directory (see above). Shards saved every ~250 seeds still contain usable candidate data.
+**Workaround:** stop with **Ctrl+C**, then run **`merge`** on the shard directory (see above). With `--checkpoint-every 250`, shards contain resume data; without it, only a clean time-budget stop writes shards automatically.
 
 This overflow is fixed in current `MimesisSeedScanner.Cli` (index-based iteration). Rebuild the CLI before resuming a full-range scan.
 
@@ -221,8 +221,11 @@ This overflow is fixed in current `MimesisSeedScanner.Cli` (index-based iteratio
 | `--pool-size` | `500` | Seeds kept per flavor per flow (random sample if more qualify) |
 | `--seed-stride` | `100000` | Only evaluate every Nth seed (sparse coverage of the full range) |
 | `--threads` | CPU count | Parallel worker threads |
+| `--checkpoint-every` | `0` (disabled) | Save shard JSON every N seeds for mid-scan resume. `0` keeps trackers in RAM and only writes shards when the scan stops early (time budget / incomplete). Use e.g. `250` if you may kill the process with Ctrl+C. |
 | `--time-budget` | none | Stop after duration (`4h`, `30m`, `3600s`); resume later from shards |
 | `--shard-dir` | `seed-scan-shards/` | Checkpoint directory for resume |
+
+During a scan, each worker keeps `FlavorSeedTracker` reservoirs **in RAM** — no JSON serialization on the hot path. When the scan finishes, results are merged directly from memory into `seed-scan-results.json`. Shard files are written **once** only when the scan ends incomplete (for resume), or periodically when `--checkpoint-every` is set.
 
 Shard checkpoints allow interrupted scans to resume. Delete `seed-scan-shards/` to start fresh with new parameters.
 
