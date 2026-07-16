@@ -1,5 +1,6 @@
 using System.Net;
 using System.Reflection;
+using FishNet.Object.Synchronizing;
 
 namespace MimesisPlayerEnhancement
 {
@@ -107,8 +108,77 @@ namespace MimesisPlayerEnhancement
             }
 
             return TryGetConnectionInfo(archive, out PlayerConnectionInfo info)
-                ? FormatFull(info, GetVoiceId(archive))
+                ? FormatLifecycleIdentity(archive, info)
                 : "archive=unavailable";
+        }
+
+        internal static string FormatLifecycleIdentity(SpeechEventArchive? archive, PlayerConnectionInfo info)
+        {
+            return FormatFull(info, ResolveDisplayVoiceId(archive, info.SteamId));
+        }
+
+        internal static string ResolveDisplayVoiceId(SpeechEventArchive? archive, ulong steamId = 0)
+        {
+            string fromArchive = GetVoiceId(archive);
+            if (fromArchive is not "(pending)" and not "(unavailable)" and not "?")
+            {
+                return fromArchive;
+            }
+
+            if (steamId != 0 && PlayerRegistry.TryGetVoiceId(steamId, out string mapped) && !string.IsNullOrEmpty(mapped))
+            {
+                return mapped;
+            }
+
+            if (archive?.events != null)
+            {
+                string? fromEvents = ResolveDominantEventPlayerName(archive);
+                if (!string.IsNullOrEmpty(fromEvents))
+                {
+                    return fromEvents;
+                }
+            }
+
+            return fromArchive;
+        }
+
+        private static string? ResolveDominantEventPlayerName(SpeechEventArchive archive)
+        {
+            try
+            {
+                SyncList<SpeechEvent>? events = archive.events;
+                if (events == null || events.Count == 0)
+                {
+                    return null;
+                }
+
+                Dictionary<string, int> counts = [];
+                string? dominant = null;
+                int max = 0;
+                for (int i = 0; i < events.Count; i++)
+                {
+                    SpeechEvent? ev = events[i];
+                    if (ev == null || string.IsNullOrEmpty(ev.PlayerName))
+                    {
+                        continue;
+                    }
+
+                    counts.TryGetValue(ev.PlayerName, out int count);
+                    count++;
+                    counts[ev.PlayerName] = count;
+                    if (count > max)
+                    {
+                        max = count;
+                        dominant = ev.PlayerName;
+                    }
+                }
+
+                return dominant;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>Short player tag for feature debug/operational logs (name + steamId).</summary>
@@ -169,7 +239,7 @@ namespace MimesisPlayerEnhancement
             return steamId != 0 || playerUid != 0;
         }
 
-        public static string DescribeSteamPlayer(ulong steamId, long playerUid = 0)
+        public static string DescribeSteamPlayer(ulong steamId, long playerUid = 0, SpeechEventArchive? archive = null)
         {
             SessionContext? session = FindSessionContext(playerUid, steamId);
             if (playerUid == 0 && session != null)
@@ -185,7 +255,12 @@ namespace MimesisPlayerEnhancement
             bool isLocal = steamId != 0 && steamId == GameSessionAccess.GetLocalSteamId();
             if (TryGetConnectionInfo(session, playerUid, steamId, isLocal, out PlayerConnectionInfo info))
             {
-                return FormatFull(info, voiceId: "(n/a)");
+                if (archive != null)
+                {
+                    info.VoiceLineCount = GetVoiceLineCount(archive);
+                }
+
+                return FormatFull(info, ResolveDisplayVoiceId(archive, steamId));
             }
 
             return $"steamId={steamId} uid={(playerUid == 0 ? "(pending)" : playerUid.ToString())}";

@@ -55,6 +55,22 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ModLog.Debug(Feature, $"CollectAllSpeechEvents: " +
                         $"{liveCount} live + {disconnectedAdded} disconnected + {pendingAdded} pending (absent players) = {list.Count} total");
                 }
+
+                int slotId = SpeechEventPoolManager.LoadedSlotId;
+                if (!IsValidSaveSlotId(slotId))
+                {
+                    slotId = GetCurrentSaveSlotId();
+                }
+
+                if (IsValidSaveSlotId(slotId))
+                {
+                    int beforeFilter = list.Count;
+                    list = SpeechEventVoiceOwnership.FilterOwnedEvents(slotId, list);
+                    if (list.Count < beforeFilter)
+                    {
+                        ModLog.Debug(Feature, $"CollectAllSpeechEvents: filtered {beforeFilter - list.Count} orphaned events");
+                    }
+                }
             }
             catch (Exception ex)
             {

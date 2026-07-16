@@ -31,14 +31,14 @@ namespace MimesisPlayerEnhancement.Features.Players
             _ = Interlocked.Increment(ref _revision);
         }
 
-        internal static void LoadForSlot(int slotId)
+        internal static void LoadForSlot(int slotId, bool forceReload = false)
         {
             if (!MimesisSaveManager.IsHost() || !MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 return;
             }
 
-            if (slotId == _loadedSlotId)
+            if (!forceReload && slotId == _loadedSlotId)
             {
                 StatisticsWriteQueue.Configure(slotId, GetStatisticsDictionary);
                 return;
@@ -83,6 +83,18 @@ namespace MimesisPlayerEnhancement.Features.Players
             _loadedSlotId = -999;
             _revision = 0;
             StatisticsWriteQueue.Clear();
+        }
+
+        internal static void ResetSessionRuntimeState()
+        {
+            foreach (PlayerRecord record in Records.Values)
+            {
+                record.VoiceId = "";
+                record.IsOnline = false;
+                record.ConnectedSinceUtc = null;
+            }
+
+            _loadedSlotId = -999;
         }
 
         internal static PlayerRecord GetOrCreate(ulong steamId)

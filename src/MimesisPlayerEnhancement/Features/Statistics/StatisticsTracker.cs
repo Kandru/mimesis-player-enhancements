@@ -623,8 +623,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             string detail = isNewSession
-                ? $"new session {doc.CurrentSession.SessionId}"
-                : $"resumed session {doc.CurrentSession.SessionId} (reconnects={reconnectCount})";
+                ? "session started"
+                : reconnectCount > 0
+                    ? $"session resumed (reconnects={reconnectCount})"
+                    : "session resumed";
             return new PlayerLifecycleContribution("Statistics", detail);
         }
 

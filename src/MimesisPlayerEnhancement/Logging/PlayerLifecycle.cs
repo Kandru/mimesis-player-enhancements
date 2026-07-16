@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement
     internal static class PlayerLifecycleCoordinator
     {
         private const string LogFeature = "Session";
-        private static readonly string[] ContributionOrder = ["MoreVoices", "Persistence", "Statistics"];
+        private static readonly string[] ContributionOrder = ["Persistence", "Statistics"];
 
         private sealed class ConnectState
         {
@@ -59,12 +59,6 @@ namespace MimesisPlayerEnhancement
             }
 
             ConnectState state = GetOrCreateConnectState(archive);
-            PlayerLifecycleContribution? moreVoices = MoreVoicesPatchHelpers.TryDescribeArchiveStarted(archive);
-            if (moreVoices.HasValue)
-            {
-                state.Contributions[moreVoices.Value.Feature] = moreVoices.Value;
-            }
-
             ApplyPendingStatisticsConnect(state);
             TryFlushConnect(state);
         }
@@ -398,6 +392,8 @@ namespace MimesisPlayerEnhancement
                    && (info.SteamId != 0 || info.PlayerUid != 0);
         }
 
+        private static readonly string[] ConnectingContributionOrder = ["Persistence"];
+
         private static void TryFlushConnect(ConnectState state)
         {
             if (state.PersistencePhase == PersistenceConnectPhase.Connecting)
@@ -405,20 +401,17 @@ namespace MimesisPlayerEnhancement
                 if (!state.ConnectingLogged && HasMinimumIdentity(state))
                 {
                     state.ConnectingLogged = true;
-                    LogLifecycle("connecting", state.Archive, OrderedContributions(state.Contributions), state.SteamId);
+                    LogLifecycle(
+                        "connecting",
+                        state.Archive,
+                        OrderedContributions(state.Contributions, ConnectingContributionOrder),
+                        state.SteamId);
                 }
 
                 return;
             }
 
             if (state.ConnectedLogged || SpeechEventPoolManager.AwaitingVoiceUuid(state.Archive))
-            {
-                return;
-            }
-
-            if (ModConfig.EnablePersistence.Value
-                && state.PersistencePhase == PersistenceConnectPhase.Connected
-                && !state.Contributions.ContainsKey("Persistence"))
             {
                 return;
             }
@@ -433,10 +426,12 @@ namespace MimesisPlayerEnhancement
         }
 
         private static List<PlayerLifecycleContribution> OrderedContributions(
-            Dictionary<string, PlayerLifecycleContribution> contributions)
+            Dictionary<string, PlayerLifecycleContribution> contributions,
+            string[]? order = null)
         {
+            order ??= ContributionOrder;
             List<PlayerLifecycleContribution> list = [];
-            foreach (string key in ContributionOrder)
+            foreach (string key in order)
             {
                 if (contributions.TryGetValue(key, out PlayerLifecycleContribution contribution))
                 {
@@ -466,21 +461,29 @@ namespace MimesisPlayerEnhancement
             ulong steamIdFallback,
             long playerUidFallback = 0)
         {
-            if (steamIdFallback != 0)
+            if (archive != null && VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info))
             {
-                return VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback);
+                if (info.SteamId == 0 && steamIdFallback != 0)
+                {
+                    info.SteamId = steamIdFallback;
+                }
+
+                if (info.PlayerUid == 0 && playerUidFallback != 0)
+                {
+                    info.PlayerUid = playerUidFallback;
+                }
+
+                return VoiceEventStats.FormatLifecycleIdentity(archive, info);
             }
 
-            if (archive != null
-                && VoiceEventStats.TryGetConnectionInfo(archive, out PlayerConnectionInfo info)
-                && (info.SteamId != 0 || info.PlayerUid != 0))
+            if (steamIdFallback != 0)
             {
-                return VoiceEventStats.DescribePlayer(archive);
+                return VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback, archive);
             }
 
             return archive != null
                 ? VoiceEventStats.DescribePlayer(archive)
-                : VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback);
+                : VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback, archive);
         }
 
         private static string FormatContributions(IReadOnlyList<PlayerLifecycleContribution> contributions)

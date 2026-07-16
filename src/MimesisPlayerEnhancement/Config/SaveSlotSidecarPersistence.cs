@@ -10,6 +10,8 @@ namespace MimesisPlayerEnhancement
     {
         private const string Feature = "SaveSlotSidecar";
 
+        private static int _loadingSidecarSlot = -1;
+
         internal static void OnSaveSlotLoaded(int slotId)
         {
             if (!MimesisSaveManager.IsHost() || !MimesisSaveManager.IsValidSaveSlotId(slotId))
@@ -17,23 +19,39 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            PlayerRegistry.LoadForSlot(slotId);
-            SaveSlotDocumentStore.LoadForSlot(slotId);
-            SaveSlotConfigStore.LoadForSlot(slotId);
-            SpeechEventArchivePatches.InvalidatePoolLoaded();
-            SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
+            if (_loadingSidecarSlot == slotId)
+            {
+                ModLog.Debug(Feature, $"Skipping reentrant sidecar load for save slot {slotId}.");
+                return;
+            }
 
-            Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
+            _loadingSidecarSlot = slotId;
+            try
+            {
+                PlayerRegistry.LoadForSlot(slotId, forceReload: true);
+                SaveSlotDocumentStore.LoadForSlot(slotId);
+                SaveSlotConfigStore.LoadForSlot(slotId);
+                SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
 
-            int statsPlayers = PlayerRegistry.GetAllStatistics().Count;
-            int rosterPlayers = SaveSlotDocumentStore.LoadedPlayerCount;
-            ModLog.Info(
-                Feature,
-                $"Loaded slot sidecars for save slot {slotId} — stats={statsPlayers}, roster={rosterPlayers}.");
+                Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
 
-            WebDashboardOfflinePlayerCache.RebuildSync(PlayerRegistry.Revision);
-            WebDashboardSnapshotCache.MarkDirty();
-            WebDashboardSnapshotCache.RequestFullPublish();
+                int statsPlayers = PlayerRegistry.GetAllStatistics().Count;
+                int rosterPlayers = SaveSlotDocumentStore.LoadedPlayerCount;
+                ModLog.Info(
+                    Feature,
+                    $"Loaded slot sidecars for save slot {slotId} — stats={statsPlayers}, roster={rosterPlayers}.");
+
+                WebDashboardOfflinePlayerCache.RebuildSync(PlayerRegistry.Revision);
+                WebDashboardSnapshotCache.MarkDirty();
+                WebDashboardSnapshotCache.RequestFullPublish();
+            }
+            finally
+            {
+                if (_loadingSidecarSlot == slotId)
+                {
+                    _loadingSidecarSlot = -1;
+                }
+            }
         }
 
         /// <summary>
@@ -108,6 +126,9 @@ namespace MimesisPlayerEnhancement
 
         internal static void OnSessionEnded()
         {
+            _loadingSidecarSlot = -1;
+            PlayerRegistry.ResetSessionRuntimeState();
+            SpeechEventArchivePatches.InvalidatePoolLoaded();
             SaveSlotConfigStore.ClearRuntimeToGlobal();
             SaveSlotDocumentStore.Clear();
         }

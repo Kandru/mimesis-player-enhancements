@@ -39,19 +39,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             bool hadPlayer = PlayerRegistry.TryGetStatistics(steamId, out _);
+            bool hadRosterEntry = !hadPlayer && SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
+
+            int voiceRemoved = SpeechEventPoolManager.RemovePlayer(steamId);
+
             if (hadPlayer)
             {
                 PlayerRegistry.RemovePlayer(steamId, waitForCompletion: true);
             }
 
-            bool hadRosterEntry = !hadPlayer && SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
             if (hadRosterEntry)
             {
                 SaveSlotDocumentStore.RemovePlayer(steamId);
                 SaveSlotDocumentStore.FlushToDisk(slotId, waitForCompletion: true);
             }
 
-            int voiceRemoved = SpeechEventPoolManager.RemovePlayer(steamId);
             try
             {
                 MimesisSaveManager.SaveMimesisData(slotId);

@@ -57,24 +57,20 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 
         internal static PersistenceConnectOutcome BuildConnectOutcome(
             SpeechEventInjector.RestoreResult result,
-            int eventsBefore,
-            int eventsAfter,
             SpeechEventArchive? archive = null)
         {
             if (result.TotalAdded > 0)
             {
-                return new PersistenceConnectOutcome(
-                    PersistenceConnectPhase.Connected,
-                    $"restored {result.TotalAdded} voice events (pool={result.FromPool}, reconnect={result.FromReconnect}, before={eventsBefore}, after={eventsAfter})");
+                return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, null);
             }
 
             if (SpeechEventPoolManager.HasPending() || SpeechEventPoolManager.DisconnectedCacheCount > 0)
             {
                 MaybeWarnNoMatchingVoices(archive);
-                return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "no matching saved voices");
+                return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "unmatched saved voices");
             }
 
-            return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "no persistence data");
+            return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, null);
         }
 
         private static void MaybeWarnNoMatchingVoices(SpeechEventArchive? archive)
