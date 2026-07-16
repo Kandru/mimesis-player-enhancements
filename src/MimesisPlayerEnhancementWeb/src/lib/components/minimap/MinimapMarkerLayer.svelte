@@ -12,6 +12,7 @@
     blindMode = false,
     mapPivot,
     followedOnly = false,
+    followedScale = 1,
   }: {
     markers: MinimapMarkerDto[];
     vp: Viewport;
@@ -21,6 +22,7 @@
     blindMode?: boolean;
     mapPivot?: { x: number; y: number };
     followedOnly?: boolean;
+    followedScale?: number;
   } = $props();
 
   const markerRadius = 7.2;
@@ -60,7 +62,7 @@
     {@const yaw = displayYaw(followedMarker)}
     <g
       class="{markerClass(followedMarker)} minimap-marker-followed"
-      transform="translate({mapPivot.x} {mapPivot.y})"
+      transform="translate({mapPivot.x} {mapPivot.y}) scale({followedScale})"
     >
       <g transform="rotate({yaw + 180})">
         <circle r={markerRadius} />

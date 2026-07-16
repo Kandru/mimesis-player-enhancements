@@ -690,7 +690,7 @@ class DashboardStore {
     const connectedIds = new Set(
       this.players.filter((p) => p.playerUid).map((p) => String(p.steamId)),
     );
-    let filtered = (markers || []).filter((m) => connectedIds.has(String(m.steamId)));
+    let filtered = (markers || []).filter((m) => connectedIds.has(String(m.steamId)) && m.isAlive);
     if (this.playerBlindMode) {
       filtered = filtered.filter((m) => m.isLocal);
     }

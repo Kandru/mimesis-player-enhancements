@@ -17,12 +17,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static string? ResolvePlayerAreaId(GamePlayScene gps, DungeonRoom room, Vector3 position)
         {
+            string? indoorArea = ResolveIndoorAreaId(room, position);
+            if (!string.IsNullOrWhiteSpace(indoorArea))
+            {
+                return indoorArea;
+            }
+
             if (WebDashboardMinimapOutdoorSource.IsPositionOutdoor(gps, position))
             {
                 return OutdoorAreaId;
             }
 
-            return ResolveIndoorAreaId(room, position);
+            return null;
         }
 
         internal static string? ResolveIndoorAreaId(DungeonRoom room, Vector3 position)

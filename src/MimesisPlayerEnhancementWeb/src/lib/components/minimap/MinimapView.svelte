@@ -73,6 +73,11 @@
     return navigation.getTransform();
   });
 
+  const followMarkerScale = $derived.by(() => {
+    void navVersion;
+    return navigation.zoom;
+  });
+
   const layoutGeometry = $derived.by(() => {
     void layoutKey;
     if (!data || isHidden) return null;
@@ -314,6 +319,7 @@
             blindMode={!!data.blindMode}
             {mapPivot}
             followedOnly
+            followedScale={followMarkerScale}
           />
         {/if}
       </svg>

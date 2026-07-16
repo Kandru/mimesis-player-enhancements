@@ -8,15 +8,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
     internal sealed class WorldOverlayFactory
     {
         private const float CanvasScale = 0.01f;
-        private const float BarWidth = 84f;
-        private const float BarHeight = 10f;
-        private const float BarBorderInset = 1f;
+        private const float GlowSize = 140f;
         internal const float FloaterScale = 0.5f;
 
-        private static readonly Color HealthFill = new(0.82f, 0.18f, 0.18f, 1f);
-        private static readonly Color HealthFillFlash = new(1f, 0.42f, 0.42f, 1f);
-        private static readonly Color HealthTrack = new(0.12f, 0.12f, 0.12f, 0.9f);
-        private static readonly Color White = Color.white;
         private static readonly Color DamageTextColor = new(1f, 0.35f, 0.35f, 1f);
 
         private static readonly Type? CanvasType = Type.GetType("UnityEngine.Canvas, UnityEngine.UIModule");
@@ -24,10 +18,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static readonly Type? GraphicRaycasterType = Type.GetType("UnityEngine.UI.GraphicRaycaster, UnityEngine.UI");
 
         private static WorldOverlayFactory? _instance;
+        private static Sprite? _glowSprite;
 
         private readonly GameObject _rootObject;
         private readonly Transform _rootTransform;
-        private readonly Stack<HealthBarWidget> _healthBarPool = new();
+        private readonly Stack<HealthGlowWidget> _healthGlowPool = new();
         private readonly Stack<FloaterWidget> _floaterPool = new();
 
         internal static WorldOverlayFactory Instance => _instance ??= new WorldOverlayFactory();
@@ -65,23 +60,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             _rootObject.SetActive(active);
         }
 
-        internal HealthBarWidget RentHealthBar()
+        internal HealthGlowWidget RentHealthGlow()
         {
-            if (_healthBarPool.TryPop(out HealthBarWidget? widget))
+            if (_healthGlowPool.TryPop(out HealthGlowWidget? widget))
             {
                 widget.Root.SetActive(true);
-                widget.SetFillPercent(1f);
+                widget.RootTransform.localScale = Vector3.one;
                 return widget;
             }
 
-            return CreateHealthBar();
+            return CreateHealthGlow();
         }
 
-        internal void ReturnHealthBar(HealthBarWidget widget)
+        internal void ReturnHealthGlow(HealthGlowWidget widget)
         {
             widget.Root.SetActive(false);
             widget.Actor = null;
-            _healthBarPool.Push(widget);
+            widget.RootTransform.localScale = Vector3.one;
+            _healthGlowPool.Push(widget);
         }
 
         internal FloaterWidget RentFloater(float displayScale = 1f)
@@ -110,9 +106,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal void TearDownAllPooled()
         {
-            while (_healthBarPool.Count > 0)
+            while (_healthGlowPool.Count > 0)
             {
-                HealthBarWidget widget = _healthBarPool.Pop();
+                HealthGlowWidget widget = _healthGlowPool.Pop();
                 if (widget.Root != null)
                 {
                     UnityEngine.Object.Destroy(widget.Root);
@@ -131,72 +127,62 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             _rootObject.SetActive(false);
         }
 
-        private HealthBarWidget CreateHealthBar()
+        private HealthGlowWidget CreateHealthGlow()
         {
-            GameObject root = new("HealthBar");
+            GameObject root = new("HealthGlow");
             root.transform.SetParent(_rootTransform, false);
 
             RectTransform rootRect = root.AddComponent<RectTransform>();
-            rootRect.sizeDelta = new Vector2(BarWidth, BarHeight);
+            rootRect.sizeDelta = new Vector2(GlowSize, GlowSize);
 
-            CreateStretchImage(root.transform, "Border", White);
+            Image glow = root.AddComponent<Image>();
+            glow.sprite = GetGlowSprite();
+            glow.color = new Color(0.2f, 1f, 0.2f, 0.85f);
+            glow.raycastTarget = false;
 
-            GameObject fillArea = new("FillArea");
-            fillArea.transform.SetParent(root.transform, false);
-            RectTransform fillAreaRect = fillArea.AddComponent<RectTransform>();
-            fillAreaRect.anchorMin = Vector2.zero;
-            fillAreaRect.anchorMax = Vector2.one;
-            fillAreaRect.offsetMin = new Vector2(BarBorderInset, BarBorderInset);
-            fillAreaRect.offsetMax = new Vector2(-BarBorderInset, -BarBorderInset);
-
-            CreateStretchImage(fillArea.transform, "Track", HealthTrack);
-
-            GameObject fillGo = new("Fill");
-            fillGo.transform.SetParent(fillArea.transform, false);
-            RectTransform fillRect = fillGo.AddComponent<RectTransform>();
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = Vector2.zero;
-            fillRect.offsetMax = Vector2.zero;
-            Image fill = fillGo.AddComponent<Image>();
-            fill.color = HealthFill;
-            fill.raycastTarget = false;
-
-            GameObject textGo = new("HpText");
-            textGo.transform.SetParent(root.transform, false);
-            RectTransform textRect = textGo.AddComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
-
-            Component label = ModUiFactory.AddText(textGo, ModUiAssets.Fallback, "100/100", 10f, ModUiFontStyle.Bold);
-            ModUiText.SetMiddleCenterAlignment(label);
-            ModUiText.SetColor(label, White);
-            ModUiText.ConfigureTextLayout(label, wordWrap: false, ModUiText.OverflowOverflow);
             DisableRaycast(root);
-            DisableRaycast(fillArea);
-            DisableRaycast(textGo);
 
-            return new HealthBarWidget
+            return new HealthGlowWidget
             {
                 Root = root,
                 RootTransform = rootRect,
-                FillImage = fill,
-                FillRect = fillRect,
-                TextComponent = label,
-                BaseFillColor = HealthFill,
-                FlashFillColor = HealthFillFlash,
+                GlowImage = glow,
             };
         }
 
-        private static void SetHorizontalFill(RectTransform fillRect, float percent)
+        private static Sprite GetGlowSprite()
         {
-            float clamped = Mathf.Clamp01(percent);
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = new Vector2(clamped, 1f);
-            fillRect.offsetMin = Vector2.zero;
-            fillRect.offsetMax = Vector2.zero;
+            if (_glowSprite != null)
+            {
+                return _glowSprite;
+            }
+
+            const int size = 64;
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, mipChain: false);
+            Vector2 center = new(size * 0.5f, size * 0.5f);
+            float radius = size * 0.5f;
+            Color[] pixels = new Color[size * size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dist = Vector2.Distance(new Vector2(x, y), center) / radius;
+                    float alpha = Mathf.Clamp01(1f - dist);
+                    alpha *= alpha;
+                    pixels[(y * size) + x] = new Color(1f, 1f, 1f, alpha);
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply();
+
+            _glowSprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            return _glowSprite;
         }
 
         private FloaterWidget CreateFloater()
@@ -220,22 +206,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 TextComponent = label,
                 BaseColor = DamageTextColor,
             };
-        }
-
-        private static Image CreateStretchImage(Transform parent, string name, Color color)
-        {
-            GameObject go = new(name);
-            go.transform.SetParent(parent, false);
-            RectTransform rect = go.AddComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            Image image = go.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            return image;
         }
 
         private static void DisableRaycast(GameObject go)
@@ -268,19 +238,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             property.SetValue(component, Enum.ToObject(enumType, value), null);
         }
 
-        internal sealed class HealthBarWidget
+        internal sealed class HealthGlowWidget
         {
             internal GameObject Root = null!;
             internal RectTransform RootTransform = null!;
-            internal RectTransform FillRect = null!;
-            internal Image FillImage = null!;
-            internal Component TextComponent = null!;
-            internal Color BaseFillColor;
-            internal Color FlashFillColor;
+            internal Image GlowImage = null!;
             internal ProtoActor? Actor;
-
-            internal void SetFillPercent(float percent) =>
-                SetHorizontalFill(FillRect, percent);
         }
 
         internal sealed class FloaterWidget

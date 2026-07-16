@@ -52,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         [HarmonyPostfix]
         private static void Postfix(ProtoActor __instance, HitTargetSig sig)
         {
-            if (!WorldOverlayGate.HealthBarsEnabled && !WorldOverlayGate.DamageNumbersEnabled)
+            if (!WorldOverlayGate.HealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
             {
                 return;
             }
@@ -79,7 +79,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         [HarmonyPostfix]
         private static void Postfix(ProtoActor __instance, ActorDamagedSig sig)
         {
-            if (!WorldOverlayGate.HealthBarsEnabled && !WorldOverlayGate.DamageNumbersEnabled)
+            if (!WorldOverlayGate.HealthGlowEnabled && !WorldOverlayGate.DamageNumbersEnabled)
             {
                 return;
             }

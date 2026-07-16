@@ -167,7 +167,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 List<WebDashboardMinimapMarkerDto> localOnly = [];
                 foreach (WebDashboardMinimapMarkerDto marker in markers)
                 {
-                    if (marker.IsLocal)
+                    if (marker.IsLocal && marker.IsAlive)
                     {
                         localOnly.Add(marker);
                     }
@@ -180,7 +180,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 foreach (WebDashboardMinimapMarkerDto marker in markers)
                 {
-                    if (marker.SteamId == focusSteamId)
+                    if (marker.SteamId == focusSteamId && marker.IsAlive)
                     {
                         return [marker];
                     }
@@ -189,7 +189,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return [];
             }
 
-            return [.. markers];
+            List<WebDashboardMinimapMarkerDto> alive = [];
+            foreach (WebDashboardMinimapMarkerDto marker in markers)
+            {
+                if (marker.IsAlive)
+                {
+                    alive.Add(marker);
+                }
+            }
+
+            return alive;
         }
 
         internal static List<WebDashboardMinimapMarkerDto> FilterMarkersForClient(

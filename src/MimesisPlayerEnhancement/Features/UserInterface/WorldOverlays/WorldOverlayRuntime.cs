@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static readonly Color DamageTextColor = new(1f, 0.25f, 0.25f, 1f);
         private static readonly Color DetoxTextColor = new(0.25f, 0.9f, 0.3f, 1f);
 
-        private static readonly WorldHealthBarController HealthBars = new();
+        private static readonly WorldHealthGlowController HealthGlows = new();
         private static readonly FloatingTextOverlayController DamageFloaters = new(
             () => WorldOverlayGate.DamageNumbersEnabled,
             WorldOverlayGate.IsDamageOverlayTarget,
@@ -35,9 +35,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             }
 
             Camera? camera = ResolveCamera();
-            if (WorldOverlayGate.HealthBarsEnabled)
+            if (WorldOverlayGate.HealthGlowEnabled)
             {
-                HealthBars.Tick(camera);
+                HealthGlows.Tick(camera);
             }
 
             if (WorldOverlayGate.DamageNumbersEnabled)
@@ -60,9 +60,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         internal static void RefreshFromConfig()
         {
             WorldOverlayGate.RefreshCache();
-            if (!WorldOverlayGate.HealthBarsEnabled)
+            if (!WorldOverlayGate.HealthGlowEnabled)
             {
-                HealthBars.TearDown();
+                HealthGlows.TearDown();
             }
 
             if (!WorldOverlayGate.DamageNumbersEnabled)
@@ -86,7 +86,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal static void NotifyHitDamage(ProtoActor victim, long damage)
         {
-            if (damage <= 0 || !WorldOverlayGate.IsHealthBarTarget(victim))
+            if (damage <= 0 || !WorldOverlayGate.IsWorldDamageTarget(victim))
             {
                 return;
             }
@@ -121,9 +121,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         private static void NotifyEntityDamaged(ProtoActor actor, long damage)
         {
-            if (WorldOverlayGate.HealthBarsEnabled && WorldOverlayGate.IsHealthBarTarget(actor))
+            if (WorldOverlayGate.HealthGlowEnabled && WorldOverlayGate.IsWorldDamageTarget(actor))
             {
-                HealthBars.NotifyDamaged(actor);
+                HealthGlows.NotifyDamaged(actor, damage);
             }
 
             if (WorldOverlayGate.DamageNumbersEnabled
@@ -142,7 +142,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         private static void TearDownAll()
         {
-            HealthBars.TearDown();
+            HealthGlows.TearDown();
             DamageFloaters.TearDown();
             DetoxFloaters.TearDown();
             WorldOverlayHpTracker.Clear();
@@ -154,7 +154,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static void RefreshActiveFlag()
         {
             _hasActiveOverlays =
-                (WorldOverlayGate.HealthBarsEnabled && HealthBars.HasActiveBars)
+                (WorldOverlayGate.HealthGlowEnabled && HealthGlows.HasActiveGlows)
                 || (WorldOverlayGate.DamageNumbersEnabled && DamageFloaters.HasActiveFloaters)
                 || (WorldOverlayGate.DetoxIndicatorsEnabled && DetoxFloaters.HasActiveFloaters);
         }
@@ -168,7 +168,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return Camera.main;
             }
 
-            // Cache the fallback camera — Camera.allCameras allocates a new array per call.
             if (_cachedFallbackCamera != null)
             {
                 return _cachedFallbackCamera;

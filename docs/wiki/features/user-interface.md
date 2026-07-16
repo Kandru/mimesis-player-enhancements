@@ -16,9 +16,9 @@ Local presentation options that do not require other players to install the mod.
 
 `EnableExtendedInGameMenuPlayerList` shows the ESC menu player list in a right-side overlay (join code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls.
 
-## World health bars
+## World health glow
 
-`EnableWorldHealthBars` shows a world-space health bar above other players, mimics, and monsters for a few seconds after they take damage. Never shown on your own avatar. `WorldHealthBarDurationSeconds` controls visibility duration (1–5 seconds).
+`EnableWorldHealthGlow` shows a world-space health glow around other players, mimics, and monsters for a few seconds after they take damage. Color shifts from green (full health) to red (low health), with a quick color transition on hit. Never shown on your own avatar. `WorldHealthGlowDurationSeconds` controls visibility duration (1–5 seconds).
 
 ## Floating damage
 

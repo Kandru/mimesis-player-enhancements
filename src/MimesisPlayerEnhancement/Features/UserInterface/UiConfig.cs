@@ -6,8 +6,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
     {
         internal const string SectionId = "MimesisPlayerEnhancement_Ui";
 
-        private const float MinWorldHealthBarDurationSeconds = 1f;
-        private const float MaxWorldHealthBarDurationSeconds = 5f;
+        private const float MinWorldHealthGlowDurationSeconds = 1f;
+        private const float MaxWorldHealthGlowDurationSeconds = 5f;
         private const float MinFloatingDamageDurationSeconds = 1f;
         private const float MaxFloatingDamageDurationSeconds = 3f;
 
@@ -36,12 +36,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "EnableExtendedInGameMenuPlayerList",
                 true);
 
-            ModConfig.EnableWorldHealthBars = ModConfig.CreateTrackedEntry(_category,
-                "EnableWorldHealthBars",
+            ModConfig.EnableWorldHealthGlow = ModConfig.CreateTrackedEntry(_category,
+                "EnableWorldHealthGlow",
                 true);
 
-            ModConfig.WorldHealthBarDurationSeconds = ModConfig.CreateTrackedEntry(_category,
-                "WorldHealthBarDurationSeconds",
+            ModConfig.WorldHealthGlowDurationSeconds = ModConfig.CreateTrackedEntry(_category,
+                "WorldHealthGlowDurationSeconds",
                 4f);
 
             ModConfig.EnableFloatingDamageNumbers = ModConfig.CreateTrackedEntry(_category,
@@ -85,10 +85,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableExtendedInGameMenuPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedInGameMenuPlayerList));
 
-            ModConfig.EnableWorldHealthBars.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableWorldHealthBars));
-            ModConfig.WorldHealthBarDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnWorldHealthBarDurationChanged(logger, value));
+            ModConfig.EnableWorldHealthGlow.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableWorldHealthGlow));
+            ModConfig.WorldHealthGlowDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
+                OnWorldHealthGlowDurationChanged(logger, value));
             ModConfig.EnableFloatingDamageNumbers.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFloatingDamageNumbers));
             ModConfig.FloatingDamageDurationSeconds.OnEntryValueChanged.Subscribe((_, value) =>
@@ -104,29 +104,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.ModToastDurationSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.WorldHealthBarDurationSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.WorldHealthGlowDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.FloatingDamageDurationSeconds);
         }
 
-        private static void OnWorldHealthBarDurationChanged(MelonLogger.Instance logger, float value)
+        private static void OnWorldHealthGlowDurationChanged(MelonLogger.Instance logger, float value)
         {
-            if (value < MinWorldHealthBarDurationSeconds)
+            if (value < MinWorldHealthGlowDurationSeconds)
             {
                 logger.Warning(
-                    $"WorldHealthBarDurationSeconds must be at least {MinWorldHealthBarDurationSeconds}; resetting.");
-                ModConfig.WorldHealthBarDurationSeconds.Value = MinWorldHealthBarDurationSeconds;
+                    $"WorldHealthGlowDurationSeconds must be at least {MinWorldHealthGlowDurationSeconds}; resetting.");
+                ModConfig.WorldHealthGlowDurationSeconds.Value = MinWorldHealthGlowDurationSeconds;
                 return;
             }
 
-            if (value > MaxWorldHealthBarDurationSeconds)
+            if (value > MaxWorldHealthGlowDurationSeconds)
             {
                 logger.Warning(
-                    $"WorldHealthBarDurationSeconds must be at most {MaxWorldHealthBarDurationSeconds}; resetting.");
-                ModConfig.WorldHealthBarDurationSeconds.Value = MaxWorldHealthBarDurationSeconds;
+                    $"WorldHealthGlowDurationSeconds must be at most {MaxWorldHealthGlowDurationSeconds}; resetting.");
+                ModConfig.WorldHealthGlowDurationSeconds.Value = MaxWorldHealthGlowDurationSeconds;
                 return;
             }
 
-            ModConfig.NotifyChanged(ModConfig.WorldHealthBarDurationSeconds);
+            ModConfig.NotifyChanged(ModConfig.WorldHealthGlowDurationSeconds);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)

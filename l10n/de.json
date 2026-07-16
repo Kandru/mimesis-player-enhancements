@@ -20,7 +20,7 @@
         "extendedSaveSlots": "Erweiterte Save-Slots",
         "extendedSpectatorList": "Spectator-Spielerliste",
         "extendedInGameMenuPlayerList": "Ingame-Menü-Spielerliste",
-        "worldHealthBars": "Welt-Lebensbalken",
+        "worldHealthGlow": "Welt-Gesundheitsglühen",
         "floatingDamage": "Schwebende Schadenszahlen",
         "floatingDetox": "Schwebende Detox-Indikatoren",
         "fpsUi": "FPS-UI"
@@ -41,13 +41,13 @@
         "title": "Erweiterte Ingame-Menü-Spielerliste aktivieren",
         "description": "Setzt den Join-Code-Button oben in die ESC-Menü-Spaltersäule, dehnt die Spielerliste auf die verbleibende Höhe aus und zeigt eine Scrollleiste, wenn die Zeilen nicht mehr passen."
       },
-      "EnableWorldHealthBars": {
-        "title": "Welt-Lebensbalken aktivieren",
-        "description": "Zeigt einen Welt-Lebensbalken über anderen Spielern, Mimics und Monstern für einige Sekunden nach erlittenem Schaden. Nie auf dem eigenen Avatar."
+      "EnableWorldHealthGlow": {
+        "title": "Welt-Gesundheitsglühen aktivieren",
+        "description": "Zeigt ein weltweites Gesundheitsglühen um andere Spieler, Mimics und Monster für einige Sekunden nach erlittenem Schaden. Die Farbe wechselt von Grün (volle Gesundheit) zu Rot (niedrige Gesundheit). Nie auf dem eigenen Avatar."
       },
-      "WorldHealthBarDurationSeconds": {
-        "title": "Welt-Lebensbalken-Dauer (Sekunden)",
-        "description": "Wie lange der Welt-Lebensbalken nach erlittenem Schaden sichtbar bleibt."
+      "WorldHealthGlowDurationSeconds": {
+        "title": "Welt-Gesundheitsglühen-Dauer (Sekunden)",
+        "description": "Wie lange das Welt-Gesundheitsglühen nach erlittenem Schaden sichtbar bleibt."
       },
       "EnableFloatingDamageNumbers": {
         "title": "Schwebende Schadenszahlen aktivieren",
