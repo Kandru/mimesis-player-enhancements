@@ -46,6 +46,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly Type? TmpTextType =
             Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
 
+        private const string DefaultBaseLobbyName = "Train";
+
         private static string _baseLobbyName = string.Empty;
         private static string _lastPublishedName = string.Empty;
         private static JoinAnytimeSessionPhase _lastPhase = JoinAnytimeSessionPhase.None;
@@ -583,7 +585,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             int waitMinutes)
         {
             int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            string baseName = string.IsNullOrEmpty(_baseLobbyName) ? "Train" : _baseLobbyName;
+            string baseName = ResolveBaseLobbyName();
             string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
                 ? $" [join in {waitMinutes} min]"
                 : phase is JoinAnytimeSessionPhase.Maintenance
@@ -700,9 +702,29 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static bool TryExportLobbyState(out string? baseLobbyName, out bool isPublicLobby)
         {
-            baseLobbyName = string.IsNullOrWhiteSpace(_baseLobbyName) ? null : _baseLobbyName;
+            if (!ModConfig.EnableJoinAnytime.Value)
+            {
+                baseLobbyName = null;
+                isPublicLobby = false;
+                return false;
+            }
+
+            SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
+            if (dispatcher != null)
+            {
+                EnsureBaseLobbyName(dispatcher);
+            }
+
+            baseLobbyName = ResolveBaseLobbyName();
             isPublicLobby = _hostWantsPublicMatchmaking;
-            return ModConfig.EnableJoinAnytime.Value;
+            return true;
+        }
+
+        private static string ResolveBaseLobbyName()
+        {
+            return string.IsNullOrWhiteSpace(_baseLobbyName)
+                ? DefaultBaseLobbyName
+                : _baseLobbyName.Trim();
         }
 
         private static void PersistLobbyRuntimeState(string? baseLobbyName = null, bool? isPublicLobby = null)

@@ -4,6 +4,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: FPS UI layout timing
 - fix: properly wire esc menu player buttons
 - fix: voice restore
+- fix: long-standing issue with properly writing the mpe-slot.sav file per savegame (missed that, sorry)
 
 ## 26.7.12
 - feature: dungeon map flavor system — 24 curated seed styles (Compact, Labyrinth, etc.)

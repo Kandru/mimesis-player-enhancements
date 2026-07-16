@@ -37,10 +37,12 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
         }
     }
 
+    // Fields must be public: serialized inside SaveSlotDocument via ModJson,
+    // and the game's runtime Newtonsoft.Json does not serialize non-public fields.
     internal sealed class SaveConfigProfileState
     {
-        internal SaveConfigProfileMode Mode = SaveConfigProfileMode.Global;
-        internal string PresetId = "";
-        internal int PresetRevision;
+        public SaveConfigProfileMode Mode = SaveConfigProfileMode.Global;
+        public string PresetId = "";
+        public int PresetRevision;
     }
 }

@@ -2,32 +2,33 @@ using MimesisPlayerEnhancement.Config.QuickSettings;
 
 namespace MimesisPlayerEnhancement.Config.Models
 {
+    // Fields must be public: the game's runtime Newtonsoft.Json does not serialize non-public fields.
     internal sealed class SaveSlotDocument
     {
         internal const int CurrentVersion = 1;
 
-        internal int Version = CurrentVersion;
+        public int Version = CurrentVersion;
 
-        internal SaveSlotLobbySection? Lobby;
+        public SaveSlotLobbySection? Lobby;
 
-        internal SaveConfigProfileState SettingsProfile = new();
+        public SaveConfigProfileState SettingsProfile = new();
 
-        internal Dictionary<string, Dictionary<string, string>>? ConfigOverrides;
+        public Dictionary<string, Dictionary<string, string>>? ConfigOverrides;
 
-        internal Dictionary<string, SaveSlotPlayerEntry>? Players;
+        public Dictionary<string, SaveSlotPlayerEntry>? Players;
     }
 
     internal sealed class SaveSlotLobbySection
     {
-        internal string? BaseLobbyName;
+        public string? BaseLobbyName;
 
-        internal bool? IsPublicLobby;
+        public bool? IsPublicLobby;
     }
 
     internal sealed class SaveSlotPlayerEntry
     {
-        internal string DisplayName = "";
+        public string DisplayName = "";
 
-        internal string VoiceId = "";
+        public string VoiceId = "";
     }
 }
