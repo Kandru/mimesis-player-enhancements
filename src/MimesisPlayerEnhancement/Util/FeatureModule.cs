@@ -1,33 +1,17 @@
+using MimesisPlayerEnhancement.Config;
 using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.UserInterface;
 
 namespace MimesisPlayerEnhancement.Util
 {
-    internal interface IFeatureModule
-    {
-        string Name { get; }
-
-        void ApplyPatches(HarmonyLib.Harmony harmony);
-
-        void SyncFromConfig()
-        {
-        }
-
-        void OnUpdate()
-        {
-        }
-
-        void OnDeinitialize()
-        {
-        }
-    }
-
-    internal sealed class FeatureModule : IFeatureModule
+    internal sealed class FeatureModule
     {
         private readonly Action<HarmonyLib.Harmony> _applyPatches;
         private readonly Action? _syncFromConfig;
         private readonly Action? _onUpdate;
         private readonly Action? _onDeinitialize;
+        private readonly Action<SessionRole, int>? _onSessionStarted;
+        private readonly Action? _onSessionEnded;
 
         public FeatureModule(
             string name,
@@ -35,13 +19,19 @@ namespace MimesisPlayerEnhancement.Util
             Action? syncFromConfig = null,
             Action? onUpdate = null,
             bool throttledUpdate = false,
-            Action? onDeinitialize = null)
+            Action? onDeinitialize = null,
+            SessionScope sessionScope = SessionScope.HostOnly,
+            Action<SessionRole, int>? onSessionStarted = null,
+            Action? onSessionEnded = null)
         {
             Name = name;
+            SessionScope = sessionScope;
             _applyPatches = applyPatches;
             _syncFromConfig = syncFromConfig;
             _onUpdate = onUpdate;
             _onDeinitialize = onDeinitialize;
+            _onSessionStarted = onSessionStarted;
+            _onSessionEnded = onSessionEnded;
             if (throttledUpdate)
             {
                 ThrottledUpdate = true;
@@ -50,61 +40,73 @@ namespace MimesisPlayerEnhancement.Util
 
         public string Name { get; }
 
+        public SessionScope SessionScope { get; }
+
         internal bool ThrottledUpdate { get; }
 
-        public void ApplyPatches(HarmonyLib.Harmony harmony)
-        {
-            _applyPatches(harmony);
-        }
+        public void ApplyPatches(HarmonyLib.Harmony harmony) => _applyPatches(harmony);
 
-        public void SyncFromConfig()
-        {
-            _syncFromConfig?.Invoke();
-        }
+        public void SyncFromConfig() => _syncFromConfig?.Invoke();
 
-        public void OnUpdate()
-        {
-            _onUpdate?.Invoke();
-        }
+        public void OnUpdate() => _onUpdate?.Invoke();
 
-        public void OnDeinitialize()
-        {
-            _onDeinitialize?.Invoke();
-        }
+        public void OnDeinitialize() => _onDeinitialize?.Invoke();
+
+        internal void InvokeSessionStarted(SessionRole role, int slotId) =>
+            _onSessionStarted?.Invoke(role, slotId);
+
+        internal void InvokeSessionEnded() => _onSessionEnded?.Invoke();
     }
 
     internal static class FeatureModules
     {
-        internal static IReadOnlyList<IFeatureModule> All { get; } =
+        internal static void ResetSharedSessionState() => PlayerLifecycleCoordinator.ClearAll();
+
+        internal static IReadOnlyList<FeatureModule> All { get; } =
         [
-            new FeatureModule("SaveSlotSidecar", SaveSlotSidecarPersistencePatches.Apply),
-            new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
-                onDeinitialize: VoicePerformanceRuntime.ClearAll),
             new FeatureModule("Persistence", PersistencePatches.Apply,
                 syncFromConfig: PersistenceRuntime.RefreshFromConfig,
                 onUpdate: SpeechEventPoolManager.ProcessDeferredUpdates,
-                onDeinitialize: PersistenceWriteQueue.FlushAllSync),
+                onDeinitialize: PersistenceWriteQueue.FlushAllSync,
+                onSessionEnded: SpeechEventPoolManager.OnSessionEnded),
             new FeatureModule("Statistics", StatisticsPatches.Apply,
                 syncFromConfig: StatisticsTracker.RefreshFromConfig,
                 onUpdate: () =>
-            {
-                if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); } },
-                onDeinitialize: SaveSlotSidecarPersistence.FlushAllSync),
-            new FeatureModule("PlayerAnnouncements", PlayerAnnouncementsPatches.Apply),
+                {
+                    if (ModConfig.EnableStatistics.Value) { StatisticsTracker.OnUpdate(); }
+                },
+                onDeinitialize: SaveSlotSidecarPersistence.FlushAllSync,
+                onSessionEnded: StatisticsTracker.OnSessionEnded),
+            new FeatureModule("SaveSlotSidecar", SaveSlotSidecarPersistencePatches.Apply,
+                onSessionEnded: SaveSlotSidecarPersistence.OnSessionEnded),
+
+            new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
+                onDeinitialize: VoicePerformanceRuntime.ClearAll),
+            new FeatureModule("PlayerAnnouncements", PlayerAnnouncementsPatches.Apply,
+                onSessionEnded: () =>
+                {
+                    BossSpawnAnnouncer.ResetForSessionEnd();
+                    MapRunStatsTracker.ResetForSessionEnd();
+                }),
             new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
             new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply,
                 syncFromConfig: JoinAnytimeRuntime.RefreshFromConfig,
-                onUpdate: JoinAnytimeRuntime.OnUpdate),
+                onUpdate: JoinAnytimeRuntime.OnUpdate,
+                onSessionEnded: JoinAnytimeRuntime.ResetSessionState),
             new FeatureModule("SpawnScaling", SpawnScalingPatches.Apply,
                 syncFromConfig: SpawnScalingPatches.RefreshFromConfig,
                 onUpdate: () =>
-            {
-                if (ModConfig.EnableSpawnScaling.Value) { MapPlacedEncounterScheduler.ProcessPendingEncounters(); } }, throttledUpdate: true),
+                {
+                    if (ModConfig.EnableSpawnScaling.Value) { MapPlacedEncounterScheduler.ProcessPendingEncounters(); }
+                },
+                throttledUpdate: true),
             new FeatureModule("LootMultiplicator", LootMultiplicatorPatches.Apply,
                 syncFromConfig: LootMultiplicatorPatches.RefreshFromConfig,
                 onUpdate: () =>
-            {
-                if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); } }, throttledUpdate: true),
+                {
+                    if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); }
+                },
+                throttledUpdate: true),
             new FeatureModule("Economy", EconomyPatches.Apply,
                 syncFromConfig: EconomyPatches.RefreshFromConfig),
             new FeatureModule("DungeonTime", DungeonTimePatches.Apply),
@@ -126,7 +128,9 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("WebDashboard", WebDashboardServer.Apply,
                 syncFromConfig: WebDashboardServer.SyncFromConfig,
                 onUpdate: WebDashboardServer.OnUpdate,
-                onDeinitialize: WebDashboardServer.StopOnDeinit),
+                onDeinitialize: WebDashboardServer.StopOnDeinit,
+                sessionScope: SessionScope.Global,
+                onSessionEnded: WebDashboardSnapshotCache.OnSessionEnded),
         ];
     }
 }

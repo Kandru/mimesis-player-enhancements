@@ -44,8 +44,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static readonly Dictionary<string, List<long>> _byPlayerName = [];
 
-        private static readonly Dictionary<ulong, string> _steamToDissonance = [];
-
         private static int _loadedSlotId = -1;
 
         private static SpeechEventArchive? _localArchive;
@@ -111,19 +109,22 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             LoadVoiceMappingsFromDocument(slotId);
 
-            if (_pool.Count > 0 && _steamToDissonance.Count == 0)
+            IReadOnlyDictionary<ulong, string> voiceMappings = PlayerRegistry.GetVoiceMappings();
+            if (_pool.Count > 0 && voiceMappings.Count == 0)
             {
                 ModLog.Warn(
                     Feature,
                     $"Voice pool loaded but no Steam→VoiceId mappings — restore will fail until mappings are saved (slot={slotId}, events={_pool.Count})");
             }
 
-            ModLog.Debug(Feature, $"Loaded {_pool.Count} events for slot {slotId} ({_steamToDissonance.Count} SteamID mappings)");
+            ModLog.Debug(Feature, $"Loaded {_pool.Count} events for slot {slotId} ({voiceMappings.Count} SteamID mappings)");
         }
 
         public static void SyncVoiceMappingsToDocument()
         {
-            Dictionary<ulong, string> mapping = BuildPlayerMapping();
+            PushLiveVoiceIdsToRegistry();
+
+            IReadOnlyDictionary<ulong, string> mapping = PlayerRegistry.GetVoiceMappings();
             if (mapping.Count == 0 && _pool.Count > 0)
             {
                 ModLog.Warn(
@@ -131,7 +132,34 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     $"No Steam→VoiceId mappings to persist despite {_pool.Count} pooled voice events — restore will fail on next load");
             }
 
-            SaveSlotDocumentStore.SyncVoiceMappingsFromRuntime(mapping);
+            PlayerRegistry.SyncRosterToDocument();
+        }
+
+        internal static void OnSessionEnded()
+        {
+            if (!ModConfig.EnablePersistence.Value)
+            {
+                Reset();
+                return;
+            }
+
+            if (!MimesisSaveManager.IsHost())
+            {
+                Reset();
+                return;
+            }
+
+            try
+            {
+                ProcessDeferredUpdates();
+                SyncVoiceMappingsToDocument();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"OnSessionEnded flush failed — {ex.Message}");
+            }
+
+            Reset();
         }
 
         internal static bool TryResolveVoiceIdForSteam(ulong steamId, out string? voiceId)
@@ -304,7 +332,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
                     if (steamId != 0)
                     {
-                        _steamToDissonance[steamId] = playerId;
+                        PlayerRegistry.UpdateVoiceId(steamId, playerId);
                     }
 
                     LogVoiceUuidRemap(brief, claimed.Count, savedVoiceId, playerId);
@@ -412,7 +440,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     ulong steamId = GameSessionAccess.ResolveSteamId(archive.PlayerUID, archive.IsLocal);
                     if (steamId != 0)
                     {
-                        _steamToDissonance[steamId] = newPlayerId;
+                        PlayerRegistry.UpdateVoiceId(steamId, newPlayerId);
                         string displayName = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
                         _ = SaveSlotDocumentStore.UpsertPlayer(steamId, displayName, newPlayerId);
                     }
@@ -493,8 +521,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static int TotalCount => _pool.Count;
 
-        public static bool IsLoaded => _loadedSlotId >= 0 && _pool.Count > 0;
-
         public static void FixEventTiming(SpeechEvent ev, float currentTime)
         {
             RecordedTimeField?.SetValue(ev, currentTime);
@@ -564,6 +590,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 if (steamId != 0 && !string.IsNullOrEmpty(playerId))
                 {
                     _disconnectedPlayerMappings[steamId] = playerId;
+                    PlayerRegistry.UpdateVoiceId(steamId, playerId);
                 }
 
                 string brief = steamId != 0
@@ -642,6 +669,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             if (steamId != 0 && claimed.Count > 0)
             {
                 _ = _disconnectedPlayerMappings.Remove(steamId);
+                if (!string.IsNullOrEmpty(playerId))
+                {
+                    PlayerRegistry.UpdateVoiceId(steamId, playerId);
+                }
             }
 
             if (claimed.Count > 0)
@@ -657,11 +688,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return [.. _disconnectedCache.Values];
         }
 
-        public static Dictionary<ulong, string> GetDisconnectedPlayerMappings()
-        {
-            return new Dictionary<ulong, string>(_disconnectedPlayerMappings);
-        }
-
         public static int DisconnectedCacheCount => _disconnectedCache.Count;
 
         public static bool HasDisconnectedCacheForSteam(ulong steamId) =>
@@ -671,7 +697,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             _pool.Clear();
             _byPlayerName.Clear();
-            _steamToDissonance.Clear();
             _deferredNameUpdates.Clear();
             _deferredInjectionArchives.Clear();
             _awaitingVoiceUuid.Clear();
@@ -686,13 +711,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static void LoadVoiceMappingsFromDocument(int slotId)
         {
-            _steamToDissonance.Clear();
             SaveSlotDocumentStore.ApplyVoiceMappingsToRuntime((steamId, voiceId) =>
             {
-                _steamToDissonance[steamId] = voiceId;
+                PlayerRegistry.UpdateVoiceId(steamId, voiceId);
             });
 
-            ModLog.Debug(Feature, $"Loaded player voice mappings from slot document: {_steamToDissonance.Count} entries (slot={slotId})");
+            ModLog.Debug(
+                Feature,
+                $"Loaded player voice mappings from slot document: {PlayerRegistry.GetVoiceMappings().Count} entries (slot={slotId})");
         }
 
         /// <summary>
@@ -723,7 +749,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             _ = _disconnectedPlayerMappings.Remove(steamId);
-            _ = _steamToDissonance.Remove(steamId);
             _ = _restoreGiveUpWarnedSteamIds.Remove(steamId);
 
             if (removed > 0)
@@ -738,7 +763,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             HashSet<string> playerNames = [];
 
-            if (_steamToDissonance.TryGetValue(steamId, out string? mapped) && !string.IsNullOrEmpty(mapped))
+            if (PlayerRegistry.TryGetVoiceId(steamId, out string mapped) && !string.IsNullOrEmpty(mapped))
             {
                 _ = playerNames.Add(mapped);
             }
@@ -1012,9 +1037,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return dominant;
         }
 
-        private static Dictionary<ulong, string> BuildPlayerMapping()
+        private static void PushLiveVoiceIdsToRegistry()
         {
-            Dictionary<ulong, string> mapping = [];
             HashSet<ulong> steamIds = [];
 
             foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
@@ -1029,11 +1053,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 }
                 catch (Exception archEx)
                 {
-                    ModLog.Warn(Feature, $"Archive error during mapping build: {archEx.Message}");
+                    ModLog.Warn(Feature, $"Archive error during voice push: {archEx.Message}");
                 }
             }
 
-            foreach (ulong steamId in _steamToDissonance.Keys)
+            foreach (ulong steamId in PlayerRegistry.GetVoiceMappings().Keys)
             {
                 _ = steamIds.Add(steamId);
             }
@@ -1060,11 +1084,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 string? voiceId = ResolveSaveVoiceIdForSteam(steamId);
                 if (!string.IsNullOrEmpty(voiceId))
                 {
-                    mapping[steamId] = voiceId;
+                    PlayerRegistry.UpdateVoiceId(steamId, voiceId);
                 }
             }
-
-            return mapping;
         }
 
         private static string? ResolveSaveVoiceIdForSteam(ulong steamId)
@@ -1125,7 +1147,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 return liveArchiveVoiceId;
             }
 
-            if (_steamToDissonance.TryGetValue(steamId, out string? mapped) && !string.IsNullOrEmpty(mapped))
+            if (PlayerRegistry.TryGetVoiceId(steamId, out string mapped) && !string.IsNullOrEmpty(mapped))
             {
                 return mapped;
             }
@@ -1163,13 +1185,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             AddMappedVoiceId(matchedPlayerNames, steamId, _disconnectedPlayerMappings, useDisconnectedMapping);
 
+            IReadOnlyDictionary<ulong, string> registryMappings = PlayerRegistry.GetVoiceMappings();
             if (useDisconnectedMapping)
             {
-                AddMappedVoiceId(matchedPlayerNames, steamId, _steamToDissonance, requirePoolMatch: false);
+                AddMappedVoiceId(matchedPlayerNames, steamId, registryMappings, requirePoolMatch: false);
             }
             else
             {
-                AddMappedVoiceId(matchedPlayerNames, steamId, _steamToDissonance, requirePoolMatch: true);
+                AddMappedVoiceId(matchedPlayerNames, steamId, registryMappings, requirePoolMatch: true);
             }
 
             if (steamId == 0)
@@ -1183,7 +1206,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         private static void AddMappedVoiceId(
             HashSet<string> matchedPlayerNames,
             ulong steamId,
-            Dictionary<ulong, string> mappingSource,
+            IReadOnlyDictionary<ulong, string> mappingSource,
             bool requirePoolMatch)
         {
             if (steamId == 0 || !mappingSource.TryGetValue(steamId, out string oldDissonanceId))

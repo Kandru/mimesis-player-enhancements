@@ -30,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return Fail(L("no_active_save_slot"));
             }
 
-            foreach (ulong connectedSteamId in StatisticsTracker.GetConnectedSteamIds())
+            foreach (ulong connectedSteamId in PlayerRegistry.GetConnectedSteamIds())
             {
                 if (connectedSteamId == steamId)
                 {
@@ -38,13 +38,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            bool hadStatistics = StatisticsTracker.TryGetPlayerDocument(steamId) != null;
-            if (hadStatistics)
+            bool hadPlayer = PlayerRegistry.TryGetStatistics(steamId, out _);
+            if (hadPlayer)
             {
-                StatisticsTracker.RemovePlayer(steamId, waitForCompletion: true);
+                PlayerRegistry.RemovePlayer(steamId, waitForCompletion: true);
             }
 
-            bool hadRosterEntry = SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
+            bool hadRosterEntry = !hadPlayer && SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
             if (hadRosterEntry)
             {
                 SaveSlotDocumentStore.RemovePlayer(steamId);
@@ -62,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ModLog.Warn(Feature, $"Speech sidecar rewrite after delete failed — {ex.Message}");
             }
 
-            if (!hadStatistics && !hadRosterEntry && voiceRemoved == 0)
+            if (!hadPlayer && !hadRosterEntry && voiceRemoved == 0)
             {
                 return Fail(L("player_delete_not_found"));
             }

@@ -45,18 +45,6 @@ namespace MimesisPlayerEnhancement.Util
             }
         }
 
-        // MimicAPI: ServerNetworkAPI.GetIVroomType()
-        public static Type? GetIVroomType()
-        {
-            return GetGameAssembly()?.GetType("IVroom");
-        }
-
-        // MimicAPI: ServerNetworkAPI.GetGameSessionInfoType()
-        public static Type? GetGameSessionInfoType()
-        {
-            return GetGameAssembly()?.GetType("GameSessionInfo");
-        }
-
         // MimicAPI: ServerNetworkAPI.GetServerSocket() → GetSdrServer() ?? GetRudpServer()
         public static object? GetServerSocket()
         {

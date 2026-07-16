@@ -95,20 +95,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
-        public static void DeleteStatisticsData(int slotId)
-        {
-            try
-            {
-                InvalidateLoadCache(slotId);
-                SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
-                ModLog.Info(Feature, $"Deleted statistics data for slot {slotId}.");
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"DeleteStatisticsData: {ex.Message}");
-            }
-        }
-
         private static void PrepareAndWrite(int slotId, string path, PendingSlotSave pending)
         {
             Dictionary<ulong, PlayerStatisticsDocument>? players;

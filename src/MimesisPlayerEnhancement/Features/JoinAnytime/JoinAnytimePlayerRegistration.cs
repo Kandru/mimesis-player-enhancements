@@ -28,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             HadStoredStatsBeforeConnect[playerUid] = steamId != 0
-                && StatisticsTracker.TryGetPlayerDocument(steamId) != null;
+                && PlayerRegistry.TryGetStatistics(steamId, out _);
 
             if (steamId != 0)
             {
@@ -129,7 +129,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             int slotId = GameSessionAccess.GetSaveSlotId();
             if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
-                && !StatisticsTracker.TryGetLoadedSlotId(out slotId))
+                && !PlayerRegistry.TryGetLoadedSlotId(out slotId))
             {
                 ModLog.Debug(Feature, $"Registration complete deferred — uid={uid}, no save slot");
                 return;
@@ -138,13 +138,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _ = DeferredSteamIds.Remove(steamId);
 
             string displayName = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
-            string? voiceId = TryResolveVoiceId(steamId);
             if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {
-                SaveSlotDocumentStore.UpsertPlayer(steamId, displayName, voiceId);
+                PlayerRegistry.UpdateDisplayName(steamId, displayName);
             }
 
-            StatisticsTracker.OnPlayerRegistered(steamId, slotId);
+            string? voiceId = TryResolveVoiceId(steamId);
+            if (!string.IsNullOrWhiteSpace(voiceId))
+            {
+                PlayerRegistry.UpdateVoiceId(steamId, voiceId);
+            }
+
+            PlayerPresenceEvents.OnPlayerRegistered(steamId, slotId);
             ModLog.Debug(Feature, $"Registration complete — uid={uid}, steamId={steamId}");
         }
 
@@ -177,7 +182,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             if (!hadPriorStats)
             {
                 StatisticsTracker.AbandonIncompleteConnection(steamId);
-                SaveSlotDocumentStore.RemovePlayer(steamId);
             }
 
             ModLog.Info(Feature, $"Abandoned incomplete join — uid={playerUid}, steamId={steamId}");

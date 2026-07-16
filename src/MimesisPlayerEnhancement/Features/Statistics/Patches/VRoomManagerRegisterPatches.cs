@@ -22,12 +22,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 
                 int slotId = GameSessionAccess.GetSaveSlotId();
                 if (!MimesisSaveManager.IsValidSaveSlotId(slotId)
-                    && !StatisticsTracker.TryGetLoadedSlotId(out slotId))
+                    && !PlayerRegistry.TryGetLoadedSlotId(out slotId))
                 {
                     return;
                 }
 
-                StatisticsTracker.OnPlayerRegistered(steamID, slotId);
+                PlayerPresenceEvents.OnPlayerRegistered(steamID, slotId);
             });
         }
     }

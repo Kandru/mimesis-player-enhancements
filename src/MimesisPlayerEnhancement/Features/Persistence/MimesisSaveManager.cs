@@ -113,17 +113,5 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             return SpeechEventFileStore.HasSpeechEventsFile(slotId);
         }
-
-        public static void DeleteMimesisData(int slotId)
-        {
-            try
-            {
-                SaveSidecarPaths.DeleteAllFilesForSlot(slotId);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"DeleteMimesisData: {ex.Message}");
-            }
-        }
     }
 }

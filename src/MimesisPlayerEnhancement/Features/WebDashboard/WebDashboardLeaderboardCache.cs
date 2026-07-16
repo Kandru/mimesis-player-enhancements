@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return _cachedSlotId == saveSlotId ? _cachedJson : null;
             }
 
-            int revision = StatisticsTracker.Revision;
+            int revision = PlayerRegistry.Revision;
             if (_cachedSlotId == saveSlotId
                 && revision == _cachedRevision
                 && !string.IsNullOrEmpty(_cachedJson))
@@ -87,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             try
             {
                 List<PlayerStatisticsDocument> livePlayers = CloneForLeaderboard(
-                    StatisticsTracker.GetCachedPlayerDocuments(),
+                    PlayerRegistry.GetAllStatistics(),
                     saveSlotId);
                 LeaderboardDocument doc = livePlayers.Count == 0
                     ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }

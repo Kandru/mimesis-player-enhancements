@@ -102,7 +102,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
     {
         internal static void SyncModuleByName(string moduleName)
         {
-            foreach (IFeatureModule module in FeatureModules.All)
+            foreach (FeatureModule module in FeatureModules.All)
             {
                 if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
                 {

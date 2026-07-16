@@ -32,7 +32,7 @@ namespace MimesisPlayerEnhancement
                 }
 
                 _harmony = new HarmonyLib.Harmony("com.mimesis.playerenhancement");
-                foreach (IFeatureModule module in FeatureModules.All)
+                foreach (FeatureModule module in FeatureModules.All)
                 {
                     module.ApplyPatches(_harmony);
                 }
@@ -82,9 +82,15 @@ namespace MimesisPlayerEnhancement
 
         public override void OnUpdate()
         {
-            foreach (IFeatureModule module in FeatureModules.All)
+            foreach (FeatureModule module in FeatureModules.All)
             {
-                if (module is FeatureModule { ThrottledUpdate: true })
+                if (module.ThrottledUpdate)
+                {
+                    continue;
+                }
+
+                if (module.SessionScope == SessionScope.HostOnly
+                    && !FeatureModuleSessionHooks.IsModuleActive(module.Name))
                 {
                     continue;
                 }
@@ -97,16 +103,24 @@ namespace MimesisPlayerEnhancement
             {
                 _nextEncounterSpawnProcessTime = Time.time + EncounterSpawnTiming.RetryIntervalSeconds;
 
-                foreach (IFeatureModule module in FeatureModules.All)
+                foreach (FeatureModule module in FeatureModules.All)
                 {
-                    if (module is FeatureModule { ThrottledUpdate: true })
+                    if (!module.ThrottledUpdate)
                     {
-                        module.OnUpdate();
+                        continue;
                     }
+
+                    if (module.SessionScope == SessionScope.HostOnly
+                        && !FeatureModuleSessionHooks.IsModuleActive(module.Name))
+                    {
+                        continue;
+                    }
+
+                    module.OnUpdate();
                 }
             }
 
-            SaveSlotConfigLifecycle.Tick();
+            SessionLifecycle.Tick();
 
             if (Time.time >= _nextLocaleRefreshTime)
             {
@@ -119,8 +133,9 @@ namespace MimesisPlayerEnhancement
         {
             Application.quitting -= OnApplicationQuitting;
             FlushGlobalConfigOnShutdown();
+            SessionLifecycle.NotifySessionEndedIfActive();
 
-            foreach (IFeatureModule module in FeatureModules.All)
+            foreach (FeatureModule module in FeatureModules.All)
             {
                 module.OnDeinitialize();
             }
@@ -163,7 +178,7 @@ namespace MimesisPlayerEnhancement
                 ? null
                 : ModConfigRegistry.GetAffectedModuleNames(change);
 
-            foreach (IFeatureModule module in FeatureModules.All)
+            foreach (FeatureModule module in FeatureModules.All)
             {
                 if (affectedModules != null && !affectedModules.Contains(module.Name))
                 {
@@ -183,7 +198,7 @@ namespace MimesisPlayerEnhancement
 
         private static void SyncFeatureModuleByName(string moduleName)
         {
-            foreach (IFeatureModule module in FeatureModules.All)
+            foreach (FeatureModule module in FeatureModules.All)
             {
                 if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
                 {

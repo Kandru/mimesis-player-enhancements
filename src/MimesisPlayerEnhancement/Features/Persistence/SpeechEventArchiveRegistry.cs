@@ -24,11 +24,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             _ = Archives.Remove(archive);
         }
 
-        internal static void Clear()
-        {
-            Archives.Clear();
-        }
-
         internal static IEnumerable<SpeechEventArchive> EnumerateActive()
         {
             for (int i = Archives.Count - 1; i >= 0; i--)

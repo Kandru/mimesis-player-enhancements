@@ -20,6 +20,13 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             _flushGeneration++;
         }
 
+        internal static void ResetForSessionEnd()
+        {
+            PendingSpawns.Clear();
+            _flushGeneration++;
+            _suppressUntilTime = 0f;
+        }
+
         internal static void RecordSpawn(int masterId)
         {
             if (!ModConfig.ShowPlayerAnnouncements.Value)

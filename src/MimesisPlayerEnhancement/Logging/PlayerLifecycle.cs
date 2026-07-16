@@ -183,6 +183,14 @@ namespace MimesisPlayerEnhancement
             }
         }
 
+        internal static void ClearAll()
+        {
+            _connectByArchive.Clear();
+            _connectBySteam.Clear();
+            _disconnectBySteam.Clear();
+            _pendingStatisticsConnect.Clear();
+        }
+
         private static ConnectState GetOrCreateConnectState(SpeechEventArchive archive)
         {
             if (_connectByArchive.TryGetValue(archive, out ConnectState? existing))

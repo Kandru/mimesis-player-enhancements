@@ -30,5 +30,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             JoinAnytimeLobbyController.RefreshLobbyState(force: true);
         }
+
+        internal static void ResetSessionState()
+        {
+            LateJoinManager.Reset();
+            JoinAnytimeConnectingTracker.Reset();
+            JoinAnytimeLobbyController.OnSessionEnded();
+        }
     }
 }

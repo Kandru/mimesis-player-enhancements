@@ -190,15 +190,7 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        internal static Dictionary<string, Dictionary<string, string>> GetConfigOverridesCopy()
-        {
-            lock (Gate)
-            {
-                return CloneOverrides(_document.ConfigOverrides);
-            }
-        }
-
-        internal static void SetConfigOverrides(Dictionary<string, Dictionary<string, string>>? overrides)
+        internal static void ApplyPlayerEntries(Action<ulong, SaveSlotPlayerEntry> visitor)
         {
             if (_loadedSlotId < 0)
             {
@@ -207,14 +199,20 @@ namespace MimesisPlayerEnhancement
 
             lock (Gate)
             {
-                Dictionary<string, Dictionary<string, string>> normalized = CloneOverrides(overrides);
-                if (OverridesEqual(_document.ConfigOverrides, normalized))
+                if (_document.Players == null)
                 {
                     return;
                 }
 
-                _document.ConfigOverrides = normalized.Count > 0 ? normalized : null;
-                _dirty = true;
+                foreach (KeyValuePair<string, SaveSlotPlayerEntry> kvp in _document.Players)
+                {
+                    if (!ulong.TryParse(kvp.Key, out ulong steamId) || steamId == 0)
+                    {
+                        continue;
+                    }
+
+                    visitor(steamId, kvp.Value);
+                }
             }
         }
 
@@ -245,19 +243,6 @@ namespace MimesisPlayerEnhancement
                     _document.ConfigOverrides = null;
                 }
 
-                _dirty = true;
-            }
-        }
-
-        internal static void MarkDirty()
-        {
-            if (_loadedSlotId < 0)
-            {
-                return;
-            }
-
-            lock (Gate)
-            {
                 _dirty = true;
             }
         }

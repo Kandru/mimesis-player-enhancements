@@ -34,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (ModConfig.EnableStatistics.Value)
             {
-                foreach (ulong steamId in StatisticsTracker.GetConnectedSteamIds())
+                foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
                 {
                     if (steamId == 0 || playersBySteam.ContainsKey(steamId))
                     {
@@ -232,11 +232,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers()
-        {
-            return BuildOfflineStatisticsPlayers(OfflinePlayerBuildContext.Capture());
-        }
-
         internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers(OfflinePlayerBuildContext context)
         {
             if (!context.IsHost || !context.EnableStatistics || context.SaveSlotId < 0)
@@ -382,7 +377,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            foreach (PlayerStatisticsDocument player in StatisticsTracker.GetCachedPlayerDocumentsView())
+            foreach (PlayerStatisticsDocument player in PlayerRegistry.GetAllStatistics())
             {
                 if (player.SteamId == 0 || playersBySteam.ContainsKey(player.SteamId))
                 {
@@ -621,18 +616,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            bool nameChanged = SaveSlotDocumentStore.UpsertPlayer(dto.SteamId, dto.DisplayName);
-
-            if (ModConfig.EnableStatistics.Value
-                && StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is PlayerStatisticsDocument doc
-                && doc.DisplayName != dto.DisplayName)
+            if (PlayerRegistry.UpdateDisplayName(dto.SteamId, dto.DisplayName))
             {
-                doc.DisplayName = dto.DisplayName;
-            }
-
-            if (nameChanged)
-            {
-                StatisticsTracker.BumpRevision();
                 WebDashboardSnapshotCache.MarkDirty();
             }
         }

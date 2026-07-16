@@ -6,12 +6,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         [HarmonyPostfix]
         public static void Postfix(ulong steamID)
         {
-            if (!ModConfig.EnableStatistics.Value)
-            {
-                return;
-            }
-
-            StatisticsTracker.OnPlayerUnregistered(steamID);
+            PlayerPresenceEvents.OnPlayerUnregistered(steamID);
         }
     }
 }

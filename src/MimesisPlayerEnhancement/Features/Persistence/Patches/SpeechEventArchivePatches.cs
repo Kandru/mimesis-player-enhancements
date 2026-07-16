@@ -42,7 +42,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
                 if (ModConfig.EnableStatistics.Value
                     && !JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistration(__instance.PlayerUID))
                 {
-                    StatisticsTracker.HandleArchiveStarted(__instance, slotId);
+                    PlayerPresenceEvents.OnArchiveStarted(__instance, slotId);
                 }
             }
             catch (Exception ex)

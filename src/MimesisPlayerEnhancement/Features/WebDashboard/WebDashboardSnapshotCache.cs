@@ -45,6 +45,36 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return _snapshot;
         }
 
+        internal static void OnSessionEnded()
+        {
+            _snapshot = new WebDashboardSnapshot();
+            _version = 0;
+            _dirty = true;
+            _lastConnected = false;
+            _lastTickMs = 0;
+            _lastFullRefreshMs = 0;
+            _lastMinimapRefreshMs = 0;
+            _minimapFingerprint = "";
+            _lastLivePlayers = [];
+            _lastLeaderboardJson = null;
+            _lastConnectedSteamIds = [];
+            _lastSeenStatisticsRevision = -1;
+            _cachedMergedPlayers = [];
+            _cachedOfflineRevision = -1;
+            _previousLiveSteamIds = [];
+            _lastPublishFingerprint = "";
+            _cachedOfflinePublishFingerprint = "";
+            _cachedOfflinePublishRevision = -1;
+            _mergedIndexBySteam = [];
+            _requireFullPublish = false;
+            WebDashboardAvatarService.Clear();
+            WebDashboardLeaderboardCache.Clear();
+            WebDashboardOfflinePlayerCache.Clear();
+            WebDashboardSnapshotEventCache.Clear();
+            WebDashboardHostCheatsRuntime.DisableAll("session ended");
+            WebDashboardCatalogCache.Invalidate();
+        }
+
         internal static void MarkDirty()
         {
             _dirty = true;
@@ -72,7 +102,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 if (ModConfig.EnableStatistics.Value
                     && WebDashboardGameState.IsHost()
-                    && StatisticsTracker.Revision != _lastSeenStatisticsRevision)
+                    && PlayerRegistry.Revision != _lastSeenStatisticsRevision)
                 {
                     _dirty = true;
                     _requireFullPublish = true;
@@ -95,7 +125,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 Refresh(listenUrl, nowMs);
                 _dirty = false;
                 _lastFullRefreshMs = nowMs;
-                _lastSeenStatisticsRevision = StatisticsTracker.Revision;
+                _lastSeenStatisticsRevision = PlayerRegistry.Revision;
 
                 return;
             }
@@ -251,7 +281,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
                 if (isHost && saveSlotId >= 0 && ModConfig.EnableStatistics.Value)
                 {
-                    WebDashboardOfflinePlayerCache.EnsureFresh(StatisticsTracker.Revision);
+                    WebDashboardOfflinePlayerCache.EnsureFresh(PlayerRegistry.Revision);
                 }
 
                 List<WebDashboardPlayerDto> livePlayers = WebDashboardPlayerService.CollectLivePlayers();
@@ -599,7 +629,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return ids;
             }
 
-            return [.. StatisticsTracker.GetConnectedSteamIds()];
+            return [.. PlayerRegistry.GetConnectedSteamIds()];
         }
 
         private static List<WebDashboardMinimapMarkerDto> CloneMarkers(

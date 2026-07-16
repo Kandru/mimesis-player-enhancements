@@ -1,6 +1,4 @@
-using ReluProtocol.Enum;
-
-namespace MimesisPlayerEnhancement
+namespace MimesisPlayerEnhancement.Config
 {
     internal static class SaveSlotSidecarPersistencePatches
     {
@@ -11,7 +9,7 @@ namespace MimesisPlayerEnhancement
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNestedPatchTypes(typeof(SaveSlotSidecarPersistencePatches)));
+                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SaveSlotSidecarPersistencePatches)));
 
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
@@ -19,42 +17,6 @@ namespace MimesisPlayerEnhancement
                 ("SaveGameData/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.SaveGameData))),
             ]);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
-        }
-
-        [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))]
-        private static class GameSessionInfoLoadPatch
-        {
-            [HarmonyPostfix]
-            private static void Postfix(MMSaveGameData saveGameData)
-            {
-                if (!MimesisSaveManager.IsHost())
-                {
-                    return;
-                }
-
-                int slotId = saveGameData?.SlotID ?? MimesisSaveManager.GetCurrentSaveSlotId();
-                if (!MimesisSaveManager.IsValidSaveSlotId(slotId))
-                {
-                    return;
-                }
-
-                SaveSlotSidecarPersistence.OnSaveSlotLoaded(slotId);
-            }
-        }
-
-        [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.SaveGameData))]
-        private static class MaintenanceRoomSavePatch
-        {
-            [HarmonyPostfix]
-            private static void Postfix(int saveSlotID, List<string> playerNames, bool isAutoSave, MsgErrorCode __result)
-            {
-                if (__result != MsgErrorCode.Success || !MimesisSaveManager.IsHost())
-                {
-                    return;
-                }
-
-                SaveSlotSidecarPersistence.OnGameSaved(saveSlotID, playerNames, isAutoSave);
-            }
         }
     }
 }
