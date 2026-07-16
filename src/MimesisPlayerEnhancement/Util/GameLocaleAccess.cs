@@ -13,7 +13,33 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly PropertyInfo? L10NManagerLanguageProperty =
             typeof(L10NManager).GetProperty("language", InstanceFlags);
 
+        private static volatile string _cachedLanguage = "en";
+        private static int _mainThreadId;
+
+        internal static void CaptureMainThread()
+        {
+            _mainThreadId = Environment.CurrentManagedThreadId;
+            _cachedLanguage = ResolveLanguageFromUnity();
+        }
+
         internal static string GetCurrentLanguage()
+        {
+            int mainThreadId = _mainThreadId;
+            if (mainThreadId != 0 && Environment.CurrentManagedThreadId != mainThreadId)
+            {
+                return _cachedLanguage;
+            }
+
+            if (mainThreadId == 0)
+            {
+                _mainThreadId = Environment.CurrentManagedThreadId;
+            }
+
+            _cachedLanguage = ResolveLanguageFromUnity();
+            return _cachedLanguage;
+        }
+
+        private static string ResolveLanguageFromUnity()
         {
             try
             {

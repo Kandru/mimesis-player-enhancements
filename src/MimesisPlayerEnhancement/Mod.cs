@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement
             _isInitializing = true;
             try
             {
+                GameLocaleAccess.CaptureMainThread();
                 ModL10n.Initialize();
                 ModConfig.Initialize(LoggerInstance);
                 SceneScopedConfigGate.Initialize();
