@@ -1,5 +1,6 @@
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
 {
@@ -10,6 +11,12 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
         private static readonly MethodInfo OnClickSpeakButtonMethod =
             AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnClickSpeakButton");
+
+        private static readonly MethodInfo OnClickPlayerInfoButtonMethod =
+            AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnClickPlayerInfoButton");
+
+        private static readonly MethodInfo OpenKickPlayerPopupMethod =
+            AccessTools.Method(typeof(UIPrefab_InGameMenu), "OpenKickPlayerPopup");
 
         internal static void EnsureExtendedSlots(UIPrefab_InGameMenu menu)
         {
@@ -42,11 +49,11 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
                 UIPrefab_InGameMenu.PlayerUIElement element = BindPlayerElement(cloneContainer, template);
                 menu.playerUIElements.Add(element);
-                WireSpeakButton(menu, element, slotIndex);
             }
 
             if (startIndex < targetSlots)
             {
+                RewireExtendedPlayerButtons(menu);
                 ModLog.Debug(Feature, $"InGameMenu extended to {targetSlots} player row slots.");
             }
         }
@@ -115,20 +122,54 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             return null;
         }
 
-        private static void WireSpeakButton(
-            UIPrefab_InGameMenu menu,
-            UIPrefab_InGameMenu.PlayerUIElement element,
-            int index)
+        internal static void RewireExtendedPlayerButtons(UIPrefab_InGameMenu menu)
         {
-            if (element.speakButton == null || OnClickSpeakButtonMethod == null)
+            if (menu.playerUIElements == null)
             {
                 return;
             }
 
-            element.speakButton.onClick.AddListener(() =>
+            for (int index = VanillaPlayerRows; index < menu.playerUIElements.Count; index++)
             {
-                _ = OnClickSpeakButtonMethod.Invoke(menu, [index]);
+                WirePlayerRowButtons(menu, menu.playerUIElements[index], index);
+            }
+        }
+
+        private static void WirePlayerRowButtons(
+            UIPrefab_InGameMenu menu,
+            UIPrefab_InGameMenu.PlayerUIElement element,
+            int index)
+        {
+            WireButton(element.speakButton, () =>
+            {
+                _ = OnClickSpeakButtonMethod?.Invoke(menu, [index]);
             });
+
+            WireButton(element.infoButton, () =>
+            {
+                _ = OnClickPlayerInfoButtonMethod?.Invoke(menu, [index]);
+            });
+
+            WireButton(element.avatarButton, () =>
+            {
+                _ = OnClickPlayerInfoButtonMethod?.Invoke(menu, [index]);
+            });
+
+            WireButton(element.kickButton, () =>
+            {
+                _ = OpenKickPlayerPopupMethod?.Invoke(menu, [index]);
+            });
+        }
+
+        private static void WireButton(Button? button, Action handler)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => handler());
         }
 
         internal static void ResizeTempVolumeList(UIPrefab_InGameMenu menu)
