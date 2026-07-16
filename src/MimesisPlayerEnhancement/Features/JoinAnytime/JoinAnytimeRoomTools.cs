@@ -22,6 +22,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return JoinAnytimeSessionPhase.None;
             }
 
+            // pdata.main survives main-menu returns (vworld destroyed, SessionJoined false).
+            if (!pdata.SessionJoined || !TryGetVRoomManager(out _))
+            {
+                return JoinAnytimeSessionPhase.None;
+            }
+
             return pdata.main switch
             {
                 MaintenanceScene => JoinAnytimeSessionPhase.Maintenance,
@@ -428,7 +434,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         {
             if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
             {
-                ModLog.Warn(Feature, "GetActiveDungeonRoom failed — VRoomManager unavailable");
                 return null;
             }
 
