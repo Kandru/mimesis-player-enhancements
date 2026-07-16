@@ -115,6 +115,18 @@ export function entryIsModified(entry: ConfigEntryDto, scope: 'global' | 'save')
   return scope === 'save' ? entry.isOverridden : settingDiffersFromDefault(entry);
 }
 
+export function sectionHasModifiedEntries(
+  section: ConfigSectionDto,
+  settings: SettingsDto | null,
+  scope: 'global' | 'save',
+) {
+  const candidates = [
+    ...(section.featureToggle ? [section.featureToggle] : []),
+    ...section.entries.filter((entry) => entryVisible(section, entry, settings)),
+  ];
+  return candidates.some((entry) => entryIsModified(entry, scope));
+}
+
 export function sectionResettableEntries(
   section: ConfigSectionDto,
   settings: SettingsDto | null,

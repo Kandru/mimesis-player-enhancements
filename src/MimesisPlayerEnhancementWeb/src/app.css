@@ -1042,6 +1042,14 @@ body.dev-verify-shake {
   background: rgba(70, 95, 255, 0.1);
 }
 
+.settings-nav-item-modified:not(.settings-nav-item-active) {
+  background: #ffffff;
+}
+
+.dark .settings-nav-item-modified:not(.settings-nav-item-active) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .settings-nav-label {
   min-width: 0;
   flex: 1;

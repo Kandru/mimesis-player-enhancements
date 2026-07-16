@@ -10,6 +10,7 @@
     entryEditable,
     featureEnabled,
     groupConfigEntries,
+    sectionHasModifiedEntries,
     sectionHasVisibleEntries,
     sectionResettableEntries,
   } from '$lib/settings';
@@ -161,7 +162,7 @@
       <nav class="settings-nav" aria-label={t('dashboard.settings_sections_nav')}>
         {#each sections as section (section.id)}
           <div
-            class="settings-nav-item {activeSection?.id === section.id ? 'settings-nav-item-active' : ''}"
+            class="settings-nav-item {activeSection?.id === section.id ? 'settings-nav-item-active' : ''} {sectionHasModifiedEntries(section, settings, scope) ? 'settings-nav-item-modified' : ''}"
             role="presentation"
           >
             <button
