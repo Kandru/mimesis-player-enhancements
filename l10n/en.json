@@ -23,7 +23,8 @@
         "damageHealthGlow": "Damage health outline",
         "floatingDamage": "Floating damage numbers",
         "fpsUi": "FPS UI",
-        "roundStartSound": "Dungeon landing sound"
+        "roundStartSound": "Dungeon landing sound",
+        "customLoadingScreen": "Custom loading screens"
       },
       "ModToastDurationSeconds": {
         "title": "Mod Message Duration (seconds)",
@@ -77,6 +78,23 @@
           "vanilla": "Vanilla export",
           "variant_01": "Variant 01",
           "variant_02": "Variant 02"
+        }
+      },
+      "CustomLoadingScreenMode": {
+        "title": "Custom Loading Screen Mode",
+        "description": "Replace scene loading overlay art with embedded themes. Dungeon loads can use separate loading and waiting images from the same theme folder. Client-only.",
+        "options": {
+          "Vanilla": "Vanilla (game art)",
+          "Random": "Random embedded theme",
+          "Specific": "Specific embedded theme"
+        }
+      },
+      "CustomLoadingScreenVariant": {
+        "title": "Custom Loading Screen Theme",
+        "description": "Theme folder to use when mode is Specific. Random mode picks a theme per transition from the matching context folder (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch).",
+        "options": {
+          "neon": "Neon",
+          "slate": "Slate"
         }
       }
     },

@@ -18,6 +18,9 @@
     <EmbeddedResource Include="Assets\RoundStartSound\**\*">
       <LogicalName>Assets.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Assets\CustomLoadingScreen\**\*">
+      <LogicalName>Assets.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(RepoRoot)dist\webinterface\$(DistFolder)\**\*">
       <LogicalName>Assets.WebDashboard.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>

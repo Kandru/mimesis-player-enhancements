@@ -29,6 +29,7 @@ namespace MimesisPlayerEnhancement
                 [(MimicTuningSectionId, "MimicInventoryCopyMode")] = ["Vanilla", "Custom"],
                 [(MimicTuningSectionId, "MimicInventoryCopyPickRule")] = ["MinDistance", "MaxDistance", "Random"],
                 [(UiSectionId, "RoundStartSoundMode")] = ["Vanilla", "Random", "Specific"],
+                [(UiSectionId, "CustomLoadingScreenMode")] = ["Vanilla", "Random", "Specific"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)
@@ -59,6 +60,12 @@ namespace MimesisPlayerEnhancement
                 return "Select";
             }
 
+            if (sectionId == UiSectionId
+                && string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
+            {
+                return "Select";
+            }
+
             if (SelectValuesByEntry.ContainsKey((sectionId, key)))
             {
                 return "Select";
@@ -79,6 +86,13 @@ namespace MimesisPlayerEnhancement
                 && string.Equals(key, "RoundStartSoundVariant", StringComparison.Ordinal))
             {
                 entry.SelectOptions = BuildRoundStartSoundVariantOptions();
+                return;
+            }
+
+            if (sectionId == UiSectionId
+                && string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
+            {
+                entry.SelectOptions = BuildCustomLoadingScreenVariantOptions();
                 return;
             }
 
@@ -257,6 +271,8 @@ namespace MimesisPlayerEnhancement
                     ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
                     ["RoundStartSoundMode"] = "roundStartSound",
                     ["RoundStartSoundVariant"] = "roundStartSound",
+                    ["CustomLoadingScreenMode"] = "customLoadingScreen",
+                    ["CustomLoadingScreenVariant"] = "customLoadingScreen",
                 };
             }
 
@@ -287,6 +303,24 @@ namespace MimesisPlayerEnhancement
                     Value = value,
                     Label = string.IsNullOrWhiteSpace(label)
                         ? RoundStartSoundResolver.FormatVariantDisplayName(value)
+                        : label,
+                });
+            }
+
+            return options;
+        }
+
+        private static List<WebDashboardConfigSelectOptionDto> BuildCustomLoadingScreenVariantOptions()
+        {
+            List<WebDashboardConfigSelectOptionDto> options = [];
+            foreach (string value in CustomLoadingScreenResolver.ListVariantOptionValues())
+            {
+                string? label = WebDashboardL10n.GetConfigSelectOptionLabel(UiSectionId, "CustomLoadingScreenVariant", value);
+                options.Add(new WebDashboardConfigSelectOptionDto
+                {
+                    Value = value,
+                    Label = string.IsNullOrWhiteSpace(label)
+                        ? CustomLoadingScreenResolver.FormatVariantDisplayName(value)
                         : label,
                 });
             }

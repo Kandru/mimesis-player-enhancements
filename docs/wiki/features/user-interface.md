@@ -36,4 +36,10 @@ Local presentation options that do not require other players to install the mod.
 
 The mod version is always prepended to the version text on the main menu and in-game menu. This is not configurable.
 
+## Custom loading screens and landing sounds
+
+`CustomLoadingScreenMode` / `CustomLoadingScreenVariant` replace scene loading overlay art with embedded PNG themes. `RoundStartSoundMode` / `RoundStartSoundVariant` replace the dungeon landing melody after the tram stop sting. Both are client-only.
+
+See [Custom Assets](./custom-assets.md) for folder layout, image sizes, and how to add your own themes.
+
 **Full config keys →** [User Interface](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)

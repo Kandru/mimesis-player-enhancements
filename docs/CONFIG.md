@@ -98,6 +98,8 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 | `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Client-only. |
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
+| `CustomLoadingScreenMode` | string | `Vanilla` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon transitions can use separate `loading.png` and `wait.png` from the same theme folder. Client-only. |
+| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme subfolder under a context folder (`Dungeon`, `InTramWaiting`, `Maintenance`, `FirstEnter`, `DeathMatch`). Random mode picks per transition from the matching context. Empty or invalid values reset to the first discovered theme. |
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 

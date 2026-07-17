@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private const float MinFloatingDamageDurationSeconds = 1f;
         private const float MaxFloatingDamageDurationSeconds = 3f;
         private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
+        private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
 
         private static MelonPreferences_Category _category = null!;
 
@@ -62,6 +63,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.RoundStartSoundVariant = ModConfig.CreateTrackedEntry(_category,
                 "RoundStartSoundVariant",
                 RoundStartSoundResolver.GetDefaultVariantOptionValue());
+
+            ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
+                "CustomLoadingScreenMode",
+                "Vanilla");
+
+            ModConfig.CustomLoadingScreenVariant = ModConfig.CreateTrackedEntry(_category,
+                "CustomLoadingScreenVariant",
+                CustomLoadingScreenResolver.GetDefaultVariantOptionValue());
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -98,8 +107,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnRoundStartSoundModeChanged(logger, value));
             ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundVariantChanged(logger, value));
+            ModConfig.CustomLoadingScreenMode.OnEntryValueChanged.Subscribe((_, value) =>
+                OnCustomLoadingScreenModeChanged(logger, value));
+            ModConfig.CustomLoadingScreenVariant.OnEntryValueChanged.Subscribe((_, value) =>
+                OnCustomLoadingScreenVariantChanged(logger, value));
 
             SanitizeRoundStartSoundVariant(logger);
+            SanitizeCustomLoadingScreenVariant(logger);
         }
 
         internal static void RegisterFloatEntries()
@@ -177,6 +191,56 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.RoundStartSoundVariant.Value = normalized;
+        }
+
+        private static void OnCustomLoadingScreenModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidCustomLoadingScreenModes, value))
+            {
+                logger.Warning("CustomLoadingScreenMode must be Vanilla, Random, or Specific; resetting to Vanilla.");
+                ModConfig.CustomLoadingScreenMode.Value = "Vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenMode);
+        }
+
+        private static void OnCustomLoadingScreenVariantChanged(MelonLogger.Instance logger, string value)
+        {
+            string normalized = CustomLoadingScreenResolver.NormalizeVariantOptionValue(value);
+            string current = value?.Trim() ?? "";
+            if (!string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                if (!string.IsNullOrEmpty(current))
+                {
+                    logger.Warning(
+                        $"CustomLoadingScreenVariant must match an embedded theme; resetting to {normalized}.");
+                }
+
+                ModConfig.CustomLoadingScreenVariant.Value = normalized;
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenVariant);
+        }
+
+        private static void SanitizeCustomLoadingScreenVariant(MelonLogger.Instance logger)
+        {
+            string normalized = CustomLoadingScreenResolver.NormalizeVariantOptionValue(
+                ModConfig.CustomLoadingScreenVariant.Value);
+            string current = ModConfig.CustomLoadingScreenVariant.Value?.Trim() ?? "";
+            if (string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+            {
+                logger.Warning(
+                    $"CustomLoadingScreenVariant '{current}' is not available; resetting to {normalized}.");
+            }
+
+            ModConfig.CustomLoadingScreenVariant.Value = normalized;
         }
 
         private static bool ContainsIgnoreCase(string[] values, string? candidate)

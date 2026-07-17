@@ -87,6 +87,12 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
+            if (string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("CustomLoadingScreenMode", "Specific");
+                return true;
+            }
+
             return false;
         }
 

@@ -23,7 +23,8 @@
         "damageHealthGlow": "Schadens-Gesundheitsumriss",
         "floatingDamage": "Schwebende Schadenszahlen",
         "fpsUi": "FPS-UI",
-        "roundStartSound": "Dungeon-Landesound"
+        "roundStartSound": "Dungeon-Landesound",
+        "customLoadingScreen": "Benutzerdefinierte Ladebildschirme"
       },
       "ModToastDurationSeconds": {
         "title": "Mod-Nachrichtendauer (Sekunden)",
@@ -77,6 +78,23 @@
           "vanilla": "Vanilla-Export",
           "variant_01": "Variante 01",
           "variant_02": "Variante 02"
+        }
+      },
+      "CustomLoadingScreenMode": {
+        "title": "Benutzerdefinierte Ladebildschirme",
+        "description": "Ersetzt Ladeoverlay-Grafiken durch eingebettete Themes. Dungeon-Ladevorgänge können getrennte loading- und wait-Bilder aus demselben Theme-Ordner nutzen. Nur Client.",
+        "options": {
+          "Vanilla": "Vanilla (Spielgrafik)",
+          "Random": "Zufälliges eingebettetes Theme",
+          "Specific": "Bestimmtes eingebettetes Theme"
+        }
+      },
+      "CustomLoadingScreenVariant": {
+        "title": "Ladebildschirm-Theme",
+        "description": "Theme-Ordner bei Modus Specific. Random wählt pro Übergang aus dem passenden Kontextordner (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch).",
+        "options": {
+          "neon": "Neon",
+          "slate": "Slate"
         }
       }
     },

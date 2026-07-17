@@ -9,6 +9,7 @@
 | [Persistence](./features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
 | [Join Anytime](./features/join-anytime.md) | Let friends join after you've already started | Host only |
 | [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration | Your game only |
+| [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Your game only |
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
 | [Web Dashboard](./features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |

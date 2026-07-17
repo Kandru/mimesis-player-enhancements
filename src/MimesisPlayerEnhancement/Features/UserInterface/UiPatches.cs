@@ -27,6 +27,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
             RoundStartSoundPatches.Apply(harmony);
+            CustomLoadingScreenPatches.Apply(harmony);
         }
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
@@ -66,6 +67,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             FpsUiOverlay.RefreshFromConfig();
             FpsUiNetWorthOverlay.RefreshFromConfig();
             RoundStartSoundRuntime.RefreshFromConfig();
+            CustomLoadingScreenRuntime.RefreshFromConfig();
         }
 
         internal static void OnUpdate()
