@@ -9,13 +9,15 @@
     steamId,
     displayName,
     badges,
+    profileLink = true,
   }: {
     steamId: string | number;
     displayName: string;
     badges?: Snippet;
+    profileLink?: boolean;
   } = $props();
 
-  const canNavigate = $derived(isValidSteamId(steamId));
+  const canNavigate = $derived(profileLink && isValidSteamId(steamId));
   const showDevBadge = $derived(isDevSteamId(steamId));
 </script>
 

@@ -315,7 +315,11 @@
                   onerror={(e) => ((e.currentTarget as HTMLImageElement).src = '/img/default-avatar.svg')}
                 />
                 <div class="min-w-0 flex-1">
-                  <PlayerIdentity steamId={player.steamId} displayName={player.displayName}>
+                  <PlayerIdentity
+                    steamId={player.steamId}
+                    displayName={player.displayName}
+                    profileLink={isHost}
+                  >
                     {#snippet badges()}
                       {#if player.isHost}<span class="badge badge-host">{t('dashboard.badge_host')}</span>{/if}
                       {#if player.isLocal}<span class="badge badge-local">{t('dashboard.badge_you')}</span>{/if}

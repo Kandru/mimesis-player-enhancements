@@ -1,5 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.15
+- draft: show players & minimap when joining lobby as a client (not as an host)
+
 ## 26.7.14
 - feature: added new random dungeon start sounds based on the original
 - removed the Replay-test. It has too many bugs to be implemented currently

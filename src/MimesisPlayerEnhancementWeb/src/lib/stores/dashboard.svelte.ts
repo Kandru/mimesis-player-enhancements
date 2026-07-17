@@ -24,7 +24,7 @@ import {
   shouldUseIndoorComposite,
 } from '../minimap/minimapFloorState';
 import { fingerprintMarkers } from '../minimap/minimapThrottler';
-import { isLobbyRoute } from '../playerHelpers';
+import { isLobbyRoute, isRouteAccessible } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
   import {
   canEditSaveSettings,
@@ -267,6 +267,7 @@ class DashboardStore {
     this.settingsSubRoute = parsed.settingsSubRoute;
     this.homeSubRoute = parsed.homeSubRoute;
     this.steamId = parsed.steamId;
+    this.guardRoute();
     this.headerSearchQuery = '';
     this.connectSse(parsed.route);
     const onSaveCustomize =
@@ -291,7 +292,18 @@ class DashboardStore {
     document.body.classList.toggle('connected', this.status.isConnected);
   }
 
+  guardRoute() {
+    if (isRouteAccessible(this.route, this.status)) return;
+    navigate('home');
+    const parsed = parseHash();
+    this.route = parsed.route;
+    this.settingsSubRoute = parsed.settingsSubRoute;
+    this.homeSubRoute = parsed.homeSubRoute;
+    this.steamId = parsed.steamId;
+  }
+
   ensureDefaultRoute() {
+    this.guardRoute();
     if (!this.status.isConnected && isLobbyRoute(this.route)) {
       location.hash = '#/home';
       const p = parseHash();

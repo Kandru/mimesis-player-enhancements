@@ -3,8 +3,22 @@ import { formatDuration } from './utils';
 
 export const LOBBY_ROUTES = ['players', 'minimap', 'leaderboard', 'settings', 'player'] as const;
 
+export const HOST_ONLY_LOBBY_ROUTES = ['leaderboard', 'settings', 'player'] as const;
+
 export function isLobbyRoute(route: string) {
   return (LOBBY_ROUTES as readonly string[]).includes(route);
+}
+
+export function isRouteAccessible(
+  route: string,
+  status: { isConnected: boolean; isHost: boolean },
+): boolean {
+  if (!isLobbyRoute(route)) return true;
+  if (!status.isConnected) return false;
+  if ((HOST_ONLY_LOBBY_ROUTES as readonly string[]).includes(route) && !status.isHost) {
+    return false;
+  }
+  return true;
 }
 
 export function sortConnectedPlayers(list: PlayerDto[]) {
