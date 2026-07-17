@@ -2,6 +2,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.15
 - draft: show players & minimap when joining lobby as a client (not as an host)
+- draft: show notifications on the top right instead of bottom right (webinterface)
 
 ## 26.7.14
 - feature: added new random dungeon start sounds based on the original
