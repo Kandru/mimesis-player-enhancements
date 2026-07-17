@@ -7,13 +7,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
 
         private static void Postfix()
         {
-            if (CustomLoadingScreenSession.HoldThroughDeparture)
+            if (CustomLoadingScreenSession.HoldThroughDeparture
+                || CustomLoadingScreenSession.IsDismissing)
             {
                 return;
             }
 
             try
             {
+                // Hide() Prefix usually starts the fade; this covers paths that skip Hide.
                 UIPrefab_Scene_Loading? loading = ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
                 CustomLoadingScreenApplier.Restore(loading);
             }

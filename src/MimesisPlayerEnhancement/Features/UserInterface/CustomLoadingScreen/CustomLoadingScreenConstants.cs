@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal const float DefaultMotionZoom = 1.08f;
         internal const float DefaultMotionCycleSeconds = 20f;
         internal const float DefaultDepartureFadeSeconds = 1f;
+        internal const float DefaultArrivalFadeSeconds = 1f;
 
         /// <summary>Nested overlay canvas sort order — above the game's fade/video layers.</summary>
         internal const int OverlayCanvasSortOrder = 32000;

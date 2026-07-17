@@ -14,10 +14,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private float _frameTimer;
         private bool _playing;
         private bool _fading;
+        private bool _fadeOut;
         private float _fadeDuration = CustomLoadingScreenConstants.DefaultDepartureFadeSeconds;
         private float _fadeElapsed;
+        private float _fadeStartAlpha = 1f;
         private Color _backgroundOpaque = Color.black;
         private Color _contentOpaque = Color.white;
+        private Action? _onFadeComplete;
 
         internal void Initialize(RawImage backgroundImage, RawImage contentImage)
         {
@@ -28,6 +31,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         internal void Play(CustomLoadingScreenResolvedPhase phase, bool motionEnabled)
         {
+            _onFadeComplete = null;
+            _fadeOut = false;
             _phase = phase;
             _motionEnabled = motionEnabled;
             _textures = CustomLoadingScreenTextureCache.TryGetTextures(phase.ImagePaths);
@@ -63,14 +68,37 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         internal void BeginFadeIn(float duration)
         {
+            _onFadeComplete = null;
+            _fadeOut = false;
             _fadeDuration = Mathf.Max(duration, 0.05f);
             _fadeElapsed = 0f;
+            _fadeStartAlpha = 0f;
             _fading = true;
             ApplyFadeAlpha(0f);
         }
 
+        internal void BeginFadeOut(float duration, Action? onComplete)
+        {
+            _fadeOut = true;
+            _fadeDuration = Mathf.Max(duration, 0.05f);
+            _fadeElapsed = 0f;
+            _fadeStartAlpha = _contentImage != null ? _contentImage.color.a : 1f;
+            if (_fadeStartAlpha <= 0.001f)
+            {
+                _fading = false;
+                onComplete?.Invoke();
+                return;
+            }
+
+            _onFadeComplete = onComplete;
+            _fading = true;
+            ApplyFadeAlpha(_fadeStartAlpha);
+        }
+
         internal void SnapVisible()
         {
+            _onFadeComplete = null;
+            _fadeOut = false;
             _fading = false;
             ApplyFadeAlpha(1f);
         }
@@ -79,6 +107,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         {
             _playing = false;
             _fading = false;
+            _fadeOut = false;
+            _onFadeComplete = null;
             _phase = null;
             _textures = [];
             _contentImage.texture = null;
@@ -108,10 +138,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             {
                 _fadeElapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(_fadeElapsed / _fadeDuration);
-                ApplyFadeAlpha(t);
+                float alpha = _fadeOut
+                    ? Mathf.Lerp(_fadeStartAlpha, 0f, t)
+                    : Mathf.Lerp(_fadeStartAlpha, 1f, t);
+                ApplyFadeAlpha(alpha);
                 if (t >= 1f)
                 {
                     _fading = false;
+                    Action? complete = _onFadeComplete;
+                    _onFadeComplete = null;
+                    complete?.Invoke();
                 }
             }
 

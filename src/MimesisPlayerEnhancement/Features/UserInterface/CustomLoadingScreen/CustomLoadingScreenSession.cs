@@ -16,6 +16,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         /// custom screen before <c>Hub.LoadScene</c>.</summary>
         internal static bool HoldThroughDeparture { get; private set; }
 
+        /// <summary>True while the overlay is fading out into the loaded scene.</summary>
+        internal static bool IsDismissing { get; private set; }
+
         internal static void TrackTransition(CustomLoadingScreenContext context)
         {
             LastTransitionContext = context;
@@ -24,6 +27,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal static void Begin(CustomLoadingScreenContext context, string theme, bool holdThroughDeparture = false)
         {
             IsActive = true;
+            IsDismissing = false;
             Context = context;
             Theme = theme;
             Phase = CustomLoadingScreenPhase.Loading;
@@ -31,6 +35,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             {
                 HoldThroughDeparture = true;
             }
+        }
+
+        internal static void BeginDismiss()
+        {
+            IsDismissing = true;
+            HoldThroughDeparture = false;
         }
 
         internal static void RequestDepartureHold()
@@ -57,6 +67,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal static void Clear()
         {
             IsActive = false;
+            IsDismissing = false;
             Theme = "";
             Phase = CustomLoadingScreenPhase.Loading;
             HoldThroughDeparture = false;

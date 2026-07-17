@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         private static UIPrefab_Scene_Loading? _activeLoading;
         private static bool _rootNodeHidden;
+        private static bool _allowVanillaHide;
 
         internal static void ApplyScene(UIPrefab_Scene_Loading loading, string loadingSceneKey)
         {
@@ -28,7 +29,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             if (!CustomLoadingScreenResolver.ShouldApplyReplacement())
             {
-                Restore(loading);
+                Restore(loading, fadeOut: false);
                 return;
             }
 
@@ -42,7 +43,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             string? theme = CustomLoadingScreenResolver.ResolveThemeForContext(context);
             if (string.IsNullOrWhiteSpace(theme))
             {
-                Restore(loading);
+                Restore(loading, fadeOut: false);
                 return;
             }
 
@@ -383,12 +384,75 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             ApplyPhase(_activeLoading, CustomLoadingScreenSession.Phase);
         }
 
-        internal static void Restore(UIPrefab_Scene_Loading? loading)
+        /// <summary>Fade the custom overlay out into the loaded scene, then tear it down.
+        /// Returns true when vanilla <c>Hide</c> must be deferred until the fade finishes.</summary>
+        internal static bool Restore(UIPrefab_Scene_Loading? loading, bool fadeOut = true)
         {
-            bool wasActive = CustomLoadingScreenSession.IsActive;
+            if (_allowVanillaHide)
+            {
+                return false;
+            }
+
+            if (CustomLoadingScreenSession.IsDismissing)
+            {
+                return fadeOut;
+            }
+
+            if (!CustomLoadingScreenSession.IsActive)
+            {
+                return false;
+            }
+
+            UIPrefab_Scene_Loading? target = loading ?? _activeLoading;
+            CustomLoadingScreenOverlayAnimator? animator = target != null ? GetAnimator(target) : null;
+            if (!fadeOut || target == null || animator == null)
+            {
+                FinishDismiss(target);
+                return false;
+            }
+
+            CustomLoadingScreenSession.BeginDismiss();
+            HideLoadingChromeExceptOverlay(target);
+            ElevateOverlayAboveVanillaCovers(target);
+            float duration = ResolveArrivalFadeSeconds();
+            animator.BeginFadeOut(duration, () => FinishDismiss(target));
+            return true;
+        }
+
+        /// <summary>While dissolving into the scene, only the custom overlay should remain so the
+        /// game is revealed underneath — not leftover loading chrome.</summary>
+        private static void HideLoadingChromeExceptOverlay(UIPrefab_Scene_Loading loading)
+        {
+            for (int i = 0; i < loading.transform.childCount; i++)
+            {
+                Transform child = loading.transform.GetChild(i);
+                if (child != null
+                    && !string.Equals(child.name, CustomLoadingScreenConstants.OverlayObjectName, StringComparison.Ordinal))
+                {
+                    child.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        private static float ResolveArrivalFadeSeconds()
+        {
+            UIManager? uiManager = ModUiGameAccess.TryGetUiManager();
+            if (uiManager == null)
+            {
+                return CustomLoadingScreenConstants.DefaultArrivalFadeSeconds;
+            }
+
+            float seconds = uiManager.InGameFadeInSec > 0.05f
+                ? uiManager.InGameFadeInSec
+                : uiManager.WaitingRoomFadeInSec;
+            return Mathf.Max(seconds, 0.05f);
+        }
+
+        private static void FinishDismiss(UIPrefab_Scene_Loading? loading)
+        {
             CustomLoadingScreenSession.Clear();
             _activeLoading = null;
-            if (loading == null || !wasActive)
+            if (loading == null)
             {
                 return;
             }
@@ -397,6 +461,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             HideOverlay(loading);
             ShowVanillaRootNode(loading);
             ShowVanillaCurrent(loading);
+
+            if (loading.gameObject.activeSelf)
+            {
+                _allowVanillaHide = true;
+                try
+                {
+                    loading.Hide();
+                }
+                finally
+                {
+                    _allowVanillaHide = false;
+                }
+            }
         }
 
         private static void ApplyPhase(UIPrefab_Scene_Loading loading, CustomLoadingScreenPhase phase)
@@ -409,7 +486,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             {
                 ModLog.Warn(CustomLoadingScreenConstants.Feature,
                     $"Custom loading screen has no images — context={CustomLoadingScreenSession.Context}, theme={CustomLoadingScreenSession.Theme}, phase={phase}");
-                Restore(loading);
+                Restore(loading, fadeOut: false);
                 return;
             }
 

@@ -105,9 +105,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
                 return false;
             }
 
+            // Arrival fade-out: keep the loading root alive so the overlay can dissolve into
+            // the scene instead of vanishing with Hide().
+            if (CustomLoadingScreenSession.IsDismissing)
+            {
+                return false;
+            }
+
             try
             {
-                CustomLoadingScreenApplier.Restore(loading);
+                if (CustomLoadingScreenApplier.Restore(loading))
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {
