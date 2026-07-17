@@ -51,19 +51,13 @@ Features/{FeatureName}/
 | `{Feature}Runtime.cs` | Optional — session or per-frame state |
 | `{Feature}Log.cs` | Optional — shared `ModLog` formatting (see [AGENTS.md](../AGENTS.md#logging)) |
 
-Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `syncFromConfig` when toggling off must revert live state; `onUpdate` for per-frame work; `throttledUpdate: true` when `Mod.cs` should batch calls; `onDeinitialize` for flush/shutdown (e.g. sidecar or HTTP server cleanup).
+Register every feature in `FeatureModules.All` — see [AGENTS.md](../AGENTS.md#new-feature) for registration, config, gating, and build checklist.
 
 ## Add a new feature
 
-1. Create `Features/{FeatureName}/` with `{Feature}Patches.cs` implementing `Apply(Harmony)`.
-2. Add nested `[HarmonyPatch]` classes; use `HarmonyPatchHelper` for apply/audit (see `MorePlayersPatches.cs`).
-3. Add `{Feature}Config.cs` (or wire entries in `ModConfig.Initialize`) with `Enable{FeatureName}` and options; expose properties on `ModConfig`.
-4. Register in `FeatureModules.All`.
-5. Gate host-only mutations with `HostApplyGate.ShouldApplyHostOnlyFeature()`.
-6. For multipliers: resolver → applier, with `FeatureToggleGate` neutral values when disabled.
-7. Log via `ModLog` and a local `Feature` const; add `{Feature}Log.cs` only when message formatting is reused.
-8. Document keys in [CONFIG.md](CONFIG.md).
-9. Run `make debug` (or `make release` if build-sensitive).
+1. Create `Features/{FeatureName}/` with `{Feature}Patches.cs` and patch types under `Patches/` (see file tree above).
+2. Add `{Feature}Config.cs` (or wire entries in `ModConfig.Initialize`) with `Enable{FeatureName}` and options.
+3. See [AGENTS.md](../AGENTS.md#new-feature) for registration, config keys, host/disable gating, logging, and build verification.
 
 ## Config
 
@@ -143,10 +137,7 @@ Feature toggles (`EnablePersistence`, `EnableStatistics`, etc.) gate **runtime b
 
 ## Host-only and session access
 
-- **HostApplyGate** — false for join-anytime participants and when the feature toggle is off; allows solo/host when network pdata is null.
-- **GameSessionAccess** — save slot, session, and hub lookups shared across features.
-
-Clients do not need this mod installed.
+**HostApplyGate** and **GameSessionAccess** gate host-only mutations and provide session/save-slot context — see [AGENTS.md](../AGENTS.md#new-feature).
 
 ## Updating the predefined dungeon seeds
 

@@ -6,13 +6,8 @@ alwaysApply: false
 
 # C# mod conventions
 
-- Target `netstandard2.1`; nullable reference types are enabled — honor nullability.
-- Default to `internal` visibility; only expose what MelonLoader or other assemblies need.
-- Namespace: `MimesisPlayerEnhancement.Features.{FeatureName}` for feature code.
-- Use descriptive names (`approvedSaveSlotIds`, not `list` or `ids`) so intent is clear without reading surrounding code.
-- Add brief comments for non-obvious business logic (host-only rules, game quirks, timing constraints).
-- Do not create `.tmp-*` scratch projects — search `deps/decompiled/**/*` for game source; use MimesisReflectionTool for MelonLoader APIs.
-- New features: register in `FeatureModules.All`, add config to `ModConfig.cs`, update [docs/CONFIG.md](../../docs/CONFIG.md).
-- Run `make check` and `make debug` before considering changes complete.
-- Match existing patterns: `_` prefix on private fields is used throughout this codebase — keep it consistent.
-- Logging: default to `ModLog.Info/Debug/Warn/Error(Feature, message)` with a local `Feature` const; add `{Feature}Log.cs` only for shared formatting or repeated semantic events. See [AGENTS.md](../../AGENTS.md#logging).
+- netstandard2.1, nullable enabled
+- `internal` default; namespace `MimesisPlayerEnhancement.Features.{Feature}`
+- Descriptive names; `_` prefix on private fields
+- Brief comments for host-only rules, game quirks, timing constraints only
+- Features, config, build, logging, patches: [AGENTS.md](../../AGENTS.md)
