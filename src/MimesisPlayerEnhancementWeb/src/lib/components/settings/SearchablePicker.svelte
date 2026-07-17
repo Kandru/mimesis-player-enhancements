@@ -123,10 +123,15 @@
     activeIndex = 0;
   }
 
+  $effect(() => {
+    if (disabled && open) {
+      closeDropdown();
+    }
+  });
+
   function selectOption(option: PickerOption) {
     if (multiple) {
-      const next = [...values, option.value];
-      onsave(formatCsv(next));
+      onsave(formatCsv([...values, option.value]));
       query = '';
       activeIndex = 0;
       inputEl?.focus();
@@ -135,6 +140,7 @@
 
     onsave(option.value);
     closeDropdown();
+    inputEl?.blur();
   }
 
   function removeValue(idValue: string) {

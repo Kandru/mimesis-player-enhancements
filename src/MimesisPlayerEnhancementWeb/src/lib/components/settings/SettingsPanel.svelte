@@ -15,6 +15,7 @@
     sectionHasVisibleEntries,
     sectionResettableEntries,
     sectionScopes,
+    patchSettingsEntry,
   } from '$lib/settings';
 
   let {
@@ -92,15 +93,21 @@
   }
 
   async function saveEntry(sectionId: string, key: string, value: string) {
+    if (scope === 'global' && dashboard.settingsGlobal) {
+      dashboard.settingsGlobal = patchSettingsEntry(dashboard.settingsGlobal, sectionId, key, value);
+    } else if (scope === 'save' && dashboard.settingsSave) {
+      dashboard.settingsSave = patchSettingsEntry(dashboard.settingsSave, sectionId, key, value);
+    }
+
     dashboard.savingSettingKey = `${sectionId}/${key}`;
     try {
       const api = scope === 'global' ? Api.updateGlobalSetting : Api.updateSaveSetting;
       const result = await api(sectionId, key, value);
       dashboard.showToast((result as { message?: string }).message || t('api.done'));
-      await reloadSettings();
     } catch (e) {
       dashboard.showToast(e instanceof Error ? e.message : String(e));
     } finally {
+      await reloadSettings();
       dashboard.savingSettingKey = '';
     }
   }

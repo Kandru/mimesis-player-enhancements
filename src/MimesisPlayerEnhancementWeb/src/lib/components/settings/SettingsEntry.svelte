@@ -102,14 +102,17 @@
     (entry.inputKind === 'ItemIdList' || entry.inputKind === 'DungeonIdList')
     && pickerOptions.length === 0,
   );
-  const pickerDisabled = $derived(!editable || isSaving || catalogUnavailable);
+  const usesSearchablePicker = $derived(isMultiPicker || isSearchableSelect);
+  const isDropdownControl = $derived(usesSearchablePicker || entry.inputKind === 'Select');
+  const pickerDisabled = $derived(!editable || catalogUnavailable || pickerOptions.length === 0);
+  const showSavingRowState = $derived(isSaving && !isDropdownControl);
   const pickerPlaceholder = $derived(
     entry.inputKind === 'VariantIdList' ? t('dashboard.picker_empty_means_all') : '',
   );
 </script>
 
 <div
-  class="settings-entry {editable ? '' : 'settings-entry-readonly'} {showReset ? 'settings-entry-modified' : ''} {featureOff ? 'settings-entry-disabled' : ''} {isSaving ? 'settings-entry-saving' : ''}"
+  class="settings-entry {editable ? '' : 'settings-entry-readonly'} {showReset ? 'settings-entry-modified' : ''} {featureOff ? 'settings-entry-disabled' : ''} {showSavingRowState ? 'settings-entry-saving' : ''}"
 >
   <div class="settings-entry-main">
     <div class="settings-entry-header">
@@ -132,7 +135,24 @@
     {/if}
   </div>
 
-  <div class="settings-entry-actions" title={hostReadOnlyHint}>
+  <div class="settings-entry-actions {editable ? 'settings-entry-actions-reservable' : ''}" title={hostReadOnlyHint}>
+    {#if editable}
+      <div class="settings-entry-reset-slot">
+        {#if showReset}
+          <button
+            type="button"
+            class="btn btn-secondary btn-xs"
+            disabled={isSaving}
+            title={resetTitle}
+            onclick={() => onreset()}
+          >
+            {t('dashboard.settings_reset')}
+          </button>
+        {/if}
+      </div>
+    {/if}
+
+    <div class="settings-entry-control">
     {#if entry.type === 'Boolean'}
       <Toggle
         checked={boolChecked}
@@ -156,11 +176,11 @@
         id="{section.id}-{entry.key}"
         options={pickerOptions}
         value={selectValue}
-        disabled={!editable || isSaving || pickerOptions.length === 0}
+        disabled={pickerDisabled}
         onsave={onsave}
       />
     {:else if entry.inputKind === 'Select'}
-      <select id="{section.id}-{entry.key}" class="input max-w-md" value={selectValue} disabled={!editable || isSaving} onchange={onChange}>
+      <select id="{section.id}-{entry.key}" class="input max-w-md" value={selectValue} disabled={!editable} onchange={onChange}>
         {#each entry.selectOptions as opt (opt.value)}
           <option value={opt.value}>{opt.label}</option>
         {/each}
@@ -177,17 +197,6 @@
         onchange={onChange}
       />
     {/if}
-
-    {#if showReset}
-      <button
-        type="button"
-        class="btn btn-secondary btn-xs"
-        disabled={isSaving}
-        title={resetTitle}
-        onclick={() => onreset()}
-      >
-        {t('dashboard.settings_reset')}
-      </button>
-    {/if}
+    </div>
   </div>
 </div>

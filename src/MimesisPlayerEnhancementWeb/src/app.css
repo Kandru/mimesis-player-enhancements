@@ -1454,6 +1454,28 @@ body.dev-verify-shake {
   gap: 0.5rem;
 }
 
+.settings-entry-actions-reservable {
+  position: relative;
+  padding-left: 3.25rem;
+}
+
+.settings-entry-reset-slot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3rem;
+  display: flex;
+  justify-content: flex-end;
+  transform: translateY(-50%);
+}
+
+.settings-entry-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .settings-entry-saving {
   opacity: 0.65;
   pointer-events: none;
@@ -1505,12 +1527,6 @@ body.dev-verify-shake {
   font-size: 0.75rem;
   line-height: 1.4;
   color: var(--text-muted);
-}
-
-.settings-entry-control {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .settings-entry-hint {

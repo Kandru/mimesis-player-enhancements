@@ -33,6 +33,7 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "CustomLoadingScreenMode"),
                 (UiConfig.SectionId, "CustomLoadingScreenVariant"),
                 (UiConfig.SectionId, "CustomLoadingScreenRandomPool"),
+                (UiConfig.SectionId, "CustomLoadingScreenMotion"),
                 (PrivacyConfig.SectionId, "EnablePrivacy"),
                 (PrivacyConfig.SectionId, "BlockReluTelemetry"),
                 (PrivacyConfig.SectionId, "BlockReplayUpload"),

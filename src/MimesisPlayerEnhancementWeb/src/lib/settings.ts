@@ -20,6 +20,30 @@ export interface SettingsSearchContext {
   dungeonCatalog: Array<{ id: string; label: string }>;
 }
 
+/** Apply an in-flight value change to the settings DTO before the backend confirms it. */
+export function patchSettingsEntry(
+  settings: SettingsDto,
+  sectionId: string,
+  key: string,
+  value: string,
+): SettingsDto {
+  return {
+    ...settings,
+    sections: settings.sections.map((section) => {
+      if (section.id !== sectionId) return section;
+
+      const patchEntry = (entry: ConfigEntryDto) =>
+        entry.key === key ? { ...entry, value } : entry;
+
+      return {
+        ...section,
+        featureToggle: section.featureToggle ? patchEntry(section.featureToggle) : section.featureToggle,
+        entries: section.entries.map(patchEntry),
+      };
+    }),
+  };
+}
+
 function entryPickerSearchLabels(
   entry: ConfigEntryDto,
   searchContext?: SettingsSearchContext,
