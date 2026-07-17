@@ -118,22 +118,6 @@
         "description": "Überspringt den Krafton-Creator-Code-SDK-Login beim Start."
       }
     },
-    "MimesisPlayerEnhancement_Replays": {
-      "_section": "Replays",
-      "_description": "Behält Dungeon-Replays lokal und spielt sie über das Hauptmenü ab. Nur Host-Aufzeichnung.",
-      "EnableReplays": {
-        "title": "Replays aktivieren",
-        "description": "Behält beendete Host-Dungeon-Aufzeichnungen lokal, zeigt den Replays-Button im Hauptmenü und erlaubt Wiedergabe."
-      },
-      "KeepLocalReplays": {
-        "title": "Lokale Replays behalten",
-        "description": "Kopiert fertige Aufzeichnungen in die Mod-Bibliothek statt sie nach jedem Lauf zu löschen."
-      },
-      "MaxStoredReplays": {
-        "title": "Max. gespeicherte Replays",
-        "description": "Maximale Anzahl Replay-Dateien in der Bibliothek. Älteste Einträge werden entfernt. 0 = unbegrenzt."
-      }
-    },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
       "_description": "Randomisiere Tram-Dungeon-Würfe, Kartenvarianten und prozeduralen Map-Flavor. Nur Host.",

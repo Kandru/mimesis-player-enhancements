@@ -20,7 +20,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("Delete/PlatformMgr", AccessTools.Method(typeof(PlatformMgr), nameof(PlatformMgr.Delete))),
-                ("ApplyLoadedGameData/GameSessionInfo", AccessTools.Method(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))),
                 ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "OnStartClient")),
                 ("OnStopClient/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))),
                 ("GetRandomOtherSpeechEventArchive/VoiceManager", AccessTools.Method(typeof(VoiceManager), "GetRandomOtherSpeechEventArchive")),

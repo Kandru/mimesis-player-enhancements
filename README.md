@@ -30,7 +30,6 @@ Most features only need to be installed on the **host** — friends can join wit
 | [Join Anytime](docs/wiki/features/join-anytime.md) | Let friends join after you've already started | Host only |
 | [User Interface](docs/wiki/features/user-interface.md) | Extended save picker, HUD overlays, toast duration | Your game only |
 | [Privacy](docs/wiki/features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
-| [Replays](docs/wiki/features/replays.md) | Keep local dungeon replays and play them back from the main menu (spectator, seek, voice) | Your game only (host records) |
 | [Statistics](docs/wiki/features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
 | [Web Dashboard](docs/wiki/features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
 | [Player Announcements](docs/wiki/features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |
@@ -92,7 +91,6 @@ Settings are grouped into TOML sections:
 
 - **`[MimesisPlayerEnhancement]`** — global debug logging
 - **`[MimesisPlayerEnhancement_Ui]`** — local UI preferences (save picker, spectator list, toast duration)
-- **`[MimesisPlayerEnhancement_Replays]`** — local replay library and playback (opt-in, disabled by default)
 - **`[MimesisPlayerEnhancement_FeatureName]`** — one section per gameplay feature (e.g. `[MimesisPlayerEnhancement_MorePlayers]`)
 
 Each gameplay feature section has its own master toggle plus feature-specific options. The web dashboard can edit global defaults and per-save-slot overrides; Web Dashboard listen settings are cfg-file only.

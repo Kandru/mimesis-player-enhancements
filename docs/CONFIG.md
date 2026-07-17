@@ -27,7 +27,7 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 | Scope | Sections / keys |
 |-------|-----------------|
-| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (debug logging only), `[MimesisPlayerEnhancement_Ui]`, `[MimesisPlayerEnhancement_Privacy]`, `[MimesisPlayerEnhancement_Replays]`, `[MimesisPlayerEnhancement_WebDashboard]` |
+| **Global only** (not in save settings UI or sidecar) | `[MimesisPlayerEnhancement]` (debug logging only), `[MimesisPlayerEnhancement_Ui]`, `[MimesisPlayerEnhancement_Privacy]`, `[MimesisPlayerEnhancement_WebDashboard]` |
 | **Save-scoped** | All other feature sections |
 
 User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav` beside vanilla saves (Steam Auto-Cloud).
@@ -39,7 +39,6 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
 | [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers | Local UI |
 | [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local client |
-| [Replays](#replays--mimesisplayerenhancement_replays) | Local replay library, playback, and main-menu picker | Local client (host recording) |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
 | [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
@@ -115,18 +114,6 @@ The mod version is always prepended to the version text on the main menu and in-
 | `BlockCrashReports` | bool | `true` | — | Disable Unity crash report uploads. |
 | `StripCrashReportMetadata` | bool | `true` | — | When crash reports remain enabled, ignore `CrashReportHandler.SetUserMetadata` calls. |
 | `BlockKraftonGppSdk` | bool | `true` | — | Skip Krafton GPP SDK initialization (creator codes). |
-
-When `[MimesisPlayerEnhancement_Replays]` `EnableReplays` is on, `BlockReplayRecording` is ignored so the game can still record locally; `BlockReplayUpload` continues to block outbound replay uploads.
-
-## Replays — `[MimesisPlayerEnhancement_Replays]`
-
-**Local client.** Opt-in local replay library and playback. Host-only recording uses the game's built-in ReluReplay capture; finished runs are copied into `persistentDataPath/Replay/ModLibrary/` instead of being deleted. Uploads to Relu remain controlled by the Privacy section.
-
-| Key | Type | Default | Range | Description |
-|-----|------|---------|-------|-------------|
-| `EnableReplays` | bool | `false` | — | Master toggle for recording preservation, the main-menu **Replays** button, and playback. |
-| `KeepLocalReplays` | bool | `true` | — | Copy finished host dungeon recordings into the local library. |
-| `MaxStoredReplays` | int | `20` | ≥ `0` | Maximum library entries (`0` = unlimited). Oldest files are deleted when exceeded. |
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
@@ -517,11 +504,6 @@ BlockReplayRecording = true
 BlockCrashReports = true
 StripCrashReportMetadata = true
 BlockKraftonGppSdk = true
-
-[MimesisPlayerEnhancement_Replays]
-EnableReplays = false
-KeepLocalReplays = true
-MaxStoredReplays = 20
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false

@@ -36,7 +36,6 @@ namespace MimesisPlayerEnhancement
             const string Weather = "MimesisPlayerEnhancement_Weather";
             const string MimicTuning = "MimesisPlayerEnhancement_MimicTuning";
             const string Ui = "MimesisPlayerEnhancement_Ui";
-            const string Replays = "MimesisPlayerEnhancement_Replays";
 
             Float(Ui, "ModToastDurationSeconds", 1f);
             FloatRange(Ui, "FloatingDamageDurationSeconds", 1f, 3f);
@@ -116,8 +115,6 @@ namespace MimesisPlayerEnhancement
                 "PlayerVoiceResponseDelayMaxSeconds");
             Float(MimicTuning, "PlayerVoiceResponseMaxDistance", 1f);
             IntRange(MimicTuning, "PlayerVoiceResponseChancePercent", 0, 100);
-
-            Int(Replays, "MaxStoredReplays", 0);
         }
 
         internal static bool TryGet(string sectionId, string key, out ModConfigEntryBound bound)

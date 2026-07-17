@@ -59,8 +59,6 @@ On every launch the game logs into Krafton GPP over Steam (for creator codes). I
 | `BlockReplayUpload` | Sending replay files to Relu storage |
 | `BlockReplayRecording` | Creating replay files at all (prevents feedback replay attachments too) |
 
-**Note:** When `[MimesisPlayerEnhancement_Replays]` `EnableReplays` is on, `BlockReplayRecording` is bypassed so local capture can run; uploads remain controlled by `BlockReplayUpload`. See [Replays](replays.md).
-
 | `BlockCrashReports` | Unity crash report uploads |
 | `StripCrashReportMetadata` | Metadata attached to crash reports (only relevant if crash reports stay on) |
 | `BlockKraftonGppSdk` | Krafton GPP login on startup |

@@ -112,6 +112,13 @@ namespace MimesisPlayerEnhancement.Util
             }
 
             ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patch Audit"), stripped, segments);
+
+            int missed = entries.Count(e => !e.ok);
+            if (missed > 0)
+            {
+                string missedLabels = string.Join(", ", entries.Where(e => !e.ok).Select(e => e.text));
+                ModLog.Warn(feature, $"Patch audit — {missed} target(s) not patched by this feature: {missedLabels}");
+            }
         }
 
         /// <summary>

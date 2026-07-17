@@ -21,7 +21,7 @@ Most features only need to be installed on the **host** — friends can join wit
 | **Persistence** | Keep mimic voice recordings across gaming sessions | Host only |
 | **Join Anytime** | Let friends join after you've already started | Host only |
 | **User Interface** | Extended save picker, HUD overlays, toast duration | Your game only |
-| **Replays** | Keep local dungeon replays and play them back from the main menu (spectator, seek, voice) | Your game only (host records) |
+| **Privacy** | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | **Statistics** | Track deaths, kills, play time, and more per save | Host only |
 | **Web Dashboard** | Browser view for players, stats, settings, and moderation | Host only |
 | **Player Announcements** | On-screen tips for dungeon settings, bosses, and death stats | Host only |
@@ -54,9 +54,9 @@ Normally, friends have to be in the lobby before a run starts. Join Anytime lets
 
 Local presentation options: replace the vanilla New/Load Tram flow with a scrollable save picker (up to 99 manual slots), optionally expand the spectator death list beyond four players, and set how long mod toast messages stay on screen. The mod version is always shown in the main and in-game menu version text.
 
-### Replays
+### Privacy
 
-Opt-in local replay library and playback. When enabled, finished **host** dungeon runs are copied into a library on disk instead of being deleted after each shift (the game already records them internally). A **Replays** button on the main menu (below Join Tram) opens a picker to play or delete saved files. Playback uses spectator view with pause, seek, voice, and an in-game HUD. Works alongside the Privacy feature: local recording can stay on while outbound replay uploads remain blocked.
+Block automatic telemetry, replay file uploads to Relu, replay recording, Unity crash reports, crash-report metadata, and Krafton GPP SDK calls. All opt-in via `[MimesisPlayerEnhancement_Privacy]` — disabled by default.
 
 ### Statistics
 

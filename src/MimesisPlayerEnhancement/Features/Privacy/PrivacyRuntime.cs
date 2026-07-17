@@ -37,11 +37,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
         internal static bool ShouldBlockReplayRecording()
         {
-            if (ModConfig.EnableReplays.Value)
-            {
-                return false;
-            }
-
             bool block = IsPrivacyEnabled && ModConfig.BlockReplayRecording.Value;
             if (block)
             {
