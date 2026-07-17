@@ -72,5 +72,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             Phase = CustomLoadingScreenPhase.Loading;
             HoldThroughDeparture = false;
         }
+
+        internal static void ResetTransitionContext()
+        {
+            LastTransitionContext = null;
+        }
     }
 }

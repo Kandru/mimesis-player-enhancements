@@ -133,6 +133,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         /// stick — the normal <c>ReleaseDepartureHold</c> path may never run in this case.</summary>
         internal static void ForceReset()
         {
+            // Session is over — a stale DungeonStart must not leak into the next keyless Show
+            // (EnsureAppliedBeforeShow falls back to LastTransitionContext ?? FirstEnter).
+            CustomLoadingScreenSession.ResetTransitionContext();
+
             if (!CustomLoadingScreenSession.IsActive
                 && !CustomLoadingScreenSession.HoldThroughDeparture
                 && _activeLoading == null)
@@ -329,13 +333,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return CustomLoadingScreenContext.Maintenance;
             }
 
-            // Leaving the tram waiting room for anything else means a dungeon map is loading.
-            if (UnityEngine.Object.FindAnyObjectByType<InTramWaitingScene>() != null)
+            // Explicit non-gameplay destinations are never a dungeon map — e.g. returning to the
+            // main menu (CorGoBackToMainMenu) tears down the session but leaves InTramWaitingScene
+            // alive until the scene switch, which would otherwise trip the tram heuristic below.
+            if (name.Contains("MainMenu", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("Quit", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            // Leaving the tram waiting room for an unknown map means a dungeon is loading — but only
+            // while a session is actually live. Post-session LoadScene (leave/quit) must not re-apply.
+            if (IsGameSessionLive()
+                && UnityEngine.Object.FindAnyObjectByType<InTramWaitingScene>() != null)
             {
                 return CustomLoadingScreenContext.DungeonStart;
             }
 
             return null;
+        }
+
+        private static bool IsGameSessionLive()
+        {
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            return pdata != null && pdata.SessionJoined;
         }
 
         /// <summary>Called right before the loading UI's open animation. Ensures the custom art
