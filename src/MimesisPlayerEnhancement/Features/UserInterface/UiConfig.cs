@@ -76,7 +76,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenMode",
-                "Vanilla");
+                "Random");
 
             ModConfig.CustomLoadingScreenVariant = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenVariant",
@@ -282,8 +282,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             if (!ContainsIgnoreCase(ValidCustomLoadingScreenModes, value))
             {
-                logger.Warning("CustomLoadingScreenMode must be Vanilla, Random, or Specific; resetting to Vanilla.");
-                ModConfig.CustomLoadingScreenMode.Value = "Vanilla";
+                logger.Warning("CustomLoadingScreenMode must be Vanilla, Random, or Specific; resetting to Random.");
+                ModConfig.CustomLoadingScreenMode.Value = "Random";
                 return;
             }
 
