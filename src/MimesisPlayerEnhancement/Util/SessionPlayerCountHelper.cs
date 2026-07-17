@@ -34,29 +34,43 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static int ResolveFromSession()
         {
+            return TryResolveExactFromSession(out int count) ? count : VanillaPlayerBaseline;
+        }
+
+        /// <summary>Exact session roster size when available. Returns false when the session
+        /// is not ready (does not fall back to <see cref="VanillaPlayerBaseline"/>).</summary>
+        internal static bool TryResolveExactFromSession(out int playerCount)
+        {
+            playerCount = 0;
             if (Hub.s == null)
             {
-                return VanillaPlayerBaseline;
+                return false;
             }
 
             if (HubVWorldProperty?.GetValue(Hub.s) is not VWorld vworld)
             {
-                return VanillaPlayerBaseline;
+                return false;
             }
 
             if (VWorldRoomManagerProperty?.GetValue(vworld) is not VRoomManager roomManager)
             {
-                return VanillaPlayerBaseline;
+                return false;
             }
 
             try
             {
                 int count = roomManager.GetPlayerCountInSession();
-                return count > 0 ? count : VanillaPlayerBaseline;
+                if (count <= 0)
+                {
+                    return false;
+                }
+
+                playerCount = count;
+                return true;
             }
             catch
             {
-                return VanillaPlayerBaseline;
+                return false;
             }
         }
 

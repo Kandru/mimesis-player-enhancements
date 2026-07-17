@@ -65,12 +65,41 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             string theme,
             CustomLoadingScreenPhase phase)
         {
+            return ResolvePhasePresentation(context, theme, phase, allowPhaseFallback: true);
+        }
+
+        /// <summary>Wait-phase art only when the theme ships dedicated wait images
+        /// (<c>wait.png</c> / <c>wait_NN.png</c> / theme.json wait images). Does not fall back
+        /// to loading/background — callers use that to skip the wait crossfade when absent.</summary>
+        internal static CustomLoadingScreenResolvedPhase? ResolveDedicatedWaitPresentation(
+            CustomLoadingScreenContext context,
+            string theme)
+        {
+            return ResolvePhasePresentation(
+                context,
+                theme,
+                CustomLoadingScreenPhase.Wait,
+                allowPhaseFallback: false);
+        }
+
+        private static CustomLoadingScreenResolvedPhase? ResolvePhasePresentation(
+            CustomLoadingScreenContext context,
+            string theme,
+            CustomLoadingScreenPhase phase,
+            bool allowPhaseFallback)
+        {
             EnsureCatalog();
             string contextFolder = CustomLoadingScreenContextUtil.ToFolderName(context);
             CustomLoadingScreenThemeManifest? manifest = ManifestsByTheme.GetValueOrDefault(theme);
             CustomLoadingScreenPhaseManifest? phaseManifest = ResolvePhaseManifest(manifest, context, phase);
 
-            List<string> imagePaths = ResolveImagePaths(context, contextFolder, theme, phase, phaseManifest);
+            List<string> imagePaths = ResolveImagePaths(
+                context,
+                contextFolder,
+                theme,
+                phase,
+                phaseManifest,
+                allowPhaseFallback);
             if (imagePaths.Count == 0)
             {
                 return null;
@@ -266,7 +295,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             string contextFolder,
             string theme,
             CustomLoadingScreenPhase phase,
-            CustomLoadingScreenPhaseManifest? phaseManifest)
+            CustomLoadingScreenPhaseManifest? phaseManifest,
+            bool allowPhaseFallback = true)
         {
             string contextPrefix = $"{theme}/{contextFolder}/";
             if (phaseManifest?.Images is { Count: > 0 } explicitImages)
@@ -284,31 +314,28 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return primary;
             }
 
-            if (context == CustomLoadingScreenContext.DungeonStart)
+            if (!allowPhaseFallback || context != CustomLoadingScreenContext.DungeonStart)
             {
-                if (phase == CustomLoadingScreenPhase.Wait)
-                {
-                    List<string> loadingFallback = ResolveConventionPaths(
-                        context,
-                        contextPrefix,
-                        CustomLoadingScreenPhase.Loading);
-                    if (loadingFallback.Count > 0)
-                    {
-                        return loadingFallback;
-                    }
-                }
+                return [];
+            }
 
-                List<string> backgroundFallback = ResolveConventionPaths(
+            if (phase == CustomLoadingScreenPhase.Wait)
+            {
+                List<string> loadingFallback = ResolveConventionPaths(
                     context,
                     contextPrefix,
-                    CustomLoadingScreenPhase.Background);
-                if (backgroundFallback.Count > 0)
+                    CustomLoadingScreenPhase.Loading);
+                if (loadingFallback.Count > 0)
                 {
-                    return backgroundFallback;
+                    return loadingFallback;
                 }
             }
 
-            return [];
+            List<string> backgroundFallback = ResolveConventionPaths(
+                context,
+                contextPrefix,
+                CustomLoadingScreenPhase.Background);
+            return backgroundFallback.Count > 0 ? backgroundFallback : [];
         }
 
         private static List<string> ResolveConventionPaths(

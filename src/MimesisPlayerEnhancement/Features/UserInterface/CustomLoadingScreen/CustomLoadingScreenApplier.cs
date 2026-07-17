@@ -360,8 +360,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return;
             }
 
+            // Wait art is only for multiplayer lobbies — solo runs stay on loading/background.
+            if (!HasMultipleLobbyPlayers())
+            {
+                ModLog.Debug(CustomLoadingScreenConstants.Feature,
+                    "Skipping wait image — solo lobby");
+                return;
+            }
+
+            CustomLoadingScreenResolvedPhase? waitPresentation =
+                CustomLoadingScreenResolver.ResolveDedicatedWaitPresentation(
+                    CustomLoadingScreenSession.Context,
+                    CustomLoadingScreenSession.Theme);
+            if (waitPresentation == null)
+            {
+                ModLog.Debug(CustomLoadingScreenConstants.Feature,
+                    "Skipping wait image — no dedicated wait.png for theme");
+                return;
+            }
+
             CustomLoadingScreenSession.SetPhase(CustomLoadingScreenPhase.Wait);
-            ApplyPhase(loading, CustomLoadingScreenPhase.Wait);
+            ApplyPhase(loading, waitPresentation, crossfade: true);
         }
 
         internal static void RefreshMotionFromConfig()
@@ -490,19 +509,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return;
             }
 
+            ApplyPhase(loading, presentation, crossfade: false);
+        }
+
+        private static void ApplyPhase(
+            UIPrefab_Scene_Loading loading,
+            CustomLoadingScreenResolvedPhase presentation,
+            bool crossfade)
+        {
             CustomLoadingScreenOverlayAnimator animator = GetOrCreateAnimator(loading);
-            animator.Play(presentation, CustomLoadingScreenResolver.IsMotionEnabled());
+            bool motionEnabled = CustomLoadingScreenResolver.IsMotionEnabled();
+            if (crossfade)
+            {
+                animator.CrossfadeTo(
+                    presentation,
+                    motionEnabled,
+                    CustomLoadingScreenConstants.DefaultPhaseCrossfadeSeconds);
+            }
+            else
+            {
+                animator.Play(presentation, motionEnabled);
+            }
+
             animator.gameObject.SetActive(true);
             PositionOverlay(loading);
             ElevateOverlayAboveVanillaCovers(loading);
             _activeLoading = loading;
 
             ModLog.Debug(CustomLoadingScreenConstants.Feature,
-                $"Custom loading screen phase applied — phase={phase}, images={string.Join(", ", presentation.ImagePaths)}");
+                $"Custom loading screen phase applied — phase={CustomLoadingScreenSession.Phase}, crossfade={crossfade}, images={string.Join(", ", presentation.ImagePaths)}");
         }
 
-        /// <summary>Decodes the wait-phase textures up front so the loading→wait switch does not
-        /// stall or pop while the dungeon is generating.</summary>
+        private static bool HasMultipleLobbyPlayers()
+        {
+            // Prefer exact roster size — VanillaPlayerBaseline must not force wait art on solo.
+            return SessionPlayerCountHelper.TryResolveExactFromSession(out int playerCount)
+                   && playerCount > 1;
+        }
+
+        /// <summary>Decodes dedicated wait-phase textures up front so the loading→wait crossfade
+        /// does not stall while the dungeon is generating.</summary>
         private static void WarmWaitPhase(CustomLoadingScreenContext context, string theme)
         {
             if (context != CustomLoadingScreenContext.DungeonStart)
@@ -510,10 +556,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return;
             }
 
-            CustomLoadingScreenResolvedPhase? waitPhase = CustomLoadingScreenResolver.ResolvePhasePresentation(
-                context,
-                theme,
-                CustomLoadingScreenPhase.Wait);
+            CustomLoadingScreenResolvedPhase? waitPhase =
+                CustomLoadingScreenResolver.ResolveDedicatedWaitPresentation(context, theme);
             if (waitPhase != null)
             {
                 _ = CustomLoadingScreenTextureCache.TryGetTextures(waitPhase.ImagePaths);
@@ -525,9 +569,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             Transform? existing = loading.transform.Find(CustomLoadingScreenConstants.OverlayObjectName);
             if (existing != null
                 && existing.TryGetComponent(out CustomLoadingScreenOverlayAnimator cachedAnimator)
-                && TryGetOverlayImages(existing, out RawImage? cachedBackground, out RawImage? cachedContent))
+                && TryGetOverlayImages(
+                    existing,
+                    out RawImage? cachedBackground,
+                    out RawImage? cachedContent,
+                    out RawImage? cachedCrossfade))
             {
-                cachedAnimator.Initialize(cachedBackground, cachedContent);
+                cachedAnimator.Initialize(cachedBackground, cachedContent, cachedCrossfade);
                 return cachedAnimator;
             }
 
@@ -551,8 +599,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 CustomLoadingScreenConstants.OverlayImageObjectName);
             contentImage.color = Color.white;
 
+            RawImage crossfadeImage = CreateStretchRawImage(
+                overlayObject.transform,
+                CustomLoadingScreenConstants.OverlayCrossfadeObjectName);
+            crossfadeImage.color = new Color(1f, 1f, 1f, 0f);
+            crossfadeImage.gameObject.SetActive(false);
+
             CustomLoadingScreenOverlayAnimator animator = overlayObject.AddComponent<CustomLoadingScreenOverlayAnimator>();
-            animator.Initialize(backgroundImage, contentImage);
+            animator.Initialize(backgroundImage, contentImage, crossfadeImage);
             return animator;
         }
 
@@ -579,16 +633,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private static bool TryGetOverlayImages(
             Transform overlayRoot,
             out RawImage backgroundImage,
-            out RawImage contentImage)
+            out RawImage contentImage,
+            out RawImage? crossfadeImage)
         {
             backgroundImage = null!;
             contentImage = null!;
+            crossfadeImage = null;
             Transform? backgroundTransform = overlayRoot.Find(CustomLoadingScreenConstants.OverlayBackgroundObjectName);
             Transform? contentTransform = overlayRoot.Find(CustomLoadingScreenConstants.OverlayImageObjectName);
-            return backgroundTransform != null
-                   && contentTransform != null
-                   && backgroundTransform.TryGetComponent(out backgroundImage)
-                   && contentTransform.TryGetComponent(out contentImage);
+            if (backgroundTransform == null
+                || contentTransform == null
+                || !backgroundTransform.TryGetComponent(out backgroundImage)
+                || !contentTransform.TryGetComponent(out contentImage))
+            {
+                return false;
+            }
+
+            Transform? crossfadeTransform = overlayRoot.Find(CustomLoadingScreenConstants.OverlayCrossfadeObjectName);
+            if (crossfadeTransform != null)
+            {
+                _ = crossfadeTransform.TryGetComponent(out crossfadeImage);
+            }
+
+            return true;
         }
 
         private static RawImage CreateStretchRawImage(Transform parent, string objectName)

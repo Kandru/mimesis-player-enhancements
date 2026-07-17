@@ -57,8 +57,10 @@ Only dungeon entry (`DungeonStart`) has two text phases on the same overlay. Shi
 | File | Phase |
 |------|-------|
 | `loading.png` | While the dungeon generates locally |
-| `wait.png` | After generation, while waiting for all players |
-| `background.png` | Used for both phases when phase-specific files are missing |
+| `wait.png` | After generation, while waiting for other players (multiplayer only) |
+| `background.png` | Fallback when `loading.png` is missing; also used by other contexts |
+
+When the game switches to `STRING_LOADING_WAIT` and the lobby has **more than one player**, the overlay crossfades from the current loading art (`loading.png`, or `background.png` if that was the fallback) into `wait.png` when that file exists. Solo lobbies keep the loading image — `wait.png` is skipped. If a theme has no dedicated wait art, the loading image stays up for everyone.
 
 Other contexts only need `background.png`.
 

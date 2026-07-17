@@ -7,6 +7,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal const string OverlayObjectName = "MPE_CustomLoadingOverlay";
         internal const string OverlayBackgroundObjectName = "MPE_CustomLoadingBackground";
         internal const string OverlayImageObjectName = "MPE_CustomLoadingImage";
+        internal const string OverlayCrossfadeObjectName = "MPE_CustomLoadingCrossfade";
 
         internal const string WaitTextKey = "STRING_LOADING_WAIT";
 
@@ -22,6 +23,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal const float DefaultMotionCycleSeconds = 20f;
         internal const float DefaultDepartureFadeSeconds = 1f;
         internal const float DefaultArrivalFadeSeconds = 1f;
+        internal const float DefaultPhaseCrossfadeSeconds = 0.75f;
 
         /// <summary>Nested overlay canvas sort order — above the game's fade/video layers.</summary>
         internal const int OverlayCanvasSortOrder = 32000;
