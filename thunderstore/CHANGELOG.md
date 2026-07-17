@@ -2,6 +2,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.14
 - draft: change the dungeon start sound randomly
+- removed the Replay-test. It has too many bugs to be implemented currently
 
 ## 26.7.13
 - fix: FPS UI layout timing
