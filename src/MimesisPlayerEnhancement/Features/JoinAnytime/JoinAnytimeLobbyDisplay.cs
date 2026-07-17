@@ -1,5 +1,4 @@
 using System.Reflection;
-using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {

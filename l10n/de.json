@@ -67,35 +67,34 @@
         "description": "Ersetzt die Dungeon-Landes-Melodie direkt nach dem Tram-Stop-Stinger. Abfahrts- und End-of-Run-Hörner bleiben unverändert. Nur Client.",
         "options": {
           "Vanilla": "Vanilla (Spielsound)",
-          "Random": "Zufällige eingebettete Variante",
-          "Specific": "Bestimmte eingebettete Variante"
+          "Random": "Zufälliger Sound",
+          "Specific": "Bestimmter Sound"
         }
       },
       "RoundStartSoundVariant": {
         "title": "Dungeon-Landesound-Variante",
-        "description": "Eingebetteter Sound bei Modus Specific. Random wählt aus allen eingebetteten Varianten.",
-        "options": {
-          "vanilla": "Vanilla-Export",
-          "variant_01": "Variante 01",
-          "variant_02": "Variante 02"
-        }
+        "description": "Sound bei Modus „Bestimmter Sound“."
+      },
+      "RoundStartSoundRandomPool": {
+        "title": "Dungeon-Landesound-Zufallspool",
+        "description": "Nur bei Modus „Zufälliger Sound“ — welche Sounds gewürfelt werden dürfen. Leer lassen = alle Sounds. Nur Client."
       },
       "CustomLoadingScreenMode": {
         "title": "Benutzerdefinierte Ladebildschirme",
-        "description": "Ersetzt Ladeoverlay-Grafiken durch eingebettete Themes. Dungeon-Ladevorgänge können getrennte loading- und wait-Bilder aus demselben Theme-Ordner nutzen. Nur Client.",
+        "description": "Ersetzt Ladeoverlay-Grafiken durch eigene Themes. Dungeon-Ladevorgänge können getrennte loading- und wait-Bilder aus demselben Theme-Ordner nutzen. Nur Client.",
         "options": {
           "Vanilla": "Vanilla (Spielgrafik)",
-          "Random": "Zufälliges eingebettetes Theme",
-          "Specific": "Bestimmtes eingebettetes Theme"
+          "Random": "Zufälliges Theme",
+          "Specific": "Bestimmtes Theme"
         }
       },
       "CustomLoadingScreenVariant": {
         "title": "Ladebildschirm-Theme",
-        "description": "Theme-Ordner bei Modus Specific. Random wählt pro Übergang aus dem passenden Kontextordner (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch).",
-        "options": {
-          "neon": "Neon",
-          "slate": "Slate"
-        }
+        "description": "Theme-Ordner bei Modus „Bestimmtes Theme“. Muss im passenden Kontextordner existieren (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch)."
+      },
+      "CustomLoadingScreenRandomPool": {
+        "title": "Ladebildschirm-Zufallspool",
+        "description": "Nur bei Modus „Zufälliges Theme“ — welche Theme-Ordner pro Übergang gewürfelt werden dürfen. Leer lassen = alle für den Kontext verfügbaren Themes. Nur Client."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -1238,6 +1237,13 @@
     "settings_hidden": "Versteckt",
     "settings_keys_count": "{count} Schlüssel",
     "settings_loading_aria": "Einstellungen werden geladen",
+    "picker_search_placeholder": "Nach Name oder ID suchen…",
+    "picker_no_results": "Keine Treffer",
+    "picker_empty_means_all": "Leer lassen = alle erlauben",
+    "picker_selected_items": "Ausgewählte Einträge",
+    "picker_remove_item": "{label} entfernen",
+    "picker_reorder_hint": "Zum Sortieren ziehen — {label}",
+    "picker_catalog_unavailable": "Katalog nicht verfügbar — mit einer Spielsitzung verbinden, in der Spieldaten geladen sind.",
     "settings_token_placeholder": "Nach Name oder ID suchen…",
     "settings_token_remove": "{label} entfernen",
     "settings_local_badge": "Lokal",

@@ -183,8 +183,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableFpsUiInventoryNetWorth { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundVariant { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> RoundStartSoundRandomPool { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenVariant { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> CustomLoadingScreenRandomPool { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePrivacy { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> BlockReluTelemetry { get; internal set; } = null!;

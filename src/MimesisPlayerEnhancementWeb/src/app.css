@@ -1358,11 +1358,21 @@ body.dev-verify-shake {
   word-break: break-all;
 }
 
+/* overflow stays visible so picker dropdowns can extend past the card;
+   rounded corners are re-applied on the first/last inner elements below. */
 .settings-section-card {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: var(--surface);
-  overflow: hidden;
+}
+
+.settings-section-card > .settings-section-header {
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.settings-entries > .settings-entry-group:last-child,
+.settings-entries > .settings-entry-group:last-child > :last-child {
+  border-radius: 0 0 0.75rem 0.75rem;
 }
 
 .settings-section-header {
@@ -1507,6 +1517,180 @@ body.dev-verify-shake {
   margin: 0.375rem 0 0;
   font-size: 0.6875rem;
   color: var(--text-subtle);
+}
+
+.picker-root {
+  position: relative;
+  width: 100%;
+}
+
+.picker-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.picker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  padding: 0.2rem 0.25rem 0.2rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.picker-badge-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-badge-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.picker-badge-remove:hover {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand);
+}
+
+.picker-badge-reorderable {
+  cursor: grab;
+}
+
+.picker-badge-reorderable:active {
+  cursor: grabbing;
+}
+
+.picker-badge-drag-over {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.picker-badge-grip {
+  color: var(--text-muted);
+  font-size: 0.625rem;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  user-select: none;
+}
+
+.picker-input-wrap {
+  position: relative;
+}
+
+.picker-input {
+  width: 100%;
+  padding-right: 2rem;
+}
+
+.picker-chevron {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.picker-dropdown {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.dark .picker-dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.picker-dropdown-up {
+  top: auto;
+  bottom: calc(100% + 0.25rem);
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.dark .picker-dropdown-up {
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.picker-group {
+  padding: 0.375rem 0.625rem 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.picker-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.picker-option:hover,
+.picker-option-active {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+.picker-option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.picker-option-id {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.picker-empty {
+  padding: 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 
 .settings-guest-banner {

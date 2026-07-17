@@ -36,10 +36,60 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             return GetMode() switch
             {
-                CustomLoadingScreenMode.Random => themeList[RandomSource.Next(themeList.Count)],
+                CustomLoadingScreenMode.Random => ResolveRandomTheme(themeList),
                 CustomLoadingScreenMode.Specific => ResolveSpecificTheme(themeList),
                 _ => null,
             };
+        }
+
+        private static string ResolveRandomTheme(List<string> themeList)
+        {
+            List<string> filtered = FilterThemesForRandomPool(themeList);
+            return filtered[RandomSource.Next(filtered.Count)];
+        }
+
+        private static List<string> ParseRandomPool()
+        {
+            return VariantIdListParser.ParseOrdered(
+                ModConfig.CustomLoadingScreenRandomPool.Value,
+                ListVariantOptionValues(),
+                CustomLoadingScreenConstants.Feature,
+                "loading screen theme");
+        }
+
+        internal static string NormalizeRandomPoolValue(string? value)
+        {
+            return VariantIdListParser.NormalizeCsv(
+                value,
+                ListVariantOptionValues(),
+                CustomLoadingScreenConstants.Feature,
+                "loading screen theme");
+        }
+
+        private static List<string> FilterThemesForRandomPool(List<string> themeList)
+        {
+            List<string> pool = ParseRandomPool();
+            if (pool.Count == 0)
+            {
+                return themeList;
+            }
+
+            HashSet<string> poolSet = new(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < pool.Count; i++)
+            {
+                _ = poolSet.Add(pool[i]);
+            }
+
+            List<string> filtered = [];
+            for (int i = 0; i < themeList.Count; i++)
+            {
+                if (poolSet.Contains(themeList[i]))
+                {
+                    filtered.Add(themeList[i]);
+                }
+            }
+
+            return filtered.Count > 0 ? filtered : themeList;
         }
 
         internal static string? ResolveImageRelativePath(

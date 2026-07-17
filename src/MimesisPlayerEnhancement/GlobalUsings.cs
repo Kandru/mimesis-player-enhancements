@@ -5,6 +5,7 @@ global using MimesisPlayerEnhancement.Features.Players;
 global using MimesisPlayerEnhancement.Util;
 global using Mimic.Actors;
 global using ReluProtocol;
+global using Steamworks;
 global using UnityEngine.EventSystems;
 global using UnityEngine.Networking;
 global using UnityEngine.UI;

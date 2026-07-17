@@ -2,7 +2,17 @@
   import type { ConfigEntryDto, ConfigSectionDto, SettingsDto } from '$lib/types';
   import Toggle from '$lib/components/Toggle.svelte';
   import ScopeBadges from '$lib/components/ScopeBadges.svelte';
+  import SearchablePicker from '$lib/components/settings/SearchablePicker.svelte';
+  import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
+  import { parseCsv } from '$lib/listValue';
+  import {
+    buildDungeonPickerOptions,
+    buildItemPickerOptions,
+    buildVariantPickerOptions,
+    buildWeatherPresetOptions,
+    isSearchableSelectEntry,
+  } from '$lib/pickerOptions';
   import {
     entryIsModified,
     entryScopes,
@@ -66,6 +76,36 @@
   const hostReadOnlyHint = $derived(
     !editable && !featureOff && !entry.hasLocalEffect ? t('dashboard.settings_host_only_hint') : undefined,
   );
+
+  const MULTI_PICKER_KINDS = ['ItemIdList', 'DungeonIdList', 'WeatherPresetList', 'VariantIdList'];
+  const isMultiPicker = $derived(MULTI_PICKER_KINDS.includes(entry.inputKind));
+  const isSearchableSelect = $derived(isSearchableSelectEntry(entry));
+
+  const pickerOptions = $derived.by(() => {
+    switch (entry.inputKind) {
+      case 'ItemIdList':
+        return buildItemPickerOptions(dashboard.itemCatalog, t);
+      case 'DungeonIdList':
+        return buildDungeonPickerOptions(dashboard.dungeonCatalog);
+      case 'WeatherPresetList':
+        return buildWeatherPresetOptions(t);
+      default:
+        return isMultiPicker || isSearchableSelect
+          ? buildVariantPickerOptions(entry.selectOptions)
+          : [];
+    }
+  });
+
+  const listValues = $derived(isMultiPicker ? parseCsv(entry.value) : []);
+  // Item/dungeon catalogs come from live game data; without them the picker cannot offer options.
+  const catalogUnavailable = $derived(
+    (entry.inputKind === 'ItemIdList' || entry.inputKind === 'DungeonIdList')
+    && pickerOptions.length === 0,
+  );
+  const pickerDisabled = $derived(!editable || isSaving || catalogUnavailable);
+  const pickerPlaceholder = $derived(
+    entry.inputKind === 'VariantIdList' ? t('dashboard.picker_empty_means_all') : '',
+  );
 </script>
 
 <div
@@ -87,6 +127,9 @@
     {#if entry.description}
       <p class="settings-entry-desc">{entry.description}</p>
     {/if}
+    {#if catalogUnavailable}
+      <p class="settings-entry-hint">{t('dashboard.picker_catalog_unavailable')}</p>
+    {/if}
   </div>
 
   <div class="settings-entry-actions" title={hostReadOnlyHint}>
@@ -96,6 +139,25 @@
         disabled={!editable || isSaving}
         label={entry.title}
         onchange={(checked) => onsave(checked ? 'true' : 'false')}
+      />
+    {:else if isMultiPicker}
+      <SearchablePicker
+        id="{section.id}-{entry.key}"
+        multiple
+        reorderable={entry.inputKind === 'WeatherPresetList'}
+        options={pickerOptions}
+        values={listValues}
+        disabled={pickerDisabled}
+        placeholder={pickerPlaceholder}
+        onsave={onsave}
+      />
+    {:else if isSearchableSelect}
+      <SearchablePicker
+        id="{section.id}-{entry.key}"
+        options={pickerOptions}
+        value={selectValue}
+        disabled={!editable || isSaving || pickerOptions.length === 0}
+        onsave={onsave}
       />
     {:else if entry.inputKind === 'Select'}
       <select id="{section.id}-{entry.key}" class="input max-w-md" value={selectValue} disabled={!editable || isSaving} onchange={onChange}>

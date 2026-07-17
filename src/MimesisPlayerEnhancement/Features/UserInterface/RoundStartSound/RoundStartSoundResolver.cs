@@ -31,9 +31,61 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             return mode switch
             {
                 RoundStartSoundMode.Specific => ResolveSpecificVariant(variants),
-                RoundStartSoundMode.Random => variants[RandomSource.Next(variants.Count)],
+                RoundStartSoundMode.Random => ResolveRandomVariant(variants),
                 _ => null,
             };
+        }
+
+        private static List<string> ParseRandomPool()
+        {
+            return VariantIdListParser.ParseOrdered(
+                ModConfig.RoundStartSoundRandomPool.Value,
+                ListVariantOptionValues(),
+                RoundStartSoundConstants.Feature,
+                "sound variant");
+        }
+
+        internal static string NormalizeRandomPoolValue(string? value)
+        {
+            return VariantIdListParser.NormalizeCsv(
+                value,
+                ListVariantOptionValues(),
+                RoundStartSoundConstants.Feature,
+                "sound variant");
+        }
+
+        private static string ResolveRandomVariant(IReadOnlyList<string> variants)
+        {
+            List<string> pool = ParseRandomPool();
+            IReadOnlyList<string> source = FilterVariants(variants, pool);
+            return source[RandomSource.Next(source.Count)];
+        }
+
+        private static IReadOnlyList<string> FilterVariants(IReadOnlyList<string> variants, List<string> pool)
+        {
+            if (pool.Count == 0)
+            {
+                return variants;
+            }
+
+            List<string> filtered = [];
+            HashSet<string> poolSet = new(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < pool.Count; i++)
+            {
+                _ = poolSet.Add(pool[i]);
+            }
+
+            for (int i = 0; i < variants.Count; i++)
+            {
+                string fileName = variants[i];
+                string stem = Path.GetFileNameWithoutExtension(fileName);
+                if (poolSet.Contains(fileName) || poolSet.Contains(stem))
+                {
+                    filtered.Add(fileName);
+                }
+            }
+
+            return filtered.Count > 0 ? filtered : variants;
         }
 
         internal static IReadOnlyList<string> ListVariantFileNames()

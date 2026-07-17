@@ -55,6 +55,13 @@ namespace MimesisPlayerEnhancement
             }
 
             if (sectionId == UiSectionId
+                && (string.Equals(key, "RoundStartSoundRandomPool", StringComparison.Ordinal)
+                    || string.Equals(key, "CustomLoadingScreenRandomPool", StringComparison.Ordinal)))
+            {
+                return "VariantIdList";
+            }
+
+            if (sectionId == UiSectionId
                 && string.Equals(key, "RoundStartSoundVariant", StringComparison.Ordinal))
             {
                 return "Select";
@@ -77,6 +84,23 @@ namespace MimesisPlayerEnhancement
         internal static void ApplyToEntry(WebDashboardConfigEntryDto entry, string sectionId, string key)
         {
             entry.InputKind = ResolveInputKind(sectionId, key);
+
+            if (string.Equals(entry.InputKind, "VariantIdList", StringComparison.Ordinal))
+            {
+                if (sectionId == UiSectionId
+                    && string.Equals(key, "RoundStartSoundRandomPool", StringComparison.Ordinal))
+                {
+                    entry.SelectOptions = BuildRoundStartSoundVariantOptions();
+                }
+                else if (sectionId == UiSectionId
+                    && string.Equals(key, "CustomLoadingScreenRandomPool", StringComparison.Ordinal))
+                {
+                    entry.SelectOptions = BuildCustomLoadingScreenVariantOptions();
+                }
+
+                return;
+            }
+
             if (!string.Equals(entry.InputKind, "Select", StringComparison.Ordinal))
             {
                 return;
@@ -270,8 +294,10 @@ namespace MimesisPlayerEnhancement
                     ["EnableFpsUi"] = "fpsUi",
                     ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
                     ["RoundStartSoundMode"] = "roundStartSound",
+                    ["RoundStartSoundRandomPool"] = "roundStartSound",
                     ["RoundStartSoundVariant"] = "roundStartSound",
                     ["CustomLoadingScreenMode"] = "customLoadingScreen",
+                    ["CustomLoadingScreenRandomPool"] = "customLoadingScreen",
                     ["CustomLoadingScreenVariant"] = "customLoadingScreen",
                 };
             }

@@ -64,6 +64,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "RoundStartSoundVariant",
                 RoundStartSoundResolver.GetDefaultVariantOptionValue());
 
+            ModConfig.RoundStartSoundRandomPool = ModConfig.CreateTrackedEntry(_category,
+                "RoundStartSoundRandomPool",
+                "");
+
             ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenMode",
                 "Vanilla");
@@ -71,6 +75,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.CustomLoadingScreenVariant = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenVariant",
                 CustomLoadingScreenResolver.GetDefaultVariantOptionValue());
+
+            ModConfig.CustomLoadingScreenRandomPool = ModConfig.CreateTrackedEntry(_category,
+                "CustomLoadingScreenRandomPool",
+                "");
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -107,13 +115,23 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnRoundStartSoundModeChanged(logger, value));
             ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundVariantChanged(logger, value));
+            ModConfig.RoundStartSoundRandomPool.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRandomPoolChanged(ModConfig.RoundStartSoundRandomPool,
+                    RoundStartSoundResolver.NormalizeRandomPoolValue, value));
             ModConfig.CustomLoadingScreenMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCustomLoadingScreenModeChanged(logger, value));
             ModConfig.CustomLoadingScreenVariant.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCustomLoadingScreenVariantChanged(logger, value));
+            ModConfig.CustomLoadingScreenRandomPool.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRandomPoolChanged(ModConfig.CustomLoadingScreenRandomPool,
+                    CustomLoadingScreenResolver.NormalizeRandomPoolValue, value));
 
             SanitizeRoundStartSoundVariant(logger);
             SanitizeCustomLoadingScreenVariant(logger);
+            SanitizeRandomPool(ModConfig.RoundStartSoundRandomPool,
+                RoundStartSoundResolver.NormalizeRandomPoolValue);
+            SanitizeRandomPool(ModConfig.CustomLoadingScreenRandomPool,
+                CustomLoadingScreenResolver.NormalizeRandomPoolValue);
         }
 
         internal static void RegisterFloatEntries()
@@ -191,6 +209,34 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.RoundStartSoundVariant.Value = normalized;
+        }
+
+        private static void OnRandomPoolChanged(
+            MelonPreferences_Entry<string> entry,
+            Func<string?, string> normalize,
+            string value)
+        {
+            string normalized = normalize(value);
+            string current = value?.Trim() ?? "";
+            if (!string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                entry.Value = normalized;
+                return;
+            }
+
+            ModConfig.NotifyChanged(entry);
+        }
+
+        private static void SanitizeRandomPool(
+            MelonPreferences_Entry<string> entry,
+            Func<string?, string> normalize)
+        {
+            string normalized = normalize(entry.Value);
+            string current = entry.Value?.Trim() ?? "";
+            if (!string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                entry.Value = normalized;
+            }
         }
 
         private static void OnCustomLoadingScreenModeChanged(MelonLogger.Instance logger, string value)

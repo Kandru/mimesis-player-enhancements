@@ -28,12 +28,16 @@
   } = $props();
 
   const query = $derived(dashboard.headerSearchQuery.trim().toLowerCase());
+  const searchContext = $derived({
+    itemCatalog: dashboard.itemCatalog,
+    dungeonCatalog: dashboard.dungeonCatalog,
+  });
   const isGuest = $derived(!dashboard.status.isHost && dashboard.status.isConnected);
 
   const sections = $derived.by(() => {
     if (!settings) return [];
     return settings.sections.filter((section) =>
-      sectionHasVisibleEntries(section, settings, query),
+      sectionHasVisibleEntries(section, settings, query, searchContext),
     );
   });
 
@@ -45,7 +49,7 @@
 
   const activeEntryGroups = $derived.by(() => {
     if (!activeSection || !settings) return [];
-    return groupConfigEntries(activeSection, settings, query);
+    return groupConfigEntries(activeSection, settings, query, searchContext);
   });
 
   const activeSectionResettable = $derived.by(() => {
@@ -57,6 +61,7 @@
       query,
       dashboard.status.isHost,
       dashboard.status.isConnected,
+      searchContext,
     );
   });
 

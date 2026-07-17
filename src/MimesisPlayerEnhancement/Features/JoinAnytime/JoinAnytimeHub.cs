@@ -1,6 +1,5 @@
 using System.Reflection;
 using ReluNetwork.ConstEnum;
-using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {

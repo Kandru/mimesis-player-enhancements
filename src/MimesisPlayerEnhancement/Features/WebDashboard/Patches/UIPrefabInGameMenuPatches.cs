@@ -1,4 +1,3 @@
-using Steamworks;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches

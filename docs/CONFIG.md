@@ -98,8 +98,12 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
 | `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Client-only. |
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
+| `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Client-only. |
 | `CustomLoadingScreenMode` | string | `Vanilla` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon transitions can use separate `loading.png` and `wait.png` from the same theme folder. Client-only. |
-| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme subfolder under a context folder (`Dungeon`, `InTramWaiting`, `Maintenance`, `FirstEnter`, `DeathMatch`). Random mode picks per transition from the matching context. Empty or invalid values reset to the first discovered theme. |
+| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme subfolder under a context folder (`Dungeon`, `InTramWaiting`, `Maintenance`, `FirstEnter`, `DeathMatch`). Empty or invalid values reset to the first discovered theme. |
+| `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). Client-only. |
+
+List-style settings (`LootAllowlist`, `DungeonAllowlist`, `WeatherCyclePresets`, and the random pools above) use searchable multi-select pickers in the web dashboard. Values are stored as comma-separated ids, not localized labels.
 
 The mod version is always prepended to the version text on the main menu and in-game menu (not configurable).
 

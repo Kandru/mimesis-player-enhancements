@@ -1,14 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Api from '$lib/api';
+  import SearchablePicker from '$lib/components/settings/SearchablePicker.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import type { PlayerDto } from '$lib/types';
   import { t } from '$lib/i18n';
-  import {
-    defaultItemSelectionKey,
-    getItemCatalogGroups,
-    parseItemSelection,
-  } from '$lib/itemCatalogHelpers';
+  import { defaultItemSelectionKey, parseItemSelection } from '$lib/itemCatalogHelpers';
+  import { buildGiveItemPickerOptions } from '$lib/pickerOptions';
 
   let {
     open = $bindable(false),
@@ -28,10 +26,20 @@
     selectedSteamIds = [...initialRecipients];
   });
 
-  const itemCatalogGroups = $derived(getItemCatalogGroups(dashboard.itemCatalog, t));
+  const giveItemOptions = $derived(buildGiveItemPickerOptions(dashboard.itemCatalog, t));
   const canSubmit = $derived(
     !submitting && selectedSteamIds.length > 0 && !!selectionKey && dashboard.itemCatalog.length > 0,
   );
+
+  $effect(() => {
+    if (giveItemOptions.length === 0) {
+      selectionKey = '';
+      return;
+    }
+    if (!giveItemOptions.some((opt) => opt.value === selectionKey)) {
+      selectionKey = giveItemOptions[0].value;
+    }
+  });
 
   function toggleRecipient(steamId: string) {
     const key = String(steamId);
@@ -124,15 +132,16 @@
       <div class="dialog-section">
         <label class="dialog-section-label" for="give-item-select">{t('dashboard.give_item_select')}</label>
         {#if dashboard.itemCatalog.length > 0}
-          <select id="give-item-select" class="input" bind:value={selectionKey} disabled={submitting}>
-            {#each itemCatalogGroups as group (group.id)}
-              <optgroup label={group.label}>
-                {#each group.entries as entry (entry.key)}
-                  <option value={entry.key}>{entry.label}</option>
-                {/each}
-              </optgroup>
-            {/each}
-          </select>
+          <SearchablePicker
+            id="give-item-select"
+            options={giveItemOptions}
+            value={selectionKey}
+            disabled={submitting}
+            rootClass=""
+            onsave={(value) => {
+              selectionKey = value;
+            }}
+          />
         {:else}
           <p class="dialog-hint">{t('dashboard.loading')}</p>
         {/if}

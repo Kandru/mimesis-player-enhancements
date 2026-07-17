@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Reflection.Emit;
-using Steamworks;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches

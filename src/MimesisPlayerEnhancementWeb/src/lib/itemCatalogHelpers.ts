@@ -8,15 +8,6 @@ export interface ItemCatalogEntry {
   type: string;
 }
 
-const CATEGORY_ORDER = ['Consumable', 'Equipment', 'Miscellany', 'Developer'] as const;
-
-const CATEGORY_LABEL_KEYS: Record<string, string> = {
-  Consumable: 'dashboard.spawn_item_category_consumable',
-  Equipment: 'dashboard.spawn_item_category_equipment',
-  Miscellany: 'dashboard.spawn_item_category_miscellany',
-  Developer: 'dashboard.spawn_item_category_developer',
-};
-
 export function encodeItemSelection(itemId: string, percent?: number) {
   return percent != null ? `${itemId}:${percent}` : itemId;
 }
@@ -57,22 +48,6 @@ export function flattenItemCatalog(items: ItemOptionDto[]): ItemCatalogEntry[] {
   }
   return entries;
 }
-
-export function getItemCatalogGroups(
-  items: ItemOptionDto[],
-  t: (key: string, params?: Record<string, string | number>) => string,
-) {
-  const buckets: Record<string, ItemCatalogEntry[]> = {};
-  for (const entry of flattenItemCatalog(items)) {
-    (buckets[entry.type] ??= []).push(entry);
-  }
-  return CATEGORY_ORDER.filter((id) => buckets[id]?.length).map((id) => ({
-    id,
-    label: t(CATEGORY_LABEL_KEYS[id] || id),
-    entries: buckets[id],
-  }));
-}
-
 export function defaultItemSelectionKey(items: ItemOptionDto[]) {
   return flattenItemCatalog(items)[0]?.key ?? '';
 }

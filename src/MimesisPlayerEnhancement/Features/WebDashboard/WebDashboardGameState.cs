@@ -1,5 +1,4 @@
 using ReluNetwork.ConstEnum;
-using Steamworks;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {

@@ -1,5 +1,13 @@
-import type { ConfigEntryDto, ConfigSectionDto, SettingsDto } from './types';
+import type { ConfigEntryDto, ConfigSectionDto, ItemOptionDto, SettingsDto } from './types';
 import { t } from './i18n';
+import { parseCsv } from './listValue';
+import {
+  buildDungeonPickerOptions,
+  buildItemPickerOptions,
+  buildVariantPickerOptions,
+  buildWeatherPresetOptions,
+  resolvePickerLabels,
+} from './pickerOptions';
 
 export interface ConfigEntryGroup {
   id: string;
@@ -7,7 +15,48 @@ export interface ConfigEntryGroup {
   entries: ConfigEntryDto[];
 }
 
-export function settingsHaystack(entry: ConfigEntryDto, sectionTitle: string) {
+export interface SettingsSearchContext {
+  itemCatalog: ItemOptionDto[];
+  dungeonCatalog: Array<{ id: string; label: string }>;
+}
+
+function entryPickerSearchLabels(
+  entry: ConfigEntryDto,
+  searchContext?: SettingsSearchContext,
+): string[] {
+  const ids = parseCsv(entry.value);
+  if (ids.length === 0) {
+    return [];
+  }
+
+  switch (entry.inputKind) {
+    case 'ItemIdList':
+      return resolvePickerLabels(
+        buildItemPickerOptions(searchContext?.itemCatalog ?? [], t),
+        ids,
+      );
+    case 'DungeonIdList':
+      return resolvePickerLabels(
+        buildDungeonPickerOptions(searchContext?.dungeonCatalog ?? []),
+        ids,
+      );
+    case 'WeatherPresetList':
+      return resolvePickerLabels(buildWeatherPresetOptions(t), ids);
+    case 'VariantIdList':
+      return resolvePickerLabels(buildVariantPickerOptions(entry.selectOptions), ids);
+    default:
+      if (entry.inputKind === 'Select' && entry.selectOptions.length > 0) {
+        return resolvePickerLabels(buildVariantPickerOptions(entry.selectOptions), ids);
+      }
+      return [];
+  }
+}
+
+export function settingsHaystack(
+  entry: ConfigEntryDto,
+  sectionTitle: string,
+  searchContext?: SettingsSearchContext,
+) {
   return [
     entry.key,
     entry.title,
@@ -17,6 +66,7 @@ export function settingsHaystack(entry: ConfigEntryDto, sectionTitle: string) {
     entry.defaultValue,
     entry.globalValue,
     sectionTitle,
+    ...entryPickerSearchLabels(entry, searchContext),
   ].map((v) => String(v ?? '').toLowerCase());
 }
 
@@ -24,9 +74,10 @@ export function matchesSettingsQuery(
   entry: ConfigEntryDto,
   sectionTitle: string,
   query: string,
+  searchContext?: SettingsSearchContext,
 ) {
   if (!query) return true;
-  return settingsHaystack(entry, sectionTitle).some((v) => v.includes(query));
+  return settingsHaystack(entry, sectionTitle, searchContext).some((v) => v.includes(query));
 }
 
 export function featureEnabled(section: ConfigSectionDto, settings: SettingsDto | null) {
@@ -68,6 +119,7 @@ export function sectionHasVisibleEntries(
   section: ConfigSectionDto,
   settings: SettingsDto | null,
   query: string,
+  searchContext?: SettingsSearchContext,
 ) {
   const normalizedQuery = query.trim().toLowerCase();
   const titleMatches = normalizedQuery.length > 0 && (
@@ -75,7 +127,7 @@ export function sectionHasVisibleEntries(
     || (section.description?.toLowerCase().includes(normalizedQuery) ?? false)
   );
 
-  if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query)) {
+  if (section.featureToggle && matchesSettingsQuery(section.featureToggle, section.title, query, searchContext)) {
     return true;
   }
 
@@ -84,7 +136,7 @@ export function sectionHasVisibleEntries(
       return section.entries.some((e) => entryVisible(section, e, settings));
     }
     return normalizedQuery.length === 0
-      || matchesSettingsQuery(section.featureToggle, section.title, query)
+      || matchesSettingsQuery(section.featureToggle, section.title, query, searchContext)
       || titleMatches
       || section.entries.some((e) => entryVisible(section, e, settings));
   }
@@ -98,7 +150,7 @@ export function sectionHasVisibleEntries(
       return false;
     }
 
-    if (matchesSettingsQuery(e, section.title, query)) {
+    if (matchesSettingsQuery(e, section.title, query, searchContext)) {
       return true;
     }
 
@@ -134,12 +186,13 @@ export function sectionResettableEntries(
   query: string,
   isHost: boolean,
   isConnected: boolean,
+  searchContext?: SettingsSearchContext,
 ) {
   const entries: ConfigEntryDto[] = [];
   const candidates = [
     ...(section.featureToggle ? [section.featureToggle] : []),
     ...section.entries.filter(
-      (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query),
+      (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query, searchContext),
     ),
   ];
 
@@ -217,9 +270,10 @@ export function groupConfigEntries(
   section: ConfigSectionDto,
   settings: SettingsDto | null,
   query: string,
+  searchContext?: SettingsSearchContext,
 ): ConfigEntryGroup[] {
   const visible = section.entries.filter(
-    (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query),
+    (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query, searchContext),
   );
   if (visible.length === 0) {
     return [];
@@ -253,7 +307,7 @@ export function groupConfigEntries(
     const entries = (grouped.get(entry.entryGroup) ?? []).filter(
       (item) =>
         groupMatches
-        || matchesSettingsQuery(item, section.title, query),
+        || matchesSettingsQuery(item, section.title, query, searchContext),
     );
     if (entries.length === 0) {
       continue;

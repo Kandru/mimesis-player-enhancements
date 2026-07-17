@@ -1,6 +1,7 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.15
+- improvement: searchable settings picker (instead of a simple input field in settings)
 - draft: show players & minimap when joining lobby as a client (not as an host)
 - draft: show notifications on the top right instead of bottom right (webinterface)
 - draft: add the ability for custom loading screens (additionally to the dungeon start sounds, yay :D)

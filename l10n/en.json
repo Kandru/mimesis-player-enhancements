@@ -67,35 +67,34 @@
         "description": "Replace the dungeon landing melody that plays right after the tram stop sting. Departure horns and end-of-run horns are unchanged. Client-only.",
         "options": {
           "Vanilla": "Vanilla (game sound)",
-          "Random": "Random embedded variant",
-          "Specific": "Specific embedded variant"
+          "Random": "Random Sound",
+          "Specific": "Specific Sound"
         }
       },
       "RoundStartSoundVariant": {
         "title": "Dungeon Landing Sound Variant",
-        "description": "Embedded sound to play when mode is Specific. Random mode picks from all embedded variants.",
-        "options": {
-          "vanilla": "Vanilla export",
-          "variant_01": "Variant 01",
-          "variant_02": "Variant 02"
-        }
+        "description": "Sound to play when mode is Specific Sound."
+      },
+      "RoundStartSoundRandomPool": {
+        "title": "Dungeon Landing Sound Random Pool",
+        "description": "Random Sound mode only — pick which sounds can be rolled. Leave empty to allow all sounds. Client-only."
       },
       "CustomLoadingScreenMode": {
         "title": "Custom Loading Screen Mode",
-        "description": "Replace scene loading overlay art with embedded themes. Dungeon loads can use separate loading and waiting images from the same theme folder. Client-only.",
+        "description": "Replace scene loading overlay art with custom themes. Dungeon loads can use separate loading and waiting images from the same theme folder. Client-only.",
         "options": {
           "Vanilla": "Vanilla (game art)",
-          "Random": "Random embedded theme",
-          "Specific": "Specific embedded theme"
+          "Random": "Random Theme",
+          "Specific": "Specific Theme"
         }
       },
       "CustomLoadingScreenVariant": {
         "title": "Custom Loading Screen Theme",
-        "description": "Theme folder to use when mode is Specific. Random mode picks a theme per transition from the matching context folder (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch).",
-        "options": {
-          "neon": "Neon",
-          "slate": "Slate"
-        }
+        "description": "Theme folder to use when mode is Specific Theme. Must exist under the matching context folder (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch)."
+      },
+      "CustomLoadingScreenRandomPool": {
+        "title": "Custom Loading Screen Random Pool",
+        "description": "Random Theme mode only — pick which theme folders can be rolled per transition. Leave empty to allow all themes available for each context. Client-only."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -1238,6 +1237,13 @@
     "settings_hidden": "Hidden",
     "settings_keys_count": "{count} keys",
     "settings_loading_aria": "Loading settings",
+    "picker_search_placeholder": "Search by name or ID…",
+    "picker_no_results": "No matches",
+    "picker_empty_means_all": "Leave empty to allow all",
+    "picker_selected_items": "Selected items",
+    "picker_remove_item": "Remove {label}",
+    "picker_reorder_hint": "Drag to reorder — {label}",
+    "picker_catalog_unavailable": "Catalog unavailable — connect to a game session with loaded data.",
     "settings_token_placeholder": "Search by name or ID…",
     "settings_token_remove": "Remove {label}",
     "settings_local_badge": "Local",

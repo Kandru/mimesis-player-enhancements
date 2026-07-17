@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using MelonLoader;
 using ReluNetwork.ConstEnum;
-using Steamworks;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
