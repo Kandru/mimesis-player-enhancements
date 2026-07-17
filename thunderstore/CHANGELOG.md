@@ -1,6 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.15
+Help needed! If you're talented with graphics / sounds: I want to extend the loading screens / custom sounds feature :) hit me up via an Github Issue if you can help - preferredly no AI generated stuff
+
 - improvement: searchable settings picker (instead of a simple input field in settings)
 - improvement: the custom dungeon landing sound is at 80% volume per default now
 - fix: dungeon loot-multiplicator errored when allowlist/denylist was empty but selected
