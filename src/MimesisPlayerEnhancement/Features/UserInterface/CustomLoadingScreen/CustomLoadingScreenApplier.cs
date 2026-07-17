@@ -162,7 +162,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             return Hub.Main switch
             {
-                InTramWaitingScene => destination == TramLeverDestination.ToMaintenance
+                InTramWaitingScene tram => IsTramMaintenanceDeparture(tram, destination)
                     ? CustomLoadingScreenContext.Maintenance
                     : CustomLoadingScreenContext.DungeonStart,
                 GamePlayScene => CustomLoadingScreenContext.DungeonEnd,
@@ -175,7 +175,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         {
             return Hub.Main switch
             {
-                InTramWaitingScene tram => IsTramSessionEnd(tram)
+                InTramWaitingScene tram => IsTramMaintenanceDeparture(tram)
                     ? CustomLoadingScreenContext.Maintenance
                     : CustomLoadingScreenContext.DungeonStart,
                 GamePlayScene => CustomLoadingScreenContext.DungeonEnd,
@@ -186,6 +186,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         private static bool IsTramSessionEnd(InTramWaitingScene tram) =>
             EndSessionSigField?.GetValue(tram) != null;
+
+        /// <summary>Matches tram lever UI: maintenance when the maintenance map slot is selected
+        /// (<c>dungeonIndex == 2</c>), session end is signaled, or the lever destination is set.</summary>
+        private static bool IsTramMaintenanceDeparture(
+            InTramWaitingScene tram,
+            TramLeverDestination? leverDestination = null)
+        {
+            if (IsTramSessionEnd(tram))
+            {
+                return true;
+            }
+
+            if (tram.GetDungeonIndex() == 2)
+            {
+                return true;
+            }
+
+            if (leverDestination == TramLeverDestination.ToMaintenance)
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         private static void ApplyPredictedContext(
             CustomLoadingScreenContext context,
@@ -216,6 +240,34 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             if (CustomLoadingScreenSession.IsActive)
             {
+                if (!holdThroughDeparture)
+                {
+                    return;
+                }
+
+                UIPrefab_Scene_Loading? activeLoading = ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
+                if (activeLoading == null)
+                {
+                    return;
+                }
+
+                string? switchTheme = CustomLoadingScreenResolver.ResolveThemeForContext(context);
+                if (string.IsNullOrWhiteSpace(switchTheme))
+                {
+                    return;
+                }
+
+                CustomLoadingScreenContext previousContext = CustomLoadingScreenSession.Context;
+                ModLog.Debug(CustomLoadingScreenConstants.Feature,
+                    $"Custom loading screen context corrected — {previousContext} -> {context}, {logDetail}");
+
+                ApplyPredictedContextToLoading(
+                    activeLoading,
+                    context,
+                    switchTheme,
+                    holdThroughDeparture,
+                    fadeIn: false,
+                    logDetail);
                 return;
             }
 
@@ -231,6 +283,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return;
             }
 
+            ApplyPredictedContextToLoading(loading, context, theme, holdThroughDeparture, fadeIn, logDetail);
+        }
+
+        private static void ApplyPredictedContextToLoading(
+            UIPrefab_Scene_Loading loading,
+            CustomLoadingScreenContext context,
+            string theme,
+            bool holdThroughDeparture,
+            bool fadeIn,
+            string logDetail)
+        {
             CustomLoadingScreenSession.Begin(context, theme, holdThroughDeparture);
             CustomLoadingScreenSession.TrackTransition(context);
             HideVanillaVariants(loading);
