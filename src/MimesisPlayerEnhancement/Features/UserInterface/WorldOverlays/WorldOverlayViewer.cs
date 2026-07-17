@@ -1,11 +1,23 @@
+using System.Reflection;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     internal static class WorldOverlayViewer
     {
+        private const BindingFlags InstanceFlags =
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private static readonly FieldInfo? HubCameramanField =
+            typeof(Hub).GetField("cameraman", InstanceFlags);
+
         internal static Vector3? TryGetWorldPosition()
         {
+            if (TryGetSpectatorTargetPosition(out Vector3 spectatorPosition))
+            {
+                return spectatorPosition;
+            }
+
             GameMainBase? main = Hub.Main;
             ProtoActor? avatar = main?.GetMyAvatar();
             if (avatar != null)
@@ -52,6 +64,28 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             {
                 target.rotation = Quaternion.LookRotation(lookDirection);
             }
+        }
+
+        private static bool TryGetSpectatorTargetPosition(out Vector3 position)
+        {
+            position = default;
+            if (Hub.s == null || HubCameramanField == null)
+            {
+                return false;
+            }
+
+            if (HubCameramanField.GetValue(Hub.s) is not CameraManager cameraman)
+            {
+                return false;
+            }
+
+            if (!cameraman.TryGetCurrentSpectatorTarget(out ProtoActor? target) || target == null)
+            {
+                return false;
+            }
+
+            position = target.transform.position;
+            return true;
         }
     }
 }
