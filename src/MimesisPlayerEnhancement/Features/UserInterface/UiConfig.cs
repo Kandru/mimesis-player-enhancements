@@ -1,4 +1,5 @@
 using MelonLoader;
+using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -33,6 +34,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.EnableExtendedSpectatorPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedSpectatorPlayerList",
                 true);
+
+            ModConfig.EnableLoadingWaitPlayerList = ModConfig.CreateTrackedEntry(_category,
+                "EnableLoadingWaitPlayerList",
+                false);
 
             ModConfig.EnableExtendedInGameMenuPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedInGameMenuPlayerList",
@@ -108,6 +113,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedSaveSlots));
             ModConfig.EnableExtendedSpectatorPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedSpectatorPlayerList));
+            ModConfig.EnableLoadingWaitPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
+            {
+                LoadingWaitPlayerListRuntime.RefreshFromConfig();
+                ModConfig.NotifyChanged(ModConfig.EnableLoadingWaitPlayerList);
+            });
             ModConfig.EnableExtendedInGameMenuPlayerList.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableExtendedInGameMenuPlayerList));
 

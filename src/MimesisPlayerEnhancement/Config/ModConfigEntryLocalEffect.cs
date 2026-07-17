@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "ModToastDurationSeconds"),
                 (UiConfig.SectionId, "EnableExtendedSaveSlots"),
                 (UiConfig.SectionId, "EnableExtendedSpectatorPlayerList"),
+                (UiConfig.SectionId, "EnableLoadingWaitPlayerList"),
                 (UiConfig.SectionId, "EnableExtendedInGameMenuPlayerList"),
                 (UiConfig.SectionId, "EnableDamageHealthGlow"),
                 (UiConfig.SectionId, "EnableFloatingDamageNumbers"),

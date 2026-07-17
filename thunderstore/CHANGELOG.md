@@ -6,6 +6,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: client player list should show players regardless whether one does host or join a lobby
 - fix: damage overlays not showing while spectating
 - fix: stop possessed mimic voice instantly (to avoid talking over the archive voices of a mimic)
+- draft: list player names during loading scene when waiting for other players to join
 
 ## 26.7.16
 Ooops.. quick bug fix relase for 26.7.15 (crashes sometimes when loading savegame). How did I miss that?

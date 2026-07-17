@@ -536,6 +536,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             }
 
             CustomLoadingScreenSession.BeginDismiss();
+            LoadingWaitPlayerList.LoadingWaitPlayerListRuntime.OnLoadingDismissStarted();
             HideLoadingChromeExceptOverlay(target);
             ElevateOverlayAboveVanillaCovers(target);
             float duration = ResolveArrivalFadeSeconds();
@@ -574,6 +575,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         private static void FinishDismiss(UIPrefab_Scene_Loading? loading)
         {
+            LoadingWaitPlayerList.LoadingWaitPlayerListRuntime.HideImmediate();
             CustomLoadingScreenSession.Clear();
             _activeLoading = null;
             if (loading == null)

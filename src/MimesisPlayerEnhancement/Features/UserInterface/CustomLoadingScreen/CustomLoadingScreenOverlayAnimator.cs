@@ -421,6 +421,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private void ApplyFadeAlpha(float alpha)
         {
             _overlayAlpha = alpha;
+            LoadingWaitPlayerList.LoadingWaitPlayerListRuntime.ApplyOverlayAlpha(alpha);
 
             Color background = _backgroundOpaque;
             background.a = alpha;

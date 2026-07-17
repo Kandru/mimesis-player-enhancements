@@ -12,6 +12,10 @@ Local presentation options that do not require other players to install the mod.
 
 `EnableExtendedSpectatorPlayerList` replaces the four-player spectator death list with a two-column layout that scales to screen height. Living players are shown first, then dead; each group is sorted alphabetically. Independent of More Players.
 
+## Loading wait player list
+
+`EnableLoadingWaitPlayerList` shows a spectator-style roster on the scene loading screen while the game waits for other players (`STRING_LOADING_WAIT`) in multiplayer. Loaded players are shown in white; players still loading are red. The list includes the vanilla microphone animation when voice chat is active, and fades out with the custom loading screen overlay.
+
 ## In-game menu player list
 
 `EnableExtendedInGameMenuPlayerList` shows the ESC menu player list in a right-side overlay (join code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls.

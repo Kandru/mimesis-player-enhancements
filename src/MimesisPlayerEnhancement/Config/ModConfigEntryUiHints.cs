@@ -290,6 +290,7 @@ namespace MimesisPlayerEnhancement
                     ["ModToastDurationSeconds"] = "modToasts",
                     ["EnableExtendedSaveSlots"] = "extendedSaveSlots",
                     ["EnableExtendedSpectatorPlayerList"] = "extendedSpectatorList",
+                    ["EnableLoadingWaitPlayerList"] = "customLoadingScreen",
                     ["EnableExtendedInGameMenuPlayerList"] = "extendedInGameMenuPlayerList",
                     ["EnableDamageHealthGlow"] = "damageHealthGlow",
                     ["EnableFloatingDamageNumbers"] = "floatingDamage",
