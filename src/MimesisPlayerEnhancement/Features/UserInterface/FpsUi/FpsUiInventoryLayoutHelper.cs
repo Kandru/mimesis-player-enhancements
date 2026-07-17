@@ -26,14 +26,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static readonly PropertyInfo? InvenFrame4Property =
             AccessTools.Property(typeof(UIPrefab_Inventory), "UE_InvenFrame4");
 
+        private static readonly string[] HotbarFrameNames =
+        [
+            "InvenFrame1",
+            "InvenFrame2",
+            "InvenFrame3",
+            "InvenFrame4",
+        ];
+
+        private const float WeightOnlyRowGapPixels = 1f;
+
         internal static UIPrefab_Inventory? TryGetInventoryUi()
         {
-            if (Hub.Main == null || InventoryUiField == null)
+            if (Hub.Main != null && InventoryUiField != null)
             {
-                return null;
+                if (InventoryUiField.GetValue(Hub.Main) is UIPrefab_Inventory inventoryUi)
+                {
+                    return inventoryUi;
+                }
             }
 
-            return InventoryUiField.GetValue(Hub.Main) as UIPrefab_Inventory;
+            UIPrefab_Inventory[] inventoryUis =
+                UnityEngine.Object.FindObjectsByType<UIPrefab_Inventory>(FindObjectsSortMode.None);
+            return inventoryUis.Length > 0 ? inventoryUis[0] : null;
         }
 
         internal static UIPrefab_InGame? TryGetIngameUi()
@@ -79,19 +94,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         /// </summary>
         internal static Component? TryGetWeightText(UIPrefab_Inventory? inventoryUi)
         {
-            if (inventoryUi == null || WeightTextProperty == null)
+            if (inventoryUi == null)
             {
                 return null;
             }
 
-            try
+            if (WeightTextProperty != null)
             {
-                return WeightTextProperty.GetValue(inventoryUi) as Component;
+                try
+                {
+                    if (WeightTextProperty.GetValue(inventoryUi) is Component fromProperty)
+                    {
+                        return fromProperty;
+                    }
+                }
+                catch (TargetInvocationException)
+                {
+                }
             }
-            catch (TargetInvocationException)
+
+            return FindWeightTextInHierarchy(inventoryUi.transform);
+        }
+
+        private static Component? FindWeightTextInHierarchy(Transform root)
+        {
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
             {
-                return null;
+                string name = child.name.Replace(' ', '_');
+                if (!name.Equals("Weight", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                Component? text = ModUiText.FindTextComponent(child.gameObject);
+                if (text != null)
+                {
+                    return text;
+                }
             }
+
+            return null;
         }
 
         internal static bool IsInventoryReady()
@@ -149,21 +191,73 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
-            if (!TryMeasureInventoryChromeBounds(strip, sourceRow, out float frameMinY, out float frameMaxY))
+            if (!TryMeasureInventoryChromeBounds(
+                    strip,
+                    sourceRow,
+                    out float frameMinY,
+                    out float frameMaxY,
+                    out bool measuredHotbar))
             {
                 return false;
             }
+
+            float rowHeight = Mathf.Max(rowMaxY - rowMinY, sourceRow.rect.height, 1f);
+            float placedMinY;
+            float placedMaxY;
+            if (measuredHotbar)
+            {
+                float bottomPadding = rowMinY - frameMinY;
+                placedMaxY = frameMaxY - Mathf.Max(bottomPadding, 0f) + topNudgePixels;
+                placedMinY = placedMaxY - rowHeight;
+            }
+            else
+            {
+                placedMinY = rowMaxY + WeightOnlyRowGapPixels + topNudgePixels;
+                placedMaxY = placedMinY + rowHeight;
+            }
+
+            ApplyRowPlacement(
+                strip,
+                sourceRow,
+                target,
+                rowMinX,
+                rowMaxX,
+                placedMinY,
+                placedMaxY);
+
+            // Mirror math can overlap the kg row when frame bounds are tight; stack above instead.
+            if (!IsRowAboveRow(strip, target, sourceRow))
+            {
+                placedMinY = rowMaxY + WeightOnlyRowGapPixels + topNudgePixels;
+                placedMaxY = placedMinY + rowHeight;
+                ApplyRowPlacement(
+                    strip,
+                    sourceRow,
+                    target,
+                    rowMinX,
+                    rowMaxX,
+                    placedMinY,
+                    placedMaxY);
+            }
+
+            return true;
+        }
+
+        private static void ApplyRowPlacement(
+            RectTransform strip,
+            RectTransform sourceRow,
+            RectTransform target,
+            float rowMinX,
+            float rowMaxX,
+            float placedMinY,
+            float placedMaxY)
+        {
+            Rect stripRect = strip.rect;
 
             if (target.parent != strip)
             {
                 target.SetParent(strip, worldPositionStays: false);
             }
-
-            float rowHeight = Mathf.Max(rowMaxY - rowMinY, sourceRow.rect.height, 1f);
-            float bottomPadding = rowMinY - frameMinY;
-            float placedMaxY = frameMaxY - Mathf.Max(bottomPadding, 0f) + topNudgePixels;
-            float placedMinY = placedMaxY - rowHeight;
-            Rect stripRect = strip.rect;
 
             target.localScale = Vector3.one;
             target.anchorMin = Vector2.zero;
@@ -175,14 +269,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             target.offsetMax = new Vector2(rowMaxX - stripRect.xMin, placedMaxY - stripRect.yMin);
             IgnoreLayoutDrivers(target.gameObject);
             target.SetAsLastSibling();
-
-            Component? weightText = TryGetWeightText(TryGetInventoryUi());
-            if (weightText?.transform is RectTransform weightRect)
-            {
-                return IsRowAboveRow(strip, target, weightRect);
-            }
-
-            return true;
         }
 
         internal static void IgnoreLayoutDrivers(GameObject root)
@@ -216,41 +302,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             RectTransform strip,
             RectTransform sourceRow,
             out float frameMinY,
-            out float frameMaxY)
+            out float frameMaxY,
+            out bool measuredHotbar)
         {
             frameMinY = float.PositiveInfinity;
             frameMaxY = float.NegativeInfinity;
-            bool measuredHotbar = false;
+            measuredHotbar = false;
 
             UIPrefab_Inventory? inventoryUi = TryGetInventoryUi();
             if (inventoryUi != null)
             {
-                foreach (PropertyInfo? frameProperty in new[]
-                         {
-                             InvenFrame1Property,
-                             InvenFrame2Property,
-                             InvenFrame3Property,
-                             InvenFrame4Property,
-                         })
-                {
-                    if (frameProperty?.GetValue(inventoryUi) is not Image frameImage)
-                    {
-                        continue;
-                    }
-
-                    RectTransform frameRect = frameImage.rectTransform;
-                    if (!TryMeasureBoundsInParent(strip, frameRect, out float _, out float _, out float minY, out float maxY))
-                    {
-                        continue;
-                    }
-
-                    frameMinY = Mathf.Min(frameMinY, minY);
-                    frameMaxY = Mathf.Max(frameMaxY, maxY);
-                    measuredHotbar = true;
-                }
+                AccumulateHotbarFrameBounds(inventoryUi, strip, ref frameMinY, ref frameMaxY, ref measuredHotbar);
             }
 
-            if (!TryMeasureBoundsInParent(strip, sourceRow, out float _, out float _, out float rowMinY, out float _))
+            if (!TryMeasureBoundsInParent(strip, sourceRow, out float _, out float _, out float rowMinY, out float rowMaxY))
             {
                 return measuredHotbar;
             }
@@ -263,10 +328,87 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             else
             {
                 frameMinY = rowMinY;
-                frameMaxY = rowMinY;
+                frameMaxY = rowMaxY;
             }
 
             return frameMaxY > frameMinY;
+        }
+
+        private static void AccumulateHotbarFrameBounds(
+            UIPrefab_Inventory inventoryUi,
+            RectTransform strip,
+            ref float frameMinY,
+            ref float frameMaxY,
+            ref bool measuredHotbar)
+        {
+            foreach (PropertyInfo? frameProperty in new[]
+                     {
+                         InvenFrame1Property,
+                         InvenFrame2Property,
+                         InvenFrame3Property,
+                         InvenFrame4Property,
+                     })
+            {
+                if (!TryGetFrameImage(inventoryUi, frameProperty, out Image? frameImage)
+                    || frameImage == null)
+                {
+                    continue;
+                }
+
+                AccumulateFrameBounds(strip, frameImage.rectTransform, ref frameMinY, ref frameMaxY, ref measuredHotbar);
+            }
+
+            if (measuredHotbar)
+            {
+                return;
+            }
+
+            foreach (Transform child in inventoryUi.transform.GetComponentsInChildren<Transform>(true))
+            {
+                string name = child.name.Replace(' ', '_');
+                if (!IsHotbarFrameName(name))
+                {
+                    continue;
+                }
+
+                Image? frameImage = child.GetComponent<Image>();
+                if (frameImage == null)
+                {
+                    continue;
+                }
+
+                AccumulateFrameBounds(strip, frameImage.rectTransform, ref frameMinY, ref frameMaxY, ref measuredHotbar);
+            }
+        }
+
+        private static void AccumulateFrameBounds(
+            RectTransform strip,
+            RectTransform frameRect,
+            ref float frameMinY,
+            ref float frameMaxY,
+            ref bool measuredHotbar)
+        {
+            if (!TryMeasureBoundsInParent(strip, frameRect, out float _, out float _, out float minY, out float maxY))
+            {
+                return;
+            }
+
+            frameMinY = Mathf.Min(frameMinY, minY);
+            frameMaxY = Mathf.Max(frameMaxY, maxY);
+            measuredHotbar = true;
+        }
+
+        private static bool IsHotbarFrameName(string name)
+        {
+            foreach (string frameName in HotbarFrameNames)
+            {
+                if (name.Equals(frameName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal static bool TryMeasureBoundsInParent(
@@ -314,6 +456,28 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             return null;
+        }
+
+        private static bool TryGetFrameImage(
+            UIPrefab_Inventory inventoryUi,
+            PropertyInfo? frameProperty,
+            out Image? frameImage)
+        {
+            frameImage = null;
+            if (frameProperty == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                frameImage = frameProperty.GetValue(inventoryUi) as Image;
+                return frameImage != null;
+            }
+            catch (TargetInvocationException)
+            {
+                return false;
+            }
         }
     }
 }

@@ -15,6 +15,8 @@ namespace MimesisPlayerEnhancement
         private float _nextLocaleRefreshTime;
         private bool _isInitializing;
         private static bool _globalConfigFlushed;
+        private readonly object _pendingSyncLock = new();
+        private ModConfigChangeInfo? _pendingSyncFromConfig;
 
         public override void OnInitializeMelon()
         {
@@ -84,6 +86,8 @@ namespace MimesisPlayerEnhancement
 
         public override void OnUpdate()
         {
+            FlushDeferredSyncFromConfig();
+
             foreach (FeatureModule module in FeatureModules.All)
             {
                 if (module.ThrottledUpdate)
@@ -174,6 +178,81 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            if (!GameLocaleAccess.IsMainThread)
+            {
+                QueueDeferredSyncFromConfig(change);
+                return;
+            }
+
+            ApplySyncFromConfig(change);
+        }
+
+        private void QueueDeferredSyncFromConfig(ModConfigChangeInfo change)
+        {
+            lock (_pendingSyncLock)
+            {
+                _pendingSyncFromConfig = CoalescePendingSync(_pendingSyncFromConfig, change);
+            }
+        }
+
+        private void FlushDeferredSyncFromConfig()
+        {
+            ModConfigChangeInfo? pending;
+            lock (_pendingSyncLock)
+            {
+                pending = _pendingSyncFromConfig;
+                _pendingSyncFromConfig = null;
+            }
+
+            if (pending != null)
+            {
+                ApplySyncFromConfig(pending);
+            }
+        }
+
+        private static ModConfigChangeInfo CoalescePendingSync(
+            ModConfigChangeInfo? pending,
+            ModConfigChangeInfo incoming)
+        {
+            if (pending == null)
+            {
+                return incoming;
+            }
+
+            if (pending.IsFullReload || incoming.IsFullReload)
+            {
+                return ModConfigChangeInfo.FullReload;
+            }
+
+            List<ModConfigKeyChange> merged = [];
+            HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+
+            void AddKey(ModConfigKeyChange keyChange)
+            {
+                string id = $"{keyChange.SectionId}\0{keyChange.Key}";
+                if (!seen.Add(id))
+                {
+                    return;
+                }
+
+                merged.Add(keyChange);
+            }
+
+            foreach (ModConfigKeyChange keyChange in pending.ChangedKeys)
+            {
+                AddKey(keyChange);
+            }
+
+            foreach (ModConfigKeyChange keyChange in incoming.ChangedKeys)
+            {
+                AddKey(keyChange);
+            }
+
+            return new ModConfigChangeInfo { ChangedKeys = merged };
+        }
+
+        private void ApplySyncFromConfig(ModConfigChangeInfo change)
+        {
             SceneScopedConfigGate.OnConfigChangePrepared(change);
 
             HashSet<string>? affectedModules = change.IsFullReload

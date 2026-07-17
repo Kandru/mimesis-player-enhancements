@@ -50,7 +50,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
         internal static void OnUpdate()
         {
-            if (!IsEnabled() || !_active)
+            if (!IsEnabled())
+            {
+                if (_active || _labelRoot != null)
+                {
+                    OnSessionEnded();
+                }
+
+                return;
+            }
+
+            if (!_active)
             {
                 return;
             }
@@ -77,14 +87,32 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            if (FpsUiInventoryLayoutHelper.IsInventoryVisible())
+            _active = true;
+            TryRefreshInventoryValue();
+            Activate();
+        }
+
+        private static void TryRefreshInventoryValue()
+        {
+            ProtoActor? avatar = Hub.Main?.GetMyAvatar();
+            UIPrefab_Inventory? inventoryUi = FpsUiInventoryLayoutHelper.TryGetInventoryUi();
+            if (avatar == null || inventoryUi == null)
             {
-                NotifyInventoryShown();
+                return;
             }
+
+            inventoryUi.UpdateSlot(
+                avatar.GetInventoryItems(),
+                avatar.GetSelectedInventorySlotIndex());
         }
 
         private static void Activate()
         {
+            if (!IsEnabled())
+            {
+                return;
+            }
+
             if (!FpsUiInventoryLayoutHelper.IsInventoryVisible())
             {
                 _labelRoot?.SetActive(false);
@@ -99,7 +127,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             if (!RefreshLayout())
             {
                 _labelRoot?.SetActive(false);
-                ReleaseWidget(preserveTotals: true);
                 return;
             }
 
