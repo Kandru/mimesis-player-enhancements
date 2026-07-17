@@ -1,5 +1,4 @@
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
-using ReluProtocol.Enum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -19,28 +18,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return markers;
                 }
 
-                Dictionary<int, ProtoActor>? map = main.GetProtoActorMap();
-                if (map == null)
-                {
-                    return markers;
-                }
-
+                WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
                 DungeonRoom? dungeonRoom = JoinAnytimeRoomTools.GetActiveDungeonRoom() as DungeonRoom;
 
-                List<ProtoActor?> actors = [.. map.Values];
-                foreach (ProtoActor? actor in actors)
+                foreach (WebDashboardLivePlayer entry in roster.Enumerate())
                 {
-                    if (actor == null || actor.ActorType != ActorType.Player)
-                    {
-                        continue;
-                    }
-
-                    ulong steamId = StatisticsTracker.TryResolveSteamId(actor);
-                    if (steamId == 0)
-                    {
-                        continue;
-                    }
-
+                    ProtoActor actor = entry.Actor;
+                    ulong steamId = entry.SteamId;
                     Transform transform = actor.transform;
                     float worldY = transform.position.y;
                     float x;
@@ -95,7 +79,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         TileId = tileId,
                         FloorIndex = floorIndex,
                         IsAlive = !actor.dead,
-                        IsHost = WebDashboardGameState.IsHost() && LocalPlayerHelper.IsLocalSteamId(steamId),
+                        IsHost = actor.IsHost,
                         IsLocal = LocalPlayerHelper.IsLocalSteamId(steamId),
                     });
                 }

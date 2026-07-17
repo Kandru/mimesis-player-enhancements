@@ -1,7 +1,6 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
-using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -13,22 +12,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
             Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
-            ProtoActorLookup actorLookup = ProtoActorLookup.Capture();
+            WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
 
-            if (sessionManager != null)
+            foreach (WebDashboardLivePlayer entry in roster.Enumerate())
             {
-                foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+                SessionContext? context = FindSessionContext(sessionManager, entry.SteamId, entry.PlayerUid);
+                WebDashboardPlayerDto? dto = BuildLivePlayerDto(
+                    entry.Actor,
+                    entry.SteamId,
+                    entry.PlayerUid,
+                    sessionManager,
+                    context,
+                    localSteamId,
+                    nameCache,
+                    roster);
+                if (dto != null)
                 {
-                    WebDashboardPlayerDto? dto = TryBuildPlayerDto(
-                        context,
-                        sessionManager,
-                        localSteamId,
-                        nameCache,
-                        actorLookup);
-                    if (dto != null)
-                    {
-                        playersBySteam[dto.SteamId] = dto;
-                    }
+                    playersBySteam[dto.SteamId] = dto;
                 }
             }
 
@@ -46,7 +46,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         sessionManager,
                         localSteamId,
                         nameCache,
-                        actorLookup);
+                        roster);
                     if (fallback != null)
                     {
                         playersBySteam[steamId] = fallback;
@@ -61,7 +61,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     sessionManager,
                     localSteamId,
                     nameCache,
-                    actorLookup,
+                    roster,
                     forceHost: true);
                 if (hostFallback != null)
                 {
@@ -83,7 +83,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         sessionManager,
                         localSteamId,
                         nameCache,
-                        actorLookup);
+                        roster);
                     if (bannedOffline != null)
                     {
                         bannedOffline.IsBanned = true;
@@ -95,141 +95,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
             WebDashboardPlayerListMerger.SortPlayers(players);
             return players;
-        }
-
-        private readonly struct ProtoActorLookup
-        {
-            private readonly Dictionary<long, ProtoActor> _byUid;
-            private readonly Dictionary<ulong, ProtoActor> _bySteamId;
-
-            private ProtoActorLookup(
-                Dictionary<long, ProtoActor> byUid,
-                Dictionary<ulong, ProtoActor> bySteamId)
-            {
-                _byUid = byUid;
-                _bySteamId = bySteamId;
-            }
-
-            internal static ProtoActorLookup Capture()
-            {
-                Dictionary<long, ProtoActor> byUid = [];
-                Dictionary<ulong, ProtoActor> bySteamId = [];
-                try
-                {
-                    Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-                    GameMainBase? main = pdata?.main;
-                    Dictionary<int, ProtoActor>? map = main?.GetProtoActorMap();
-                    if (map == null)
-                    {
-                        return new ProtoActorLookup(byUid, bySteamId);
-                    }
-
-                    foreach (ProtoActor? actor in map.Values)
-                    {
-                        if (actor == null || actor.ActorType != ActorType.Player)
-                        {
-                            continue;
-                        }
-
-                        if (actor.UID != 0)
-                        {
-                            byUid[actor.UID] = actor;
-                        }
-
-                        if (StatisticsTracker.TryResolveSteamId(actor) is ulong steamId && steamId != 0)
-                        {
-                            bySteamId[steamId] = actor;
-                        }
-                    }
-                }
-                catch
-                {
-                    /* scene may be transitioning */
-                }
-
-                return new ProtoActorLookup(byUid, bySteamId);
-            }
-
-            internal bool TryGetByUid(long playerUid, out ProtoActor actor)
-            {
-                return _byUid.TryGetValue(playerUid, out actor!);
-            }
-
-            internal bool TryGetBySteamId(ulong steamId, out ProtoActor actor)
-            {
-                return _bySteamId.TryGetValue(steamId, out actor!);
-            }
-
-            internal string? ResolveNickName(long playerUid, ulong steamId)
-            {
-                if (playerUid != 0 && TryGetByUid(playerUid, out ProtoActor actor) && IsUsableNick(actor.nickName))
-                {
-                    return actor.nickName;
-                }
-
-                if (steamId != 0 && TryGetBySteamId(steamId, out actor) && IsUsableNick(actor.nickName))
-                {
-                    return actor.nickName;
-                }
-
-                return null;
-            }
-
-            internal bool TryGetAlive(long playerUid, ulong steamId, out bool isAlive)
-            {
-                isAlive = true;
-                if (playerUid != 0 && TryGetByUid(playerUid, out ProtoActor actor))
-                {
-                    isAlive = !actor.dead;
-                    return true;
-                }
-
-                if (steamId != 0 && TryGetBySteamId(steamId, out actor))
-                {
-                    isAlive = !actor.dead;
-                    return true;
-                }
-
-                return false;
-            }
-
-            internal bool TryGetVitals(
-                long playerUid,
-                ulong steamId,
-                out long health,
-                out long maxHealth,
-                out double toxicPercent)
-            {
-                health = 0;
-                maxHealth = 0;
-                toxicPercent = 0;
-                ProtoActor? actor = null;
-                if (playerUid != 0 && TryGetByUid(playerUid, out ProtoActor byUid))
-                {
-                    actor = byUid;
-                }
-                else if (steamId != 0 && TryGetBySteamId(steamId, out ProtoActor bySteam))
-                {
-                    actor = bySteam;
-                }
-
-                if (actor == null)
-                {
-                    return false;
-                }
-
-                health = actor.netSyncActorData.hp;
-                maxHealth = actor.netSyncActorData.maxHP;
-                long conta = actor.netSyncActorData.conta;
-                long maxConta = actor.netSyncActorData.maxConta;
-                toxicPercent = ComputeVitalPercent(conta, maxConta) ?? 0;
-                return true;
-            }
-
-            private static bool IsUsableNick(string? nickName)
-            {
-                return !string.IsNullOrWhiteSpace(nickName);
-            }
         }
 
         internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers(OfflinePlayerBuildContext context)
@@ -288,7 +153,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     steamId,
                     0,
                     TryGetSteamNameCache(),
-                    ProtoActorLookup.Capture(),
+                    WebDashboardLiveRoster.Capture(),
                     saveSlotId);
         }
 
@@ -297,42 +162,44 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionManager? sessionManager,
             ulong localSteamId,
             Dictionary<ulong, string>? nameCache,
-            ProtoActorLookup actorLookup,
+            WebDashboardLiveRoster roster,
             bool forceHost = false)
         {
+            SessionContext? matchedContext = FindSessionContext(sessionManager, steamId, 0);
             long playerUid = 0;
-            SessionContext? matchedContext = null;
-            if (sessionManager != null)
+            if (matchedContext != null)
             {
-                foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+                try
                 {
-                    if (context.SteamID != steamId)
-                    {
-                        continue;
-                    }
-
-                    matchedContext = context;
-                    try
-                    {
-                        playerUid = context.GetPlayerUID();
-                    }
-                    catch
-                    {
-                        /* player may still be spawning */
-                    }
-
-                    break;
+                    playerUid = matchedContext.GetPlayerUID();
                 }
+                catch
+                {
+                    /* player may still be spawning */
+                }
+            }
+
+            if (playerUid == 0 && roster.TryGetBySteamId(steamId, out ProtoActor actor))
+            {
+                playerUid = actor.UID;
             }
 
             bool isLocal = localSteamId != 0 && steamId == localSteamId;
             bool isHost = forceHost || (WebDashboardGameState.IsHost() && isLocal);
+            if (!forceHost && roster.TryGetBySteamId(steamId, out ProtoActor hostActor))
+            {
+                isHost = hostActor.IsHost;
+                if (!isHost && isLocal && WebDashboardGameState.IsHost())
+                {
+                    isHost = true;
+                }
+            }
 
             WebDashboardPlayerDto dto = new()
             {
                 SteamId = steamId,
                 PlayerUid = playerUid,
-                DisplayName = ResolveDisplayNameCore(matchedContext, steamId, playerUid, nameCache, actorLookup),
+                DisplayName = ResolveDisplayNameCore(matchedContext, steamId, playerUid, nameCache, roster),
                 IsHost = isHost,
                 IsLocal = isLocal,
                 IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -346,7 +213,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 dto.NetworkGrade = grade;
             }
 
-            EnrichPlayerDto(dto, sessionManager, matchedContext, actorLookup);
+            EnrichPlayerDto(dto, sessionManager, matchedContext, roster);
             return ShouldIncludeLivePlayer(dto) ? dto : null;
         }
 
@@ -426,62 +293,88 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        private static WebDashboardPlayerDto? TryBuildPlayerDto(
-            SessionContext context,
-            SessionManager sessionManager,
+        private static SessionContext? FindSessionContext(
+            SessionManager? sessionManager,
+            ulong steamId,
+            long playerUid)
+        {
+            if (sessionManager == null)
+            {
+                return null;
+            }
+
+            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            {
+                try
+                {
+                    if (steamId != 0 && context.SteamID == steamId)
+                    {
+                        return context;
+                    }
+
+                    if (playerUid != 0 && context.GetPlayerUID() == playerUid)
+                    {
+                        return context;
+                    }
+                }
+                catch
+                {
+                    /* context may be mid-setup or disposed */
+                }
+            }
+
+            return null;
+        }
+
+        private static WebDashboardPlayerDto? BuildLivePlayerDto(
+            ProtoActor actor,
+            ulong steamId,
+            long playerUid,
+            SessionManager? sessionManager,
+            SessionContext? context,
             ulong localSteamId,
             Dictionary<ulong, string>? nameCache,
-            ProtoActorLookup actorLookup)
+            WebDashboardLiveRoster roster)
         {
             try
             {
-                ulong steamId = context.SteamID;
-                if (steamId == 0 && WebDashboardGameState.IsHost() && LocalPlayerHelper.IsLocalSteamId(localSteamId))
-                {
-                    steamId = localSteamId;
-                }
-
                 if (steamId == 0)
                 {
                     return null;
                 }
 
-                long playerUid = 0;
-                try
+                bool isLocal = localSteamId != 0 && steamId == localSteamId;
+                bool isHost = actor.IsHost;
+                if (!isHost && isLocal && WebDashboardGameState.IsHost())
                 {
-                    playerUid = context.GetPlayerUID();
-                }
-                catch
-                {
-                    /* player may still be spawning */
+                    isHost = true;
                 }
 
-                VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(context);
-                bool isLocal = localSteamId != 0 && steamId == localSteamId;
-                bool isHost = vPlayer?.IsHost ?? false;
-                if (!isHost && isLocal)
+                VPlayer? vPlayer = context != null ? WebDashboardSessionAccess.GetVPlayer(context) : null;
+                if (vPlayer != null && vPlayer.IsHost)
                 {
-                    isHost = WebDashboardGameState.IsHost();
+                    isHost = true;
                 }
 
                 WebDashboardPlayerDto dto = new()
                 {
                     SteamId = steamId,
                     PlayerUid = playerUid,
-                    DisplayName = ResolveDisplayNameCore(context, steamId, playerUid, nameCache, actorLookup),
+                    DisplayName = ResolveDisplayNameCore(context, steamId, playerUid, nameCache, roster),
                     IsHost = isHost,
                     IsLocal = isLocal,
-                    IsBanned = WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
+                    IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
                 };
 
-                if (playerUid != 0
+                if (sessionManager != null
+                    && playerUid != 0
                     && (WebDashboardSessionAccess.TryGetNetworkGrade(sessionManager, playerUid, out int grade)
                         || WebDashboardPatchHelpers.TryGetCachedGrade(playerUid, out grade)))
                 {
                     dto.NetworkGrade = grade;
                 }
 
-                EnrichPlayerDto(dto, sessionManager, context, actorLookup);
+                EnrichPlayerDto(dto, sessionManager, context, roster);
                 return ShouldIncludeLivePlayer(dto) ? dto : null;
             }
             catch
@@ -493,7 +386,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void ApplyAliveStatus(
             WebDashboardPlayerDto dto,
             SessionContext? context,
-            ProtoActorLookup actorLookup)
+            WebDashboardLiveRoster roster)
         {
             VPlayer? vPlayer = context != null ? WebDashboardSessionAccess.GetVPlayer(context) : null;
             if (vPlayer != null)
@@ -502,7 +395,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            if (actorLookup.TryGetAlive(dto.PlayerUid, dto.SteamId, out bool isAlive))
+            if (roster.TryGetAlive(dto.PlayerUid, dto.SteamId, out bool isAlive))
             {
                 dto.IsAlive = isAlive;
             }
@@ -511,7 +404,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static void ApplyVitals(
             WebDashboardPlayerDto dto,
             SessionContext? context,
-            ProtoActorLookup actorLookup)
+            WebDashboardLiveRoster roster)
         {
             if (dto.PlayerUid == 0 && dto.SteamId == 0)
             {
@@ -530,7 +423,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            if (actorLookup.TryGetVitals(dto.PlayerUid, dto.SteamId, out long health, out long maxHealth, out double toxicPercent))
+            if (roster.TryGetVitals(dto.PlayerUid, dto.SteamId, out long health, out long maxHealth, out double toxicPercent))
             {
                 dto.Health = health;
                 dto.MaxHealth = maxHealth;
@@ -560,7 +453,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             ulong steamId,
             long playerUid,
             Dictionary<ulong, string>? nameCache,
-            ProtoActorLookup actorLookup,
+            WebDashboardLiveRoster roster,
             int saveSlotId = -1)
         {
             if (IsUsableName(context?.NickName, steamId))
@@ -575,7 +468,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return cached;
             }
 
-            string? fromActor = actorLookup.ResolveNickName(playerUid, steamId);
+            string? fromActor = roster.ResolveNickName(playerUid, steamId);
             if (IsUsableName(fromActor, steamId))
             {
                 return fromActor!;
@@ -627,17 +520,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardPlayerDto dto,
             SessionManager? sessionManager,
             SessionContext? context,
-            ProtoActorLookup actorLookup)
+            WebDashboardLiveRoster roster)
         {
             ApplyConnectionInfo(dto, context);
 
             PersistDisplayName(dto);
 
-            ApplyAliveStatus(dto, context, actorLookup);
+            ApplyAliveStatus(dto, context, roster);
 
             if (WebDashboardGameState.IsHost())
             {
-                ApplyVitals(dto, context, actorLookup);
+                ApplyVitals(dto, context, roster);
             }
 
             if (WebDashboardGameState.IsHost() && ModConfig.EnableStatistics.Value)
