@@ -21,7 +21,12 @@ MELON="$GAME_PATH/MelonLoader/net35"
 
 for f in "$MANAGED/Assembly-CSharp.dll" "$MANAGED/FishNet.Runtime.dll" "$MANAGED/UniTask.dll" \
          "$MANAGED/UnityEngine.dll" "$MANAGED/UnityEngine.CoreModule.dll" \
-         "$MANAGED/UnityEngine.ImageConversionModule.dll" "$MANAGED/com.rlabrecque.steamworks.net.dll" \
+         "$MANAGED/UnityEngine.ImageConversionModule.dll" \
+         "$MANAGED/UnityEngine.UI.dll" "$MANAGED/UnityEngine.UIModule.dll" \
+         "$MANAGED/UnityEngine.AudioModule.dll" \
+         "$MANAGED/UnityEngine.UnityWebRequestModule.dll" \
+         "$MANAGED/UnityEngine.UnityWebRequestAudioModule.dll" \
+         "$MANAGED/com.rlabrecque.steamworks.net.dll" \
          "$MELON/MelonLoader.dll"; do
   if [[ ! -f "$f" ]]; then
     echo "Missing required file: $f" >&2
@@ -37,6 +42,11 @@ cp "$MANAGED/Assembly-CSharp.dll" \
    "$MANAGED/UnityEngine.dll" \
    "$MANAGED/UnityEngine.CoreModule.dll" \
    "$MANAGED/UnityEngine.ImageConversionModule.dll" \
+   "$MANAGED/UnityEngine.UI.dll" \
+   "$MANAGED/UnityEngine.UIModule.dll" \
+   "$MANAGED/UnityEngine.AudioModule.dll" \
+   "$MANAGED/UnityEngine.UnityWebRequestModule.dll" \
+   "$MANAGED/UnityEngine.UnityWebRequestAudioModule.dll" \
    "$MANAGED/com.rlabrecque.steamworks.net.dll" \
    "$REF_DIR/Managed/"
 
