@@ -30,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendSpawnSummary(List<string> parts, int playerCount)
         {
-            if (!ModConfig.EnableSpawnScaling.Value)
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
             {
                 return;
             }
@@ -42,7 +42,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendLootSummary(List<string> parts, int playerCount)
         {
-            if (!ModConfig.EnableLootMultiplicator.Value)
+            if (!SceneScopedConfigGate.Loot.EnableLootMultiplicator)
             {
                 return;
             }
@@ -60,7 +60,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendMoneySummary(List<string> parts, int playerCount)
         {
-            if (!ModConfig.EnableEconomy.Value)
+            if (!SceneScopedConfigGate.Economy.EnableEconomy)
             {
                 return;
             }
@@ -92,23 +92,27 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendDungeonTime(List<string> parts, int playerCount)
         {
-            if (!ModConfig.EnableDungeonTime.Value)
+            DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
+            if (!config.EnableDungeonTime)
             {
                 return;
             }
 
-            double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount);
+            double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount, config);
             if (bonusSeconds <= 0d)
             {
                 return;
             }
 
-            parts.Add(ModL10n.Get("announce.shift_time_bonus", new Dictionary<string, object> { ["seconds"] = (int)bonusSeconds }));
+            parts.Add(ModL10n.Get("announce.shift_time_bonus", new Dictionary<string, object>
+            {
+                ["seconds"] = FormatBonusSeconds(bonusSeconds),
+            }));
         }
 
         private static void AppendDungeonRandomizer(List<string> parts)
         {
-            if (!ModConfig.EnableDungeonRandomizer.Value)
+            if (!SceneScopedConfigGate.DungeonRandomizer.EnableDungeonRandomizer)
             {
                 return;
             }
@@ -168,6 +172,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
         private static string FormatMultiplier(float multiplier)
         {
             return $"×{multiplier:0.##}";
+        }
+
+        private static string FormatBonusSeconds(double bonusSeconds)
+        {
+            return bonusSeconds.ToString("0.##");
         }
     }
 }

@@ -2,8 +2,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal static class DungeonTimeApplier
     {
-        private const string Feature = "DungeonTime";
-
         internal static void EnsureApplied(DungeonRoom room)
         {
             if (DungeonRoomAppliedSet.IsApplied(room, DungeonRoomApplyKind.DungeonTime))
@@ -11,10 +9,11 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => SceneScopedConfigGate.DungeonTime.EnableDungeonTime))
+            DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => config.EnableDungeonTime))
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-                if (!SceneScopedConfigGate.DungeonTime.EnableDungeonTime)
+                if (!config.EnableDungeonTime)
                 {
                     DungeonTimeLog.DebugSkipped("EnableDungeonTime is off");
                 }
@@ -27,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             }
 
             int playerCount = room.GetMemberCount();
-            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount);
+            long bonusMs = (long)(DungeonTimeResolver.GetBonusSeconds(playerCount, config) * 1000d);
             if (bonusMs <= 0)
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
@@ -43,7 +42,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             }
 
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-            DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime);
+            DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime, config);
         }
     }
 }
