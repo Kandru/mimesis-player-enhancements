@@ -1,7 +1,5 @@
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Ui
 {

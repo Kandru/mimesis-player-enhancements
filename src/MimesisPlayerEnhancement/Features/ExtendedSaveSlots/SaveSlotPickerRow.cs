@@ -1,8 +1,6 @@
 using System.Collections;
 using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {

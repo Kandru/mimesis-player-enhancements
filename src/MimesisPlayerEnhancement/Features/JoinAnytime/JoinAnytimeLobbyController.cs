@@ -5,7 +5,6 @@ using MelonLoader;
 using ReluNetwork.ConstEnum;
 using Steamworks;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {

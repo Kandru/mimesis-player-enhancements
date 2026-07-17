@@ -1,6 +1,5 @@
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
 {

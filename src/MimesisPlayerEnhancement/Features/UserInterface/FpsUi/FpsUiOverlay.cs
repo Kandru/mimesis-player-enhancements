@@ -2,7 +2,6 @@ using System.Collections;
 using System.Reflection;
 using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {

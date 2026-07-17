@@ -1,6 +1,5 @@
 using ReluNetwork.ConstEnum;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {

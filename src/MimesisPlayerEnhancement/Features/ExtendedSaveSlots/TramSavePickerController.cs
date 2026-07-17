@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {

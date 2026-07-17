@@ -1,6 +1,5 @@
 using MelonLoader;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Ui.MenuMirror
 {
