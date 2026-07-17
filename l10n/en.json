@@ -41,6 +41,10 @@
         "title": "Enable Extended Spectator List",
         "description": "Show a two-column spectator list that scales to screen height. Living players first, then dead. Client-only."
       },
+      "EnableLoadingWaitPlayerList": {
+        "title": "Loading Wait Player List",
+        "description": "Show a player roster on the loading screen while waiting for others. Client-only."
+      },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Enable Extended Menu List",
         "description": "Pin the join-code button at the top and stretch the ESC menu player list with a scrollbar when needed. Client-only."

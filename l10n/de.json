@@ -41,6 +41,10 @@
         "title": "Erweiterte Spectator-Liste aktivieren",
         "description": "Zeigt eine zweispaltige Spectator-Liste, die mit der Bildschirmhöhe skaliert. Lebende zuerst, dann Tote. Nur Client."
       },
+      "EnableLoadingWaitPlayerList": {
+        "title": "Lade-Warte-Spielerliste",
+        "description": "Spielerliste auf dem Ladebildschirm während des Wartens auf andere. Nur Client."
+      },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Erweiterte Menü-Liste aktivieren",
         "description": "Setzt den Join-Code-Button oben und dehnt die ESC-Menü-Spielerliste mit Scrollleiste aus. Nur Client."
