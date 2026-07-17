@@ -225,7 +225,7 @@ tools: require-docker deps
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_IMAGE) \
-		dotnet format $(SLN) --verbosity minimal $(DOTNET_GAME_ARGS)
+		dotnet format $(SLN) --verbosity minimal
 	@echo "==> Building dev tools ($(DOTNET_CONFIG)) via Docker…"
 	@for rel in $(TOOL_PROJECTS); do \
 		echo "==> dotnet build $$rel"; \
@@ -249,7 +249,7 @@ format-csharp: require-docker
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_IMAGE) \
-		dotnet format $(SLN) --verbosity minimal $(DOTNET_GAME_ARGS)
+		dotnet format $(SLN) --verbosity minimal
 
 check-web: require-docker stage-web-sources
 	@echo "==> Type-checking Svelte via Docker…"
@@ -279,7 +279,7 @@ check: ensure-ops-image require-docker
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_IMAGE) \
-		dotnet format $(SLN) --verbosity minimal $(DOTNET_GAME_ARGS)
+		dotnet format $(SLN) --verbosity minimal
 	@echo "==> [3/3] Type-checking Svelte…"
 	@docker run --rm \
 		$(DOCKER_USER) \
