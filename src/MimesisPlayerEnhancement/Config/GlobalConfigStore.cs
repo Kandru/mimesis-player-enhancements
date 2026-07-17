@@ -17,6 +17,10 @@ namespace MimesisPlayerEnhancement
         private static bool _pendingDocLoaded;
         private static bool _dirty;
 
+        internal static bool IsDirty => _dirty;
+
+        internal static bool HasPendingDocument => _pendingDocLoaded && _pendingDoc != null;
+
         internal static SparseTomlConfig.Document Load()
         {
             if (string.IsNullOrEmpty(ModConfig.FilePath))
@@ -84,6 +88,11 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            if (_dirty)
+            {
+                return;
+            }
+
             SparseTomlConfig.Document doc = new();
             foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
             {
@@ -111,18 +120,49 @@ namespace MimesisPlayerEnhancement
             _dirty = true;
         }
 
-        internal static void FlushToDisk(bool waitForCompletion = true)
+        internal static void FlushIfDirty()
+        {
+            if (!_dirty)
+            {
+                return;
+            }
+
+            ModLog.Debug(Feature, "Flushing pending global config before reload.");
+            FlushToDisk();
+        }
+
+        internal static void RestorePendingToDisk()
+        {
+            if (!HasPendingDocument)
+            {
+                return;
+            }
+
+            ModLog.Debug(Feature, "Restoring pending global config after MelonLoader save.");
+            FlushToDisk(force: true);
+        }
+
+        internal static void FlushToDisk(bool waitForCompletion = true, bool force = false)
         {
             _ = waitForCompletion;
 
-            if (!_dirty || !ModConfig.IsInitialized || string.IsNullOrEmpty(ModConfig.FilePath))
+            if (!ModConfig.IsInitialized || string.IsNullOrEmpty(ModConfig.FilePath))
+            {
+                return;
+            }
+
+            if (!force && !_dirty)
             {
                 return;
             }
 
             if (!_pendingDocLoaded || _pendingDoc == null)
             {
-                _dirty = false;
+                if (!force)
+                {
+                    _dirty = false;
+                }
+
                 return;
             }
 

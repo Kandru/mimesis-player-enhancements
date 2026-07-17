@@ -64,6 +64,7 @@ namespace MimesisPlayerEnhancement
             }
 
             ModConfig.NormalizeSavedFloats();
+            GlobalConfigStore.RestorePendingToDisk();
         }
 
         public override void OnPreferencesLoaded(string filepath)

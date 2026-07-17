@@ -314,6 +314,7 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
+            GlobalConfigStore.FlushIfDirty();
             MainCategory.LoadFromFile(false);
             SanitizeFloatEntries();
         }
