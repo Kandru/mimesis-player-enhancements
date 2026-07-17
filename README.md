@@ -105,9 +105,9 @@ See [docs/BUILD.md](docs/BUILD.md).
 
 1. [Fork](https://github.com/Kandru/mimesis-player-enhancements/fork) this repo on GitHub.
 2. Create a branch for your change (`git checkout -b my-fix`).
-3. Make your edits and run `./scripts/build.sh` to check it compiles (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for build and formatting commands).
+3. Make your edits and run `make debug` to check it compiles (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for build and formatting commands).
 4. Push your branch and open a [pull request](https://github.com/Kandru/mimesis-player-enhancements/compare) against `main`.
-5. Describe what you changed and why. Confirm `./scripts/build.sh` passes locally before opening the PR.
+5. Describe what you changed and why. Confirm `make check` and `make debug` pass locally before opening the PR.
 
 For architecture, feature scaffolding, and agent-oriented guidance, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and [AGENTS.md](AGENTS.md).
 

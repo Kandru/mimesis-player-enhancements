@@ -8,7 +8,7 @@ REF_DIR="$ROOT/deps/reference"
 GAME_PATH="${MIMESIS_PATH:-${GAME_PATH:-}}"
 
 if [[ -z "$GAME_PATH" && -f "$ROOT/PathConfig.props" ]]; then
-  GAME_PATH="$(grep -oP '(?<=<GamePath>)[^<]+' "$ROOT/PathConfig.props" | head -1 || true)"
+  GAME_PATH="$(sed -n 's:.*<GamePath>\(.*\)</GamePath>.*:\1:p' "$ROOT/PathConfig.props" 2>/dev/null | head -1)"
 fi
 
 if [[ -z "$GAME_PATH" || ! -d "$GAME_PATH" ]]; then

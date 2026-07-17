@@ -10,8 +10,6 @@ src/MimesisPlayerEnhancementWeb/dist/
 src/MimesisPlayerEnhancementWeb/.wiki-src/
 src/MimesisPlayerEnhancementWeb/.changelog-src/
 src/MimesisPlayerEnhancementWeb/src/lib/generated/
-src/MimesisPlayerEnhancement/Assets/*
-!src/MimesisPlayerEnhancement/Assets/RoundStartSound/
 deps/MimicAPI/
 deps/nuget/
 deps/reference/Managed/

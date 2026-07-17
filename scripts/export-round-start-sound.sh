@@ -10,7 +10,7 @@
 #
 # UnityPy is required to read Unity .assets / .bundle files. If it is not installed
 # locally (pip install UnityPy), this script falls back to Docker — same pattern as
-# build-webdashboard.sh.
+# Requires Docker (same as make webinterface).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

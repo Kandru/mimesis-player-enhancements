@@ -19,7 +19,7 @@ dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 csharp_using_directive_placement = outside_namespace:suggestion
 
-# Analyzer fixes applied by dotnet format (scripts/format-code.sh, build.sh)
+# Analyzer fixes applied by dotnet format (`make check`, `make tools`)
 dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.IDE0060.severity = none
 

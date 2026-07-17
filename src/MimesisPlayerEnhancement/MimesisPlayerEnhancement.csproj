@@ -15,14 +15,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Assets\**\*">
+    <EmbeddedResource Include="Assets\RoundStartSound\**\*">
       <LogicalName>Assets.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(RepoRoot)dist\webinterface\$(DistFolder)\**\*">
+      <LogicalName>Assets.WebDashboard.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(RepoRoot)l10n\*.json">
+      <LogicalName>Assets.Locale.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="EnsureWebDashboardAssets" BeforeTargets="BeforeBuild" Condition="'$(SkipWebBuild)' != 'true'">
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\Assets\WebDashboard\index.html')"
-           Text="Web dashboard assets missing. Run ./scripts/build-webdashboard.sh (requires Docker) or build with -p:SkipWebBuild=true." />
+    <Error Condition="!Exists('$(RepoRoot)dist\webinterface\$(DistFolder)\index.html')"
+           Text="Web dashboard assets missing. Run make webinterface (requires Docker) or build with -p:SkipWebBuild=true." />
   </Target>
 
   <ItemGroup>

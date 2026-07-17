@@ -8,5 +8,5 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Copy Vite output to mounted volume (see scripts/build-webdashboard.sh).
+# Copy Vite output to mounted volume (see Makefile webinterface target → dist/webinterface/).
 CMD ["sh", "-c", "cp -r dist/. /out/"]

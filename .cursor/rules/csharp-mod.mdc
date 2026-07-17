@@ -13,6 +13,6 @@ alwaysApply: false
 - Add brief comments for non-obvious business logic (host-only rules, game quirks, timing constraints).
 - Do not create `.tmp-*` scratch projects — search `deps/decompiled/**/*` for game source; use MimesisReflectionTool for MelonLoader APIs.
 - New features: register in `FeatureModules.All`, add config to `ModConfig.cs`, update [docs/CONFIG.md](../../docs/CONFIG.md).
-- Run `./scripts/build.sh` before considering changes complete.
+- Run `make check` and `make debug` before considering changes complete.
 - Match existing patterns: `_` prefix on private fields is used throughout this codebase — keep it consistent.
 - Logging: default to `ModLog.Info/Debug/Warn/Error(Feature, message)` with a local `Feature` const; add `{Feature}Log.cs` only for shared formatting or repeated semantic events. See [AGENTS.md](../../AGENTS.md#logging).

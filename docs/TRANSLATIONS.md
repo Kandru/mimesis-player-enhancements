@@ -36,17 +36,16 @@ Select options add an `options` map keyed by the stored value.
 
 ## Build pipeline
 
-1. Edit files under `l10n/` only — never `src/MimesisPlayerEnhancement/Assets/Locale/` (generated, gitignored).
-2. `./scripts/stage-locale.sh` copies `l10n/*.json` into `Assets/Locale/` before compile.
-3. `./scripts/validate-locale.sh` checks every `*Config.cs` entry has `title` and `description` in `en.json`.
+1. Edit files under `l10n/` only.
+2. `make check` validates every `*Config.cs` entry has `title` and `description` in `en.json` (via Docker).
 
-`./scripts/build.sh` runs staging and validation automatically.
+`make debug` / `make release` embed `l10n/*.json` directly and run validation automatically.
 
 ## Adding a language
 
 1. Copy `l10n/en.json` to `l10n/<lang>.json` (for example `fr.json`).
 2. Translate string values only; keep keys, section IDs, and option value keys unchanged.
-3. Run `./scripts/validate-locale.sh` and `./scripts/build.sh`.
+3. Run `make check` and `make debug`.
 
 No C# or web code changes are required — embedded locale discovery picks up new `l10n/*.json` files at build time.
 
@@ -55,7 +54,7 @@ No C# or web code changes are required — embedded locale discovery picks up ne
 1. Branch from `main`.
 2. Update `l10n/en.json` when adding config entries in code.
 3. Update translation files for languages you can provide.
-4. Run `./scripts/validate-locale.sh` and `./scripts/build.sh`.
+4. Run `make check` and `make debug`.
 5. Open a pull request.
 
 The JSON structure is compatible with future Weblate or Crowdin integration if you add a translation platform later.

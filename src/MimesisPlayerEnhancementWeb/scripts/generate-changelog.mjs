@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build-time changelog ingestion: reads thunderstore CHANGELOG.md and emits changelog.ts.
- * Run via npm prebuild/predev; source is copied from thunderstore/ by build-webdashboard.sh.
+ * Run via npm prebuild/predev; source is copied from thunderstore/ by `make webinterface`.
  */
 import fs from 'node:fs';
 import path from 'node:path';

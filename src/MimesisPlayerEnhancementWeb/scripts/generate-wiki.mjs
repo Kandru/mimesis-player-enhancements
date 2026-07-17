@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build-time wiki ingestion: reads markdown from .wiki-src/ and emits wiki.ts.
- * Run via npm prebuild/predev; wiki source is copied from docs/wiki/ by build-webdashboard.sh.
+ * Run via npm prebuild/predev; wiki source is copied from docs/wiki/ by `make webinterface`.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -123,7 +123,7 @@ function processArticle(id, markdown) {
 function main() {
   if (!fs.existsSync(WIKI_ROOT)) {
     console.error(`error: wiki source not found at ${WIKI_ROOT}`);
-    console.error('Run build-webdashboard.sh or copy docs/wiki to .wiki-src');
+    console.error('Run `make webinterface` or copy docs/wiki to .wiki-src');
     process.exit(1);
   }
 

@@ -7,19 +7,18 @@ Svelte 5 + Vite + Tailwind 4 frontend for the in-game web dashboard.
 From the repository root:
 
 ```bash
-./scripts/build-webdashboard.sh
+make webinterface
+make webinterface CONFIG=Release
 ```
 
-This builds inside `node:22-alpine` and writes output to `src/MimesisPlayerEnhancement/Assets/WebDashboard/` (gitignored; produced at build time). Static images live in `public/img/` and are copied into the build output by Vite.
+This builds inside Docker (`node:22-alpine`) and writes output to `dist/webinterface/debug/` or `dist/webinterface/prod/`. Static images live in `public/img/` and are copied into the build output by Vite.
 
-`./scripts/build.sh` runs the web build automatically unless `SKIP_WEB_BUILD=true`.
+`make debug` / `make release` run the web build automatically unless `SKIP_WEB=1`.
 
-For dotnet-only builds without a fresh frontend:
+For C#-only iteration when web assets are already built:
 
 ```bash
-SKIP_WEB_BUILD=true ./scripts/build.sh
-# or
-dotnet build -p:SkipWebBuild=true
+SKIP_WEB=1 make debug
 ```
 
 ## Development

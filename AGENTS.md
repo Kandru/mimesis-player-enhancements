@@ -14,7 +14,7 @@ When you need game source or MelonLoader APIs, **use the paths below**. Do not c
 | Regenerate dungeon seed pools (in-game scan + codegen) | **MimesisSeedScanner** | `src/MimesisSeedScanner/` |
 | Regenerate decompiled trees after a game update | **decompile-game.sh** | `scripts/decompile-game.sh` |
 
-Inspection and reflection tools live in `src/MimesisPlayerEnhancement.sln`, build with `dotnet build`, and output to their own `bin/` folders (not `dist/`).
+Inspection and reflection tools live in `src/MimesisPlayerEnhancement.sln`, build with `make tools`, and output to their own `bin/` folders (not `dist/`).
 
 ### Quick start
 
@@ -44,14 +44,14 @@ See each tool's README for full command reference:
 
 ### Reference assemblies
 
-Run `./scripts/bootstrap-deps.sh` once to populate `deps/reference/Managed/` and `deps/reference/MelonLoader/net35/`. Tools fall back to `MIMESIS_PATH` or `--game` / `--managed` / `--melonloader` flags when bootstrap paths are missing.
+Run `make deps` once to populate `deps/reference/Managed/` and `deps/reference/MelonLoader/net35/`. Tools fall back to `MIMESIS_PATH` or `--game` / `--managed` / `--melonloader` flags when bootstrap paths are missing.
 
 Game source is already decompiled under `deps/decompiled/` (gitignored). Search and read files there — e.g. `deps/decompiled/Assembly-CSharp/**/*.cs`. Run `./scripts/decompile-game.sh` only to refresh after a game patch (requires `dotnet tool install -g ilspycmd`).
 
 ## Mod project layout
 
 - Main mod: `src/MimesisPlayerEnhancement/` (netstandard2.1, Harmony patches)
-- Build output: `dist/debug/` or `dist/prod/` (not committed)
+- Build output: `dist/debug/` or `dist/prod/` (not committed); web dashboard UI: `dist/webinterface/{debug|prod}/`
 - Game references: `deps/reference/` after bootstrap, or local install via `PathConfig.props` / `MIMESIS_PATH`
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for architecture, feature scaffolding, and formatting commands.
@@ -61,17 +61,22 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for architecture, feature scaffol
 Always verify changes compile before considering work complete:
 
 ```bash
-./scripts/bootstrap-deps.sh   # first time only
-./scripts/build-webdashboard.sh  # Svelte UI via Docker (first time / after web changes)
-./scripts/build.sh              # Debug → dist/debug/ (runs web build unless SKIP_WEB_BUILD=true)
-./scripts/build.sh Release      # Release → dist/prod/
+make deps        # first time only
+make check       # locales + C# format (Docker) + Svelte check (Docker)
+make debug       # → dist/debug/ (includes webinterface unless SKIP_WEB=1)
+make release     # → dist/prod/
+make tools       # dev tools + seed scanner → src/*/bin/
 ```
 
-Equivalent: `dotnet build src/MimesisPlayerEnhancement.sln -c Debug` (use `-p:SkipWebBuild=true` if dashboard assets already built).
+All steps except `make clean` run in ephemeral Docker containers (`--rm`):
 
-Web dashboard sources: [src/MimesisPlayerEnhancementWeb/](src/MimesisPlayerEnhancementWeb/) — **Docker required** for `npm` (no local Node.js).
+| Image | Role |
+|-------|------|
+| `mpe-ops:local` | deps, locale validation, web staging, Thunderstore zip |
+| `mcr.microsoft.com/dotnet/sdk:10.0` | mod/tools compile, `dotnet format` |
+| `node:22-alpine` | Svelte `svelte-check` |
 
-Build runs `./scripts/format-code.sh` before compile (skip with `SKIP_FORMAT=true`). Verify only: `./scripts/format-code.sh --verify`
+Web dashboard sources: [src/MimesisPlayerEnhancementWeb/](src/MimesisPlayerEnhancementWeb/) — built via `make webinterface` / `make check`.
 
 ## Mod development
 

@@ -11,9 +11,9 @@ Architecture and conventions for working on Mimesis Player Enhancement. For AI a
 | `src/MimesisPlayerEnhancement/Config/` | `ModConfig`, per-save overrides, sidecar coordination |
 | `src/MimesisPlayerEnhancement/Ui/` | Shared uGUI/TMP toolkit (`MimesisPlayerEnhancement.Ui`) |
 | `src/MimesisPlayerEnhancement/Util/` | Cross-feature helpers (`HarmonyPatchHelper`, gates, session access) |
-| `src/MimesisInspectionTool/`, `src/MimesisReflectionTool/` | Dev-time metadata / MelonLoader reflection |
+| `src/MimesisInspectionTool/`, `src/MimesisReflectionTool/` | Dev-time metadata / MelonLoader reflection (`make tools`) |
 | `deps/reference/` | Bootstrap game assemblies; `deps/decompiled/` for patch design (gitignored) |
-| `dist/debug/`, `dist/prod/` | Build output (not committed) |
+| `dist/debug/`, `dist/prod/`, `dist/webinterface/` | Build output (not committed) |
 | [CUSTOM_GAME_MODELS.md](CUSTOM_GAME_MODELS.md) | Runtime OBJ meshes, materials, spawn patterns for mod world geometry |
 
 ## Architecture
@@ -63,7 +63,7 @@ Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `s
 6. For multipliers: resolver → applier, with `FeatureToggleGate` neutral values when disabled.
 7. Log via `ModLog` and a local `Feature` const; add `{Feature}Log.cs` only when message formatting is reused.
 8. Document keys in [CONFIG.md](CONFIG.md).
-9. Run `./scripts/build.sh` (Debug; Release if build-sensitive).
+9. Run `make debug` (or `make release` if build-sensitive).
 
 ## Config
 
@@ -75,11 +75,12 @@ Register every feature in `FeatureModules.All` (`Util/FeatureModule.cs`). Use `s
 
 ## Web dashboard (Svelte)
 
-Built via Docker — no local Node.js required:
+Built via Docker — no local Node.js or .NET SDK required:
 
 ```bash
-./scripts/build-webdashboard.sh          # Docker → Assets/WebDashboard/
-SKIP_WEB_BUILD=true ./scripts/build.sh   # dotnet only when assets already built
+make webinterface                  # → dist/webinterface/debug/
+make webinterface CONFIG=Release   # → dist/webinterface/prod/
+SKIP_WEB=1 make debug              # C# only when web assets already built
 ```
 
 See [src/MimesisPlayerEnhancementWeb/README.md](../src/MimesisPlayerEnhancementWeb/README.md).
@@ -113,7 +114,7 @@ Reference: `Features/ExtendedSaveSlots/` (save slot picker).
 
 ## Localization
 
-User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale source JSON lives in [`l10n/`](../l10n/) (for example `en.json`, `de.json`); `./scripts/build.sh` stages them into `Assets/Locale/` before embed. Config registration resolves titles and descriptions from the same files — see [TRANSLATIONS.md](TRANSLATIONS.md). Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
+User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale source JSON lives in [`l10n/`](../l10n/) (for example `en.json`, `de.json`); `make debug` / `make release` embed them directly at compile time. Config registration resolves titles and descriptions from the same files — see [TRANSLATIONS.md](TRANSLATIONS.md). Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
 
 ## Per-save sidecars
 
@@ -178,7 +179,7 @@ dotnet run --project src/MimesisSeedScanner.Cli -- merge \
 ./scripts/generate-dungeon-seeds.sh seed-scan-results.json
 
 # 6. Rebuild main mod
-SKIP_WEB_BUILD=true ./scripts/build.sh
+SKIP_WEB=1 make debug
 ```
 
 If `scan` runs to completion, it writes `seed-scan-results.json` automatically and you can skip step 4.
@@ -253,6 +254,6 @@ See [BUILD.md](BUILD.md) for bootstrap, compile, and copying the DLL into your g
 
 ## Formatting
 
-Style: `.editorconfig`. `./scripts/build.sh` runs `./scripts/format-code.sh` first (skip with `SKIP_FORMAT=true`). Verify only: `./scripts/format-code.sh --verify`. Direct `dotnet build` does not format.
+Style: `.editorconfig`. `make check` formats C# and type-checks Svelte via Docker.
 
 Global usings: `src/MimesisPlayerEnhancement/GlobalUsings.cs` (`System.Collections.Generic`, `HarmonyLib`, `MimesisPlayerEnhancement.Util`). `System` is omitted — conflicts with `UnityEngine.Object` / `UnityEngine.Random`.
