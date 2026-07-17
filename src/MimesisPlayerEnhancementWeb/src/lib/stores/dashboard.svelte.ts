@@ -597,7 +597,7 @@ class DashboardStore {
       && layoutFingerprint === this.lastMinimapLayoutFingerprint
       && markerFingerprint !== this.lastMinimapMarkerFingerprint;
 
-    if (markersOnly) {
+    if (markersOnly && this.minimap) {
       this.minimap.markers = areaMarkers;
       this.lastMinimapMarkerFingerprint = markerFingerprint;
       return;

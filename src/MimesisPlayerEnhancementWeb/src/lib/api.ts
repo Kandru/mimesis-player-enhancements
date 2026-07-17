@@ -145,7 +145,7 @@ const Api = {
   },
 
   deletePlayer(steamId: string) {
-    return Api.fetchJson(`/api/players/${encodeURIComponent(steamId)}/delete`, { method: 'POST' });
+    return Api.fetchJson<{ message?: string }>(`/api/players/${encodeURIComponent(steamId)}/delete`, { method: 'POST' });
   },
 
   spawnItem(steamId: string, itemId: string, percent?: number) {

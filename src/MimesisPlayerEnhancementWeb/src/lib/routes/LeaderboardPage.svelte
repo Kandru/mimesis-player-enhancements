@@ -56,9 +56,9 @@
           continue;
         }
         for (const [key, value] of Object.entries(counters)) {
-          if (typeof value === 'number') {
-            existing[key as keyof StatCountersDto] = Number(existing[key as keyof StatCountersDto] ?? 0) + value;
-          }
+          if (typeof value !== 'number') continue;
+          const prev = (existing as Record<string, number | undefined>)[key];
+          (existing as Record<string, number | undefined>)[key] = Number(prev ?? 0) + value;
         }
       }
     }
