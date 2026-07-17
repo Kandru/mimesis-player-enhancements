@@ -76,5 +76,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             FpsUiOverlay.OnUpdate();
             FpsUiNetWorthOverlay.OnUpdate();
         }
+
+        internal static void OnSessionEnded() => CustomLoadingScreenRuntime.OnSessionEnded();
     }
 }

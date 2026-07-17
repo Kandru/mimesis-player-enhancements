@@ -8,5 +8,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             CustomLoadingScreenTextureCache.Clear();
             CustomLoadingScreenApplier.ReapplyActivePhaseIfNeeded();
         }
+
+        internal static void OnSessionEnded() => CustomLoadingScreenApplier.ForceReset();
     }
 }

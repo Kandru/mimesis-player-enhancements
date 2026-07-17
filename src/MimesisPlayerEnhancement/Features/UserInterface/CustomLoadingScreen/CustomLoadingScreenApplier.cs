@@ -128,6 +128,26 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             CustomLoadingScreenSession.ReleaseDepartureHold();
         }
 
+        /// <summary>Session ended (e.g. host left the lobby mid-departure before <c>Hub.LoadScene</c>
+        /// completed). Force the overlay down and clear all hold/dismiss state so it can never
+        /// stick — the normal <c>ReleaseDepartureHold</c> path may never run in this case.</summary>
+        internal static void ForceReset()
+        {
+            if (!CustomLoadingScreenSession.IsActive
+                && !CustomLoadingScreenSession.HoldThroughDeparture
+                && _activeLoading == null)
+            {
+                return;
+            }
+
+            UIPrefab_Scene_Loading? loading =
+                _activeLoading ?? ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
+            FinishDismiss(loading);
+
+            ModLog.Debug(CustomLoadingScreenConstants.Feature,
+                "Custom loading screen force-reset — session ended");
+        }
+
         private static CustomLoadingScreenContext? PredictContextFromLever(NewTramLeverLevelObject lever)
         {
             TramLeverDestination destination = TramLeverDestination.ToMap;
