@@ -54,6 +54,8 @@ endif
 
 DOCKER_REPO_MOUNT := -v "$(ROOT):/repo" -w /repo
 DOCKER_USER := --user "$$(id -u):$$(id -g)"
+# Non-root containers cannot run SDK workload integrity checks (harmless for this repo).
+DOTNET_ENV := -e DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK=1
 
 .PHONY: help all debug release webinterface thunderstore tools check clean \
 	require-docker ensure-ops-image deps validate-locale stage-web-sources \
@@ -77,7 +79,7 @@ help:
 	@echo "  thunderstore  Release build + dist/thunderstore/mpe<version>.zip"
 	@echo "  tools         Dev tools + seed scanner → src/*/bin/"
 	@echo "  check         Validate locales, format C#, type-check Svelte"
-	@echo "  clean         Remove dist/ (host only)"
+	@echo "  clean         Empty dist output dirs (host only; keeps folder layout)"
 	@echo "  deps          Download reference assemblies (first-time setup)"
 	@echo ""
 	@echo "Containers: mpe-ops:local, dotnet/sdk:10.0, node:22-alpine (all --rm)"
@@ -155,7 +157,7 @@ webinterface: require-docker deps stage-web-sources ensure-ops-image
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(OPS_IMAGE) \
-		sh -c 'rm -rf "/repo/dist/webinterface/$(DIST_SUBDIR)" && mkdir -p "/repo/dist/webinterface/$(DIST_SUBDIR)"'
+		sh -c 'mkdir -p "/repo/dist/webinterface/$(DIST_SUBDIR)" && find "/repo/dist/webinterface/$(DIST_SUBDIR)" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
 	@echo "==> Building webinterface image ($(WEB_IMAGE))…"
 	@docker build -t $(WEB_IMAGE) -f "$(WEB_SRC)/Dockerfile" "$(WEB_SRC)"
 	@echo "==> Exporting webinterface ($(DIST_SUBDIR)) via Docker…"
@@ -182,6 +184,7 @@ mod: require-docker deps validate-locale
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
 		$(DOTNET_IMAGE) \
 		dotnet build $(MOD_PROJ) -c $(DOTNET_CONFIG) $(MOD_EXTRA)
 	@echo "==> Mod ready: dist/$(DIST_SUBDIR)/MimesisPlayerEnhancement.dll"
@@ -224,6 +227,7 @@ tools: require-docker deps
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 	@echo "==> Building dev tools ($(DOTNET_CONFIG)) via Docker…"
@@ -233,6 +237,7 @@ tools: require-docker deps
 			$(DOCKER_USER) \
 			$(DOCKER_REPO_MOUNT) \
 			$(GAME_MOUNT) \
+			$(DOTNET_ENV) \
 			$(DOTNET_IMAGE) \
 			dotnet build "src/$$rel" -c $(DOTNET_CONFIG); \
 	done
@@ -248,6 +253,7 @@ format-csharp: require-docker
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 
@@ -278,6 +284,7 @@ check: ensure-ops-image require-docker
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 	@echo "==> [3/3] Type-checking Svelte…"
@@ -304,6 +311,15 @@ check: ensure-ops-image require-docker
 # ---------------------------------------------------------------------------
 
 clean:
-	@echo "==> Removing dist/…"
-	@rm -rf "$(ROOT)/dist"
+	@echo "==> Cleaning dist/ output (keeping directory layout)…"
+	@dist="$(ROOT)/dist"; \
+	for dir in debug prod thunderstore; do \
+		mkdir -p "$$dist/$$dir"; \
+		find "$$dist/$$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +; \
+	done; \
+	mkdir -p "$$dist/webinterface"; \
+	for dir in debug prod; do \
+		mkdir -p "$$dist/webinterface/$$dir"; \
+		find "$$dist/webinterface/$$dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +; \
+	done
 	@echo "==> Clean complete"

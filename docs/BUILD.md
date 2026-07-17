@@ -10,7 +10,7 @@ make webinterface  # Svelte UI only → dist/webinterface/debug/
 make tools         # dev tools + seed scanner → src/*/bin/
 make check         # validate locales, format C#, type-check Svelte
 make thunderstore  # release + dist/thunderstore/mpe<version>.zip
-make clean         # remove dist/ (host only — no Docker)
+make clean         # empty dist/debug, prod, webinterface, thunderstore (host only — no Docker)
 ```
 
 `make` or `make help` lists all targets.
