@@ -1,9 +1,9 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 {
-    internal enum CustomLoadingScreenPhase
+    internal enum CustomLoadingScreenLoopMode
     {
-        Loading,
-        Wait,
-        Background,
+        Loop,
+        PingPong,
+        Once,
     }
 }

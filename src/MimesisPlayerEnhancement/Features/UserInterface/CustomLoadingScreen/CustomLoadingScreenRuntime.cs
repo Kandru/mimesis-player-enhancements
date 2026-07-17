@@ -6,6 +6,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         {
             CustomLoadingScreenResolver.InvalidateCatalog();
             CustomLoadingScreenTextureCache.Clear();
+            CustomLoadingScreenApplier.ReapplyActivePhaseIfNeeded();
         }
     }
 }

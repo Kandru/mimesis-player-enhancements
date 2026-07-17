@@ -16,10 +16,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\RoundStartSound\**\*">
-      <LogicalName>Assets.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
+      <LogicalName>Assets.RoundStartSound.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\CustomLoadingScreen\**\*">
-      <LogicalName>Assets.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
+      <LogicalName>Assets.CustomLoadingScreen.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="$(RepoRoot)dist\webinterface\$(DistFolder)\**\*">
       <LogicalName>Assets.WebDashboard.$([System.String]::Copy('%(RecursiveDir)').Replace('\','.').Replace('/','.'))%(Filename)%(Extension)</LogicalName>
@@ -76,6 +76,10 @@
     </Reference>
     <Reference Include="UnityEngine.UI" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UI.dll')">
       <HintPath>$(GameAssemblyPath)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UIModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UIModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll')">

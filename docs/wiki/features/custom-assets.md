@@ -4,8 +4,6 @@
 
 Replace scene loading overlay art and the dungeon landing melody with your own embedded files. Both features are client-only — each player chooses their own themes and sounds.
 
-After `make debug` or `make release`, example loading-screen PNG templates (1920×1080) are copied next to the built mod DLL in `dist/debug/` or `dist/prod/`. Use them as size and naming references when authoring your own assets.
-
 ## Loading screen themes
 
 Custom loading screens replace the full-screen art behind the vanilla loading text (`STRING_LOADING`, `STRING_LOADING_WAIT`). The mod hides the game's built-in variant transforms and draws your PNG on a full-screen overlay instead.
@@ -16,42 +14,45 @@ Each scene transition type has its own folder under `Assets/CustomLoadingScreen/
 
 | Folder | When it appears |
 |--------|-----------------|
-| `Dungeon/` | Entering a dungeon (generation + waiting for players) |
-| `InTramWaiting/` | Tram waiting room before a run |
+| `DungeonStart/` | Entering a dungeon (generation + waiting for players) |
+| `DungeonEnd/` | Returning from a dungeon to the tram scene |
+| `TramScene/` | Entering the tram from the start room or maintenance |
 | `Maintenance/` | Returning to maintenance between cycles |
 | `FirstEnter/` | First connection to a session |
 | `DeathMatch/` | Death match arena load |
 
-Per-dungeon excel keys (for example `Dungeon_Forest`) are normalized to the `Dungeon/` folder.
+Per-dungeon excel keys (for example `Dungeon_Forest`) are normalized to the `DungeonStart/` folder. The game uses the same internal key for both tram transitions; the mod distinguishes `DungeonEnd` from `TramScene` by whether the previous transition entered a dungeon.
 
-### Theme subfolders
+### Theme folders
 
-Inside each context folder, create one subfolder per theme (for example `cyberpunk`, `neon`, `slate`). Use the **same theme name** across contexts if you want a consistent look through maintenance → tram → dungeon.
+Each theme is a top-level folder. Context subfolders hold the images for each transition type:
 
 ```
 src/MimesisPlayerEnhancement/Assets/CustomLoadingScreen/
-  Dungeon/
-    my_theme/
-      loading.png       # optional — local generation phase
-      wait.png          # optional — waiting-for-players phase
-      background.png    # fallback for both phases
-  InTramWaiting/
-    my_theme/
+  GTA/
+    theme.json            # optional — theme-wide settings
+    DungeonStart/
+      loading.png         # optional — local generation phase
+      wait.png            # optional — waiting-for-players phase
+      background.png      # fallback for both phases
+    DungeonEnd/
       background.png
-  Maintenance/
-    my_theme/
+    TramScene/
       background.png
-  FirstEnter/
-    my_theme/
+    Maintenance/
       background.png
-  DeathMatch/
-    my_theme/
-      background.png
+  neon/
+    theme.json
+    DungeonStart/
+      loading.png
+      wait.png
 ```
+
+Use the **same theme folder name** across contexts when you want a consistent look through maintenance → tram → dungeon.
 
 ### Dungeon loading + wait coupling
 
-Only dungeon loads have two text phases on the same overlay. Ship matching art in the same theme folder:
+Only dungeon entry (`DungeonStart`) has two text phases on the same overlay. Ship matching art in the same context folder:
 
 | File | Phase |
 |------|-------|
@@ -61,31 +62,62 @@ Only dungeon loads have two text phases on the same overlay. Ship matching art i
 
 Other contexts only need `background.png`.
 
+### Frame sequences
+
+Animated themes can use numbered frame files instead of a single PNG:
+
+| Pattern | Example |
+|---------|---------|
+| `loading_01.png` … `loading_NN.png` | Dungeon generation phase (`DungeonStart`) |
+| `wait_01.png` … `wait_NN.png` | Dungeon wait phase (`DungeonStart`) |
+| `background_01.png` … `background_NN.png` | All other contexts or fallback |
+
+Single-file names (`loading.png`, `wait.png`, `background.png`) still work and are treated as one-frame sequences.
+
+### Optional `theme.json`
+
+Each theme folder may include a `theme.json` to override animation and display settings. All fields are optional — missing files or fields fall back to defaults.
+
+```json
+{
+  "frameRate": 8,
+  "loop": "loop",
+  "motion": { "mode": "panZoom", "zoom": 1.08, "cycleSeconds": 20 },
+  "backgroundColor": "#000000",
+  "phases": {
+    "loading": { "frameRate": 12, "motion": { "mode": "none" } },
+    "wait": { "images": ["wait_a.png", "wait_b.png"], "loop": "pingPong" }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `frameRate` | Frames per second for sequences (1–30, default 4) |
+| `loop` | `loop`, `pingPong`, or `once` |
+| `motion.mode` | `none` or `panZoom` (Ken Burns on single-frame images) |
+| `motion.zoom` | Zoom factor for pan/zoom (default 1.08) |
+| `motion.cycleSeconds` | Pan/zoom cycle length (default 20) |
+| `backgroundColor` | Hex color behind letterboxed images (default `#000000`) |
+| `phases.loading` / `wait` / `background` | Per-phase overrides plus optional explicit `images` list |
+
+Global `CustomLoadingScreenMotion` disables pan/zoom but frame sequences still play when authored.
+
 ### Image requirements
 
 - **Format:** `.png` only
 - **Recommended size:** 1920×1080 (16:9). The mod stretches the image to the overlay; leave safe margins for vanilla loading text.
 - **Naming:** Lowercase filenames exactly as above (`loading.png`, `wait.png`, `background.png`).
 
-Example templates ship in the repo at `assets/examples/custom-loading-screen/` and are copied to `dist/debug/` (or `dist/prod/`) on build:
-
-- `example-dungeon-loading.png`
-- `example-dungeon-wait.png`
-- `example-dungeon-background.png`
-- `example-intramwaiting-background.png`
-- `example-maintenance-background.png`
-- `example-firstenter-background.png`
-- `example-deathmatch-background.png`
-
-Regenerate templates with:
+Generate blank 1920×1080 templates locally with:
 
 ```bash
-python3 scripts/generate-loading-screen-examples.py
+python3 scripts/generate-loading-screen-examples.py --output /path/to/output
 ```
 
 ### Build and embed
 
-1. Add PNGs under `src/MimesisPlayerEnhancement/Assets/CustomLoadingScreen/`.
+1. Add PNGs (and optional `theme.json`) under `src/MimesisPlayerEnhancement/Assets/CustomLoadingScreen/`.
 2. Rebuild the mod (`make debug` or `make release`). Files are embedded into the DLL automatically.
 3. Set `CustomLoadingScreenMode` in the web dashboard:
    - `Vanilla` — game art (default, feature off)
@@ -135,8 +167,8 @@ Check `Assets/RoundStartSound/LICENSE.md` before redistributing third-party audi
 
 **Loading screens**
 
-1. Copy example PNGs from `dist/debug/` or `assets/examples/custom-loading-screen/`.
-2. Edit them and place under `Assets/CustomLoadingScreen/<Context>/<theme>/`.
+1. Create theme folders under `Assets/CustomLoadingScreen/<theme>/<Context>/`.
+2. Add PNGs (and optional `theme.json` for animation settings).
 3. Rebuild, set `CustomLoadingScreenMode` to `Random` or `Specific`.
 
 **Sounds**

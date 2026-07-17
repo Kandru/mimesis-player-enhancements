@@ -1,13 +1,20 @@
 using System.IO;
+using System.Text;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 {
     internal static class CustomLoadingScreenResolver
     {
         private static readonly string[] ImageExtensions = [".png"];
-        private static readonly Random RandomSource = new();
-        private static readonly Dictionary<string, HashSet<string>> ThemesByContextFolder = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly System.Random RandomSource = new();
+        private static readonly Dictionary<string, HashSet<string>> ThemesByContextFolder =
+            new(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> AllThemeNames = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> KnownAssetPaths = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, CustomLoadingScreenThemeManifest> ManifestsByTheme =
+            new(StringComparer.OrdinalIgnoreCase);
         private static bool _catalogBuilt;
 
         internal static CustomLoadingScreenMode GetMode()
@@ -22,6 +29,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         internal static bool ShouldApplyReplacement() => GetMode() != CustomLoadingScreenMode.Vanilla;
 
+        internal static bool IsMotionEnabled()
+        {
+            if (!ModConfig.IsInitialized)
+            {
+                return true;
+            }
+
+            return ModConfig.CustomLoadingScreenMotion.Value;
+        }
+
         internal static string? ResolveThemeForContext(CustomLoadingScreenContext context)
         {
             EnsureCatalog();
@@ -33,22 +50,44 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             List<string> themeList = [.. themes];
             themeList.Sort(StringComparer.OrdinalIgnoreCase);
+            themeList = FilterThemesForRandomPool(themeList);
 
             return GetMode() switch
             {
-                CustomLoadingScreenMode.Random => ResolveRandomTheme(themeList),
+                CustomLoadingScreenMode.Random => themeList[RandomSource.Next(themeList.Count)],
                 CustomLoadingScreenMode.Specific => ResolveSpecificTheme(themeList),
                 _ => null,
             };
         }
 
-        private static string ResolveRandomTheme(List<string> themeList)
+        internal static CustomLoadingScreenResolvedPhase? ResolvePhasePresentation(
+            CustomLoadingScreenContext context,
+            string theme,
+            CustomLoadingScreenPhase phase)
         {
-            List<string> filtered = FilterThemesForRandomPool(themeList);
-            return filtered[RandomSource.Next(filtered.Count)];
+            EnsureCatalog();
+            string contextFolder = CustomLoadingScreenContextUtil.ToFolderName(context);
+            CustomLoadingScreenThemeManifest? manifest = ManifestsByTheme.GetValueOrDefault(theme);
+            CustomLoadingScreenPhaseManifest? phaseManifest = ResolvePhaseManifest(manifest, context, phase);
+
+            List<string> imagePaths = ResolveImagePaths(context, contextFolder, theme, phase, phaseManifest);
+            if (imagePaths.Count == 0)
+            {
+                return null;
+            }
+
+            CustomLoadingScreenMotionSettings motion = ResolveMotion(manifest?.Motion, phaseManifest?.Motion);
+            return new CustomLoadingScreenResolvedPhase
+            {
+                ImagePaths = imagePaths,
+                FrameRate = ClampFrameRate(phaseManifest?.FrameRate ?? manifest?.FrameRate),
+                Loop = ParseLoopMode(phaseManifest?.Loop ?? manifest?.Loop),
+                Motion = motion,
+                BackgroundColor = ParseBackgroundColor(manifest?.BackgroundColor),
+            };
         }
 
-        private static List<string> ParseRandomPool()
+        internal static List<string> ParseRandomPool()
         {
             return VariantIdListParser.ParseOrdered(
                 ModConfig.CustomLoadingScreenRandomPool.Value,
@@ -64,78 +103,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 ListVariantOptionValues(),
                 CustomLoadingScreenConstants.Feature,
                 "loading screen theme");
-        }
-
-        private static List<string> FilterThemesForRandomPool(List<string> themeList)
-        {
-            List<string> pool = ParseRandomPool();
-            if (pool.Count == 0)
-            {
-                return themeList;
-            }
-
-            HashSet<string> poolSet = new(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < pool.Count; i++)
-            {
-                _ = poolSet.Add(pool[i]);
-            }
-
-            List<string> filtered = [];
-            for (int i = 0; i < themeList.Count; i++)
-            {
-                if (poolSet.Contains(themeList[i]))
-                {
-                    filtered.Add(themeList[i]);
-                }
-            }
-
-            return filtered.Count > 0 ? filtered : themeList;
-        }
-
-        internal static string? ResolveImageRelativePath(
-            CustomLoadingScreenContext context,
-            string theme,
-            CustomLoadingScreenPhase phase)
-        {
-            string contextFolder = CustomLoadingScreenContextUtil.ToFolderName(context);
-            string prefix = $"{contextFolder}/{theme}/";
-
-            if (context == CustomLoadingScreenContext.Dungeon)
-            {
-                if (phase == CustomLoadingScreenPhase.Loading)
-                {
-                    string loadingPath = prefix + CustomLoadingScreenConstants.LoadingImageFile;
-                    if (AssetExists(loadingPath))
-                    {
-                        return loadingPath;
-                    }
-                }
-                else
-                {
-                    string waitPath = prefix + CustomLoadingScreenConstants.WaitImageFile;
-                    if (AssetExists(waitPath))
-                    {
-                        return waitPath;
-                    }
-                }
-            }
-
-            string backgroundPath = prefix + CustomLoadingScreenConstants.BackgroundImageFile;
-            if (AssetExists(backgroundPath))
-            {
-                return backgroundPath;
-            }
-
-            if (context == CustomLoadingScreenContext.Dungeon && phase == CustomLoadingScreenPhase.Wait)
-            {
-                string loadingPath = prefix + CustomLoadingScreenConstants.LoadingImageFile;
-                if (AssetExists(loadingPath))
-                {
-                    return loadingPath;
-                }
-            }
-
-            return null;
         }
 
         internal static IReadOnlyList<string> ListVariantOptionValues()
@@ -177,34 +144,41 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             return options[0];
         }
 
-        internal static string FormatVariantDisplayName(string optionValue)
-        {
-            if (string.IsNullOrWhiteSpace(optionValue))
-            {
-                return optionValue;
-            }
-
-            string[] parts = optionValue.Replace('_', ' ').Split(
-                [' '],
-                StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0)
-            {
-                return optionValue;
-            }
-
-            for (int i = 0; i < parts.Length; i++)
-            {
-                parts[i] = ToTitleCaseWord(parts[i]);
-            }
-
-            return string.Join(' ', parts);
-        }
+        internal static string FormatVariantDisplayName(string optionValue) => optionValue;
 
         internal static void InvalidateCatalog()
         {
             _catalogBuilt = false;
             ThemesByContextFolder.Clear();
             AllThemeNames.Clear();
+            KnownAssetPaths.Clear();
+            ManifestsByTheme.Clear();
+        }
+
+        private static List<string> FilterThemesForRandomPool(List<string> themeList)
+        {
+            List<string> pool = ParseRandomPool();
+            if (pool.Count == 0)
+            {
+                return themeList;
+            }
+
+            HashSet<string> poolSet = new(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < pool.Count; i++)
+            {
+                _ = poolSet.Add(pool[i]);
+            }
+
+            List<string> filtered = [];
+            for (int i = 0; i < themeList.Count; i++)
+            {
+                if (poolSet.Contains(themeList[i]))
+                {
+                    filtered.Add(themeList[i]);
+                }
+            }
+
+            return filtered.Count > 0 ? filtered : themeList;
         }
 
         private static void EnsureCatalog()
@@ -217,9 +191,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             _catalogBuilt = true;
             foreach (string resourcePath in EmbeddedAssets.ListFeatureFiles(CustomLoadingScreenConstants.AssetFolder))
             {
-                if (!TryParseAssetPath(resourcePath, out string contextFolder, out string theme, out _))
+                if (!TryParseAssetPath(resourcePath, out string theme, out string contextFolder, out string fileName))
                 {
                     continue;
+                }
+
+                AllThemeNames.Add(theme);
+
+                if (string.IsNullOrEmpty(contextFolder))
+                {
+                    if (string.Equals(fileName, CustomLoadingScreenConstants.ThemeManifestFile, StringComparison.OrdinalIgnoreCase))
+                    {
+                        LoadManifest(theme, $"{theme}/{fileName}");
+                    }
+
+                    continue;
+                }
+
+                string relativePath = $"{theme}/{contextFolder}/{fileName}";
+                if (IsImageFile(fileName))
+                {
+                    _ = KnownAssetPaths.Add(relativePath);
                 }
 
                 if (!ThemesByContextFolder.TryGetValue(contextFolder, out HashSet<string>? themes))
@@ -229,18 +221,318 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 }
 
                 themes.Add(theme);
-                AllThemeNames.Add(theme);
             }
+        }
+
+        private static void LoadManifest(string theme, string relativePath)
+        {
+            if (ManifestsByTheme.ContainsKey(theme))
+            {
+                return;
+            }
+
+            if (!EmbeddedAssets.TryReadFeature(
+                    CustomLoadingScreenConstants.AssetFolder,
+                    relativePath,
+                    out byte[] bytes,
+                    out _))
+            {
+                return;
+            }
+
+            try
+            {
+                string json = Encoding.UTF8.GetString(bytes);
+                CustomLoadingScreenThemeManifest? manifest =
+                    JsonConvert.DeserializeObject<CustomLoadingScreenThemeManifest>(json);
+                if (manifest == null)
+                {
+                    ModLog.Warn(CustomLoadingScreenConstants.Feature,
+                        $"Custom loading screen theme.json is empty — {theme}");
+                    return;
+                }
+
+                ManifestsByTheme[theme] = manifest;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(CustomLoadingScreenConstants.Feature,
+                    $"Custom loading screen theme.json parse failed — {theme}: {ex.Message}");
+            }
+        }
+
+        private static List<string> ResolveImagePaths(
+            CustomLoadingScreenContext context,
+            string contextFolder,
+            string theme,
+            CustomLoadingScreenPhase phase,
+            CustomLoadingScreenPhaseManifest? phaseManifest)
+        {
+            string contextPrefix = $"{theme}/{contextFolder}/";
+            if (phaseManifest?.Images is { Count: > 0 } explicitImages)
+            {
+                List<string> explicitPaths = FilterExistingPaths(theme, contextFolder, explicitImages);
+                if (explicitPaths.Count > 0)
+                {
+                    return explicitPaths;
+                }
+            }
+
+            List<string> primary = ResolveConventionPaths(context, contextPrefix, phase);
+            if (primary.Count > 0)
+            {
+                return primary;
+            }
+
+            if (context == CustomLoadingScreenContext.DungeonStart)
+            {
+                if (phase == CustomLoadingScreenPhase.Wait)
+                {
+                    List<string> loadingFallback = ResolveConventionPaths(
+                        context,
+                        contextPrefix,
+                        CustomLoadingScreenPhase.Loading);
+                    if (loadingFallback.Count > 0)
+                    {
+                        return loadingFallback;
+                    }
+                }
+
+                List<string> backgroundFallback = ResolveConventionPaths(
+                    context,
+                    contextPrefix,
+                    CustomLoadingScreenPhase.Background);
+                if (backgroundFallback.Count > 0)
+                {
+                    return backgroundFallback;
+                }
+            }
+
+            return [];
+        }
+
+        private static List<string> ResolveConventionPaths(
+            CustomLoadingScreenContext context,
+            string contextPrefix,
+            CustomLoadingScreenPhase phase)
+        {
+            string baseName = ResolveConventionBaseName(context, phase);
+            List<string> numbered = DiscoverNumberedFrames(contextPrefix, baseName);
+            if (numbered.Count > 0)
+            {
+                return numbered;
+            }
+
+            string singlePath = contextPrefix + baseName + ".png";
+            return AssetExists(singlePath) ? [singlePath] : [];
+        }
+
+        private static string ResolveConventionBaseName(
+            CustomLoadingScreenContext context,
+            CustomLoadingScreenPhase phase)
+        {
+            if (phase == CustomLoadingScreenPhase.Background
+                || context != CustomLoadingScreenContext.DungeonStart)
+            {
+                return Path.GetFileNameWithoutExtension(CustomLoadingScreenConstants.BackgroundImageFile);
+            }
+
+            return phase == CustomLoadingScreenPhase.Loading
+                ? Path.GetFileNameWithoutExtension(CustomLoadingScreenConstants.LoadingImageFile)
+                : Path.GetFileNameWithoutExtension(CustomLoadingScreenConstants.WaitImageFile);
+        }
+
+        private static List<string> DiscoverNumberedFrames(string contextPrefix, string baseName)
+        {
+            string searchPrefix = contextPrefix + baseName + "_";
+            List<(int Number, string Path)> matches = [];
+            foreach (string assetPath in KnownAssetPaths)
+            {
+                if (!assetPath.StartsWith(searchPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                string fileName = assetPath[(contextPrefix.Length)..];
+                if (!TryParseNumberedFrame(fileName, baseName, out int number))
+                {
+                    continue;
+                }
+
+                matches.Add((number, assetPath));
+            }
+
+            matches.Sort((left, right) => left.Number.CompareTo(right.Number));
+            List<string> paths = [];
+            for (int i = 0; i < matches.Count; i++)
+            {
+                paths.Add(matches[i].Path);
+            }
+
+            return paths;
+        }
+
+        private static bool TryParseNumberedFrame(string fileName, string baseName, out int number)
+        {
+            number = 0;
+            if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string withoutExtension = fileName[..^4];
+            string expectedPrefix = baseName + "_";
+            if (!withoutExtension.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string suffix = withoutExtension[expectedPrefix.Length..];
+            return int.TryParse(suffix, out number);
+        }
+
+        private static List<string> FilterExistingPaths(
+            string theme,
+            string contextFolder,
+            IEnumerable<string> images)
+        {
+            string contextPrefix = $"{theme}/{contextFolder}/";
+            List<string> paths = [];
+            foreach (string image in images)
+            {
+                if (string.IsNullOrWhiteSpace(image))
+                {
+                    continue;
+                }
+
+                string trimmed = image.Trim().Replace('\\', '/');
+                string relativePath = trimmed.Contains('/', StringComparison.Ordinal)
+                    ? $"{theme}/{trimmed}"
+                    : contextPrefix + trimmed;
+                if (AssetExists(relativePath))
+                {
+                    paths.Add(relativePath);
+                }
+            }
+
+            return paths;
+        }
+
+        private static CustomLoadingScreenPhaseManifest? ResolvePhaseManifest(
+            CustomLoadingScreenThemeManifest? manifest,
+            CustomLoadingScreenContext context,
+            CustomLoadingScreenPhase phase)
+        {
+            if (manifest?.Phases == null)
+            {
+                return null;
+            }
+
+            if (context == CustomLoadingScreenContext.DungeonStart)
+            {
+                return phase == CustomLoadingScreenPhase.Loading
+                    ? manifest.Phases.Loading
+                    : manifest.Phases.Wait;
+            }
+
+            return manifest.Phases.Background ?? manifest.Phases.Loading;
+        }
+
+        private static CustomLoadingScreenMotionSettings ResolveMotion(
+            CustomLoadingScreenMotionManifest? themeMotion,
+            CustomLoadingScreenMotionManifest? phaseMotion)
+        {
+            CustomLoadingScreenMotionManifest? source = phaseMotion ?? themeMotion;
+            if (source == null)
+            {
+                return CustomLoadingScreenMotionSettings.Default;
+            }
+
+            return new CustomLoadingScreenMotionSettings
+            {
+                Mode = ParseMotionMode(source.Mode),
+                Zoom = source.Zoom ?? CustomLoadingScreenConstants.DefaultMotionZoom,
+                CycleSeconds = source.CycleSeconds ?? CustomLoadingScreenConstants.DefaultMotionCycleSeconds,
+            };
+        }
+
+        private static float ClampFrameRate(float? frameRate)
+        {
+            float value = frameRate ?? CustomLoadingScreenConstants.DefaultFrameRate;
+            return Mathf.Clamp(value, CustomLoadingScreenConstants.MinFrameRate, CustomLoadingScreenConstants.MaxFrameRate);
+        }
+
+        private static CustomLoadingScreenLoopMode ParseLoopMode(string? value)
+        {
+            if (string.Equals(value, "pingPong", StringComparison.OrdinalIgnoreCase))
+            {
+                return CustomLoadingScreenLoopMode.PingPong;
+            }
+
+            if (string.Equals(value, "once", StringComparison.OrdinalIgnoreCase))
+            {
+                return CustomLoadingScreenLoopMode.Once;
+            }
+
+            return CustomLoadingScreenLoopMode.Loop;
+        }
+
+        private static CustomLoadingScreenMotionMode ParseMotionMode(string? value)
+        {
+            if (string.Equals(value, "none", StringComparison.OrdinalIgnoreCase))
+            {
+                return CustomLoadingScreenMotionMode.None;
+            }
+
+            return CustomLoadingScreenMotionMode.PanZoom;
+        }
+
+        private static Color ParseBackgroundColor(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Color.black;
+            }
+
+            string trimmed = value.Trim();
+            if (trimmed.StartsWith('#'))
+            {
+                trimmed = trimmed[1..];
+            }
+
+            if (trimmed.Length != 6 && trimmed.Length != 8)
+            {
+                return Color.black;
+            }
+
+            if (!uint.TryParse(trimmed, System.Globalization.NumberStyles.HexNumber, null, out uint rgba))
+            {
+                return Color.black;
+            }
+
+            if (trimmed.Length == 6)
+            {
+                float r = ((rgba >> 16) & 0xFF) / 255f;
+                float g = ((rgba >> 8) & 0xFF) / 255f;
+                float b = (rgba & 0xFF) / 255f;
+                return new Color(r, g, b, 1f);
+            }
+
+            float alpha = ((rgba >> 24) & 0xFF) / 255f;
+            float red = ((rgba >> 16) & 0xFF) / 255f;
+            float green = ((rgba >> 8) & 0xFF) / 255f;
+            float blue = (rgba & 0xFF) / 255f;
+            return new Color(red, green, blue, alpha);
         }
 
         private static bool TryParseAssetPath(
             string resourcePath,
-            out string contextFolder,
             out string theme,
+            out string contextFolder,
             out string fileName)
         {
-            contextFolder = "";
             theme = "";
+            contextFolder = "";
             fileName = "";
 
             if (string.IsNullOrWhiteSpace(resourcePath))
@@ -249,23 +541,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             }
 
             string extension = Path.GetExtension(resourcePath);
-            if (!IsImageExtension(extension))
+            if (string.IsNullOrEmpty(extension))
             {
                 return false;
             }
 
             string withoutExtension = resourcePath[..^extension.Length];
             string[] parts = withoutExtension.Split('.');
-            if (parts.Length < 3)
+            if (parts.Length < 2)
             {
                 return false;
             }
 
-            contextFolder = parts[0];
-            theme = parts[1];
+            theme = parts[0];
+            if (parts.Length == 2)
+            {
+                contextFolder = "";
+                fileName = parts[1] + extension;
+                return !string.IsNullOrWhiteSpace(theme) && !string.IsNullOrWhiteSpace(fileName);
+            }
+
+            contextFolder = parts[1];
             fileName = string.Join('.', parts, 2, parts.Length - 2) + extension;
-            return !string.IsNullOrWhiteSpace(contextFolder)
-                   && !string.IsNullOrWhiteSpace(theme)
+            return !string.IsNullOrWhiteSpace(theme)
+                   && !string.IsNullOrWhiteSpace(contextFolder)
                    && !string.IsNullOrWhiteSpace(fileName);
         }
 
@@ -288,13 +587,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             return null;
         }
 
-        private static bool AssetExists(string relativePath)
+        private static bool AssetExists(string relativePath) => KnownAssetPaths.Contains(relativePath);
+
+        private static bool IsImageFile(string fileName)
         {
-            return EmbeddedAssets.TryReadFeature(
-                CustomLoadingScreenConstants.AssetFolder,
-                relativePath,
-                out _,
-                out _);
+            string extension = Path.GetExtension(fileName);
+            for (int i = 0; i < ImageExtensions.Length; i++)
+            {
+                if (string.Equals(extension, ImageExtensions[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static CustomLoadingScreenMode ParseMode(string? value)
@@ -310,34 +616,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             }
 
             return CustomLoadingScreenMode.Vanilla;
-        }
-
-        private static bool IsImageExtension(string extension)
-        {
-            for (int i = 0; i < ImageExtensions.Length; i++)
-            {
-                if (string.Equals(extension, ImageExtensions[i], StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static string ToTitleCaseWord(string word)
-        {
-            if (string.IsNullOrEmpty(word))
-            {
-                return word;
-            }
-
-            if (word.Length == 1)
-            {
-                return word.ToUpperInvariant();
-            }
-
-            return char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant();
         }
     }
 }

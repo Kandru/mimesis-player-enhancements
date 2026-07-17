@@ -7,6 +7,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
 
         private static void Postfix()
         {
+            if (CustomLoadingScreenSession.HoldThroughDeparture)
+            {
+                return;
+            }
+
             try
             {
                 UIPrefab_Scene_Loading? loading = ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;

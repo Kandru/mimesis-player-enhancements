@@ -43,6 +43,26 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             return texture;
         }
 
+        internal static Texture2D[] TryGetTextures(IReadOnlyList<string> relativePaths)
+        {
+            if (relativePaths.Count == 0)
+            {
+                return [];
+            }
+
+            List<Texture2D> textures = [];
+            for (int i = 0; i < relativePaths.Count; i++)
+            {
+                Texture2D? texture = TryGetTexture(relativePaths[i]);
+                if (texture != null)
+                {
+                    textures.Add(texture);
+                }
+            }
+
+            return textures.ToArray();
+        }
+
         internal static void Clear()
         {
             foreach (Texture2D texture in TexturesByRelativePath.Values)

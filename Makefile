@@ -187,9 +187,6 @@ mod: require-docker deps validate-locale
 		$(DOTNET_ENV) \
 		$(DOTNET_IMAGE) \
 		dotnet build $(MOD_PROJ) -c $(DOTNET_CONFIG) $(MOD_EXTRA)
-	@echo "==> Copying custom asset examples to dist/$(DIST_SUBDIR)/"
-	@mkdir -p "$(ROOT)/dist/$(DIST_SUBDIR)"
-	@cp "$(ROOT)/assets/examples/custom-loading-screen/"*.png "$(ROOT)/dist/$(DIST_SUBDIR)/"
 	@echo "==> Mod ready: dist/$(DIST_SUBDIR)/MimesisPlayerEnhancement.dll"
 
 ifeq ($(SKIP_WEB),1)

@@ -299,6 +299,7 @@ namespace MimesisPlayerEnhancement
                     ["CustomLoadingScreenMode"] = "customLoadingScreen",
                     ["CustomLoadingScreenRandomPool"] = "customLoadingScreen",
                     ["CustomLoadingScreenVariant"] = "customLoadingScreen",
+                    ["CustomLoadingScreenMotion"] = "customLoadingScreen",
                 };
             }
 

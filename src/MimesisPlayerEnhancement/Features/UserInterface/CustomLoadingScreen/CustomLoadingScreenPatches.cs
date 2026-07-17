@@ -20,10 +20,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         {
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
+                ("LoadScene/Hub", AccessTools.Method(typeof(Hub), nameof(Hub.LoadScene))),
                 ("SetLoadingScene/UIPrefab_Scene_Loading", AccessTools.Method(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingScene))),
                 ("SetLoadingText/UIPrefab_Scene_Loading", AccessTools.Method(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingText))),
+                ("Show/UIPrefabScript (scene loading)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))),
                 ("Hide/UIPrefabScript (scene loading)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
+                ("Cor_Hide/UIPrefabScript (game status)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Cor_Hide))),
+                ("OnChangeLevelObjectStateSig/NewTramLeverLevelObject", AccessTools.Method(typeof(NewTramLeverLevelObject), nameof(NewTramLeverLevelObject.OnChangeLevelObjectStateSig))),
                 ("EndSceneLoading/GameMainBase", AccessTools.Method(typeof(GameMainBase), nameof(GameMainBase.EndSceneLoading))),
+                ("FadeOut/UIManager", AccessTools.Method(typeof(UIManager), nameof(UIManager.FadeOut))),
             ]);
         }
     }

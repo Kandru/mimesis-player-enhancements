@@ -90,11 +90,15 @@
       },
       "CustomLoadingScreenVariant": {
         "title": "Ladebildschirm-Theme",
-        "description": "Theme-Ordner bei Modus „Bestimmtes Theme“. Muss im passenden Kontextordner existieren (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch)."
+        "description": "Theme-Ordner bei Modus „Bestimmtes Theme“. Muss Assets für den passenden Kontext enthalten (DungeonStart, DungeonEnd, TramScene, Maintenance, FirstEnter, DeathMatch)."
       },
       "CustomLoadingScreenRandomPool": {
         "title": "Ladebildschirm-Zufallspool",
         "description": "Nur bei Modus „Zufälliges Theme“ — welche Theme-Ordner pro Übergang gewürfelt werden dürfen. Leer lassen = alle für den Kontext verfügbaren Themes. Nur Client."
+      },
+      "CustomLoadingScreenMotion": {
+        "title": "Ladebildschirm-Bewegung",
+        "description": "Aktiviert langsame Pan/Zoom-Bewegung bei Einzelbild-Ladegrafiken. Frame-Sequenzen werden bei vorhandenen Assets immer animiert. Nur Client."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {

@@ -90,11 +90,15 @@
       },
       "CustomLoadingScreenVariant": {
         "title": "Custom Loading Screen Theme",
-        "description": "Theme folder to use when mode is Specific Theme. Must exist under the matching context folder (Dungeon, InTramWaiting, Maintenance, FirstEnter, DeathMatch)."
+        "description": "Theme folder to use when mode is Specific Theme. Must contain assets for the matching context (DungeonStart, DungeonEnd, TramScene, Maintenance, FirstEnter, DeathMatch)."
       },
       "CustomLoadingScreenRandomPool": {
         "title": "Custom Loading Screen Random Pool",
         "description": "Random Theme mode only — pick which theme folders can be rolled per transition. Leave empty to allow all themes available for each context. Client-only."
+      },
+      "CustomLoadingScreenMotion": {
+        "title": "Custom Loading Screen Motion",
+        "description": "Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. Client-only."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {

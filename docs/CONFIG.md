@@ -100,8 +100,9 @@ Mod-wide settings that are not owned by a single feature.
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
 | `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Client-only. |
 | `CustomLoadingScreenMode` | string | `Vanilla` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon transitions can use separate `loading.png` and `wait.png` from the same theme folder. Client-only. |
-| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme subfolder under a context folder (`Dungeon`, `InTramWaiting`, `Maintenance`, `FirstEnter`, `DeathMatch`). Empty or invalid values reset to the first discovered theme. |
+| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme folder that has assets under the current transition context (for example `GTA/Dungeon/background.png`). Empty or invalid values reset to the first discovered theme. |
 | `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). Client-only. |
+| `CustomLoadingScreenMotion` | bool | `true` | — | Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. Client-only. |
 
 List-style settings (`LootAllowlist`, `DungeonAllowlist`, `WeatherCyclePresets`, and the random pools above) use searchable multi-select pickers in the web dashboard. Values are stored as comma-separated ids, not localized labels.
 
