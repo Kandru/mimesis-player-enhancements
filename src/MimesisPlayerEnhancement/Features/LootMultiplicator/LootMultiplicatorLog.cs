@@ -152,6 +152,28 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 $"multiplier={multiplier:0.##}×, budgetsScaled={scalingApplied}, pos={SpawnScalingLog.FormatLocation(room, spawnData.PosVector)}");
         }
 
+        internal static void DebugRandomSpawnPoolsFiltered(
+            int filtered,
+            int emptied,
+            LootItemFilterMode mode)
+        {
+            if (!ModConfig.EnableDebugLogging.Value)
+            {
+                return;
+            }
+
+            ModLog.Debug(
+                Feature,
+                $"Random map loot pools filtered — slots={filtered}, emptied={emptied}, mode={mode}");
+        }
+
+        internal static void WarnRandomSpawnPoolFilterFailed(int failed)
+        {
+            ModLog.Warn(
+                Feature,
+                $"Failed to apply filtered random map loot candidates — markers={failed}");
+        }
+
         internal static void DebugRandomPoolBudget(
             int vanillaBudget,
             int finalBudget,

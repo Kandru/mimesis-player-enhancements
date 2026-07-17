@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
@@ -26,6 +27,14 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         private static LootItemFilterMode _cachedMode = LootItemFilterMode.All;
         private static List<int> _validAllowlistIds = [];
 
+        private enum RandomSpawnFilterResult
+        {
+            Skipped,
+            Filtered,
+            Emptied,
+            Failed,
+        }
+
         static LootItemFilter()
         {
             ModConfig.Changed += OnConfigChanged;
@@ -39,7 +48,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static bool IsFilterActive()
         {
-            return _cachedMode != LootItemFilterMode.All;
+            return _cachedMode switch
+            {
+                LootItemFilterMode.AllowlistOnly => _validAllowlistIds.Count > 0,
+                LootItemFilterMode.BlocklistOnly => _cachedBlocklist.Count > 0,
+                _ => false,
+            };
         }
 
         internal static bool IsSpawnAllowed(int masterId)
@@ -141,12 +155,20 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
+            if (DungeonRoomAppliedSet.IsApplied(room, DungeonRoomApplyKind.LootSpawnFilter))
+            {
+                return;
+            }
+
             if (SpawnedActorDatasField.GetValue(room) is not IDictionary spawnDatas)
             {
                 return;
             }
 
             int filtered = 0;
+            int emptied = 0;
+            int failed = 0;
+
             foreach (DictionaryEntry entry in spawnDatas)
             {
                 if (entry.Value is not RandomSpawnedItemActorData randomSpawn)
@@ -154,15 +176,30 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     continue;
                 }
 
-                if (TryFilterRandomSpawnCandidates(randomSpawn))
+                switch (TryFilterRandomSpawnCandidates(randomSpawn))
                 {
-                    filtered++;
+                    case RandomSpawnFilterResult.Filtered:
+                        filtered++;
+                        break;
+                    case RandomSpawnFilterResult.Emptied:
+                        emptied++;
+                        break;
+                    case RandomSpawnFilterResult.Failed:
+                        failed++;
+                        break;
                 }
             }
 
-            if (filtered > 0 && ModConfig.EnableDebugLogging.Value)
+            DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.LootSpawnFilter);
+
+            if (filtered > 0 || emptied > 0)
             {
-                ModLog.Debug(Feature, $"Random map loot pools filtered — slots={filtered}, mode={_cachedMode}");
+                LootMultiplicatorLog.DebugRandomSpawnPoolsFiltered(filtered, emptied, _cachedMode);
+            }
+
+            if (failed > 0)
+            {
+                LootMultiplicatorLog.WarnRandomSpawnPoolFilterFailed(failed);
             }
         }
 
@@ -176,12 +213,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             blocklist = _cachedBlocklist;
         }
 
-        private static bool TryFilterRandomSpawnCandidates(RandomSpawnedItemActorData spawnData)
+        private static RandomSpawnFilterResult TryFilterRandomSpawnCandidates(RandomSpawnedItemActorData spawnData)
         {
             ImmutableDictionary<int, (int rate, int meanPrice)> candidates = spawnData.Candidates;
             if (candidates.Count == 0 && _cachedMode != LootItemFilterMode.AllowlistOnly)
             {
-                return false;
+                return RandomSpawnFilterResult.Skipped;
             }
 
             List<(int masterId, int weight, int meanPrice)> entries = ExtractIndividualRates(candidates);
@@ -194,18 +231,16 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             if (entries.Count == 0)
             {
-                ModLog.Warn(Feature, "Random map loot pool empty after spawn filter — marker left inactive");
-                return false;
+                return RandomSpawnFilterResult.Emptied;
             }
 
             ImmutableDictionary<int, (int, int)> filtered = BuildCumulativeCandidates(entries);
             if (!SetRandomSpawnCandidates(spawnData, filtered))
             {
-                ModLog.Warn(Feature, "Failed to apply filtered random map loot candidates");
-                return false;
+                return RandomSpawnFilterResult.Failed;
             }
 
-            return true;
+            return RandomSpawnFilterResult.Filtered;
         }
 
         private static List<(int masterId, int weight, int meanPrice)> ExtractIndividualRates(
@@ -323,6 +358,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             _cachedBlocklist = LootItemIdListParser.Parse(ModConfig.LootBlocklist.Value ?? "");
             _cachedMode = LootItemIdListParser.ParseMode(ModConfig.LootItemFilterMode.Value ?? "");
             RebuildValidAllowlistIds();
+            WarnIfFilterModeHasEmptyList();
         }
 
         private static void RebuildValidAllowlistIds()
@@ -338,6 +374,20 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 {
                     ModLog.Warn(Feature, $"Loot allowlist ID not found in masterdata — id={masterId}");
                 }
+            }
+        }
+
+        private static void WarnIfFilterModeHasEmptyList()
+        {
+            if (_cachedMode == LootItemFilterMode.AllowlistOnly && _validAllowlistIds.Count == 0)
+            {
+                ModLog.Warn(Feature, "LootItemFilterMode is AllowlistOnly but allowlist is empty — spawn filter inactive");
+                return;
+            }
+
+            if (_cachedMode == LootItemFilterMode.BlocklistOnly && _cachedBlocklist.Count == 0)
+            {
+                ModLog.Warn(Feature, "LootItemFilterMode is BlocklistOnly but blocklist is empty — spawn filter inactive");
             }
         }
     }

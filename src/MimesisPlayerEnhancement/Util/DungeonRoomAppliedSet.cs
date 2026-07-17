@@ -8,6 +8,7 @@ namespace MimesisPlayerEnhancement.Util
         SpawnScaling = 1 << 0,
         MapPlacedEncounters = 1 << 1,
         LootScaling = 1 << 2,
+        LootSpawnFilter = 1 << 6,
         FixedLootCoordination = 1 << 3,
         DungeonTime = 1 << 4,
         Weather = 1 << 5,
