@@ -25,6 +25,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal const float DefaultArrivalFadeSeconds = 1f;
         internal const float DefaultPhaseCrossfadeSeconds = 0.75f;
 
+        /// <summary>Display aspect at or above this value uses fit-height pillarboxing (21:9).</summary>
+        internal const float UltrawideAspectThreshold = 21f / 9f;
+
         /// <summary>Nested overlay canvas sort order — above the game's fade/video layers.</summary>
         internal const int OverlayCanvasSortOrder = 32000;
     }

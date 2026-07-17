@@ -108,7 +108,7 @@ Global `CustomLoadingScreenMotion` disables pan/zoom but frame sequences still p
 ### Image requirements
 
 - **Format:** `.png` only
-- **Recommended size:** 1920×1080 (16:9). The mod stretches the image to the overlay; leave safe margins for vanilla loading text.
+- **Recommended size:** 1920×1080 (16:9). The mod scales images to cover the full screen on standard displays (16:9, 16:10, 4:3, etc.); leave safe margins for vanilla loading text. On ultrawide monitors (21:9+), images fit to full height with `backgroundColor` filling the side bars.
 - **Naming:** Lowercase filenames exactly as above (`loading.png`, `wait.png`, `background.png`).
 
 Generate blank 1920×1080 templates locally with:

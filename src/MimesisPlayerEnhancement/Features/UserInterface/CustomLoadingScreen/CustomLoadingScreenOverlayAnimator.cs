@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 {
@@ -26,6 +27,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private Color _backgroundOpaque = Color.black;
         private Color _contentOpaque = Color.white;
         private Action? _onFadeComplete;
+        private Rect _baseUvRect = new(0f, 0f, 1f, 1f);
+        private CustomLoadingScreenScaleMode _scaleMode = CustomLoadingScreenScaleMode.Cover;
 
         internal void Initialize(RawImage backgroundImage, RawImage contentImage, RawImage? crossfadeImage = null)
         {
@@ -93,15 +96,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             _backgroundImage.texture = Texture2D.whiteTexture;
 
             crossfade.texture = incoming[0];
-            crossfade.uvRect = new Rect(0f, 0f, 1f, 1f);
             crossfade.gameObject.SetActive(true);
             ApplyContentLayerAlpha(_contentImage, 1f);
             ApplyContentLayerAlpha(crossfade, 0f);
+            ApplyImageLayout();
+            ApplyImageLayout(crossfade);
 
             _crossfadeDuration = Mathf.Max(duration, 0.05f);
             _crossfadeElapsed = 0f;
             _crossfading = true;
-            ResetUvRect();
         }
 
         internal void BeginFadeIn(float duration)
@@ -155,7 +158,21 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             _textures = [];
             _contentImage.texture = null;
             ApplyFadeAlpha(1f);
-            ResetUvRect();
+            ResetImageLayout();
+        }
+
+        internal void RefreshLayout()
+        {
+            ApplyImageLayout();
+            if (_crossfadeImage != null && _crossfadeImage.gameObject.activeSelf)
+            {
+                ApplyImageLayout(_crossfadeImage);
+            }
+        }
+
+        private void OnRectTransformDimensionsChange()
+        {
+            RefreshLayout();
         }
 
         internal void RefreshMotion(bool motionEnabled)
@@ -163,7 +180,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             _motionEnabled = motionEnabled;
             if (!_motionEnabled || _textures.Length != 1 || !ShouldUsePanZoom())
             {
-                ResetUvRect();
+                ApplyImageLayout();
             }
         }
 
@@ -254,7 +271,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                     $"Custom loading screen has no decodable images — {string.Join(", ", phase.ImagePaths)}");
             }
 
-            ResetUvRect();
+            ApplyImageLayout();
         }
 
         private void FinishCrossfade()
@@ -268,7 +285,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             _crossfading = false;
             ApplyContentLayerAlpha(_contentImage, 1f);
-            ResetUvRect();
+            ApplyImageLayout();
         }
 
         private void CancelCrossfade(bool keepLayer = false)
@@ -312,11 +329,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             GameObject imageObject = new(CustomLoadingScreenConstants.OverlayCrossfadeObjectName);
             imageObject.transform.SetParent(transform, worldPositionStays: false);
             RectTransform rect = imageObject.AddComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.localScale = Vector3.one;
+            CustomLoadingScreenImageLayout.StretchRect(rect);
 
             RawImage rawImage = imageObject.AddComponent<RawImage>();
             rawImage.raycastTarget = false;
@@ -382,7 +395,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             _frameIndex = Mathf.Clamp(nextIndex, 0, _textures.Length - 1);
             _contentImage.texture = _textures[_frameIndex];
-            ResetUvRect();
+            ApplyImageLayout();
         }
 
         private void ApplyPanZoom()
@@ -396,15 +409,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             float cycleSeconds = Mathf.Max(motion.CycleSeconds, 0.1f);
             float zoom = Mathf.Max(motion.Zoom, 1f);
             float t = (Time.unscaledTime % cycleSeconds) / cycleSeconds;
-            float size = 1f / zoom;
-            float baseOffset = (1f - size) * 0.5f;
-            float panX = baseOffset + Mathf.Sin(t * Mathf.PI * 2f) * 0.02f;
-            float panY = baseOffset + Mathf.Cos(t * Mathf.PI * 2f) * 0.015f;
-            _contentImage.uvRect = new Rect(panX, panY, size, size);
+            _contentImage.uvRect = CustomLoadingScreenImageLayout.ComputePanZoomUvRect(_baseUvRect, zoom, t);
         }
 
         private bool ShouldUsePanZoom() =>
-            _phase != null && _textures.Length == 1 && _phase.Motion.IsPanZoomEnabled(_motionEnabled);
+            _scaleMode == CustomLoadingScreenScaleMode.Cover
+            && _phase != null
+            && _textures.Length == 1
+            && _phase.Motion.IsPanZoomEnabled(_motionEnabled);
 
         private void ApplyFadeAlpha(float alpha)
         {
@@ -437,9 +449,43 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             image.color = content;
         }
 
-        private void ResetUvRect()
+        private void ApplyImageLayout()
         {
+            ApplyImageLayout(_contentImage);
+        }
+
+        private void ApplyImageLayout(RawImage image)
+        {
+            Texture? texture = image.texture;
+            if (texture == null)
+            {
+                return;
+            }
+
+            RectTransform parentRect = (RectTransform)transform;
+            float screenAspect = CustomLoadingScreenImageLayout.GetScreenAspect(parentRect);
+            _scaleMode = CustomLoadingScreenImageLayout.ResolveMode(screenAspect);
+            CustomLoadingScreenImageLayout.Apply(image, texture, parentRect);
+
+            if (ReferenceEquals(image, _contentImage)
+                && _scaleMode == CustomLoadingScreenScaleMode.Cover)
+            {
+                _baseUvRect = image.uvRect;
+            }
+        }
+
+        private void ResetImageLayout()
+        {
+            CustomLoadingScreenImageLayout.StretchRect(_contentImage.rectTransform);
             _contentImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+            _baseUvRect = new Rect(0f, 0f, 1f, 1f);
+            _scaleMode = CustomLoadingScreenScaleMode.Cover;
+
+            if (_crossfadeImage != null)
+            {
+                CustomLoadingScreenImageLayout.StretchRect(_crossfadeImage.rectTransform);
+                _crossfadeImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+            }
         }
 
         private static bool SameImagePaths(

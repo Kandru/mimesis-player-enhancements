@@ -372,6 +372,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             if (CustomLoadingScreenSession.IsActive)
             {
                 PositionOverlay(loading);
+                GetAnimator(loading)?.RefreshLayout();
                 return;
             }
 
@@ -617,6 +618,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                     out RawImage? cachedCrossfade))
             {
                 cachedAnimator.Initialize(cachedBackground, cachedContent, cachedCrossfade);
+                cachedAnimator.RefreshLayout();
                 return cachedAnimator;
             }
 
@@ -627,7 +629,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             GameObject overlayObject = new(CustomLoadingScreenConstants.OverlayObjectName);
             overlayObject.transform.SetParent(loading.transform, worldPositionStays: false);
-            StretchRect(overlayObject.AddComponent<RectTransform>());
+            CustomLoadingScreenImageLayout.StretchRect(overlayObject.AddComponent<RectTransform>());
 
             RawImage backgroundImage = CreateStretchRawImage(
                 overlayObject.transform,
@@ -703,20 +705,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         {
             GameObject imageObject = new(objectName);
             imageObject.transform.SetParent(parent, worldPositionStays: false);
-            StretchRect(imageObject.AddComponent<RectTransform>());
+            CustomLoadingScreenImageLayout.StretchRect(imageObject.AddComponent<RectTransform>());
 
             RawImage rawImage = imageObject.AddComponent<RawImage>();
             rawImage.raycastTarget = false;
             return rawImage;
-        }
-
-        private static void StretchRect(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.localScale = Vector3.one;
         }
 
         private static CustomLoadingScreenOverlayAnimator? GetAnimator(UIPrefab_Scene_Loading loading)
