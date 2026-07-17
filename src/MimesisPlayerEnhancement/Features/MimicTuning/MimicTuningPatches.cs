@@ -35,6 +35,10 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
                     AccessTools.Method(typeof(Mimic.Voice.SpeechSystem.SpeechEventAdditionalGameData), nameof(Mimic.Voice.SpeechSystem.SpeechEventAdditionalGameData.PickBestMatch))),
                 ("CopyInventory/AIController",
                     AccessTools.Method(typeof(AIController), nameof(AIController.CopyInventory))),
+                ("SetPossession/ProtoActor",
+                    AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.SetPossession))),
+                ("PlayVoiceOnActor/ProtoActor",
+                    AccessTools.Method(typeof(ProtoActor), nameof(ProtoActor.PlayVoiceOnActor))),
             ]);
         }
     }
