@@ -141,6 +141,8 @@ namespace MimesisPlayerEnhancement
 
         internal static void AssignEntryGroups(WebDashboardConfigSectionDto section)
         {
+            // New explicit or auto-inferred groupIds need matching labels in l10n:
+            // config.{sectionId}._groups.{groupId}
             string sectionId = section.Id;
             string? featureToggleKey = section.FeatureToggle?.Key;
             List<WebDashboardConfigEntryDto> entries = section.Entries;
@@ -215,6 +217,7 @@ namespace MimesisPlayerEnhancement
 
         private static Dictionary<string, string> GetExplicitGroups(string sectionId)
         {
+            // Each groupId value must have a label under config.{sectionId}._groups in l10n/*.json.
             if (sectionId == LootSectionId)
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)

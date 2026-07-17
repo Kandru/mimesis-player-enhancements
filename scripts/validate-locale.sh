@@ -150,6 +150,28 @@ def main() -> int:
             de_section = de_config.get(section_id, {})
             if not de_section.get("_description"):
                 print(f"warning: de.json missing config.{section_id}._description")
+
+            en_groups = section.get("_groups")
+            if isinstance(en_groups, dict):
+                de_groups = de_section.get("_groups")
+                if not isinstance(de_groups, dict):
+                    errors.append(
+                        f"missing config.{section_id}._groups in de.json (present in en.json)"
+                    )
+                else:
+                    en_group_keys = set(en_groups)
+                    de_group_keys = set(de_groups)
+                    missing_in_de = sorted(en_group_keys - de_group_keys)
+                    extra_in_de = sorted(de_group_keys - en_group_keys)
+                    for group_id in missing_in_de:
+                        errors.append(
+                            f"missing config.{section_id}._groups.{group_id} in de.json"
+                        )
+                    for group_id in extra_in_de:
+                        errors.append(
+                            f"orphan config.{section_id}._groups.{group_id} in de.json"
+                        )
+
             for key, value in section.items():
                 if key in METADATA_KEYS or not isinstance(value, dict):
                     continue

@@ -19,10 +19,10 @@ Config entry shape:
 ```json
 "config": {
   "MimesisPlayerEnhancement_LootMultiplicator": {
-    "_section": "Loot Multiplicator",
+    "_section": "Loot Multiplier",
     "_description": "Adjust map loot and enemy drops; scale with player count or filter item types. Host only.",
     "EnableLootMultiplicator": {
-      "title": "Enable Loot Multiplicator",
+      "title": "Enable Loot Multiplier",
       "description": "Scale map loot and enemy death drops..."
     }
   }
@@ -31,8 +31,34 @@ Config entry shape:
 
 - `_section` — category title (MelonPreferences and web settings nav)
 - `_description` — category subtitle on the web dashboard settings panel
+- `_groups` — optional map of entry-group labels for the web dashboard (`groupId` → display string). Group IDs come from `ModConfigEntryUiHints.AssignEntryGroups` (explicit maps or auto-inferred from entry keys). When missing, the web UI falls back to the raw `groupId`.
 
-Select options add an `options` map keyed by the stored value.
+```json
+"MimesisPlayerEnhancement_Ui": {
+  "_section": "User Interface",
+  "_description": "Extended save picker and local HUD tweaks. Client-only.",
+  "_groups": {
+    "fpsUi": "FPS UI",
+    "roundStartSound": "Dungeon landing sound"
+  },
+  "EnableFpsUi": {
+    "title": "Enable FPS UI",
+    "description": "Replace the top-left health bar with numeric readouts."
+  }
+}
+```
+
+## Copy style
+
+Config titles and descriptions are user-facing. Keep them short and plain:
+
+- **Titles:** 2–5 words, sentence case. Keep `Enable …` for master toggles.
+- **Descriptions:** 1–2 short sentences. Lead with what the player or host will see or control.
+- **Avoid:** implementation jargon (`scrap-value budget`, `master ID`, `embedded`), literal `…` in auto-scale descriptions, and repo-internal details unless needed (e.g. `docs/LOOT_ITEM_IDS.md` on allow/block lists).
+- **Keep:** `Host only.` / client-only notes, numeric baselines (`1 = vanilla`), and option labels for enum values.
+- **Sounds and themes:** describe round-start sounds and loading-screen themes as things users can apply — not as “embedded” assets.
+
+When adding a new entry group in `ModConfigEntryUiHints.cs`, add matching `config.{section}._groups.{groupId}` strings in every locale file.
 
 ## Build pipeline
 
