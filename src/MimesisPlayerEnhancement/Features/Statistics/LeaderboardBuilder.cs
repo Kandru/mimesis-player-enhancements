@@ -7,10 +7,38 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     {
         public static LeaderboardDocument Build(int slotId, IEnumerable<PlayerStatisticsDocument> players)
         {
+            return BuildCore(
+                slotId,
+                StatisticsRunTracker.GetCurrentZone(),
+                players,
+                (steamId, fallback) => SaveSlotDocumentStore.ResolveDisplayName(slotId, steamId, fallback));
+        }
+
+        internal static LeaderboardDocument BuildFromSnapshot(
+            int slotId,
+            int currentZone,
+            IEnumerable<PlayerStatisticsDocument> players,
+            IReadOnlyDictionary<ulong, string> displayNames)
+        {
+            return BuildCore(
+                slotId,
+                currentZone,
+                players,
+                (steamId, fallback) => displayNames.TryGetValue(steamId, out string? name) && !string.IsNullOrWhiteSpace(name)
+                    ? name
+                    : fallback ?? steamId.ToString());
+        }
+
+        private static LeaderboardDocument BuildCore(
+            int slotId,
+            int currentZone,
+            IEnumerable<PlayerStatisticsDocument> players,
+            Func<ulong, string?, string> resolveDisplayName)
+        {
             LeaderboardDocument leaderboard = new()
             {
                 SaveSlotId = slotId,
-                CurrentZone = StatisticsRunTracker.GetCurrentZone(),
+                CurrentZone = currentZone,
                 UpdatedAtUtc = DateTime.UtcNow,
             };
 
@@ -41,10 +69,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 leaderboard.Entries.Add(new LeaderboardEntry
                 {
                     SteamId = player.SteamId,
-                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
-                        slotId,
-                        player.SteamId,
-                        player.DisplayName),
+                    DisplayName = resolveDisplayName(player.SteamId, player.DisplayName),
                     Score = TeamValueScore.Compute(run),
                     AllTimeScore = TeamValueScore.Compute(allTime),
                     ItemCarryCount = run.ItemCarryCount,

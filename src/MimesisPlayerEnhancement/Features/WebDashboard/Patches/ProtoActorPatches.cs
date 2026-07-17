@@ -8,7 +8,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static bool Prefix(ProtoActor __instance)
         {
-            if (WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip
+                || WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
                 || !WebDashboardHostCheatsNoClipMovement.ShouldReplaceControl(__instance))
             {
                 return true;

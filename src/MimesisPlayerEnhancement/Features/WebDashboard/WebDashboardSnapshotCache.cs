@@ -67,6 +67,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _cachedOfflinePublishRevision = -1;
             _mergedIndexBySteam = [];
             _requireFullPublish = false;
+            WebDashboardPatchHelpers.ClearCachedGrades();
             WebDashboardAvatarService.Clear();
             WebDashboardLeaderboardCache.Clear();
             WebDashboardOfflinePlayerCache.Clear();
@@ -185,14 +186,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             List<WebDashboardPlayerDto> players = _lastLivePlayers;
+            WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
             if (players.Count == 0)
             {
-                players = WebDashboardPlayerService.CollectLivePlayers();
+                players = WebDashboardPlayerService.CollectLivePlayers(roster);
             }
 
             WebDashboardMinimapLayoutBuilder.EnsureLayout();
             List<WebDashboardMinimapMarkerDto> markers =
-                WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train);
+                WebDashboardMinimapService.CollectMarkers(players, out WebDashboardMinimapTrainDto? train, roster);
             string fingerprint = BuildMinimapFingerprint(markers, train);
             if (fingerprint == _minimapFingerprint
                 && WebDashboardMinimapLayoutBuilder.LayoutVersion == _snapshot.MinimapLayout.LayoutVersion)
@@ -284,7 +286,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardOfflinePlayerCache.EnsureFresh(PlayerRegistry.Revision);
                 }
 
-                List<WebDashboardPlayerDto> livePlayers = WebDashboardPlayerService.CollectLivePlayers();
+                WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
+                List<WebDashboardPlayerDto> livePlayers = WebDashboardPlayerService.CollectLivePlayers(roster);
                 if (livePlayers.Count > 0)
                 {
                     _lastLivePlayers = livePlayers;
@@ -393,7 +396,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         WebDashboardMinimapLayoutBuilder.EnsureLayout();
                         next.MinimapLayout = WebDashboardMinimapLayoutBuilder.Current;
                         List<WebDashboardMinimapMarkerDto> markers =
-                            WebDashboardMinimapService.CollectMarkers(livePlayers, out WebDashboardMinimapTrainDto? train);
+                            WebDashboardMinimapService.CollectMarkers(livePlayers, out WebDashboardMinimapTrainDto? train, roster);
                         next.MinimapMarkers = CloneMarkers(markers);
                         next.MinimapTrain = train;
                         _minimapFingerprint = BuildMinimapFingerprint(markers, train);

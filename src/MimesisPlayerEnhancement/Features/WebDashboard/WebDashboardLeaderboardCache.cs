@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -74,22 +75,27 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            LeaderboardRebuildSnapshot snapshot = WebDashboardBackgroundSnapshots.CaptureLeaderboardRebuild(saveSlotId);
             List<ulong> connectedIds = [.. connectedSteamIds];
             int rebuildRevision = revision;
-            _ = Task.Run(() => BuildAndSerializeBackground(saveSlotId, connectedIds, rebuildRevision));
+            _ = Task.Run(() => BuildAndSerializeBackground(saveSlotId, connectedIds, rebuildRevision, snapshot));
         }
 
         private static void BuildAndSerializeBackground(
             int saveSlotId,
             List<ulong> connectedSteamIds,
-            int revision)
+            int revision,
+            LeaderboardRebuildSnapshot snapshot)
         {
             try
             {
-                List<PlayerStatisticsDocument> livePlayers = [.. PlayerRegistry.GetAllStatistics()];
-                LeaderboardDocument doc = livePlayers.Count == 0
+                LeaderboardDocument doc = snapshot.Players.Count == 0
                     ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }
-                    : LeaderboardBuilder.Build(saveSlotId, livePlayers);
+                    : LeaderboardBuilder.BuildFromSnapshot(
+                        snapshot.SaveSlotId,
+                        snapshot.CurrentZone,
+                        snapshot.Players,
+                        snapshot.DisplayNames);
 
                 string json = WebDashboardJson.SerializeLeaderboardResponse(doc, connectedSteamIds);
                 List<ulong> leaderboardSteamIds = [];

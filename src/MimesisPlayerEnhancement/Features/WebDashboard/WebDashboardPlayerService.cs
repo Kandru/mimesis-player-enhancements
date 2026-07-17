@@ -6,15 +6,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardPlayerService
     {
-        internal static List<WebDashboardPlayerDto> CollectLivePlayers()
+        internal static List<WebDashboardPlayerDto> CollectLivePlayers(WebDashboardLiveRoster? roster = null)
         {
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
             Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
-            WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
+            WebDashboardLiveRoster resolvedRoster = roster ?? WebDashboardLiveRoster.Capture();
 
-            foreach (WebDashboardLivePlayer entry in roster.Enumerate())
+            foreach (WebDashboardLivePlayer entry in resolvedRoster.Enumerate())
             {
                 SessionContext? context = FindSessionContext(sessionManager, entry.SteamId, entry.PlayerUid);
                 WebDashboardPlayerDto? dto = BuildLivePlayerDto(
@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     context,
                     localSteamId,
                     nameCache,
-                    roster);
+                    resolvedRoster);
                 if (dto != null)
                 {
                     playersBySteam[dto.SteamId] = dto;
@@ -46,7 +46,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         sessionManager,
                         localSteamId,
                         nameCache,
-                        roster);
+                        resolvedRoster);
                     if (fallback != null)
                     {
                         playersBySteam[steamId] = fallback;
@@ -61,7 +61,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     sessionManager,
                     localSteamId,
                     nameCache,
-                    roster,
+                    resolvedRoster,
                     forceHost: true);
                 if (hostFallback != null)
                 {
@@ -83,7 +83,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         sessionManager,
                         localSteamId,
                         nameCache,
-                        roster);
+                        resolvedRoster);
                     if (bannedOffline != null)
                     {
                         bannedOffline.IsBanned = true;
@@ -97,19 +97,37 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return players;
         }
 
-        internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers(OfflinePlayerBuildContext context)
+        internal static List<WebDashboardPlayerDto> BuildOfflineStatisticsPlayers(OfflinePlayerRebuildSnapshot snapshot)
         {
+            OfflinePlayerBuildContext context = snapshot.Context;
             if (!context.IsHost || !context.EnableStatistics || context.SaveSlotId < 0)
             {
                 return [];
             }
 
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
-            MergeOfflineStatisticsPlayers(
-                playersBySteam,
-                context.LocalSteamId,
-                context.SaveSlotId,
-                context.IsHost);
+            foreach (PlayerStatisticsDocument player in snapshot.Players)
+            {
+                if (player.SteamId == 0 || playersBySteam.ContainsKey(player.SteamId))
+                {
+                    continue;
+                }
+
+                bool isLocal = context.LocalSteamId != 0 && player.SteamId == context.LocalSteamId;
+                WebDashboardPlayerDto dto = new()
+                {
+                    SteamId = player.SteamId,
+                    DisplayName = snapshot.DisplayNames.TryGetValue(player.SteamId, out string? name)
+                        ? name
+                        : player.DisplayName,
+                    IsHost = context.IsHost && isLocal,
+                    IsLocal = isLocal,
+                };
+
+                EnrichStoredPlayerDto(dto, player, snapshot.BannedSteamIds);
+                playersBySteam[player.SteamId] = dto;
+            }
+
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
             WebDashboardPlayerListMerger.SortPlayers(players);
             return players;
@@ -233,49 +251,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return SaveSlotDocumentStore.TryGetName(saveSlotId, dto.SteamId, out _);
         }
 
-        private static void MergeOfflineStatisticsPlayers(
-            Dictionary<ulong, WebDashboardPlayerDto> playersBySteam,
-            ulong localSteamId,
-            int saveSlotId,
-            bool isHost)
+        private static void EnrichStoredPlayerDto(
+            WebDashboardPlayerDto dto,
+            PlayerStatisticsDocument doc,
+            HashSet<ulong> bannedSteamIds)
         {
-            if (saveSlotId < 0)
-            {
-                return;
-            }
-
-            foreach (PlayerStatisticsDocument player in PlayerRegistry.GetAllStatistics())
-            {
-                if (player.SteamId == 0 || playersBySteam.ContainsKey(player.SteamId))
-                {
-                    continue;
-                }
-
-                bool isLocal = localSteamId != 0 && player.SteamId == localSteamId;
-                WebDashboardPlayerDto dto = new()
-                {
-                    SteamId = player.SteamId,
-                    DisplayName = SaveSlotDocumentStore.ResolveDisplayName(
-                        saveSlotId,
-                        player.SteamId,
-                        player.DisplayName),
-                    IsHost = isHost && isLocal,
-                    IsLocal = isLocal,
-                };
-
-                EnrichStoredPlayerDto(dto, saveSlotId);
-                playersBySteam[player.SteamId] = dto;
-            }
-        }
-
-        private static void EnrichStoredPlayerDto(WebDashboardPlayerDto dto, int saveSlotId)
-        {
-            if (dto.SteamId == 0 || saveSlotId < 0 || !ModConfig.EnableStatistics.Value)
-            {
-                return;
-            }
-
-            if (StatisticsTracker.TryGetPlayerDocument(dto.SteamId) is not PlayerStatisticsDocument doc)
+            if (dto.SteamId == 0 || !ModConfig.EnableStatistics.Value)
             {
                 return;
             }
@@ -285,12 +266,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             dto.RunStats = BuildRunStatsFromDocument(doc);
             dto.ActivityState = "offline";
             dto.ActivityDetail = string.Empty;
-
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
-            if (sessionManager != null)
-            {
-                dto.IsBanned = WebDashboardSessionAccess.IsBanned(sessionManager, dto.SteamId);
-            }
+            dto.IsBanned = bannedSteamIds.Contains(dto.SteamId);
         }
 
         private static SessionContext? FindSessionContext(

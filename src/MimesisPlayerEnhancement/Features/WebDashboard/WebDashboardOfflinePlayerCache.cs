@@ -5,7 +5,8 @@ using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     /// <summary>
-    /// Offline/historical player rows for the dashboard — rebuilt on a background thread when stats revision changes.
+    /// Offline/historical player rows for the dashboard — snapshot on the main thread,
+    /// DTO build on a background thread when stats revision changes.
     /// </summary>
     internal static class WebDashboardOfflinePlayerCache
     {
@@ -41,9 +42,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             int rebuildRevision = revision;
-            WebDashboardPlayerService.OfflinePlayerBuildContext context =
-                WebDashboardPlayerService.OfflinePlayerBuildContext.Capture();
-            _ = Task.Run(() => RebuildBackground(rebuildRevision, context));
+            OfflinePlayerRebuildSnapshot snapshot = WebDashboardBackgroundSnapshots.CaptureOfflineRebuild();
+            _ = Task.Run(() => RebuildBackground(rebuildRevision, snapshot));
         }
 
         internal static void Clear()
@@ -55,20 +55,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void RebuildSync(int revision)
         {
-            WebDashboardPlayerService.OfflinePlayerBuildContext context =
-                WebDashboardPlayerService.OfflinePlayerBuildContext.Capture();
-            _cached = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(context);
+            OfflinePlayerRebuildSnapshot snapshot = WebDashboardBackgroundSnapshots.CaptureOfflineRebuild();
+            _cached = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(snapshot);
             _cachedRevision = revision;
             _pendingRevision = 0;
         }
 
-        private static void RebuildBackground(
-            int revision,
-            WebDashboardPlayerService.OfflinePlayerBuildContext context)
+        private static void RebuildBackground(int revision, OfflinePlayerRebuildSnapshot snapshot)
         {
             try
             {
-                List<WebDashboardPlayerDto> built = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(context);
+                List<WebDashboardPlayerDto> built = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(snapshot);
                 _cached = built;
                 _cachedRevision = revision;
                 WebDashboardSnapshotCache.MarkDirty();

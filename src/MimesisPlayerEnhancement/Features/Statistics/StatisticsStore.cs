@@ -171,6 +171,23 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return clone;
         }
 
+        internal static List<PlayerStatisticsDocument> ClonePlayerDocuments(
+            IEnumerable<PlayerStatisticsDocument> players)
+        {
+            List<PlayerStatisticsDocument> clones = [];
+            foreach (PlayerStatisticsDocument player in players)
+            {
+                if (player == null || player.SteamId == 0)
+                {
+                    continue;
+                }
+
+                clones.Add(ClonePlayerDocument(player, player.SteamId));
+            }
+
+            return clones;
+        }
+
         private static PlayerStatisticsDocument ClonePlayerDocument(PlayerStatisticsDocument source, ulong steamId)
         {
             List<SessionStats> recentSessions = [];

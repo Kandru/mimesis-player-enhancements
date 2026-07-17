@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using MimesisPlayerEnhancement.Config.QuickSettings;
+using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -597,11 +598,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                PlayerStatisticsDocument? doc;
+                string? json;
                 try
                 {
-                    doc = WebDashboardConfigUpdateQueue.EnqueueAndWait(
-                        () => WebDashboardPlayerStatsService.TryGetStats(steamId));
+                    json = WebDashboardConfigUpdateQueue.EnqueueAndWait(() =>
+                    {
+                        PlayerStatisticsDocument? doc = StatisticsTracker.TryGetPlayerDocument(steamId);
+                        if (doc == null)
+                        {
+                            return null;
+                        }
+
+                        int slotId = WebDashboardGameState.GetSaveSlotId();
+                        string displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
+                            doc.SteamId,
+                            slotId);
+                        return WebDashboardJson.SerializePlayerStats(doc, displayName);
+                    });
                 }
                 catch (TimeoutException)
                 {
@@ -609,13 +622,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return;
                 }
 
-                if (doc == null)
+                if (json == null)
                 {
                     WriteJson(context, 404, WebDashboardJson.SerializeError(404, L("player_stats_not_found")));
                     return;
                 }
 
-                string json = WebDashboardJson.SerializePlayerStats(doc);
                 WriteJson(context, 200, json);
                 return;
             }

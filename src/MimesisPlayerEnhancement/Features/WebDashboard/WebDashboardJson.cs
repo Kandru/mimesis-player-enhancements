@@ -50,9 +50,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             });
         }
 
-        public static string SerializePlayerStats(PlayerStatisticsDocument doc)
+        public static string SerializePlayerStats(PlayerStatisticsDocument doc, string displayName)
         {
-            return ModJson.Serialize(MapPlayerStats(doc));
+            return ModJson.Serialize(MapPlayerStats(doc, displayName));
         }
 
         public static string SerializeActionResult(WebDashboardActionResult result)
@@ -373,11 +373,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return mapped;
         }
 
-        private static PlayerStatsApiDto MapPlayerStats(PlayerStatisticsDocument doc)
+        private static PlayerStatsApiDto MapPlayerStats(PlayerStatisticsDocument doc, string displayName)
         {
-            int slotId = WebDashboardGameState.GetSaveSlotId();
-            string displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(doc.SteamId, slotId);
-
             return new PlayerStatsApiDto
             {
                 Version = doc.Version,

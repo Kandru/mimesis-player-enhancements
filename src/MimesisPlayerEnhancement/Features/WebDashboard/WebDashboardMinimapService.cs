@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardMinimapService
     {
-        internal static List<WebDashboardMinimapMarkerDto> CollectRawMarkers()
+        internal static List<WebDashboardMinimapMarkerDto> CollectRawMarkers(WebDashboardLiveRoster? roster = null)
         {
             List<WebDashboardMinimapMarkerDto> markers = [];
 
@@ -18,10 +18,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return markers;
                 }
 
-                WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
+                WebDashboardLiveRoster resolvedRoster = roster ?? WebDashboardLiveRoster.Capture();
                 DungeonRoom? dungeonRoom = JoinAnytimeRoomTools.GetActiveDungeonRoom() as DungeonRoom;
 
-                foreach (WebDashboardLivePlayer entry in roster.Enumerate())
+                foreach (WebDashboardLivePlayer entry in resolvedRoster.Enumerate())
                 {
                     ProtoActor actor = entry.Actor;
                     ulong steamId = entry.SteamId;
@@ -94,9 +94,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static List<WebDashboardMinimapMarkerDto> CollectMarkers(
             IReadOnlyList<WebDashboardPlayerDto> players,
-            out WebDashboardMinimapTrainDto? train)
+            out WebDashboardMinimapTrainDto? train,
+            WebDashboardLiveRoster? roster = null)
         {
-            List<WebDashboardMinimapMarkerDto> raw = CollectRawMarkers();
+            List<WebDashboardMinimapMarkerDto> raw = CollectRawMarkers(roster);
             WebDashboardMinimapLayoutDto layout = WebDashboardMinimapLayoutBuilder.Current;
             Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
             WebDashboardMinimapTrainDto? rawTrain = TryCollectTrain(pdata?.main, layout);

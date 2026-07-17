@@ -49,6 +49,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly PropertyInfo RunSpeedProperty =
             AccessTools.Property(typeof(ProtoActor), "runSpeed")!;
 
+        private static Type? _consoleIsActiveMethodOwner;
+        private static MethodInfo? _consoleIsActiveMethod;
+        private static int _consoleCheckFrame = -1;
+        private static bool _consoleBlocking;
+
         internal static bool ShouldReplaceControl(ProtoActor actor)
         {
             if (WebDashboardHostCheatsRuntime.IsRoomTransitionSuspended
@@ -61,16 +66,49 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
-            object? console = Hub.s == null || HubConsoleField == null
-                ? null
-                : HubConsoleField.GetValue(Hub.s);
-            if (console != null
-                && AccessTools.Method(console.GetType(), "IsConsoleActive")?.Invoke(console, null) is true)
+            if (IsConsoleBlocking())
             {
                 return false;
             }
 
             return true;
+        }
+
+        private static bool IsConsoleBlocking()
+        {
+            int frame = Time.frameCount;
+            if (frame == _consoleCheckFrame)
+            {
+                return _consoleBlocking;
+            }
+
+            _consoleCheckFrame = frame;
+            _consoleBlocking = false;
+
+            if (Hub.s == null || HubConsoleField == null)
+            {
+                return false;
+            }
+
+            object? console = HubConsoleField.GetValue(Hub.s);
+            if (console == null)
+            {
+                return false;
+            }
+
+            Type consoleType = console.GetType();
+            if (_consoleIsActiveMethodOwner != consoleType)
+            {
+                _consoleIsActiveMethodOwner = consoleType;
+                _consoleIsActiveMethod = AccessTools.Method(consoleType, "IsConsoleActive");
+            }
+
+            if (_consoleIsActiveMethod?.Invoke(console, null) is true)
+            {
+                _consoleBlocking = true;
+            }
+
+            return _consoleBlocking;
         }
 
         internal static void PrepareActor(long playerUid)

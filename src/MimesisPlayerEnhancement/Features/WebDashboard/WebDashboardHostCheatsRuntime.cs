@@ -13,6 +13,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool IsRoomTransitionSuspended => _roomTransitionSuspend;
 
+        internal static bool HasActiveNoClip =>
+            !_roomTransitionSuspend
+            && (NoClipPlayerUids.Count > 0 || WebDashboardHostCheatsClientRuntime.IsLocalNoClipEnabled());
+
         internal static VCreature? MoveValidationCreature => _moveValidationCreature;
 
         internal static bool IsGodModeEnabled(long playerUid) =>

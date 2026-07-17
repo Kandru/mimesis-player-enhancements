@@ -29,5 +29,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 WebDashboardSnapshotCache.MarkDirty();
             }
         }
+
+        internal static void ClearCachedGrades()
+        {
+            GradeByPlayerUid.Clear();
+        }
     }
 }
