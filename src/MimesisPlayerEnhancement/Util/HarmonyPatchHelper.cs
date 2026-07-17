@@ -64,16 +64,10 @@ namespace MimesisPlayerEnhancement.Util
 
         public static void LogPatchSummary(string feature, PatchApplyResult result)
         {
-            string patchCount = $"{result.Applied} patch(es)";
-            string failures = $"{result.Failed} failure(s).";
-            string stripped = $"{patchCount}, {failures}";
+            string message = $"{result.Applied} patch(es), {result.Failed} failure(s).";
+            ColorARGB? lineColor = PickOutcomeLineColor(result.Applied, result.Failed);
 
-            ModLog.PassLogSegmented(
-                ModLog.FeatureSection(feature, "Patches Applied"),
-                stripped,
-                (result.Applied > 0 ? ModLog.SuccessGreen : null, patchCount),
-                (null, ", "),
-                (result.Failed > 0 ? ModLog.FailureRed : null, failures));
+            ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patches Applied"), message, (lineColor, message));
         }
 
         public static void LogPatchAudit(string feature, HarmonyLib.Harmony harmony, IEnumerable<(string label, MethodBase? method)> checks)
@@ -87,8 +81,8 @@ namespace MimesisPlayerEnhancement.Util
 
             foreach ((string? label, MethodBase? method) in checks)
             {
-                string text = method == null ? $"{label} (type/method not found)" : label;
-                bool ok = IsPatched(harmony, method);
+                bool ok = method != null && IsPatched(harmony, method);
+                string text = method == null ? $"{label} (not found)" : ok ? $"{label} (ok)" : $"{label} (miss)";
                 entries.Add((text, ok));
             }
 
@@ -97,28 +91,21 @@ namespace MimesisPlayerEnhancement.Util
                 return;
             }
 
-            string stripped = string.Join(", ", entries.Select(e => e.text));
-
-            (ColorARGB? color, string text)[] segments = new (ColorARGB? color, string text)[(entries.Count * 2) - 1];
-            for (int i = 0; i < entries.Count; i++)
-            {
-                if (i > 0)
-                {
-                    segments[(i * 2) - 1] = (null, ", ");
-                }
-
-                (string? text, bool ok) = entries[i];
-                segments[i * 2] = (ok ? ModLog.SuccessGreen : ModLog.FailureRed, text);
-            }
-
-            ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patch Audit"), stripped, segments);
-
             int missed = entries.Count(e => !e.ok);
-            if (missed > 0)
+            string message = string.Join(", ", entries.Select(e => e.text));
+            ColorARGB? lineColor = PickOutcomeLineColor(entries.Count - missed, missed);
+
+            ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patch Audit"), message, (lineColor, message));
+        }
+
+        private static ColorARGB? PickOutcomeLineColor(int succeeded, int failed)
+        {
+            if (failed == 0)
             {
-                string missedLabels = string.Join(", ", entries.Where(e => !e.ok).Select(e => e.text));
-                ModLog.Warn(feature, $"Patch audit — {missed} target(s) not patched by this feature: {missedLabels}");
+                return succeeded > 0 ? ModLog.SuccessGreen : null;
             }
+
+            return succeeded > 0 ? ModLog.PartialYellow : ModLog.FailureRed;
         }
 
         /// <summary>

@@ -42,8 +42,8 @@ namespace MimesisPlayerEnhancement
         }
 
         /// <summary>
-        /// One native log line with per-segment console colors. Follows MelonLogger.PastelMsg on native
-        /// terminals and the bootstrap Wine path (plain message + one ConsoleColor) under Proton.
+        /// One native log line with a single message color. MelonLoader only honors one color per line;
+        /// multi-segment colors are collapsed (mixed outcomes use <see cref="PartialYellow"/> on Wine).
         /// </summary>
         internal static void PassLogSegmented(
             string section,
@@ -56,9 +56,8 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            bool plain = UseLegacyConsoleColors;
-            string body = BuildMessageBody(segments, plain);
-            ColorARGB msgColor = plain ? PickMessageColor(segments) : Neutral;
+            string body = BuildMessageBody(segments, plain: true);
+            ColorARGB msgColor = PickMessageColor(segments);
 
             _ = PassLogMsgMethod.Invoke(null, [msgColor, body, Neutral, section, stripped]);
         }
