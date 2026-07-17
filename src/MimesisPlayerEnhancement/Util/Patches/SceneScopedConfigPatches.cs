@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
-                HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SceneScopedConfigPatches)));
+                HarmonyPatchHelper.GetNestedPatchTypes(typeof(SceneScopedConfigPatches)));
 
             LogPatchAudit(harmony);
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
