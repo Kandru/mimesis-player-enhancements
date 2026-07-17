@@ -49,6 +49,16 @@ namespace MimesisPlayerEnhancement.Features.Replays
             ModUiText.SetText(_pauseLabel, ReplayPlaybackEngine.IsPaused ? "Resume" : "Pause");
         }
 
+        internal void RefreshSliderOnly()
+        {
+            if (_dragging)
+            {
+                return;
+            }
+
+            _slider.SetValueWithoutNotify(ReplayPlaybackEngine.GetProgressNormalized());
+        }
+
         internal void Destroy()
         {
             if (gameObject != null)

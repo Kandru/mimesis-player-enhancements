@@ -11,6 +11,8 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static ReplayPickerPanel? Panel => _panel;
 
+        internal static UIPrefab_MainMenu? MainMenuUi => _mainMenuUi;
+
         internal static void OnMainMenuStarted(MainMenu mainMenu, UIPrefab_MainMenu mainMenuUi)
         {
             _ = mainMenu;

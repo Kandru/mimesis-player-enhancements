@@ -1,6 +1,5 @@
 using System.Collections;
 using System.IO;
-using System.Reflection;
 using MelonLoader;
 using ReluNetwork.ConstEnum;
 using ReluProtocol.Enum;
@@ -21,39 +20,45 @@ namespace MimesisPlayerEnhancement.Features.Replays
     {
         private const string Feature = "Replays";
         private const string MainMenuSceneName = "MainMenuScene";
+        private const float HudRefreshIntervalSeconds = 0.25f;
+        private const float BootstrapWatchdogSeconds = 15f;
 
         private static ReplayData? _replayData;
         private static ReplayLevelObjectRemapper _remapper = new();
         private static readonly Queue<IMsg> _pendingMessages = new();
-        private static readonly HashSet<long> _processedTimelineIndices = new();
 
-        private static bool _isActive;
+        private static ReplaySessionState _state = ReplaySessionState.Idle;
         private static bool _isPaused;
         private static bool _isFastForwarding;
-        private static bool _sceneReady;
-        private static bool _spectatorStarted;
-        private static bool _dataLoaded;
+        private static bool _dataReady;
+        private static bool _gameplaySceneReadyPending;
+        private static bool _bootstrapScheduled;
+        private static int _bootstrapWatchdogGeneration;
+        private static bool _spectatorVerified;
         private static int _startSpawnIndex;
         private static int _timelineIndex;
         private static long _currentAbsoluteTimeMs;
+        private static double _clockMs;
         private static long _recordStartTimeMs;
         private static long _recordEndTimeMs;
         private static float _playbackSpeed = 1f;
         private static string? _pendingPlayPath;
         private static ReplayHudUi? _hud;
-        private static bool _sceneLoadedHandled;
         private static int _loadGeneration;
-        private static int _seekReloadGeneration;
         private static long _pendingSeekTargetTime = -1;
-        private static bool _presentationScheduled;
         private static ReplayUiVisibilityMode _uiVisibilityMode = ReplayUiVisibilityMode.BothVisible;
+        private static float _nextHudRefreshTime;
+        private static float _nextMenuEnforceTime;
 
-        private static readonly MethodInfo? ChangeSpectatorTargetMethod =
-            AccessTools.Method(typeof(CameraManager), "ChangeSpectatorCameraTarget", [typeof(int)]);
-
-        internal static bool IsActive => _isActive;
+        internal static bool IsActive => _state != ReplaySessionState.Idle;
 
         internal static bool IsPaused => _isPaused;
+
+        internal static bool IsRewinding => _state == ReplaySessionState.Rewinding;
+
+        internal static bool BlockVanillaPlayerUiShow =>
+            _state != ReplaySessionState.Idle
+            && _uiVisibilityMode == ReplayUiVisibilityMode.BothHidden;
 
         internal static float PlaybackSpeed
         {
@@ -87,20 +92,21 @@ namespace MimesisPlayerEnhancement.Features.Replays
             _pendingPlayPath = playFilePath;
             _recordStartTimeMs = header.GetReplayRecordStartTime();
             _recordEndTimeMs = header.GetReplayRecordEndTime();
-            _dataLoaded = false;
-            _sceneReady = false;
-            _spectatorStarted = false;
-            _sceneLoadedHandled = false;
+            _dataReady = false;
+            _gameplaySceneReadyPending = false;
+            _bootstrapScheduled = false;
+            _bootstrapWatchdogGeneration++;
+            _spectatorVerified = false;
             _timelineIndex = 0;
             _startSpawnIndex = 0;
-            _processedTimelineIndices.Clear();
             _pendingMessages.Clear();
             _isPaused = false;
             _isFastForwarding = false;
             _playbackSpeed = 1f;
             _currentAbsoluteTimeMs = _recordStartTimeMs;
+            _clockMs = _recordStartTimeMs;
             _uiVisibilityMode = ReplayUiVisibilityMode.BothVisible;
-            _presentationScheduled = false;
+            _nextHudRefreshTime = 0f;
 
             ReplaySharedData.Clear();
             ReplaySharedData.SetPlayMode();
@@ -138,7 +144,11 @@ namespace MimesisPlayerEnhancement.Features.Replays
             int generation = ++_loadGeneration;
             _replayData = new ReplayData(playFilePath);
             _replayData.LoadReplayData(() => OnReplayDataLoaded(generation, playFilePath));
-            _isActive = true;
+            _state = ReplaySessionState.LoadingData;
+            LogStateTransition(ReplaySessionState.LoadingData, "BeginPlayback");
+
+            ReplayMenuSession.HideForPlayback();
+
             ModLog.Info(Feature, $"Loading replay — {Path.GetFileName(playFilePath)}");
             ModLog.Info(Feature, $"Loading replay scene — {sceneName}");
             Hub.LoadScene(sceneName);
@@ -146,49 +156,80 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static void OnUpdate()
         {
-            if (!ReplaysRuntime.IsEnabled || !_isActive)
+            if (_state == ReplaySessionState.Idle)
             {
                 return;
             }
 
-            if (ReplayGameAccess.WasF10PressedThisFrame())
+            if (!ReplaysRuntime.IsEnabled)
             {
-                CycleUiVisibility();
-            }
-
-            if (_replayData == null || !_dataLoaded || !_sceneReady)
-            {
+                StopPlayback();
                 return;
             }
+
+            if (_state is ReplaySessionState.Playing or ReplaySessionState.Rewinding)
+            {
+                if (ReplayGameAccess.WasF10PressedThisFrame())
+                {
+                    CycleUiVisibility();
+                }
+            }
+
+            if (_state == ReplaySessionState.Rewinding)
+            {
+                _hud?.Refresh();
+                EnforceMenuHiddenThrottled();
+                return;
+            }
+
+            if (_state != ReplaySessionState.Playing || _replayData == null)
+            {
+                if (_state is ReplaySessionState.Bootstrapping or ReplaySessionState.LoadingData)
+                {
+                    EnforceMenuHiddenThrottled();
+                }
+
+                return;
+            }
+
+            EnforceMenuHiddenThrottled();
 
             if (!_isPaused && !_isFastForwarding)
             {
-                long deltaMs = (long)(Time.unscaledDeltaTime * 1000f * _playbackSpeed);
-                _currentAbsoluteTimeMs = Math.Min(_recordEndTimeMs, _currentAbsoluteTimeMs + deltaMs);
+                _clockMs += Time.unscaledDeltaTime * 1000.0 * _playbackSpeed;
+                _currentAbsoluteTimeMs = (long)Math.Min(_recordEndTimeMs, _clockMs);
             }
 
             PumpTimeline(upToTime: _currentAbsoluteTimeMs, skipVoice: _isFastForwarding);
-            UpdateSharedTimeSlider();
-            _hud?.Refresh();
-            TryEnsureSpectator();
-            EnforceUiVisibility();
+
+            if (Time.unscaledTime >= _nextHudRefreshTime)
+            {
+                _nextHudRefreshTime = Time.unscaledTime + HudRefreshIntervalSeconds;
+                UpdateSharedTimeSlider();
+                _hud?.Refresh();
+            }
+            else
+            {
+                _hud?.RefreshSliderOnly();
+            }
         }
 
-        internal static void ScheduleScenePresentationReady()
+        internal static void NotifyGameplaySceneReady()
         {
-            if (!_isActive || _sceneLoadedHandled || _presentationScheduled)
+            if (_state is ReplaySessionState.Idle or ReplaySessionState.Playing)
             {
                 return;
             }
 
-            _presentationScheduled = true;
-            MelonCoroutines.Start(WaitForScenePresentationReady());
+            ModLog.Debug(Feature, "Gameplay scene ready signal received.");
+            _gameplaySceneReadyPending = true;
+            TryScheduleBootstrapComplete();
         }
 
         internal static bool TryDequeueMessage(out IMsg msg)
         {
             msg = null!;
-            if (!_isActive || _replayData == null || !_sceneReady)
+            if (_state != ReplaySessionState.Playing || _replayData == null)
             {
                 return false;
             }
@@ -207,59 +248,6 @@ namespace MimesisPlayerEnhancement.Features.Replays
             return true;
         }
 
-        internal static void OnScenePresentationReady()
-        {
-            if (!_isActive || _replayData == null || _sceneLoadedHandled || !_dataLoaded)
-            {
-                return;
-            }
-
-            GameMainBase? main = ReplayGameAccess.TryGetMain();
-            if (main is not GamePlayScene and not DeathMatchScene)
-            {
-                return;
-            }
-
-            _sceneLoadedHandled = true;
-            ReplayHeader? header = _replayData.ReplayHeader as ReplayHeader;
-            if (header?.BTActionNameTable != null)
-            {
-                BTActionRegistry.InitializeFromTable(header.BTActionNameTable);
-            }
-
-            _remapper.BuildFromHeader(header);
-            ReplaySharedData.SetEmotionData(_replayData.DebugMimicVoiceEmotionData);
-            _sceneReady = true;
-            _timelineIndex = 0;
-            _startSpawnIndex = 0;
-            _processedTimelineIndices.Clear();
-            _pendingMessages.Clear();
-
-            long resumeTime = _pendingSeekTargetTime >= _recordStartTimeMs
-                ? _pendingSeekTargetTime
-                : _recordStartTimeMs;
-            _pendingSeekTargetTime = -1;
-            _currentAbsoluteTimeMs = resumeTime;
-
-            PumpStartSpawnData();
-            if (resumeTime > _recordStartTimeMs)
-            {
-                _isFastForwarding = true;
-                PumpTimeline(upToTime: resumeTime, skipVoice: true);
-                _isFastForwarding = false;
-            }
-
-            UpdateSharedTimeSlider();
-            _hud?.Destroy();
-            _hud = ReplayHudUi.Create();
-            ApplyUiVisibility();
-            MelonCoroutines.Start(RetrySpectatorCoroutine());
-            ModLog.Info(Feature, "Replay playback started.");
-            _isFastForwarding = false;
-        }
-
-        internal static void OnSceneLoadedComplete() => ScheduleScenePresentationReady();
-
         internal static void CycleUiVisibility()
         {
             _uiVisibilityMode = (ReplayUiVisibilityMode)(((int)_uiVisibilityMode + 1) % 3);
@@ -268,7 +256,7 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static void OnPlayerSpawned(ProtoActor actor)
         {
-            if (!_isActive || actor == null || !actor.IsPlayer())
+            if (_state != ReplaySessionState.Playing || actor == null || !actor.IsPlayer())
             {
                 return;
             }
@@ -286,29 +274,23 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static void CycleSpectatorTarget(int delta)
         {
-            if (!_isActive || delta == 0)
+            if (_state != ReplaySessionState.Playing || delta == 0)
             {
                 return;
             }
 
-            CameraManager? camera = ReplayGameAccess.TryGetCameraManager();
-            if (camera == null || ChangeSpectatorTargetMethod == null)
+            if (!ReplayGameAccess.TryCycleSpectatorTarget(delta))
             {
                 return;
             }
 
-            bool enteredSpectator = ReplayGameAccess.TryEnterSpectatorMode();
-            if (enteredSpectator)
+            if (ReplayGameAccess.TryGetCameraManager() is CameraManager camera
+                && ReplayGameAccess.IsSpectatorVerified(camera))
             {
-                _spectatorStarted = true;
+                _spectatorVerified = true;
             }
 
-            if (camera.Mode == CameraManager.CameraMode.Normal)
-            {
-                return;
-            }
-
-            ChangeSpectatorTargetMethod.Invoke(camera, [delta]);
+            ApplyUiVisibility();
         }
 
         internal static void SeekToNormalized(float normalized)
@@ -325,31 +307,31 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static void StopPlayback(bool silent = false)
         {
-            bool wasActive = _isActive;
+            bool wasActive = _state != ReplaySessionState.Idle;
             _loadGeneration++;
-            _seekReloadGeneration++;
-            _isActive = false;
-            _sceneReady = false;
-            _dataLoaded = false;
-            _spectatorStarted = false;
-            _sceneLoadedHandled = false;
+            _bootstrapWatchdogGeneration++;
+            SetState(ReplaySessionState.Idle, silent ? "StopPlayback(silent)" : "StopPlayback");
+            _dataReady = false;
+            _gameplaySceneReadyPending = false;
+            _bootstrapScheduled = false;
+            _spectatorVerified = false;
             _isPaused = false;
             _isFastForwarding = false;
             _pendingPlayPath = null;
             _pendingSeekTargetTime = -1;
-            _presentationScheduled = false;
             _uiVisibilityMode = ReplayUiVisibilityMode.BothVisible;
             _replayData = null;
             _timelineIndex = 0;
             _startSpawnIndex = 0;
             _currentAbsoluteTimeMs = 0;
+            _clockMs = 0;
             _recordStartTimeMs = 0;
             _recordEndTimeMs = 0;
             _pendingMessages.Clear();
-            _processedTimelineIndices.Clear();
             _remapper = new ReplayLevelObjectRemapper();
             _hud?.Destroy();
             _hud = null;
+            ReplayMenuSession.Clear();
             ReplaySharedData.Clear();
             ReplaySharedData.SetNormalMode();
 
@@ -379,6 +361,11 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         internal static string GetTimeLabel()
         {
+            if (_state == ReplaySessionState.Rewinding)
+            {
+                return "Rewinding…";
+            }
+
             long elapsed = Math.Max(0, _currentAbsoluteTimeMs - _recordStartTimeMs);
             long total = Math.Max(0, _recordEndTimeMs - _recordStartTimeMs);
             return $"{FormatDuration(elapsed)} / {FormatDuration(total)}";
@@ -398,7 +385,7 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
         private static void OnReplayDataLoaded(int generation, string playFilePath)
         {
-            if (generation != _loadGeneration || !_isActive || playFilePath != _pendingPlayPath)
+            if (generation != _loadGeneration || _state == ReplaySessionState.Idle || playFilePath != _pendingPlayPath)
             {
                 return;
             }
@@ -410,12 +397,153 @@ namespace MimesisPlayerEnhancement.Features.Replays
                 return;
             }
 
-            _dataLoaded = _replayData.IsLoaded;
-            if (!_dataLoaded)
+            if (!_replayData.IsLoaded)
             {
                 ModLog.Warn(Feature, $"Replay data failed to load — {playFilePath}");
                 StopPlayback();
+                return;
             }
+
+            _dataReady = true;
+            if (_state == ReplaySessionState.LoadingData)
+            {
+                SetState(ReplaySessionState.Bootstrapping, "Replay data loaded");
+                StartBootstrapWatchdog();
+            }
+
+            TryScheduleBootstrapComplete();
+        }
+
+        private static void SetState(ReplaySessionState newState, string reason)
+        {
+            if (_state == newState)
+            {
+                return;
+            }
+
+            ModLog.Debug(Feature, $"State {_state} → {newState} — {reason}");
+            _state = newState;
+        }
+
+        private static void LogStateTransition(ReplaySessionState newState, string reason) =>
+            SetState(newState, reason);
+
+        private static void StartBootstrapWatchdog()
+        {
+            int generation = ++_bootstrapWatchdogGeneration;
+            MelonCoroutines.Start(BootstrapWatchdogCoroutine(generation));
+        }
+
+        private static IEnumerator BootstrapWatchdogCoroutine(int generation)
+        {
+            yield return new WaitForSecondsRealtime(BootstrapWatchdogSeconds);
+
+            if (generation != _bootstrapWatchdogGeneration || _state == ReplaySessionState.Idle)
+            {
+                yield break;
+            }
+
+            if (_state == ReplaySessionState.Playing)
+            {
+                yield break;
+            }
+
+            GameMainBase? main = ReplayGameAccess.TryGetMain();
+            ModLog.Warn(
+                Feature,
+                $"Replay bootstrap stalled — state={_state}, dataReady={_dataReady}, "
+                + $"sceneReadyPending={_gameplaySceneReadyPending}, main={main?.GetType().Name ?? "null"}");
+        }
+
+        private static void TryScheduleBootstrapComplete()
+        {
+            if (!_dataReady || !_gameplaySceneReadyPending || _bootstrapScheduled)
+            {
+                return;
+            }
+
+            if (_state is not (ReplaySessionState.Bootstrapping or ReplaySessionState.Rewinding))
+            {
+                return;
+            }
+
+            _bootstrapScheduled = true;
+            ModLog.Debug(Feature, "Scheduling replay bootstrap complete.");
+            MelonCoroutines.Start(BootstrapCompleteCoroutine());
+        }
+
+        private static IEnumerator BootstrapCompleteCoroutine()
+        {
+            try
+            {
+                yield return null;
+
+                if (_state is ReplaySessionState.Idle)
+                {
+                    yield break;
+                }
+
+                OnSceneBootstrapComplete();
+            }
+            finally
+            {
+                _bootstrapScheduled = false;
+            }
+        }
+
+        private static void OnSceneBootstrapComplete()
+        {
+            if (_state is ReplaySessionState.Idle || _replayData == null || !_dataReady)
+            {
+                return;
+            }
+
+            GameMainBase? main = ReplayGameAccess.TryGetMain();
+            if (main is not GamePlayScene and not DeathMatchScene)
+            {
+                return;
+            }
+
+            ReplayHeader? header = _replayData.ReplayHeader as ReplayHeader;
+            if (header?.BTActionNameTable != null)
+            {
+                BTActionRegistry.InitializeFromTable(header.BTActionNameTable);
+            }
+
+            _remapper.BuildFromHeader(header);
+            ReplaySharedData.SetEmotionData(_replayData.DebugMimicVoiceEmotionData);
+            _timelineIndex = 0;
+            _startSpawnIndex = 0;
+            _pendingMessages.Clear();
+            _spectatorVerified = false;
+            _gameplaySceneReadyPending = false;
+            _bootstrapWatchdogGeneration++;
+
+            ReplayMenuSession.ClearBlockingOverlays();
+
+            long resumeTime = _pendingSeekTargetTime >= _recordStartTimeMs
+                ? _pendingSeekTargetTime
+                : _recordStartTimeMs;
+            _pendingSeekTargetTime = -1;
+            _currentAbsoluteTimeMs = resumeTime;
+            _clockMs = resumeTime;
+
+            PumpStartSpawnData();
+            if (resumeTime > _recordStartTimeMs)
+            {
+                _isFastForwarding = true;
+                PumpTimeline(upToTime: resumeTime, skipVoice: true);
+                _isFastForwarding = false;
+            }
+
+            SetState(ReplaySessionState.Playing, "Bootstrap complete");
+            UpdateSharedTimeSlider();
+            _hud?.Destroy();
+            _hud = ReplayHudUi.Create();
+            ApplyUiVisibility();
+            MelonCoroutines.Start(RetrySpectatorCoroutine());
+            _nextHudRefreshTime = 0f;
+            ModLog.Info(Feature, "Replay playback started.");
         }
 
         private static void PumpStartSpawnData()
@@ -462,12 +590,6 @@ namespace MimesisPlayerEnhancement.Features.Replays
 
                 foreach (ReplayData.PlayLoopData loopData in loopItems)
                 {
-                    long key = ((long)_timelineIndex << 32) | (uint)loopData.index;
-                    if (!_processedTimelineIndices.Add(key))
-                    {
-                        continue;
-                    }
-
                     if (loopData.Type == ReplayData.REPLAY_DATA_TYPE.PLAY)
                     {
                         MsgWithTime? playMsg = _replayData.GetPlayDataByIndex(loopData.index);
@@ -493,20 +615,24 @@ namespace MimesisPlayerEnhancement.Features.Replays
                 return;
             }
 
+            targetTime = Math.Clamp(targetTime, _recordStartTimeMs, _recordEndTimeMs);
+
             if (targetTime < _currentAbsoluteTimeMs)
             {
-                ReloadSceneForSeek(targetTime);
+                BeginSilentRewind(targetTime);
                 return;
             }
 
             _isFastForwarding = true;
             _currentAbsoluteTimeMs = targetTime;
+            _clockMs = targetTime;
             PumpTimeline(upToTime: targetTime, skipVoice: true);
             _isFastForwarding = false;
             UpdateSharedTimeSlider();
+            _hud?.Refresh();
         }
 
-        private static void ReloadSceneForSeek(long targetTime)
+        private static void BeginSilentRewind(long targetTime)
         {
             if (string.IsNullOrEmpty(_pendingPlayPath) || _replayData == null)
             {
@@ -531,52 +657,21 @@ namespace MimesisPlayerEnhancement.Features.Replays
                 return;
             }
 
+            SetState(ReplaySessionState.Rewinding, "Backward seek");
             _pendingSeekTargetTime = targetTime;
             _timelineIndex = 0;
             _startSpawnIndex = 0;
-            _processedTimelineIndices.Clear();
             _pendingMessages.Clear();
-            _sceneReady = false;
-            _spectatorStarted = false;
-            _sceneLoadedHandled = false;
-            _presentationScheduled = false;
+            _spectatorVerified = false;
+            _gameplaySceneReadyPending = false;
+            _bootstrapScheduled = false;
+            _bootstrapWatchdogGeneration++;
             _isFastForwarding = true;
+            _hud?.Refresh();
 
             Hub.LoadScene(sceneName);
-        }
-
-        private static IEnumerator WaitForScenePresentationReady()
-        {
-            try
-            {
-                const int maxFrames = 600;
-                for (int frame = 0; frame < maxFrames && _isActive && !_sceneLoadedHandled; frame++)
-                {
-                    GameMainBase? main = ReplayGameAccess.TryGetMain();
-                    if (_dataLoaded && main is GamePlayScene or DeathMatchScene)
-                    {
-                        break;
-                    }
-
-                    yield return null;
-                }
-
-                if (!_isActive || _sceneLoadedHandled || !_dataLoaded)
-                {
-                    yield break;
-                }
-
-                for (int frame = 0; frame < 5; frame++)
-                {
-                    yield return null;
-                }
-
-                OnScenePresentationReady();
-            }
-            finally
-            {
-                _presentationScheduled = false;
-            }
+            SetState(ReplaySessionState.Bootstrapping, "Silent rewind scene load");
+            StartBootstrapWatchdog();
         }
 
         private static void ApplyUiVisibility()
@@ -593,44 +688,59 @@ namespace MimesisPlayerEnhancement.Features.Replays
                 _hud?.Hide();
             }
 
-            ReplayGameAccess.TrySetInGameUiVisible(showPlayerUi);
-        }
-
-        private static void EnforceUiVisibility()
-        {
-            if (_uiVisibilityMode == ReplayUiVisibilityMode.BothHidden)
+            if (showPlayerUi)
             {
-                ReplayGameAccess.TrySetInGameUiVisible(false);
+                ReplayGameAccess.TryShowSpectatorHud();
+            }
+            else
+            {
+                ReplayGameAccess.TryHideSpectatorPlayerUi();
             }
         }
 
         private static void TryEnsureSpectator()
         {
-            if (!_isActive || _spectatorStarted)
+            if (_spectatorVerified)
             {
                 return;
             }
 
-            if (ReplayGameAccess.TryEnterSpectatorMode())
+            ReplayGameAccess.TryEnterSpectatorMode();
+            CameraManager? camera = ReplayGameAccess.TryGetCameraManager();
+            if (camera == null || !ReplayGameAccess.IsSpectatorVerified(camera))
             {
-                _spectatorStarted = true;
+                return;
             }
+
+            _spectatorVerified = true;
+            ReplayGameAccess.TryShowSpectatorHud();
+            ApplyUiVisibility();
+        }
+
+        private static void EnforceMenuHiddenThrottled()
+        {
+            if (Time.unscaledTime < _nextMenuEnforceTime)
+            {
+                return;
+            }
+
+            _nextMenuEnforceTime = Time.unscaledTime + 0.25f;
+            ReplayMenuSession.ClearBlockingOverlays();
         }
 
         private static IEnumerator RetrySpectatorCoroutine()
         {
-            for (int attempt = 0; attempt < 20 && _isActive && !_spectatorStarted; attempt++)
+            for (int attempt = 0; attempt < 20 && _state == ReplaySessionState.Playing && !_spectatorVerified; attempt++)
             {
+                ReplayMenuSession.ClearBlockingOverlays();
                 TryEnsureSpectator();
-                if (_spectatorStarted)
+                if (_spectatorVerified)
                 {
                     yield break;
                 }
 
                 yield return new WaitForSecondsRealtime(0.25f);
             }
-
-            _isFastForwarding = false;
         }
 
         private static void UpdateSharedTimeSlider()

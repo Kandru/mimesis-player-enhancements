@@ -19,7 +19,8 @@ When `EnableReplays` is on, `BlockReplayRecording` from the Privacy feature is *
 ## Playback limits (current)
 
 - **InGame** dungeon replays only (DeathMatch files are rejected)
-- Seek backward reloads the dungeon scene and fast-forwards to the target time
+- Seek backward silently rebuilds the dungeon from the recorded seed and fast-forwards to the target time (no loading screen; the mod HUD shows "Rewinding…" briefly)
+- Seek forward fast-forwards in place without reloading
 - Level-object IDs are remapped using the header's stable-ID table after regenerating the dungeon from the recorded seed
 
 ## HUD controls
@@ -32,3 +33,12 @@ When `EnableReplays` is on, `BlockReplayRecording` from the Privacy feature is *
 | Prev / Next | Cycle spectator camera target |
 | Exit | Return to main menu |
 | Escape | Exit playback |
+| F10 | Cycle UI visibility: mod HUD + player UI → player UI only → all hidden |
+
+### F10 visibility modes
+
+| Press | Mod HUD | Player UI (stats, inventory, spectator bar) |
+|-------|---------|-----------------------------------------------|
+| Default | shown | shown |
+| 1st F10 | hidden | shown |
+| 2nd F10 | hidden | hidden |

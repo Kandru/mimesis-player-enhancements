@@ -30,6 +30,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
             try
             {
                 FpsUiOverlay.Attach(__instance);
+                FpsUiOverlay.ForceHideOxyGauge(__instance);
                 FpsUiOverlay.RefreshLayout();
             }
             catch (Exception ex)
@@ -93,25 +94,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
     }
 
     [HarmonyPatch(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnContaChanged))]
-    internal static class InGameOnContaChangedPostfix
+    internal static class InGameOnContaChangedPrefix
     {
         private const string Feature = "Ui";
 
-        [HarmonyPostfix]
-        private static void Postfix(UIPrefab_InGame __instance, long curr, long maxContaVal)
+        [HarmonyPrefix]
+        private static bool Prefix(UIPrefab_InGame __instance, long curr, long maxContaVal)
         {
             if (!FpsUiOverlay.IsEnabled())
             {
-                return;
+                return true;
             }
 
             try
             {
                 FpsUiOverlay.UpdateConta(__instance, curr, maxContaVal);
+                return false;
             }
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"FPS UI conta update failed — {ex.Message}");
+                return true;
             }
         }
     }

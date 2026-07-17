@@ -52,32 +52,6 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
         }
     }
 
-    [HarmonyPatch(typeof(ReplayManager), nameof(ReplayManager.OnGamePlaySceneLoadedComplete))]
-    internal static class ReplayManagerOnGamePlaySceneLoadedCompletePatch
-    {
-        private const string Feature = "Replays";
-
-        [HarmonyPrefix]
-        private static bool Prefix()
-        {
-            if (!ReplaySharedData.IsReplayPlayMode)
-            {
-                return true;
-            }
-
-            try
-            {
-                ReplayPlaybackEngine.ScheduleScenePresentationReady();
-                return false;
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"OnGamePlaySceneLoadedComplete patch failed — {ex.Message}");
-                return true;
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(ReplayManager), nameof(ReplayManager.OnEnterDungeon))]
     internal static class ReplayManagerOnEnterDungeonPatch
     {
@@ -93,7 +67,7 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
 
             try
             {
-                ReplayPlaybackEngine.ScheduleScenePresentationReady();
+                ReplayPlaybackEngine.NotifyGameplaySceneReady();
             }
             catch (Exception ex)
             {
@@ -107,23 +81,21 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
     {
         private const string Feature = "Replays";
 
-        [HarmonyPrefix]
-        private static bool Prefix(ProtoActor playerActor)
+        [HarmonyPostfix]
+        private static void Postfix(ProtoActor playerActor)
         {
             if (!ReplaySharedData.IsReplayPlayMode)
             {
-                return true;
+                return;
             }
 
             try
             {
                 ReplayPlaybackEngine.OnPlayerSpawned(playerActor);
-                return false;
             }
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"OnPlayerSpawn patch failed — {ex.Message}");
-                return true;
             }
         }
     }
@@ -192,5 +164,4 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
             }
         }
     }
-
 }

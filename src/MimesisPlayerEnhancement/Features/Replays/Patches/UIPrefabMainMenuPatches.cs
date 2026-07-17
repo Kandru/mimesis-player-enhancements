@@ -10,6 +10,12 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
         {
             try
             {
+                if (ReplayPlaybackEngine.IsActive)
+                {
+                    ReplayMenuSession.ClearBlockingOverlays();
+                    return;
+                }
+
                 ReplayPickerController.OnMainMenuShown(__instance);
             }
             catch (Exception ex)

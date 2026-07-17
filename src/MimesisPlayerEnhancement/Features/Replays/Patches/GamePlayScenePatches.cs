@@ -41,6 +41,25 @@ namespace MimesisPlayerEnhancement.Features.Replays.Patches
                 return true;
             }
         }
+
+        [HarmonyPostfix]
+        private static void Postfix(GamePlayScene __instance)
+        {
+            if (!ReplaySharedData.IsReplayPlayMode || !ReplayPlaybackEngine.IsActive)
+            {
+                return;
+            }
+
+            try
+            {
+                __instance.EndSceneLoading();
+                ReplayPlaybackEngine.NotifyGameplaySceneReady();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"TryCreateGameRoom replay bootstrap failed — {ex.Message}");
+            }
+        }
     }
 
     [HarmonyPatch(typeof(GamePlayScene), "TryEnterGameRoom")]
