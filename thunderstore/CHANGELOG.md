@@ -2,6 +2,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 
 ## 26.7.15
 - improvement: searchable settings picker (instead of a simple input field in settings)
+- improvement: the custom dungeon landing sound is at 80% volume per default now
 - fix: dungeon loot-multiplicator errored when allowlist/denylist was empty but selected
 - draft: first overhaul of all configuration titles, descriptions and translations (it's a start)
 - draft: show players & minimap when joining lobby as a client (not as an host)

@@ -39,6 +39,7 @@ namespace MimesisPlayerEnhancement
 
             Float(Ui, "ModToastDurationSeconds", 1f);
             FloatRange(Ui, "FloatingDamageDurationSeconds", 1f, 3f);
+            FloatRange(Ui, "RoundStartSoundVolume", 0f, 1f);
 
             Int(MorePlayers, "MaxPlayers", 1);
             MinZeroFloat(MorePlayers,

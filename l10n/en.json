@@ -82,6 +82,10 @@
         "title": "Landing Sound Pool",
         "description": "Random Sound mode only — which sounds can be picked. Leave empty for all sounds. Client-only."
       },
+      "RoundStartSoundVolume": {
+        "title": "Landing Sound Volume",
+        "description": "Playback volume for custom dungeon landing sounds (Random or Specific mode). Does not affect the tram-stop sting or vanilla mode. Client-only."
+      },
       "CustomLoadingScreenMode": {
         "title": "Loading Screen Mode",
         "description": "Replace loading screen art with custom themes. Client-only.",

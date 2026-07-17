@@ -29,7 +29,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
                 return false;
             }
 
-            _audioSource.PlayOneShot(clip);
+            _audioSource.PlayOneShot(clip, RoundStartSoundResolver.GetVolumeScale());
             ModLog.Info(
                 RoundStartSoundConstants.Feature,
                 $"Dungeon landing sound replaced — mode={RoundStartSoundResolver.GetMode()}, variant={fileName}");

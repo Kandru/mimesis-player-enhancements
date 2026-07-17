@@ -160,6 +160,7 @@ This writes `src/MimesisPlayerEnhancement/Assets/RoundStartSound/vanilla.wav` wh
    - `Random` — pick a random embedded file each dungeon entry
    - `Specific` — play `RoundStartSoundVariant`
 4. Replacement only applies during the short window after entering the dungeon (the tram-stop sting itself is not replaced).
+5. Adjust `RoundStartSoundVolume` (default `0.8`) if custom melodies feel too loud relative to the tram-stop horn. Does not affect vanilla mode.
 
 Check `Assets/RoundStartSound/LICENSE.md` before redistributing third-party audio with your mod build.
 

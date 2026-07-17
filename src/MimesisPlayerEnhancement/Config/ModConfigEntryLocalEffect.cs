@@ -30,6 +30,7 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "RoundStartSoundMode"),
                 (UiConfig.SectionId, "RoundStartSoundVariant"),
                 (UiConfig.SectionId, "RoundStartSoundRandomPool"),
+                (UiConfig.SectionId, "RoundStartSoundVolume"),
                 (UiConfig.SectionId, "CustomLoadingScreenMode"),
                 (UiConfig.SectionId, "CustomLoadingScreenVariant"),
                 (UiConfig.SectionId, "CustomLoadingScreenRandomPool"),

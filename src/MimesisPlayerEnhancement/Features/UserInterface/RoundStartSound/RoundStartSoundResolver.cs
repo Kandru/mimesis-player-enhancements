@@ -4,6 +4,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
 {
     internal static class RoundStartSoundResolver
     {
+        internal const float DefaultVolume = 0.8f;
+        internal const float MinVolume = 0f;
+        internal const float MaxVolume = 1f;
+
         private static readonly string[] AudioExtensions = [".wav", ".ogg"];
         private static readonly Random RandomSource = new();
 
@@ -18,6 +22,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
         }
 
         internal static bool ShouldApplyReplacement() => GetMode() != RoundStartSoundMode.Vanilla;
+
+        internal static float GetVolumeScale()
+        {
+            if (!ModConfig.IsInitialized)
+            {
+                return DefaultVolume;
+            }
+
+            return UnityEngine.Mathf.Clamp(
+                ModConfig.RoundStartSoundVolume.Value,
+                MinVolume,
+                MaxVolume);
+        }
 
         internal static string? ResolveVariantFileName()
         {

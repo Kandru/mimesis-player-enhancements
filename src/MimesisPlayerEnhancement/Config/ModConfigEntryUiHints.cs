@@ -299,6 +299,7 @@ namespace MimesisPlayerEnhancement
                     ["RoundStartSoundMode"] = "roundStartSound",
                     ["RoundStartSoundRandomPool"] = "roundStartSound",
                     ["RoundStartSoundVariant"] = "roundStartSound",
+                    ["RoundStartSoundVolume"] = "roundStartSound",
                     ["CustomLoadingScreenMode"] = "customLoadingScreen",
                     ["CustomLoadingScreenRandomPool"] = "customLoadingScreen",
                     ["CustomLoadingScreenVariant"] = "customLoadingScreen",

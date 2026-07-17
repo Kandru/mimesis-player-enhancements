@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         private const float MinFloatingDamageDurationSeconds = 1f;
         private const float MaxFloatingDamageDurationSeconds = 3f;
+        private const float MinRoundStartSoundVolume = 0f;
+        private const float MaxRoundStartSoundVolume = 1f;
         private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
 
@@ -68,6 +70,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "RoundStartSoundRandomPool",
                 "");
 
+            ModConfig.RoundStartSoundVolume = ModConfig.CreateTrackedEntry(_category,
+                "RoundStartSoundVolume",
+                RoundStartSoundResolver.DefaultVolume);
+
             ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenMode",
                 "Vanilla");
@@ -122,6 +128,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.RoundStartSoundRandomPool.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRandomPoolChanged(ModConfig.RoundStartSoundRandomPool,
                     RoundStartSoundResolver.NormalizeRandomPoolValue, value));
+            ModConfig.RoundStartSoundVolume.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRoundStartSoundVolumeChanged(logger, value));
             ModConfig.CustomLoadingScreenMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCustomLoadingScreenModeChanged(logger, value));
             ModConfig.CustomLoadingScreenVariant.OnEntryValueChanged.Subscribe((_, value) =>
@@ -147,6 +155,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             ModConfig.TrackFloatEntry(ModConfig.ModToastDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.FloatingDamageDurationSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.RoundStartSoundVolume);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)
@@ -168,6 +177,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.NotifyChanged(ModConfig.FloatingDamageDurationSeconds);
+        }
+
+        private static void OnRoundStartSoundVolumeChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MinRoundStartSoundVolume)
+            {
+                logger.Warning(
+                    $"RoundStartSoundVolume must be at least {MinRoundStartSoundVolume}; resetting.");
+                ModConfig.RoundStartSoundVolume.Value = MinRoundStartSoundVolume;
+                return;
+            }
+
+            if (value > MaxRoundStartSoundVolume)
+            {
+                logger.Warning(
+                    $"RoundStartSoundVolume must be at most {MaxRoundStartSoundVolume}; resetting.");
+                ModConfig.RoundStartSoundVolume.Value = MaxRoundStartSoundVolume;
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.RoundStartSoundVolume);
         }
 
         private static void OnRoundStartSoundModeChanged(MelonLogger.Instance logger, string value)

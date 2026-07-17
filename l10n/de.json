@@ -82,6 +82,10 @@
         "title": "Landesound-Pool",
         "description": "Nur bei Modus „Zufälliger Sound“ — welche Sounds gewählt werden dürfen. Leer lassen = alle Sounds. Nur Client."
       },
+      "RoundStartSoundVolume": {
+        "title": "Landesound-Lautstärke",
+        "description": "Wiedergabelautstärke für eigene Dungeon-Landesounds (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Tram-Stop-Sting oder Vanilla-Modus. Nur Client."
+      },
       "CustomLoadingScreenMode": {
         "title": "Ladebildschirm-Modus",
         "description": "Ersetzt Ladebildschirm-Grafiken durch eigene Themes. Nur Client.",
