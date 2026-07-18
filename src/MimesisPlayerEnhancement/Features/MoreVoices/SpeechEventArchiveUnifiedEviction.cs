@@ -1,4 +1,5 @@
 using System.Reflection;
+using FishNet.Object.Synchronizing;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices
 {
@@ -8,9 +9,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// </summary>
     internal static class SpeechEventArchiveUnifiedEviction
     {
-        private static readonly FieldInfo? EventsField =
-            AccessTools.Field(typeof(SpeechEventArchive), "events");
-
         private static readonly MethodInfo? EvaluateValueMethod =
             AccessTools.Method(typeof(SpeechEventArchive), "EvaluateValue");
 
@@ -19,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static readonly List<long> _removedIds = [];
         private static readonly HashSet<long> _removedIdSet = [];
 
-        internal static bool IsAvailable => EventsField != null && EvaluateValueMethod != null;
+        internal static bool IsAvailable => EvaluateValueMethod != null;
 
         internal static List<long> TryEvict(SpeechEventArchive archive)
         {
@@ -29,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 return _removedIds;
             }
 
-            List<SpeechEvent>? events = EventsField!.GetValue(archive) as List<SpeechEvent>;
+            SyncList<SpeechEvent>? events = archive.events;
             if (events == null || events.Count == 0)
             {
                 return _removedIds;

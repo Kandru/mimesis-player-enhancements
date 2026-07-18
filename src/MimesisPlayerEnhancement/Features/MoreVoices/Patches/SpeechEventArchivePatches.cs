@@ -29,7 +29,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         [HarmonyPrefix]
         public static void Prefix(SpeechEventArchive __instance)
         {
-            if (!ModConfig.EnableMoreVoices.Value || __instance == null)
+            if (!ModConfig.EnableMoreVoices.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature()
+                || __instance == null)
             {
                 return;
             }
@@ -56,7 +58,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         [HarmonyPrefix]
         public static void Prefix(SpeechEventArchive __instance)
         {
-            if (!ModConfig.EnableMoreVoices.Value || __instance == null)
+            if (!ModConfig.EnableMoreVoices.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature()
+                || __instance == null)
             {
                 return;
             }
@@ -81,7 +85,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         [HarmonyPrefix]
         public static bool Prefix(SpeechEventArchive __instance, ref List<long> __result)
         {
-            if (!MoreVoicesUnify.IsActive || __instance == null)
+            if (!MoreVoicesUnify.IsActive
+                || !HostApplyGate.ShouldApplyHostOnlyFeature()
+                || __instance == null)
             {
                 return true;
             }

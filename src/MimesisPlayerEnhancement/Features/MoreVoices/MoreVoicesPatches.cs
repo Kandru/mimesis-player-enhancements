@@ -38,6 +38,12 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         {
             VoicePerformanceRuntime.RefreshFromConfig();
 
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
+            {
+                MoreVoicesRecording.ApplyRecordingState();
+                return;
+            }
+
             if (ModConfig.EnableMoreVoices.Value)
             {
                 SpeechEventArchiveLimits.PoolLimits? limits = SpeechEventArchiveLimits.ResolveFromConfig();
