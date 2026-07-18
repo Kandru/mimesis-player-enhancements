@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Api from '$lib/api';
+  import Toggle from '$lib/components/Toggle.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
   import type { UiDebugStatusDto } from '$lib/types';
 
   let status = $state<UiDebugStatusDto | null>(null);
   let pending = $state<string | null>(null);
-  let error = $state('');
 
   const overlays = [
-    { id: 'spectator', labelKey: 'dashboard.debug_overlay_spectator' },
-    { id: 'loadingWait', labelKey: 'dashboard.debug_overlay_loading_wait' },
-    { id: 'escMenu', labelKey: 'dashboard.debug_overlay_esc_menu' },
-    { id: 'survivalResult', labelKey: 'dashboard.debug_overlay_survival_result' },
+    { id: 'spectator', labelKey: 'dashboard.debug_overlay_spectator', descKey: 'dashboard.debug_overlay_spectator_desc' },
+    { id: 'loadingWait', labelKey: 'dashboard.debug_overlay_loading_wait', descKey: 'dashboard.debug_overlay_loading_wait_desc' },
+    { id: 'escMenu', labelKey: 'dashboard.debug_overlay_esc_menu', descKey: 'dashboard.debug_overlay_esc_menu_desc' },
+    { id: 'survivalResult', labelKey: 'dashboard.debug_overlay_survival_result', descKey: 'dashboard.debug_overlay_survival_result_desc' },
   ] as const;
 
   const ingame = $derived(status?.ingame ?? !!dashboard.status.sessionScene);
@@ -23,26 +23,23 @@
   async function refresh() {
     try {
       status = await Api.getUiDebugOverlays();
-      error = '';
     } catch (err) {
-      error = err instanceof Error ? err.message : String(err);
+      const message = err instanceof Error ? err.message : String(err);
+      dashboard.showToast(message);
     }
   }
 
-  async function toggle(id: string) {
-    if (!available || pending) return;
+  async function setActive(id: string, active: boolean) {
+    if (!available || pending || isActive(id) === active) return;
     pending = id;
-    error = '';
     try {
       const result = await Api.toggleUiDebugOverlay(id);
       if (!result.success && result.message) {
-        error = result.message;
         dashboard.showToast(result.message);
       }
       await refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      error = message;
       dashboard.showToast(message);
     } finally {
       pending = null;
@@ -74,80 +71,25 @@
   });
 </script>
 
-<div class="settings-debug-overlays" aria-label={t('dashboard.debug_overlays_heading')}>
-  <p class="settings-debug-overlays-lead">{t('dashboard.debug_overlays_lead')}</p>
-  {#if status}
-    <p class="settings-debug-overlays-hint">
-      {t('dashboard.debug_max_players_hint', { count: String(status.maxPlayers) })}
-    </p>
-  {/if}
-  {#if !ingame}
-    <p class="settings-debug-overlays-disabled">{t('dashboard.debug_not_ingame_hint')}</p>
-  {:else if !alive}
-    <p class="settings-debug-overlays-disabled">{t('dashboard.debug_not_alive_hint')}</p>
-  {/if}
-  {#if error}
-    <p class="settings-debug-overlays-error">{error}</p>
-  {/if}
-  <div class="settings-debug-overlays-grid">
-    {#each overlays as overlay (overlay.id)}
-      <div class="settings-debug-overlay-row">
-        <span class="settings-debug-overlay-label">{t(overlay.labelKey)}</span>
-        <button
-          type="button"
-          class="btn btn-secondary btn-xs {isActive(overlay.id) ? 'btn-active' : ''}"
-          disabled={!available || pending === overlay.id}
-          onclick={() => toggle(overlay.id)}
-        >
-          {isActive(overlay.id) ? t('dashboard.debug_hide') : t('dashboard.debug_show')}
-        </button>
+<div aria-label={t('dashboard.debug_overlays_heading')}>
+  {#each overlays as overlay (overlay.id)}
+    <div class="settings-entry {!available ? 'settings-entry-disabled' : ''}">
+      <div class="settings-entry-main">
+        <div class="settings-entry-header">
+          <span class="settings-entry-title" id="ui-debug-{overlay.id}">{t(overlay.labelKey)}</span>
+        </div>
+        <p class="settings-entry-desc">{t(overlay.descKey)}</p>
       </div>
-    {/each}
-  </div>
+      <div class="settings-entry-actions">
+        <div class="settings-entry-control">
+          <Toggle
+            checked={isActive(overlay.id)}
+            disabled={!available || pending === overlay.id}
+            label={t(overlay.labelKey)}
+            onchange={(checked) => setActive(overlay.id, checked)}
+          />
+        </div>
+      </div>
+    </div>
+  {/each}
 </div>
-
-<style>
-  .settings-debug-overlays {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
-  }
-
-  .settings-debug-overlays-lead,
-  .settings-debug-overlays-hint,
-  .settings-debug-overlays-disabled,
-  .settings-debug-overlays-error {
-    margin: 0 0 0.5rem;
-    font-size: 0.8125rem;
-    line-height: 1.45;
-  }
-
-  .settings-debug-overlays-lead,
-  .settings-debug-overlays-hint {
-    color: var(--text-muted, #6b7280);
-  }
-
-  .settings-debug-overlays-disabled {
-    color: #b45309;
-  }
-
-  .settings-debug-overlays-error {
-    color: #dc2626;
-  }
-
-  .settings-debug-overlays-grid {
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .settings-debug-overlay-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
-  .settings-debug-overlay-label {
-    font-size: 0.875rem;
-  }
-</style>

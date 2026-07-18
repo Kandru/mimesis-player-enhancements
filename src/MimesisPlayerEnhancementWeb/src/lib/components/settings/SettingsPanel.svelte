@@ -9,7 +9,7 @@
   import { t } from '$lib/i18n';
   import {
     canEditEntry,
-    configEntryGroupId,
+    configEntryGroupLabel,
     entryEditable,
     featureEnabled,
     groupConfigEntries,
@@ -257,11 +257,16 @@
                       onreset={() => resetSetting(activeSection.id, entry.key)}
                     />
                   {/each}
-                  {#if scope === 'global' && activeSection.id === 'MimesisPlayerEnhancement' && configEntryGroupId(group.id) === 'EnableDebugLogging'}
-                    <UiOverlayDebugPanel />
-                  {/if}
                 </div>
               {/each}
+              {#if scope === 'global' && activeSection.id === 'MimesisPlayerEnhancement'}
+                <div class="settings-entry-group">
+                  <h4 class="settings-entry-group-title">
+                    {configEntryGroupLabel('MimesisPlayerEnhancement', 'MimesisPlayerEnhancement::UiOverlayDebug')}
+                  </h4>
+                  <UiOverlayDebugPanel />
+                </div>
+              {/if}
             </div>
           </section>
         </div>

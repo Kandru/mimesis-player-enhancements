@@ -4,7 +4,8 @@
       "_section": "Mimesis Player Enhancement",
       "_description": "Global mod options, including verbose debug logging.",
       "_groups": {
-        "EnableDebugLogging": "Debug logging"
+        "EnableDebugLogging": "Debug logging",
+        "UiOverlayDebug": "UI overlay preview"
       },
       "EnableDebugLogging": {
         "title": "Enable Debug Logging",
@@ -1313,16 +1314,14 @@
     "settings_host_only_hint": "Only the host can change this setting.",
     "settings_guest_readonly": "You are connected as a guest. Host-only settings are shown for reference but cannot be changed.",
     "debug_overlays_heading": "UI overlay preview",
-    "debug_overlays_lead": "Force-show real game player-list UIs filled with static fake players for layout checks. No live session data while a preview is open.",
     "debug_overlay_spectator": "Spectator list",
+    "debug_overlay_spectator_desc": "Force-show the spectator player list filled with fake players for layout checks.",
     "debug_overlay_loading_wait": "Loading wait list",
+    "debug_overlay_loading_wait_desc": "Force-show the loading-screen player roster filled with fake players for layout checks.",
     "debug_overlay_esc_menu": "ESC menu list",
+    "debug_overlay_esc_menu_desc": "Force-show the in-game menu player list filled with fake players for layout checks.",
     "debug_overlay_survival_result": "Survival result / tram list",
-    "debug_show": "Show",
-    "debug_hide": "Hide",
-    "debug_max_players_hint": "Fills {count} fake players (current max).",
-    "debug_not_ingame_hint": "Join a game session (tram, maintenance, or dungeon) to use these previews.",
-    "debug_not_alive_hint": "Your player must be alive in-game to use these previews.",
+    "debug_overlay_survival_result_desc": "Force-show the survival result player grid filled with fake players for layout checks.",
     "settings_sections_nav": "Setting groups",
     "settings_unavailable": "Settings unavailable.",
     "settings_overridden": "Overridden",

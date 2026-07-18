@@ -4,7 +4,8 @@
       "_section": "Mimesis Player Enhancement",
       "_description": "Globale Mod-Optionen, einschließlich ausführlicher Debug-Protokollierung.",
       "_groups": {
-        "EnableDebugLogging": "Debug-Protokollierung"
+        "EnableDebugLogging": "Debug-Protokollierung",
+        "UiOverlayDebug": "UI-Overlay-Vorschau"
       },
       "EnableDebugLogging": {
         "title": "Debug-Logging aktivieren",
@@ -1313,16 +1314,14 @@
     "settings_host_only_hint": "Nur der Host kann diese Einstellung ändern.",
     "settings_guest_readonly": "Du bist als Gast verbunden. Host-only-Einstellungen werden zur Ansicht angezeigt, können aber nicht geändert werden.",
     "debug_overlays_heading": "UI-Overlay-Vorschau",
-    "debug_overlays_lead": "Zeigt echte Spielerlisten-UIs mit statischen Fake-Spielern für Layout-Checks. Keine Live-Sitzungsdaten, solange eine Vorschau aktiv ist.",
     "debug_overlay_spectator": "Zuschauerliste",
+    "debug_overlay_spectator_desc": "Zeigt die Zuschauer-Spielerliste mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_loading_wait": "Warte-Ladeliste",
+    "debug_overlay_loading_wait_desc": "Zeigt die Spielerliste auf dem Ladebildschirm mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_esc_menu": "ESC-Menü-Liste",
+    "debug_overlay_esc_menu_desc": "Zeigt die Spielerliste im Spielmenü mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_survival_result": "Überlebensergebnis / Tram-Liste",
-    "debug_show": "Anzeigen",
-    "debug_hide": "Ausblenden",
-    "debug_max_players_hint": "Füllt {count} Fake-Spieler (aktuelles Maximum).",
-    "debug_not_ingame_hint": "Tritt einer Spielsitzung bei (Tram, Wartung oder Dungeon), um diese Vorschauen zu nutzen.",
-    "debug_not_alive_hint": "Dein Spieler muss im Spiel lebendig sein, um diese Vorschauen zu nutzen.",
+    "debug_overlay_survival_result_desc": "Zeigt das Überlebensergebnis-Spielerraster mit Fake-Spielern für Layout-Checks an.",
     "settings_sections_nav": "Einstellungsgruppen",
     "settings_unavailable": "Einstellungen nicht verfügbar.",
     "settings_overridden": "Überschrieben",
