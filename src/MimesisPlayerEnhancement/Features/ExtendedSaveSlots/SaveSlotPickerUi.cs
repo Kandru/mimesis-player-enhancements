@@ -57,7 +57,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 if (_emptyLabel == null)
                 {
                     _emptyLabel = _scrollList
-                        .CreatePlaceholderLabel(_assets, "No save games found.")
+                        .CreatePlaceholderLabel(_assets, ModL10n.Get("saveslots.empty_list"))
                         .gameObject;
                 }
 
@@ -126,7 +126,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             DeleteButton = ModButton.Create(
                 actionRow,
                 _assets,
-                "Delete",
+                ModL10n.Get("saveslots.delete"),
                 expandWidth: true,
                 () => DeleteClicked?.Invoke());
             LoadButton = ModButton.Create(

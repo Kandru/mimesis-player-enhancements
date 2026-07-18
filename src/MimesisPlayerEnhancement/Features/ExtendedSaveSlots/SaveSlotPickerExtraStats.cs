@@ -5,6 +5,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotPickerExtraStats
     {
+        internal static void PopulateLine3Text(IReadOnlyList<SaveSlotEntry> entries)
+        {
+            foreach (SaveSlotEntry entry in entries)
+            {
+                entry.Line3Text = FormatLine3(entry.SlotId);
+            }
+        }
+
         internal static string FormatLine3(int slotId)
         {
             List<string> parts = [];

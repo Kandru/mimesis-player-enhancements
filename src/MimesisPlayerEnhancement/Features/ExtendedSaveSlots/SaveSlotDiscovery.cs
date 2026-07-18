@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal sealed class SaveSlotEntry
@@ -7,6 +5,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         internal int SlotId { get; set; }
         internal MMSaveGameData Data { get; set; } = null!;
         internal SaveSlotDisplayInfo Display { get; set; } = null!;
+        internal string Line3Text { get; set; } = string.Empty;
     }
 
     internal static class SaveSlotDiscovery
@@ -40,9 +39,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 }
             }
 
-            return entries
-                .OrderByDescending(static entry => entry.Data.RegDateTime)
-                .ToList();
+            return entries;
         }
 
         internal static int FindFirstFreeManualSlot()

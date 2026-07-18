@@ -24,6 +24,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             IsSavePickerOpen = open;
         }
 
+        internal static void OnSessionEnded()
+        {
+            ResetMenuSession();
+            _mainMenu = null;
+            _mainMenuUi = null;
+            _hostButtonLabel = null;
+        }
+
         internal static bool TryGetCachedSave(int slotId, out MMSaveGameData? data)
         {
             if (_panel != null && _panel.TryGetCachedSave(slotId, out data))

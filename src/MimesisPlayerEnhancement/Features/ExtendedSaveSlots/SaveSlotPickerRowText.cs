@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             sb.Append('\n');
             sb.Append("<size=17>").Append(line2).Append("</size>");
 
-            string line3 = SaveSlotPickerExtraStats.FormatLine3(entry.SlotId);
+            string line3 = entry.Line3Text;
             sb.Append('\n');
             sb.Append("<size=15><color=#B8AE94>").Append(EscapeRichText(line3)).Append("</color></size>");
 
@@ -35,7 +35,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             {
                 Line2Style.VersionBlinkHidden => SaveSlotDisplayFormatter.BuildTransparentBlinkText(info),
                 Line2Style.VersionBlink => SaveSlotDisplayFormatter.BuildBlinkText(info, showVersionWarning: true),
-                _ => SaveSlotDisplayFormatter.Format(entry.Data).BaseText,
+                _ => info.BaseText,
             };
         }
 

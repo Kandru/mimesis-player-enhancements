@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private readonly Dictionary<int, MMSaveGameData> _saveCache = new();
         private readonly Dictionary<int, SaveSlotEntry> _entriesBySlot = new();
         private SaveSlotPickerRow? _selectedRow;
+        private int _firstFreeManualSlot = -1;
 
         internal SaveSlotPickerPanel(
             MainMenu mainMenu,
@@ -152,7 +153,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal void HandleNewTram()
         {
-            int slotId = SaveSlotDiscovery.FindFirstFreeManualSlot();
+            int slotId = _firstFreeManualSlot;
             if (slotId < 0)
             {
                 ModLog.Warn(Feature, "All manual save slots are full.");
@@ -173,6 +174,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _entriesBySlot.Clear();
 
             List<SaveSlotEntry> entries = SaveSlotRoomListMapper.BuildSaveEntries();
+            SaveSlotPickerExtraStats.PopulateLine3Text(entries);
+            _firstFreeManualSlot = SaveSlotDiscovery.FindFirstFreeManualSlot();
             foreach (SaveSlotEntry entry in entries)
             {
                 _saveCache[entry.SlotId] = entry.Data;
@@ -207,7 +210,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _ui.SetActionButtons(
                 loadEnabled: hasSelection,
                 deleteEnabled: hasSelection,
-                newTramEnabled: SaveSlotDiscovery.FindFirstFreeManualSlot() >= 0);
+                newTramEnabled: _firstFreeManualSlot >= 0);
         }
 
         private void ClearSelection()

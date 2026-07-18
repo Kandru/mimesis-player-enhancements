@@ -87,6 +87,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             LoadingWaitPlayerListRuntime.OnSessionEnded();
             CustomLoadingScreenRuntime.OnSessionEnded();
+            ExtendedSaveSlotsRuntime.OnSessionEnded();
             WorldOverlayRuntime.OnSessionEnded();
             FpsUiOverlay.OnSessionEnded();
             FpsUiNetWorthOverlay.OnSessionEnded();

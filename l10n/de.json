@@ -870,6 +870,8 @@
     "late_join_awaiting_tram": "warte auf Tram (Laden)"
   },
   "saveslots": {
+    "empty_list": "Keine Speicherstände gefunden.",
+    "delete": "Löschen",
     "no_statistics": "Noch keine Statistiken verfügbar",
     "survival_wins": "{count} Überlebens-Siege",
     "survival_deaths": "{count} Überlebens-Tode",

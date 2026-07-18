@@ -13,5 +13,10 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 TramSavePickerController.ApplyVanillaMode();
             }
         }
+
+        internal static void OnSessionEnded()
+        {
+            TramSavePickerController.OnSessionEnded();
+        }
     }
 }

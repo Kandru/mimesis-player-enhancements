@@ -870,6 +870,8 @@
     "late_join_awaiting_tram": "awaiting tram load"
   },
   "saveslots": {
+    "empty_list": "No save games found.",
+    "delete": "Delete",
     "no_statistics": "No statistics available yet",
     "survival_wins": "{count} survival wins",
     "survival_deaths": "{count} survival deaths",
