@@ -15,6 +15,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(LoadingWaitPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InGameMenuPlayerListPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SurvivalResultPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ExtendedSaveSlotsPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ModVersionDisplayPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)))
@@ -55,6 +56,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ("Hide/UIPrefab_Inventory (FPS UI net worth)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
                 ("SetVersionText/UIPrefab_MainMenu", AccessTools.Method(typeof(UIPrefab_MainMenu), "SetVersionText")),
                 ("SetVersionText/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "SetVersionText")),
+                ("PatchParameter/UIPrefab_SurvivalResult", AccessTools.Method(AccessTools.TypeByName("UIPrefab_SurvivalResult"), "PatchParameter")),
             ]);
         }
     }

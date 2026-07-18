@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
-using MimesisPlayerEnhancement.Features.WebDashboard.Debug;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard

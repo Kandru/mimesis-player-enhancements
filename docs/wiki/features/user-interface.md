@@ -20,6 +20,10 @@ Local presentation options that do not require other players to install the mod.
 
 `EnableExtendedInGameMenuPlayerList` shows the ESC menu player list in a right-side overlay (join code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls.
 
+## Survival result
+
+When [More Players](more-players.md) is enabled and more than four players finish a run, the survival-result dialog uses a custom 6-per-row grid (up to ~90% of screen width) under a centered **DAY X RESULTS** header instead of the vanilla four-slot layout. Up to **24 players** are shown; additional players are omitted. Extra rows stack downward with spacing for name, status, and award text; the whole block (title, grid, and scrap loss) is vertically centered on screen. Scrap loss stays centered under the grid; the dungeon seed is shown in the bottom-left corner. Four players or fewer keep the vanilla dialog.
+
 ## Damage health outline
 
 `EnableDamageHealthGlow` tints other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fades out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar.

@@ -30,7 +30,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 ("UpdatePlayerGroupSize/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdatePlayerGroupSize))),
                 ("SetRoomList/UIPrefab_PublicRoomList", AccessTools.Method(typeof(UIPrefab_PublicRoomList), nameof(UIPrefab_PublicRoomList.SetRoomList))),
                 ("SetRoomData/UiPrefab_RoomCard", AccessTools.Method(typeof(UiPrefab_RoomCard), "SetRoomData")),
-                ("PatchParameter/UIPrefab_SurvivalResult", AccessTools.Method(AccessTools.TypeByName("UIPrefab_SurvivalResult"), "PatchParameter")),
                 ("SetRemoteVolumeController_v2/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))),
                 ("SetPingImage/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),

@@ -1,6 +1,7 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.18
+- improvement: better survival result screen with 4+ players
 - draft: add debug buttons for the custom overlays to test them without real data
 
 ## 26.7.17

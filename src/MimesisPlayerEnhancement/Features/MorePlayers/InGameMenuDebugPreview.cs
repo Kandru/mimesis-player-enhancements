@@ -1,6 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList;
-using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers

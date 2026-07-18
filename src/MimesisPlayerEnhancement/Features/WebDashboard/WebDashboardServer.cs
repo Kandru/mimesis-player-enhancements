@@ -1,6 +1,5 @@
 using System.Net;
 using System.Threading;
-using MimesisPlayerEnhancement.Features.WebDashboard.Debug;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {

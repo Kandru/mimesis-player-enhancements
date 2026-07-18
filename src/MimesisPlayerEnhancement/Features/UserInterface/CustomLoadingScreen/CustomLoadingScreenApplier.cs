@@ -1,5 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
