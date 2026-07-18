@@ -8,6 +8,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
+            if (!PlayerTuningResolver.IsFeatureEnabled)
+            {
+                return;
+            }
+
             try
             {
                 PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
@@ -27,6 +32,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
+            if (!PlayerTuningResolver.IsFeatureEnabled)
+            {
+                return;
+            }
+
             try
             {
                 PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
@@ -46,6 +56,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
+            if (!PlayerTuningResolver.IsFeatureEnabled)
+            {
+                return;
+            }
+
             try
             {
                 PlayerTuningCollision.OnPassThroughActorConfigured(__instance);
@@ -65,6 +80,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance, int masterID)
         {
+            if (!PlayerTuningResolver.IsFeatureEnabled)
+            {
+                return;
+            }
+
             try
             {
                 PlayerTuningCollision.OnPassThroughActorConfigured(__instance, masterID);
@@ -84,6 +104,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
+            if (!PlayerTuningResolver.IsFeatureEnabled)
+            {
+                return;
+            }
+
             try
             {
                 PlayerTuningCollision.OnPassThroughActorConfigured(__instance);

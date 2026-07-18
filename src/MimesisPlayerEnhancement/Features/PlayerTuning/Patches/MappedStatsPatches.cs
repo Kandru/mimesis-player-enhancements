@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         {
             try
             {
-                if (!ModConfig.EnablePlayerTuning.Value || !__result || type != ActorType.Player)
+                if (!PlayerTuningApplier.ShouldApply || !__result || type != ActorType.Player)
                 {
                     return;
                 }
@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         {
             try
             {
-                if (!ModConfig.EnablePlayerTuning.Value)
+                if (!PlayerTuningApplier.ShouldApply)
                 {
                     return;
                 }

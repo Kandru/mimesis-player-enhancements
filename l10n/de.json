@@ -648,7 +648,7 @@
       },
       "MaxCarryWeightMultiplier": {
         "title": "Tragegewicht-Multiplikator",
-        "description": "Tragekapazität vor Verlangsamung (1 = Vanilla, 2 = doppelt)."
+        "description": "Maximales Tragegewicht und Verlangsamungsschwelle (1 = Vanilla, 2 = doppelt)."
       },
       "DisablePlayerCollision": {
         "title": "Spieler-Kollision deaktivieren",

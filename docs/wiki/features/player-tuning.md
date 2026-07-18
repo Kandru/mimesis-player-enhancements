@@ -18,7 +18,7 @@ Tweak how players move and survive: walk/run speed, stamina pool, sprint drain, 
 
 ## Carry weight
 
-`MaxCarryWeightMultiplier` scales carry capacity before encumbrance slows movement.
+`MaxCarryWeightMultiplier` scales maximum carry weight and the encumbrance slowdown threshold (`1` = vanilla, `2` = double).
 
 ## Player collision
 

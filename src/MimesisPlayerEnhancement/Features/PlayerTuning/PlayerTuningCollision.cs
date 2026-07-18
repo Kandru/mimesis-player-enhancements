@@ -20,8 +20,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 ? AccessTools.Property(CapsuleColliderType.BaseType!, "enabled")
                 : null;
 
-        internal static bool ShouldDisable =>
-            PlayerTuningResolver.IsFeatureEnabled && ModConfig.DisablePlayerCollision.Value;
+        internal static bool ShouldDisable => PlayerTuningResolver.DisablePlayerCollision;
 
         internal static void RefreshFromConfig()
         {

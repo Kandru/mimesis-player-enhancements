@@ -68,6 +68,17 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             }
         }
 
+        internal static void OnSessionEnded()
+        {
+            if (_runtimeTuningApplied)
+            {
+                RestoreRuntimeTuning("session ended");
+            }
+
+            _wasApplying = false;
+            _vanillaCached = false;
+        }
+
         private static int GetEffectiveMaxCarryWeight()
         {
             EnsureVanillaCached();
@@ -170,6 +181,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             SetConstLong(consts, StaminaRegenDelayRemainField, ScaleLong(
                 _vanillaStaminaRegenDelayRemain,
                 PlayerTuningResolver.StaminaRegenDelayMultiplier));
+            SetConstInt(consts, MaxCarryWeightField, ScalingMath.ScaleCount(
+                _vanillaMaxCarryWeight,
+                PlayerTuningResolver.MaxCarryWeightMultiplier));
 
             _runtimeTuningApplied = true;
             PlayerTuningLog.InfoAppliedRuntimeTuning();
@@ -192,6 +206,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             SetConstLong(consts, StaminaRegenValueField, _vanillaStaminaRegenValue);
             SetConstLong(consts, StaminaRegenDelayEmptyField, _vanillaStaminaRegenDelayEmpty);
             SetConstLong(consts, StaminaRegenDelayRemainField, _vanillaStaminaRegenDelayRemain);
+            SetConstInt(consts, MaxCarryWeightField, _vanillaMaxCarryWeight);
             _runtimeTuningApplied = false;
             PlayerTuningLog.DebugRestoredRuntimeTuning(reason);
         }
@@ -224,6 +239,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         }
 
         private static void SetConstLong(DataConsts consts, FieldInfo? field, long value)
+        {
+            field?.SetValue(consts, value);
+        }
+
+        private static void SetConstInt(DataConsts consts, FieldInfo? field, int value)
         {
             field?.SetValue(consts, value);
         }

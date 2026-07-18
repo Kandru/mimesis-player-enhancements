@@ -648,7 +648,7 @@
       },
       "MaxCarryWeightMultiplier": {
         "title": "Carry Weight Multiplier",
-        "description": "Carry capacity before encumbrance slows you (1 = vanilla, 2 = double)."
+        "description": "Maximum carry weight and encumbrance threshold (1 = vanilla, 2 = double)."
       },
       "DisablePlayerCollision": {
         "title": "Disable Player Collision",

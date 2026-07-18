@@ -369,7 +369,7 @@ When you are dead and press **E** to speak through a nearby mimic, vanilla uses 
 | `StaminaDrainMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales sprint stamina cost per tick (`0.5` = half drain). |
 | `StaminaRegenMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales stamina recovered per regen tick. |
 | `StaminaRegenDelayMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales wait before regen starts after sprinting (`0.5` = regen starts sooner). |
-| `MaxCarryWeightMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales carry capacity before encumbrance slows movement. |
+| `MaxCarryWeightMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales maximum carry weight and encumbrance slowdown threshold (`1` = vanilla, `2` = double). |
 | `DisablePlayerCollision` | bool | `true` | — | On the local client, disable capsule colliders on other players and mimics so you can walk through them (e.g. crowded tram). Regular monsters and walls remain solid. Local effect only; requires `EnablePlayerTuning`. |
 
 ## Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
