@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
     {
         private const string Feature = "Ui";
         private const int VanillaPlayerRows = 4;
+        private const string OverflowRootObjectName = "MPE_SpectatorOverflow";
         private const float BottomMargin = 8f;
         private const float RightMargin = 8f;
         private const float ColumnGap = 12f;
@@ -463,6 +464,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 state.OriginPosition = Vector2.zero;
                 state.YDirection = -1f;
                 state.ColumnStepPixels = FallbackColumnWidth + ColumnGap;
+                state.ColumnWidth = FallbackColumnWidth;
                 return;
             }
 
@@ -485,69 +487,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 state.RowHeight = 24f;
             }
 
-            float columnWidth = firstRect.sizeDelta.x;
-            if (columnWidth <= 1f || columnWidth > 800f)
-            {
-                columnWidth = FallbackColumnWidth;
-            }
-
-            state.ColumnStepPixels = columnWidth + ColumnGap;
+            state.ColumnWidth = FallbackColumnWidth;
+            state.ColumnStepPixels = FallbackColumnWidth + ColumnGap;
         }
 
-        private static void EnsureColumnRoots(SpectatorListState state)
-        {
-            if (state.NativeRows[0].transform is not RectTransform templateRect)
-            {
-                return;
-            }
-
-            Transform nativeParent = templateRect.transform.parent;
-
-            while (state.ColumnRoots.Count > state.MaxColumns)
-            {
-                int lastIndex = state.ColumnRoots.Count - 1;
-                RectTransform columnRoot = state.ColumnRoots[lastIndex];
-                state.ColumnRoots.RemoveAt(lastIndex);
-                if (columnRoot != null)
-                {
-                    UnityEngine.Object.Destroy(columnRoot.gameObject);
-                }
-            }
-
-            while (state.ColumnRoots.Count < state.MaxColumns)
-            {
-                GameObject columnObject = new($"MPE_SpectatorColumn_{state.ColumnRoots.Count + 1}");
-                RectTransform columnRoot = columnObject.AddComponent<RectTransform>();
-                columnRoot.SetParent(nativeParent, worldPositionStays: false);
-                state.ColumnRoots.Add(columnRoot);
-            }
-
-            for (int columnIndex = 0; columnIndex < state.ColumnRoots.Count; columnIndex++)
-            {
-                RectTransform columnRoot = state.ColumnRoots[columnIndex];
-                columnRoot.anchorMin = templateRect.anchorMin;
-                columnRoot.anchorMax = templateRect.anchorMax;
-                columnRoot.pivot = templateRect.pivot;
-                columnRoot.sizeDelta = Vector2.zero;
-                columnRoot.anchoredPosition = state.OriginPosition
-                    + new Vector2(columnIndex * state.ColumnStepPixels, 0f);
-            }
-        }
-
-        private static void DestroyColumnRoots(SpectatorListState state)
-        {
-            foreach (RectTransform columnRoot in state.ColumnRoots)
-            {
-                if (columnRoot != null)
-                {
-                    UnityEngine.Object.Destroy(columnRoot.gameObject);
-                }
-            }
-
-            state.ColumnRoots.Clear();
-        }
-
-        private static void ApplyAnchoredLayout(
+        private static void ApplyNativeRowLayout(
             RectTransform rowRect,
             RectTransform templateRect,
             Transform parent,
@@ -562,6 +506,36 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             rowRect.anchorMax = templateRect.anchorMax;
             rowRect.pivot = templateRect.pivot;
             rowRect.anchoredPosition = anchoredPosition;
+        }
+
+        private static RectTransform EnsureOverflowRoot(SpectatorListState state)
+        {
+            if (state.OverflowRoot == null)
+            {
+                GameObject overflowObject = new(OverflowRootObjectName);
+                overflowObject.layer = state.ListView.gameObject.layer;
+                RectTransform overflowRect = overflowObject.AddComponent<RectTransform>();
+                overflowRect.SetParent(state.ListView.transform, worldPositionStays: false);
+                overflowRect.anchorMin = Vector2.zero;
+                overflowRect.anchorMax = Vector2.one;
+                overflowRect.offsetMin = Vector2.zero;
+                overflowRect.offsetMax = Vector2.zero;
+                state.OverflowRoot = overflowRect;
+            }
+
+            state.OverflowRoot.SetAsLastSibling();
+            return state.OverflowRoot;
+        }
+
+        private static void DestroyOverflowRoot(SpectatorListState state)
+        {
+            if (state.OverflowRoot == null)
+            {
+                return;
+            }
+
+            UnityEngine.Object.Destroy(state.OverflowRoot.gameObject);
+            state.OverflowRoot = null;
         }
 
         private static int ComputeRowsPerColumn(SpectatorListState state, out float availableHeight)
@@ -681,6 +655,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             UIPrefab_Spectator_PlayerListViewItem template = state.NativeRows[0];
+            Transform nativeParent = template.transform.parent;
             int requiredRows = state.RowsPerColumn * state.MaxColumns;
 
             while (state.CloneRows.Count > requiredRows)
@@ -697,11 +672,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 
             while (state.CloneRows.Count < requiredRows)
             {
-                int slotIndex = state.CloneRows.Count;
-                int columnIndex = slotIndex / state.RowsPerColumn;
-                Transform columnParent = state.ColumnRoots[columnIndex];
                 UIPrefab_Spectator_PlayerListViewItem clone =
-                    UnityEngine.Object.Instantiate(template, columnParent);
+                    UnityEngine.Object.Instantiate(template, nativeParent);
                 clone.gameObject.name = $"MorePlayersSpectatorRow_{state.CloneRows.Count + 1}";
                 clone.gameObject.SetActive(true);
                 clone.transform.localScale = Vector3.one;
@@ -711,14 +683,28 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 state.CloneRows.Add(clone);
             }
 
-            EnsureColumnRoots(state);
+            for (int slotIndex = 0; slotIndex < state.CloneRows.Count; slotIndex++)
+            {
+                int columnIndex = slotIndex / state.RowsPerColumn;
+                if (columnIndex != 0)
+                {
+                    continue;
+                }
+
+                int rowIndex = slotIndex % state.RowsPerColumn;
+                PositionRow(state, state.CloneRows[slotIndex], columnIndex, rowIndex);
+            }
 
             for (int slotIndex = 0; slotIndex < state.CloneRows.Count; slotIndex++)
             {
-                UIPrefab_Spectator_PlayerListViewItem row = state.CloneRows[slotIndex];
                 int columnIndex = slotIndex / state.RowsPerColumn;
+                if (columnIndex == 0)
+                {
+                    continue;
+                }
+
                 int rowIndex = slotIndex % state.RowsPerColumn;
-                PositionRow(state, row, columnIndex, rowIndex);
+                PositionRow(state, state.CloneRows[slotIndex], columnIndex, rowIndex);
             }
         }
 
@@ -735,17 +721,35 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             SpectatorPlayerRowBinder.ApplyNormalRowLayout(row);
-            if (columnIndex >= state.ColumnRoots.Count)
+            Transform nativeParent = templateRect.transform.parent;
+            Vector2 anchoredPosition = state.OriginPosition
+                + new Vector2(0f, rowIndex * state.YDirection * state.RowHeight);
+
+            if (columnIndex == 0)
+            {
+                ApplyNativeRowLayout(rowRect, templateRect, nativeParent, anchoredPosition);
+                return;
+            }
+
+            if (rowIndex >= state.RowsPerColumn
+                || state.CloneRows[rowIndex].transform is not RectTransform referenceRect)
             {
                 return;
             }
 
-            Vector2 rowPosition = new(0f, rowIndex * state.YDirection * state.RowHeight);
-            ApplyAnchoredLayout(
-                rowRect,
-                templateRect,
-                state.ColumnRoots[columnIndex],
-                rowPosition);
+            UIPrefab_Spectator_PlayerListViewItem referenceRow = state.CloneRows[rowIndex];
+            RectTransform overflowRoot = EnsureOverflowRoot(state);
+            row.transform.SetParent(overflowRoot, worldPositionStays: false);
+            rowRect.anchorMin = referenceRect.anchorMin;
+            rowRect.anchorMax = referenceRect.anchorMax;
+            rowRect.pivot = referenceRect.pivot;
+            rowRect.sizeDelta = referenceRect.sizeDelta;
+            rowRect.localScale = Vector3.one;
+
+            Vector3 targetPosition = referenceRow.transform.position
+                + new Vector3(columnIndex * state.ColumnStepPixels, 0f, 0f);
+            row.transform.position = targetPosition;
+            row.transform.SetAsLastSibling();
         }
 
         private static void BindRows(
@@ -939,7 +943,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             state.CloneRows.Clear();
-            DestroyColumnRoots(state);
+            DestroyOverflowRoot(state);
         }
 
         private sealed class SpectatorDebugEntry
@@ -952,12 +956,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
         private sealed class SpectatorListState
         {
             internal UIPrefab_Spectator_PlayerListView ListView = null!;
+            internal RectTransform? OverflowRoot;
             internal UIPrefab_Spectator_PlayerListViewItem[] NativeRows = [];
-            internal List<RectTransform> ColumnRoots = [];
             internal List<UIPrefab_Spectator_PlayerListViewItem> CloneRows = [];
             internal Color LiveColor = Color.white;
             internal Color DeadColor = Color.red;
             internal Vector2 OriginPosition;
+            internal float ColumnWidth = FallbackColumnWidth;
             internal float ColumnStepPixels = FallbackColumnWidth + ColumnGap;
             internal float RowHeight = 24f;
             internal float YDirection = -1f;
