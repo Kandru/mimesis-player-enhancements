@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using ReluProtocol.Enum;
 using UnityEngine;
 
@@ -36,13 +37,24 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         private const int RowsPerColumn = 4;
         private const float ColumnGap = 12f;
 
+        private static readonly ConditionalWeakTable<object, SurvivalResultGridState> GridStates = new();
+
+        private static readonly MemberInfo? RandDungeonSeedMember =
+            (MemberInfo?)AccessTools.Field(typeof(Hub.PersistentData), "randDungeonSeed")
+            ?? AccessTools.Property(typeof(Hub.PersistentData), "randDungeonSeed");
+
         private static string GetL10NText(string key, params object[] formattingArgs)
         {
             return GameLocaleAccess.GetL10NText(key, formattingArgs);
         }
 
-        private static readonly PropertyInfo? HubPdataProperty =
-            AccessTools.Property(typeof(Hub), "pdata");
+        private sealed class SurvivalResultGridState
+        {
+            internal SurvivalResultRowSlot[] NativeRows = [];
+            internal readonly List<SurvivalResultRowSlot> ExtendedRows = [];
+            internal float ColumnStep;
+            internal bool ColumnStepMeasured;
+        }
 
         internal static void ApplyPatchParameter(object ui, object[] parameters)
         {
@@ -69,38 +81,103 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             AppendRandomSeed(ui);
         }
 
-        private static SurvivalResultRowSlot[] EnsureSlots(object ui, int playerCount)
+        private static SurvivalResultGridState GetOrCreateState(object ui)
         {
-            SurvivalResultRowSlot[] nativeRows = BuildNativeSlots(ui);
-            int requiredSlots = Math.Min(playerCount, MorePlayersPatchHelpers.GetMaxPlayers());
-            if (requiredSlots <= RowsPerColumn)
+            return GridStates.GetValue(ui, _ => new SurvivalResultGridState());
+        }
+
+        private static SurvivalResultRowSlot[] EnsureSlots(object ui, int requiredSlots)
+        {
+            SurvivalResultGridState state = GetOrCreateState(ui);
+
+            if (state.NativeRows.Length == 0)
             {
-                return nativeRows;
+                state.NativeRows = BuildNativeSlots(ui);
             }
 
-            List<SurvivalResultRowSlot> slots = [.. nativeRows];
-            float columnStep = MeasureColumnStep(nativeRows);
-            Transform rowParent = nativeRows[0].RowRoot.parent;
-
-            for (int slotIndex = RowsPerColumn; slotIndex < requiredSlots; slotIndex++)
+            if (requiredSlots <= RowsPerColumn)
             {
+                TrimExtendedRows(state, 0);
+                return state.NativeRows;
+            }
+
+            if (!state.ColumnStepMeasured)
+            {
+                state.ColumnStep = MeasureColumnStep(state.NativeRows);
+                state.ColumnStepMeasured = true;
+            }
+
+            int extendedRequired = requiredSlots - RowsPerColumn;
+            EnsureExtendedRows(state, extendedRequired);
+
+            SurvivalResultRowSlot[] all = new SurvivalResultRowSlot[requiredSlots];
+            Array.Copy(state.NativeRows, all, RowsPerColumn);
+            for (int i = 0; i < extendedRequired; i++)
+            {
+                all[RowsPerColumn + i] = state.ExtendedRows[i];
+            }
+
+            return all;
+        }
+
+        private static void EnsureExtendedRows(SurvivalResultGridState state, int extendedRequired)
+        {
+            TrimExtendedRows(state, extendedRequired);
+
+            Transform rowParent = state.NativeRows[0].RowRoot.parent;
+
+            while (state.ExtendedRows.Count < extendedRequired)
+            {
+                int slotIndex = RowsPerColumn + state.ExtendedRows.Count;
                 int columnIndex = slotIndex / RowsPerColumn;
                 int rowIndex = slotIndex % RowsPerColumn;
-                SurvivalResultRowSlot template = nativeRows[rowIndex];
+                SurvivalResultRowSlot template = state.NativeRows[rowIndex];
                 Transform cloneRoot = UnityEngine.Object.Instantiate(template.RowRoot, rowParent);
                 cloneRoot.gameObject.SetActive(true);
                 cloneRoot.name = $"MorePlayersRow_{slotIndex + 1}";
 
-                if (cloneRoot is RectTransform cloneRect && nativeRows[rowIndex].RowRoot is RectTransform templateRect)
-                {
-                    Vector2 anchor = templateRect.anchoredPosition;
-                    cloneRect.anchoredPosition = anchor + new Vector2(columnIndex * columnStep, 0f);
-                }
-
-                slots.Add(BindRow(cloneRoot));
+                PositionExtendedRow(cloneRoot, template.RowRoot, columnIndex, state.ColumnStep);
+                state.ExtendedRows.Add(BindRow(cloneRoot));
             }
 
-            return slots.ToArray();
+            for (int i = 0; i < state.ExtendedRows.Count; i++)
+            {
+                int slotIndex = RowsPerColumn + i;
+                int columnIndex = slotIndex / RowsPerColumn;
+                int rowIndex = slotIndex % RowsPerColumn;
+                PositionExtendedRow(
+                    state.ExtendedRows[i].RowRoot,
+                    state.NativeRows[rowIndex].RowRoot,
+                    columnIndex,
+                    state.ColumnStep);
+            }
+        }
+
+        private static void TrimExtendedRows(SurvivalResultGridState state, int extendedRequired)
+        {
+            while (state.ExtendedRows.Count > extendedRequired)
+            {
+                int lastIndex = state.ExtendedRows.Count - 1;
+                SurvivalResultRowSlot slot = state.ExtendedRows[lastIndex];
+                state.ExtendedRows.RemoveAt(lastIndex);
+                if (slot.RowRoot != null)
+                {
+                    UnityEngine.Object.Destroy(slot.RowRoot.gameObject);
+                }
+            }
+        }
+
+        private static void PositionExtendedRow(
+            Transform cloneRoot,
+            Transform templateRoot,
+            int columnIndex,
+            float columnStep)
+        {
+            if (cloneRoot is RectTransform cloneRect && templateRoot is RectTransform templateRect)
+            {
+                Vector2 anchor = templateRect.anchoredPosition;
+                cloneRect.anchoredPosition = anchor + new Vector2(columnIndex * columnStep, 0f);
+            }
         }
 
         private static SurvivalResultRowSlot[] BuildNativeSlots(object ui)
@@ -354,16 +431,20 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             return textProperty?.GetValue(textComponent) as string ?? string.Empty;
         }
 
-
         private static object? GetRandomDungeonSeed()
         {
-            if (Hub.s == null || HubPdataProperty?.GetValue(Hub.s) == null)
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            if (pdata == null || RandDungeonSeedMember == null)
             {
                 return string.Empty;
             }
 
-            PropertyInfo? seedProperty = HubPdataProperty.GetValue(Hub.s)?.GetType().GetProperty("randDungeonSeed");
-            return seedProperty?.GetValue(HubPdataProperty.GetValue(Hub.s));
+            return RandDungeonSeedMember switch
+            {
+                FieldInfo field => field.GetValue(pdata),
+                PropertyInfo property => property.GetValue(pdata),
+                _ => string.Empty,
+            };
         }
     }
 }

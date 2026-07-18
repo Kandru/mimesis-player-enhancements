@@ -40,41 +40,12 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_InGameMenu __instance)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
-
-            InGameMenuExtendedSlots.ResizeTempVolumeList(__instance);
+            InGameMenuExtendedSlots.ApplyCapToMenu(__instance);
         }
     }
 
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class SetRemoteVolumeControllerPostfix
-    {
-        private const string Feature = "MorePlayers";
-
-        [HarmonyPostfix]
-        private static void Postfix(UIPrefab_InGameMenu __instance)
-        {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
-
-            try
-            {
-                InGameMenuExtendedSlots.RewireExtendedPlayerButtons(__instance);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"InGameMenu extended player-button rewire failed — {ex.Message}");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(UIPrefab_InGameMenu), "Start")]
-    internal static class InGameMenuStartPostfix
     {
         private const string Feature = "MorePlayers";
 

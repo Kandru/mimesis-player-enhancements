@@ -50,6 +50,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         /// <summary>Re-applies player-cap limits to live networking state after config changes.</summary>
         public static void RefreshFromConfig()
         {
+            InGameMenuExtendedSlots.SyncFromConfig();
+
             if (!ModConfig.EnableMorePlayers.Value)
             {
                 if (MorePlayersPatchHelpers._lastAppliedMaxClients > MorePlayersPatchHelpers.VanillaMaxPlayers)
@@ -69,6 +71,11 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             }
 
             VActorDictCapacity.ApplyToAllRooms();
+        }
+
+        internal static void OnSessionEnded()
+        {
+            MorePlayersPatchHelpers.ResetSessionState();
         }
     }
 }

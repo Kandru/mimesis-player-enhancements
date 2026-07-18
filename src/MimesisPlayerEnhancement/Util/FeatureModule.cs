@@ -90,7 +90,8 @@ namespace MimesisPlayerEnhancement.Util
                     BossSpawnAnnouncer.ResetForSessionEnd();
                     MapRunStatsTracker.ResetForSessionEnd();
                 }),
-            new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig),
+            new FeatureModule("MorePlayers", MorePlayersPatches.Apply, MorePlayersPatches.RefreshFromConfig,
+                onSessionEnded: MorePlayersPatches.OnSessionEnded),
             new FeatureModule("JoinAnytime", JoinAnytimePatches.Apply,
                 syncFromConfig: JoinAnytimeRuntime.RefreshFromConfig,
                 onUpdate: JoinAnytimeRuntime.OnUpdate,

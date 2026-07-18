@@ -17,6 +17,25 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         private static readonly MethodInfo OpenKickPlayerPopupMethod =
             AccessTools.Method(typeof(UIPrefab_InGameMenu), "OpenKickPlayerPopup");
 
+        internal static void SyncFromConfig()
+        {
+            UIPrefab_InGameMenu? menu = JoinAnytimeHub.GetInGameMenu();
+            if (menu != null)
+            {
+                ApplyCapToMenu(menu);
+            }
+        }
+
+        internal static void ApplyCapToMenu(UIPrefab_InGameMenu menu)
+        {
+            int targetSlots = ModConfig.EnableMorePlayers.Value
+                ? MorePlayersPatchHelpers.GetMaxPlayers()
+                : VanillaPlayerRows;
+
+            TrimExtendedSlots(menu, targetSlots);
+            ResizeTempVolumeList(menu, targetSlots);
+        }
+
         internal static void EnsureExtendedSlots(UIPrefab_InGameMenu menu)
         {
             if (!ModConfig.EnableMorePlayers.Value)
@@ -173,18 +192,20 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
         internal static void ResizeTempVolumeList(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
+            int cap = ModConfig.EnableMorePlayers.Value
+                ? MorePlayersPatchHelpers.GetMaxPlayers()
+                : VanillaPlayerRows;
+            ResizeTempVolumeList(menu, cap);
+        }
 
+        private static void ResizeTempVolumeList(UIPrefab_InGameMenu menu, int cap)
+        {
             FieldInfo? field = AccessTools.Field(typeof(UIPrefab_InGameMenu), "tempVolumeList");
             if (field?.GetValue(menu) is not List<float> tempVolumeList)
             {
                 return;
             }
 
-            int cap = MorePlayersPatchHelpers.GetMaxPlayers();
             while (tempVolumeList.Count < cap)
             {
                 tempVolumeList.Add(0f);
@@ -193,6 +214,25 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             if (tempVolumeList.Count > cap)
             {
                 tempVolumeList.RemoveRange(cap, tempVolumeList.Count - cap);
+            }
+        }
+
+        private static void TrimExtendedSlots(UIPrefab_InGameMenu menu, int targetSlots)
+        {
+            if (menu.playerUIElements == null || menu.playerUIElements.Count <= targetSlots)
+            {
+                return;
+            }
+
+            while (menu.playerUIElements.Count > targetSlots)
+            {
+                int lastIndex = menu.playerUIElements.Count - 1;
+                UIPrefab_InGameMenu.PlayerUIElement element = menu.playerUIElements[lastIndex];
+                menu.playerUIElements.RemoveAt(lastIndex);
+                if (element.container != null)
+                {
+                    UnityEngine.Object.Destroy(element.container);
+                }
             }
         }
     }

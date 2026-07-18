@@ -47,6 +47,11 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             }
         }
 
+        internal static void ResetSessionState()
+        {
+            _lastAppliedMaxClients = -1;
+        }
+
         internal static IEnumerable<MethodBase> FindEnterRoomLambdaMethods()
         {
             const BindingFlags allDeclared =

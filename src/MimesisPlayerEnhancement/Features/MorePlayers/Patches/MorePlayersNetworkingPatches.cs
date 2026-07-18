@@ -31,7 +31,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPrefix]
         internal static bool Prefix(ref int __result)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
+            if (!ModConfig.EnableMorePlayers.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return true;
             }
@@ -47,7 +48,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPrefix]
         internal static bool Prefix(ref int value)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
+            if (!ModConfig.EnableMorePlayers.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return true;
             }
@@ -65,7 +67,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPostfix]
         internal static void Postfix(object __instance)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
+            if (!ModConfig.EnableMorePlayers.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -129,7 +132,8 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPrefix]
         internal static bool Prefix(bool isOpenForRandomMatch, bool isRetryAttempt)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
+            if (!ModConfig.EnableMorePlayers.Value
+                || !HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return true;
             }
