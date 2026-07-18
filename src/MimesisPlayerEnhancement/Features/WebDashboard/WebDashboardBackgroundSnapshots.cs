@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard

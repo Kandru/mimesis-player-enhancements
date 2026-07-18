@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen;
-
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList.Patches
 {
     [HarmonyPatch(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingText))]

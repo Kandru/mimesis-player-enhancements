@@ -1,6 +1,4 @@
 using System.Reflection;
-using MimesisPlayerEnhancement.Features.MoreVoices;
-using MimesisPlayerEnhancement.Features.Players;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 {

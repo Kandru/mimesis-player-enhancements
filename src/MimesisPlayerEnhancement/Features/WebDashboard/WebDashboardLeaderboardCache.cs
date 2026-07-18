@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard

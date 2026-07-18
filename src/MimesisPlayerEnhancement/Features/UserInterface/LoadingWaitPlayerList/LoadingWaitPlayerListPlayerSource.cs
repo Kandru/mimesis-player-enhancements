@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Features.WebDashboard;
-
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 {
     internal static class LoadingWaitPlayerListPlayerSource

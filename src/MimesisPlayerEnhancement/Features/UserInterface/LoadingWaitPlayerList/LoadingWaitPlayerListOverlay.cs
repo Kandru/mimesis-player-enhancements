@@ -1,6 +1,4 @@
-using MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 {
