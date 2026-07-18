@@ -13,6 +13,9 @@ namespace MimesisPlayerEnhancement.Ui
 
         private static FieldInfo? _uimanField;
         private static PropertyInfo? _uimanProperty;
+        private static FieldInfo? _audiomanField;
+        private static PropertyInfo? _audiomanProperty;
+        private static MethodInfo? _playSfxMethod;
 
         internal static UIManager? TryGetUiManager()
         {
@@ -39,22 +42,38 @@ namespace MimesisPlayerEnhancement.Ui
                 return;
             }
 
-            FieldInfo? field = typeof(Hub).GetField("audioman", InstanceFlags)
-                ?? typeof(Hub).GetField("<audioman>k__BackingField", InstanceFlags);
-            PropertyInfo? property = typeof(Hub).GetProperty("audioman", InstanceFlags);
-            object? audioManager = field?.GetValue(Hub.s) ?? property?.GetValue(Hub.s);
+            object? audioManager = TryGetAudioManager();
             if (audioManager == null)
             {
                 return;
             }
 
-            MethodInfo? playSfx = audioManager.GetType().GetMethod(
+            _playSfxMethod ??= audioManager.GetType().GetMethod(
                 "PlaySfx",
                 InstanceFlags,
                 binder: null,
                 [typeof(string)],
                 modifiers: null);
-            playSfx?.Invoke(audioManager, [sfxId]);
+            _playSfxMethod?.Invoke(audioManager, [sfxId]);
+        }
+
+        private static object? TryGetAudioManager()
+        {
+            if (Hub.s == null)
+            {
+                return null;
+            }
+
+            _audiomanProperty ??= typeof(Hub).GetProperty("audioman", InstanceFlags);
+            object? fromProperty = _audiomanProperty?.GetValue(Hub.s);
+            if (fromProperty != null)
+            {
+                return fromProperty;
+            }
+
+            _audiomanField ??= typeof(Hub).GetField("audioman", InstanceFlags)
+                ?? typeof(Hub).GetField("<audioman>k__BackingField", InstanceFlags);
+            return _audiomanField?.GetValue(Hub.s);
         }
     }
 }

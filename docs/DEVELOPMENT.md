@@ -81,7 +81,7 @@ See [src/MimesisPlayerEnhancementWeb/README.md](../src/MimesisPlayerEnhancementW
 
 ## UI toolkit
 
-Shared primitives in `src/MimesisPlayerEnhancement/Ui/`. Features compose these; Harmony wiring stays in the feature.
+Shared primitives in `src/MimesisPlayerEnhancement/Ui/` (namespace `MimesisPlayerEnhancement.Ui`). This folder is **cross-feature infrastructure**, not a `Features/{Name}/` module — Harmony wiring for UI features stays under `Features/UserInterface/` (or the consuming feature), and patch types are discovered via anchor types + `HarmonyPatchHelper.GetNamespacePatchTypes`.
 
 | Type | Role |
 |------|------|
@@ -93,6 +93,9 @@ Shared primitives in `src/MimesisPlayerEnhancement/Ui/`. Features compose these;
 | **ModUiScrollForwarder** | Forwards wheel events to parent `ScrollRect` |
 | **ModUiGameAccess** | Reflection helpers for `UIManager` / audio |
 | **ModUiText / ModUiLayout / ModUiFactory** | TMP helpers, anchors, low-level creation |
+| **MenuMirror** (`Ui/MenuMirror/`) | Declarative vanilla menu customization (hide buttons, insert clones); patches registered via `UiPatches` |
+
+**MenuMirror:** Features register `MenuCustomization` specs through `MenuMirrorRegistry.SetCustomization` / `ClearCustomization` (keyed by feature name). The mirror captures vanilla button layout on menu `Start`, then rebuilds the column when specs change. Each registering feature is responsible for clearing its entries when disabled; `MenuMirrorController.OnSessionEnded` resets capture state and clones on session end.
 
 ```csharp
 if (!ModUiAssets.TryCaptureFromMainMenu(mainMenu, loadTram, out ModUiAssets assets))
@@ -104,7 +107,7 @@ page.CreateTitle(assets, "My Feature");
 ModButton.Create(page.CreateActionButtonRow(), assets, "Apply", expandWidth: true, () => MyFeatureApplier.Apply());
 ```
 
-Reference: `Features/ExtendedSaveSlots/` (save slot picker).
+Reference: `Features/ExtendedSaveSlots/` (save slot picker), `Features/WebDashboard/ManagementMenuButton.cs` (menu mirror button).
 
 ## Localization
 

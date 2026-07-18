@@ -84,6 +84,17 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
             }
         }
 
+        internal static void OnSessionEnded()
+        {
+            PendingCapture.Clear();
+            PendingRebuild.Clear();
+
+            foreach (MenuState state in States.Values)
+            {
+                ResetState(state);
+            }
+        }
+
         internal static void OnRegistryChanged(MenuKind kind)
         {
             MenuState state = States[kind];

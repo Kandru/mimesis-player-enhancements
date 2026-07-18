@@ -85,6 +85,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         internal static void OnSessionEnded()
         {
+            MenuMirrorController.OnSessionEnded();
             LoadingWaitPlayerListRuntime.OnSessionEnded();
             CustomLoadingScreenRuntime.OnSessionEnded();
             ExtendedSaveSlotsRuntime.OnSessionEnded();
