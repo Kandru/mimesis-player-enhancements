@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Reflection;
+using System.Text;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices
 {
@@ -50,10 +50,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             SpeechEvent_IncomingType.ChargeCompleted,
         ];
 
-        private static readonly MethodInfo? GetTopFactorMethod =
-            AccessTools.Method(typeof(SpeechEventAdditionalGameData), "GetTopFactor");
-
-        private static readonly List<(string playerID, SpeechEvent evt)> _intervalFiltered = [];
         private static readonly List<(string playerID, SpeechEvent evt)> _areaMatched = [];
         private static readonly List<(string playerID, SpeechEvent evt)> _strictAreaPool = [];
         private static readonly List<(string playerID, SpeechEvent evt)> _fallbackPool = [];
@@ -61,10 +57,13 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static readonly List<(string playerID, SpeechEvent evt)> _trapIndoorPool = [];
         private static readonly List<(string playerID, SpeechEvent evt)> _noIncoming = [];
         private static readonly List<(string playerID, SpeechEvent evt)> _incomingMatches = [];
-        private static readonly HashSet<SpeechEvent_IncomingType> _currentIncomingTypes = [];
+        private static readonly Dictionary<SpeechEvent_IncomingType, List<(string playerID, SpeechEvent evt)>> _incomingCandidateIndex = [];
+        private static readonly Dictionary<SpeechEvent_IncomingType, HashSet<int>> _incomingIdsByType = [];
         private static readonly HashSet<SpeechEvent_IncomingType> _matchedIncomingTypes = [];
-        private static readonly HashSet<int> _eventIdsForType = [];
-        private static readonly List<(string playerID, SpeechEvent evt, float similarity)> _topSimilar = [];
+        private static readonly HashSet<SpeechEvent_IncomingType> _typesAddedThisEvent = [];
+        private static readonly StringBuilder _incomingReasonBuilder = new();
+
+        private static readonly (string playerID, SpeechEvent evt, float similarity)[] _topSlots = new (string, SpeechEvent, float)[TopK];
 
         internal static bool TryPick(
             MimicVoiceSpawner.MimicContext context,
@@ -128,13 +127,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 : PlayTimeInterval;
 
             float now = GameSessionAccess.GetCurrentTickSec();
-            FilterByReplayInterval(allEvents, playTimeIntervalTemp, now);
-            if (_intervalFiltered.Count == 0)
-            {
-                return false;
-            }
-
-            if (!TryBuildCandidatePool(_intervalFiltered, curGameData, out string poolReason))
+            if (!TryBuildCandidatePoolSinglePass(allEvents, curGameData, now, playTimeIntervalTemp, out string poolReason))
             {
                 return false;
             }
@@ -148,6 +141,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     out pickReason,
                     poolReason);
             }
+
+            ShuffleInPlace(_areaMatched);
 
             if (curGameData.IncomingEventStart == null || curGameData.IncomingEventStart.Count == 0)
             {
@@ -173,15 +168,101 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             return TryPickIncomingMatch(curGameData, out speechEvent, out mimickingPlayerID, out pickReason);
         }
 
-        private static void FilterByReplayInterval(
-            List<(string playerID, SpeechEvent evt)> source,
+        private static bool TryBuildCandidatePoolSinglePass(
+            List<(string playerID, SpeechEvent evt)> allEvents,
+            SpeechEventAdditionalGameData curGameData,
+            float now,
             float playTimeIntervalTemp,
-            float now)
+            out string poolReason)
         {
-            _intervalFiltered.Clear();
-            for (int i = 0; i < source.Count; i++)
+            _areaMatched.Clear();
+            _strictAreaPool.Clear();
+            _fallbackPool.Clear();
+            _generalIndoorPool.Clear();
+            _trapIndoorPool.Clear();
+            poolReason = string.Empty;
+
+            if (!MoreVoicesUnify.IsActive)
             {
-                (string playerID, SpeechEvent evt) pair = source[i];
+                for (int i = 0; i < allEvents.Count; i++)
+                {
+                    (string playerID, SpeechEvent evt) pair = allEvents[i];
+                    SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
+                    if (gameData == null)
+                    {
+                        continue;
+                    }
+
+                    if (now - pair.evt.LastPlayedTime < playTimeIntervalTemp)
+                    {
+                        continue;
+                    }
+
+                    if (gameData.IndoorEntered == curGameData.IndoorEntered && gameData.Area == curGameData.Area)
+                    {
+                        _areaMatched.Add(pair);
+                    }
+                }
+
+                if (_areaMatched.Count == 0)
+                {
+                    return false;
+                }
+
+                poolReason = $"Area({curGameData.Area}), Indoor({curGameData.IndoorEntered})";
+                return true;
+            }
+
+            if (VoiceEventContext.IsDeathMatch(curGameData.Area))
+            {
+                for (int i = 0; i < allEvents.Count; i++)
+                {
+                    (string playerID, SpeechEvent evt) pair = allEvents[i];
+                    SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
+                    if (gameData == null)
+                    {
+                        continue;
+                    }
+
+                    if (now - pair.evt.LastPlayedTime < playTimeIntervalTemp)
+                    {
+                        continue;
+                    }
+
+                    if (gameData.Area == curGameData.Area)
+                    {
+                        _areaMatched.Add(pair);
+                    }
+                }
+
+                if (_areaMatched.Count == 0)
+                {
+                    return false;
+                }
+
+                poolReason = $"StrictArea({curGameData.Area})";
+                return true;
+            }
+
+            if (VoiceEventContext.IsOutdoorArea(curGameData.Area))
+            {
+                BucketIntervalEligibleOutdoor(allEvents, curGameData, now, playTimeIntervalTemp);
+                return SelectOutdoorPool(curGameData, out poolReason);
+            }
+
+            BucketIntervalEligibleIndoor(allEvents, curGameData, now, playTimeIntervalTemp);
+            return SelectIndoorPool(curGameData, out poolReason);
+        }
+
+        private static void BucketIntervalEligibleOutdoor(
+            List<(string playerID, SpeechEvent evt)> allEvents,
+            SpeechEventAdditionalGameData curGameData,
+            float now,
+            float playTimeIntervalTemp)
+        {
+            for (int i = 0; i < allEvents.Count; i++)
+            {
+                (string playerID, SpeechEvent evt) pair = allEvents[i];
                 SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
                 if (gameData == null)
                 {
@@ -193,200 +274,13 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     continue;
                 }
 
-                _intervalFiltered.Add(pair);
-            }
-        }
-
-        private static bool TryBuildCandidatePool(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechEventAdditionalGameData curGameData,
-            out string poolReason)
-        {
-            _areaMatched.Clear();
-            poolReason = string.Empty;
-
-            if (!MoreVoicesUnify.IsActive)
-            {
-                FilterStrictIndoorEnteredAndArea(source, curGameData);
-                if (_areaMatched.Count == 0)
+                if (gameData.Area == curGameData.Area)
                 {
-                    return false;
-                }
-
-                poolReason = $"Area({curGameData.Area}), Indoor({curGameData.IndoorEntered})";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (VoiceEventContext.IsDeathMatch(curGameData.Area))
-            {
-                FilterByArea(source, curGameData.Area, _areaMatched);
-                if (_areaMatched.Count == 0)
-                {
-                    return false;
-                }
-
-                poolReason = $"StrictArea({curGameData.Area})";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (VoiceEventContext.IsOutdoorArea(curGameData.Area))
-            {
-                return TryBuildOutdoorCandidatePool(source, curGameData, out poolReason);
-            }
-
-            return TryBuildIndoorCandidatePool(source, curGameData, out poolReason);
-        }
-
-        private static bool TryBuildOutdoorCandidatePool(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechEventAdditionalGameData curGameData,
-            out string poolReason)
-        {
-            FilterByArea(source, curGameData.Area, _strictAreaPool);
-            BuildIndoorCrossPools(source);
-
-            bool hasStrict = _strictAreaPool.Count > 0;
-            bool hasGeneralIndoor = _generalIndoorPool.Count > 0;
-            bool hasTrapIndoor = _trapIndoorPool.Count > 0;
-
-            if (hasStrict && UnityEngine.Random.value >= OutdoorCrossIndoorChance)
-            {
-                CopyPool(_strictAreaPool, _areaMatched);
-                poolReason = $"StrictArea({curGameData.Area})";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (hasGeneralIndoor)
-            {
-                CopyPool(_generalIndoorPool, _areaMatched);
-                poolReason = "CrossIndoorGeneral";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (hasTrapIndoor && (!hasGeneralIndoor || UnityEngine.Random.value < TrapMonsterFallbackChance))
-            {
-                CopyPool(_trapIndoorPool, _areaMatched);
-                poolReason = "CrossIndoorTrapMonster";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (hasStrict)
-            {
-                CopyPool(_strictAreaPool, _areaMatched);
-                poolReason = $"StrictArea({curGameData.Area})";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            poolReason = string.Empty;
-            return false;
-        }
-
-        private static bool TryBuildIndoorCandidatePool(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechEventAdditionalGameData curGameData,
-            out string poolReason)
-        {
-            FilterByArea(source, curGameData.Area, _strictAreaPool);
-            FilterCrossAreaFallback(source, curGameData.Area, _fallbackPool);
-
-            bool hasStrict = _strictAreaPool.Count > 0;
-            bool hasFallback = _fallbackPool.Count > 0;
-
-            if (hasStrict && (UnityEngine.Random.value >= CrossAreaFallbackChance || !hasFallback))
-            {
-                CopyPool(_strictAreaPool, _areaMatched);
-                poolReason = $"StrictArea({curGameData.Area})";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            if (hasFallback)
-            {
-                CopyPool(_fallbackPool, _areaMatched);
-                poolReason = "CrossAreaFallback";
-                ShuffleInPlace(_areaMatched);
-                return true;
-            }
-
-            poolReason = string.Empty;
-            return false;
-        }
-
-        private static void FilterStrictIndoorEnteredAndArea(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechEventAdditionalGameData curGameData)
-        {
-            _areaMatched.Clear();
-            for (int i = 0; i < source.Count; i++)
-            {
-                (string playerID, SpeechEvent evt) pair = source[i];
-                SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
-                if (gameData == null)
-                {
+                    _strictAreaPool.Add(pair);
                     continue;
                 }
 
-                if (gameData.IndoorEntered == curGameData.IndoorEntered && gameData.Area == curGameData.Area)
-                {
-                    _areaMatched.Add(pair);
-                }
-            }
-        }
-
-        private static void FilterByArea(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechType_Area area,
-            List<(string playerID, SpeechEvent evt)> destination)
-        {
-            destination.Clear();
-            for (int i = 0; i < source.Count; i++)
-            {
-                (string playerID, SpeechEvent evt) pair = source[i];
-                if (pair.evt.GameData?.Area == area)
-                {
-                    destination.Add(pair);
-                }
-            }
-        }
-
-        private static void FilterCrossAreaFallback(
-            List<(string playerID, SpeechEvent evt)> source,
-            SpeechType_Area currentArea,
-            List<(string playerID, SpeechEvent evt)> destination)
-        {
-            destination.Clear();
-            for (int i = 0; i < source.Count; i++)
-            {
-                (string playerID, SpeechEvent evt) pair = source[i];
-                SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
-                if (gameData == null || VoiceEventContext.IsDeathMatch(gameData.Area))
-                {
-                    continue;
-                }
-
-                if (gameData.Area != currentArea)
-                {
-                    destination.Add(pair);
-                }
-            }
-        }
-
-        private static void BuildIndoorCrossPools(List<(string playerID, SpeechEvent evt)> source)
-        {
-            _generalIndoorPool.Clear();
-            _trapIndoorPool.Clear();
-            for (int i = 0; i < source.Count; i++)
-            {
-                (string playerID, SpeechEvent evt) pair = source[i];
-                SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
-                if (gameData == null
-                    || VoiceEventContext.IsDeathMatch(gameData.Area)
+                if (VoiceEventContext.IsDeathMatch(gameData.Area)
                     || VoiceEventContext.IsOutdoorArea(gameData.Area))
                 {
                     continue;
@@ -401,6 +295,105 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     _generalIndoorPool.Add(pair);
                 }
             }
+        }
+
+        private static void BucketIntervalEligibleIndoor(
+            List<(string playerID, SpeechEvent evt)> allEvents,
+            SpeechEventAdditionalGameData curGameData,
+            float now,
+            float playTimeIntervalTemp)
+        {
+            for (int i = 0; i < allEvents.Count; i++)
+            {
+                (string playerID, SpeechEvent evt) pair = allEvents[i];
+                SpeechEventAdditionalGameData? gameData = pair.evt.GameData;
+                if (gameData == null)
+                {
+                    continue;
+                }
+
+                if (now - pair.evt.LastPlayedTime < playTimeIntervalTemp)
+                {
+                    continue;
+                }
+
+                if (gameData.Area == curGameData.Area)
+                {
+                    _strictAreaPool.Add(pair);
+                    continue;
+                }
+
+                if (VoiceEventContext.IsDeathMatch(gameData.Area))
+                {
+                    continue;
+                }
+
+                if (gameData.Area != curGameData.Area)
+                {
+                    _fallbackPool.Add(pair);
+                }
+            }
+        }
+
+        private static bool SelectOutdoorPool(SpeechEventAdditionalGameData curGameData, out string poolReason)
+        {
+            poolReason = string.Empty;
+            bool hasStrict = _strictAreaPool.Count > 0;
+            bool hasGeneralIndoor = _generalIndoorPool.Count > 0;
+            bool hasTrapIndoor = _trapIndoorPool.Count > 0;
+
+            if (hasStrict && UnityEngine.Random.value >= OutdoorCrossIndoorChance)
+            {
+                CopyPool(_strictAreaPool, _areaMatched);
+                poolReason = $"StrictArea({curGameData.Area})";
+                return _areaMatched.Count > 0;
+            }
+
+            if (hasGeneralIndoor)
+            {
+                CopyPool(_generalIndoorPool, _areaMatched);
+                poolReason = "CrossIndoorGeneral";
+                return true;
+            }
+
+            if (hasTrapIndoor && (!hasGeneralIndoor || UnityEngine.Random.value < TrapMonsterFallbackChance))
+            {
+                CopyPool(_trapIndoorPool, _areaMatched);
+                poolReason = "CrossIndoorTrapMonster";
+                return true;
+            }
+
+            if (hasStrict)
+            {
+                CopyPool(_strictAreaPool, _areaMatched);
+                poolReason = $"StrictArea({curGameData.Area})";
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool SelectIndoorPool(SpeechEventAdditionalGameData curGameData, out string poolReason)
+        {
+            poolReason = string.Empty;
+            bool hasStrict = _strictAreaPool.Count > 0;
+            bool hasFallback = _fallbackPool.Count > 0;
+
+            if (hasStrict && (UnityEngine.Random.value >= CrossAreaFallbackChance || !hasFallback))
+            {
+                CopyPool(_strictAreaPool, _areaMatched);
+                poolReason = $"StrictArea({curGameData.Area})";
+                return true;
+            }
+
+            if (hasFallback)
+            {
+                CopyPool(_fallbackPool, _areaMatched);
+                poolReason = "CrossAreaFallback";
+                return true;
+            }
+
+            return false;
         }
 
         private static void CopyPool(
@@ -425,6 +418,63 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
         }
 
+        private static void BuildIncomingIdsByType(SpeechEventAdditionalGameData curGameData)
+        {
+            foreach (HashSet<int> ids in _incomingIdsByType.Values)
+            {
+                ids.Clear();
+            }
+
+            List<IncomingEvent> incomingStart = curGameData.IncomingEventStart;
+            for (int i = 0; i < incomingStart.Count; i++)
+            {
+                IncomingEvent incoming = incomingStart[i];
+                if (!_incomingIdsByType.TryGetValue(incoming.EventType, out HashSet<int>? ids))
+                {
+                    ids = [];
+                    _incomingIdsByType[incoming.EventType] = ids;
+                }
+
+                _ = ids.Add(incoming.EventID);
+            }
+        }
+
+        private static void BuildIncomingCandidateIndex()
+        {
+            foreach (List<(string playerID, SpeechEvent evt)> bucket in _incomingCandidateIndex.Values)
+            {
+                bucket.Clear();
+            }
+
+            for (int i = 0; i < _areaMatched.Count; i++)
+            {
+                (string playerID, SpeechEvent evt) pair = _areaMatched[i];
+                List<IncomingEvent>? incoming = pair.evt.GameData?.IncomingEventStart;
+                if (incoming == null || incoming.Count == 0)
+                {
+                    continue;
+                }
+
+                _typesAddedThisEvent.Clear();
+                for (int j = 0; j < incoming.Count; j++)
+                {
+                    SpeechEvent_IncomingType eventType = incoming[j].EventType;
+                    if (!_typesAddedThisEvent.Add(eventType))
+                    {
+                        continue;
+                    }
+
+                    if (!_incomingCandidateIndex.TryGetValue(eventType, out List<(string playerID, SpeechEvent evt)>? bucket))
+                    {
+                        bucket = [];
+                        _incomingCandidateIndex[eventType] = bucket;
+                    }
+
+                    bucket.Add(pair);
+                }
+            }
+        }
+
         private static bool TryPickIncomingMatch(
             SpeechEventAdditionalGameData curGameData,
             out SpeechEvent? speechEvent,
@@ -435,12 +485,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             mimickingPlayerID = string.Empty;
             pickReason = string.Empty;
 
-            _currentIncomingTypes.Clear();
-            List<IncomingEvent> incomingStart = curGameData.IncomingEventStart;
-            for (int i = 0; i < incomingStart.Count; i++)
-            {
-                _ = _currentIncomingTypes.Add(incomingStart[i].EventType);
-            }
+            BuildIncomingIdsByType(curGameData);
+            BuildIncomingCandidateIndex();
 
             _incomingMatches.Clear();
             _matchedIncomingTypes.Clear();
@@ -448,24 +494,19 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             for (int typeIndex = 0; typeIndex < IncomingTypePriority.Length; typeIndex++)
             {
                 SpeechEvent_IncomingType incType = IncomingTypePriority[typeIndex];
-                if (!_currentIncomingTypes.Contains(incType))
+                if (!_incomingIdsByType.ContainsKey(incType))
                 {
                     continue;
                 }
 
-                _eventIdsForType.Clear();
-                for (int i = 0; i < incomingStart.Count; i++)
+                if (!_incomingCandidateIndex.TryGetValue(incType, out List<(string playerID, SpeechEvent evt)>? candidates))
                 {
-                    IncomingEvent incoming = incomingStart[i];
-                    if (incoming.EventType == incType)
-                    {
-                        _ = _eventIdsForType.Add(incoming.EventID);
-                    }
+                    continue;
                 }
 
-                for (int i = 0; i < _areaMatched.Count; i++)
+                for (int i = 0; i < candidates.Count; i++)
                 {
-                    (string playerID, SpeechEvent evt) pair = _areaMatched[i];
+                    (string playerID, SpeechEvent evt) pair = candidates[i];
                     if (!MatchesIncomingType(pair.evt, incType))
                     {
                         continue;
@@ -486,12 +527,37 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 return false;
             }
 
-            string reason = "Incoming:" + string.Join(", ", _matchedIncomingTypes);
-            return FinishPickOldest(_incomingMatches, out speechEvent, out mimickingPlayerID, out pickReason, reason);
+            pickReason = BuildIncomingPickReason();
+            return FinishPickOldest(_incomingMatches, out speechEvent, out mimickingPlayerID, out pickReason, pickReason);
+        }
+
+        private static string BuildIncomingPickReason()
+        {
+            _incomingReasonBuilder.Clear();
+            _incomingReasonBuilder.Append("Incoming:");
+
+            bool first = true;
+            foreach (SpeechEvent_IncomingType type in _matchedIncomingTypes)
+            {
+                if (!first)
+                {
+                    _ = _incomingReasonBuilder.Append(", ");
+                }
+
+                _ = _incomingReasonBuilder.Append(type);
+                first = false;
+            }
+
+            return _incomingReasonBuilder.ToString();
         }
 
         private static bool MatchesIncomingType(SpeechEvent evt, SpeechEvent_IncomingType incType)
         {
+            if (!_incomingIdsByType.TryGetValue(incType, out HashSet<int>? eventIdsForType))
+            {
+                return false;
+            }
+
             List<IncomingEvent>? incoming = evt.GameData?.IncomingEventStart;
             if (incoming == null || incoming.Count == 0)
             {
@@ -502,14 +568,14 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             for (int i = 0; i < incoming.Count; i++)
             {
                 IncomingEvent candidate = incoming[i];
-                if (candidate.EventType == incType && _eventIdsForType.Contains(candidate.EventID))
+                if (candidate.EventType == incType && eventIdsForType.Contains(candidate.EventID))
                 {
                     matched = true;
                     break;
                 }
             }
 
-            if (incType == SpeechEvent_IncomingType.Monster && _eventIdsForType.Contains(MonsterMimicEventId))
+            if (incType == SpeechEvent_IncomingType.Monster && eventIdsForType.Contains(MonsterMimicEventId))
             {
                 for (int i = 0; i < incoming.Count; i++)
                 {
@@ -537,7 +603,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             mimickingPlayerID = string.Empty;
             pickReason = string.Empty;
 
-            _topSimilar.Clear();
+            VoicePickSimilarity.ScrapCounts curScrap = VoicePickSimilarity.CountScrap(curGameData.ScrapObjects);
+            int topCount = 0;
+
             for (int i = 0; i < source.Count; i++)
             {
                 (string playerID, SpeechEvent evt) pair = source[i];
@@ -547,48 +615,64 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     continue;
                 }
 
-                float similarity = SpeechEventAdditionalGameData.CalculateSimilarity(gameData, curGameData);
-                InsertTopSimilarity(pair.playerID, pair.evt, similarity);
+                VoicePickSimilarity.ScrapCounts eventScrap = VoicePickSimilarity.CountScrap(gameData.ScrapObjects);
+                float similarity = VoicePickSimilarity.CalculateSimilarity(
+                    gameData,
+                    curGameData,
+                    eventScrap,
+                    curScrap);
+                InsertTopSimilarity(pair.playerID, pair.evt, similarity, ref topCount);
             }
 
-            if (_topSimilar.Count == 0)
+            if (topCount == 0)
             {
                 return false;
             }
 
             int bestIndex = 0;
-            float bestLastPlayed = _topSimilar[0].evt.LastPlayedTime;
-            for (int i = 1; i < _topSimilar.Count; i++)
+            float bestLastPlayed = _topSlots[0].evt.LastPlayedTime;
+            for (int i = 1; i < topCount; i++)
             {
-                if (_topSimilar[i].evt.LastPlayedTime < bestLastPlayed)
+                if (_topSlots[i].evt.LastPlayedTime < bestLastPlayed)
                 {
-                    bestLastPlayed = _topSimilar[i].evt.LastPlayedTime;
+                    bestLastPlayed = _topSlots[i].evt.LastPlayedTime;
                     bestIndex = i;
                 }
             }
 
-            (string playerID, SpeechEvent evt, float _) pick = _topSimilar[bestIndex];
+            (string playerID, SpeechEvent evt, float _) pick = _topSlots[bestIndex];
             speechEvent = pick.evt;
             mimickingPlayerID = pick.playerID;
-            pickReason = ResolveTopFactor(pick.evt.GameData, curGameData);
+            VoicePickSimilarity.ScrapCounts pickScrap = VoicePickSimilarity.CountScrap(pick.evt.GameData?.ScrapObjects);
+            pickReason = VoicePickSimilarity.GetTopFactorName(pick.evt.GameData!, curGameData, pickScrap, curScrap);
             return true;
         }
 
-        private static void InsertTopSimilarity(string playerID, SpeechEvent evt, float similarity)
+        private static void InsertTopSimilarity(
+            string playerID,
+            SpeechEvent evt,
+            float similarity,
+            ref int topCount)
         {
-            int insertAt = _topSimilar.Count;
-            for (int i = 0; i < _topSimilar.Count; i++)
+            int insertAt = topCount;
+            for (int i = 0; i < topCount; i++)
             {
-                if (similarity > _topSimilar[i].similarity)
+                if (similarity > _topSlots[i].similarity)
                 {
                     insertAt = i;
                     break;
                 }
             }
 
-            if (_topSimilar.Count < TopK)
+            if (topCount < TopK)
             {
-                _topSimilar.Insert(insertAt, (playerID, evt, similarity));
+                for (int i = topCount; i > insertAt; i--)
+                {
+                    _topSlots[i] = _topSlots[i - 1];
+                }
+
+                _topSlots[insertAt] = (playerID, evt, similarity);
+                topCount++;
                 return;
             }
 
@@ -597,8 +681,12 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 return;
             }
 
-            _topSimilar.Insert(insertAt, (playerID, evt, similarity));
-            _topSimilar.RemoveAt(TopK);
+            for (int i = TopK - 1; i > insertAt; i--)
+            {
+                _topSlots[i] = _topSlots[i - 1];
+            }
+
+            _topSlots[insertAt] = (playerID, evt, similarity);
         }
 
         private static bool FinishPickOldest(
@@ -646,25 +734,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 (string playerID, SpeechEvent evt) temp = items[i];
                 items[i] = items[swapIndex];
                 items[swapIndex] = temp;
-            }
-        }
-
-        private static string ResolveTopFactor(
-            SpeechEventAdditionalGameData? eventGameData,
-            SpeechEventAdditionalGameData curGameData)
-        {
-            if (eventGameData == null || GetTopFactorMethod == null)
-            {
-                return string.Empty;
-            }
-
-            try
-            {
-                return (string)GetTopFactorMethod.Invoke(null, [eventGameData, curGameData])!;
-            }
-            catch
-            {
-                return string.Empty;
             }
         }
 

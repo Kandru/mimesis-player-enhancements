@@ -14,6 +14,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private sealed class CacheEntry
         {
             internal readonly List<SpeechEvent> WarmedEvents = [];
+            internal readonly List<(string PlayerId, SpeechEvent Event)> WarmedPairs = [];
             internal readonly Dictionary<long, SpeechEvent> EventsById = [];
             internal readonly HashSet<long> EventIds = [];
             internal SyncList<SpeechEvent>.SyncListChanged? OnChangeHandler;
@@ -85,6 +86,42 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
 
             _entries.Clear();
+        }
+
+        internal static void AppendWarmedPairs(
+            SpeechEventArchive archive,
+            List<(string playerID, SpeechEvent evt)> destination)
+        {
+            if (archive == null || destination == null)
+            {
+                return;
+            }
+
+            if (!VoicePerformanceRuntime.IsActive || archive.events == null)
+            {
+                AppendWarmedPairsUncached(archive, destination);
+                return;
+            }
+
+            CacheEntry entry = GetOrCreateEntry(archive);
+            EnsureBuilt(archive, entry);
+            for (int i = 0; i < entry.WarmedPairs.Count; i++)
+            {
+                (string playerId, SpeechEvent speechEvent) = entry.WarmedPairs[i];
+                destination.Add((playerId, speechEvent));
+            }
+        }
+
+        private static void AppendWarmedPairsUncached(
+            SpeechEventArchive archive,
+            List<(string playerID, SpeechEvent evt)> destination)
+        {
+            string playerId = archive.PlayerId;
+            List<SpeechEvent> warmed = archive.events == null ? [] : BuildUncachedWarmedList(archive);
+            for (int i = 0; i < warmed.Count; i++)
+            {
+                destination.Add((playerId, warmed[i]));
+            }
         }
 
         internal static List<SpeechEvent> GetWarmedEvents(SpeechEventArchive archive)
@@ -161,9 +198,11 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static void Rebuild(SpeechEventArchive archive, CacheEntry entry, float now)
         {
             entry.WarmedEvents.Clear();
+            entry.WarmedPairs.Clear();
             entry.EventsById.Clear();
             entry.EventIds.Clear();
 
+            string playerId = archive.PlayerId;
             float warmUpDuration = WarmUpDurationField != null
                 ? (float)WarmUpDurationField.GetValue(archive)!
                 : 10f;
@@ -178,6 +217,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 if (now - speechEvent.RecordedTime > warmUpDuration)
                 {
                     entry.WarmedEvents.Add(speechEvent);
+                    entry.WarmedPairs.Add((playerId, speechEvent));
                 }
             }
 
