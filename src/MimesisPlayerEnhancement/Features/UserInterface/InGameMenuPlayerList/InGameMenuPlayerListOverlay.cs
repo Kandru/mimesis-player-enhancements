@@ -17,6 +17,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
         private const float PanelMaxX = 0.98f;
         private const float PanelMinY = 0.04f;
         private const float PanelMaxY = 0.96f;
+        private const float PanelLeftExpandPx = 24f;
+        private const float PanelBottomInsetPx = 30f;
         private const float InviteScrollGapPx = 8f;
 
         private static readonly Dictionary<int, OverlayState> States = [];
@@ -182,6 +184,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
                 PanelMinY,
                 PanelMaxX,
                 PanelMaxY);
+            panel.offsetMin = new Vector2(-PanelLeftExpandPx, PanelBottomInsetPx);
 
             RectTransform inviteBand = ModUiLayout.CreateBand(
                 panel,
