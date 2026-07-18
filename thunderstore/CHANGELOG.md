@@ -1,6 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.18
+Help needed! If you're talented with graphics / sounds: I want to extend the loading screens / custom sounds feature :) hit me up via an Github Issue if you can help - preferredly no AI generated stuff
+
 - improvement: better survival result screen with 4+ players
 - improvement: better loading wait player list
 - improvement: better esc menu player list
@@ -9,8 +11,6 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - draft: add debug buttons for the custom overlays to test them without real data
 
 ## 26.7.17
-Help needed! If you're talented with graphics / sounds: I want to extend the loading screens / custom sounds feature :) hit me up via an Github Issue if you can help - preferredly no AI generated stuff
-
 - fix: custom loading screen scaling
 - fix: do not show the DungeonStart loading screen when going back to maintenance
 - fix: client player list should show players regardless whether one does host or join a lobby
