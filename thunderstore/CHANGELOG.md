@@ -5,6 +5,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - improvement: better loading wait player list
 - improvement: better esc menu player list
 - improvement: death spectator list now shows more players properly
+- fix: loot filter tried to initialize when starting the game
 - draft: add debug buttons for the custom overlays to test them without real data
 
 ## 26.7.17

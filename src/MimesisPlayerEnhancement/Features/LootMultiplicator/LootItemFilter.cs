@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
@@ -21,6 +22,8 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         private static HashSet<int> _cachedBlocklist = [];
         private static LootItemFilterMode _cachedMode = LootItemFilterMode.All;
         private static List<int> _validAllowlistIds = [];
+        private static bool _masterdataValidated;
+        private static int _lastValidationFingerprint;
 
         private enum RandomSpawnFilterResult
         {
@@ -37,6 +40,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static bool IsFilterActive()
         {
+            TryValidateAgainstMasterdata();
             return _cachedMode switch
             {
                 LootItemFilterMode.AllowlistOnly => _validAllowlistIds.Count > 0,
@@ -339,8 +343,54 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             _cachedAllowlist = LootItemIdListParser.Parse(config.LootAllowlist);
             _cachedBlocklist = LootItemIdListParser.Parse(config.LootBlocklist);
             _cachedMode = LootItemIdListParser.ParseMode(config.LootItemFilterMode);
+
+            int fingerprint = ComputeValidationFingerprint();
+            if (fingerprint != _lastValidationFingerprint)
+            {
+                _masterdataValidated = false;
+            }
+
+            TryValidateAgainstMasterdata();
+        }
+
+        private static void TryValidateAgainstMasterdata()
+        {
+            if (HubGameDataAccess.Excel == null)
+            {
+                _validAllowlistIds = [];
+                _masterdataValidated = false;
+                return;
+            }
+
+            int fingerprint = ComputeValidationFingerprint();
+            if (_masterdataValidated && fingerprint == _lastValidationFingerprint)
+            {
+                return;
+            }
+
             RebuildValidAllowlistIds();
+            _masterdataValidated = true;
+            _lastValidationFingerprint = fingerprint;
             WarnIfFilterModeHasEmptyList();
+        }
+
+        private static int ComputeValidationFingerprint()
+        {
+            unchecked
+            {
+                int hash = (int)_cachedMode;
+                foreach (int id in _cachedAllowlist)
+                {
+                    hash = (hash * 397) ^ id;
+                }
+
+                foreach (int id in _cachedBlocklist)
+                {
+                    hash = (hash * 397) ^ id;
+                }
+
+                return hash;
+            }
         }
 
         private static void RebuildValidAllowlistIds()
@@ -361,6 +411,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         private static void WarnIfFilterModeHasEmptyList()
         {
+            if (!_masterdataValidated)
+            {
+                return;
+            }
+
             if (_cachedMode == LootItemFilterMode.AllowlistOnly && _validAllowlistIds.Count == 0)
             {
                 ModLog.Warn(Feature, "LootItemFilterMode is AllowlistOnly but allowlist is empty — spawn filter inactive");
