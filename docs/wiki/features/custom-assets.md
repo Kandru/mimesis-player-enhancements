@@ -62,7 +62,7 @@ Only dungeon entry (`DungeonStart`) has two text phases on the same overlay. Shi
 
 When the game switches to `STRING_LOADING_WAIT` and the lobby has **more than one player**, the overlay crossfades from the current loading art (`loading.png`, or `background.png` if that was the fallback) into `wait.png` when that file exists. Solo lobbies keep the loading image — `wait.png` is skipped. If a theme has no dedicated wait art, the loading image stays up for everyone.
 
-With `EnableLoadingWaitPlayerList`, a spectator-style player roster can appear during this wait phase: white names for loaded players, red for those still loading, with microphone animation when voice chat is active. It fades out with the custom loading overlay when the scene finishes loading.
+With `EnableLoadingWaitPlayerList`, a comma-separated player list can appear along the bottom of the screen during this wait phase: white names for loaded players, red for those still loading, with microphone animation when voice chat is active. Names wrap into additional rows when needed and stay inside the visible loading image area (on 21:9 and wider displays, that matches the pillarboxed image rather than the full screen width). The list fades out with the custom loading overlay when the scene finishes loading.
 
 Other contexts only need `background.png`.
 

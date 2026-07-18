@@ -12,6 +12,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
     {
         private const float AspectEpsilon = 0.001f;
 
+        internal const float FallbackImageAspect = 16f / 9f;
+
         internal static CustomLoadingScreenScaleMode ResolveMode(float screenAspect) =>
             screenAspect >= CustomLoadingScreenConstants.UltrawideAspectThreshold
                 ? CustomLoadingScreenScaleMode.FitHeight
@@ -30,6 +32,60 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         internal static float GetImageAspect(Texture texture) =>
             texture.width / (float)Mathf.Max(texture.height, 1);
+
+        internal static bool TryResolveImageAspect(Transform loadingRoot, out float aspect)
+        {
+            aspect = FallbackImageAspect;
+            if (loadingRoot == null)
+            {
+                return false;
+            }
+
+            Transform? overlay = loadingRoot.Find(CustomLoadingScreenConstants.OverlayObjectName);
+            if (overlay == null)
+            {
+                return false;
+            }
+
+            Transform? imageTransform = overlay.Find(CustomLoadingScreenConstants.OverlayImageObjectName);
+            if (imageTransform == null)
+            {
+                return false;
+            }
+
+            RawImage? rawImage = imageTransform.GetComponent<RawImage>();
+            if (rawImage?.texture == null)
+            {
+                return false;
+            }
+
+            aspect = GetImageAspect(rawImage.texture);
+            return true;
+        }
+
+        internal static void ApplyContentBoundsInset(RectTransform target, RectTransform parent, float imageAspect)
+        {
+            target.anchorMin = Vector2.zero;
+            target.anchorMax = Vector2.one;
+            target.pivot = new Vector2(0.5f, 0.5f);
+            target.anchoredPosition = Vector2.zero;
+            target.localScale = Vector3.one;
+
+            float screenAspect = GetScreenAspect(parent);
+            if (ResolveMode(screenAspect) == CustomLoadingScreenScaleMode.Cover)
+            {
+                target.offsetMin = new Vector2(0f, 0f);
+                target.offsetMax = new Vector2(0f, 0f);
+                return;
+            }
+
+            float parentWidth = parent.rect.width;
+            float parentHeight = parent.rect.height;
+            float targetWidth = parentHeight * imageAspect;
+            float horizontalInset = Mathf.Max((parentWidth - targetWidth) * 0.5f, 0f);
+            target.offsetMin = new Vector2(horizontalInset, 0f);
+            target.offsetMax = new Vector2(-horizontalInset, 0f);
+        }
 
         internal static Rect ComputeCoverUvRect(float imageAspect, float screenAspect)
         {

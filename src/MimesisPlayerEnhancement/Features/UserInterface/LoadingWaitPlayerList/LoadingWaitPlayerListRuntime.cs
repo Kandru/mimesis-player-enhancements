@@ -177,6 +177,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             {
                 LoadingWaitPlayerListGrid.Update(
                     _overlay.GridState!,
+                    loading.transform,
                     entries,
                     SpeakCancellation.Token);
             }
@@ -314,8 +315,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             try
             {
+                Transform? loadingRoot = _activeLoading?.transform;
+                if (loadingRoot == null)
+                {
+                    return;
+                }
+
                 LoadingWaitPlayerListGrid.Update(
                     _overlay.GridState,
+                    loadingRoot,
                     players,
                     SpeakCancellation.Token);
             }

@@ -14,7 +14,7 @@ Local presentation options that do not require other players to install the mod.
 
 ## Loading wait player list
 
-`EnableLoadingWaitPlayerList` shows a spectator-style roster on the scene loading screen while the game waits for other players (`STRING_LOADING_WAIT`) in multiplayer. Loaded players are shown in white; players still loading are red. The list includes the vanilla microphone animation when voice chat is active, and fades out with the custom loading screen overlay.
+`EnableLoadingWaitPlayerList` shows a comma-separated player list along the bottom of the scene loading screen while the game waits for other players (`STRING_LOADING_WAIT`) in multiplayer. Loaded players are white; players still loading are red. Names flow left-to-right and wrap upward into additional rows when needed, staying inside the custom loading image bounds (pillarboxed on ultrawide displays). The vanilla microphone animation appears next to each name when voice chat is active. The list fades out with the custom loading screen overlay.
 
 ## In-game menu player list
 

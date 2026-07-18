@@ -5,13 +5,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     internal sealed class LoadingWaitPlayerListOverlay
     {
         internal const string RootObjectName = "MPE_LoadingWaitPlayerList";
-        internal const string GridObjectName = "MPE_LoadingWaitPlayerListGrid";
+        internal const string BoundsObjectName = "MPE_LoadingWaitPlayerListBounds";
+        internal const string FlowObjectName = "MPE_LoadingWaitPlayerListFlow";
 
         private const int CanvasSortOrder = CustomLoadingScreenConstants.OverlayCanvasSortOrder + 1;
 
         internal GameObject? Root { get; private set; }
         internal CanvasGroup? CanvasGroup { get; private set; }
         internal LoadingWaitPlayerListGrid.GridState? GridState { get; private set; }
+        internal RectTransform? BoundsRect { get; private set; }
 
         internal bool TryEnsure(Transform parent)
         {
@@ -50,15 +52,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             CanvasGroup.interactable = false;
             CanvasGroup.blocksRaycasts = false;
 
-            GameObject gridObject = new(GridObjectName);
-            gridObject.transform.SetParent(Root.transform, worldPositionStays: false);
-            RectTransform gridRect = gridObject.AddComponent<RectTransform>();
-            StretchRect(gridRect);
+            GameObject boundsObject = new(BoundsObjectName);
+            boundsObject.transform.SetParent(Root.transform, worldPositionStays: false);
+            BoundsRect = boundsObject.AddComponent<RectTransform>();
+            StretchRect(BoundsRect);
 
-            if (!LoadingWaitPlayerListGrid.TryInitialize(listView, gridObject.transform, out LoadingWaitPlayerListGrid.GridState? gridState))
+            GameObject flowObject = new(FlowObjectName);
+            flowObject.transform.SetParent(BoundsRect, worldPositionStays: false);
+            RectTransform flowRect = flowObject.AddComponent<RectTransform>();
+            AnchorBottomStretch(flowRect);
+
+            if (!LoadingWaitPlayerListGrid.TryInitialize(
+                    listView,
+                    BoundsRect,
+                    flowRect,
+                    out LoadingWaitPlayerListGrid.GridState? gridState))
             {
                 UnityEngine.Object.Destroy(Root);
                 Root = null;
+                BoundsRect = null;
                 CanvasGroup = null;
                 return false;
             }
@@ -89,6 +101,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 Root = null;
             }
 
+            BoundsRect = null;
             CanvasGroup = null;
         }
 
@@ -124,6 +137,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rect.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        private static void AnchorBottomStretch(RectTransform rect)
+        {
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
         }
     }
 }
