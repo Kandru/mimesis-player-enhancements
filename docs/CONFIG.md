@@ -112,7 +112,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## Privacy — `[MimesisPlayerEnhancement_Privacy]`
 
-**Local client.** Global-only preferences that block automatic outbound data from your game install. Not available in per-save override UI or quick presets. User-initiated feedback/bug reports are never blocked.
+**Local client.** Global-only preferences that block automatic outbound data from your game install. Not available in per-save override UI or quick presets. Manual feedback and bug-report submission still works; `BlockReplayRecording` and `BlockReplayUpload` can prevent automatic replay capture and replay attachments from being created or uploaded.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

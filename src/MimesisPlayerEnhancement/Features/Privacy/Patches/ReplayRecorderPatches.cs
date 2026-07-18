@@ -1,22 +1,20 @@
 using System.Reflection;
 using Cysharp.Threading.Tasks;
-using ReluReplay;
 using ReluReplay.Recorder;
-using ReluReplay.Shared;
 
 namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
-    [HarmonyPatch]
-    internal static class BlockReplaySharedDataSetRecordModePatch
+    internal static class ReplayRecorderUploadBlockHelper
     {
-        private static MethodBase TargetMethod() =>
-            AccessTools.Method(typeof(ReplaySharedData), nameof(ReplaySharedData.SetRecordMode))
-            ?? throw new InvalidOperationException("ReplaySharedData.SetRecordMode not found");
-
-        [HarmonyPrefix]
-        private static bool Prefix()
+        internal static bool TryBlockUpload(ref UniTask result)
         {
-            return !PrivacyRuntime.ShouldBlockReplayRecording();
+            if (!PrivacyRuntime.ShouldBlockReplayUpload())
+            {
+                return false;
+            }
+
+            result = UniTask.CompletedTask;
+            return true;
         }
     }
 
@@ -94,27 +92,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
     }
 
     [HarmonyPatch]
-    internal static class BlockReplayManagerSetFeedbackUploadedPatch
-    {
-        private static readonly FieldInfo RequireFeedbackReplayFileField =
-            AccessTools.Field(typeof(ReplayManager), "_requireFeedbackReplayFile")
-            ?? throw new InvalidOperationException("ReplayManager._requireFeedbackReplayFile not found");
-
-        private static MethodBase TargetMethod() =>
-            AccessTools.Method(typeof(ReplayManager), nameof(ReplayManager.SetFeedbackUploaded))
-            ?? throw new InvalidOperationException("ReplayManager.SetFeedbackUploaded not found");
-
-        [HarmonyPostfix]
-        private static void Postfix(ReplayManager __instance)
-        {
-            if (PrivacyRuntime.ShouldBlockReplayRecording())
-            {
-                RequireFeedbackReplayFileField.SetValue(__instance, false);
-            }
-        }
-    }
-
-    [HarmonyPatch]
     internal static class BlockReplayRecorderUploadReplayDataToStoragePatch
     {
         private static MethodBase TargetMethod() =>
@@ -122,16 +99,8 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             ?? throw new InvalidOperationException("ReplayRecorder.UploadReplayDataToStorage not found");
 
         [HarmonyPrefix]
-        private static bool Prefix(ref UniTask __result)
-        {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
-            {
-                return true;
-            }
-
-            __result = UniTask.CompletedTask;
-            return false;
-        }
+        private static bool Prefix(ref UniTask __result) =>
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
     }
 
     [HarmonyPatch]
@@ -156,16 +125,8 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             ?? throw new InvalidOperationException("ReplayRecorder.UploadReplayFiles not found");
 
         [HarmonyPrefix]
-        private static bool Prefix(ref UniTask __result)
-        {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
-            {
-                return true;
-            }
-
-            __result = UniTask.CompletedTask;
-            return false;
-        }
+        private static bool Prefix(ref UniTask __result) =>
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
     }
 
     [HarmonyPatch]
@@ -176,16 +137,8 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             ?? throw new InvalidOperationException("ReplayRecorder.UploadSavedFeedbackFiles not found");
 
         [HarmonyPrefix]
-        private static bool Prefix(ref UniTask __result)
-        {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
-            {
-                return true;
-            }
-
-            __result = UniTask.CompletedTask;
-            return false;
-        }
+        private static bool Prefix(ref UniTask __result) =>
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
     }
 
     [HarmonyPatch]
@@ -196,16 +149,8 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             ?? throw new InvalidOperationException("ReplayRecorder.UploadFeedbackReplayFile(string,string) not found");
 
         [HarmonyPrefix]
-        private static bool Prefix(ref UniTask __result)
-        {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
-            {
-                return true;
-            }
-
-            __result = UniTask.CompletedTask;
-            return false;
-        }
+        private static bool Prefix(ref UniTask __result) =>
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
     }
 
     [HarmonyPatch]
@@ -216,15 +161,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             ?? throw new InvalidOperationException("ReplayRecorder.UploadFeedbackReplayFile(byte[],string) not found");
 
         [HarmonyPrefix]
-        private static bool Prefix(ref UniTask __result)
-        {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
-            {
-                return true;
-            }
-
-            __result = UniTask.CompletedTask;
-            return false;
-        }
+        private static bool Prefix(ref UniTask __result) =>
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
     }
 }

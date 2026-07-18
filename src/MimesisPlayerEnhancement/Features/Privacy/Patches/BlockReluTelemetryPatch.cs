@@ -12,7 +12,14 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         [HarmonyPostfix]
         private static void Postfix(APIRequestHandler __instance)
         {
-            ReluTelemetryGate.ApplyGate(__instance);
+            try
+            {
+                ReluTelemetryGate.ApplyGate(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn("Privacy", $"BlockReluTelemetryAwakePatch failed — {ex.Message}");
+            }
         }
     }
 
@@ -26,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         [HarmonyPrefix]
         private static bool Prefix()
         {
-            return !PrivacyRuntime.ShouldBlockReluTelemetry();
+            return !PrivacyRuntime.BlocksReluTelemetry;
         }
     }
 }

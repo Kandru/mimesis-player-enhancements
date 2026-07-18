@@ -11,68 +11,73 @@ namespace MimesisPlayerEnhancement.Features.Privacy
         private static bool _loggedCrashMetadata;
         private static bool _loggedGppSdk;
 
+        private static bool _blockReluTelemetry;
+        private static bool _blockReplayUpload;
+        private static bool _blockReplayRecording;
+        private static bool _blockCrashReports;
+        private static bool _stripCrashReportMetadata;
+        private static bool _blockKraftonGppSdk;
+
         internal static bool IsPrivacyEnabled => ModConfig.EnablePrivacy.Value;
+
+        internal static bool BlocksReluTelemetry => _blockReluTelemetry;
 
         internal static bool ShouldBlockReluTelemetry()
         {
-            bool block = IsPrivacyEnabled && ModConfig.BlockReluTelemetry.Value;
-            if (block)
+            if (_blockReluTelemetry)
             {
                 LogOnce(ref _loggedReluTelemetry, "Relu telemetry blocked — session logs and gameplay event logs will not be sent.");
             }
 
-            return block;
+            return _blockReluTelemetry;
         }
 
         internal static bool ShouldBlockReplayUpload()
         {
-            bool block = IsPrivacyEnabled && ModConfig.BlockReplayUpload.Value;
-            if (block)
+            if (_blockReplayUpload)
             {
                 LogOnce(ref _loggedReplayUpload, "Replay upload blocked — replay files will not be sent to Relu storage.");
             }
 
-            return block;
+            return _blockReplayUpload;
         }
 
         internal static bool ShouldBlockReplayRecording()
         {
-            bool block = IsPrivacyEnabled && ModConfig.BlockReplayRecording.Value;
-            if (block)
+            if (_blockReplayRecording)
             {
                 LogOnce(ref _loggedReplayRecording, "Replay recording blocked — no replay files will be created.");
             }
 
-            return block;
+            return _blockReplayRecording;
         }
 
-        internal static bool ShouldBlockCrashReports() =>
-            IsPrivacyEnabled && ModConfig.BlockCrashReports.Value;
+        internal static bool ShouldBlockCrashReports() => _blockCrashReports;
 
         internal static bool ShouldStripCrashReportMetadata()
         {
-            bool strip = IsPrivacyEnabled && ModConfig.StripCrashReportMetadata.Value;
-            if (strip)
+            if (_stripCrashReportMetadata)
             {
                 LogOnce(ref _loggedCrashMetadata, "Crash report metadata stripped — SetUserMetadata calls are ignored.");
             }
 
-            return strip;
+            return _stripCrashReportMetadata;
         }
 
         internal static bool ShouldBlockKraftonGppSdk()
         {
-            bool block = IsPrivacyEnabled && ModConfig.BlockKraftonGppSdk.Value;
-            if (block)
+            if (_blockKraftonGppSdk)
             {
                 LogOnce(ref _loggedGppSdk, "Krafton GPP SDK blocked — creator-code login will not run.");
             }
 
-            return block;
+            return _blockKraftonGppSdk;
         }
 
         internal static void RefreshFromConfig()
         {
+            RefreshCache();
+
             if (!IsPrivacyEnabled)
             {
                 PrivacyCrashReportHelper.SetEnabled(true);
@@ -83,16 +88,34 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
             ReluTelemetryGate.SyncActiveHandler();
 
-            bool blockCrashReports = ShouldBlockCrashReports();
-            PrivacyCrashReportHelper.SetEnabled(!blockCrashReports);
-            if (blockCrashReports)
+            if (_blockCrashReports)
             {
+                PrivacyCrashReportHelper.SetEnabled(false);
                 LogOnce(ref _loggedCrashReports, "Unity crash reports disabled.");
             }
             else
             {
+                PrivacyCrashReportHelper.SetEnabled(true);
                 _loggedCrashReports = false;
             }
+        }
+
+        internal static void RestoreOnShutdown()
+        {
+            PrivacyCrashReportHelper.SetEnabled(true);
+            ReluTelemetryGate.RestoreVanilla();
+            ResetLogFlags();
+        }
+
+        private static void RefreshCache()
+        {
+            bool enabled = ModConfig.IsInitialized && IsPrivacyEnabled;
+            _blockReluTelemetry = enabled && ModConfig.BlockReluTelemetry.Value;
+            _blockReplayUpload = enabled && ModConfig.BlockReplayUpload.Value;
+            _blockReplayRecording = enabled && ModConfig.BlockReplayRecording.Value;
+            _blockCrashReports = enabled && ModConfig.BlockCrashReports.Value;
+            _stripCrashReportMetadata = enabled && ModConfig.StripCrashReportMetadata.Value;
+            _blockKraftonGppSdk = enabled && ModConfig.BlockKraftonGppSdk.Value;
         }
 
         private static void ResetLogFlags()
