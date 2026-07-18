@@ -9,6 +9,14 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
         private static string _cachedAllowlistRaw = "";
         private static string _cachedBlocklistRaw = "";
 
+        internal static void ClearFilterCache()
+        {
+            _cachedAllowlist = null;
+            _cachedBlocklist = null;
+            _cachedAllowlistRaw = "";
+            _cachedBlocklistRaw = "";
+        }
+
         internal static int ResolvePick(int vanillaResult, IReadOnlyList<int> excludeDungeonIds)
         {
             DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;

@@ -9,6 +9,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 
         private static int _attempt;
 
+        internal static void ResetGenerationAttempt() => _attempt = 0;
+
         [HarmonyPrefix]
         private static void Prefix(RuntimeDungeon __instance)
         {

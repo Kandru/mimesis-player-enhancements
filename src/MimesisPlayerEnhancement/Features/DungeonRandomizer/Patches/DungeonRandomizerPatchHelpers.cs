@@ -6,8 +6,18 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 
         private static int _cachedVanillaSeed;
         private static int _cachedDungeonMasterId;
+        private static DungeonSeedFlavor _cachedSeedFlavor;
         private static int _cachedCuratedSeed;
         private static bool _hasSeedCache;
+
+        internal static void ClearSeedCache()
+        {
+            _hasSeedCache = false;
+            _cachedVanillaSeed = 0;
+            _cachedDungeonMasterId = 0;
+            _cachedSeedFlavor = DungeonSeedFlavor.Vanilla;
+            _cachedCuratedSeed = 0;
+        }
 
         internal static bool ShouldApply =>
             HostApplyGate.ShouldApplyHostOnlyFeature(() => SceneScopedConfigGate.DungeonRandomizer.EnableDungeonRandomizer);
@@ -22,7 +32,11 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
                 return;
             }
 
-            if (_hasSeedCache && seed == _cachedVanillaSeed && dungeonMasterId == _cachedDungeonMasterId)
+            DungeonSeedFlavor seedFlavor = SceneScopedConfigGate.DungeonRandomizer.SeedFlavor;
+            if (_hasSeedCache
+                && seed == _cachedVanillaSeed
+                && dungeonMasterId == _cachedDungeonMasterId
+                && seedFlavor == _cachedSeedFlavor)
             {
                 seed = _cachedCuratedSeed;
                 DungeonRandomizerLog.DebugSeedCurationReused(_cachedVanillaSeed, _cachedCuratedSeed);
@@ -35,6 +49,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
                 seed = DungeonSeedFlavorResolver.ResolveSeed(seed, dungeonMasterId);
                 _cachedVanillaSeed = vanillaSeed;
                 _cachedDungeonMasterId = dungeonMasterId;
+                _cachedSeedFlavor = seedFlavor;
                 _cachedCuratedSeed = seed;
                 _hasSeedCache = true;
             }

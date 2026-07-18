@@ -1,26 +1,5 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
-    [HarmonyPatch(typeof(VWaitingRoom), nameof(VWaitingRoom.RollDiceDungeon))]
-    internal static class VWaitingRoomRollDiceDungeonPatch
-    {
-        private const string Feature = DungeonRandomizerPatchHelpers.Feature;
-
-        internal static bool ClearFirstPickExcludes { get; set; }
-
-        [HarmonyPrefix]
-        public static void Prefix(bool reroll)
-        {
-            ClearFirstPickExcludes = reroll && DungeonRandomizerPatchHelpers.ShouldIgnoreRerollExcludes();
-        }
-
-        [HarmonyFinalizer]
-        public static Exception? Finalizer(Exception? __exception)
-        {
-            ClearFirstPickExcludes = false;
-            return __exception;
-        }
-    }
-
     [HarmonyPatch(typeof(ExcelDataManager), nameof(ExcelDataManager.PickDungeon))]
     internal static class ExcelDataManagerPickDungeonPatch
     {
