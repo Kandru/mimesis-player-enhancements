@@ -1,36 +1,48 @@
+using System.Reflection;
+using HarmonyLib;
+using MimesisPlayerEnhancement.Ui;
+using UnityEngine;
+
 namespace MimesisPlayerEnhancement.Features.ModVersionDisplay
 {
     internal static class ModVersionDisplayPatchHelpers
     {
         private const string ModPrefixLead = "MimesisPlayerEnhancement v";
 
+        private static readonly PropertyInfo? MainMenuVersionTextProperty =
+            AccessTools.Property(typeof(UIPrefab_MainMenu), "UE_versionText");
+
+        private static readonly PropertyInfo? InGameMenuVersionTextProperty =
+            AccessTools.Property(typeof(UIPrefab_InGameMenu), "UE_versionText");
+
         internal static void PrependModVersion(UIPrefab_MainMenu menu)
         {
-            if (menu.UE_versionText == null)
-            {
-                return;
-            }
-
-            PrependModVersion(
-                () => menu.UE_versionText.text,
-                value => menu.UE_versionText.text = value);
+            PrependModVersion(GetVersionTextComponent(menu, MainMenuVersionTextProperty));
         }
 
         internal static void PrependModVersion(UIPrefab_InGameMenu menu)
         {
-            if (menu.UE_versionText == null)
+            PrependModVersion(GetVersionTextComponent(menu, InGameMenuVersionTextProperty));
+        }
+
+        private static Component? GetVersionTextComponent(object menu, PropertyInfo? versionTextProperty)
+        {
+            if (versionTextProperty?.GetValue(menu) is Component versionText)
+            {
+                return versionText;
+            }
+
+            return null;
+        }
+
+        private static void PrependModVersion(Component? versionText)
+        {
+            if (versionText == null)
             {
                 return;
             }
 
-            PrependModVersion(
-                () => menu.UE_versionText.text,
-                value => menu.UE_versionText.text = value);
-        }
-
-        private static void PrependModVersion(Func<string> getText, Action<string> setText)
-        {
-            string current = getText() ?? string.Empty;
+            string current = ModUiText.GetText(versionText) ?? string.Empty;
             string vanillaText = StripExistingModPrefix(current);
             string prefix = $"{ModPrefixLead}{VersionInfo.ModuleVersion}";
             string target = string.IsNullOrEmpty(vanillaText)
@@ -42,7 +54,7 @@ namespace MimesisPlayerEnhancement.Features.ModVersionDisplay
                 return;
             }
 
-            setText(target);
+            ModUiText.SetText(versionText, target);
         }
 
         private static string StripExistingModPrefix(string text)
