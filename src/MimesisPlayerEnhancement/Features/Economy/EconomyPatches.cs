@@ -17,6 +17,11 @@ namespace MimesisPlayerEnhancement.Features.Economy
             HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
 
+        internal static void OnSessionEnded()
+        {
+            EconomyApplier.OnSessionEnded();
+        }
+
         /// <summary>Called via FeatureModule.SyncFromConfig when the Economy section changes.</summary>
         public static void RefreshFromConfig()
         {

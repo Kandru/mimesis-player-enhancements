@@ -10,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
         private sealed class RoomState
         {
             internal int AppliedConfigGeneration = -1;
+            internal int AppliedPlayerCount = -1;
             internal bool LoadedFromSave;
         }
 
@@ -22,6 +23,27 @@ namespace MimesisPlayerEnhancement.Features.Economy
         {
             _ = Interlocked.Increment(ref _configGeneration);
             RefreshTouchedRooms();
+        }
+
+        internal static void RefreshForPlayerCountChange()
+        {
+            for (int i = TouchedRooms.Count - 1; i >= 0; i--)
+            {
+                if (!TouchedRooms[i].TryGetTarget(out MaintenanceRoom? room) || room == null)
+                {
+                    TouchedRooms.RemoveAt(i);
+                    continue;
+                }
+
+                RoomState state = GetState(room);
+                if (state.LoadedFromSave)
+                {
+                    continue;
+                }
+
+                MarkDirty(room);
+                EnsureApplied(room);
+            }
         }
 
         internal static void RefreshTouchedRooms()
@@ -37,6 +59,11 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 GetState(room).LoadedFromSave = false;
                 EnsureApplied(room);
             }
+        }
+
+        internal static void ClearSessionState()
+        {
+            TouchedRooms.Clear();
         }
 
         /// <summary>
@@ -148,8 +175,17 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 return;
             }
 
+            EconomyApplier.SyncIfSessionPlayerCountChanged();
+
             RoomState state = GetState(room);
-            if (state.AppliedConfigGeneration == _configGeneration || state.LoadedFromSave)
+            if (state.LoadedFromSave)
+            {
+                return;
+            }
+
+            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
+            if (state.AppliedConfigGeneration == _configGeneration
+                && state.AppliedPlayerCount == playerCount)
             {
                 return;
             }
@@ -157,6 +193,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
             ApplyBuyPrices(room);
             ApplyDiscounts(room);
             state.AppliedConfigGeneration = _configGeneration;
+            state.AppliedPlayerCount = playerCount;
         }
 
         private static void MarkDirty(MaintenanceRoom room)
