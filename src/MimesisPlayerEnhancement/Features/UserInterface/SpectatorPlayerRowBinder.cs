@@ -129,6 +129,32 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
         }
 
+        internal static void ApplyNormalRowLayout(UIPrefab_Spectator_PlayerListViewItem row)
+        {
+            if (row.transform is RectTransform rowRect)
+            {
+                rowRect.localScale = Vector3.one;
+            }
+
+            if (NameTextProperty?.GetValue(row) is Component nameText
+                && nameText.transform is RectTransform nameRect)
+            {
+                nameRect.localScale = Vector3.one;
+            }
+
+            Image? speakIcon = row.SpeakIcon;
+            if (speakIcon != null)
+            {
+                speakIcon.rectTransform.localScale = Vector3.one;
+            }
+
+            if (IsPossessorProperty?.GetValue(row) is Component possessor
+                && possessor.transform is RectTransform possessorRect)
+            {
+                possessorRect.localScale = Vector3.one;
+            }
+        }
+
         internal static void StopSpeakAnimations(IEnumerable<UIPrefab_Spectator_PlayerListViewItem> rows)
         {
             foreach (UIPrefab_Spectator_PlayerListViewItem row in rows)

@@ -4,6 +4,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - improvement: better survival result screen with 4+ players
 - improvement: better loading wait player list
 - improvement: better esc menu player list
+- improvement: death spectator list now shows more players properly
 - draft: add debug buttons for the custom overlays to test them without real data
 
 ## 26.7.17
