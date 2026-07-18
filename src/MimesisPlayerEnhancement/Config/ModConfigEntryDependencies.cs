@@ -242,6 +242,9 @@ namespace MimesisPlayerEnhancement
                 case "WeatherCycleMaxDelaySeconds":
                     dependency = new ModConfigEntryDependency("WeatherMode", "Cycle");
                     return true;
+                case "EnableRealtimeTramClock":
+                    dependency = new ModConfigEntryDependency("EnableWeather");
+                    return true;
                 default:
                     return false;
             }

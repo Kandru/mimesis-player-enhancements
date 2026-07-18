@@ -104,7 +104,8 @@ namespace MimesisPlayerEnhancement
                 module.OnUpdate();
             }
 
-            if ((ModConfig.EnableSpawnScaling.Value || ModConfig.EnableLootMultiplicator.Value)
+            if ((ModConfig.EnableSpawnScaling.Value || ModConfig.EnableLootMultiplicator.Value
+                    || WeatherCycleScheduler.NeedsThrottledProcessing())
                 && Time.time >= _nextEncounterSpawnProcessTime)
             {
                 _nextEncounterSpawnProcessTime = Time.time + EncounterSpawnTiming.RetryIntervalSeconds;

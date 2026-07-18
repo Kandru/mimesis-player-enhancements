@@ -4,6 +4,9 @@ namespace MimesisPlayerEnhancement.Features.Weather
     {
         private const string Feature = "Weather";
 
+        internal static bool NeedsThrottledProcessing() =>
+            WeatherResolver.IsFeatureEnabled && WeatherResolver.GetMode() == WeatherMode.Cycle;
+
         internal static void Stop(DungeonRoom room)
         {
             WeatherRoomState state = WeatherRoomAccess.GetOrCreateState(room);
@@ -33,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
             }
 
             state.CycleActive = true;
-            ApplyCurrentCycleStep(room, state, scheduleNext: true);
+            ApplyCurrentCycleStep(room, state, presets, scheduleNext: true);
         }
 
         internal static void ProcessPendingTransitions()
@@ -48,6 +51,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return;
             }
 
+            List<string> presets = WeatherPresetListParser.ParseOrderedPresets(ModConfig.WeatherCyclePresets.Value);
             long nowMs = GameSessionAccess.TryGetTimeUtil()?.GetCurrentTickMilliSec() ?? 0;
             foreach (KeyValuePair<DungeonRoom, WeatherRoomState> entry in WeatherRoomAccess.RoomStates.EnumerateAll())
             {
@@ -63,7 +67,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
                     continue;
                 }
 
-                List<string> presets = WeatherPresetListParser.ParseOrderedPresets(ModConfig.WeatherCyclePresets.Value);
                 if (presets.Count == 0)
                 {
                     Stop(room);
@@ -71,13 +74,16 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 }
 
                 state.CycleIndex = (state.CycleIndex + 1) % presets.Count;
-                ApplyCurrentCycleStep(room, state, scheduleNext: true);
+                ApplyCurrentCycleStep(room, state, presets, scheduleNext: true);
             }
         }
 
-        private static void ApplyCurrentCycleStep(DungeonRoom room, WeatherRoomState state, bool scheduleNext)
+        private static void ApplyCurrentCycleStep(
+            DungeonRoom room,
+            WeatherRoomState state,
+            List<string> presets,
+            bool scheduleNext)
         {
-            List<string> presets = WeatherPresetListParser.ParseOrderedPresets(ModConfig.WeatherCyclePresets.Value);
             if (presets.Count == 0)
             {
                 Stop(room);

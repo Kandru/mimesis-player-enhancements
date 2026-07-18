@@ -81,10 +81,10 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
     {
         private const string Feature = "Weather";
 
-        // Runs every dungeon frame — only maintain the time context when a weather
-        // override (or the realtime tram clock) can actually consume it.
+        // Runs every dungeon frame — only when start-time override or realtime tram clock can run.
         private static bool IsContextNeeded =>
-            WeatherResolver.IsFeatureEnabled || ModConfig.EnableRealtimeTramClock.Value;
+            WeatherTimeResolver.UsesOverrideStartTime()
+            || (WeatherResolver.IsFeatureEnabled && ModConfig.EnableRealtimeTramClock.Value);
 
         [HarmonyPrefix]
         public static void Prefix(DungeonRoom __instance)
