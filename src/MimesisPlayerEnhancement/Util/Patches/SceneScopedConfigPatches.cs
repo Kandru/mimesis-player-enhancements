@@ -84,6 +84,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
 
                 // The run is over — queued bonus encounters must not spawn into the stale room.
                 Features.SpawnScaling.MapPlacedEncounterScheduler.ClearPendingEncounters();
+                Features.SpawnScaling.MapPlacedEncounterProximity.ClearCaches();
             }
         }
 

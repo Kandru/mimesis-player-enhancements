@@ -48,7 +48,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             int playerCount = room.GetMemberCount();
-            SpawnScalingLog.InfoScalingApplied(playerCount);
+            SpawnScalingLog.InfoScalingApplied(playerCount, config);
 
             float mimicMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount, config);
             float jakoMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config);
@@ -63,9 +63,9 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 jakoMultiplier,
                 "normalMonsterSpawnThreatMinThreshold");
 
-            int specialGroups = ScaleSpecialGroups(room, playerCount);
-            int spawnPoints = ScaleSpawnPointDatas(room, playerCount);
-            int bonusGroupWaves = ConfigureBonusGroupWaves(room, playerCount);
+            int specialGroups = ScaleSpecialGroups(room, playerCount, config);
+            int spawnPoints = ScaleSpawnPointDatas(room, playerCount, config);
+            int bonusGroupWaves = ConfigureBonusGroupWaves(room, playerCount, config);
 
             RoomSpawnScalingState state = RoomSpawnScalingRegistry.GetOrCreate(room);
             state.SetSnapshot(config);
@@ -80,7 +80,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 $"specialGroups={specialGroups}, spawnPoints={spawnPoints}, bonusGroupWaves={bonusGroupWaves}");
         }
 
-        private static int ScaleSpecialGroups(DungeonRoom room, int playerCount)
+        private static int ScaleSpecialGroups(DungeonRoom room, int playerCount, SpawnScalingSceneConfig config)
         {
             if (SpawnScalingFields.SpecialMonsterSpawnGroupsField.GetValue(room) is not IList groups)
             {
@@ -101,7 +101,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     continue;
                 }
 
-                float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(spawnInfo.MasterID, playerCount);
+                float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(spawnInfo.MasterID, playerCount, config);
                 if (multiplier <= FeatureToggleGate.NeutralMultiplier)
                 {
                     continue;
@@ -123,7 +123,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return scaled;
         }
 
-        private static int ScaleSpawnPointDatas(DungeonRoom room, int playerCount)
+        private static int ScaleSpawnPointDatas(DungeonRoom room, int playerCount, SpawnScalingSceneConfig config)
         {
             if (SpawnScalingFields.SpawnedActorDatasField.GetValue(room) is not IDictionary datas)
             {
@@ -138,13 +138,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     continue;
                 }
 
-                scaled += ScaleSpawnDataObject(entry.Value, playerCount) ? 1 : 0;
+                scaled += ScaleSpawnDataObject(entry.Value, playerCount, config) ? 1 : 0;
             }
 
             return scaled;
         }
 
-        private static int ConfigureBonusGroupWaves(DungeonRoom room, int playerCount)
+        private static int ConfigureBonusGroupWaves(DungeonRoom room, int playerCount, SpawnScalingSceneConfig config)
         {
             if (SpawnScalingFields.GroupSpawnDatasField.GetValue(room) is not IDictionary datas)
             {
@@ -169,7 +169,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     foreach (GroupCreatureData member in groupData.Members)
                     {
                         category = SpawnCategoryLookup.GetCategory(member.MasterID);
-                        groupMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(member.MasterID, playerCount);
+                        groupMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(member.MasterID, playerCount, config);
                         entityName = MonsterTypeLookup.GetDisplayName(member.MasterID);
                         break;
                     }
@@ -191,7 +191,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return configured;
         }
 
-        private static bool ScaleSpawnDataObject(object spawnData, int playerCount)
+        private static bool ScaleSpawnDataObject(object spawnData, int playerCount, SpawnScalingSceneConfig config)
         {
             if (ReflectionFieldCache.GetField(spawnData, "MasterID") == null)
             {
@@ -210,7 +210,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
-            float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount);
+            float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);
             if (multiplier <= FeatureToggleGate.NeutralMultiplier)
             {
                 return false;

@@ -71,9 +71,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static readonly FieldInfo CurrentSpawnCountBackingField =
             Field(typeof(SpawnedActorData), "<CurrentSpawnCount>k__BackingField");
 
-        internal static readonly FieldInfo SpawnDataIndexField =
-            Field(typeof(SpawnedActorData), "Index");
-
         internal static FieldInfo Field(Type type, string name)
         {
             FieldInfo? field = type.GetField(name, InstanceFlags) ?? AccessTools.Field(type, name);

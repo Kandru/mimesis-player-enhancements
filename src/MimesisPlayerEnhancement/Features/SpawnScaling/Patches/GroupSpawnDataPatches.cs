@@ -8,6 +8,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         [HarmonyPostfix]
         public static void Postfix(GroupSpawnData __instance, int actorID, bool __result)
         {
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+            {
+                return;
+            }
+
             try
             {
                 GroupSpawnBonusWaveApplier.OnMemberDead(__instance, __result);

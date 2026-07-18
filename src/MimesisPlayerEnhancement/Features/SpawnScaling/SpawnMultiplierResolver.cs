@@ -2,11 +2,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnMultiplierResolver
     {
-        internal static bool IsAutoScaleEnabled(SpawnCategory category)
-        {
-            return IsAutoScaleEnabled(category, SceneScopedConfigGate.Spawn);
-        }
-
         internal static bool IsAutoScaleEnabled(SpawnCategory category, SpawnScalingSceneConfig config)
         {
             return category switch
@@ -20,22 +15,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             };
         }
 
-        internal static float GetPlayerScale(SpawnCategory category, int playerCount)
-        {
-            return GetPlayerScale(category, playerCount, SceneScopedConfigGate.Spawn);
-        }
-
         internal static float GetPlayerScale(SpawnCategory category, int playerCount, SpawnScalingSceneConfig config)
         {
             return ScalingMath.GetPlayerScale(
                 playerCount,
                 IsAutoScaleEnabled(category, config),
                 config.SpawnScalingPlayerCountScaleRate);
-        }
-
-        internal static float GetPerCategoryMultiplier(SpawnCategory category)
-        {
-            return GetPerCategoryMultiplier(category, SceneScopedConfigGate.Spawn);
         }
 
         internal static float GetPerCategoryMultiplier(SpawnCategory category, SpawnScalingSceneConfig config)
@@ -64,12 +49,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             return GetPerCategoryMultiplier(category, config) * GetPlayerScale(category, playerCount, config);
-        }
-
-        internal static float GetEffectiveMultiplier(int masterId, int playerCount)
-        {
-            SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
-            return GetEffectiveMultiplier(category, playerCount);
         }
 
         internal static float GetEffectiveMultiplier(int masterId, int playerCount, SpawnScalingSceneConfig config)

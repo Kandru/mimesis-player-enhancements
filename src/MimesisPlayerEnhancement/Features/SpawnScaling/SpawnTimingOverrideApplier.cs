@@ -61,7 +61,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             float mimicMultiplier)
         {
             bool needsTryRateOverride = jakoMultiplier > 1f || mimicMultiplier > 1f;
-            bool needsPeriodOverride = PeriodicSpawnWaitResolver.IsWaitModeActive();
+            bool needsPeriodOverride = PeriodicSpawnWaitResolver.IsWaitModeActive(state.Snapshot);
 
             if (!needsTryRateOverride && !needsPeriodOverride)
             {

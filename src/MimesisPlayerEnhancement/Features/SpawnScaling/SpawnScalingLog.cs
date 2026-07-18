@@ -26,21 +26,21 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 : $"{location} room={roomName}";
         }
 
-        internal static void InfoScalingApplied(int playerCount)
+        internal static void InfoScalingApplied(int playerCount, SpawnScalingSceneConfig config)
         {
             float sharedPlayerScale = ScalingMath.GetPlayerScale(
                 playerCount,
                 autoScaleEnabled: true,
-                ModConfig.SpawnScalingPlayerCountScaleRate.Value);
+                config.SpawnScalingPlayerCountScaleRate);
             ModLog.Info(
                 Feature,
-                $"Spawn scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× at rate={ModConfig.SpawnScalingPlayerCountScaleRate.Value:0.##} when auto enabled), " +
-                $"mimic={ModConfig.MimicSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleMimicSpawnsByPlayerCount.Value}, " +
-                $"boss={ModConfig.BossSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleBossSpawnsByPlayerCount.Value}, " +
-                $"jako={ModConfig.JakoSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleJakoSpawnsByPlayerCount.Value}, " +
-                $"special={ModConfig.SpecialSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleSpecialSpawnsByPlayerCount.Value}, " +
-                $"trap={ModConfig.TrapSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleTrapSpawnsByPlayerCount.Value}, " +
-                $"other={ModConfig.OtherSpawnMultiplier.Value:0.##}× auto={ModConfig.AutoScaleOtherSpawnsByPlayerCount.Value}");
+                $"Spawn scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× at rate={config.SpawnScalingPlayerCountScaleRate:0.##} when auto enabled), " +
+                $"mimic={config.MimicSpawnMultiplier:0.##}× auto={config.AutoScaleMimicSpawnsByPlayerCount}, " +
+                $"boss={config.BossSpawnMultiplier:0.##}× auto={config.AutoScaleBossSpawnsByPlayerCount}, " +
+                $"jako={config.JakoSpawnMultiplier:0.##}× auto={config.AutoScaleJakoSpawnsByPlayerCount}, " +
+                $"special={config.SpecialSpawnMultiplier:0.##}× auto={config.AutoScaleSpecialSpawnsByPlayerCount}, " +
+                $"trap={config.TrapSpawnMultiplier:0.##}× auto={config.AutoScaleTrapSpawnsByPlayerCount}, " +
+                $"other={config.OtherSpawnMultiplier:0.##}× auto={config.AutoScaleOtherSpawnsByPlayerCount}");
         }
 
         internal static void DebugFieldScaled(string label, int before, int after, float multiplier)

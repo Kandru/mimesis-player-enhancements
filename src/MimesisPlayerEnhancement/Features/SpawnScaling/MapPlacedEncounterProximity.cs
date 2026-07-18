@@ -7,6 +7,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static readonly Dictionary<SpawnedActorData, CachedBlockResult> CreatureBlockCache = [];
         private static readonly Dictionary<SpawnedActorData, CachedBlockResult> LootBlockCache = [];
 
+        internal static void ClearCaches()
+        {
+            CreatureBlockCache.Clear();
+            LootBlockCache.Clear();
+        }
+
         internal static bool ShouldBlockBonusEncounterSpawn(
             DungeonRoom? room,
             SpawnedActorData? spawnData,
