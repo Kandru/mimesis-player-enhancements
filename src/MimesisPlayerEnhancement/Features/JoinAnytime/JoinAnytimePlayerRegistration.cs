@@ -43,12 +43,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            if (WebDashboardSessionAccess.TryGetHostPlayerUid(out long hostUid) && playerUid == hostUid)
+            if (SessionContextAccess.TryGetHostPlayerUid(out long hostUid) && playerUid == hostUid)
             {
                 return false;
             }
 
-            if (WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player) && player!.IsHost)
+            if (SessionContextAccess.TryGetPlayerByUid(playerUid, out VPlayer? player) && player!.IsHost)
             {
                 return false;
             }
@@ -167,7 +167,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             _ = HadStoredStatsBeforeConnect.Remove(playerUid);
 
             ulong steamId = steamIdHint;
-            if (steamId == 0 && WebDashboardSessionAccess.TryGetPlayerByUid(playerUid, out VPlayer? player))
+            if (steamId == 0 && SessionContextAccess.TryGetPlayerByUid(playerUid, out VPlayer? player))
             {
                 steamId = GameSessionAccess.ResolveSteamId(playerUid, player!.IsHost);
             }

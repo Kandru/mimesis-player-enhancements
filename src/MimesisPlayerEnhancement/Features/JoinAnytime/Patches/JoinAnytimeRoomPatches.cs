@@ -82,7 +82,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+            VPlayer? player = SessionContextAccess.GetVPlayer(context);
             if (player != null)
             {
                 JoinAnytimeConnectingTracker.TryPromoteIfReady(player);

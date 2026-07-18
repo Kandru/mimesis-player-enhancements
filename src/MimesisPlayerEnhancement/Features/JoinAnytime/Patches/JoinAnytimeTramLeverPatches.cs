@@ -106,7 +106,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            if (JoinAnytimeHub.GetPdata()?.main is not InTramWaitingScene)
+            if (GameSessionAccess.TryGetPdata()?.main is not InTramWaitingScene)
             {
                 return;
             }

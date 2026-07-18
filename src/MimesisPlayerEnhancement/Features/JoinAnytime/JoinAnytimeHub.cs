@@ -10,9 +10,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly FieldInfo? PdataField =
-            typeof(Hub).GetField("pdata", InstanceFlags);
-
         private static readonly FieldInfo? SteamInviteField =
             typeof(Hub).GetField("steamInviteDispatcher", InstanceFlags);
 
@@ -22,23 +19,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static FieldInfo? _uimanField;
         private static PropertyInfo? _uimanProperty;
 
-        private static bool _warnedMissingFields;
-
-        internal static Hub.PersistentData? GetPdata()
-        {
-            if (Hub.s == null)
-            {
-                return null;
-            }
-
-            if (PdataField == null)
-            {
-                WarnMissingFieldsOnce();
-                return null;
-            }
-
-            return PdataField.GetValue(Hub.s) as Hub.PersistentData;
-        }
+        private static bool _warnedMissingSteamInviteField;
 
         internal static SteamInviteDispatcher? GetSteamInviteDispatcher()
         {
@@ -49,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             if (SteamInviteField == null)
             {
-                WarnMissingFieldsOnce();
+                WarnMissingSteamInviteFieldOnce();
                 return null;
             }
 
@@ -116,7 +97,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void SyncIsPublicLobby(bool isPublic)
         {
-            Hub.PersistentData? pdata = GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata == null)
             {
                 return;
@@ -134,7 +115,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static bool IsHost()
         {
-            return GetPdata()?.ClientMode == NetworkClientMode.Host;
+            return GameSessionAccess.TryGetPdata()?.ClientMode == NetworkClientMode.Host;
         }
 
         internal static UIPrefab_InGameMenu? GetInGameMenu()
@@ -166,15 +147,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return _uimanField?.GetValue(Hub.s) as UIManager;
         }
 
-        private static void WarnMissingFieldsOnce()
+        private static void WarnMissingSteamInviteFieldOnce()
         {
-            if (_warnedMissingFields)
+            if (_warnedMissingSteamInviteField)
             {
                 return;
             }
 
-            _warnedMissingFields = true;
-            ModLog.Warn(Feature, "Hub reflection fields missing — pdata or steamInviteDispatcher not found");
+            _warnedMissingSteamInviteField = true;
+            ModLog.Warn(Feature, "Hub reflection field missing — steamInviteDispatcher not found");
         }
     }
 }

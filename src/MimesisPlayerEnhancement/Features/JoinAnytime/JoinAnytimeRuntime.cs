@@ -24,6 +24,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 LateJoinManager.Reset();
                 JoinAnytimeConnectingTracker.Reset();
+                JoinAnytimeLobbyController.OnSessionEnded();
             }
 
             _wasEnabled = enabled;

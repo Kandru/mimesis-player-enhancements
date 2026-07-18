@@ -43,7 +43,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             try
             {
-                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
                 GameMainBase? main = pdata?.main;
                 Dictionary<int, ProtoActor>? map = main?.GetProtoActorMap();
                 if (map == null)

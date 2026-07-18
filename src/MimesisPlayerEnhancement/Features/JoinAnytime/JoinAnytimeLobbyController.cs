@@ -2,7 +2,6 @@ using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MelonLoader;
-using ReluNetwork.ConstEnum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -845,7 +844,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static bool IsHost()
         {
-            return JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Host;
+            return JoinAnytimeHub.IsHost();
         }
     }
 }

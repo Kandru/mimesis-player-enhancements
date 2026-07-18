@@ -801,7 +801,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             try
             {
-                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
                 GameMainBase? main = pdata?.main;
                 if (main != null)
                 {
@@ -834,7 +834,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             try
             {
-                Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
                 GameMainBase? main = pdata?.main;
                 if (main == null)
                 {

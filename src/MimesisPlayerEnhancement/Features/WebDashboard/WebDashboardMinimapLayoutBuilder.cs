@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void EnsureLayout()
         {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             GameMainBase? main = pdata?.main;
             string runKey = BuildRunKey(main);
 

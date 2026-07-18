@@ -23,7 +23,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            if (WebDashboardSessionAccess.GetVPlayer(context) is VPlayer livePlayer)
+            if (SessionContextAccess.GetVPlayer(context) is VPlayer livePlayer)
             {
                 return RouteToTram(livePlayer, allowResend);
             }

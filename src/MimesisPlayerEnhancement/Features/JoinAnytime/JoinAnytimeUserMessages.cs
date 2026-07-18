@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.main is not InTramWaitingScene)
             {
                 return;
@@ -87,7 +87,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 yield break;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.main is not InTramWaitingScene scene)
             {
                 yield break;

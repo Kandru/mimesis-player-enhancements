@@ -1,4 +1,3 @@
-using ReluNetwork.ConstEnum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -95,7 +94,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.main is not InTramWaitingScene and not GamePlayScene)
             {
                 return;
@@ -112,7 +111,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (context.GetVRoomType() == VRoomType.Game
                 && pdata?.main is MaintenanceScene)
             {
@@ -160,7 +159,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 ModLog.Info(
                     Feature,
-                    $"Late joiner in maintenance — uid={player.UID} hostScene={JoinAnytimeHub.GetPdata()?.main?.GetType().Name ?? "null"}");
+                    $"Late joiner in maintenance — uid={player.UID} hostScene={GameSessionAccess.TryGetPdata()?.main?.GetType().Name ?? "null"}");
             }
             else if (LateJoinRouteTracker.GetStuckSeconds(player.UID) > 0f && resend)
             {
@@ -175,15 +174,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static void RouteAllMaintenanceLateJoiners(bool allowResend)
         {
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return;
             }
 
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
-                VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+                VPlayer? player = SessionContextAccess.GetVPlayer(context);
                 if (player == null || player.IsHost || !player.LevelLoadCompleted)
                 {
                     continue;
@@ -195,13 +194,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static void RetryStuckRoutes()
         {
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return;
             }
 
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
                 long uid = context.GetPlayerUID();
                 if (uid == 0)
@@ -209,7 +208,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
-                VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+                VPlayer? player = SessionContextAccess.GetVPlayer(context);
                 if (player != null)
                 {
                     if (player.IsHost)
@@ -255,15 +254,15 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static void SyncMaintenanceLobbyPlayers()
         {
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return;
             }
 
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
-                VPlayer? player = WebDashboardSessionAccess.GetVPlayer(context);
+                VPlayer? player = SessionContextAccess.GetVPlayer(context);
                 if (player == null || player.IsHost)
                 {
                     continue;
@@ -273,11 +272,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static bool ShouldRouteToTram()
-        {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            return pdata?.ClientMode == NetworkClientMode.Host
-                && pdata.main is InTramWaitingScene or GamePlayScene;
-        }
+        private static bool ShouldRouteToTram() => JoinAnytimeRoomTools.ShouldRouteToTram();
     }
 }

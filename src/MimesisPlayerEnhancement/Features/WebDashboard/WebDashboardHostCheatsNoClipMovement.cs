@@ -120,7 +120,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             try
             {
-                GameMainBase? main = JoinAnytimeHub.GetPdata()?.main;
+                GameMainBase? main = GameSessionAccess.TryGetPdata()?.main;
                 if (main?.GetActorByPlayerUID(playerUid) is ProtoActor actor)
                 {
                     SetCharacterControllerEnabled(actor, enabled: false);
@@ -193,7 +193,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             try
             {
-                GameMainBase? main = JoinAnytimeHub.GetPdata()?.main;
+                GameMainBase? main = GameSessionAccess.TryGetPdata()?.main;
                 if (main?.GetActorByPlayerUID(playerUid) is ProtoActor actor)
                 {
                     RestoreCharacterController(actor);

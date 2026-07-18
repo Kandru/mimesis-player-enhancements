@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return;
             }
 
-            if (WebDashboardSessionAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
+            if (SessionContextAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
                 && context != null)
             {
                 long uid = context.GetPlayerUID();

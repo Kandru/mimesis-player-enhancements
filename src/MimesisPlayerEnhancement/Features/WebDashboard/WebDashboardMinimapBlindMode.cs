@@ -31,7 +31,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (!WebDashboardSessionScene.IsBlindModeScene(pdata?.main))
             {
                 return false;

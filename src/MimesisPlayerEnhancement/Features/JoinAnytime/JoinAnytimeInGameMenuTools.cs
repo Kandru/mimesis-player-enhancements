@@ -1,4 +1,3 @@
-using ReluNetwork.ConstEnum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -17,9 +16,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void OnMenuStart(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value
-                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host
-                || menu == null)
+            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
             {
                 return;
             }
@@ -31,9 +28,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void InstallHostPublicRoomListener(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value
-                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host
-                || menu == null)
+            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
             {
                 return;
             }
@@ -52,9 +47,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void EnsurePublicRoomControlsAccessible(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value
-                || JoinAnytimeHub.GetPdata()?.ClientMode != NetworkClientMode.Host
-                || menu == null)
+            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
             {
                 return;
             }

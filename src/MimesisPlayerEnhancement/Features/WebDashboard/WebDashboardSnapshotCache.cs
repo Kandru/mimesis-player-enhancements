@@ -249,7 +249,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         ? LateJoinRouteTracker.GetActiveRoutingCount()
                         : 0,
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
-                    SessionScene = WebDashboardSessionScene.Resolve(JoinAnytimeHub.GetPdata()?.main),
+                    SessionScene = WebDashboardSessionScene.Resolve(GameSessionAccess.TryGetPdata()?.main),
                     BlindModeEnabled = WebDashboardMinimapBlindMode.Enabled,
                 },
             };

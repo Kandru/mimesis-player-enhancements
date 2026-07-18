@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return "late_join";
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             GameMainBase? main = pdata?.main;
 
             return vPlayer.VRoom switch
@@ -61,7 +61,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return string.Empty;
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
 
             if (!vPlayer.LevelLoadCompleted)
             {

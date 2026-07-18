@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         internal static bool IsConnected()
         {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             return pdata != null && pdata.SessionJoined;
         }
 
@@ -22,7 +22,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
-            return JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Host
+            return GameSessionAccess.TryGetPdata()?.ClientMode == NetworkClientMode.Host
                 || MimesisSaveManager.IsHost();
         }
 

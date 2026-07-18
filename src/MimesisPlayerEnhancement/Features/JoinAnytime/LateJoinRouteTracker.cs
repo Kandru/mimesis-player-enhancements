@@ -1,4 +1,3 @@
-using ReluNetwork.ConstEnum;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
@@ -53,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
             else if (player.VRoom is MaintenanceRoom && state.Phase != LateJoinRoutePhase.AwaitingClient)
             {
-                state.SetPhase(ShouldRouteToTram()
+                state.SetPhase(JoinAnytimeRoomTools.ShouldRouteToTram()
                     ? LateJoinRoutePhase.InMaintenance
                     : LateJoinRoutePhase.InMaintenanceLobby);
             }
@@ -179,14 +178,14 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            VPlayer? vPlayer = context != null ? WebDashboardSessionAccess.GetVPlayer(context) : null;
+            VPlayer? vPlayer = context != null ? SessionContextAccess.GetVPlayer(context) : null;
             if (vPlayer != null)
             {
                 SyncFromLivePlayer(vPlayer);
             }
 
             LateJoinRoutePhase phase = GetPhase(dto.PlayerUid);
-            if (phase == LateJoinRoutePhase.None && vPlayer?.VRoom is MaintenanceRoom && ShouldRouteToTram())
+            if (phase == LateJoinRoutePhase.None && vPlayer?.VRoom is MaintenanceRoom && JoinAnytimeRoomTools.ShouldRouteToTram())
             {
                 phase = LateJoinRoutePhase.InMaintenance;
             }
@@ -222,7 +221,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static string GetRoutingTramLabel()
         {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             return pdata?.main is InTramWaitingScene
                 ? ModL10n.Get("joinanytime.late_join_joining_tram")
                 : ModL10n.Get("joinanytime.late_join_routing_tram");
@@ -237,13 +236,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             return state;
-        }
-
-        private static bool ShouldRouteToTram()
-        {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
-            return pdata?.ClientMode == NetworkClientMode.Host
-                && pdata.main is InTramWaitingScene or GamePlayScene;
         }
 
         private static void NotifyDashboardIfChanged()

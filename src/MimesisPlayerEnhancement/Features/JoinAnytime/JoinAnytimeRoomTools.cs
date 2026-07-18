@@ -11,12 +11,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly PropertyInfo? HubVworldProperty =
-            typeof(Hub).GetProperty("vworld", InstanceFlags);
-
         internal static JoinAnytimeSessionPhase ResolveHostPhase()
         {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.ClientMode != NetworkClientMode.Host)
             {
                 return JoinAnytimeSessionPhase.None;
@@ -49,7 +46,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static bool AreJoinsOpen()
         {
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.ClientMode != NetworkClientMode.Host)
             {
                 return false;
@@ -132,9 +129,16 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static bool ShouldBlockWaitingRoomStartGame() =>
             GetWaitingRoomBlockReason() != WaitingRoomBlockReason.None;
 
+        internal static bool ShouldRouteToTram()
+        {
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            return pdata?.ClientMode == NetworkClientMode.Host
+                && pdata.main is InTramWaitingScene or GamePlayScene;
+        }
+
         internal static void MoveCurrentPlayerToSnapshot(SessionContext context)
         {
-            if (WebDashboardSessionAccess.GetVPlayer(context) is not VPlayer player)
+            if (SessionContextAccess.GetVPlayer(context) is not VPlayer player)
             {
                 ModLog.Warn(Feature, "MoveCurrentPlayerToSnapshot skipped — _vPlayer not found");
                 return;
@@ -193,7 +197,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 }
             }
 
-            Hub.PersistentData? pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             return pdata?.PickedMapID ?? 0;
         }
 
@@ -219,7 +223,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            if (HubVworldProperty?.GetValue(Hub.s) is not VWorld vworld)
+            VWorld? vworld = GameSessionAccess.TryGetVWorld();
+            if (vworld == null)
             {
                 ModLog.Warn(Feature, "TryEnsureWaitingRoom failed — VWorld unavailable");
                 return false;
@@ -514,13 +519,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static bool TryGetVRoomManager(out VRoomManager? vroomManager)
         {
-            vroomManager = null;
-            if (Hub.s == null || HubVworldProperty?.GetValue(Hub.s) is not VWorld vworld)
-            {
-                return false;
-            }
-
-            vroomManager = vworld.VRoomManager;
+            vroomManager = GameSessionAccess.TryGetVWorld()?.VRoomManager;
             return vroomManager != null;
         }
     }

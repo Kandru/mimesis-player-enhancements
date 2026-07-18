@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal static bool IsParticipantClient()
         {
-            return JoinAnytimeHub.GetPdata()?.ClientMode == NetworkClientMode.Participant;
+            return GameSessionAccess.TryGetPdata()?.ClientMode == NetworkClientMode.Participant;
         }
 
         internal static bool ShouldApplyHostOnlyFeature(Func<bool>? isFeatureEnabled = null)
@@ -16,7 +16,7 @@ namespace MimesisPlayerEnhancement.Util
                 return false;
             }
 
-            var pdata = JoinAnytimeHub.GetPdata();
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata?.ClientMode == NetworkClientMode.Participant)
             {
                 return false;

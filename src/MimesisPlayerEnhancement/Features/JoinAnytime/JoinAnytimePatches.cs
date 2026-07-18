@@ -27,7 +27,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
                 ("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))),
                 ("PendMoveToDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))),
+                ("BroadcastRoomReady/VRoomManager", AccessTools.Method(typeof(VRoomManager), "BroadcastRoomReady")),
+                ("InitWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.InitWaitingRoom))),
+                ("OnDungeonFinished/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))),
                 ("OnAllMemberEntered/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "OnAllMemberEntered")),
+                ("OnAllMemberEntered/IVroom", AccessTools.Method(typeof(IVroom), "OnAllMemberEntered")),
                 ("RunEventActionInternal/IVroom", AccessTools.Method(typeof(IVroom), "RunEventActionInternal")),
                 ("HandleLevelObject/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.HandleLevelObject))),
                 ("IsTriggerable/NewTramLeverLevelObject", AccessTools.Method(typeof(NewTramLeverLevelObject), "IsTriggerable", [typeof(ProtoActor), typeof(int)])),
@@ -38,6 +42,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("UpdateLobbyData/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdateLobbyData))),
                 ("SetPresenceInLobby/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresenceInLobby))),
                 ("SetPresencePlaying/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresencePlaying))),
+                ("UpdatePlayerGroupSize/SteamInviteDispatcher", AccessTools.Method(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdatePlayerGroupSize))),
                 ("HandleLevelLoadComplete/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.HandleLevelLoadComplete))),
                 ("OnEnable/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "OnEnable")),
                 ("Start/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "Start")),
@@ -46,6 +51,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 ("SetRoomData/UiPrefab_RoomCard", AccessTools.Method(typeof(UiPrefab_RoomCard), "SetRoomData")),
                 ("TryInitHostMaintenenceRoom/MaintenanceScene", AccessTools.Method(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")),
                 ("Start/InTramWaitingScene", AccessTools.Method(typeof(InTramWaitingScene), "Start")),
+                ("Start/GamePlayScene", AccessTools.Method(typeof(GamePlayScene), "Start")),
                 (".ctor/VPlayer", AccessTools.Constructor(
                     typeof(VPlayer),
                     [

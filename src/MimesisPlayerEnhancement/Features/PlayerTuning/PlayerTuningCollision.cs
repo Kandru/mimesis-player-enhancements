@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
         internal static void RefreshFromConfig()
         {
-            GameMainBase? main = JoinAnytimeHub.GetPdata()?.main;
+            GameMainBase? main = GameSessionAccess.TryGetPdata()?.main;
             if (main == null)
             {
                 return;
