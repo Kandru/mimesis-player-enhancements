@@ -145,5 +145,17 @@ namespace MimesisPlayerEnhancement
                 MelonLogger.Msg($"[{feature}:debug] {message}");
             }
         }
+
+        /// <summary>
+        /// Defers message formatting until debug logging is enabled — use on hot paths
+        /// where building the string would call identity resolution or reflection.
+        /// </summary>
+        public static void Debug(string feature, Func<string> messageFactory)
+        {
+            if (ModConfig.EnableDebugLogging.Value)
+            {
+                MelonLogger.Msg($"[{feature}:debug] {messageFactory()}");
+            }
+        }
     }
 }

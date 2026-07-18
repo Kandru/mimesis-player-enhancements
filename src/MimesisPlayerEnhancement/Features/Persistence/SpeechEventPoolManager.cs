@@ -329,7 +329,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         PlayerRegistry.UpdateVoiceId(steamId, playerId);
                     }
 
-                    LogVoiceUuidRemap(brief, claimed.Count, savedVoiceId, playerId);
+                    LogVoiceUuidRemap(archive, claimed.Count, savedVoiceId, playerId);
                 }
                 else if (archive != null)
                 {
@@ -368,8 +368,9 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
             if (_deferredInjectionArchives.Add(archive))
             {
-                ModLog.Debug(Feature, $"Deferred injection registered — {VoiceEventStats.DescribePlayerBrief(archive)} " +
-                                $"(waiting for SyncVars, {_deferredInjectionArchives.Count} pending)");
+                ModLog.Debug(Feature, () =>
+                    $"Deferred injection registered — {VoiceEventStats.DescribePlayerBrief(archive)} " +
+                    $"(waiting for SyncVars, {_deferredInjectionArchives.Count} pending)");
             }
         }
 
@@ -397,7 +398,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                         continue;
                     }
 
-                    ModLog.Debug(Feature, $"Deferred injection ready — {VoiceEventStats.DescribePlayerBrief(archive)}");
+                    ModLog.Debug(Feature, () =>
+                        $"Deferred injection ready — {VoiceEventStats.DescribePlayerBrief(archive)}");
 
                     ArchiveRestoreOutcome outcome = TryRestoreToArchive(archive);
                     ApplyRestoreOutcome(archive, outcome, flush: true);
@@ -435,7 +437,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     _ = (ev?.PlayerName = newPlayerId);
                 }
 
-                LogVoiceUuidRemap(VoiceEventStats.DescribePlayerBrief(archive), events.Count, oldVoiceId, newPlayerId);
+                LogVoiceUuidRemap(archive, events.Count, oldVoiceId, newPlayerId);
                 _deferredNameUpdates.RemoveAt(i);
 
                 try
@@ -464,9 +466,10 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 : $"steamId={GameSessionAccess.ResolveSteamId(playerUID, isLocal)}";
         }
 
-        private static void LogVoiceUuidRemap(string brief, int count, string oldVoiceId, string newVoiceId)
+        private static void LogVoiceUuidRemap(SpeechEventArchive? archive, int count, string oldVoiceId, string newVoiceId)
         {
-            ModLog.Debug(Feature, $"Voice UUID remapped — {brief} — {count} events: '{oldVoiceId}' -> '{newVoiceId}'");
+            ModLog.Debug(Feature, () =>
+                $"Voice UUID remapped — {VoiceEventStats.DescribePlayerBrief(archive)} — {count} events: '{oldVoiceId}' -> '{newVoiceId}'");
         }
 
         public static SpeechEventArchive? GetLocalArchive()

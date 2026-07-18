@@ -2,24 +2,14 @@ using System.Net;
 using System.Reflection;
 using FishNet.Object.Synchronizing;
 
-namespace MimesisPlayerEnhancement
+namespace MimesisPlayerEnhancement.Features.Players
 {
-    public sealed class PlayerConnectionInfo
-    {
-        public long PlayerUid;
-        public string DisplayName = "";
-        public string ConnectionRole = "";
-        public ulong SteamId;
-        public string ConnectionAddress = "";
-        public int VoiceLineCount;
-    }
-
-    public static class VoiceEventStats
+    internal static class VoiceEventStats
     {
         private const BindingFlags InstanceMemberFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public static int GetVoiceLineCount(SpeechEventArchive? archive)
+        internal static int GetVoiceLineCount(SpeechEventArchive? archive)
         {
             if (archive == null)
             {
@@ -38,10 +28,27 @@ namespace MimesisPlayerEnhancement
 
         /// <summary>
         /// In-game display name (Steam/session nickname), not the voice-comms UUID.
-        /// Mirrors <c>UIPrefab_InGameMenu.ResolveNickName</c>.
+        /// Prefers <see cref="PlayerRegistry"/> and <see cref="StatisticsDisplayNameResolver"/>,
+        /// then live proto actor / actor map as early-connect fallback.
         /// </summary>
-        public static string ResolveDisplayName(SpeechEventArchive? archive, long playerUid, bool isLocal)
+        internal static string ResolveDisplayName(SpeechEventArchive? archive, long playerUid, bool isLocal)
         {
+            ulong steamId = GameSessionAccess.ResolveSteamId(playerUid, isLocal);
+            if (steamId != 0)
+            {
+                if (PlayerRegistry.TryGetRecord(steamId, out PlayerRecord record)
+                    && SaveSlotDocumentStore.IsUsableName(record.DisplayName, steamId))
+                {
+                    return record.DisplayName;
+                }
+
+                string resolved = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
+                if (SaveSlotDocumentStore.IsUsableName(resolved, steamId))
+                {
+                    return resolved;
+                }
+            }
+
             if (archive != null)
             {
                 try
@@ -69,10 +76,14 @@ namespace MimesisPlayerEnhancement
 
             if (isLocal)
             {
-                string? hostNick = GetHostNickName();
-                if (!string.IsNullOrWhiteSpace(hostNick))
+                ulong localSteamId = GameSessionAccess.GetLocalSteamId();
+                if (localSteamId != 0)
                 {
-                    return hostNick;
+                    string localName = StatisticsDisplayNameResolver.Resolve(localSteamId, string.Empty);
+                    if (SaveSlotDocumentStore.IsUsableName(localName, localSteamId))
+                    {
+                        return localName;
+                    }
                 }
             }
 
@@ -82,7 +93,7 @@ namespace MimesisPlayerEnhancement
         /// <summary>
         /// Voice-comms identifier (Dissonance / syncedCommsPlayerName). Used internally for persistence matching.
         /// </summary>
-        public static string GetVoiceId(SpeechEventArchive? archive)
+        internal static string GetVoiceId(SpeechEventArchive? archive)
         {
             if (archive == null)
             {
@@ -100,7 +111,7 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        public static string DescribePlayer(SpeechEventArchive? archive)
+        internal static string DescribePlayer(SpeechEventArchive? archive)
         {
             if (archive == null)
             {
@@ -182,7 +193,7 @@ namespace MimesisPlayerEnhancement
         }
 
         /// <summary>Short player tag for feature debug/operational logs (name + steamId).</summary>
-        public static string DescribePlayerBrief(SpeechEventArchive? archive)
+        internal static string DescribePlayerBrief(SpeechEventArchive? archive)
         {
             if (archive == null)
             {
@@ -197,49 +208,16 @@ namespace MimesisPlayerEnhancement
         /// <summary>
         /// Best-effort identity from a live archive. Prefer this at disconnect prefix time before teardown clears fields.
         /// </summary>
-        public static bool TryCaptureArchiveIdentity(
+        internal static bool TryCaptureArchiveIdentity(
             SpeechEventArchive? archive,
             out long playerUid,
             out bool isLocal,
             out ulong steamId)
         {
-            playerUid = 0;
-            isLocal = false;
-            steamId = 0;
-
-            if (archive == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                playerUid = archive.PlayerUID;
-                isLocal = archive.IsLocal;
-            }
-            catch
-            {
-                return false;
-            }
-
-            steamId = GameSessionAccess.ResolveSteamId(playerUid, isLocal);
-            if (steamId == 0 && TryGetConnectionInfo(archive, out PlayerConnectionInfo info))
-            {
-                if (info.SteamId != 0)
-                {
-                    steamId = info.SteamId;
-                }
-
-                if (playerUid == 0 && info.PlayerUid != 0)
-                {
-                    playerUid = info.PlayerUid;
-                }
-            }
-
-            return steamId != 0 || playerUid != 0;
+            return StatisticsArchiveIdentity.TryCaptureArchiveIdentity(archive, out playerUid, out isLocal, out steamId);
         }
 
-        public static string DescribeSteamPlayer(ulong steamId, long playerUid = 0, SpeechEventArchive? archive = null)
+        internal static string DescribeSteamPlayer(ulong steamId, long playerUid = 0, SpeechEventArchive? archive = null)
         {
             SessionContext? session = FindSessionContext(playerUid, steamId);
             if (playerUid == 0 && session != null)
@@ -279,12 +257,12 @@ namespace MimesisPlayerEnhancement
             return $"uid={uid} name={info.DisplayName} role={info.ConnectionRole} steamId={steamId} ip={info.ConnectionAddress} voiceId={voiceId} voiceLines={info.VoiceLineCount}";
         }
 
-        public static bool TryGetConnectionInfo(SpeechEventArchive? archive, out PlayerConnectionInfo info)
+        internal static bool TryGetConnectionInfo(SpeechEventArchive? archive, out PlayerConnectionInfo info)
         {
             return TryGetConnectionInfo(archive, null, 0, out info);
         }
 
-        public static bool TryGetConnectionInfo(
+        internal static bool TryGetConnectionInfo(
             SpeechEventArchive? archive,
             SessionContext? knownContext,
             ulong steamIdHint,
@@ -377,7 +355,7 @@ namespace MimesisPlayerEnhancement
                 out info);
         }
 
-        public static bool TryGetConnectionInfo(
+        internal static bool TryGetConnectionInfo(
             SessionContext? session,
             long playerUid,
             ulong steamId,
@@ -423,11 +401,10 @@ namespace MimesisPlayerEnhancement
 
             try
             {
-                object? pdata = GetHubMember("pdata");
-                FieldInfo? field = pdata?.GetType().GetField("actorUIDToSteamID", InstanceMemberFlags);
-                if (field?.GetValue(pdata) is Dictionary<long, ulong> dict)
+                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+                if (pdata?.actorUIDToSteamID != null)
                 {
-                    foreach (KeyValuePair<long, ulong> kvp in dict)
+                    foreach (KeyValuePair<long, ulong> kvp in pdata.actorUIDToSteamID)
                     {
                         if (kvp.Value == steamId)
                         {
@@ -441,46 +418,30 @@ namespace MimesisPlayerEnhancement
                 /* Hub / actor map may be unavailable */
             }
 
-            SessionManager? sessionManager = GetSessionManager();
+            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
             if (sessionManager == null)
             {
                 return 0;
             }
 
-            try
+            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
             {
-                FieldInfo hostField = typeof(SessionManager).GetField("_hostSessionContext", InstanceMemberFlags);
-                if (hostField?.GetValue(sessionManager) is SessionContext host && host.SteamID == steamId)
+                try
                 {
-                    return host.GetPlayerUID();
-                }
-
-                FieldInfo contextsField = typeof(SessionManager).GetField("m_Contexts", InstanceMemberFlags);
-                if (contextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts)
-                {
-                    foreach (SessionContext context in contexts.Values)
+                    if (context.SteamID == steamId)
                     {
-                        if (context.SteamID != steamId)
-                        {
-                            continue;
-                        }
-
                         return context.GetPlayerUID();
                     }
                 }
-            }
-            catch
-            {
-                /* Session manager may be unavailable */
+                catch
+                {
+                    /* Session manager may be unavailable */
+                }
             }
 
             return 0;
         }
 
-        /// <summary>
-        /// Resolve SteamID for a player.
-        /// Prefers the live session context, then the shared session-access lookup.
-        /// </summary>
         private static ulong ResolveSteamId(long playerUid, bool isLocal, SessionContext? session)
         {
             if (session != null)
@@ -502,10 +463,6 @@ namespace MimesisPlayerEnhancement
             return GameSessionAccess.ResolveSteamId(playerUid, isLocal);
         }
 
-        /// <summary>
-        /// Best-effort remote address. Only the host/server typically has peer endpoints.
-        /// Steam SDR / relay connections may not expose a public IP.
-        /// </summary>
         private static string ResolveConnectionAddress(bool isLocal, SessionContext? session)
         {
             if (isLocal)
@@ -550,36 +507,18 @@ namespace MimesisPlayerEnhancement
 
         private static SessionContext? FindSessionContext(long playerUid, ulong steamId)
         {
-            SessionManager? sessionManager = GetSessionManager();
+            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
             if (sessionManager == null)
             {
                 return null;
             }
 
-            try
+            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
             {
-                FieldInfo hostField = typeof(SessionManager).GetField("_hostSessionContext", InstanceMemberFlags);
-                if (hostField?.GetValue(sessionManager) is SessionContext host
-                    && MatchesSessionContext(host, playerUid, steamId))
+                if (MatchesSessionContext(context, playerUid, steamId))
                 {
-                    return host;
+                    return context;
                 }
-
-                FieldInfo contextsField = typeof(SessionManager).GetField("m_Contexts", InstanceMemberFlags);
-                if (contextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts)
-                {
-                    foreach (SessionContext context in contexts.Values)
-                    {
-                        if (MatchesSessionContext(context, playerUid, steamId))
-                        {
-                            return context;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                /* Session manager may be unavailable during teardown */
             }
 
             return null;
@@ -612,30 +551,13 @@ namespace MimesisPlayerEnhancement
             return false;
         }
 
-        private static SessionManager? GetSessionManager()
-        {
-            try
-            {
-                object? vworld = GetHubMember("vworld");
-                if (vworld == null)
-                {
-                    return null;
-                }
-
-                FieldInfo field = vworld.GetType().GetField("_sessionManager", InstanceMemberFlags);
-                return field?.GetValue(vworld) as SessionManager;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         private static string? ResolveNickNameFromActorMap(long playerUid)
         {
             try
             {
-                object? main = GetGameMain();
+                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+                FieldInfo? mainField = pdata?.GetType().GetField("main", InstanceMemberFlags);
+                object? main = mainField?.GetValue(pdata);
                 if (main == null)
                 {
                     return null;
@@ -647,8 +569,7 @@ namespace MimesisPlayerEnhancement
                     return null;
                 }
 
-                List<ProtoActor?> actors = [.. map.Values];
-                foreach (ProtoActor? actor in actors)
+                foreach (ProtoActor? actor in map.Values)
                 {
                     if (actor == null || actor.UID != playerUid)
                     {
@@ -664,70 +585,6 @@ namespace MimesisPlayerEnhancement
             }
 
             return null;
-        }
-
-        private static string? GetHostNickName()
-        {
-            try
-            {
-                object? main = GetGameMain();
-                if (main != null)
-                {
-                    MethodInfo getHostNick = main.GetType().GetMethod("GetHostActorNickName", InstanceMemberFlags);
-                    if (getHostNick?.Invoke(main, null) is string hostNick && !string.IsNullOrWhiteSpace(hostNick))
-                    {
-                        return hostNick;
-                    }
-                }
-
-                object? pdata = GetHubMember("pdata");
-                if (pdata == null)
-                {
-                    return null;
-                }
-
-                FieldInfo myNickField = pdata.GetType().GetField("MyNickName", InstanceMemberFlags);
-                if (myNickField?.GetValue(pdata) is string myNick && !string.IsNullOrWhiteSpace(myNick))
-                {
-                    return myNick;
-                }
-            }
-            catch
-            {
-                /* Hub may be unavailable */
-            }
-
-            return null;
-        }
-
-        private static object? GetGameMain()
-        {
-            object? pdata = GetHubMember("pdata");
-            if (pdata == null)
-            {
-                return null;
-            }
-
-            FieldInfo mainField = pdata.GetType().GetField("main", InstanceMemberFlags);
-            return mainField?.GetValue(pdata);
-        }
-
-        private static object? GetHubMember(string name)
-        {
-            if (Hub.s == null)
-            {
-                return null;
-            }
-
-            Type hubType = typeof(Hub);
-            FieldInfo field = hubType.GetField(name, InstanceMemberFlags);
-            if (field != null)
-            {
-                return field.GetValue(Hub.s);
-            }
-
-            PropertyInfo prop = hubType.GetProperty(name, InstanceMemberFlags);
-            return prop != null && prop.CanRead ? prop.GetValue(Hub.s) : null;
         }
     }
 }

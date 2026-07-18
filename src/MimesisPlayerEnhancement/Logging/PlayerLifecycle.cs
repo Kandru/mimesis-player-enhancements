@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MimesisPlayerEnhancement
 {
-    public readonly struct PlayerLifecycleContribution(string feature, string detail)
+    internal readonly struct PlayerLifecycleContribution(string feature, string detail)
     {
         public string Feature { get; } = feature;
         public string Detail { get; } = detail;
