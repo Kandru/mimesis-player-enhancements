@@ -2,17 +2,18 @@ using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
-namespace MimesisPlayerEnhancement.Features.Statistics
+namespace MimesisPlayerEnhancement.Util
 {
     /// <summary>
     /// Bottom-left in-game toasts via <see cref="UIPrefab_PlayerEnterInfo"/>.
+    /// Shared by Statistics, PlayerAnnouncements, and JoinAnytime.
     /// Use <see cref="ShowModMessage"/> for plain English — do not call
     /// <see cref="UIPrefab_PlayerEnterInfo.AddPlayerInfo"/> for mod text; it localizes via
     /// <c>ROOM_ENTER_STRING</c> / <c>ROOM_EXIT_STRING</c> and the <c>[usernickname:]</c> placeholder.
     /// </summary>
-    public static class InGameMessageHelper
+    internal static class InGameMessageHelper
     {
-        private const string Feature = "Statistics";
+        private const string Feature = "InGameMessage";
 
         internal const string MessagePrefix = "[PlayerEnhancements]";
 
@@ -46,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         /// <param name="ignoreFeatureToggles">
         /// When true, show even if statistics and player-announcement toasts are disabled.
         /// </param>
-        public static void ShowModMessage(
+        internal static void ShowModMessage(
             string message,
             bool isEntering = true,
             bool localOnly = false,
@@ -287,9 +288,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return field?.GetValue(target) as IList;
         }
 
-        private static bool _timeUtilReflectionResolved;
-        private static PropertyInfo? _timeUtilProperty;
-        private static FieldInfo? _timeUtilField;
         private static MethodInfo? _getTickMethod;
         private static bool _loggedTickFallback;
 
@@ -297,19 +295,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             try
             {
-                if (Hub.s == null)
-                {
-                    return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                }
-
-                if (!_timeUtilReflectionResolved)
-                {
-                    _timeUtilProperty = typeof(Hub).GetProperty("timeutil", InstanceMemberFlags);
-                    _timeUtilField = typeof(Hub).GetField("timeutil", InstanceMemberFlags);
-                    _timeUtilReflectionResolved = true;
-                }
-
-                object? timeUtil = _timeUtilProperty?.GetValue(Hub.s) ?? _timeUtilField?.GetValue(Hub.s);
+                TimeUtil? timeUtil = GameSessionAccess.TryGetTimeUtil();
                 if (timeUtil == null)
                 {
                     return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -339,12 +325,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static UIPrefab_PlayerEnterInfo? GetPlayerEnterInfoUi()
         {
-            if (Hub.s == null)
-            {
-                return null;
-            }
-
-            object? pdata = typeof(Hub).GetField("pdata", InstanceMemberFlags)?.GetValue(Hub.s);
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (pdata == null)
             {
                 return null;

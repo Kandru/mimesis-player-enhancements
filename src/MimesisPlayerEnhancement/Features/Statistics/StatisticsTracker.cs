@@ -8,7 +8,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private const string Feature = "Statistics";
 
         private const float ConnectedTimeFlushIntervalSeconds = 1f;
+        private const float GracePeriodCheckIntervalSeconds = 5f;
         private static float _nextConnectedTimeFlushTime;
+        private static float _nextGracePeriodCheckTime;
 
         private static bool _wasEnabled;
 
@@ -30,6 +32,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             StatisticsVoiceCounter.Clear();
             _nextConnectedTimeFlushTime = 0f;
+            _nextGracePeriodCheckTime = 0f;
             StatisticsMessages.ClearRuntimeState();
             StatisticsRunTracker.ClearRuntimeState();
             StatisticsDeathHandler.ClearRuntimeState();
@@ -172,34 +175,21 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (PlayerRegistry.GetConnectedSteamIds().Count == 0 && !HasOpenDisconnectedSessions())
+            int connectedCount = PlayerRegistry.GetConnectedSteamIds().Count;
+            bool hasGraceSessions = HasOpenDisconnectedSessions();
+            if (connectedCount == 0 && !hasGraceSessions)
             {
                 return;
             }
 
-            int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
-            DateTime now = DateTime.UtcNow;
             bool changed = false;
-
-            foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
+            if (hasGraceSessions && UnityEngine.Time.time >= _nextGracePeriodCheckTime)
             {
-                SessionStats? session = doc.CurrentSession;
-                if (session == null || !session.IsOpen || !session.LastDisconnectedAtUtc.HasValue)
-                {
-                    continue;
-                }
-
-                if (now - session.LastDisconnectedAtUtc.Value <= TimeSpan.FromMinutes(graceMinutes))
-                {
-                    continue;
-                }
-
-                ModLog.Info(Feature, $"Session finalized — steamId={doc.SteamId} session={session.SessionId} after grace period");
-                FinalizeOpenSession(doc, countAsCompleted: true);
-                changed = true;
+                _nextGracePeriodCheckTime = UnityEngine.Time.time + GracePeriodCheckIntervalSeconds;
+                changed = FinalizeExpiredGraceSessions();
             }
 
-            if (UnityEngine.Time.time >= _nextConnectedTimeFlushTime)
+            if (connectedCount > 0 && UnityEngine.Time.time >= _nextConnectedTimeFlushTime)
             {
                 _nextConnectedTimeFlushTime = UnityEngine.Time.time + ConnectedTimeFlushIntervalSeconds;
                 foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
@@ -345,7 +335,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         public static void OnGameSaved(int slotId, bool waitForCompletion = false)
         {
-            if (!MimesisSaveManager.IsHost())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -361,7 +351,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         internal static void OnSessionEnded()
         {
-            if (MimesisSaveManager.IsHost() && PlayerRegistry.TryGetLoadedSlotId(out int slotId))
+            if (HostApplyGate.ShouldApplyHostOnlyFeature() && PlayerRegistry.TryGetLoadedSlotId(out int slotId))
             {
                 try
                 {
@@ -404,9 +394,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             ProcessDeferred();
         }
-
-        private static void MergeDelta(PlayerStatisticsDocument doc, StatCounters delta) =>
-            StatisticsCounterWriter.MergeDelta(doc.SteamId, delta);
 
         private static PlayerLifecycleContribution? BuildSessionConnectContribution(
             PlayerStatisticsDocument doc,
@@ -456,7 +443,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             ModConfig.EnableStatistics.Value
             && PlayerRegistry.TryGetLoadedSlotId(out int slotId)
             && MimesisSaveManager.IsValidSaveSlotId(slotId)
-            && MimesisSaveManager.IsHost();
+            && HostApplyGate.ShouldApplyHostOnlyFeature();
 
         internal static SessionStats CreateSession(DateTime now) => NewSession(now);
 
@@ -694,6 +681,33 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             {
                 PersistSlot(slotId, waitForCompletion);
             }
+        }
+
+        private static bool FinalizeExpiredGraceSessions()
+        {
+            int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
+            DateTime now = DateTime.UtcNow;
+            bool changed = false;
+
+            foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
+            {
+                SessionStats? session = doc.CurrentSession;
+                if (session == null || !session.IsOpen || !session.LastDisconnectedAtUtc.HasValue)
+                {
+                    continue;
+                }
+
+                if (now - session.LastDisconnectedAtUtc.Value <= TimeSpan.FromMinutes(graceMinutes))
+                {
+                    continue;
+                }
+
+                ModLog.Info(Feature, $"Session finalized — steamId={doc.SteamId} session={session.SessionId} after grace period");
+                FinalizeOpenSession(doc, countAsCompleted: true);
+                changed = true;
+            }
+
+            return changed;
         }
 
         private static bool HasOpenDisconnectedSessions()

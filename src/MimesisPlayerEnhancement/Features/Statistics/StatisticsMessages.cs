@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Reflection;
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using UnityEngine;
@@ -12,9 +11,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private const float LocalIntroDelaySeconds = 1f;
         private const float GlobalStatsJoinDelaySeconds = 3f;
         private const float GlobalStatsDedupSeconds = 3f;
-
-        private const BindingFlags InstanceMemberFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         internal const string PluginDisplayName = "Mimesis Player Enhancement";
         internal const string AuthorName = "Kandru";
@@ -122,7 +118,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            ulong steamId = ResolveSteamIdFromDisplayName(userName);
+            ulong steamId = StatisticsDisplayNameResolver.TryResolveSteamId(userName, out ulong resolved)
+                ? resolved
+                : 0;
             if (steamId == 0)
             {
                 return;
@@ -390,44 +388,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     ? ModL10n.Get("stats.playtime_hours_minutes", new Dictionary<string, object> { ["hours"] = hours, ["minutes"] = minutes })
                     : ModL10n.Get("stats.playtime_hours", new Dictionary<string, object> { ["hours"] = hours })
                 : ModL10n.Get("stats.playtime_minutes", new Dictionary<string, object> { ["minutes"] = minutes });
-        }
-
-        private static ulong ResolveSteamIdFromDisplayName(string displayName)
-        {
-            try
-            {
-                if (Hub.s == null)
-                {
-                    return 0;
-                }
-
-                object? pdata = typeof(Hub).GetField("pdata", InstanceMemberFlags)?.GetValue(Hub.s);
-                object? main = pdata?.GetType().GetField("main", InstanceMemberFlags)?.GetValue(pdata);
-                if (main == null)
-                {
-                    return 0;
-                }
-
-                FieldInfo cacheField = main.GetType().GetField("steamIDToNameCache", InstanceMemberFlags);
-                if (cacheField?.GetValue(main) is not Dictionary<ulong, string> cache)
-                {
-                    return 0;
-                }
-
-                foreach (KeyValuePair<ulong, string> kvp in cache)
-                {
-                    if (string.Equals(kvp.Value, displayName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return kvp.Key;
-                    }
-                }
-            }
-            catch
-            {
-                /* ignore */
-            }
-
-            return 0;
         }
     }
 }
