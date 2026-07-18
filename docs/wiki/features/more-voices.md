@@ -27,6 +27,8 @@ Vanilla only records voices inside dungeons. These toggles extend recording to h
 
 ## Performance cache
 
-Large voice pools can cause lag. `EnableVoicePerformanceCache` caches warmed voice lists, decoded audio clips, mimic host selection, and player lookups. `VoiceClipCacheMaxEntries` limits decoded clips kept in memory (LRU eviction).
+Large voice pools can cause lag. `EnableVoicePerformanceCache` caches warmed voice lists, decoded audio clips, mimic host selection, and player lookups (only when `EnableMoreVoices` is on). `VoiceClipCacheMaxEntries` limits decoded clips kept in memory (LRU eviction).
+
+With `EnableDebugLogging`, slow or large `PickBestMatch` runs log event count and elapsed time for playtest profiling.
 
 **Full config keys →** [More Voices](../CONFIG.md#more-voices--mimesisplayerenhancement_morevoices)

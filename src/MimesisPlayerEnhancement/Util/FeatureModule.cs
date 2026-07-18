@@ -81,7 +81,8 @@ namespace MimesisPlayerEnhancement.Util
                 onSessionEnded: SaveSlotSidecarPersistence.OnSessionEnded),
 
             new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
-                onDeinitialize: VoicePerformanceRuntime.ClearAll),
+                onDeinitialize: VoicePerformanceRuntime.ClearAll,
+                onSessionEnded: VoicePerformanceRuntime.ClearAll),
             new FeatureModule("PlayerAnnouncements", PlayerAnnouncementsPatches.Apply,
                 onSessionEnded: () =>
                 {

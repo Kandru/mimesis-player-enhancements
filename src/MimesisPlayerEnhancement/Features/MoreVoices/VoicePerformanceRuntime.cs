@@ -2,7 +2,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 {
     internal static class VoicePerformanceRuntime
     {
-        internal static bool IsActive => ModConfig.EnableVoicePerformanceCache.Value;
+        internal static bool IsActive =>
+            ModConfig.EnableMoreVoices.Value && ModConfig.EnableVoicePerformanceCache.Value;
 
         internal static int ClipCacheMaxEntries
         {

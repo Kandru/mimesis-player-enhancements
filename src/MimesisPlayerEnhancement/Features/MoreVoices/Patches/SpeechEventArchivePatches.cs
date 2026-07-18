@@ -105,6 +105,11 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         [HarmonyPostfix]
         public static void Postfix(List<long> __result)
         {
+            if (!ModConfig.EnableMoreVoices.Value)
+            {
+                return;
+            }
+
             MoreVoicesPatchHelpers._lastRemovalIds = __result;
         }
     }

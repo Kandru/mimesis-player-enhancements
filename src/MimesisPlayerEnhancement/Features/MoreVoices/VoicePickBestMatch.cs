@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices
@@ -7,6 +8,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// </summary>
     internal static class VoicePickBestMatch
     {
+        private const string Feature = "MoreVoices";
+        private const int ProfileEventThreshold = 500;
+        private const long ProfileElapsedMsThreshold = 2;
         private const float PlayTimeInterval = 60f;
         private const float DeathMatchPlayTimeInterval = 3f;
         private const float CrossAreaFallbackChance = 0.25f;
@@ -63,6 +67,40 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static readonly List<(string playerID, SpeechEvent evt, float similarity)> _topSimilar = [];
 
         internal static bool TryPick(
+            MimicVoiceSpawner.MimicContext context,
+            List<(string playerID, SpeechEvent evt)> allEvents,
+            SpeechEventAdditionalGameData curGameData,
+            bool periodic,
+            int pickCount,
+            float playTimeIntervalRandom,
+            out SpeechEvent? speechEvent,
+            out string mimickingPlayerID,
+            out string pickReason)
+        {
+            int eventCount = allEvents?.Count ?? 0;
+            bool profile = ModConfig.EnableDebugLogging.Value;
+            long startTicks = profile ? Stopwatch.GetTimestamp() : 0;
+
+            bool picked = TryPickCore(
+                context,
+                allEvents,
+                curGameData,
+                periodic,
+                pickCount,
+                playTimeIntervalRandom,
+                out speechEvent,
+                out mimickingPlayerID,
+                out pickReason);
+
+            if (profile)
+            {
+                MaybeLogPickProfile(eventCount, startTicks, picked, pickReason);
+            }
+
+            return picked;
+        }
+
+        private static bool TryPickCore(
             MimicVoiceSpawner.MimicContext context,
             List<(string playerID, SpeechEvent evt)> allEvents,
             SpeechEventAdditionalGameData curGameData,
@@ -628,6 +666,19 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             {
                 return string.Empty;
             }
+        }
+
+        private static void MaybeLogPickProfile(int eventCount, long startTicks, bool picked, string reason)
+        {
+            long elapsedMs = (Stopwatch.GetTimestamp() - startTicks) * 1000 / Stopwatch.Frequency;
+            if (elapsedMs < ProfileElapsedMsThreshold && eventCount < ProfileEventThreshold)
+            {
+                return;
+            }
+
+            ModLog.Debug(
+                Feature,
+                $"PickBestMatch profile — events={eventCount}, elapsed={elapsedMs}ms, picked={picked}, reason={reason}");
         }
     }
 }

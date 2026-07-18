@@ -17,6 +17,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private static readonly List<SpeechEvent> _deathMatchEvents = [];
         private static readonly List<SpeechEvent> _sharedEvents = [];
         private static readonly List<long> _removedIds = [];
+        private static readonly HashSet<long> _removedIdSet = [];
 
         internal static bool IsAvailable => EventsField != null && EvaluateValueMethod != null;
 
@@ -56,10 +57,21 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             CollectRemovals(archive, _sharedEvents, sharedCap);
             CollectRemovals(archive, _deathMatchEvents, deathMatchCap);
 
-            for (int i = 0; i < _removedIds.Count; i++)
+            if (_removedIds.Count > 0)
             {
-                long id = _removedIds[i];
-                events.RemoveAll(e => e.Id == id);
+                _removedIdSet.Clear();
+                for (int i = 0; i < _removedIds.Count; i++)
+                {
+                    _ = _removedIdSet.Add(_removedIds[i]);
+                }
+
+                for (int i = events.Count - 1; i >= 0; i--)
+                {
+                    if (_removedIdSet.Contains(events[i].Id))
+                    {
+                        events.RemoveAt(i);
+                    }
+                }
             }
 
             return _removedIds;
