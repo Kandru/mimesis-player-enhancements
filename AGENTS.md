@@ -22,7 +22,7 @@ Start in `deps/decompiled/` for patch design. InspectionTool for one-off metadat
 - Web: `src/MimesisPlayerEnhancementWeb/` → `dist/webinterface/{debug|prod}/`
 - Architecture/UI/sidecars: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 
-Verify before done: `make check`, `make debug` (`make deps` first time; `make release`/`make tools` as needed). Docker (`--rm`): `mpe-ops:local`, `mcr.microsoft.com/dotnet/sdk:10.0`, `node:22-alpine`.
+Verify before done: `make check`, `make debug` (`make deps` first time; `make release`/`make tools` as needed). Docker (`--rm`): `mpe-ops:local`, `mcr.microsoft.com/dotnet/sdk:10.0`, `node:22-alpine`. Package caches: `mpe-nuget-cache`, `mpe-npm-cache`.
 
 ## New feature
 

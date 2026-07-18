@@ -8,8 +8,6 @@ SHELL := /bin/bash
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 SLN := src/MimesisPlayerEnhancement.sln
 MOD_PROJ := src/MimesisPlayerEnhancement/MimesisPlayerEnhancement.csproj
-WEB_SRC := $(ROOT)/src/MimesisPlayerEnhancementWeb
-WEB_WORKDIR := /repo/src/MimesisPlayerEnhancementWeb
 OPS_DIR := $(ROOT)/docker/ops
 REF_MANAGED := $(ROOT)/deps/reference/Managed/Assembly-CSharp.dll
 REF_MELON := $(ROOT)/deps/reference/MelonLoader/net35/MelonLoader.dll
@@ -17,7 +15,6 @@ REF_MELON := $(ROOT)/deps/reference/MelonLoader/net35/MelonLoader.dll
 OPS_IMAGE := mpe-ops:local
 DOTNET_IMAGE := mcr.microsoft.com/dotnet/sdk:10.0
 NODE_IMAGE := node:22-alpine
-WEB_IMAGE := mpe-webdashboard:local
 
 TOOL_PROJECTS := \
 	MimesisInspectionTool/MimesisInspectionTool.csproj \
@@ -56,9 +53,13 @@ DOCKER_REPO_MOUNT := -v "$(ROOT):/repo" -w /repo
 DOCKER_USER := --user "$$(id -u):$$(id -g)"
 # Non-root containers cannot run SDK workload integrity checks (harmless for this repo).
 DOTNET_ENV := -e DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK=1
+NUGET_CACHE_VOL := mpe-nuget-cache
+NPM_CACHE_VOL := mpe-npm-cache
+DOCKER_NUGET_CACHE := -v $(NUGET_CACHE_VOL):/cache/nuget -e NUGET_PACKAGES=/cache/nuget
+DOCKER_NPM_CACHE := -v $(NPM_CACHE_VOL):/cache/npm -e npm_config_cache=/cache/npm
 
 .PHONY: help all debug release webinterface thunderstore tools check clean \
-	require-docker ensure-ops-image deps validate-locale stage-web-sources \
+	require-docker ensure-ops-image ensure-cache-volumes deps validate-locale stage-web-sources \
 	mod format-csharp check-web
 
 .DEFAULT_GOAL := help
@@ -83,6 +84,7 @@ help:
 	@echo "  deps          Download reference assemblies (first-time setup)"
 	@echo ""
 	@echo "Containers: mpe-ops:local, dotnet/sdk:10.0, node:22-alpine (all --rm)"
+	@echo "Package caches: $(NUGET_CACHE_VOL), $(NPM_CACHE_VOL) (named Docker volumes)"
 	@echo ""
 	@echo "Variables:"
 	@echo "  CONFIG=Release    webinterface or tools prod/Release output"
@@ -113,6 +115,14 @@ ensure-ops-image: require-docker
 		echo "==> Building ops image ($(OPS_IMAGE))…"; \
 		docker build -t $(OPS_IMAGE) -f "$(OPS_DIR)/Dockerfile" "$(OPS_DIR)"; \
 	fi
+
+ensure-cache-volumes: require-docker
+	@uid=$$(id -u); gid=$$(id -g); \
+	docker run --rm --user root \
+		-v $(NUGET_CACHE_VOL):/cache/nuget \
+		-v $(NPM_CACHE_VOL):/cache/npm \
+		$(NODE_IMAGE) \
+		sh -c "mkdir -p /cache/nuget /cache/npm && chown -R $$uid:$$gid /cache/nuget /cache/npm"
 
 # ---------------------------------------------------------------------------
 # Shared steps (ops container)
@@ -148,23 +158,29 @@ stage-web-sources: ensure-ops-image
 		./scripts/stage-web-sources.sh
 
 # ---------------------------------------------------------------------------
-# Webinterface (Node + web build image)
+# Webinterface (Node container)
 # ---------------------------------------------------------------------------
 
-webinterface: require-docker deps stage-web-sources ensure-ops-image
+webinterface: require-docker ensure-cache-volumes deps stage-web-sources ensure-ops-image
 	@echo "==> Preparing webinterface output directory ($(DIST_SUBDIR)) via Docker…"
 	@docker run --rm \
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(OPS_IMAGE) \
 		sh -c 'mkdir -p "/repo/dist/webinterface/$(DIST_SUBDIR)" && find "/repo/dist/webinterface/$(DIST_SUBDIR)" -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
-	@echo "==> Building webinterface image ($(WEB_IMAGE))…"
-	@docker build -t $(WEB_IMAGE) -f "$(WEB_SRC)/Dockerfile" "$(WEB_SRC)"
-	@echo "==> Exporting webinterface ($(DIST_SUBDIR)) via Docker…"
+	@echo "==> Building webinterface ($(DIST_SUBDIR)) via Docker…"
 	@docker run --rm \
 		$(DOCKER_USER) \
-		-v "$(ROOT)/dist/webinterface/$(DIST_SUBDIR):/out" \
-		$(WEB_IMAGE)
+		-v "$(ROOT):/repo" \
+		$(DOCKER_NPM_CACHE) \
+		$(NODE_IMAGE) \
+		sh -c 'set -euo pipefail; \
+			rm -rf /tmp/web; \
+			cp -a /repo/src/MimesisPlayerEnhancementWeb /tmp/web; \
+			cd /tmp/web; \
+			npm ci --silent; \
+			npm run build; \
+			cp -r dist/. "/repo/dist/webinterface/$(DIST_SUBDIR)/"'
 	@test -f "$(ROOT)/dist/webinterface/$(DIST_SUBDIR)/index.html" \
 		|| { echo "error: web build did not produce index.html" >&2; exit 1; }
 	@echo "==> Webinterface ready: dist/webinterface/$(DIST_SUBDIR)/"
@@ -173,7 +189,7 @@ webinterface: require-docker deps stage-web-sources ensure-ops-image
 # Mod (dotnet SDK container)
 # ---------------------------------------------------------------------------
 
-mod: require-docker deps validate-locale
+mod: require-docker ensure-cache-volumes deps validate-locale
 	@if [[ -n "$(strip $(MIMESIS_PATH))" ]]; then \
 		echo "==> Using game assemblies from $(MIMESIS_PATH)"; \
 	else \
@@ -185,6 +201,7 @@ mod: require-docker deps validate-locale
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
 		$(DOTNET_IMAGE) \
 		dotnet build $(MOD_PROJ) -c $(DOTNET_CONFIG) $(MOD_EXTRA)
 	@echo "==> Mod ready: dist/$(DIST_SUBDIR)/MimesisPlayerEnhancement.dll"
@@ -221,13 +238,14 @@ thunderstore: release ensure-ops-image
 # Dev tools (dotnet SDK container)
 # ---------------------------------------------------------------------------
 
-tools: require-docker deps
+tools: require-docker ensure-cache-volumes deps
 	@echo "==> Formatting C# ($(DOTNET_CONFIG)) via Docker…"
 	@docker run --rm \
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 	@echo "==> Building dev tools ($(DOTNET_CONFIG)) via Docker…"
@@ -238,6 +256,7 @@ tools: require-docker deps
 			$(DOCKER_REPO_MOUNT) \
 			$(GAME_MOUNT) \
 			$(DOTNET_ENV) \
+			$(DOCKER_NUGET_CACHE) \
 			$(DOTNET_IMAGE) \
 			dotnet build "src/$$rel" -c $(DOTNET_CONFIG); \
 	done
@@ -247,20 +266,23 @@ tools: require-docker deps
 # Quality checks
 # ---------------------------------------------------------------------------
 
-format-csharp: require-docker
+format-csharp: require-docker ensure-cache-volumes
 	@echo "==> Formatting C# via Docker…"
 	@docker run --rm \
 		$(DOCKER_USER) \
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 
-check-web: require-docker stage-web-sources
+check-web: require-docker ensure-cache-volumes stage-web-sources
 	@echo "==> Type-checking Svelte via Docker…"
 	@docker run --rm \
+		$(DOCKER_USER) \
 		-v "$(ROOT):/repo:ro" \
+		$(DOCKER_NPM_CACHE) \
 		$(NODE_IMAGE) \
 		sh -c 'set -euo pipefail; \
 			rm -rf /tmp/web; \
@@ -271,7 +293,7 @@ check-web: require-docker stage-web-sources
 			node scripts/generate-changelog.mjs; \
 			npm run check'
 
-check: ensure-ops-image require-docker
+check: ensure-ops-image ensure-cache-volumes require-docker
 	@echo "==> Running quality checks via Docker…"
 	@echo "==> [1/3] Validating locale files…"
 	@docker run --rm \
@@ -285,6 +307,7 @@ check: ensure-ops-image require-docker
 		$(DOCKER_REPO_MOUNT) \
 		$(GAME_MOUNT) \
 		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
 		$(DOTNET_IMAGE) \
 		dotnet format $(SLN) --verbosity minimal
 	@echo "==> [3/3] Type-checking Svelte…"
@@ -294,7 +317,9 @@ check: ensure-ops-image require-docker
 		$(OPS_IMAGE) \
 		./scripts/stage-web-sources.sh
 	@docker run --rm \
+		$(DOCKER_USER) \
 		-v "$(ROOT):/repo:ro" \
+		$(DOCKER_NPM_CACHE) \
 		$(NODE_IMAGE) \
 		sh -c 'set -euo pipefail; \
 			rm -rf /tmp/web; \

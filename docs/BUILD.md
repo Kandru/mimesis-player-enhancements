@@ -21,8 +21,22 @@ make clean         # empty dist/debug, prod, webinterface, thunderstore (host on
 |-------|----------|
 | `mpe-ops:local` | deps bootstrap, locale validation, web staging, Thunderstore packaging |
 | `mcr.microsoft.com/dotnet/sdk:10.0` | mod/tools compile, C# format |
-| `node:22-alpine` | Svelte type-check |
-| `mpe-webdashboard:local` | webinterface Vite build |
+| `node:22-alpine` | webinterface Vite build, Svelte type-check |
+
+**Package caches** (named Docker volumes, persist across runs):
+
+| Volume | Caches |
+|--------|--------|
+| `mpe-nuget-cache` | NuGet packages (`NUGET_PACKAGES`) for dotnet builds |
+| `mpe-npm-cache` | npm download cache for web builds and checks |
+
+Reset caches if packages are corrupted or stale:
+
+```bash
+docker volume rm mpe-nuget-cache mpe-npm-cache
+```
+
+Volumes are created automatically and ownership is fixed for your host user on each build/check run.
 
 If `PathConfig.props` or `MIMESIS_PATH` is set, the game install is mounted read-only into containers for full Unity references.
 
