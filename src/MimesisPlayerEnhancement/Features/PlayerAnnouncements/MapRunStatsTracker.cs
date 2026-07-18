@@ -35,16 +35,6 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             {
                 Baselines[localSteamId] = CaptureCurrent(localSteamId);
             }
-
-            foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
-            {
-                if (Baselines.ContainsKey(steamId))
-                {
-                    continue;
-                }
-
-                Baselines[steamId] = CaptureCurrent(steamId);
-            }
         }
 
         internal static void ResetForSessionEnd()

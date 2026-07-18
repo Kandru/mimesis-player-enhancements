@@ -85,6 +85,7 @@ namespace MimesisPlayerEnhancement.Util
             new FeatureModule("PlayerAnnouncements", PlayerAnnouncementsPatches.Apply,
                 onSessionEnded: () =>
                 {
+                    PlayerAnnouncements.ResetForSessionEnd();
                     BossSpawnAnnouncer.ResetForSessionEnd();
                     MapRunStatsTracker.ResetForSessionEnd();
                 }),

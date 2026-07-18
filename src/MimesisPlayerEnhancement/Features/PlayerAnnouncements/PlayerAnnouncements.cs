@@ -8,11 +8,6 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         internal static void OnAllMembersEnteredDungeon(DungeonRoom room)
         {
-            if (!EntryAnnouncedRooms.Add(room))
-            {
-                return;
-            }
-
             MapRunStatsTracker.ResetForDungeonEntry();
             BossSpawnAnnouncer.BeginDungeonRun();
 
@@ -26,11 +21,21 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 return;
             }
 
+            if (!EntryAnnouncedRooms.Add(room))
+            {
+                return;
+            }
+
             string? settings = DungeonSettingsFormatter.FormatForDungeonEntry(room);
             if (!string.IsNullOrWhiteSpace(settings))
             {
                 ShowToast(settings);
             }
+        }
+
+        internal static void ResetForSessionEnd()
+        {
+            EntryAnnouncedRooms.Clear();
         }
 
         internal static void ShowToast(string message, bool isEntering = true, bool localOnly = false)
