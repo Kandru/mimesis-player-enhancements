@@ -164,5 +164,34 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void DisconnectSession(SessionManager sessionManager, long sessionId, DisconnectReason reason) =>
             SessionContextAccess.DisconnectSession(sessionManager, sessionId, reason);
+
+        internal static bool TryGetLocalVPlayer(out VPlayer? player)
+        {
+            player = null;
+            SessionManager? sessionManager = GetSessionManager();
+            if (sessionManager == null)
+            {
+                return false;
+            }
+
+            ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
+            if (localSteamId == 0)
+            {
+                return false;
+            }
+
+            foreach (SessionContext context in EnumerateSessionContexts(sessionManager))
+            {
+                if (context.SteamID != localSteamId)
+                {
+                    continue;
+                }
+
+                player = GetVPlayer(context);
+                return player != null;
+            }
+
+            return false;
+        }
     }
 }

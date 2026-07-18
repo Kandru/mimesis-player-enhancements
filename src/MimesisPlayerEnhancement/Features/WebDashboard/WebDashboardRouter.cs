@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Features.WebDashboard.Debug;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -170,6 +171,34 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Success = true,
                     Message = L("done"),
                 }));
+                return;
+            }
+
+            if (path == "/api/debug/ui-overlays" && method == "GET")
+            {
+                WriteJson(context, 200, ModJson.Serialize(WebDashboardUiDebugController.GetStatus()));
+                return;
+            }
+
+            if (path == "/api/debug/ui-overlays" && method == "POST")
+            {
+                WebDashboardUiDebugToggleRequest? toggleRequest =
+                    ModJson.Deserialize<WebDashboardUiDebugToggleRequest>(ReadRequestBody(context.Request));
+                if (string.IsNullOrWhiteSpace(toggleRequest?.Id))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_settings_request")));
+                    return;
+                }
+
+                WebDashboardUiDebugToggleResult toggleResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                    () => WebDashboardUiDebugController.Toggle(toggleRequest.Id));
+                int statusCode = toggleResult.Success
+                    ? 200
+                    : toggleResult.Message is string msg
+                        && (msg == L("debug_not_ingame") || msg == L("debug_not_alive"))
+                        ? 409
+                        : 400;
+                WriteJson(context, statusCode, ModJson.Serialize(toggleResult));
                 return;
             }
 

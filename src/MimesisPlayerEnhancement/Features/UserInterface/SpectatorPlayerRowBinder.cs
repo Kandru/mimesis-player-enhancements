@@ -48,11 +48,50 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
         }
 
+        internal static void TrySetRowColor(UIPrefab_Spectator_PlayerListViewItem row, Color color)
+        {
+            if (row == null)
+            {
+                return;
+            }
+
+            if (NameTextProperty?.GetValue(row) is Component nameText)
+            {
+                TrySetGraphicColor(nameText, color);
+            }
+
+            Image? speakIcon = row.SpeakIcon;
+            if (speakIcon != null)
+            {
+                speakIcon.color = color;
+            }
+        }
+
+        private static void TrySetGraphicColor(Component? component, Color color)
+        {
+            if (component == null)
+            {
+                return;
+            }
+
+            PropertyInfo? colorProperty = component.GetType().GetProperty("color");
+            colorProperty?.SetValue(component, color);
+        }
+
         internal static void SetPossessorActive(UIPrefab_Spectator_PlayerListViewItem row, bool active)
         {
             if (IsPossessorProperty?.GetValue(row) is Component possessor)
             {
                 possessor.gameObject.SetActive(active);
+            }
+        }
+
+        internal static void EnsureSpeakIconVisible(UIPrefab_Spectator_PlayerListViewItem row)
+        {
+            Image? speakIcon = row.SpeakIcon;
+            if (speakIcon != null)
+            {
+                speakIcon.gameObject.SetActive(true);
             }
         }
 

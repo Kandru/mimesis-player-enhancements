@@ -171,7 +171,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                     UnityEngine.Object.Instantiate(template, rowParent);
                 clone.gameObject.name = $"LoadingWaitPlayerRow_{state.CloneRows.Count + 1}";
                 clone.gameObject.SetActive(true);
-                clone.SetColor(state.LiveColor);
+                SpectatorPlayerRowBinder.TrySetRowColor(clone, state.LiveColor);
                 SpectatorPlayerRowBinder.TurnOffSpeakAnimation(clone);
                 SpectatorPlayerRowBinder.SetPossessorActive(clone, false);
                 state.CloneRows.Add(clone);
@@ -204,7 +204,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             CancellationToken cancellationToken)
         {
             SpectatorPlayerRowBinder.SetRowName(row, entry.DisplayName);
-            row.SetColor(entry.Loaded ? state.LiveColor : state.DeadColor);
+            SpectatorPlayerRowBinder.TrySetRowColor(row, entry.Loaded ? state.LiveColor : state.DeadColor);
             SpectatorPlayerRowBinder.BindSpeakState(row, entry.Speaking, cancellationToken);
             SpectatorPlayerRowBinder.SetPossessorActive(row, false);
         }

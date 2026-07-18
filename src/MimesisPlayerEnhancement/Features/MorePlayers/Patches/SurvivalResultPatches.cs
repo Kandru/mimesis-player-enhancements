@@ -40,4 +40,22 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
             }
         }
     }
+
+    [HarmonyPatch]
+    internal static class UIPrefabSurvivalResultPatchParameterCapturePostfix
+    {
+        internal static MethodBase? TargetMethod()
+        {
+            Type? survivalResultType = AccessTools.TypeByName("UIPrefab_SurvivalResult");
+            return survivalResultType == null
+                ? null
+                : AccessTools.Method(survivalResultType, "PatchParameter");
+        }
+
+        [HarmonyPostfix]
+        private static void Postfix(object __instance)
+        {
+            SurvivalResultDebugPreview.CaptureInstance(__instance);
+        }
+    }
 }

@@ -1,4 +1,5 @@
 using System.Reflection;
+using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
@@ -864,6 +865,80 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                     transform.gameObject.SetActive(active);
                 }
             }
+        }
+
+        internal static bool DebugBeginWaitPreview(UIPrefab_Scene_Loading loading)
+        {
+            if (loading == null)
+            {
+                return false;
+            }
+
+            if (CustomLoadingScreenResolver.ShouldApplyReplacement())
+            {
+                CustomLoadingScreenContext context = CustomLoadingScreenContext.DungeonStart;
+                string? theme = CustomLoadingScreenResolver.ResolveThemeForContext(context);
+                if (!string.IsNullOrWhiteSpace(theme))
+                {
+                    CustomLoadingScreenSession.Begin(context, theme);
+                    HideVanillaVariants(loading);
+                    HideVanillaRootNode(loading);
+
+                    CustomLoadingScreenResolvedPhase? waitPresentation =
+                        CustomLoadingScreenResolver.ResolveDedicatedWaitPresentation(context, theme);
+                    if (waitPresentation != null)
+                    {
+                        CustomLoadingScreenSession.SetPhase(CustomLoadingScreenPhase.Wait);
+                        ApplyPhase(loading, waitPresentation, crossfade: false);
+                    }
+                    else
+                    {
+                        ApplyPhase(loading, CustomLoadingScreenPhase.Loading);
+                    }
+
+                    SuppressVanillaFullscreenCovers();
+                    EnsureLoadingVisible(loading, fadeIn: false);
+                    return true;
+                }
+            }
+
+            if (!loading.gameObject.activeSelf)
+            {
+                loading.Show();
+            }
+
+            loading.SetLoadingText(CustomLoadingScreenConstants.WaitTextKey);
+            SuppressVanillaFullscreenCovers();
+            return true;
+        }
+
+        internal static void DebugEndWaitPreview(UIPrefab_Scene_Loading? loading)
+        {
+            UIPrefab_Scene_Loading? target = loading
+                ?? _activeLoading
+                ?? ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
+
+            if (target != null && CustomLoadingScreenSession.IsActive)
+            {
+                Restore(target, fadeOut: false);
+                return;
+            }
+
+            if (target != null && target.gameObject.activeSelf)
+            {
+                _allowVanillaHide = true;
+                try
+                {
+                    target.Hide();
+                }
+                finally
+                {
+                    _allowVanillaHide = false;
+                }
+            }
+
+            CustomLoadingScreenSession.Clear();
+            _activeLoading = null;
         }
     }
 }

@@ -45,6 +45,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
                 return;
             }
 
+            ShowInternal(menu);
+        }
+
+        internal static bool ShowForDebug(UIPrefab_InGameMenu menu)
+        {
+            if (!CanUseMenu(menu)
+                || menu.playerUIElements == null
+                || menu.playerUIElements.Count == 0
+                || menu.playerUIElements[0].container == null)
+            {
+                return false;
+            }
+
+            ShowInternal(menu);
+            return true;
+        }
+
+        private static void ShowInternal(UIPrefab_InGameMenu menu)
+        {
             try
             {
                 CleanupLegacyLayout(menu);

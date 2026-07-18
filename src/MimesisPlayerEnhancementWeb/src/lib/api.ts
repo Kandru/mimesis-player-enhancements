@@ -165,6 +165,18 @@ const Api = {
       body: JSON.stringify({ enabled }),
     });
   },
+
+  getUiDebugOverlays() {
+    return Api.fetchJson<import('./types').UiDebugStatusDto>('/api/debug/ui-overlays');
+  },
+
+  toggleUiDebugOverlay(id: string) {
+    return Api.fetchJson<import('./types').UiDebugToggleResultDto>('/api/debug/ui-overlays', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+  },
 };
 
 export default Api;

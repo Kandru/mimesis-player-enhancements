@@ -13,13 +13,46 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
         private const float BottomMargin = 8f;
         private const float FallbackColumnStep = 220f;
 
+        private static readonly FieldInfo? SpectatorUiField =
+            AccessTools.Field(typeof(GameMainBase), "spectatorui");
+
+        private static readonly FieldInfo? PlayerListViewField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "playerListView");
+
         private static readonly MethodInfo? GetActorByActorIdMethod =
             AccessTools.Method(typeof(GameMainBase), "GetActorByActorID", [typeof(int)]);
 
         private static readonly MethodInfo? ResolveNickNameMethod =
             AccessTools.Method(typeof(GameMainBase), "ResolveNickName", [typeof(ProtoActor), typeof(string)]);
 
+        private static readonly FieldInfo? SpectatorIsShowField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "IsShow");
+
+        private static readonly FieldInfo? PrevChangeCameraUiField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "_prevChangeCameraUI");
+
+        private static readonly FieldInfo? NextChangeCameraUiField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "_nextChangeCameraUI");
+
+        private static readonly FieldInfo? PossessionUiField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "_possessionUI");
+
+        private static readonly FieldInfo? PossessableQuitUiField =
+            AccessTools.Field(typeof(UIPrefab_Spectator), "_possessableQuitUI");
+
+        private static readonly PropertyInfo? NextChangeTimeTextProperty =
+            AccessTools.Property(typeof(UIPrefab_Spectator), "UE_nextChangeTimeText");
+
         private static readonly Dictionary<int, SpectatorListState> States = [];
+
+        private static readonly System.Random DebugRandom = new();
+
+        private static readonly CancellationTokenSource DebugSpeakCancellation = new();
+
+        private static bool _debugActive;
+        private static UIPrefab_Spectator_PlayerListView? _debugListView;
+        private static UIPrefab_Spectator? _debugSpectator;
+        private static bool _debugSpectatorWasVisible;
 
         internal static bool IsEnabled() =>
             ModConfig.EnableExtendedSpectatorPlayerList.Value;
@@ -40,6 +73,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             List<Tuple<int, bool, bool, bool>> actorsInfo,
             CancellationToken cancellationToken)
         {
+            if (_debugActive)
+            {
+                return;
+            }
+
             if (actorsInfo.Count == 0 || Hub.Main == null)
             {
                 return;
@@ -110,6 +148,154 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 
             StopSpeakAnimations(state);
             RevertToVanilla(state);
+        }
+
+        internal static bool DebugShow(IReadOnlyList<string> fakeNames)
+        {
+            EnsureSpectatorHudAvailable();
+
+            UIPrefab_Spectator_PlayerListView? listView = ResolveListView(out UIPrefab_Spectator? spectator);
+            if (listView == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                _debugSpectator = spectator;
+                _debugListView = listView;
+                _debugSpectatorWasVisible = spectator != null
+                    && spectator.gameObject.activeSelf
+                    && SpectatorIsShowField?.GetValue(spectator) is true;
+
+                if (spectator != null && !spectator.gameObject.activeSelf)
+                {
+                    spectator.gameObject.SetActive(true);
+                }
+
+                HideSpectatorChrome(spectator);
+                listView.gameObject.SetActive(true);
+                listView.Show();
+
+                SpectatorListState state = GetOrCreateState(listView);
+                CacheNativeRows(state);
+                if (!state.ExtendedActive)
+                {
+                    ApplyExtended(state);
+                }
+
+                List<SpectatorDebugEntry> entries = BuildScrambledDebugEntries(fakeNames);
+                RefreshLayoutIfNeeded(state, entries.Count);
+                int visibleCount = Math.Min(state.MaxVisibleSlots, entries.Count);
+                EnsureCloneRows(state, state.MaxVisibleSlots);
+                BindDebugRows(state, entries, visibleCount, DebugSpeakCancellation.Token);
+
+                _debugActive = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Spectator debug preview failed — {ex.Message}");
+                DebugHide();
+                return false;
+            }
+        }
+
+        internal static void DebugHide()
+        {
+            _debugActive = false;
+
+            if (_debugListView != null)
+            {
+                HandleDisable(_debugListView);
+                _debugListView.Hide();
+            }
+
+            if (_debugSpectator != null)
+            {
+                if (_debugSpectatorWasVisible)
+                {
+                    _debugSpectator.Show();
+                }
+                else
+                {
+                    _debugSpectator.Hide();
+                }
+            }
+
+            _debugListView = null;
+            _debugSpectator = null;
+            _debugSpectatorWasVisible = false;
+        }
+
+        internal static void EnsureSpectatorHudAvailable()
+        {
+            GameMainBase? main = Hub.Main;
+            if (main == null || main.spectatorui != null)
+            {
+                return;
+            }
+
+            MethodInfo? createSpectatorHud =
+                AccessTools.Method(typeof(GameMainBase), "CreateSpectatorHUD");
+            if (createSpectatorHud == null)
+            {
+                return;
+            }
+
+            try
+            {
+                createSpectatorHud.Invoke(main, null);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Spectator HUD create failed — {ex.Message}");
+            }
+        }
+
+        private static UIPrefab_Spectator_PlayerListView? ResolveListView(out UIPrefab_Spectator? spectator)
+        {
+            spectator = null;
+            GameMainBase? main = Hub.Main;
+            if (main?.spectatorui != null)
+            {
+                spectator = main.spectatorui;
+                if (PlayerListViewField?.GetValue(spectator) is UIPrefab_Spectator_PlayerListView listView)
+                {
+                    return listView;
+                }
+            }
+
+            if (main != null && SpectatorUiField?.GetValue(main) is UIPrefab_Spectator spectatorUi)
+            {
+                spectator = spectatorUi;
+                if (PlayerListViewField?.GetValue(spectatorUi) is UIPrefab_Spectator_PlayerListView listView)
+                {
+                    return listView;
+                }
+            }
+
+            UIPrefab_Spectator_PlayerListView[] views =
+                UnityEngine.Object.FindObjectsByType<UIPrefab_Spectator_PlayerListView>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+            for (int i = 0; i < views.Length; i++)
+            {
+                UIPrefab_Spectator_PlayerListView view = views[i];
+                if (view == null)
+                {
+                    continue;
+                }
+
+                UIPrefab_Spectator_PlayerListViewItem[] rows =
+                    view.GetComponentsInChildren<UIPrefab_Spectator_PlayerListViewItem>(includeInactive: true);
+                if (rows is { Length: > 0 })
+                {
+                    return view;
+                }
+            }
+
+            return null;
         }
 
         private static SpectatorListState GetOrCreateState(UIPrefab_Spectator_PlayerListView listView)
@@ -391,7 +577,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                     UnityEngine.Object.Instantiate(template, rowParent);
                 clone.gameObject.name = $"MorePlayersSpectatorRow_{state.CloneRows.Count + 1}";
                 clone.gameObject.SetActive(true);
-                clone.SetColor(state.LiveColor);
+                SpectatorPlayerRowBinder.TrySetRowColor(clone, state.LiveColor);
                 SpectatorPlayerRowBinder.TurnOffSpeakAnimation(clone);
                 SpectatorPlayerRowBinder.SetPossessorActive(clone, false);
                 state.CloneRows.Add(clone);
@@ -467,10 +653,132 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 return;
             }
 
-            SpectatorPlayerRowBinder.SetRowName(row, name);
-            row.SetColor(dead ? state.DeadColor : state.LiveColor);
+            BindDebugRow(state, row, name, dead, speaking, possessor, cancellationToken);
+        }
+
+        private static void BindDebugRows(
+            SpectatorListState state,
+            IReadOnlyList<SpectatorDebugEntry> entries,
+            int visibleCount,
+            CancellationToken cancellationToken)
+        {
+            for (int slotIndex = 0; slotIndex < state.CloneRows.Count; slotIndex++)
+            {
+                UIPrefab_Spectator_PlayerListViewItem row = state.CloneRows[slotIndex];
+                if (slotIndex >= visibleCount)
+                {
+                    row.gameObject.SetActive(false);
+                    SpectatorPlayerRowBinder.SetRowName(row, string.Empty);
+                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(row);
+                    SpectatorPlayerRowBinder.SetPossessorActive(row, false);
+                    continue;
+                }
+
+                row.gameObject.SetActive(true);
+                SpectatorDebugEntry entry = entries[slotIndex];
+                BindDebugRow(state, row, entry.DisplayName, entry.Dead, entry.Speaking, possessor: false, cancellationToken);
+            }
+        }
+
+        private static void BindDebugRow(
+            SpectatorListState state,
+            UIPrefab_Spectator_PlayerListViewItem row,
+            string displayName,
+            bool dead,
+            bool speaking,
+            bool possessor,
+            CancellationToken cancellationToken)
+        {
+            SpectatorPlayerRowBinder.SetRowName(row, displayName);
+            SpectatorPlayerRowBinder.TrySetRowColor(row, dead ? state.DeadColor : state.LiveColor);
+            SpectatorPlayerRowBinder.EnsureSpeakIconVisible(row);
             SpectatorPlayerRowBinder.BindSpeakState(row, speaking, cancellationToken);
             SpectatorPlayerRowBinder.SetPossessorActive(row, possessor);
+        }
+
+        private static List<SpectatorDebugEntry> BuildScrambledDebugEntries(IReadOnlyList<string> fakeNames)
+        {
+            int count = fakeNames.Count;
+            bool[] deadFlags = ScrambleTrueFlags(count, trueRatio: 0.5f);
+            bool[] speakingFlags = ScrambleTrueFlags(count, trueRatio: 0.35f, ensureMix: false);
+
+            List<SpectatorDebugEntry> entries = new(count);
+            for (int index = 0; index < count; index++)
+            {
+                entries.Add(new SpectatorDebugEntry
+                {
+                    DisplayName = fakeNames[index],
+                    Dead = deadFlags[index],
+                    Speaking = speakingFlags[index],
+                });
+            }
+
+            entries.Sort(static (left, right) =>
+            {
+                int deadCompare = left.Dead.CompareTo(right.Dead);
+                if (deadCompare != 0)
+                {
+                    return deadCompare;
+                }
+
+                return string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);
+            });
+
+            return entries;
+        }
+
+        private static bool[] ScrambleTrueFlags(int count, float trueRatio, bool ensureMix = true)
+        {
+            bool[] flags = new bool[count];
+            if (count == 0)
+            {
+                return flags;
+            }
+
+            int trueCount = Mathf.Clamp(Mathf.RoundToInt(count * trueRatio), 0, count);
+            if (ensureMix && count >= 2)
+            {
+                trueCount = Mathf.Clamp(trueCount, 1, count - 1);
+            }
+
+            for (int index = 0; index < trueCount; index++)
+            {
+                flags[index] = true;
+            }
+
+            for (int index = count - 1; index > 0; index--)
+            {
+                int swapIndex = DebugRandom.Next(index + 1);
+                (flags[index], flags[swapIndex]) = (flags[swapIndex], flags[index]);
+            }
+
+            return flags;
+        }
+
+        private static void HideSpectatorChrome(UIPrefab_Spectator? spectator)
+        {
+            if (spectator == null)
+            {
+                return;
+            }
+
+            SetChromeActive(PrevChangeCameraUiField, spectator, active: false);
+            SetChromeActive(NextChangeCameraUiField, spectator, active: false);
+            SetChromeActive(PossessionUiField, spectator, active: false);
+            SetChromeActive(PossessableQuitUiField, spectator, active: false);
+            spectator.SetActiveSpectatedPlayerName(isActive: false);
+            if (NextChangeTimeTextProperty?.GetValue(spectator) is Component nextChangeTimeText)
+            {
+                nextChangeTimeText.gameObject.SetActive(false);
+            }
+        }
+
+        private static void SetChromeActive(FieldInfo? field, UIPrefab_Spectator spectator, bool active)
+        {
+            if (field?.GetValue(spectator) is GameObject chrome)
+            {
+                chrome.SetActive(active);
+            }
         }
 
         private static void StopSpeakAnimations(SpectatorListState state)
@@ -489,6 +797,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             state.CloneRows.Clear();
+        }
+
+        private sealed class SpectatorDebugEntry
+        {
+            internal string DisplayName = string.Empty;
+            internal bool Dead;
+            internal bool Speaking;
         }
 
         private sealed class SpectatorListState

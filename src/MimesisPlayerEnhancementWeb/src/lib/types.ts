@@ -305,6 +305,23 @@ export interface PlayerStatsDto {
   recentSessions?: Array<Record<string, unknown>>;
 }
 
+export interface UiDebugStatusDto {
+  ingame: boolean;
+  alive: boolean;
+  maxPlayers: number;
+  spectator: boolean;
+  loadingWait: boolean;
+  escMenu: boolean;
+  survivalResult: boolean;
+}
+
+export interface UiDebugToggleResultDto {
+  success: boolean;
+  id: string;
+  active: boolean;
+  message: string;
+}
+
 export type RouteName =
   | 'home'
   | 'changelog'

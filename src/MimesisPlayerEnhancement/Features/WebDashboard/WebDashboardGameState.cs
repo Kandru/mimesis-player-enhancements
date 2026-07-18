@@ -10,6 +10,31 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return pdata != null && pdata.SessionJoined;
         }
 
+        internal static bool IsIngame()
+        {
+            if (!IsConnected())
+            {
+                return false;
+            }
+
+            return !string.IsNullOrEmpty(
+                WebDashboardSessionScene.Resolve(GameSessionAccess.TryGetPdata()?.main));
+        }
+
+        internal static bool IsLocalPlayerAlive()
+        {
+            if (!IsIngame())
+            {
+                return false;
+            }
+
+            return WebDashboardSessionAccess.TryGetLocalVPlayer(out VPlayer? player)
+                && player != null
+                && player.IsAliveStatus();
+        }
+
+        internal static bool CanUseUiDebugOverlays() => IsIngame() && IsLocalPlayerAlive();
+
         internal static bool IsHost()
         {
             if (!IsConnected())

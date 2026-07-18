@@ -1,6 +1,7 @@
 <script lang="ts">
   import Api from '$lib/api';
   import SettingsEntry from './SettingsEntry.svelte';
+  import UiOverlayDebugPanel from './UiOverlayDebugPanel.svelte';
   import Toggle from '$lib/components/Toggle.svelte';
   import ScopeBadges from '$lib/components/ScopeBadges.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
@@ -8,6 +9,7 @@
   import { t } from '$lib/i18n';
   import {
     canEditEntry,
+    configEntryGroupId,
     entryEditable,
     featureEnabled,
     groupConfigEntries,
@@ -255,6 +257,9 @@
                       onreset={() => resetSetting(activeSection.id, entry.key)}
                     />
                   {/each}
+                  {#if scope === 'global' && activeSection.id === 'MimesisPlayerEnhancement' && configEntryGroupId(group.id) === 'EnableDebugLogging'}
+                    <UiOverlayDebugPanel />
+                  {/if}
                 </div>
               {/each}
             </div>

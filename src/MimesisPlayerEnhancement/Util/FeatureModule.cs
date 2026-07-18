@@ -157,7 +157,11 @@ namespace MimesisPlayerEnhancement.Util
                 onUpdate: WebDashboardServer.OnUpdate,
                 onDeinitialize: WebDashboardServer.StopOnDeinit,
                 sessionScope: SessionScope.Global,
-                onSessionEnded: WebDashboardSnapshotCache.OnSessionEnded),
+                onSessionEnded: () =>
+                {
+                    WebDashboardSnapshotCache.OnSessionEnded();
+                    WebDashboardUiDebugController.OnSessionEnded();
+                }),
         ];
     }
 }

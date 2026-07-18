@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading;
+using MimesisPlayerEnhancement.Features.WebDashboard.Debug;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -89,6 +90,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             WebDashboardActionQueue.Process();
             WebDashboardSnapshotCache.Tick(_listenUrl);
+            WebDashboardUiDebugController.SyncFromAvailability();
         }
 
         private static void FlushDeferredSync()

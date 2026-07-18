@@ -13,8 +13,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         internal CanvasGroup? CanvasGroup { get; private set; }
         internal LoadingWaitPlayerListGrid.GridState? GridState { get; private set; }
 
-        internal bool TryEnsure(UIPrefab_Scene_Loading loading, Transform parent)
+        internal bool TryEnsure(Transform parent)
         {
+            if (parent == null)
+            {
+                return false;
+            }
+
             if (Root != null && GridState != null)
             {
                 Root.transform.SetParent(parent, worldPositionStays: false);
@@ -59,7 +64,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
 
             GridState = gridState;
-            _ = loading;
             return true;
         }
 

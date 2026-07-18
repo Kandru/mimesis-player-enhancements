@@ -10,7 +10,7 @@ Default URL: `http://127.0.0.1:8001/`
 
 | View | Who can see it | What it shows |
 |------|----------------|---------------|
-| **Global Settings** | Host or idle (no session) | Global defaults; written to disk immediately |
+| **Global Settings** | Host or idle (no session) | Global defaults; written to disk immediately. Under **Debug logging**, UI overlay preview toggles force-show player-list layouts while in a session (tram, maintenance, or dungeon). |
 | **Settings** | Host in an active save | Per-save overrides (in `mpe-slot.sav`); applied live; written on vanilla save |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, ban status |
 | **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs |
@@ -37,5 +37,9 @@ While the dashboard server runs, a yellow **Management** button appears on the m
 ## Security
 
 Default bind is `127.0.0.1` (loopback) — only your machine can connect. Binding to `0.0.0.0` or a LAN IP exposes the dashboard to anyone on that network with no login. Listen address and port are cfg-file only (not editable from inside the dashboard).
+
+## UI overlay debug previews
+
+In **Global Settings → Mimesis Player Enhancement → Debug logging**, four toggles force-show the mod's real player-list UIs (spectator, loading-wait, ESC menu, survival result) filled with static fake players up to the current max-player count. Use them to check alignment and layout. Available only while connected and in an active session scene; press again to hide. Previews do not update from live voice or roster data and reset when the session ends.
 
 **Full config keys →** [Web Dashboard](../CONFIG.md#web-dashboard--mimesisplayerenhancement_webdashboard)
