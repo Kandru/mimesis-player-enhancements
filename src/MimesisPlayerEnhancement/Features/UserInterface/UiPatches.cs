@@ -53,6 +53,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ("OnDestroy/GameMainBase (FPS UI cleanup)", AccessTools.Method(typeof(GameMainBase), "OnDestroy")),
                 ("Hide/UIPrefabScript (FPS UI vitals)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
                 ("Hide/UIPrefab_Inventory (FPS UI net worth)", AccessTools.Method(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))),
+                ("SetVersionText/UIPrefab_MainMenu", AccessTools.Method(typeof(UIPrefab_MainMenu), "SetVersionText")),
+                ("SetVersionText/UIPrefab_InGameMenu", AccessTools.Method(typeof(UIPrefab_InGameMenu), "SetVersionText")),
             ]);
         }
     }

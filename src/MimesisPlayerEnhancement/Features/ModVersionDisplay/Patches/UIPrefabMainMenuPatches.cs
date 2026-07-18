@@ -1,9 +1,14 @@
+using System.Reflection;
+
 namespace MimesisPlayerEnhancement.Features.ModVersionDisplay.Patches
 {
-    [HarmonyPatch(typeof(UIPrefab_MainMenu), "SetVersionText")]
+    [HarmonyPatch]
     internal static class UIPrefabMainMenuSetVersionTextPatch
     {
         private const string Feature = "ModVersionDisplay";
+
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(UIPrefab_MainMenu), "SetVersionText");
 
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_MainMenu __instance)
