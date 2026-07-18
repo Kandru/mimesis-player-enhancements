@@ -3,7 +3,7 @@ using System.IO;
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
     [HarmonyPatch(typeof(PlatformMgr), nameof(PlatformMgr.Delete))]
-    public static class PlatformMgrPatches
+    internal static class PlatformMgrPatches
     {
         private const string Feature = "Persistence";
 

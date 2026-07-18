@@ -1,7 +1,7 @@
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
-    public static class SpeechEventArchivePatches
+    internal static class SpeechEventArchivePatches
     {
         private const string Feature = "Persistence";
 
@@ -103,6 +103,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 
         internal static void EnsurePoolLoaded(int slotId)
         {
+            if (!ModConfig.EnablePersistence.Value)
+            {
+                return;
+            }
+
             if (slotId == _poolLoadedForSlot)
             {
                 // Pool may have been reset after save (e.g. returning to menu) while disk now has data.

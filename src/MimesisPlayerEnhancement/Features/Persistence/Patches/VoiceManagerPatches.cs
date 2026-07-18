@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
     /// with warmed-up events in the local archive.
     /// </summary>
     [HarmonyPatch(typeof(VoiceManager), "GetRandomOtherSpeechEventArchive")]
-    public static class VoiceManagerHallucinationPatch
+    internal static class VoiceManagerPatches
     {
         private const string Feature = "Persistence";
 

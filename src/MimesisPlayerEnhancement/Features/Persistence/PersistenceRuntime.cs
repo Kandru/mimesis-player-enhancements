@@ -6,9 +6,21 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     {
         private const string Feature = "Persistence";
 
+        private static bool _wasEnabled;
+
         internal static void RefreshFromConfig()
         {
-            if (!ModConfig.EnablePersistence.Value || !MimesisSaveManager.IsHost())
+            bool enabled = ModConfig.EnablePersistence.Value;
+            if (_wasEnabled && !enabled)
+            {
+                SpeechEventPoolManager.OnSessionEnded();
+                SpeechEventArchivePatches.InvalidatePoolLoaded();
+                ModLog.Debug(Feature, "Persistence disabled — cleared voice pool runtime state.");
+            }
+
+            _wasEnabled = enabled;
+
+            if (!enabled || !MimesisSaveManager.IsHost())
             {
                 return;
             }

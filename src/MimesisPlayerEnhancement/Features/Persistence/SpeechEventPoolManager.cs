@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Reflection;
 using FishNet.Object.Synchronizing;
 using MimesisPlayerEnhancement.Features.Persistence.Patches;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
@@ -11,7 +10,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     /// Pending  -> loaded, waiting for a matching SpeechEventArchive
     /// Injected -> matched and added to the correct player's archive
     /// </summary>
-    public static class SpeechEventPoolManager
+    internal static class SpeechEventPoolManager
     {
         private const string Feature = "Persistence";
         private const float DeferredRetryTimeoutSec = 30f;
@@ -59,11 +58,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static readonly HashSet<ulong> _restoreGiveUpWarnedSteamIds = [];
 
-        private static readonly FieldInfo? RecordedTimeField =
-            typeof(SpeechEvent).GetField("RecordedTime", BindingFlags.Public | BindingFlags.Instance);
+        private static readonly System.Reflection.FieldInfo? RecordedTimeField =
+            AccessTools.Field(typeof(SpeechEvent), "RecordedTime");
 
-        private static readonly FieldInfo? LastPlayedTimeField =
-            typeof(SpeechEvent).GetField("LastPlayedTime", BindingFlags.Public | BindingFlags.Instance);
+        private static readonly System.Reflection.FieldInfo? LastPlayedTimeField =
+            AccessTools.Field(typeof(SpeechEvent), "LastPlayedTime");
 
         internal static int LoadedSlotId => _loadedSlotId;
 
@@ -376,6 +375,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static void ProcessDeferredUpdates()
         {
+            if (!ModConfig.EnablePersistence.Value)
+            {
+                return;
+            }
+
             if (_deferredInjectionArchives.Count == 0 && _deferredNameUpdates.Count == 0)
             {
                 return;

@@ -1,7 +1,7 @@
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
     [HarmonyPatch(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))]
-    public static class SpeechEventArchiveDisconnectPatches
+    internal static class SpeechEventArchiveDisconnectPatches
     {
         private const string Feature = "Persistence";
 

@@ -3,10 +3,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     internal static class SpeechEventArchiveRegistry
     {
         private static readonly List<SpeechEventArchive> Archives = [];
+        private static readonly HashSet<SpeechEventArchive> ArchiveSet = [];
 
         internal static void Register(SpeechEventArchive archive)
         {
-            if (archive == null || Archives.Contains(archive))
+            if (archive == null || !ArchiveSet.Add(archive))
             {
                 return;
             }
@@ -17,6 +18,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         internal static void Unregister(SpeechEventArchive archive)
         {
             if (archive == null)
+            {
+                return;
+            }
+
+            if (!ArchiveSet.Remove(archive))
             {
                 return;
             }

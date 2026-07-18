@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     /// Data stored as flat sidecar files in Save/{SteamID}/ (MMGameData{N}.mpe-*.sav)
     /// so Steam Auto-Cloud syncs them alongside vanilla saves.
     /// </summary>
-    public static class MimesisSaveManager
+    internal static class MimesisSaveManager
     {
         private const string Feature = "Persistence";
 
@@ -97,6 +97,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         public static void SaveMimesisData(int slotId)
         {
+            if (!ModConfig.EnablePersistence.Value)
+            {
+                ModLog.Debug(Feature, "Skip save: persistence disabled.");
+                return;
+            }
+
             if (!IsHost())
             {
                 ModLog.Debug(Feature, "Skip save: not host.");

@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace MimesisPlayerEnhancement.Features.Persistence
 {
     /// <summary>
@@ -10,7 +8,8 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     {
         private const string Feature = "Persistence";
 
-        private static MethodInfo? _requestInitialSyncMethod;
+        private static readonly System.Reflection.MethodInfo? RequestInitialSyncMethod =
+            AccessTools.Method(typeof(SpeechEventArchive), "ServerRpcRequestInitialSync");
 
         internal static void RequestAfterRestore(SpeechEventArchive archive, int totalAdded)
         {
@@ -52,17 +51,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     return;
                 }
 
-                _requestInitialSyncMethod ??= typeof(SpeechEventArchive).GetMethod(
-                    "ServerRpcRequestInitialSync",
-                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                if (_requestInitialSyncMethod == null)
+                if (RequestInitialSyncMethod == null)
                 {
                     ModLog.Warn(Feature, "ServerRpcRequestInitialSync not found — reconnect client sync skipped.");
                     return;
                 }
 
-                _ = _requestInitialSyncMethod.Invoke(archive, null);
+                _ = RequestInitialSyncMethod.Invoke(archive, null);
                 ModLog.Debug(Feature, $"Re-requested initial voice sync — {VoiceEventStats.DescribePlayerBrief(archive)} — events={totalAdded}");
             }
             catch (Exception ex)
