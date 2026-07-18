@@ -77,14 +77,6 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
         }
 
-        internal static void Clear()
-        {
-            Records.Clear();
-            _loadedSlotId = -999;
-            _revision = 0;
-            StatisticsWriteQueue.Clear();
-        }
-
         internal static void ResetSessionRuntimeState()
         {
             foreach (PlayerRecord record in Records.Values)
@@ -95,6 +87,7 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
 
             _loadedSlotId = -999;
+            BumpRevision();
         }
 
         internal static PlayerRecord GetOrCreate(ulong steamId)
@@ -140,6 +133,30 @@ namespace MimesisPlayerEnhancement.Features.Players
             return connected;
         }
 
+        internal static bool HasAnyConnected()
+        {
+            foreach (PlayerRecord record in Records.Values)
+            {
+                if (record.IsOnline)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static void ForEachConnected(Action<ulong> action)
+        {
+            foreach (PlayerRecord record in Records.Values)
+            {
+                if (record.IsOnline)
+                {
+                    action(record.SteamId);
+                }
+            }
+        }
+
         internal static IReadOnlyDictionary<ulong, PlayerStatisticsDocument> GetStatisticsDictionary()
         {
             return SnapshotStatistics();
@@ -154,11 +171,6 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
 
             return documents;
-        }
-
-        internal static IReadOnlyCollection<PlayerRecord> GetAllRecords()
-        {
-            return Records.Values;
         }
 
         internal static bool UpdateDisplayName(ulong steamId, string displayName)
@@ -179,6 +191,18 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
 
             return changed;
+        }
+
+        internal static string ApplyResolvedDisplayName(ulong steamId, string fallback)
+        {
+            if (steamId == 0)
+            {
+                return string.IsNullOrWhiteSpace(fallback) ? steamId.ToString() : fallback;
+            }
+
+            string displayName = StatisticsDisplayNameResolver.Resolve(steamId, fallback);
+            SyncDisplayNameFields(steamId, displayName);
+            return displayName;
         }
 
         internal static bool UpdateVoiceId(ulong steamId, string voiceId)
@@ -223,18 +247,6 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
 
             return mappings;
-        }
-
-        internal static void MarkConnected(ulong steamId)
-        {
-            if (steamId == 0)
-            {
-                return;
-            }
-
-            PlayerRecord record = GetOrCreate(steamId);
-            record.IsOnline = true;
-            record.ConnectedSinceUtc ??= DateTime.UtcNow;
         }
 
         internal static void MarkDisconnected(ulong steamId)
@@ -413,21 +425,35 @@ namespace MimesisPlayerEnhancement.Features.Players
         {
             SaveSlotDocumentStore.ApplyPlayerEntries((steamId, entry) =>
             {
-                PlayerRecord record = GetOrCreate(steamId);
                 if (SaveSlotDocumentStore.IsUsableName(entry.DisplayName, steamId))
                 {
-                    record.DisplayName = entry.DisplayName;
-                    if (string.IsNullOrWhiteSpace(record.Statistics.DisplayName))
-                    {
-                        record.Statistics.DisplayName = entry.DisplayName;
-                    }
+                    UpdateDisplayName(steamId, entry.DisplayName);
                 }
 
                 if (!string.IsNullOrWhiteSpace(entry.VoiceId))
                 {
-                    record.VoiceId = entry.VoiceId;
+                    UpdateVoiceId(steamId, entry.VoiceId);
                 }
             });
+        }
+
+        private static void SyncDisplayNameFields(ulong steamId, string displayName)
+        {
+            PlayerRecord record = GetOrCreate(steamId);
+            bool changed = record.Statistics.DisplayName != displayName;
+            record.Statistics.DisplayName = displayName;
+            record.Statistics.SteamId = steamId;
+
+            if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
+            {
+                changed |= record.DisplayName != displayName;
+                record.DisplayName = displayName;
+            }
+
+            if (changed)
+            {
+                BumpRevision();
+            }
         }
     }
 }

@@ -136,7 +136,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            doc.DisplayName = userName;
+            if (!PlayerRegistry.UpdateDisplayName(steamId, userName))
+            {
+                doc.DisplayName = userName;
+            }
             if (isEntering)
             {
                 ScheduleGlobalStatsOnJoin(steamId, userName, doc);

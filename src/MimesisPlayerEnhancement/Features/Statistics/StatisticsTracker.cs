@@ -14,6 +14,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static bool _wasEnabled;
 
+        private static readonly Action<ulong> FlushConnectedTimeCallback = FlushConnectedTimeForConnectedPlayer;
+
         /// <summary>
         /// Config-sync hook — persists and clears runtime state when the feature is toggled off live.
         /// </summary>
@@ -85,10 +87,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             PlayerRegistry.LoadForSlot(slotId);
 
             PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
-            if (SaveSlotDocumentStore.IsUsableName(doc.DisplayName, steamId))
+            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
+            if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {
-                SaveSlotDocumentStore.UpsertPlayer(steamId, doc.DisplayName);
+                SaveSlotDocumentStore.UpsertPlayer(steamId, displayName);
             }
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
@@ -146,10 +148,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
 
-            doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
-            if (PlayerRegistry.TryGetLoadedSlotId(out int slotId) && SaveSlotDocumentStore.IsUsableName(doc.DisplayName, steamId))
+            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
+            if (PlayerRegistry.TryGetLoadedSlotId(out int slotId) && SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {
-                SaveSlotDocumentStore.UpsertPlayer(steamId, doc.DisplayName);
+                SaveSlotDocumentStore.UpsertPlayer(steamId, displayName);
             }
 
             FlushConnectedTime(steamId, doc);
@@ -175,9 +177,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            int connectedCount = PlayerRegistry.GetConnectedSteamIds().Count;
+            bool hasConnected = PlayerRegistry.HasAnyConnected();
             bool hasGraceSessions = HasOpenDisconnectedSessions();
-            if (connectedCount == 0 && !hasGraceSessions)
+            if (!hasConnected && !hasGraceSessions)
             {
                 return;
             }
@@ -189,23 +191,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 changed = FinalizeExpiredGraceSessions();
             }
 
-            if (connectedCount > 0 && UnityEngine.Time.time >= _nextConnectedTimeFlushTime)
+            if (hasConnected && UnityEngine.Time.time >= _nextConnectedTimeFlushTime)
             {
                 _nextConnectedTimeFlushTime = UnityEngine.Time.time + ConnectedTimeFlushIntervalSeconds;
-                foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
-                {
-                    if (!PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc))
-                    {
-                        continue;
-                    }
-
-                    if (doc.CurrentSession?.LastDisconnectedAtUtc.HasValue == true)
-                    {
-                        continue;
-                    }
-
-                    FlushConnectedTime(steamId, doc);
-                }
+                PlayerRegistry.ForEachConnected(FlushConnectedTimeCallback);
             }
 
             if (changed)
@@ -248,7 +237,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             foreach (ulong steamId in affected)
             {
                 PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-                doc.DisplayName = StatisticsDisplayNameResolver.Resolve(steamId, doc.DisplayName);
+                PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
                 ApplyVoiceDelta(steamId, doc, voiceCounts);
                 FlushConnectedTime(steamId, doc);
             }
@@ -572,6 +561,21 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 IsOpen = false,
                 Counters = session.Counters.Clone(),
             };
+        }
+
+        private static void FlushConnectedTimeForConnectedPlayer(ulong steamId)
+        {
+            if (!PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc))
+            {
+                return;
+            }
+
+            if (doc.CurrentSession?.LastDisconnectedAtUtc.HasValue == true)
+            {
+                return;
+            }
+
+            FlushConnectedTime(steamId, doc);
         }
 
         private static void FlushConnectedTime(ulong steamId, PlayerStatisticsDocument doc)
