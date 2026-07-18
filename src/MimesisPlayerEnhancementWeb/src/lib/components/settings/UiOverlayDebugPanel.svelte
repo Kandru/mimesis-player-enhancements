@@ -49,9 +49,18 @@
     }
   }
 
-  function isActive(id: string): boolean {
+  function isActive(id: (typeof overlays)[number]['id']): boolean {
     if (!status) return false;
-    return Boolean((status as Record<string, boolean | number>)[id]);
+    switch (id) {
+      case 'spectator':
+        return status.spectator;
+      case 'loadingWait':
+        return status.loadingWait;
+      case 'escMenu':
+        return status.escMenu;
+      case 'survivalResult':
+        return status.survivalResult;
+    }
   }
 
   onMount(() => {
