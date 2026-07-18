@@ -8,6 +8,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: stop possessed mimic voice instantly (to avoid talking over the archive voices of a mimic)
 - draft: list player names during loading scene when waiting for other players to join
 - draft: better voice cache for mimic voices when players have a lot of voices
+- draft: refactored this large code base (AI hell)
 
 ## 26.7.16
 Ooops.. quick bug fix relase for 26.7.15 (crashes sometimes when loading savegame). How did I miss that?
