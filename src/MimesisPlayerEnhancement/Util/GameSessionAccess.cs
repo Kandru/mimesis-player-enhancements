@@ -26,6 +26,18 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly PropertyInfo? HubTimeutilProperty =
             typeof(Hub).GetProperty("timeutil", InstanceFlags);
 
+        private static readonly FieldInfo? SessionManagerField =
+            typeof(VWorld).GetField("_sessionManager", InstanceFlags);
+
+        private static readonly FieldInfo? HostSessionContextField =
+            typeof(SessionManager).GetField("_hostSessionContext", InstanceFlags);
+
+        private static readonly FieldInfo? ContextsField =
+            typeof(SessionManager).GetField("m_Contexts", InstanceFlags);
+
+        private static readonly FieldInfo? SessionVPlayerField =
+            typeof(SessionContext).GetField("_vPlayer", InstanceFlags);
+
         internal static VWorld? TryGetVWorld()
         {
             if (Hub.s == null)
@@ -162,6 +174,47 @@ namespace MimesisPlayerEnhancement.Util
             }
 
             return TryGetGameSessionInfo()?.TotalPlayerSteamIDs?.ContainsKey(steamId) == true;
+        }
+
+        internal static SessionManager? TryGetSessionManager()
+        {
+            try
+            {
+                return SessionManagerField?.GetValue(TryGetVWorld()) as SessionManager;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        internal static IEnumerable<SessionContext> EnumerateSessionContexts(SessionManager sessionManager)
+        {
+            HashSet<SessionContext> seen = [];
+
+            if (HostSessionContextField?.GetValue(sessionManager) is SessionContext host
+                && host != null
+                && seen.Add(host))
+            {
+                yield return host;
+            }
+
+            if (ContextsField?.GetValue(sessionManager) is Dictionary<long, SessionContext> contexts)
+            {
+                List<SessionContext> sessionContexts = [.. contexts.Values];
+                foreach (SessionContext context in sessionContexts)
+                {
+                    if (context != null && seen.Add(context))
+                    {
+                        yield return context;
+                    }
+                }
+            }
+        }
+
+        internal static VPlayer? TryGetVPlayer(SessionContext context)
+        {
+            return SessionVPlayerField?.GetValue(context) as VPlayer;
         }
     }
 }

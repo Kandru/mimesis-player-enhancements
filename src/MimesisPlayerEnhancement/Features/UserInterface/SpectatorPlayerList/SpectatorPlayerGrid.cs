@@ -13,33 +13,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
         private const float BottomMargin = 8f;
         private const float FallbackColumnStep = 220f;
 
-        private static readonly FieldInfo? LiveColorField =
-            AccessTools.Field(typeof(UIPrefab_Spectator_PlayerListView), "liveColor");
-
-        private static readonly FieldInfo? DeadColorField =
-            AccessTools.Field(typeof(UIPrefab_Spectator_PlayerListView), "deadColor");
-
-        private static readonly PropertyInfo? NameTextProperty =
-            AccessTools.Property(typeof(UIPrefab_Spectator_PlayerListViewItem), "UE_Name_Text");
-
-        private static readonly PropertyInfo? SpeakAnimationProperty =
-            AccessTools.Property(typeof(UIPrefab_Spectator_PlayerListViewItem), "SpriteChangeAnimation");
-
-        private static readonly PropertyInfo? IsPossessorProperty =
-            AccessTools.Property(typeof(UIPrefab_Spectator_PlayerListViewItem), "IsPossessor");
-
-        private static readonly MethodInfo? SpeakPlayMethod =
-            AccessTools.Method(typeof(SpriteChangeAnimation), "Play", [typeof(CancellationToken)]);
-
-        private static readonly MethodInfo? SpeakTurnOffMethod =
-            AccessTools.Method(typeof(SpriteChangeAnimation), "TurnOff");
-
-        private static readonly PropertyInfo? SpeakCanPlayProperty =
-            AccessTools.Property(typeof(SpriteChangeAnimation), "CanPlay");
-
-        private static readonly PropertyInfo? SpeakIsPlayingProperty =
-            AccessTools.Property(typeof(SpriteChangeAnimation), "IsPlaying");
-
         private static readonly MethodInfo? GetActorByActorIdMethod =
             AccessTools.Method(typeof(GameMainBase), "GetActorByActorID", [typeof(int)]);
 
@@ -166,8 +139,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             state.NativeRows = rows;
-            state.LiveColor = LiveColorField?.GetValue(state.ListView) is Color live ? live : Color.white;
-            state.DeadColor = DeadColorField?.GetValue(state.ListView) is Color dead ? dead : Color.red;
+            SpectatorPlayerRowBinder.CacheColors(state.ListView, out Color liveColor, out Color deadColor);
+            state.LiveColor = liveColor;
+            state.DeadColor = deadColor;
             MeasureRowMetrics(state);
         }
 
@@ -406,7 +380,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 state.CloneRows.RemoveAt(lastIndex);
                 if (clone != null)
                 {
-                    TurnOffSpeakAnimation(clone);
+                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(clone);
                     UnityEngine.Object.Destroy(clone.gameObject);
                 }
             }
@@ -418,8 +392,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 clone.gameObject.name = $"MorePlayersSpectatorRow_{state.CloneRows.Count + 1}";
                 clone.gameObject.SetActive(true);
                 clone.SetColor(state.LiveColor);
-                TurnOffSpeakAnimation(clone);
-                SetPossessorActive(clone, false);
+                SpectatorPlayerRowBinder.TurnOffSpeakAnimation(clone);
+                SpectatorPlayerRowBinder.SetPossessorActive(clone, false);
                 state.CloneRows.Add(clone);
             }
 
@@ -457,9 +431,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 if (slotIndex >= visibleActors.Count)
                 {
                     row.gameObject.SetActive(false);
-                    SetRowName(row, string.Empty);
-                    TurnOffSpeakAnimation(row);
-                    SetPossessorActive(row, false);
+                    SpectatorPlayerRowBinder.SetRowName(row, string.Empty);
+                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(row);
+                    SpectatorPlayerRowBinder.SetPossessorActive(row, false);
                     continue;
                 }
 
@@ -487,69 +461,21 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
 
             if (!TryResolveActorDisplayName(actorId, out string name))
             {
-                SetRowName(row, string.Empty);
-                TurnOffSpeakAnimation(row);
-                SetPossessorActive(row, false);
+                SpectatorPlayerRowBinder.SetRowName(row, string.Empty);
+                SpectatorPlayerRowBinder.TurnOffSpeakAnimation(row);
+                SpectatorPlayerRowBinder.SetPossessorActive(row, false);
                 return;
             }
 
-            SetRowName(row, name);
+            SpectatorPlayerRowBinder.SetRowName(row, name);
             row.SetColor(dead ? state.DeadColor : state.LiveColor);
-
-            object? speakAnimation = SpeakAnimationProperty?.GetValue(row);
-            if (speaking)
-            {
-                if (speakAnimation != null
-                    && SpeakCanPlayProperty?.GetValue(speakAnimation) is true
-                    && SpeakPlayMethod != null)
-                {
-                    _ = SpeakPlayMethod.Invoke(speakAnimation, [cancellationToken]);
-                }
-            }
-            else if (speakAnimation == null
-                     || SpeakIsPlayingProperty?.GetValue(speakAnimation) is not true)
-            {
-                TurnOffSpeakAnimation(row);
-            }
-
-            SetPossessorActive(row, possessor);
-        }
-
-        private static void SetRowName(UIPrefab_Spectator_PlayerListViewItem row, string text)
-        {
-            if (NameTextProperty?.GetValue(row) is Component nameText)
-            {
-                MethodInfo? setText = nameText.GetType().GetMethod("SetText", [typeof(string)]);
-                _ = setText?.Invoke(nameText, [text]);
-            }
-        }
-
-        private static void SetPossessorActive(UIPrefab_Spectator_PlayerListViewItem row, bool active)
-        {
-            if (IsPossessorProperty?.GetValue(row) is Component possessor)
-            {
-                possessor.gameObject.SetActive(active);
-            }
-        }
-
-        private static void TurnOffSpeakAnimation(UIPrefab_Spectator_PlayerListViewItem row)
-        {
-            object? speakAnimation = SpeakAnimationProperty?.GetValue(row);
-            if (speakAnimation != null && SpeakTurnOffMethod != null)
-            {
-                SpeakTurnOffMethod.Invoke(speakAnimation, null);
-            }
+            SpectatorPlayerRowBinder.BindSpeakState(row, speaking, cancellationToken);
+            SpectatorPlayerRowBinder.SetPossessorActive(row, possessor);
         }
 
         private static void StopSpeakAnimations(SpectatorListState state)
         {
-            foreach (UIPrefab_Spectator_PlayerListViewItem row in state.CloneRows)
-            {
-                if (row != null)
-                {
-                    TurnOffSpeakAnimation(row);
-                }
-            }
+            SpectatorPlayerRowBinder.StopSpeakAnimations(state.CloneRows);
         }
 
         private static void DestroyCloneRows(SpectatorListState state)

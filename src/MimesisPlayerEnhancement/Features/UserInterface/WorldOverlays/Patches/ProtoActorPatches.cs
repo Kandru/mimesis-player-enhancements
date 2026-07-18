@@ -12,6 +12,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         {
             try
             {
+                WorldOverlayVisibility.RemoveFromCache(__instance.ActorID);
                 WorldOverlayRuntime.ReleaseDamageGlowForDespawn(__instance);
             }
             catch (Exception ex)

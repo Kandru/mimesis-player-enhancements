@@ -41,7 +41,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
         {
             foreach (string fileName in RoundStartSoundResolver.ListVariantFileNames())
             {
-                _ = RoundStartSoundClipCache.TryGetClip(fileName);
+                _ = RoundStartSoundClipCache.TryPreloadClip(fileName);
             }
         }
     }

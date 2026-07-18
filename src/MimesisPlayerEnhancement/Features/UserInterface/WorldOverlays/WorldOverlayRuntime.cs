@@ -48,6 +48,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             }
         }
 
+        internal static void OnSessionEnded()
+        {
+            TearDownAll();
+            _cachedFallbackCamera = null;
+        }
+
         internal static void RefreshFromConfig()
         {
             WorldOverlayGate.RefreshCache();

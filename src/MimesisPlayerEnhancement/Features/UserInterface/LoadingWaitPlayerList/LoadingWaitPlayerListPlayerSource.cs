@@ -4,14 +4,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     {
         internal static List<LoadingWaitPlayerEntry> CollectPlayers()
         {
-            SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
+            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
             if (sessionManager == null)
             {
                 return [];
             }
 
             List<LoadingWaitPlayerEntry> players = [];
-            foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
             {
                 LoadingWaitPlayerEntry? entry = TryBuildEntry(context);
                 if (entry != null)
@@ -72,9 +72,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 /* player may still be spawning */
             }
 
-            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(context);
+            VPlayer? vPlayer = GameSessionAccess.TryGetVPlayer(context);
             bool loaded = vPlayer != null && vPlayer.LevelLoadCompleted;
-            string displayName = ResolveDisplayName(context, steamId, playerUid);
+            string displayName = ResolveDisplayName(context, steamId);
             if (string.IsNullOrWhiteSpace(displayName))
             {
                 displayName = steamId.ToString();
@@ -91,7 +91,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             };
         }
 
-        private static string ResolveDisplayName(SessionContext context, ulong steamId, long playerUid)
+        private static string ResolveDisplayName(SessionContext context, ulong steamId)
         {
             try
             {
@@ -105,7 +105,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 /* mid-setup */
             }
 
-            return WebDashboardPlayerService.ResolveDisplayNameForSteamId(steamId);
+            if (PlayerRegistry.TryGetRecord(steamId, out PlayerRecord? record)
+                && !string.IsNullOrWhiteSpace(record.DisplayName))
+            {
+                return record.DisplayName;
+            }
+
+            return string.Empty;
         }
     }
 }

@@ -8,6 +8,23 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
     {
         private static readonly Dictionary<string, AudioClip> ClipsByFileName = new(StringComparer.OrdinalIgnoreCase);
 
+        internal static AudioClip? TryGetCachedClip(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return null;
+            }
+
+            return ClipsByFileName.TryGetValue(fileName, out AudioClip? cached) && cached != null
+                ? cached
+                : null;
+        }
+
+        internal static bool TryPreloadClip(string fileName)
+        {
+            return TryGetClip(fileName) != null;
+        }
+
         internal static AudioClip? TryGetClip(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
@@ -89,7 +106,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             UnityWebRequestAsyncOperation operation = request.SendWebRequest();
             while (!operation.isDone)
             {
-                // UnityWebRequest on the main thread during gameplay; this path runs on audio trigger.
+                // Preload-only path: runs during config refresh or dungeon scene start, not on Sfx trigger.
             }
 
             if (request.result != UnityWebRequest.Result.Success)

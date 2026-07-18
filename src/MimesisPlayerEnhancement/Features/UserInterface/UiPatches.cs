@@ -85,6 +85,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             LoadingWaitPlayerListRuntime.OnSessionEnded();
             CustomLoadingScreenRuntime.OnSessionEnded();
+            WorldOverlayRuntime.OnSessionEnded();
+            FpsUiOverlay.OnSessionEnded();
+            FpsUiNetWorthOverlay.OnSessionEnded();
+            RoundStartSoundRuntime.OnSessionEnded();
         }
     }
 }

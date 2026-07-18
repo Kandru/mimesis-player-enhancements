@@ -16,6 +16,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static int _resolvedTotal = UnsetTotal;
         private static int _displayedTotal = UnsetTotal;
         private static bool _loggedEnsureFailure;
+        private static Vector2 _lastSourceAnchoredPosition = new(float.NaN, float.NaN);
+        private static Vector2 _lastSourceRectSize = new(float.NaN, float.NaN);
 
         internal static bool IsEnabled() => ModConfig.EnableFpsUiInventoryNetWorth.Value;
 
@@ -27,6 +29,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             _active = true;
+            InvalidateLayoutCache();
             Activate();
         }
 
@@ -76,6 +79,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         internal static void OnSessionEnded()
         {
             _active = false;
+            InvalidateLayoutCache();
             ReleaseWidget();
         }
 
@@ -215,6 +219,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             CopyTextStyle(weightText, _label);
             FpsUiInventoryLayoutHelper.IgnoreLayoutDrivers(_labelRoot);
             _displayedTotal = UnsetTotal;
+            InvalidateLayoutCache();
             return true;
         }
 
@@ -237,10 +242,31 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
-            return FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
+            Vector2 anchoredPosition = sourceRow.anchoredPosition;
+            Vector2 rectSize = sourceRow.rect.size;
+            if (anchoredPosition == _lastSourceAnchoredPosition
+                && rectSize == _lastSourceRectSize)
+            {
+                return true;
+            }
+
+            bool laidOut = FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
                 sourceRow,
                 cloneRect,
                 TopEdgeNudgePixels);
+            if (laidOut)
+            {
+                _lastSourceAnchoredPosition = anchoredPosition;
+                _lastSourceRectSize = rectSize;
+            }
+
+            return laidOut;
+        }
+
+        private static void InvalidateLayoutCache()
+        {
+            _lastSourceAnchoredPosition = new Vector2(float.NaN, float.NaN);
+            _lastSourceRectSize = new Vector2(float.NaN, float.NaN);
         }
 
         private static void ReleaseWidget(bool preserveTotals = false)
@@ -252,6 +278,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
             _labelRoot = null;
             _label = null;
+            InvalidateLayoutCache();
             if (!preserveTotals)
             {
                 _resolvedTotal = UnsetTotal;

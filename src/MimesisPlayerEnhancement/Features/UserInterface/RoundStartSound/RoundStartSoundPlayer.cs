@@ -16,10 +16,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
                 return false;
             }
 
-            AudioClip? clip = RoundStartSoundClipCache.TryGetClip(fileName);
+            AudioClip? clip = RoundStartSoundClipCache.TryGetCachedClip(fileName);
             if (clip == null)
             {
-                ModLog.Warn(RoundStartSoundConstants.Feature, $"Dungeon landing sound replacement skipped — could not load {fileName}");
+                ModLog.Warn(RoundStartSoundConstants.Feature, $"Dungeon landing sound replacement skipped — clip not preloaded ({fileName})");
                 return false;
             }
 
