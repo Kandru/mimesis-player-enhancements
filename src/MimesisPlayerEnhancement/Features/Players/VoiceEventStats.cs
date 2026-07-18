@@ -418,13 +418,13 @@ namespace MimesisPlayerEnhancement.Features.Players
                 /* Hub / actor map may be unavailable */
             }
 
-            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return 0;
             }
 
-            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
                 try
                 {
@@ -507,13 +507,13 @@ namespace MimesisPlayerEnhancement.Features.Players
 
         private static SessionContext? FindSessionContext(long playerUid, ulong steamId)
         {
-            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return null;
             }
 
-            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
                 if (MatchesSessionContext(context, playerUid, steamId))
                 {

@@ -2,21 +2,25 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Util
 {
+    /// <summary>
+    /// Platform-level local Steam ID before Hub/pdata is ready. In session prefer
+    /// <see cref="GameSessionAccess.GetLocalSteamId"/>.
+    /// </summary>
     internal static class LocalPlayerHelper
     {
         private const BindingFlags InstanceMemberFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        internal static ulong TryGetLocalSteamId()
+        private static readonly FieldInfo? UniqueUserPathField =
+            typeof(PlatformMgr).GetField("_uniqueUserPath", InstanceMemberFlags);
+
+        internal static ulong TryGetLocalSteamId() => GameSessionAccess.GetLocalSteamId();
+
+        internal static ulong TryGetPlatformSteamId()
         {
             try
             {
-                PlatformMgr platformMgr = MonoSingleton<PlatformMgr>.Instance;
-                FieldInfo pathField = typeof(PlatformMgr).GetField("_uniqueUserPath", InstanceMemberFlags);
-                string? userPath = pathField?.GetValue(platformMgr) as string;
-                return !string.IsNullOrEmpty(userPath) && ulong.TryParse(userPath, out ulong localSteam)
-                    ? localSteam
-                    : 0;
+                return TryReadPlatformSteamId(MonoSingleton<PlatformMgr>.Instance);
             }
             catch
             {
@@ -31,19 +35,16 @@ namespace MimesisPlayerEnhancement.Util
                 return false;
             }
 
-            try
-            {
-                PlatformMgr platformMgr = MonoSingleton<PlatformMgr>.Instance;
-                FieldInfo pathField = typeof(PlatformMgr).GetField("_uniqueUserPath", InstanceMemberFlags);
-                string? userPath = pathField?.GetValue(platformMgr) as string;
-                return !string.IsNullOrEmpty(userPath)
-                       && ulong.TryParse(userPath, out ulong localSteam)
-                       && localSteam == steamId;
-            }
-            catch
-            {
-                return false;
-            }
+            ulong localSteamId = GameSessionAccess.GetLocalSteamId();
+            return localSteamId != 0 && localSteamId == steamId;
+        }
+
+        private static ulong TryReadPlatformSteamId(PlatformMgr platformMgr)
+        {
+            string? userPath = UniqueUserPathField?.GetValue(platformMgr) as string;
+            return !string.IsNullOrEmpty(userPath) && ulong.TryParse(userPath, out ulong localSteam)
+                ? localSteam
+                : 0;
         }
     }
 }

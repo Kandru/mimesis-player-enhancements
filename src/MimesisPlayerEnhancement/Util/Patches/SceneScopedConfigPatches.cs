@@ -80,11 +80,8 @@ namespace MimesisPlayerEnhancement.Util.Patches
                 }
 
                 SceneScopedConfigGate.CommitPendingOnSceneEnd();
-                SceneScopedConfigGate.FlushDeferredModuleSync(SceneScopedConfigGateSync.SyncModuleByName);
-
-                // The run is over — queued bonus encounters must not spawn into the stale room.
-                Features.SpawnScaling.MapPlacedEncounterScheduler.ClearPendingEncounters();
-                Features.SpawnScaling.MapPlacedEncounterProximity.ClearCaches();
+                SceneScopedConfigGate.FlushDeferredModuleSync(FeatureModules.SyncModuleByName);
+                SceneScopedConfigGate.InvokeDungeonRunEndCleanup();
             }
         }
 
@@ -95,21 +92,6 @@ namespace MimesisPlayerEnhancement.Util.Patches
             private static void Postfix()
             {
                 SceneScopedConfigGate.EndScene();
-            }
-        }
-    }
-
-    internal static class SceneScopedConfigGateSync
-    {
-        internal static void SyncModuleByName(string moduleName)
-        {
-            foreach (FeatureModule module in FeatureModules.All)
-            {
-                if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
-                {
-                    module.SyncFromConfig();
-                    break;
-                }
             }
         }
     }

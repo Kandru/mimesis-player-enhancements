@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         public static void Apply(HarmonyLib.Harmony harmony)
         {
             _ = GameNetworkApi.GetGameAssembly();
+            SceneScopedConfigGate.SetDungeonRunEndCleanup(OnDungeonRunEnded);
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -26,6 +27,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 MapPlacedEncounterScheduler.ClearPendingEncounters();
             }
+        }
+
+        private static void OnDungeonRunEnded()
+        {
+            MapPlacedEncounterScheduler.ClearPendingEncounters();
+            MapPlacedEncounterProximity.ClearCaches();
         }
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)

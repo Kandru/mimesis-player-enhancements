@@ -9,9 +9,6 @@ namespace MimesisPlayerEnhancement.Util
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly PropertyInfo? HubVWorldProperty =
-            typeof(Hub).GetProperty("vworld", InstanceFlags);
-
         private static readonly PropertyInfo? VWorldRoomManagerProperty =
             typeof(VWorld).GetProperty("VRoomManager", InstanceFlags);
 
@@ -42,12 +39,8 @@ namespace MimesisPlayerEnhancement.Util
         internal static bool TryResolveExactFromSession(out int playerCount)
         {
             playerCount = 0;
-            if (Hub.s == null)
-            {
-                return false;
-            }
-
-            if (HubVWorldProperty?.GetValue(Hub.s) is not VWorld vworld)
+            VWorld? vworld = GameSessionAccess.TryGetVWorld();
+            if (vworld == null)
             {
                 return false;
             }

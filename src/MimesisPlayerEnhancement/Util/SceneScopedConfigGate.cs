@@ -48,6 +48,7 @@ namespace MimesisPlayerEnhancement.Util
         private static bool _deferInfoLogged;
 
         private static Action<string>? _deferredModuleSyncAction;
+        private static Action? _dungeonRunEndCleanup;
 
         internal static SceneScopeKind ActiveKind => _activeKind;
 
@@ -64,6 +65,16 @@ namespace MimesisPlayerEnhancement.Util
         internal static void SetDeferredModuleSyncAction(Action<string> syncAction)
         {
             _deferredModuleSyncAction = syncAction;
+        }
+
+        internal static void SetDungeonRunEndCleanup(Action? cleanup)
+        {
+            _dungeonRunEndCleanup = cleanup;
+        }
+
+        internal static void InvokeDungeonRunEndCleanup()
+        {
+            _dungeonRunEndCleanup?.Invoke();
         }
 
         internal static void Initialize()

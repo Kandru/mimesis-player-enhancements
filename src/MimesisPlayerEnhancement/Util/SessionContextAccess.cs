@@ -21,23 +21,20 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly FieldInfo? SessionVPlayerField =
             typeof(SessionContext).GetField("_vPlayer", InstanceMemberFlags);
 
+        private static readonly FieldInfo? SessionManagerField =
+            typeof(VWorld).GetField("_sessionManager", InstanceMemberFlags);
+
         internal static SessionManager? GetSessionManager()
         {
             try
             {
-                if (Hub.s == null)
-                {
-                    return null;
-                }
-
                 VWorld? vworld = GameSessionAccess.TryGetVWorld();
                 if (vworld == null)
                 {
                     return null;
                 }
 
-                FieldInfo? field = typeof(VWorld).GetField("_sessionManager", InstanceMemberFlags);
-                return field?.GetValue(vworld) as SessionManager;
+                return SessionManagerField?.GetValue(vworld) as SessionManager;
             }
             catch
             {

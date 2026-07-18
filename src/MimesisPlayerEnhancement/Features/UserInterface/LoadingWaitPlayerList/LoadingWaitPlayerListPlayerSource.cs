@@ -4,14 +4,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     {
         internal static List<LoadingWaitPlayerEntry> CollectPlayers()
         {
-            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return [];
             }
 
             List<LoadingWaitPlayerEntry> players = [];
-            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
                 LoadingWaitPlayerEntry? entry = TryBuildEntry(context);
                 if (entry != null)
@@ -72,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 /* player may still be spawning */
             }
 
-            VPlayer? vPlayer = GameSessionAccess.TryGetVPlayer(context);
+            VPlayer? vPlayer = SessionContextAccess.GetVPlayer(context);
             bool loaded = vPlayer != null && vPlayer.LevelLoadCompleted;
             string displayName = ResolveDisplayName(context, steamId);
             if (string.IsNullOrWhiteSpace(displayName))

@@ -1,6 +1,6 @@
 using ReluNetwork.ConstEnum;
 
-namespace MimesisPlayerEnhancement
+namespace MimesisPlayerEnhancement.Util
 {
     internal enum SessionRole
     {

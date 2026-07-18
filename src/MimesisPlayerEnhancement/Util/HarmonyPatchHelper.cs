@@ -4,28 +4,28 @@ using MelonLoader.Logging;
 
 namespace MimesisPlayerEnhancement.Util
 {
-    public static class HarmonyPatchHelper
+    internal static class HarmonyPatchHelper
     {
-        public struct PatchApplyResult
+        internal struct PatchApplyResult
         {
-            public int Applied;
-            public int Failed;
+            internal int Applied;
+            internal int Failed;
         }
 
-        public static IEnumerable<Type> GetNestedPatchTypes(Type containerType)
+        internal static IEnumerable<Type> GetNestedPatchTypes(Type containerType)
         {
             return containerType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(t => t.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0);
         }
 
-        public static IEnumerable<Type> GetNamespacePatchTypes(Type anchorType, string suffix = ".Patches")
+        internal static IEnumerable<Type> GetNamespacePatchTypes(Type anchorType, string suffix = ".Patches")
         {
             return anchorType.Assembly.GetTypes()
                 .Where(t => t.Namespace == anchorType.Namespace + suffix
                             && t.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0);
         }
 
-        public static PatchApplyResult ApplyPatchTypes(HarmonyLib.Harmony harmony, string feature, IEnumerable<Type> patchTypes)
+        internal static PatchApplyResult ApplyPatchTypes(HarmonyLib.Harmony harmony, string feature, IEnumerable<Type> patchTypes)
         {
             int applied = 0;
             int failed = 0;
@@ -62,7 +62,7 @@ namespace MimesisPlayerEnhancement.Util
             return new PatchApplyResult { Applied = applied, Failed = failed };
         }
 
-        public static void LogPatchSummary(string feature, PatchApplyResult result)
+        internal static void LogPatchSummary(string feature, PatchApplyResult result)
         {
             string message = $"{result.Applied} patch(es), {result.Failed} failure(s).";
             ColorARGB? lineColor = PickOutcomeLineColor(result.Applied, result.Failed);
@@ -70,7 +70,7 @@ namespace MimesisPlayerEnhancement.Util
             ModLog.PassLogSegmented(ModLog.FeatureSection(feature, "Patches Applied"), message, (lineColor, message));
         }
 
-        public static void LogPatchAudit(string feature, HarmonyLib.Harmony harmony, IEnumerable<(string label, MethodBase? method)> checks)
+        internal static void LogPatchAudit(string feature, HarmonyLib.Harmony harmony, IEnumerable<(string label, MethodBase? method)> checks)
         {
             if (!ModConfig.EnableDebugLogging.Value)
             {
@@ -112,7 +112,7 @@ namespace MimesisPlayerEnhancement.Util
         /// Returns the compiler-generated MoveNext for an iterator method (IEnumerator/async).
         /// Transpilers must patch MoveNext — not the outer iterator stub.
         /// </summary>
-        public static MethodInfo? GetEnumeratorMoveNext(Type declaringType, string methodName, Type[]? parameters = null)
+        internal static MethodInfo? GetEnumeratorMoveNext(Type declaringType, string methodName, Type[]? parameters = null)
         {
             MethodInfo? iterator = parameters == null
                 ? AccessTools.Method(declaringType, methodName)
@@ -140,7 +140,7 @@ namespace MimesisPlayerEnhancement.Util
             return null;
         }
 
-        public static bool IsPatched(HarmonyLib.Harmony harmony, MethodBase? expected)
+        internal static bool IsPatched(HarmonyLib.Harmony harmony, MethodBase? expected)
         {
             if (expected == null)
             {

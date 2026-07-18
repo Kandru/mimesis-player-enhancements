@@ -102,13 +102,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static void EnrichFromSession(ref long playerUid, ref ulong steamId)
         {
-            SessionManager? sessionManager = GameSessionAccess.TryGetSessionManager();
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
             {
                 return;
             }
 
-            foreach (SessionContext context in GameSessionAccess.EnumerateSessionContexts(sessionManager))
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
                 try
                 {

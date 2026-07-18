@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Util
         private readonly Action<SessionRole, int>? _onSessionStarted;
         private readonly Action? _onSessionEnded;
 
-        public FeatureModule(
+        internal FeatureModule(
             string name,
             Action<HarmonyLib.Harmony> applyPatches,
             Action? syncFromConfig = null,
@@ -38,19 +38,19 @@ namespace MimesisPlayerEnhancement.Util
             }
         }
 
-        public string Name { get; }
+        internal string Name { get; }
 
-        public SessionScope SessionScope { get; }
+        internal SessionScope SessionScope { get; }
 
         internal bool ThrottledUpdate { get; }
 
-        public void ApplyPatches(HarmonyLib.Harmony harmony) => _applyPatches(harmony);
+        internal void ApplyPatches(HarmonyLib.Harmony harmony) => _applyPatches(harmony);
 
-        public void SyncFromConfig() => _syncFromConfig?.Invoke();
+        internal void SyncFromConfig() => _syncFromConfig?.Invoke();
 
-        public void OnUpdate() => _onUpdate?.Invoke();
+        internal void OnUpdate() => _onUpdate?.Invoke();
 
-        public void OnDeinitialize() => _onDeinitialize?.Invoke();
+        internal void OnDeinitialize() => _onDeinitialize?.Invoke();
 
         internal void InvokeSessionStarted(SessionRole role, int slotId) =>
             _onSessionStarted?.Invoke(role, slotId);
@@ -61,6 +61,18 @@ namespace MimesisPlayerEnhancement.Util
     internal static class FeatureModules
     {
         internal static void ResetSharedSessionState() => PlayerLifecycleCoordinator.ClearAll();
+
+        internal static void SyncModuleByName(string moduleName)
+        {
+            foreach (FeatureModule module in All)
+            {
+                if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
+                {
+                    module.SyncFromConfig();
+                    return;
+                }
+            }
+        }
 
         internal static IReadOnlyList<FeatureModule> All { get; } =
         [

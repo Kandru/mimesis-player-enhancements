@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement
                 ModL10n.Initialize();
                 ModConfig.Initialize(LoggerInstance);
                 SceneScopedConfigGate.Initialize();
-                SceneScopedConfigGate.SetDeferredModuleSyncAction(SyncFeatureModuleByName);
+                SceneScopedConfigGate.SetDeferredModuleSyncAction(FeatureModules.SyncModuleByName);
                 if (!GameVersionChecker.TryAllowLoad())
                 {
                     throw new InvalidOperationException(
@@ -276,18 +276,6 @@ namespace MimesisPlayerEnhancement
             }
 
             ModLog.Debug("Config", $"Synced — {BuildConfigSummary()}");
-        }
-
-        private static void SyncFeatureModuleByName(string moduleName)
-        {
-            foreach (FeatureModule module in FeatureModules.All)
-            {
-                if (string.Equals(module.Name, moduleName, StringComparison.Ordinal))
-                {
-                    module.SyncFromConfig();
-                    break;
-                }
-            }
         }
 
         private void LogStartupSummary()

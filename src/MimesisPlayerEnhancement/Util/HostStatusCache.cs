@@ -4,7 +4,7 @@ namespace MimesisPlayerEnhancement.Util
 {
     /// <summary>
     /// Caches host/server status to avoid repeated reflection on hot paths.
-    /// Invalidated on scene transitions and session changes.
+    /// Invalidated on session start/end and deinit.
     /// </summary>
     internal static class HostStatusCache
     {
@@ -24,12 +24,6 @@ namespace MimesisPlayerEnhancement.Util
 
         private static readonly PropertyInfo? NetworkManagerIsServerProp =
             NetworkManagerType?.GetProperty("IsServer", InstanceFlags);
-
-        private static readonly FieldInfo? HubVworldField =
-            typeof(Hub).GetField("vworld", InstanceFlags);
-
-        private static readonly PropertyInfo? HubVworldProperty =
-            typeof(Hub).GetProperty("vworld", InstanceFlags);
 
         private static FieldInfo? _sessionManagerField;
         private static FieldInfo? _hostSessionContextField;
@@ -87,7 +81,7 @@ namespace MimesisPlayerEnhancement.Util
         {
             try
             {
-                object? vworld = GetHubVworld();
+                VWorld? vworld = GameSessionAccess.TryGetVWorld();
                 if (vworld == null)
                 {
                     return false;
@@ -122,11 +116,6 @@ namespace MimesisPlayerEnhancement.Util
             {
                 return false;
             }
-        }
-
-        private static object? GetHubVworld()
-        {
-            return Hub.s == null ? null : HubVworldField != null ? HubVworldField.GetValue(Hub.s) : (HubVworldProperty?.GetValue(Hub.s));
         }
 
         private static void EnsureVWorldHostChainResolved(Type vworldType)
