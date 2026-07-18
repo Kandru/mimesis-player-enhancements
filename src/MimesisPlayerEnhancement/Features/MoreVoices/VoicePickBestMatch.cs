@@ -67,7 +67,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static bool TryPick(
             MimicVoiceSpawner.MimicContext context,
-            List<(string playerID, SpeechEvent evt)> allEvents,
+            List<(string playerID, SpeechEvent evt)>? allEvents,
             SpeechEventAdditionalGameData curGameData,
             bool periodic,
             int pickCount,
@@ -101,7 +101,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         private static bool TryPickCore(
             MimicVoiceSpawner.MimicContext context,
-            List<(string playerID, SpeechEvent evt)> allEvents,
+            List<(string playerID, SpeechEvent evt)>? allEvents,
             SpeechEventAdditionalGameData curGameData,
             bool periodic,
             int pickCount,

@@ -1,6 +1,4 @@
 using System.Reflection;
-using HarmonyLib;
-using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.ModVersionDisplay
