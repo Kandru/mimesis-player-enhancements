@@ -25,9 +25,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             typeof(bool),
         ];
 
-        private static readonly FieldInfo SpawnedActorDatasField =
-            typeof(DungeonRoom).GetField("_spawnedActorDatas", InstanceFlags)
-            ?? throw new InvalidOperationException("DungeonRoom._spawnedActorDatas not found");
+        private static readonly FieldInfo SpawnedActorDatasField = LootMultiplicatorFields.SpawnedActorDatasField;
 
         private static readonly MethodInfo GetNewItemElementMethod =
             AccessTools.Method(typeof(IVroom), "GetNewItemElement",
@@ -98,7 +96,9 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            RoomState state = RoomStates.GetOrCreate(room, () => new RoomState(room, lootConfig));
+            RoomState state = RoomStates.GetOrCreate(room, () => new RoomState(room));
+
+            MapMarker_LootingObjectSpawnPoint[] allMarkers = MapLootMarkerIndex.CollectLootMarkers();
 
             foreach (DictionaryEntry entry in spawnDatas)
             {
@@ -154,7 +154,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 }
 
                 List<MapMarker_LootingObjectSpawnPoint> unusedMarkers =
-                    MapLootMarkerIndex.CollectUnusedMarkers(masterId, usedMarkerIds);
+                    MapLootMarkerIndex.CollectUnusedMarkers(masterId, usedMarkerIds, allMarkers);
                 MapLootMarkerIndex.ShuffleMarkers(unusedMarkers);
 
                 int activated = ActivateUnusedMarkers(room, state, spawnDatas, template, unusedMarkers, need);
@@ -552,15 +552,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         {
             private readonly Dictionary<int, int> _remainingQuotaByMasterId = [];
 
-            internal RoomState(DungeonRoom room, LootMultiplicatorSceneConfig snapshot)
+            internal RoomState(DungeonRoom room)
             {
                 Room = room;
-                Snapshot = snapshot;
             }
 
             internal DungeonRoom Room { get; }
-
-            internal LootMultiplicatorSceneConfig Snapshot { get; }
 
             internal int SlotCount => _slots.Count;
 
@@ -633,16 +630,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
                 _remainingQuotaByMasterId[masterId] = quota - 1;
                 return true;
-            }
-
-            internal void RestoreQuota(int masterId)
-            {
-                if (!_remainingQuotaByMasterId.TryGetValue(masterId, out int quota))
-                {
-                    return;
-                }
-
-                _remainingQuotaByMasterId[masterId] = quota + 1;
             }
         }
 

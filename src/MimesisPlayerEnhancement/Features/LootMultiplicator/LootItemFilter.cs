@@ -17,10 +17,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         private static readonly FieldInfo? MaxRateField =
             typeof(RandomSpawnedItemActorData).GetField("_maxRate", InstanceFlags);
 
-        private static readonly FieldInfo SpawnedActorDatasField =
-            typeof(DungeonRoom).GetField("_spawnedActorDatas", InstanceFlags)
-            ?? throw new InvalidOperationException("DungeonRoom._spawnedActorDatas not found");
-
         private static HashSet<int> _cachedAllowlist = [];
         private static HashSet<int> _cachedBlocklist = [];
         private static LootItemFilterMode _cachedMode = LootItemFilterMode.All;
@@ -32,12 +28,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             Filtered,
             Emptied,
             Failed,
-        }
-
-        static LootItemFilter()
-        {
-            ModConfig.Changed += OnConfigChanged;
-            ReloadFromConfig();
         }
 
         internal static bool ShouldApply()
@@ -159,7 +149,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            if (SpawnedActorDatasField.GetValue(room) is not IDictionary spawnDatas)
+            if (LootMultiplicatorFields.SpawnedActorDatasField.GetValue(room) is not IDictionary spawnDatas)
             {
                 return;
             }
@@ -342,20 +332,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
         }
 
-        private static void OnConfigChanged(ModConfigChangeInfo change)
+        /// <summary>Reloads filter caches from the scene-frozen loot snapshot.</summary>
+        internal static void ReloadFromSceneSnapshot()
         {
-            if (change.IsFullReload
-                || change.AffectsSection("MimesisPlayerEnhancement_LootMultiplicator"))
-            {
-                ReloadFromConfig();
-            }
-        }
-
-        private static void ReloadFromConfig()
-        {
-            _cachedAllowlist = LootItemIdListParser.Parse(ModConfig.LootAllowlist.Value ?? "");
-            _cachedBlocklist = LootItemIdListParser.Parse(ModConfig.LootBlocklist.Value ?? "");
-            _cachedMode = LootItemIdListParser.ParseMode(ModConfig.LootItemFilterMode.Value ?? "");
+            LootMultiplicatorSceneConfig config = SceneScopedConfigGate.Loot;
+            _cachedAllowlist = LootItemIdListParser.Parse(config.LootAllowlist);
+            _cachedBlocklist = LootItemIdListParser.Parse(config.LootBlocklist);
+            _cachedMode = LootItemIdListParser.ParseMode(config.LootItemFilterMode);
             RebuildValidAllowlistIds();
             WarnIfFilterModeHasEmptyList();
         }

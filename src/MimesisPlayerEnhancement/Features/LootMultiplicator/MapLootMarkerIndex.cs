@@ -15,11 +15,12 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static List<MapMarker_LootingObjectSpawnPoint> CollectUnusedMarkers(
             int masterId,
-            HashSet<int> usedMarkerIds)
+            HashSet<int> usedMarkerIds,
+            IReadOnlyList<MapMarker_LootingObjectSpawnPoint> allMarkers)
         {
             List<MapMarker_LootingObjectSpawnPoint> unused = [];
 
-            foreach (MapMarker_LootingObjectSpawnPoint marker in CollectLootMarkers())
+            foreach (MapMarker_LootingObjectSpawnPoint marker in allMarkers)
             {
                 if (marker.masterID != masterId || usedMarkerIds.Contains(marker.ID))
                 {

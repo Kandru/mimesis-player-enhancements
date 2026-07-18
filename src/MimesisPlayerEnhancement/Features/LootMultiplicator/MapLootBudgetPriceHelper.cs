@@ -8,12 +8,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     {
         private const float MaxFilterPriceRatio = 100f;
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo SpawnedActorDatasField =
-            typeof(DungeonRoom).GetField("_spawnedActorDatas", InstanceFlags)
-            ?? throw new InvalidOperationException("DungeonRoom._spawnedActorDatas not found");
+        private static readonly FieldInfo SpawnedActorDatasField = LootMultiplicatorFields.SpawnedActorDatasField;
 
         internal static float GetFilterPriceRatio(DungeonRoom room, DungeonMasterInfo dungeonInfo)
         {

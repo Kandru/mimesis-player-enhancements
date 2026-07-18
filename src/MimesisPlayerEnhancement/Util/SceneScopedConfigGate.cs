@@ -209,6 +209,7 @@ namespace MimesisPlayerEnhancement.Util
             _activeEconomy = _pendingEconomy;
             _activeDungeonTime = _pendingDungeonTime;
             _activeDungeonRandomizer = _pendingDungeonRandomizer;
+            LootItemFilter.ReloadFromSceneSnapshot();
         }
 
         private static void CaptureAllActiveFromModConfig()
@@ -218,6 +219,7 @@ namespace MimesisPlayerEnhancement.Util
             _activeEconomy = EconomySceneConfig.CaptureFromModConfig();
             _activeDungeonTime = DungeonTimeSceneConfig.CaptureFromModConfig();
             _activeDungeonRandomizer = DungeonRandomizerSceneConfig.CaptureFromModConfig();
+            LootItemFilter.ReloadFromSceneSnapshot();
         }
 
         private static void CaptureAllPendingFromModConfig()
@@ -235,6 +237,7 @@ namespace MimesisPlayerEnhancement.Util
             {
                 case "LootMultiplicator":
                     _activeLoot = _pendingLoot;
+                    LootItemFilter.ReloadFromSceneSnapshot();
                     break;
                 case "SpawnScaling":
                     _activeSpawn = _pendingSpawn;

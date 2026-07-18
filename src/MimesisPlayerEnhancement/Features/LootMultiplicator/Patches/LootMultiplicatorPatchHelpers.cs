@@ -71,6 +71,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator.Patches
         /// <summary>Called via FeatureModule.SyncFromConfig when the LootMultiplicator section changes.</summary>
         internal static void RefreshFromConfig()
         {
+            if (SceneScopedConfigGate.IsModuleSyncDeferred("LootMultiplicator"))
+            {
+                return;
+            }
+
+            LootItemFilter.ReloadFromSceneSnapshot();
+
             if (!ModConfig.EnableLootMultiplicator.Value)
             {
                 FixedLootSpawnCoordinator.ClearPendingRespawns();

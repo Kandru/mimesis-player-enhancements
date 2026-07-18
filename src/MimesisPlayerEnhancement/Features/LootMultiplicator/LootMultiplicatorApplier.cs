@@ -7,11 +7,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
     {
         private const string Feature = "LootMultiplicator";
 
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo SpawnedActorDatasField =
-            AccessToolsField(typeof(DungeonRoom), "_spawnedActorDatas");
+        private static readonly FieldInfo SpawnedActorDatasField = LootMultiplicatorFields.SpawnedActorDatasField;
 
         internal static bool IsApplied(DungeonRoom room)
         {
@@ -191,12 +187,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             return scaled;
-        }
-
-        private static FieldInfo AccessToolsField(Type type, string name)
-        {
-            FieldInfo? field = type.GetField(name, InstanceFlags);
-            return field ?? throw new InvalidOperationException($"{type.Name}.{name} not found");
         }
     }
 }

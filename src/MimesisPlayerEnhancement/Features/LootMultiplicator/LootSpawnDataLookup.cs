@@ -5,12 +5,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootSpawnDataLookup
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo SpawnedActorDatasField =
-            typeof(DungeonRoom).GetField("_spawnedActorDatas", InstanceFlags)
-            ?? throw new InvalidOperationException("DungeonRoom._spawnedActorDatas not found");
+        private static readonly FieldInfo SpawnedActorDatasField = LootMultiplicatorFields.SpawnedActorDatasField;
 
         private static readonly DungeonRoomStateRegistry<Dictionary<int, SpawnedActorData>> IndexByRoom = new();
 

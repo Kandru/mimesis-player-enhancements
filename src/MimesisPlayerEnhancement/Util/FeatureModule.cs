@@ -107,8 +107,12 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: LootMultiplicatorPatches.RefreshFromConfig,
                 onUpdate: () =>
                 {
-                    if (ModConfig.EnableLootMultiplicator.Value) { FixedLootSpawnCoordinator.ProcessPendingRespawns(); }
+                    if (SceneScopedConfigGate.Loot.EnableLootMultiplicator)
+                    {
+                        FixedLootSpawnCoordinator.ProcessPendingRespawns();
+                    }
                 },
+                onSessionEnded: FixedLootSpawnCoordinator.ClearPendingRespawns,
                 throttledUpdate: true),
             new FeatureModule("Economy", EconomyPatches.Apply,
                 syncFromConfig: EconomyPatches.RefreshFromConfig),
