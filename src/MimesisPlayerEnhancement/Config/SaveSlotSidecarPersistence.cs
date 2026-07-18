@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MimesisPlayerEnhancement.Features.Persistence.Patches;
 
 namespace MimesisPlayerEnhancement
@@ -28,8 +29,8 @@ namespace MimesisPlayerEnhancement
             _loadingSidecarSlot = slotId;
             try
             {
-                PlayerRegistry.LoadForSlot(slotId, forceReload: true);
                 SaveSlotDocumentStore.LoadForSlot(slotId);
+                PlayerRegistry.LoadForSlot(slotId, forceReload: true);
                 SaveSlotConfigStore.LoadForSlot(slotId);
                 SpeechEventArchivePatches.EnsurePoolLoaded(slotId);
 
@@ -91,6 +92,9 @@ namespace MimesisPlayerEnhancement
             EnsureSlotBoundForSave(slotId);
 
             bool waitForCompletion = !isAutoSave;
+            Stopwatch? saveFlushTimer = waitForCompletion && ModConfig.EnableDebugLogging.Value
+                ? Stopwatch.StartNew()
+                : null;
 
             SpeechEventPoolManager.ProcessDeferredUpdates();
 
@@ -108,6 +112,14 @@ namespace MimesisPlayerEnhancement
             {
                 PersistenceWriteQueue.FlushAllSync();
                 BackgroundFileWriteQueue.FlushAllSync();
+            }
+
+            if (saveFlushTimer != null)
+            {
+                saveFlushTimer.Stop();
+                ModLog.Debug(
+                    Feature,
+                    $"Manual save sidecar flush completed in {saveFlushTimer.ElapsedMilliseconds} ms — slot={slotId}.");
             }
 
             ModLog.Info(Feature, $"Persisted slot sidecars for save slot {slotId} (auto={isAutoSave}).");
