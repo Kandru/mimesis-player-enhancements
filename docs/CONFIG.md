@@ -318,7 +318,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 **Host-only.** Tune how often mimics replay archived player voice lines, which player inventory mimics copy for decoy loadouts, and dead-player mimic possession timing. Off by default. Voice and inventory subfeatures use a **Vanilla / Custom** mode dropdown (default **Vanilla**). Custom keys apply only when that subfeature is set to Custom.
 
-**Live apply:** Changes take effect on the next mimic voice attempt, `CopyInventory` call, or E-possession — no restart required. Already-playing audio, already-cloned inventories, and active possession sessions are not reverted.
+**Live apply:** Changes take effect on the next mimic voice attempt, `CopyInventory` call, or E-possession — no restart required. Already-playing audio, already-cloned inventories, and active possession sessions are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked from replaying while the mimic remains possessed.
 
 ### Voice tuning (`MimicVoiceTuningMode`)
 

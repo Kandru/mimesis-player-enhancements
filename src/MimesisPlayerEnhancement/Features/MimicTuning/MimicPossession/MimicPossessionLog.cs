@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
             ModLog.Debug(
                 Feature,
                 $"Possession duration rolled — actor={mimicActorId}, {vanillaMs}ms -> {rolledMs}ms " +
-                $"({ModConfig.MimicPossessionMinTimeSeconds.Value:0.##}-{ModConfig.MimicPossessionMaxTimeSeconds.Value:0.##}s range)");
+                $"({MimicPossessionResolver.CachedMinDurationSeconds:0.##}-{MimicPossessionResolver.CachedMaxDurationSeconds:0.##}s range)");
         }
 
         internal static void DebugCooltimeScaled(long vanillaMs, long scaledMs, float multiplier)

@@ -6,6 +6,8 @@ Tune mimic behavior on the host: how often mimics replay archived player voices,
 
 Off by default. Changes take effect on the next mimic voice attempt, inventory copy, or E-possession — no restart required. Already-playing audio, cloned inventories, and active possession sessions are not reverted.
 
+With `EnableMimicTuning = true`, archived mimic voice lines are stopped when a mimic enters possessed state and blocked from replaying while possessed (local audio cleanup during E-possession).
+
 ## Voice tuning
 
 `MimicVoiceTuningMode`: `Vanilla` uses game timing; `Custom` applies the response keys below.

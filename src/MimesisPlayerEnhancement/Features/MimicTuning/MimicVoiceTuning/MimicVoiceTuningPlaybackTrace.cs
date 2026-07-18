@@ -52,5 +52,13 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
                 return true;
             }
         }
+
+        internal static void ClearAll()
+        {
+            lock (Gate)
+            {
+                LastByMimicActorId.Clear();
+            }
+        }
     }
 }

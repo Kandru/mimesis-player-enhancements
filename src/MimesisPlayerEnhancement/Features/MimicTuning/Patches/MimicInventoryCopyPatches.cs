@@ -2,7 +2,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     internal static class MimicInventoryCopyPatches
     {
-        private const string Feature = "MimicInventoryCopy";
+        private const string Feature = "MimicTuning";
 
         private static readonly System.Reflection.FieldInfo? SelfField =
             AccessTools.Field(typeof(AIController), "_self");

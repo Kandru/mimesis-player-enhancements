@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
 {
     internal static class MimicPossessionResolver
@@ -14,8 +16,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
         private static bool _cachedEnable;
         private static bool _cachedRandomizeDuration;
         private static float _cachedCooltimeMultiplier;
+        private static float _cachedMinDurationSeconds = VanillaPossessionDurationSeconds;
+        private static float _cachedMaxDurationSeconds = VanillaPossessionDurationSeconds;
 
         internal static bool IsEnabled => _cachedEnable;
+
+        internal static float CachedMinDurationSeconds => _cachedMinDurationSeconds;
+
+        internal static float CachedMaxDurationSeconds => _cachedMaxDurationSeconds;
 
         internal static bool ShouldApplyHost =>
             HostApplyGate.ShouldApplyHostOnlyFeature(() => _cachedEnable);
@@ -58,10 +66,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
                 return vanillaMs;
             }
 
-            float minSeconds = ModConfig.MimicPossessionMinTimeSeconds.Value;
-            float maxSeconds = ModConfig.MimicPossessionMaxTimeSeconds.Value;
-            long minMs = Math.Max(1L, (long)(minSeconds * 1000f));
-            long maxMs = Math.Max(minMs, (long)(maxSeconds * 1000f));
+            long minMs = Math.Max(1L, (long)(_cachedMinDurationSeconds * 1000f));
+            long maxMs = Math.Max(minMs, (long)(_cachedMaxDurationSeconds * 1000f));
 
             long rolled = minMs >= maxMs
                 ? minMs
@@ -87,7 +93,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
         internal static float GetProgressBarTotalSeconds(int mimicActorId, float serverLeftTimeMs)
         {
             float vanillaSeconds = GetVanillaPossessionDurationSeconds();
-            if (!_cachedEnable || !_cachedRandomizeDuration)
+            if (!ShouldRandomizeDuration)
             {
                 return vanillaSeconds;
             }
@@ -114,7 +120,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
                 return 0f;
             }
 
-            if (!_cachedEnable || !ShouldScaleCooltime)
+            if (!ShouldScaleCooltime)
             {
                 return vanillaMs * 0.001f;
             }
@@ -127,6 +133,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
             if (ModConfig.EnableMimicTuning == null
                 || ModConfig.EnableMimicPossessionTuning == null
                 || ModConfig.RandomizeMimicPossessionDuration == null
+                || ModConfig.MimicPossessionMinTimeSeconds == null
+                || ModConfig.MimicPossessionMaxTimeSeconds == null
                 || ModConfig.MimicPossessionCooltimeMultiplier == null)
             {
                 return;
@@ -136,6 +144,18 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
                 && ModConfig.EnableMimicPossessionTuning.Value;
             _cachedRandomizeDuration = ModConfig.RandomizeMimicPossessionDuration.Value;
             _cachedCooltimeMultiplier = ModConfig.MimicPossessionCooltimeMultiplier.Value;
+            _cachedMinDurationSeconds = Mathf.Clamp(
+                ModConfig.MimicPossessionMinTimeSeconds.Value,
+                MinDurationSeconds,
+                MaxDurationSeconds);
+            _cachedMaxDurationSeconds = Mathf.Clamp(
+                ModConfig.MimicPossessionMaxTimeSeconds.Value,
+                MinDurationSeconds,
+                MaxDurationSeconds);
+            if (_cachedMaxDurationSeconds < _cachedMinDurationSeconds)
+            {
+                _cachedMaxDurationSeconds = _cachedMinDurationSeconds;
+            }
         }
     }
 }

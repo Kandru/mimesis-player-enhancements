@@ -179,7 +179,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             {
                 try
                 {
-                    if (!__result || speechEvent == null)
+                    if (!__result || speechEvent == null || !MimicVoiceTuningResolver.ShouldApplyCustom)
                     {
                         return;
                     }

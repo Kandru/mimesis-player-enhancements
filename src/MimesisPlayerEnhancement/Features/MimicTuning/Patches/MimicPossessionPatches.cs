@@ -46,6 +46,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             internal float TotalSeconds;
         }
 
+        internal static void ClearProgressBarRestartStates()
+        {
+            ProgressBarRestartStates.Clear();
+        }
+
         internal static IEnumerable<CodeInstruction> ReplaceConstIntLoad(
             IEnumerable<CodeInstruction> instructions,
             FieldInfo? constField,
@@ -130,7 +135,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             ref Coroutine ____progressCoroutine,
             Image ____possessionProgressbar)
         {
-            if (!MimicPossessionResolver.IsEnabled || MimicPossessionPatchSupport.RunPossessionProgressbarCo == null)
+            if (!MimicPossessionResolver.ShouldRandomizeDuration || MimicPossessionPatchSupport.RunPossessionProgressbarCo == null)
             {
                 return true;
             }
@@ -189,7 +194,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         {
             try
             {
-                if (!MimicPossessionResolver.IsEnabled)
+                if (!MimicPossessionResolver.ShouldApplyHost)
                 {
                     return;
                 }
@@ -214,8 +219,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         {
             try
             {
-                if (!MimicPossessionResolver.IsEnabled
-                    || !MimicPossessionResolver.ShouldScaleCooltime
+                if (!MimicPossessionResolver.ShouldScaleCooltime
                     || inCooltime <= 0f)
                 {
                     return;

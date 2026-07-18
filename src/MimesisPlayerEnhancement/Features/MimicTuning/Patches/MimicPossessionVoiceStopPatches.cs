@@ -8,7 +8,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         [HarmonyPostfix]
         internal static void Postfix(ProtoActor __instance, ProtoActor.PossessionState inState)
         {
-            if (inState != ProtoActor.PossessionState.Possessed)
+            if (inState != ProtoActor.PossessionState.Possessed
+                || !MimicVoiceTuningResolver.IsMasterEnabled)
             {
                 return;
             }
@@ -36,7 +37,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         [HarmonyPrefix]
         internal static bool Prefix(ProtoActor __instance, ref bool __result)
         {
-            if (__instance.Possession.State != ProtoActor.PossessionState.Possessed)
+            if (__instance.Possession.State != ProtoActor.PossessionState.Possessed
+                || !MimicVoiceTuningResolver.IsMasterEnabled)
             {
                 return true;
             }
