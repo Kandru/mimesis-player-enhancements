@@ -16,6 +16,8 @@ OPS_IMAGE := mpe-ops:local
 DOTNET_IMAGE := mcr.microsoft.com/dotnet/sdk:10.0
 NODE_IMAGE := node:22-alpine
 
+TEST_PROJ := src/MimesisPlayerEnhancement.Tests/MimesisPlayerEnhancement.Tests.csproj
+
 TOOL_PROJECTS := \
 	MimesisInspectionTool/MimesisInspectionTool.csproj \
 	MimesisReflectionTool/MimesisReflectionTool.csproj \
@@ -58,7 +60,7 @@ NPM_CACHE_VOL := mpe-npm-cache
 DOCKER_NUGET_CACHE := -v $(NUGET_CACHE_VOL):/cache/nuget -e NUGET_PACKAGES=/cache/nuget
 DOCKER_NPM_CACHE := -v $(NPM_CACHE_VOL):/cache/npm -e npm_config_cache=/cache/npm
 
-.PHONY: help all debug release webinterface thunderstore tools check clean \
+.PHONY: help all debug release webinterface thunderstore tools test check clean \
 	require-docker ensure-ops-image ensure-cache-volumes deps validate-locale stage-web-sources \
 	mod format-csharp check-web
 
@@ -79,6 +81,7 @@ help:
 	@echo "  webinterface  Svelte UI only → dist/webinterface/<debug|prod>/"
 	@echo "  thunderstore  Release build + dist/thunderstore/mpe<version>.zip"
 	@echo "  tools         Dev tools + seed scanner → src/*/bin/"
+	@echo "  test          Run xUnit test suite via Docker"
 	@echo "  check         Validate locales, format C#, type-check Svelte"
 	@echo "  clean         Empty dist output dirs (host only; keeps folder layout)"
 	@echo "  deps          Download reference assemblies (first-time setup)"
@@ -261,6 +264,17 @@ tools: require-docker ensure-cache-volumes deps
 			dotnet build "src/$$rel" -c $(DOTNET_CONFIG); \
 	done
 	@echo "==> Tools ready under src/*/bin/$(DOTNET_CONFIG)/"
+
+test: require-docker ensure-cache-volumes deps
+	@echo "==> Running tests via Docker…"
+	@docker run --rm \
+		$(DOCKER_USER) \
+		$(DOCKER_REPO_MOUNT) \
+		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
+		$(DOTNET_IMAGE) \
+		dotnet test $(TEST_PROJ) -c Debug -p:SkipWebBuild=true --verbosity minimal
 
 # ---------------------------------------------------------------------------
 # Quality checks

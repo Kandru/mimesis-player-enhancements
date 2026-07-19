@@ -5,6 +5,7 @@ using UnityEngine;
 [assembly: MelonInfo(typeof(MimesisPlayerEnhancement.Mod), "MimesisPlayerEnhancement", MimesisPlayerEnhancement.VersionInfo.ModuleVersion, "kalle")]
 [assembly: MelonGame("ReLUGames", "MIMESIS")]
 [assembly: HarmonyDontPatchAll]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MimesisPlayerEnhancement.Tests")]
 
 namespace MimesisPlayerEnhancement
 {

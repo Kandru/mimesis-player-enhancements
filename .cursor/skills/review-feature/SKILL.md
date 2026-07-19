@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 # review-feature
 
-READ-ONLY. No edits unless user asks to fix findings.
+READ-ONLY. No edits unless user asks to fix findings. Related: `test-feature` for regression tests.
 
 ## Scope
 
