@@ -59,13 +59,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
             }
         }
 
-        internal static bool ShouldIgnoreRerollExcludes()
-        {
-            DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;
-            return ShouldApply
-                   && config.RandomizeDungeonPick
-                   && config.IgnoreDungeonExcludeList
-                   && DungeonIdListParser.ParsePoolMode(config.DungeonPickPoolMode) == DungeonPickPoolMode.WidenVanilla;
-        }
+        internal static bool ShouldIgnoreRerollExcludes() =>
+            DungeonRerollExcludePolicy.ShouldIgnoreRerollExcludes(
+                SceneScopedConfigGate.DungeonRandomizer,
+                ShouldApply);
     }
 }

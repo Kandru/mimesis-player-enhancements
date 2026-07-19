@@ -5,20 +5,25 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal static bool IsFeatureEnabled =>
             ModConfig.EnableWeather.Value;
 
-        internal static WeatherMode GetMode()
+        internal static WeatherMode GetMode() => GetMode(WeatherSceneConfig.CaptureFromModConfig());
+
+        internal static WeatherMode GetMode(WeatherSceneConfig config)
         {
-            if (!IsFeatureEnabled)
+            if (!config.EnableWeather)
             {
                 return WeatherMode.Vanilla;
             }
 
-            return ParseMode(ModConfig.WeatherMode.Value);
+            return config.Mode;
         }
 
         internal static bool ShouldStripRandomWeather() =>
-            IsFeatureEnabled
-            && GetMode() == WeatherMode.Vanilla
-            && ModConfig.DisableRandomWeather.Value;
+            ShouldStripRandomWeather(WeatherSceneConfig.CaptureFromModConfig());
+
+        internal static bool ShouldStripRandomWeather(WeatherSceneConfig config) =>
+            config.EnableWeather
+            && config.Mode == WeatherMode.Vanilla
+            && config.DisableRandomWeather;
 
         internal static bool TryGetFixedWeatherMasterId(out int masterId)
         {
@@ -83,10 +88,13 @@ namespace MimesisPlayerEnhancement.Features.Weather
             return WeatherMode.Vanilla;
         }
 
-        internal static void GetCycleDelayRange(out float minSeconds, out float maxSeconds)
+        internal static void GetCycleDelayRange(out float minSeconds, out float maxSeconds) =>
+            GetCycleDelayRange(WeatherSceneConfig.CaptureFromModConfig(), out minSeconds, out maxSeconds);
+
+        internal static void GetCycleDelayRange(WeatherSceneConfig config, out float minSeconds, out float maxSeconds)
         {
-            minSeconds = Math.Max(0f, ModConfig.WeatherCycleMinDelaySeconds.Value);
-            maxSeconds = Math.Max(minSeconds, ModConfig.WeatherCycleMaxDelaySeconds.Value);
+            minSeconds = Math.Max(0f, config.CycleMinDelaySeconds);
+            maxSeconds = Math.Max(minSeconds, config.CycleMaxDelaySeconds);
         }
     }
 }

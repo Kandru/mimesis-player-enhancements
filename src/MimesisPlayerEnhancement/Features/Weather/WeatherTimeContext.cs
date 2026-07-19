@@ -32,7 +32,10 @@ namespace MimesisPlayerEnhancement.Features.Weather
             }
 
             long roomVanillaStart = WeatherRoomAccess.GetVanillaStartSeconds(room);
-            return roomVanillaStart > 0 && vanillaSeconds == roomVanillaStart;
+            return ShouldOverrideConvertResult(vanillaSeconds, roomVanillaStart);
         }
+
+        internal static bool ShouldOverrideConvertResult(long vanillaSeconds, long roomVanillaStart) =>
+            roomVanillaStart > 0 && vanillaSeconds == roomVanillaStart;
     }
 }

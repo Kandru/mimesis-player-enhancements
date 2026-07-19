@@ -3,8 +3,11 @@ namespace MimesisPlayerEnhancement.Features.Weather
     internal static class WeatherTimeResolver
     {
         internal static bool UsesOverrideStartTime() =>
-            WeatherResolver.IsFeatureEnabled
-            && ParseStartTimePreset(ModConfig.StartTimePreset.Value) != StartTimePreset.Vanilla;
+            UsesOverrideStartTime(WeatherSceneConfig.CaptureFromModConfig());
+
+        internal static bool UsesOverrideStartTime(WeatherSceneConfig config) =>
+            config.EnableWeather
+            && config.StartTimePreset != StartTimePreset.Vanilla;
 
         internal static StartTimePreset ParseStartTimePreset(string? value)
         {
@@ -44,7 +47,8 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return vanilla;
             }
 
-            StartTimePreset preset = ParseStartTimePreset(ModConfig.StartTimePreset.Value);
+            WeatherSceneConfig config = WeatherSceneConfig.CaptureFromModConfig();
+            StartTimePreset preset = config.StartTimePreset;
             if (!TryGetPresetHour(preset, out int hour))
             {
                 return vanilla;

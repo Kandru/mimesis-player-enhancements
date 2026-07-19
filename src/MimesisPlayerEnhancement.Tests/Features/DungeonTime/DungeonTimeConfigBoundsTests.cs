@@ -1,3 +1,4 @@
+using System.Globalization;
 using MimesisPlayerEnhancement;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
                 SectionId,
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
                 out ModConfigEntryBound bound));
-            Assert.Equal("0", bound.MinValue);
+            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
             Assert.Null(bound.MaxValue);
         }
     }

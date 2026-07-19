@@ -10,13 +10,24 @@ namespace MimesisPlayerEnhancement.Tests.Infrastructure
         internal MimesisMetadataContext(string managedPath)
         {
             string assemblyPath = ManagedAssemblyPaths.RequireAssemblyCSharp(managedPath);
-            List<string> assemblyPaths = [.. Directory.EnumerateFiles(managedPath, "*.dll")];
+            List<string> assemblyPaths = [];
+            HashSet<string> seenNames = new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string path in Directory.EnumerateFiles(managedPath, "*.dll"))
+            {
+                string name = Path.GetFileName(path);
+                if (seenNames.Add(name))
+                {
+                    assemblyPaths.Add(path);
+                }
+            }
 
             string runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location)
                                   ?? throw new InvalidOperationException("Could not locate runtime assemblies.");
             foreach (string runtimeAssembly in Directory.EnumerateFiles(runtimeDir, "*.dll"))
             {
-                if (!assemblyPaths.Contains(runtimeAssembly))
+                string name = Path.GetFileName(runtimeAssembly);
+                if (seenNames.Add(name))
                 {
                     assemblyPaths.Add(runtimeAssembly);
                 }

@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement.Util
 
         private static readonly Dictionary<string, JObject> LocaleRoots = new(StringComparer.OrdinalIgnoreCase);
         private static readonly List<string> AvailableLocales = [];
+        private static readonly object InitLock = new();
         private static bool _initialized;
 
         internal static IReadOnlyList<string> GetAvailableLocales()
@@ -26,31 +27,7 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static void Initialize()
         {
-            if (_initialized)
-            {
-                return;
-            }
-
-            foreach (string fileName in EmbeddedAssets.ListFeatureFiles(LocaleFolder))
-            {
-                if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                string locale = Path.GetFileNameWithoutExtension(fileName);
-                if (!string.IsNullOrWhiteSpace(locale))
-                {
-                    LoadLocale(locale);
-                }
-            }
-
-            if (!LocaleRoots.ContainsKey(DefaultLocale))
-            {
-                LoadLocale(DefaultLocale);
-            }
-
-            _initialized = true;
+            EnsureInitialized();
         }
 
         internal static string Get(string key, params object[] args)
@@ -118,9 +95,38 @@ namespace MimesisPlayerEnhancement.Util
 
         private static void EnsureInitialized()
         {
-            if (!_initialized)
+            if (_initialized)
             {
-                Initialize();
+                return;
+            }
+
+            lock (InitLock)
+            {
+                if (_initialized)
+                {
+                    return;
+                }
+
+                foreach (string fileName in EmbeddedAssets.ListFeatureFiles(LocaleFolder))
+                {
+                    if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    string locale = Path.GetFileNameWithoutExtension(fileName);
+                    if (!string.IsNullOrWhiteSpace(locale))
+                    {
+                        LoadLocale(locale);
+                    }
+                }
+
+                if (!LocaleRoots.ContainsKey(DefaultLocale))
+                {
+                    LoadLocale(DefaultLocale);
+                }
+
+                _initialized = true;
             }
         }
 

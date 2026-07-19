@@ -5,29 +5,56 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         internal const float MinMultiplier = 0.1f;
         internal const float MaxMultiplier = 5f;
 
-        internal static bool IsFeatureEnabled => ModConfig.EnablePlayerTuning.Value;
+        internal static bool IsFeatureEnabled => GetIsFeatureEnabled(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float MoveSpeedMultiplier =>
-            IsFeatureEnabled ? ModConfig.MoveSpeedMultiplier.Value : 1f;
+            GetMoveSpeedMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
-        internal static float NoClipSpeedMultiplier => ModConfig.NoClipSpeedMultiplier.Value;
+        internal static float NoClipSpeedMultiplier =>
+            GetNoClipSpeedMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float MaxStaminaMultiplier =>
-            IsFeatureEnabled ? ModConfig.MaxStaminaMultiplier.Value : 1f;
+            GetMaxStaminaMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float StaminaDrainMultiplier =>
-            IsFeatureEnabled ? ModConfig.StaminaDrainMultiplier.Value : 1f;
+            GetStaminaDrainMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float StaminaRegenMultiplier =>
-            IsFeatureEnabled ? ModConfig.StaminaRegenMultiplier.Value : 1f;
+            GetStaminaRegenMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float StaminaRegenDelayMultiplier =>
-            IsFeatureEnabled ? ModConfig.StaminaRegenDelayMultiplier.Value : 1f;
+            GetStaminaRegenDelayMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static float MaxCarryWeightMultiplier =>
-            IsFeatureEnabled ? ModConfig.MaxCarryWeightMultiplier.Value : 1f;
+            GetMaxCarryWeightMultiplier(PlayerTuningConfigSnapshot.CaptureFromModConfig());
 
         internal static bool DisablePlayerCollision =>
-            IsFeatureEnabled && ModConfig.DisablePlayerCollision.Value;
+            GetDisablePlayerCollision(PlayerTuningConfigSnapshot.CaptureFromModConfig());
+
+        internal static bool GetIsFeatureEnabled(PlayerTuningConfigSnapshot config) => config.Enabled;
+
+        internal static float GetMoveSpeedMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.MoveSpeedMultiplier : 1f;
+
+        internal static float GetNoClipSpeedMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.NoClipSpeedMultiplier;
+
+        internal static float GetMaxStaminaMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.MaxStaminaMultiplier : 1f;
+
+        internal static float GetStaminaDrainMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.StaminaDrainMultiplier : 1f;
+
+        internal static float GetStaminaRegenMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.StaminaRegenMultiplier : 1f;
+
+        internal static float GetStaminaRegenDelayMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.StaminaRegenDelayMultiplier : 1f;
+
+        internal static float GetMaxCarryWeightMultiplier(PlayerTuningConfigSnapshot config) =>
+            config.Enabled ? config.MaxCarryWeightMultiplier : 1f;
+
+        internal static bool GetDisablePlayerCollision(PlayerTuningConfigSnapshot config) =>
+            config.Enabled && config.DisablePlayerCollision;
     }
 }

@@ -2,23 +2,25 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonVariantResolver
     {
-        private const string Feature = "DungeonRandomizer";
-
         internal static int? ResolveMapId(DungeonMasterInfo info, int vanillaMapId)
         {
-            if (!SceneScopedConfigGate.DungeonRandomizer.RandomizeMapVariant)
+            DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;
+            int? mapId = DungeonMapVariantPickLogic.Resolve(
+                config.RandomizeMapVariant,
+                info.ID,
+                info.MapIDs,
+                vanillaMapId,
+                TryPickUniformMapId);
+
+            if (mapId.HasValue)
             {
-                return null;
+                DungeonRandomizerLog.InfoMapVariantChanged(info.ID, vanillaMapId, mapId.Value);
             }
 
-            if (!DungeonDataAccess.TryPickUniformMapId(info, out int mapId))
-            {
-                ModLog.Debug(Feature, $"Map variant: no MapIDs for dungeon {info.ID}; keeping {vanillaMapId}");
-                return null;
-            }
-
-            DungeonRandomizerLog.InfoMapVariantChanged(info.ID, vanillaMapId, mapId);
             return mapId;
         }
+
+        private static int? TryPickUniformMapId(IReadOnlyList<int> mapIds) =>
+            DungeonDataAccess.TryPickUniformMapId(mapIds, out int mapId) ? mapId : null;
     }
 }

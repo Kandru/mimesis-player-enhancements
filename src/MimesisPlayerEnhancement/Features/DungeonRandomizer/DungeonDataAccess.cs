@@ -85,16 +85,18 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             return true;
         }
 
-        internal static bool TryPickUniformMapId(DungeonMasterInfo info, out int mapId)
+        internal static bool TryPickUniformMapId(DungeonMasterInfo info, out int mapId) =>
+            TryPickUniformMapId(info.MapIDs, out mapId);
+
+        internal static bool TryPickUniformMapId(IReadOnlyList<int> mapIds, out int mapId)
         {
             mapId = 0;
-            ImmutableArray<int> mapIds = info.MapIDs;
-            if (mapIds.Length == 0)
+            if (mapIds.Count == 0)
             {
                 return false;
             }
 
-            mapId = mapIds[UnityEngine.Random.Range(0, mapIds.Length)];
+            mapId = mapIds[UnityEngine.Random.Range(0, mapIds.Count)];
             return true;
         }
     }

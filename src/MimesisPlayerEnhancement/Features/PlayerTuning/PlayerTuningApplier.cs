@@ -87,11 +87,6 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
 
         private static int ComputeMoveSpeedDecreaseRateByWeight(int totalWeight)
         {
-            if (totalWeight <= 0)
-            {
-                return 0;
-            }
-
             ExcelDataManager? excel = HubGameDataAccess.Excel;
             if (excel == null)
             {
@@ -102,14 +97,10 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 ? GetEffectiveMaxCarryWeight()
                 : _vanillaMaxCarryWeight;
 
-            if (effectiveMax <= 0)
-            {
-                return 0;
-            }
-
-            double x = Math.Min((double)totalWeight / effectiveMax, 1.0);
-            double thresholdFactor = 1.0 - excel.Consts.C_MinThresholdMoveSpeedRate * 0.0001;
-            return (int)(Math.Min(Math.Pow(x, 3.0) * thresholdFactor, thresholdFactor) * 10000.0);
+            return PlayerTuningWeightPenaltyLogic.ComputeRate(
+                totalWeight,
+                effectiveMax,
+                excel.Consts.C_MinThresholdMoveSpeedRate);
         }
 
         internal static void ApplyMappedPlayerStats(MappedStats mappedStats)

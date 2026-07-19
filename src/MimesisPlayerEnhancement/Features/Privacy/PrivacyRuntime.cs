@@ -109,13 +109,21 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
         private static void RefreshCache()
         {
-            bool enabled = ModConfig.IsInitialized && IsPrivacyEnabled;
-            _blockReluTelemetry = enabled && ModConfig.BlockReluTelemetry.Value;
-            _blockReplayUpload = enabled && ModConfig.BlockReplayUpload.Value;
-            _blockReplayRecording = enabled && ModConfig.BlockReplayRecording.Value;
-            _blockCrashReports = enabled && ModConfig.BlockCrashReports.Value;
-            _stripCrashReportMetadata = enabled && ModConfig.StripCrashReportMetadata.Value;
-            _blockKraftonGppSdk = enabled && ModConfig.BlockKraftonGppSdk.Value;
+            PrivacyBlockFlags flags = PrivacyGateLogic.Compute(new PrivacySceneConfig(
+                masterEnabled: ModConfig.IsInitialized && IsPrivacyEnabled,
+                blockReluTelemetry: ModConfig.BlockReluTelemetry.Value,
+                blockReplayUpload: ModConfig.BlockReplayUpload.Value,
+                blockReplayRecording: ModConfig.BlockReplayRecording.Value,
+                blockCrashReports: ModConfig.BlockCrashReports.Value,
+                stripCrashReportMetadata: ModConfig.StripCrashReportMetadata.Value,
+                blockKraftonGppSdk: ModConfig.BlockKraftonGppSdk.Value));
+
+            _blockReluTelemetry = flags.BlockReluTelemetry;
+            _blockReplayUpload = flags.BlockReplayUpload;
+            _blockReplayRecording = flags.BlockReplayRecording;
+            _blockCrashReports = flags.BlockCrashReports;
+            _stripCrashReportMetadata = flags.StripCrashReportMetadata;
+            _blockKraftonGppSdk = flags.BlockKraftonGppSdk;
         }
 
         private static void ResetLogFlags()

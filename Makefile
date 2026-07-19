@@ -274,7 +274,7 @@ test: require-docker ensure-cache-volumes deps
 		$(DOTNET_ENV) \
 		$(DOCKER_NUGET_CACHE) \
 		$(DOTNET_IMAGE) \
-		dotnet test $(TEST_PROJ) -c Debug -p:SkipWebBuild=true --verbosity minimal
+		dotnet test $(TEST_PROJ) -c Debug -p:SkipWebBuild=true $(DOTNET_GAME_ARGS) --verbosity minimal
 
 # ---------------------------------------------------------------------------
 # Quality checks

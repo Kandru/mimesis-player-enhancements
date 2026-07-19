@@ -14,22 +14,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
                 return true;
             }
 
-            switch (__instance.GameSessionState)
-            {
-                case VGameSessionState.Ready:
-                case VGameSessionState.WaitStartSession:
-                case VGameSessionState.EndGame:
-                    __result = true;
-                    return false;
-                case VGameSessionState.OnPlaying:
-                case VGameSessionState.DeathMatch:
-                case VGameSessionState.AfterGame:
-                    __result = false;
-                    return false;
-                default:
-                    __result = JoinAnytimeRoomTools.AreJoinsOpen();
-                    return false;
-            }
+            __result = JoinAnytimeSessionAdmission.ResolveCanEnter(
+                (int)__instance.GameSessionState,
+                JoinAnytimeRoomTools.AreJoinsOpen());
+            return false;
         }
     }
 

@@ -6,9 +6,9 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
     internal static class ReplayRecorderUploadBlockHelper
     {
-        internal static bool TryBlockUpload(ref UniTask result)
+        internal static bool TryBlockUpload(bool shouldBlock, ref UniTask result)
         {
-            if (!PrivacyRuntime.ShouldBlockReplayUpload())
+            if (!shouldBlock)
             {
                 return false;
             }
@@ -100,7 +100,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 
         [HarmonyPrefix]
         private static bool Prefix(ref UniTask __result) =>
-            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
     [HarmonyPatch]
@@ -126,7 +126,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 
         [HarmonyPrefix]
         private static bool Prefix(ref UniTask __result) =>
-            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
     [HarmonyPatch]
@@ -138,7 +138,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 
         [HarmonyPrefix]
         private static bool Prefix(ref UniTask __result) =>
-            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
     [HarmonyPatch]
@@ -150,7 +150,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 
         [HarmonyPrefix]
         private static bool Prefix(ref UniTask __result) =>
-            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
     [HarmonyPatch]
@@ -162,6 +162,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 
         [HarmonyPrefix]
         private static bool Prefix(ref UniTask __result) =>
-            !ReplayRecorderUploadBlockHelper.TryBlockUpload(ref __result);
+            !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 }

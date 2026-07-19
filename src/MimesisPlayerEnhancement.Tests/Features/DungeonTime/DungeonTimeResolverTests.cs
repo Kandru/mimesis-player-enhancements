@@ -36,11 +36,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         }
 
         [Theory]
-        [InlineData(4, 0d)]
         [InlineData(5, 10d)]
         [InlineData(6, 20d)]
         [InlineData(8, 40d)]
-        public void GetBonusSeconds_uses_default_like_scaling(int playerCount, double expectedSeconds)
+        public void GetBonusSeconds_scales_players_above_baseline(int playerCount, double expectedSeconds)
         {
             DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 10f);
 
@@ -59,33 +58,28 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
             Assert.Equal(5d, bonusSeconds);
         }
 
+        [Fact]
+        public void GetBonusSeconds_returns_zero_when_extra_per_player_is_zero()
+        {
+            DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 0f);
+
+            double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount: 8, config);
+
+            Assert.Equal(0d, bonusSeconds);
+        }
+
         [Theory]
-        [InlineData(5, 10d, 10_000L)]
-        [InlineData(6, 20d, 20_000L)]
-        public void GetBonusSeconds_converts_to_milliseconds_like_applier(
-            int playerCount,
-            double expectedSeconds,
-            long expectedMilliseconds)
+        [InlineData(5, 10_000L)]
+        [InlineData(6, 20_000L)]
+        [InlineData(8, 40_000L)]
+        public void Bonus_milliseconds_match_applier_conversion(int playerCount, long expectedMilliseconds)
         {
             DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 10f);
 
             double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount, config);
             long bonusMilliseconds = (long)(bonusSeconds * 1000d);
 
-            Assert.Equal(expectedSeconds, bonusSeconds);
             Assert.Equal(expectedMilliseconds, bonusMilliseconds);
-        }
-
-        [Fact]
-        public void GetBonusMilliseconds_matches_seconds_conversion_for_positive_bonus()
-        {
-            DungeonTimeSceneConfig config = Config(true, baseline: 1, extraPerPlayer: 2.5f);
-            double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(3, config);
-
-            long expectedMilliseconds = (long)(bonusSeconds * 1000d);
-
-            Assert.Equal(5d, bonusSeconds);
-            Assert.Equal(5_000L, expectedMilliseconds);
         }
     }
 }

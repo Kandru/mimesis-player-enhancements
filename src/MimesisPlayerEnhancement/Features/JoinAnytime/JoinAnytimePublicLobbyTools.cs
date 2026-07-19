@@ -8,14 +8,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         /// <summary>
         /// When the host requested a public lobby, do not let a stale ESC toggle downgrade PublicRoom.
         /// </summary>
-        internal static bool CoercePublicRoomWriteFlag(bool isPublicRequested, bool toggleOrFallbackFlag)
+        internal static bool CoercePublicRoomWriteFlag(bool isPublicRequested, bool toggleOrFallbackFlag) =>
+            CoercePublicRoomWriteFlag(
+                ModConfig.EnableJoinAnytime.Value,
+                JoinAnytimeLobbyController.HostWantsPublicMatchmaking(),
+                isPublicRequested,
+                toggleOrFallbackFlag);
+
+        internal static bool CoercePublicRoomWriteFlag(
+            bool featureEnabled,
+            bool hostWantsPublic,
+            bool isPublicRequested,
+            bool toggleOrFallbackFlag)
         {
-            if (!ModConfig.EnableJoinAnytime.Value)
+            if (!featureEnabled)
             {
                 return toggleOrFallbackFlag;
             }
 
-            if (isPublicRequested || JoinAnytimeLobbyController.HostWantsPublicMatchmaking())
+            if (isPublicRequested || hostWantsPublic)
             {
                 return true;
             }

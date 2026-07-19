@@ -187,7 +187,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
         }
 
-        private static float CalcSimTerm(float a, float b, float maxDiff)
+        internal static float CalcSimTerm(float a, float b, float maxDiff)
         {
             if (maxDiff <= 0f)
             {

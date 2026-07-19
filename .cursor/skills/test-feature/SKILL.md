@@ -1,120 +1,69 @@
 ---
 name: test-feature
 description: >-
-  Author regression tests for one MimesisPlayerEnhancement feature: pure logic,
-  config sanitize, Harmony patch contracts vs game DLLs, blast-radius on shared
-  Util/Players. Bootstraps xUnit harness on first use. Trigger: /test-feature
-  {Name}, test {Name}, add tests for {Name}.
+  Regression tests for one feature: patch contracts vs game DLLs, pure logic,
+  config bounds, blast-radius. Bootstraps xUnit harness if missing.
+  Trigger: /test-feature {Name}, test {Name}.
 disable-model-invocation: true
 ---
 
 # test-feature
 
-Writes tests. Bootstraps harness if missing. Complements read-only `review-feature`.
+Lock **functions** (resolvers, parsers, math) and **game connections** (patch/`AccessTools` targets) in `make test`. Complements `review-feature`.
 
-Refs: `AGENTS.md`, `docs/DEVELOPMENT.md`, `.cursor/rules/*.mdc`, `deps/decompiled/`, `deps/reference/Managed/`.
+Refs: `AGENTS.md`, `deps/decompiled/`, `deps/reference/Managed/`.
 
-## Scope
+## Priority
 
-Resolve `{Name}` → `src/MimesisPlayerEnhancement/Features/{Name}/`, `FeatureModules.All` in `Util/FeatureModule.cs`, `{Name}Config.cs`/`ModConfig.cs`, web UI if any. Aliases: `Ui` → `UserInterface`. Folder missing → list matches, stop.
+1. **PatchContract** — every `[HarmonyPatch]` + critical `AccessTools` in feature → `{Name}PatchContractTests.cs`
+2. **PureLogic** — `[Theory]` tables; inject `bool`/`*SceneConfig` overload — never live `ModConfig`
+3. ConfigSanitize / blast-radius `Util/` / playtest gaps (list only)
+
+Scope: `Features/{Name}/`, `FeatureModules.All`, config. `Ui` → `UserInterface`. Patches registered elsewhere (e.g. `UiPatches`) still get contracts under `Features/{Name}/`.
 
 ## Steps
 
-1. **Resolve** scope (above).
-2. **Harness** — if `src/MimesisPlayerEnhancement.Tests/` missing → bootstrap (below), then continue.
-3. **Classify** each `.cs` in feature folder (see Classify).
-4. **Mimesis contracts** — PatchContract: confirm target in `deps/decompiled/`, assert type/method resolvable via MetadataLoadContext on `deps/reference/Managed/*.dll` (reuse `MimesisInspectionTool` pattern or shared `Infrastructure/` helper).
-5. **Author** tests — characterize **current** behavior; inject config structs/overloads only when needed for PureLogic.
-6. **Blast radius** — if change touches `Util/`, `Features/Players/`, or shared API: grep consumers; add/update characterization tests in other features' test folders.
-7. **Run** `make test` — full suite, not feature filter; fix until green.
-8. **Report** (template below).
+Resolve → harness exists? reuse `src/MimesisPlayerEnhancement.Tests/` : bootstrap → classify `.cs` → **contracts** (grep `HarmonyPatch`/`AccessTools`, confirm in `deps/decompiled/`, assert via `MimesisMetadataContext`) → pure logic → blast radius → `make test` full suite → report.
 
 ## Classify
 
-| Tag | Target | Test |
-|-----|--------|------|
-| PureLogic | resolver/applier/parser/math | unit: inputs → outputs |
-| ConfigSanitize | clamp/parse/default in `*Config` | boundary + invalid input |
-| PatchContract | `[HarmonyPatch]`, `TargetMethod(s)`, `AccessTools` | type/method exists in Managed |
-| UntestableRuntime | Unity scene, FishNet, UI mutation, MelonPreferences I/O | playtest bullet only |
+| Tag | Test |
+|-----|------|
+| PatchContract | type/method/field in Managed metadata |
+| PureLogic | inputs → outputs |
+| ConfigSanitize | `*Config` bounds |
+| UntestableRuntime | Unity, FishNet, UI, disk, MelonPreferences → playtest |
 
-Scene-gated (DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, SpawnScaling): pass `*SceneConfig` snapshots — not live `ModConfig`.
+Scene-gated features: `*SceneConfig` snapshots. Disabled gates: `FeatureToggleGate.NeutralMultiplier`.
 
-Gates in PureLogic: disabled → `FeatureToggleGate.NeutralMultiplier`; host-only predicates testable without Unity.
+## Contracts (detect broken patches)
 
-## Do / Don't
+Metadata-only. Pattern: `DungeonRoomPatchContractTests.cs` — `ManagedAssemblyPaths.Resolve()` → `context.RequireType("T")` → `GetMethod`/`GetField`.
 
-**Do:** multipliers, parsers, filters, scaling tables, disabled→neutral, seed/list parsing, patch target resolution.
+Assert: each Harmony target + `AccessTools`/`TypeByName` + reflection chains (each hop).
 
-**Don't:** Harmony postfix bodies w/ mocked Unity; visual UI; network; locale keys (`make check`/`validate-locale` owns that); delete failing contracts after game patch.
+MetadataLoadContext: no runtime `typeof()` in `GetMethod`; compare types via `.Name`; `PlatformMgr.Load` is instance generic.
 
-**Shared:** `ScalingMath`, gates, parsers → one test file under `Util/`; feature tests assert via feature resolvers.
+Red after game update → fix patch / refresh decompile — **never** delete contract. Inspect: `dotnet run --project src/MimesisInspectionTool -- member T M`.
 
-## Harness (first use only)
+## Pure logic
 
-Create `src/MimesisPlayerEnhancement.Tests/`:
+Pattern: `DungeonTimeResolverTests.cs`. Test DTOs/resolvers, not `MMSaveGameData`. One injectable overload if `ModConfig` blocks. Don't mock Unity/Harmony bodies.
 
-```
-MimesisPlayerEnhancement.Tests.csproj   # net10.0, xUnit, Microsoft.NET.Test.Sdk
-Infrastructure/                         # MetadataLoadContext, Managed paths
-Features/{Name}/                        # mirror mod feature tree
-Util/                                   # shared math/parser tests (once)
-```
+## Runtime traps
 
-- `ProjectReference` mod with `-p:SkipWebBuild=true`
-- `InternalsVisibleTo("MimesisPlayerEnhancement.Tests")` on mod assembly
-- Package versions in `Directory.Packages.props` (add xUnit pins)
-- Add to `src/MimesisPlayerEnhancement.sln`
-- `make test` target: Docker `mcr.microsoft.com/dotnet/sdk:10.0`, `DOCKER_NUGET_CACHE`, `dotnet test` — separate from `make check`
-- Managed DLL paths: `deps/reference/Managed/` (same as mod `GameAssemblyPath`)
+Bootstrap `deps/reference/Managed/` ≈ 12 DLLs — not full game. Avoid: `new MMSaveGameData`/`SaveSlotEntry`, `SaveSlotDocumentStore`/`PlatformMgr`/`Hub` invoke, copying `MelonLoader.dll` (hangs vstest) or full Managed folder.
 
-## Paths
+## Harness (first use)
 
-- Feature: `src/MimesisPlayerEnhancement.Tests/Features/{Name}/{Type}Tests.cs`
-- Contracts: `.../Features/{Name}/{GameType}PatchContractTests.cs`
-- Shared: `src/MimesisPlayerEnhancement.Tests/Util/{Type}Tests.cs`
-
-Naming: `{ClassUnderTest}Tests`, `[Fact]` per behavior, theory for tables.
-
-## Blast radius
-
-When editing or testing shared code:
-
-1. Grep symbol across `src/MimesisPlayerEnhancement/`
-2. List consumer features
-3. Add/update tests in each consumer's `Features/{Consumer}/` folder
-4. Run full `make test`
-
-Goal: Util tweak cannot silently change Economy vs SpawnScaling vs Loot.
-
-## Drift
-
-Red after game update = update patches or refresh `deps/decompiled/` — **never** delete contract to green. Message: "update patch or decompile".
+`MimesisPlayerEnhancement.Tests/` net10.0 xUnit, `Infrastructure/`, `Features/{Name}/`, `Util/`. `InternalsVisibleTo` on mod. `make test` + `make deps`. Paths: `{Type}Tests.cs`, `{Name}PatchContractTests.cs`.
 
 ## Output
 
 ```markdown
 # Feature tests: {Name}
-Harness: {exists|bootstrapped} | Files: {N} new, {M} updated
-
-## Coverage
-| File | Classify | Tests |
-PureLogic|ConfigSanitize|PatchContract|UntestableRuntime
-
-## New tests
-- `{path}` — {what locked}
-
-## Contracts
-| Patch | Target | Status |
-
-## Blast radius
-{consumers touched + tests added}
-
-## Playtest gaps
-{UntestableRuntime bullets}
-
-## Risk
-{residual untested behavior}
+Harness: exists|bootstrapped | Files: N new, M updated
+## Coverage | New tests | Contracts | Blast radius | Playtest gaps | Risk
 ```
 
-Rules: characterize behavior not implementation; smallest injectable overload; `make test` before done; `make check` only if user asks.
+Characterize behavior; smallest seam; `make test` before done.

@@ -67,23 +67,56 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         internal static bool FieldsAvailable =>
             MaxEventsField != null && MaxDeathMatchField != null && MaxOutDoorField != null;
 
-        internal static PoolLimits? ResolveFromConfig()
+        internal readonly struct MoreVoicesLimitsConfig
         {
-            if (!ModConfig.EnableMoreVoices.Value)
+            internal MoreVoicesLimitsConfig(
+                bool enabled,
+                bool unifyIndoorOutdoor,
+                int indoor,
+                int outdoor,
+                int deathMatch)
+            {
+                Enabled = enabled;
+                UnifyIndoorOutdoor = unifyIndoorOutdoor;
+                Indoor = indoor;
+                Outdoor = outdoor;
+                DeathMatch = deathMatch;
+            }
+
+            internal bool Enabled { get; }
+            internal bool UnifyIndoorOutdoor { get; }
+            internal int Indoor { get; }
+            internal int Outdoor { get; }
+            internal int DeathMatch { get; }
+        }
+
+        internal static PoolLimits? Resolve(MoreVoicesLimitsConfig config)
+        {
+            if (!config.Enabled)
             {
                 return null;
             }
 
-            int deathMatch = ModConfig.MaxDeathMatchVoiceEvents.Value;
-            if (MoreVoicesUnify.IsActive)
+            if (config.UnifyIndoorOutdoor)
             {
-                int shared = ModConfig.MaxIndoorVoiceEvents.Value + ModConfig.MaxOutdoorVoiceEvents.Value;
-                return new PoolLimits(deathMatch + shared, deathMatch, shared);
+                int shared = config.Indoor + config.Outdoor;
+                return new PoolLimits(config.DeathMatch + shared, config.DeathMatch, shared);
             }
 
-            int indoor = ModConfig.MaxIndoorVoiceEvents.Value;
-            int outdoor = ModConfig.MaxOutdoorVoiceEvents.Value;
-            return new PoolLimits(indoor + deathMatch + outdoor, deathMatch, outdoor);
+            return new PoolLimits(
+                config.Indoor + config.DeathMatch + config.Outdoor,
+                config.DeathMatch,
+                config.Outdoor);
+        }
+
+        internal static PoolLimits? ResolveFromConfig()
+        {
+            return Resolve(new MoreVoicesLimitsConfig(
+                ModConfig.EnableMoreVoices.Value,
+                MoreVoicesUnify.IsActive,
+                ModConfig.MaxIndoorVoiceEvents.Value,
+                ModConfig.MaxOutdoorVoiceEvents.Value,
+                ModConfig.MaxDeathMatchVoiceEvents.Value));
         }
 
         internal static EffectiveCaps ReadEffectiveCaps(SpeechEventArchive archive)
@@ -104,7 +137,12 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static string FormatEffectiveCaps(EffectiveCaps caps)
         {
-            if (MoreVoicesUnify.IsActive)
+            return FormatEffectiveCaps(caps, MoreVoicesUnify.IsActive);
+        }
+
+        internal static string FormatEffectiveCaps(EffectiveCaps caps, bool unifyIndoorOutdoor)
+        {
+            if (unifyIndoorOutdoor)
             {
                 return $"shared={caps.Indoor + caps.Outdoor}, deathmatch={caps.DeathMatch}";
             }
