@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
     [HarmonyPatch(typeof(PlatformMgr), nameof(PlatformMgr.Delete))]
@@ -12,13 +10,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
         {
             try
             {
-                if (string.IsNullOrEmpty(fileName) || !fileName.StartsWith("MMGameData", StringComparison.OrdinalIgnoreCase))
+                if (!PlatformMgrSlotParser.TryParseSlotIdFromGameDataFile(fileName, out int slotId))
                 {
                     return;
                 }
 
-                string slotStr = Path.GetFileNameWithoutExtension(fileName).Replace("MMGameData", "");
-                if (int.TryParse(slotStr, out int slotId) && MMSaveGameData.CheckSaveSlotID(slotId, true))
+                if (MMSaveGameData.CheckSaveSlotID(slotId, true))
                 {
                     SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
                     SpeechEventArchivePatches.InvalidatePoolLoaded();

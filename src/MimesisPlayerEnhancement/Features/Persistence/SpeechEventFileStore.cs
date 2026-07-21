@@ -52,19 +52,17 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     return 0;
                 }
 
-                if (HasMagicHeader(header))
+                if (SpeechEventFileHeader.TryReadEventCount(header.AsSpan(0, read), out int count))
                 {
-                    if (read >= 12)
-                    {
-                        int count = BitConverter.ToInt32(header, 8);
-                        return count > 0 ? count : 0;
-                    }
+                    return count;
+                }
 
+                if (SpeechEventFileHeader.HasMagicHeader(header.AsSpan(0, read)) && read < 12)
+                {
                     return ReadCountAfterHeader(stream, skipBytes: 8);
                 }
 
-                int legacyCount = BitConverter.ToInt32(header, 0);
-                return legacyCount > 0 ? legacyCount : 0;
+                return 0;
             }
             catch
             {
@@ -157,7 +155,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     return null;
                 }
 
-                if (HasMagicHeader(data))
+                if (SpeechEventFileHeader.HasMagicHeader(data))
                 {
                     return LoadV3(data, slotId);
                 }
@@ -169,15 +167,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 ModLog.Warn(Feature, $"LoadSpeechEvents: {ex.Message}");
                 return null;
             }
-        }
-
-        private static bool HasMagicHeader(byte[] data)
-        {
-            return data.Length >= FileMagic.Length
-                   && data[0] == FileMagic[0]
-                   && data[1] == FileMagic[1]
-                   && data[2] == FileMagic[2]
-                   && data[3] == FileMagic[3];
         }
 
         private static List<SpeechEvent>? LoadV3(byte[] data, int slotId)

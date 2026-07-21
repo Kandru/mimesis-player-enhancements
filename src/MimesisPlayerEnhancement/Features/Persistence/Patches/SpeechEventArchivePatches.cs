@@ -59,12 +59,25 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
             SpeechEventInjector.RestoreResult result,
             SpeechEventArchive? archive = null)
         {
+            return BuildConnectOutcome(
+                result,
+                SpeechEventPoolManager.HasPending(),
+                SpeechEventPoolManager.DisconnectedCacheCount,
+                archive);
+        }
+
+        internal static PersistenceConnectOutcome BuildConnectOutcome(
+            SpeechEventInjector.RestoreResult result,
+            bool hasPending,
+            int disconnectedCacheCount,
+            SpeechEventArchive? archive = null)
+        {
             if (result.TotalAdded > 0)
             {
                 return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, null);
             }
 
-            if (SpeechEventPoolManager.HasPending() || SpeechEventPoolManager.DisconnectedCacheCount > 0)
+            if (hasPending || disconnectedCacheCount > 0)
             {
                 MaybeWarnNoMatchingVoices(archive);
                 return new PersistenceConnectOutcome(PersistenceConnectPhase.Connected, "unmatched saved voices");

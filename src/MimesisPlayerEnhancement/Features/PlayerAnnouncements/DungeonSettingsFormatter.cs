@@ -78,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 return;
             }
 
-            if (IsDefaultMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value))
+            if (AnnouncementMultiplierFormat.IsDefaultMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value))
             {
                 return;
             }
@@ -86,7 +86,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             parts.Add(ModL10n.Get("announce.multiplier_prefix", new Dictionary<string, object>
             {
                 ["label"] = ModL10n.Get("announce.quota"),
-                ["multiplier"] = FormatMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value),
+                ["multiplier"] = AnnouncementMultiplierFormat.FormatMultiplier(ModConfig.RoundGoalMoneyMultiplier.Value),
             }));
         }
 
@@ -106,7 +106,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
             parts.Add(ModL10n.Get("announce.shift_time_bonus", new Dictionary<string, object>
             {
-                ["seconds"] = FormatBonusSeconds(bonusSeconds),
+                ["seconds"] = AnnouncementMultiplierFormat.FormatBonusSeconds(bonusSeconds),
             }));
         }
 
@@ -152,7 +152,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
         private static void AppendMultiplier(List<string> parts, string label, float multiplier)
         {
-            if (IsDefaultMultiplier(multiplier))
+            if (AnnouncementMultiplierFormat.IsDefaultMultiplier(multiplier))
             {
                 return;
             }
@@ -160,23 +160,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             parts.Add(ModL10n.Get("announce.multiplier_prefix", new Dictionary<string, object>
             {
                 ["label"] = label,
-                ["multiplier"] = FormatMultiplier(multiplier),
+                ["multiplier"] = AnnouncementMultiplierFormat.FormatMultiplier(multiplier),
             }));
         }
 
-        private static bool IsDefaultMultiplier(float multiplier)
-        {
-            return multiplier is >= 0.995f and <= 1.005f;
-        }
-
-        private static string FormatMultiplier(float multiplier)
-        {
-            return $"×{multiplier:0.##}";
-        }
-
-        private static string FormatBonusSeconds(double bonusSeconds)
-        {
-            return bonusSeconds.ToString("0.##");
-        }
     }
 }
