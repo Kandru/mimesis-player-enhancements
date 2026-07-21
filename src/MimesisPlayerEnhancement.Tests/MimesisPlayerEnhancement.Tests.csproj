@@ -20,6 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
+    <PackageReference Include="HarmonyX" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)/MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
@@ -39,6 +44,10 @@
     </Reference>
     <Reference Include="UniTask" Condition="Exists('$(GameAssemblyPath)/UniTask.dll')">
       <HintPath>$(GameAssemblyPath)/UniTask.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="FishNet.Runtime" Condition="Exists('$(GameAssemblyPath)/FishNet.Runtime.dll')">
+      <HintPath>$(GameAssemblyPath)/FishNet.Runtime.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

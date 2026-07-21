@@ -62,7 +62,7 @@ namespace MimesisPlayerEnhancement
             _ = PassLogMsgMethod.Invoke(null, [msgColor, body, Neutral, section, stripped]);
         }
 
-        private static string BuildMessageBody((ColorARGB? color, string text)[] segments, bool plain)
+        internal static string BuildMessageBody((ColorARGB? color, string text)[] segments, bool plain)
         {
             StringBuilder sb = new();
             foreach ((ColorARGB? color, string? text) in segments)
@@ -73,7 +73,7 @@ namespace MimesisPlayerEnhancement
             return sb.ToString();
         }
 
-        private static ColorARGB PickMessageColor((ColorARGB? color, string text)[] segments)
+        internal static ColorARGB PickMessageColor((ColorARGB? color, string text)[] segments)
         {
             bool hasFailure = segments.Any(s => s.color.HasValue && s.color.Value.Equals(FailureRed));
             bool hasSuccess = segments.Any(s => s.color.HasValue && s.color.Value.Equals(SuccessGreen));

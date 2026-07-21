@@ -425,7 +425,7 @@ namespace MimesisPlayerEnhancement
             LogLifecycle("connected", state.Archive, OrderedContributions(state.Contributions), state.SteamId);
         }
 
-        private static List<PlayerLifecycleContribution> OrderedContributions(
+        internal static List<PlayerLifecycleContribution> OrderedContributions(
             Dictionary<string, PlayerLifecycleContribution> contributions,
             string[]? order = null)
         {
@@ -486,7 +486,7 @@ namespace MimesisPlayerEnhancement
                 : VoiceEventStats.DescribeSteamPlayer(steamIdFallback, playerUidFallback, archive);
         }
 
-        private static string FormatContributions(IReadOnlyList<PlayerLifecycleContribution> contributions)
+        internal static string FormatContributions(IReadOnlyList<PlayerLifecycleContribution> contributions)
         {
             if (contributions.Count == 0)
             {

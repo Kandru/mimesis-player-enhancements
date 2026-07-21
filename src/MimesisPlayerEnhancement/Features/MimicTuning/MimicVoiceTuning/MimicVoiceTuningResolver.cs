@@ -37,38 +37,54 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning
         internal static float GetResponseCooldownSeconds() => _cachedResponseCooldownSeconds;
 
         internal static float GetResponseMaxDistance() =>
-            ShouldApplyCustom ? _cachedResponseMaxDistance : VanillaResponseMaxDistance;
+            GetResponseMaxDistance(ShouldApplyCustom, _cachedResponseMaxDistance);
 
-        internal static float ScaleIntervalSeconds(float vanillaSeconds)
+        internal static float GetResponseMaxDistance(bool shouldApplyCustom, float configuredDistance) =>
+            shouldApplyCustom ? configuredDistance : VanillaResponseMaxDistance;
+
+        internal static float ScaleIntervalSeconds(float vanillaSeconds) =>
+            ScaleIntervalSeconds(vanillaSeconds, ShouldApplyCustom, _cachedIntervalMultiplier);
+
+        internal static float ScaleIntervalSeconds(
+            float vanillaSeconds,
+            bool shouldApplyCustom,
+            float intervalMultiplier)
         {
-            if (!ShouldApplyCustom || vanillaSeconds <= 0f)
+            if (!shouldApplyCustom || vanillaSeconds <= 0f)
             {
                 return vanillaSeconds;
             }
 
-            return Mathf.Max(0f, vanillaSeconds * _cachedIntervalMultiplier);
+            return Mathf.Max(0f, vanillaSeconds * intervalMultiplier);
         }
 
-        internal static float RollResponseDelaySeconds()
+        internal static float RollResponseDelaySeconds() =>
+            RollResponseDelaySeconds(
+                ShouldApplyCustom,
+                _cachedResponseDelayMinSeconds,
+                _cachedResponseDelayMaxSeconds);
+
+        internal static float RollResponseDelaySeconds(bool shouldApplyCustom, float minSeconds, float maxSeconds)
         {
-            if (!ShouldApplyCustom)
+            if (!shouldApplyCustom)
             {
                 return VanillaResponseDelaySeconds;
             }
 
-            float min = _cachedResponseDelayMinSeconds;
-            float max = _cachedResponseDelayMaxSeconds;
-            return min >= max ? min : UnityEngine.Random.Range(min, max);
+            return minSeconds >= maxSeconds ? minSeconds : UnityEngine.Random.Range(minSeconds, maxSeconds);
         }
 
-        internal static bool RollResponseChance()
+        internal static bool RollResponseChance() =>
+            RollResponseChance(ShouldApplyCustom, _cachedResponseChancePercent);
+
+        internal static bool RollResponseChance(bool shouldApplyCustom, int chancePercent)
         {
-            if (!ShouldApplyCustom)
+            if (!shouldApplyCustom)
             {
                 return true;
             }
 
-            int chance = Mathf.Clamp(_cachedResponseChancePercent, 0, 100);
+            int chance = Mathf.Clamp(chancePercent, 0, 100);
             if (chance >= 100)
             {
                 return true;

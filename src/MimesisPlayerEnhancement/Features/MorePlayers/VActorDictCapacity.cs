@@ -19,14 +19,17 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 "m_MaxCount",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
-        internal static int ResolveCap()
+        internal static int ResolveCap() =>
+            ResolveCap(ModConfig.EnableMorePlayers.Value, ModConfig.MaxPlayers.Value);
+
+        internal static int ResolveCap(bool enabled, int maxPlayers)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
+            if (!enabled)
             {
                 return VanillaRoomPlayerDictCap;
             }
 
-            return Math.Max(VanillaRoomPlayerDictCap, MorePlayersPatchHelpers.GetMaxPlayers());
+            return Math.Max(VanillaRoomPlayerDictCap, MorePlayersPatchHelpers.GetMaxPlayers(enabled, maxPlayers));
         }
 
         internal static void ApplyToRoom(IVroom? room)

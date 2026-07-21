@@ -15,16 +15,18 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             AccessTools.Method(typeof(MorePlayersPatchHelpers), nameof(GetLobbyPlayerCountSuffix));
 
         /// <summary>Called from transpiled game IL — must not bake config in at patch time.</summary>
-        public static int GetMaxPlayers()
-        {
-            return ModConfig.EnableMorePlayers.Value ? ModConfig.MaxPlayers.Value : VanillaMaxPlayers;
-        }
+        public static int GetMaxPlayers() =>
+            GetMaxPlayers(ModConfig.EnableMorePlayers.Value, ModConfig.MaxPlayers.Value);
+
+        public static int GetMaxPlayers(bool enabled, int maxPlayers) =>
+            enabled ? maxPlayers : VanillaMaxPlayers;
 
         /// <summary>Called from transpiled UI IL for room list player count labels (e.g. "3/32").</summary>
-        public static string GetLobbyPlayerCountSuffix()
-        {
-            return "/" + GetMaxPlayers();
-        }
+        public static string GetLobbyPlayerCountSuffix() =>
+            GetLobbyPlayerCountSuffix(ModConfig.EnableMorePlayers.Value, ModConfig.MaxPlayers.Value);
+
+        public static string GetLobbyPlayerCountSuffix(bool enabled, int maxPlayers) =>
+            "/" + GetMaxPlayers(enabled, maxPlayers);
 
         internal static bool ApplyMaxClientsToSocket(int maxClients)
         {

@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace MimesisPlayerEnhancement.Util
 {
     internal enum SceneScopeKind
@@ -14,15 +12,6 @@ namespace MimesisPlayerEnhancement.Util
     internal static class SceneScopedConfigGate
     {
         private const string Feature = "Config";
-
-        private static readonly HashSet<string> GatedModules =
-        [
-            "LootMultiplicator",
-            "SpawnScaling",
-            "Economy",
-            "DungeonTime",
-            "DungeonRandomizer",
-        ];
 
         private static readonly Dictionary<string, Func<bool>> EnableReaders = new(StringComparer.Ordinal)
         {
@@ -98,9 +87,9 @@ namespace MimesisPlayerEnhancement.Util
                 return;
             }
 
-            foreach (string moduleName in GatedModules)
+            foreach (string moduleName in SceneScopedConfigDeferralLogic.GatedModules)
             {
-                if (!IsModuleAffected(moduleName, change))
+                if (!SceneScopedConfigDeferralLogic.IsModuleAffected(moduleName, change))
                 {
                     continue;
                 }
@@ -123,22 +112,12 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static bool ShouldDeferModuleSync(string moduleName, ModConfigChangeInfo change)
         {
-            if (!GatedModules.Contains(moduleName))
-            {
-                return false;
-            }
-
-            if (IsMasterToggleDisabledChange(moduleName, change))
-            {
-                return false;
-            }
-
-            if (!IsGameplaySceneActive())
-            {
-                return false;
-            }
-
-            return IsModuleAffected(moduleName, change);
+            return SceneScopedConfigDeferralLogic.ShouldDefer(
+                moduleName,
+                change,
+                IsGameplaySceneActive(),
+                IsMasterEnabled(moduleName),
+                TryGetMasterToggleKey(moduleName));
         }
 
         internal static void TransitionToScene(SceneScopeKind kind)
@@ -267,38 +246,26 @@ namespace MimesisPlayerEnhancement.Util
             _ = DeferredModules.Remove(moduleName);
         }
 
-        private static bool IsModuleAffected(string moduleName, ModConfigChangeInfo change)
-        {
-            if (change.IsFullReload)
-            {
-                return true;
-            }
-
-            string sectionId = $"MimesisPlayerEnhancement_{moduleName}";
-            return change.AffectsSection(sectionId);
-        }
-
         private static bool IsMasterToggleDisabledChange(string moduleName, ModConfigChangeInfo change)
         {
-            if (!EnableReaders.TryGetValue(moduleName, out Func<bool>? readEnable) || readEnable())
-            {
-                return false;
-            }
+            return SceneScopedConfigDeferralLogic.IsMasterToggleDisabledChange(
+                moduleName,
+                change,
+                IsMasterEnabled(moduleName),
+                TryGetMasterToggleKey(moduleName));
+        }
 
-            if (change.IsFullReload)
-            {
-                return true;
-            }
+        private static bool IsMasterEnabled(string moduleName)
+        {
+            return EnableReaders.TryGetValue(moduleName, out Func<bool>? readEnable) && readEnable();
+        }
 
+        private static string? TryGetMasterToggleKey(string moduleName)
+        {
             string sectionId = $"MimesisPlayerEnhancement_{moduleName}";
-            if (!ModConfigRegistry.TryGetFeatureToggleKey(sectionId, out string toggleKey))
-            {
-                return false;
-            }
-
-            return change.ChangedKeys.Any(keyChange =>
-                string.Equals(keyChange.SectionId, sectionId, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(keyChange.Key, toggleKey, StringComparison.OrdinalIgnoreCase));
+            return ModConfigRegistry.TryGetFeatureToggleKey(sectionId, out string toggleKey)
+                ? toggleKey
+                : null;
         }
     }
 }

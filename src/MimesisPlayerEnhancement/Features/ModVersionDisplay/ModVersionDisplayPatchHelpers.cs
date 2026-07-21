@@ -41,11 +41,7 @@ namespace MimesisPlayerEnhancement.Features.ModVersionDisplay
             }
 
             string current = ModUiText.GetText(versionText) ?? string.Empty;
-            string vanillaText = StripExistingModPrefix(current);
-            string prefix = $"{ModPrefixLead}{VersionInfo.ModuleVersion}";
-            string target = string.IsNullOrEmpty(vanillaText)
-                ? prefix
-                : $"{prefix}\n{vanillaText}";
+            string target = BuildTargetText(current, VersionInfo.ModuleVersion);
 
             if (string.Equals(current, target, StringComparison.Ordinal))
             {
@@ -53,6 +49,15 @@ namespace MimesisPlayerEnhancement.Features.ModVersionDisplay
             }
 
             ModUiText.SetText(versionText, target);
+        }
+
+        internal static string BuildTargetText(string currentText, string moduleVersion)
+        {
+            string vanillaText = StripExistingModPrefix(currentText);
+            string prefix = $"{ModPrefixLead}{moduleVersion}";
+            return string.IsNullOrEmpty(vanillaText)
+                ? prefix
+                : $"{prefix}\n{vanillaText}";
         }
 
         private static string StripExistingModPrefix(string text)

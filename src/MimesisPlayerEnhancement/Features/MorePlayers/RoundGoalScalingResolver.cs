@@ -17,40 +17,73 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
 
-        internal static int ComputeCenter(int stageCount)
+        internal static int ComputeCenter(int stageCount) =>
+            ComputeCenter(
+                stageCount,
+                ModConfig.RoundGoalBasePerZone.Value,
+                ModConfig.RoundGoalCurveExponent.Value,
+                ModConfig.RoundGoalMoneyMultiplier.Value);
+
+        internal static int ComputeCenter(int stageCount, float basePerZone, float curveExponent, float moneyMultiplier)
         {
             if (stageCount <= 0)
             {
                 return 0;
             }
 
-            float stageFactor = Mathf.Pow(stageCount, ModConfig.RoundGoalCurveExponent.Value);
-            float raw = ModConfig.RoundGoalBasePerZone.Value * stageFactor;
-            return ScalingMath.ScaleCount(Mathf.RoundToInt(raw), ModConfig.RoundGoalMoneyMultiplier.Value);
+            float stageFactor = Mathf.Pow(stageCount, curveExponent);
+            float raw = basePerZone * stageFactor;
+            return ScalingMath.ScaleCount(Mathf.RoundToInt(raw), moneyMultiplier);
         }
 
-        internal static int ComputeMin(int stageCount)
+        internal static int ComputeMin(int stageCount) =>
+            ComputeMin(
+                stageCount,
+                ModConfig.RoundGoalBasePerZone.Value,
+                ModConfig.RoundGoalCurveExponent.Value,
+                ModConfig.RoundGoalMoneyMultiplier.Value,
+                ModConfig.RoundGoalRandomSpreadPercent.Value);
+
+        internal static int ComputeMin(
+            int stageCount,
+            float basePerZone,
+            float curveExponent,
+            float moneyMultiplier,
+            int spreadPercent)
         {
-            int center = ComputeCenter(stageCount);
+            int center = ComputeCenter(stageCount, basePerZone, curveExponent, moneyMultiplier);
             if (center <= 0)
             {
                 return 0;
             }
 
-            float spread = ModConfig.RoundGoalRandomSpreadPercent.Value / 100f;
+            float spread = spreadPercent / 100f;
             return Mathf.Max(1, Mathf.RoundToInt(center * (1f - spread)));
         }
 
-        internal static int ComputeMax(int stageCount)
+        internal static int ComputeMax(int stageCount) =>
+            ComputeMax(
+                stageCount,
+                ModConfig.RoundGoalBasePerZone.Value,
+                ModConfig.RoundGoalCurveExponent.Value,
+                ModConfig.RoundGoalMoneyMultiplier.Value,
+                ModConfig.RoundGoalRandomSpreadPercent.Value);
+
+        internal static int ComputeMax(
+            int stageCount,
+            float basePerZone,
+            float curveExponent,
+            float moneyMultiplier,
+            int spreadPercent)
         {
-            int center = ComputeCenter(stageCount);
+            int center = ComputeCenter(stageCount, basePerZone, curveExponent, moneyMultiplier);
             if (center <= 0)
             {
                 return 0;
             }
 
-            float spread = ModConfig.RoundGoalRandomSpreadPercent.Value / 100f;
-            int min = ComputeMin(stageCount);
+            float spread = spreadPercent / 100f;
+            int min = ComputeMin(stageCount, basePerZone, curveExponent, moneyMultiplier, spreadPercent);
             return Mathf.Max(min, Mathf.RoundToInt(center * (1f + spread)));
         }
 

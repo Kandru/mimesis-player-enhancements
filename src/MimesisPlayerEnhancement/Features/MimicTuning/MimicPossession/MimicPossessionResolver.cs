@@ -59,41 +59,95 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
             return consts != null;
         }
 
-        internal static long RollPossessionDurationMs(long vanillaMs, int mimicActorId)
+        internal static long RollPossessionDurationMs(long vanillaMs, int mimicActorId) =>
+            RollPossessionDurationMsWithLogging(
+                RollPossessionDurationMs(
+                    vanillaMs,
+                    mimicActorId,
+                    _cachedEnable,
+                    ShouldRandomizeDuration,
+                    _cachedMinDurationSeconds,
+                    _cachedMaxDurationSeconds),
+                mimicActorId,
+                vanillaMs);
+
+        private static long RollPossessionDurationMsWithLogging(long rolled, int mimicActorId, long vanillaMs)
         {
-            if (!_cachedEnable || !ShouldRandomizeDuration || vanillaMs <= 0)
+            if (rolled != vanillaMs)
+            {
+                MimicPossessionLog.DebugPossessionDurationRolled(mimicActorId, vanillaMs, rolled);
+            }
+
+            return rolled;
+        }
+
+        internal static long RollPossessionDurationMs(
+            long vanillaMs,
+            int mimicActorId,
+            bool enabled,
+            bool randomize,
+            float minDurationSeconds,
+            float maxDurationSeconds)
+        {
+            if (!enabled || !randomize || vanillaMs <= 0)
             {
                 return vanillaMs;
             }
 
-            long minMs = Math.Max(1L, (long)(_cachedMinDurationSeconds * 1000f));
-            long maxMs = Math.Max(minMs, (long)(_cachedMaxDurationSeconds * 1000f));
+            long minMs = Math.Max(1L, (long)(minDurationSeconds * 1000f));
+            long maxMs = Math.Max(minMs, (long)(maxDurationSeconds * 1000f));
 
             long rolled = minMs >= maxMs
                 ? minMs
                 : UnityEngine.Random.Range((int)minMs, (int)maxMs + 1);
 
             MimicPossessionSessions.SetSessionDurationMs(mimicActorId, rolled);
-            MimicPossessionLog.DebugPossessionDurationRolled(mimicActorId, vanillaMs, rolled);
             return rolled;
         }
 
-        internal static long ScalePossessionCooltimeMs(long vanillaMs)
+        internal static long ScalePossessionCooltimeMs(long vanillaMs) =>
+            ScalePossessionCooltimeMs(
+                vanillaMs,
+                _cachedEnable,
+                ShouldScaleCooltime,
+                _cachedCooltimeMultiplier,
+                logWhenScaled: true);
+
+        internal static long ScalePossessionCooltimeMs(
+            long vanillaMs,
+            bool enabled,
+            bool shouldScale,
+            float multiplier,
+            bool logWhenScaled = false)
         {
-            if (!_cachedEnable || !ShouldScaleCooltime || vanillaMs <= 0)
+            if (!enabled || !shouldScale || vanillaMs <= 0)
             {
                 return vanillaMs;
             }
 
-            long scaled = Math.Max(0L, (long)(vanillaMs * _cachedCooltimeMultiplier));
-            MimicPossessionLog.DebugCooltimeScaled(vanillaMs, scaled, _cachedCooltimeMultiplier);
+            long scaled = Math.Max(0L, (long)(vanillaMs * multiplier));
+            if (logWhenScaled)
+            {
+                MimicPossessionLog.DebugCooltimeScaled(vanillaMs, scaled, multiplier);
+            }
+
             return scaled;
         }
 
-        internal static float GetProgressBarTotalSeconds(int mimicActorId, float serverLeftTimeMs)
+        internal static float GetProgressBarTotalSeconds(int mimicActorId, float serverLeftTimeMs) =>
+            GetProgressBarTotalSeconds(
+                mimicActorId,
+                serverLeftTimeMs,
+                ShouldRandomizeDuration,
+                GetVanillaPossessionDurationSeconds());
+
+        internal static float GetProgressBarTotalSeconds(
+            int mimicActorId,
+            float serverLeftTimeMs,
+            bool shouldRandomize,
+            float vanillaSeconds)
         {
-            float vanillaSeconds = GetVanillaPossessionDurationSeconds();
-            if (!ShouldRandomizeDuration)
+            if (!shouldRandomize)
             {
                 return vanillaSeconds;
             }
