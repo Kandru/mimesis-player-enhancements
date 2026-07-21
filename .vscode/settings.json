@@ -1,0 +1,20 @@
+{
+  // This repo builds via Docker (`make check` / `make debug`); no host .NET SDK required.
+  // Disable C# and C# Dev Kit for this workspace (Extensions → gear → Disable (Workspace))
+  // to stop language-server errors and rely on built-in TextMate syntax highlighting.
+
+  "dotnet.defaultSolution": "disable",
+  "dotnet.projects.enableFileBasedPrograms": false,
+  "dotnet.projects.enableAutomaticRestore": false,
+  "dotnet.fileBasedApps.enableAutomaticDiscovery": false,
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "none",
+  "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "none",
+
+  "csharp.suppressDotnetInstallWarning": true,
+  "csharp.suppressDotnetRestoreNotification": true,
+  "csharp.semanticHighlighting.enabled": false,
+
+  "files.associations": {
+    "*.cs": "csharp"
+  }
+}
