@@ -1,125 +1,121 @@
 ---
 name: review-feature
 description: >-
-  Read-only audit of one MimesisPlayerEnhancement feature: lag, SSoT violations,
-  layout compliance, dead code, lifecycle, conventions, simplification. Trigger:
-  /review-feature {Name}, audit/health-check {Name}.
+  Read-only audit of one feature: prod code (lag, SSoT, layout, lifecycle) + tests
+  (PC/PL/CB coverage, quality). Trigger: /review-feature {Name}, audit {Name}.
 disable-model-invocation: true
 ---
 
 # review-feature
 
-READ-ONLY. No edits unless user asks to fix findings. Related: `test-feature` for regression tests.
+READ-ONLY. No edits unless user asks. Siblings: `test-feature` (fill gaps) · `extend-feature` (new sub-feature).
+Refs: `AGENTS.md` · `docs/DEVELOPMENT.md` · `.cursor/rules/*.mdc`.
 
 ## Scope
 
-Resolve `{Name}` → `src/MimesisPlayerEnhancement/Features/{Name}/`, `FeatureModules.All` entry in `Util/FeatureModule.cs`, `{Name}Config.cs`/`ModConfig.cs`, web UI if any (`src/MimesisPlayerEnhancementWeb/`). Folder missing → list matches, stop.
-
-Refs: `AGENTS.md`, `docs/DEVELOPMENT.md`, `.cursor/rules/*.mdc`.
+`{Name}` → prod `Features/{Name}/` · tests `Tests/Features/{Name}/` (`Ui`→`UserInterface`) · `FeatureModules.All` · `{Name}Config`/`ModConfig` · web `MimesisPlayerEnhancementWeb/` if any. Missing folder → list matches, stop.
 
 ## Steps
 
-1. Inventory `.cs` files → patch|resolver|applier|runtime|config|log|service|UI
-2. Layout vs standard tree
-3. Hot paths: patches, `onUpdate`/`throttledUpdate`, UI loops, HTTP/async→main, session hooks
-4. SSoT: map every `static`/cache/`Dictionary`/`_cached*` to canonical owner
-5. Grep patterns (below)
-6. Dead/legacy: unreferenced symbols, orphaned patches, `#if false`, undiscovered patch types
-7. Simplify: smallest diff only, no rewrites
+1. Inventory prod `.cs` → patch|resolver|applier|runtime|config|log|UI
+2. Inventory tests → PC|PL|CB|infra; build coverage map (`symbol→test|MISSING`)
+3. Layout vs standard tree (both roots)
+4. Hot paths: patches · `onUpdate`/`throttledUpdate` · UI loops · HTTP/async→main · session hooks
+5. SSoT: map `static`/cache/`Dictionary`/`_cached*` → canonical owner
+6. Grep (below) · dead/legacy · simplify (smallest diff)
+7. Test gaps implying untestable prod shape → **Simplify** finding
 
 ## Layout
 
 ```
 Features/{Name}/
-  {Name}Patches.cs          # Apply(Harmony), optional RefreshFromConfig
-  {Name}Config.cs           # if options
-  {Name}Log.cs              # only shared format/debug helpers
-  Patches/GlobalUsings.cs + {GameType}Patches.cs  # one game type/file, Feature const if logs
-  {Name}Resolver|Applier|Runtime.cs  # optional
+  {Name}Patches.cs · {Name}Config.cs? · {Name}Log.cs? (shared format only)
+  Patches/GlobalUsings.cs + {GameType}Patches.cs  # 1 game type/file
+  {SubName}/*Resolver.cs? · {Name}Runtime.cs?
 ```
 
-Must: `FeatureModules.All` (hooks, `sessionScope`, `throttledUpdate`), `HarmonyPatchHelper.GetNamespacePatchTypes`+`ApplyPatchTypes`, `Enable{Name}`+`[MimesisPlayerEnhancement_{Name}]`, `docs/CONFIG.md` if new options, `internal`, ns `MimesisPlayerEnhancement.Features.{Name}`, `ModLog` not `MelonLogger`.
+Must: `FeatureModules.All` · `HarmonyPatchHelper.GetNamespacePatchTypes`+`ApplyPatchTypes` · `Enable{Name}`+`[MimesisPlayerEnhancement_{Name}]` · `docs/CONFIG.md` if options · `internal` · ns `MimesisPlayerEnhancement.Features.{Name}` · `ModLog` not `MelonLogger`.
 
-Gates: host mutations → `HostApplyGate.ShouldApplyHostOnlyFeature()`; disabled → `FeatureToggleGate` neutral + patch early-return + `SyncFromConfig` revert.
+Gates: host→`HostApplyGate` · disabled→`FeatureToggleGate` neutral + patch early-return + `SyncFromConfig` revert.
+Scene-gated (DungeonRandomizer,DungeonTime,Economy,LootMultiplicator,SpawnScaling): `SceneScopedConfigGate` snapshots — not live `ModConfig` mid-scene.
 
-Scene-gated gameplay (DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, SpawnScaling): read `SceneScopedConfigGate` snapshots — not live `ModConfig` mid-scene.
+Violations: patches outside `Patches/` · undiscovered types · logic in patches not resolver/runtime · missing `FeatureModules` · needless `public` · deep service chains.
 
-Layout violations: patches outside `Patches/` or undiscovered; logic in patches not resolver/applier/runtime; missing `FeatureModules` entry; `public` without need; deep service chains.
+## Tests
+
+| Check | How |
+|-------|-----|
+| Parity | `*Resolver`/`*Parser`/`*Applier`/math → `{Type}Tests.cs`? |
+| PC | every `[HarmonyPatch]`+critical `AccessTools` → `{Name}PatchContractTests.cs` |
+| CB | `*Config` bounds → `{Name}ConfigBoundsTests.cs` |
+| Quality | `[Theory]` branches · edges (0,neg,disabled) · no live `ModConfig`/Unity/FishNet |
+| Harness | `MimesisMetadataContext` pattern · no runtime traps (see `test-feature`) |
+| Infra | shared fixtures in `Infrastructure/` only when reused |
+
+Gaps → suggest `/test-feature {Name}`.
 
 ## SSoT
 
-Rule: one canonical owner per domain. Others read/project — no parallel mutable copies.
+One owner per domain — others read/project, no parallel mutable copies.
 
-| Domain | Owner | Forbidden duplicate |
-|--------|-------|---------------------|
-| session/slot/pdata | `GameSessionAccess` | raw `Hub.s`/vworld reflection |
-| host/client | `HostApplyGate` | inline `ClientMode` (except JoinAnytime internals) |
-| persisted names/voices | `SaveSlotDocumentStore` | local `Dictionary<ulong,string>` name maps |
-| runtime player+stats | `PlayerRegistry` | parallel player dicts, cached name/stat |
-| stat counters | `StatisticsTracker`/`PlayerRecord.Statistics` | local accumulators not synced |
-| live actors (web) | `WebDashboardLiveRoster.Capture()` | per-service `GetProtoActorMap` walks |
-| scene gameplay config | `SceneScopedConfigGate` | `ModConfig.Enable*`/multipliers mid-scene (gated modules) |
+| Domain | Owner | Forbidden |
+|--------|-------|-----------|
+| session/slot | `GameSessionAccess` | raw `Hub.s`/vworld |
+| host/client | `HostApplyGate` | inline `ClientMode` (except JoinAnytime) |
+| names/voices disk | `SaveSlotDocumentStore` | local `Dictionary<ulong,string>` |
+| runtime players | `PlayerRegistry` | parallel dicts, cached name/stat |
+| stat counters | `StatisticsTracker`/`PlayerRecord.Statistics` | local accumulators |
+| live actors (web) | `WebDashboardLiveRoster.Capture()` | `GetProtoActorMap` walks |
+| scene config | `SceneScopedConfigGate` | `ModConfig.Enable*` mid-scene |
 | live config | `ModConfig`/`GlobalConfigStore` | hardcoded defaults |
-| per-save overrides | `SaveSlotConfigStore` | feature override dicts |
-| slot document | `SaveSlotDocumentStore`+`SaveSlotSidecarPersistence` | second on-disk format |
+| per-save | `SaveSlotConfigStore` | feature override dicts |
+| slot doc | `SaveSlotDocumentStore`+`SaveSlotSidecarPersistence` | 2nd format |
 | stat disk | `StatisticsStore`/`StatisticsWriteQueue` | sync `File.Write` |
-| speech/voice disk | `SpeechEventPoolManager`/`MimesisSaveManager`/`PersistenceWriteQueue` | bypass pool |
-| join/leave | `PlayerPresenceEvents`/`PlayerLifecycleCoordinator` | per-feature join tracking |
-| strings | `ModL10n`/`l10n/*.json` | hardcoded UI (non-debug) |
-| version | `VersionInfo` | local version strings |
+| speech disk | `SpeechEventPoolManager`/`MimesisSaveManager`/`PersistenceWriteQueue` | bypass pool |
+| join/leave | `PlayerPresenceEvents`/`PlayerLifecycleCoordinator` | per-feature tracking |
+| strings | `ModL10n`/`l10n/*.json` | hardcoded UI |
+| version | `VersionInfo` | local strings |
 
-SSoT detect: list feature-owned state → map entity → owner. Cached mutable copy without invalidation on `PlayerRegistry.Revision`/session end/`SyncFromConfig` = **High** if drift on join/leave/save/config/scene.
+Detect: feature state → entity → owner. Cache w/o invalidation on `PlayerRegistry.Revision`/session/`SyncFromConfig` = **High** if drift on join/leave/save/config/scene.
+Grep: `GetProtoActorMap` · `JoinAnytimeHub.GetPdata` · `Dictionary<ulong` · `HashSet<ulong` · `DisplayName`/`SteamId`/`VoiceId` on DTOs · `ModConfig.Enable*` in gated patches · direct `File.`/`JsonSerializer`.
+Fix: delete redundant → derive snapshot → invalidate via revision/event → `Util/`/`Players/` only if ≥2 consumers. Never sync-cache between caches.
 
-Grep: `GetProtoActorMap`, `JoinAnytimeHub.GetPdata` (outside roster/session helpers), `Dictionary<ulong`, `Dictionary<long`, `HashSet<ulong`, independent `DisplayName`/`SteamId`/`VoiceId` on DTOs, `ModConfig.Enable*` in gated gameplay patches, direct `File.`/`JsonSerializer`/sidecar paths.
+## Grep · Lag · Other
 
-Fix order: delete redundant store → derive snapshot (`WebDashboardLiveRoster`) → invalidate via revision/event → extract to `Util/`/`Features/Players/` only if ≥2 consumers. Never add sync-cache between two caches.
+Grep: `OnUpdate|Update` · `FindObjectsOfType` · `\.Where\(|\.Select\(|\.ToList\(` · `lock` · `File\.` · `ModLog\.` (ungated hot path) · `AccessTools|\.Invoke\(` · `new ` in loops.
 
-## Grep (feature folder)
+Lag (Critical→Info): per-frame `onUpdate` w/o early-exit · heavy Harmony on spawn/loot/UI · scene scans · LINQ in hot path · sync I/O · O(n²) · missing `throttledUpdate` · unbounded caches · `lock` on hot path. Throttled batch: `EncounterSpawnTiming.RetryIntervalSeconds` when SpawnScaling/LootMultiplicator on (`Mod.cs`).
 
-`OnUpdate|Update|LateUpdate|FixedUpdate` · `FindObjectsOfType|FindObjectsOfTypeAll|GetComponentsInChildren` · `\.Where\(|\.Select\(|\.ToList\(|\.ToArray\(` · `lock` · `File\.|Stream` · `Thread\.Sleep` · `ModLog\.` (ungated in hot path) · `AccessTools|GetField|GetMethod|\.Invoke\(` · `new ` in loops · `$"`/concat in hot paths · `.ToList()` on dict iteration (alloc note)
-
-## Lag (main thread)
-
-Severity: Critical|High|Medium|Low|Info.
-
-Signals: per-frame `onUpdate` w/o disabled early-exit · heavy Harmony on spawn/loot/move/UI · scene scans per frame · LINQ/allocs in patch/per-frame · ungated `ModLog` · sync I/O · O(n²) actor/room/loot · missing `throttledUpdate` for periodic work · HTTP thread→Unity w/o marshal · unbounded caches · `lock` on hot path.
-
-Context: non-throttled modules every `OnUpdate`; throttled batch on `EncounterSpawnTiming.RetryIntervalSeconds` when SpawnScaling or LootMultiplicator enabled (`Mod.cs`).
-
-## Other
-
-Lifecycle: static cleared `onSessionEnded`/`onDeinitialize`; no stale `ProtoActor`/UI refs; sidecar via `SaveSlotSidecarPersistence`.
-
-Correctness: cheap disable check first in patches; `SyncFromConfig` full revert; scene deferral respected; idempotent appliers.
-
-Coupling: no other feature's private statics; shared player/session via `Features/Players/`/`GameSessionAccess`/`Util/`.
-
-Harmony: confirm `deps/decompiled/`; `AccessTools` not strings; try/catch+`ModLog.Warn`; minimal transpilers.
-
-Config: l10n for user-facing; `SaveSlotConfigStore` for slot keys; writes via queues.
-
-C#: netstandard2.1, nullable, early return, `StringComparison.Ordinal`, no single-use abstractions.
+Lifecycle: statics cleared `onSessionEnded`/`onDeinitialize` · no stale refs · sidecar via `SaveSlotSidecarPersistence`.
+Correctness: disable check first · `SyncFromConfig` revert · scene deferral · idempotent appliers.
+Harmony: `deps/decompiled/` · `AccessTools` not strings · try/catch+`ModLog.Warn`.
+C#: netstandard2.1 · nullable · early return · no single-use abstractions.
 
 ## Output
 
 ```markdown
 # Feature review: {Name}
-Scope: {N} files | Registration: {hooks, sessionScope, throttled?} | Layout: {ok|N gaps}
+Scope: {N} prod, {M} test | Registration: {hooks,sessionScope,throttled?} | Layout: {ok|gaps}
 
 ## Summary
 {≤3 sentences}
 
 ## Findings
 | Sev | Cat | Location | Issue | Fix |
-Cat: Lag|SSoT|Layout|Dead|Lifecycle|Convention|Simplify — sort Critical→Info
+Cat: Lag|SSoT|Layout|Dead|Lifecycle|Convention|Simplify|Tests|Coverage — Critical→Info
+
+## Tests
+Coverage: {symbol→test|MISSING}
+| Sev | Cat | Location | Issue | Fix |
+Gaps → `/test-feature {Name}`
 
 ## SSoT map
-| Entity | Owner | Feature usage | OK|DRIFT |
+| Entity | Owner | Usage | OK|DRIFT |
 
 ## Hot paths
 {entry→work→freq}
 
-## Layout gaps | Dead | Simplify | Positives | Next steps
+## Layout | Dead | Simplify | Positives | Next steps
 ```
 
-Rules: every finding = `file:line` or symbol; confirmed vs suspected; SSoT drift in normal gameplay = High; no style nitpicks; `make check` only if asked.
+Rules: finding=`file:line` or symbol · confirmed vs suspected · SSoT drift in gameplay=High · no style nits · `make check` only if asked.
