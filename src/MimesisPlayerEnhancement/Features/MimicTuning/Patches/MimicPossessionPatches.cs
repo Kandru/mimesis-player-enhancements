@@ -33,10 +33,16 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                 : null;
 
         internal static readonly MethodInfo RollPossessionDurationMsMethod =
-            AccessTools.Method(typeof(MimicPossessionResolver), nameof(MimicPossessionResolver.RollPossessionDurationMs));
+            AccessTools.Method(
+                typeof(MimicPossessionResolver),
+                nameof(MimicPossessionResolver.RollPossessionDurationMs),
+                [typeof(long), typeof(int)]);
 
         internal static readonly MethodInfo ScalePossessionCooltimeMsMethod =
-            AccessTools.Method(typeof(MimicPossessionResolver), nameof(MimicPossessionResolver.ScalePossessionCooltimeMs));
+            AccessTools.Method(
+                typeof(MimicPossessionResolver),
+                nameof(MimicPossessionResolver.ScalePossessionCooltimeMs),
+                [typeof(long)]);
 
         internal static readonly Dictionary<int, ProgressBarRestartState> ProgressBarRestartStates = [];
 

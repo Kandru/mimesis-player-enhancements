@@ -11,7 +11,10 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         private static bool _loggedLastVoiceTimeMiss;
 
         private static readonly MethodInfo GetResponseMaxDistanceMethod =
-            AccessTools.Method(typeof(MimicVoiceTuningResolver), nameof(MimicVoiceTuningResolver.GetResponseMaxDistance));
+            AccessTools.Method(
+                typeof(MimicVoiceTuningResolver),
+                nameof(MimicVoiceTuningResolver.GetResponseMaxDistance),
+                Type.EmptyTypes);
 
         [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.TrySpawnMimicReply))]
         internal static class TrySpawnMimicReplyPatch

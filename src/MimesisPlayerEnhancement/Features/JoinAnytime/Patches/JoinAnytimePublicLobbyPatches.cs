@@ -9,7 +9,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static readonly MethodInfo CoercePublicRoomWriteFlagMethod =
             AccessTools.Method(
                 typeof(JoinAnytimePublicLobbyTools),
-                nameof(JoinAnytimePublicLobbyTools.CoercePublicRoomWriteFlag));
+                nameof(JoinAnytimePublicLobbyTools.CoercePublicRoomWriteFlag),
+                [typeof(bool), typeof(bool)]);
 
         private static MethodBase? TargetMethod() =>
             HarmonyPatchHelper.GetEnumeratorMoveNext(

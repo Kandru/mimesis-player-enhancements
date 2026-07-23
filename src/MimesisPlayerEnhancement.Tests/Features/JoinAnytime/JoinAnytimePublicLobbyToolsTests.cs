@@ -1,3 +1,5 @@
+using System.Reflection;
+using HarmonyLib;
 using MimesisPlayerEnhancement.Features.JoinAnytime;
 using Xunit;
 
@@ -5,6 +7,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.JoinAnytime
 {
     public sealed class JoinAnytimePublicLobbyToolsTests
     {
+        [Fact]
+        public void CoercePublicRoomWriteFlag_transpiler_target_resolves_two_arg_overload()
+        {
+            MethodInfo method = AccessTools.Method(
+                typeof(JoinAnytimePublicLobbyTools),
+                nameof(JoinAnytimePublicLobbyTools.CoercePublicRoomWriteFlag),
+                [typeof(bool), typeof(bool)]);
+
+            Assert.NotNull(method);
+            Assert.Equal(2, method.GetParameters().Length);
+        }
+
         [Theory]
         [InlineData(false, false, true, true)]
         [InlineData(true, false, false, false)]
