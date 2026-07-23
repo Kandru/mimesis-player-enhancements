@@ -13,12 +13,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         [Fact]
-        public void VoiceManager_SpawnMimicVoicEventOnce_exists()
+        public void VoiceManager_TrySpawnMimicReply_exists()
         {
             using MimesisMetadataContext context = CreateContext();
             Type type = context.RequireType("VoiceManager");
 
-            MethodInfo? method = type.GetMethod("SpawnMimicVoicEventOnce", InstanceMember);
+            MethodInfo? method = type.GetMethod("TrySpawnMimicReply", InstanceMember);
 
             Assert.NotNull(method);
             Assert.Equal("Boolean", method.ReturnType.Name);
@@ -26,12 +26,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
         }
 
         [Fact]
-        public void VoiceManager_SpawnMimicVoiceWithDelay_exists()
+        public void VoiceManager_SpawnMimicVoiceAfterDelay_exists()
         {
             using MimesisMetadataContext context = CreateContext();
             Type type = context.RequireType("VoiceManager");
 
-            MethodInfo? method = type.GetMethod("SpawnMimicVoiceWithDelay", InstanceMember);
+            MethodInfo? method = type.GetMethod("SpawnMimicVoiceAfterDelay", InstanceMember);
 
             Assert.NotNull(method);
             Assert.Equal("IEnumerator", method.ReturnType.Name);
@@ -64,15 +64,29 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
         }
 
         [Fact]
-        public void MimicVoiceSpawner_TrySpawnMimicVoiceEventOnce_exists()
+        public void MimicVoiceSpawner_PrepareNearbyMimicReplies_exists()
         {
             using MimesisMetadataContext context = CreateContext();
             Type type = context.RequireType("MimicVoiceSpawner");
 
-            MethodInfo? method = type.GetMethod("TrySpawnMimicVoiceEventOnce", InstanceMember);
+            MethodInfo? method = type.GetMethod("PrepareNearbyMimicReplies", InstanceMember);
 
             Assert.NotNull(method);
-            Assert.Equal("Void", method.ReturnType.Name);
+            Assert.Contains("List`1", method.ReturnType.Name, StringComparison.Ordinal);
+            Assert.Equal(2, method.GetParameters().Length);
+        }
+
+        [Fact]
+        public void MimicVoiceSpawner_SpawnPreparedMimicVoice_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("MimicVoiceSpawner");
+
+            MethodInfo? method = type.GetMethod("SpawnPreparedMimicVoice", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Boolean", method.ReturnType.Name);
+            Assert.Single(method.GetParameters());
         }
 
         [Fact]

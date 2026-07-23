@@ -1,5 +1,4 @@
 using System.Globalization;
-using MimesisPlayerEnhancement;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.Config

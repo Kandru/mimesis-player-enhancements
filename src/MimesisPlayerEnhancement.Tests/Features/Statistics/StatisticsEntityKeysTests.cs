@@ -1,5 +1,4 @@
 using MimesisPlayerEnhancement.Features.Statistics;
-using ReluProtocol.Enum;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.Statistics

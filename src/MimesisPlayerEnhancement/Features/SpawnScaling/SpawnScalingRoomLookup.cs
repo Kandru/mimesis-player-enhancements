@@ -12,9 +12,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             AccessTools.Field(typeof(DungeonRoom), "_dungeonSpaceGroup")
             ?? throw new InvalidOperationException("DungeonRoom._dungeonSpaceGroup not found");
 
-        private static readonly FieldInfo SpaceGroupField =
-            AccessTools.Field(typeof(DungeonRoom), "_spaceGroup")
-            ?? throw new InvalidOperationException("DungeonRoom._spaceGroup not found");
+        private static readonly FieldInfo? SpaceGroupField =
+            AccessTools.Field(typeof(DungeonRoom), "_spaceGroup");
 
         private static readonly FieldInfo TilesField =
             AccessTools.Field(typeof(VSpaceTileGroup), "m_tiles")
@@ -63,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 tileGroup = dungeonTileGroup;
             }
-            else if (SpaceGroupField.GetValue(room) is VSpaceTileGroup spaceTileGroup)
+            else if (SpaceGroupField?.GetValue(room) is VSpaceTileGroup spaceTileGroup)
             {
                 tileGroup = spaceTileGroup;
             }

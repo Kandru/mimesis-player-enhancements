@@ -1,5 +1,4 @@
 using System.Globalization;
-using MimesisPlayerEnhancement;
 using MimesisPlayerEnhancement.Features.PlayerTuning;
 using Xunit;
 

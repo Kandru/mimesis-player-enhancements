@@ -186,7 +186,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
 
         [Theory]
         [InlineData("_dungeonSpaceGroup")]
-        [InlineData("_spaceGroup")]
         public void DungeonRoom_tile_group_fields_exist(string fieldName)
         {
             using MimesisMetadataContext context = CreateContext();
@@ -196,6 +195,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
 
             Assert.NotNull(field);
             Assert.Equal("ISpaceGroup", field.FieldType.Name);
+        }
+
+        [Fact]
+        public void DungeonRoom_legacy_space_group_field_is_optional()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("DungeonRoom");
+
+            FieldInfo? field = type.GetField("_spaceGroup", InstanceMember);
+
+            // Removed in 0.3.1; older game builds may still expose it.
+            _ = field;
         }
 
         [Fact]

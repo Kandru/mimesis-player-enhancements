@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Reflection;
-using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
@@ -12,14 +10,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         internal static readonly FieldInfo? LastMimicVoiceTimeField =
             AccessTools.Field(typeof(VoiceManager), "_lastMimicVoiceTime");
 
-        internal static readonly MethodInfo? GetActorByPlayerUidMethod =
-            AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.GetActorByPlayerUID));
+        internal static readonly FieldInfo? PreparedVoiceContextField =
+            AccessTools.Field(typeof(MimicVoiceSpawner.PreparedMimicVoiceSpawn), "Context");
 
-        internal static readonly MethodInfo? StartCoroutineMethod =
-            AccessTools.Method(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine), [typeof(IEnumerator)]);
-
-        internal static readonly MethodInfo? SpawnMimicVoiceWithDelayMethod =
-            AccessTools.Method(typeof(VoiceManager), "SpawnMimicVoiceWithDelay");
+        internal static readonly MethodInfo? SpawnMimicVoiceAfterDelayMethod =
+            AccessTools.Method(typeof(VoiceManager), "SpawnMimicVoiceAfterDelay", [typeof(float), typeof(Action)]);
 
         internal static bool TryGetLastMimicVoiceTime(VoiceManager instance, out float lastTime)
         {
@@ -41,6 +36,20 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         internal static bool IsServer(VoiceManager instance)
         {
             return AsServerField != null && (bool)AsServerField.GetValue(instance)!;
+        }
+
+        internal static bool TryGetPreparedVoiceContext(
+            MimicVoiceSpawner.PreparedMimicVoiceSpawn preparedVoice,
+            out MimicVoiceSpawner.MimicContext? context)
+        {
+            context = null;
+            if (PreparedVoiceContextField == null)
+            {
+                return false;
+            }
+
+            context = PreparedVoiceContextField.GetValue(preparedVoice) as MimicVoiceSpawner.MimicContext;
+            return context != null;
         }
     }
 }

@@ -10,17 +10,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 
         private static bool _loggedLastVoiceTimeMiss;
 
-        private static readonly MethodInfo RollResponseDelaySecondsMethod =
-            AccessTools.Method(typeof(MimicVoiceTuningResolver), nameof(MimicVoiceTuningResolver.RollResponseDelaySeconds));
-
         private static readonly MethodInfo GetResponseMaxDistanceMethod =
             AccessTools.Method(typeof(MimicVoiceTuningResolver), nameof(MimicVoiceTuningResolver.GetResponseMaxDistance));
 
-        private static readonly MethodInfo ScaleIntervalSecondsMethod =
-            AccessTools.Method(typeof(MimicVoiceTuningResolver), nameof(MimicVoiceTuningResolver.ScaleIntervalSeconds));
-
-        [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.SpawnMimicVoicEventOnce))]
-        internal static class SpawnMimicVoicEventOncePatch
+        [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.TrySpawnMimicReply))]
+        internal static class TrySpawnMimicReplyPatch
         {
             [HarmonyPrefix]
             internal static bool Prefix(VoiceManager __instance, long playerUID, ref bool __result)
@@ -38,7 +32,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                         return false;
                     }
 
-                    if (__instance.mimicVoiceSpawner == null)
+                    MimicVoiceSpawner? spawner = __instance.mimicVoiceSpawner;
+                    if (spawner == null)
                     {
                         __result = false;
                         return false;
@@ -76,52 +71,61 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                         return false;
                     }
 
-                    if (MimicVoiceTuningPatchSupport.SpawnMimicVoiceWithDelayMethod != null)
+                    List<MimicVoiceSpawner.PreparedMimicVoiceSpawn> preparedVoices =
+                        spawner.PrepareNearbyMimicReplies(actor.ActorID, actor.transform.position);
+                    if (preparedVoices.Count == 0)
                     {
-                        MimicVoiceTuningPatchSupport.SetLastMimicVoiceTime(__instance, now);
-                        IEnumerator routine = (IEnumerator)MimicVoiceTuningPatchSupport.SpawnMimicVoiceWithDelayMethod.Invoke(
-                            __instance,
-                            [actor.ActorID, actor.transform.position])!;
-                        __instance.StartCoroutine(routine);
+                        __result = false;
+                        return false;
                     }
+
+                    if (MimicVoiceTuningPatchSupport.SpawnMimicVoiceAfterDelayMethod == null)
+                    {
+                        return true;
+                    }
+
+                    float prevMimicVoiceTime = lastTime;
+                    MimicVoiceTuningPatchSupport.SetLastMimicVoiceTime(__instance, now);
+
+                    float delay = MimicVoiceTuningResolver.RollResponseDelaySeconds();
+                    VoiceManager voiceManager = __instance;
+                    MimicVoiceSpawner mimicSpawner = spawner;
+
+                    Action spawnAction = () =>
+                    {
+                        bool anySpawned = false;
+                        foreach (MimicVoiceSpawner.PreparedMimicVoiceSpawn item in preparedVoices)
+                        {
+                            if (mimicSpawner.SpawnPreparedMimicVoice(item))
+                            {
+                                anySpawned = true;
+                            }
+                        }
+
+                        if (!anySpawned)
+                        {
+                            MimicVoiceTuningPatchSupport.SetLastMimicVoiceTime(voiceManager, prevMimicVoiceTime);
+                        }
+                    };
+
+                    IEnumerator routine = (IEnumerator)MimicVoiceTuningPatchSupport.SpawnMimicVoiceAfterDelayMethod.Invoke(
+                        __instance,
+                        [delay, spawnAction])!;
+                    __instance.StartCoroutine(routine);
 
                     __result = true;
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn(Feature, $"SpawnMimicVoicEventOnce prefix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"TrySpawnMimicReply prefix failed — {ex.Message}");
                     return true;
                 }
             }
         }
 
-        [HarmonyPatch(typeof(VoiceManager), "SpawnMimicVoiceWithDelay")]
-        internal static class SpawnMimicVoiceWithDelayTranspiler
-        {
-            [HarmonyTranspiler]
-            internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                if (RollResponseDelaySecondsMethod == null)
-                {
-                    return instructions;
-                }
-
-                List<CodeInstruction> codes = [.. instructions];
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    if (codes[i].opcode == OpCodes.Ldc_R4 && codes[i].operand is float value && Math.Abs(value - 0.2f) < 0.0001f)
-                    {
-                        codes[i] = new CodeInstruction(OpCodes.Call, RollResponseDelaySecondsMethod);
-                    }
-                }
-
-                return codes;
-            }
-        }
-
-        [HarmonyPatch(typeof(MimicVoiceSpawner), nameof(MimicVoiceSpawner.TrySpawnMimicVoiceEventOnce))]
-        internal static class TrySpawnMimicVoiceEventOnceTranspiler
+        [HarmonyPatch(typeof(MimicVoiceSpawner), nameof(MimicVoiceSpawner.PrepareNearbyMimicReplies))]
+        internal static class PrepareNearbyMimicRepliesTranspiler
         {
             [HarmonyTranspiler]
             internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -197,15 +201,21 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             }
         }
 
-        [HarmonyPatch(typeof(MimicVoiceSpawner), "TrySpawnVoiceByContext")]
-        internal static class TrySpawnVoiceByContextPatch
+        [HarmonyPatch(typeof(MimicVoiceSpawner), nameof(MimicVoiceSpawner.SpawnPreparedMimicVoice))]
+        internal static class SpawnPreparedMimicVoicePatch
         {
             [HarmonyPostfix]
-            internal static void Postfix(MimicVoiceSpawner.MimicContext context, bool periodic, bool __result)
+            internal static void Postfix(MimicVoiceSpawner.PreparedMimicVoiceSpawn preparedVoice, bool __result)
             {
                 try
                 {
                     if (!__result || !MimicVoiceTuningResolver.ShouldApplyCustom)
+                    {
+                        return;
+                    }
+
+                    if (!MimicVoiceTuningPatchSupport.TryGetPreparedVoiceContext(preparedVoice, out MimicVoiceSpawner.MimicContext? context)
+                        || context == null)
                     {
                         return;
                     }
@@ -218,14 +228,14 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                     MimicVoiceTuningLog.DebugVoicePlayed(
                         context.MimicActorID,
                         context.MimicMonsterMasterID,
-                        periodic,
+                        periodic: false,
                         snapshot.SpeechEvent,
                         snapshot.MimickingPlayerId,
                         snapshot.PickReason);
                 }
                 catch (Exception ex)
                 {
-                    ModLog.Warn(Feature, $"TrySpawnVoiceByContext postfix failed — {ex.Message}");
+                    ModLog.Warn(Feature, $"SpawnPreparedMimicVoice postfix failed — {ex.Message}");
                 }
             }
         }

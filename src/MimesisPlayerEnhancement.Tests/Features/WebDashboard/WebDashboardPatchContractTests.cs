@@ -348,7 +348,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
 
         [Theory]
         [InlineData("_dungeonSpaceGroup")]
-        [InlineData("_spaceGroup")]
         public void DungeonRoom_space_group_fields_exist(string fieldName)
         {
             using MimesisMetadataContext context = CreateContext();
@@ -357,6 +356,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
             FieldInfo? field = type.GetField(fieldName, InstanceMember);
 
             Assert.NotNull(field);
+        }
+
+        [Fact]
+        public void DungeonRoom_legacy_space_group_field_is_optional()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("DungeonRoom");
+
+            FieldInfo? field = type.GetField("_spaceGroup", InstanceMember);
+
+            // Removed in 0.3.1; older game builds may still expose it.
+            _ = field;
         }
 
         [Theory]

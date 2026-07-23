@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Reflection;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {

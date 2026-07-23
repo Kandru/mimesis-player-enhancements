@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement;
 using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using Xunit;

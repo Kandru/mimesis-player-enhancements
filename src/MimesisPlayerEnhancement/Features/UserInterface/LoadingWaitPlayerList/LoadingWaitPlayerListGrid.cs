@@ -1,7 +1,5 @@
 using System.Reflection;
 using System.Threading;
-using MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen;
-using MimesisPlayerEnhancement.Ui;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList

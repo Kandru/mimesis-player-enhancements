@@ -16,7 +16,7 @@
 
 Mimesis Player Enhancement is a mod for Mimesis that consolidates and extends a lot of tweaks into one maintained package. Hosts can raise the player limits, expand mimic voice recording and persistence (across game sessions), allow players to join at any time, scale spawns/loot/money to match their needs, randomize dungeons, tune player and mimic behavior, control weather, and track session statistics — all from one config file. Clients do not need the mod; only the host does. It also replaces the save-game UI with a scrollable picker (up to 99 manual slots) and always shows the installed mod version in the main and in-game menus.
 
-Tested with **MIMESIS 0.3.0** and **MelonLoader 0.7.3**.
+Tested with **MIMESIS 0.3.1** and **MelonLoader 0.7.3**.
 
 ## Features
 

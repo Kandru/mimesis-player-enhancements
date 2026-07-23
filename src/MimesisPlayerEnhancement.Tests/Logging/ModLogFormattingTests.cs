@@ -1,5 +1,4 @@
 using MelonLoader.Logging;
-using MimesisPlayerEnhancement;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Logging

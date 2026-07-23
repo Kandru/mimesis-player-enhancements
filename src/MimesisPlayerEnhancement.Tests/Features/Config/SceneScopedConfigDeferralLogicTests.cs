@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement;
 using MimesisPlayerEnhancement.Util;
 using Xunit;
 

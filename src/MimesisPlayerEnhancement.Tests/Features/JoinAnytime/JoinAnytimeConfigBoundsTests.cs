@@ -1,4 +1,3 @@
-using MimesisPlayerEnhancement;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.JoinAnytime
