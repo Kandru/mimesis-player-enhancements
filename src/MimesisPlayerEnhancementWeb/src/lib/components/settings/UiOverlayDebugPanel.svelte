@@ -7,7 +7,6 @@
   import type { UiDebugStatusDto } from '$lib/types';
 
   let status = $state<UiDebugStatusDto | null>(null);
-  let pending = $state<string | null>(null);
 
   const overlays = [
     { id: 'spectator', labelKey: 'dashboard.debug_overlay_spectator', descKey: 'dashboard.debug_overlay_spectator_desc' },
@@ -15,6 +14,10 @@
     { id: 'escMenu', labelKey: 'dashboard.debug_overlay_esc_menu', descKey: 'dashboard.debug_overlay_esc_menu_desc' },
     { id: 'survivalResult', labelKey: 'dashboard.debug_overlay_survival_result', descKey: 'dashboard.debug_overlay_survival_result_desc' },
   ] as const;
+
+  type OverlayId = (typeof overlays)[number]['id'];
+
+  let pending = $state<OverlayId | null>(null);
 
   const ingame = $derived(status?.ingame ?? !!dashboard.status.sessionScene);
   const alive = $derived(status?.alive ?? dashboard.getLocalPlayer()?.isAlive ?? false);
@@ -29,7 +32,7 @@
     }
   }
 
-  async function setActive(id: string, active: boolean) {
+  async function setActive(id: OverlayId, active: boolean) {
     if (!available || pending || isActive(id) === active) return;
     pending = id;
     try {
