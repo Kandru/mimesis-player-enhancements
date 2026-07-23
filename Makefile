@@ -51,6 +51,8 @@ ifdef COPY_TO_MODS
   MOD_EXTRA += -p:CopyToMods=true
 endif
 
+DECOMPILE_ARGS ?=
+
 DOCKER_REPO_MOUNT := -v "$(ROOT):/repo" -w /repo
 DOCKER_USER := --user "$$(id -u):$$(id -g)"
 # Non-root containers cannot run SDK workload integrity checks (harmless for this repo).
@@ -61,7 +63,7 @@ DOCKER_NUGET_CACHE := -v $(NUGET_CACHE_VOL):/cache/nuget -e NUGET_PACKAGES=/cach
 DOCKER_NPM_CACHE := -v $(NPM_CACHE_VOL):/cache/npm -e npm_config_cache=/cache/npm
 
 .PHONY: help all debug release webinterface thunderstore tools test check clean \
-	require-docker ensure-ops-image ensure-cache-volumes deps validate-locale stage-web-sources \
+	require-docker ensure-ops-image ensure-cache-volumes deps decompile validate-locale stage-web-sources \
 	mod format-csharp check-web
 
 .DEFAULT_GOAL := help
@@ -85,6 +87,7 @@ help:
 	@echo "  check         Validate locales, format C#, type-check Svelte"
 	@echo "  clean         Empty dist output dirs (host only; keeps folder layout)"
 	@echo "  deps          Download reference assemblies (first-time setup)"
+	@echo "  decompile     Decompile game assemblies → deps/decompiled/<version>/ (ilspycmd in Docker)"
 	@echo ""
 	@echo "Containers: mpe-ops:local, dotnet/sdk:10.0, node:22-alpine (all --rm)"
 	@echo "Package caches: $(NUGET_CACHE_VOL), $(NPM_CACHE_VOL) (named Docker volumes)"
@@ -94,6 +97,7 @@ help:
 	@echo "  MIMESIS_PATH=…    Game install for Docker (default: PathConfig.props)"
 	@echo "  SKIP_WEB=1        Skip webinterface; pass -p:SkipWebBuild=true"
 	@echo "  COPY_TO_MODS=1    Copy DLL into game Mods/ after build"
+	@echo "  DECOMPILE_ARGS=…  Extra args for decompile (e.g. --force, --all-managed)"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make debug"
@@ -143,6 +147,24 @@ deps: require-docker ensure-ops-image
 			$(OPS_IMAGE) \
 			./scripts/bootstrap-deps.sh; \
 	fi
+
+decompile: require-docker ensure-cache-volumes deps
+	@echo "==> Decompiling game assemblies via Docker…"
+	@docker run --rm \
+		$(DOCKER_USER) \
+		$(DOCKER_REPO_MOUNT) \
+		$(GAME_MOUNT) \
+		$(DOTNET_ENV) \
+		$(DOCKER_NUGET_CACHE) \
+		$(DOTNET_IMAGE) \
+		bash -c 'set -euo pipefail; \
+			TOOL_DIR=/cache/nuget/dotnet-tools; \
+			mkdir -p "$$TOOL_DIR"; \
+			if [[ ! -x "$$TOOL_DIR/ilspycmd" ]]; then \
+				dotnet tool install ilspycmd --tool-path "$$TOOL_DIR"; \
+			fi; \
+			export PATH="$$TOOL_DIR:$$PATH"; \
+			./scripts/decompile-game.sh $(DECOMPILE_ARGS)'
 
 validate-locale: ensure-ops-image
 	@echo "==> Validating locale files via Docker…"

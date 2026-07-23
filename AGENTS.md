@@ -6,15 +6,15 @@ No `.tmp-*` scratch folders at repo root.
 
 | Need | Path |
 |------|------|
-| Game source (types, methods, constants) | `deps/decompiled/**/*` |
+| Game source (types, methods, constants) | `deps/decompiled/<version>/**/*` |
 | MelonLoader APIs | `src/MimesisReflectionTool/` |
 | Quick metadata (optional) | `src/MimesisInspectionTool/` |
 | Dungeon seed pools | `src/MimesisSeedScanner/` |
-| Refresh decompiled after game patch | `scripts/decompile-game.sh` |
+| Refresh decompiled after game patch | `make decompile` (or `scripts/decompile-game.sh` with host ilspycmd) |
 
 `make deps` → `deps/reference/Managed/` + `deps/reference/MelonLoader/net35/` (fallback: `MIMESIS_PATH`, `--game`/`--managed`/`--melonloader`). Tools: `make tools` → `src/*/bin/`. Extend existing tool `Program.cs` for new commands; new concern → new `src/` project with README.
 
-Start in `deps/decompiled/` for patch design. InspectionTool for one-off metadata; ReflectionTool for MelonLoader.
+Start in `deps/decompiled/<version>/` for patch design. InspectionTool for one-off metadata; ReflectionTool for MelonLoader.
 
 ## Layout & build
 
@@ -37,7 +37,7 @@ Example: `Features/MorePlayers/MorePlayersPatches.cs` + `MorePlayers/Patches/`.
 
 ## Harmony
 
-- Confirm targets in `deps/decompiled/` before patching
+- Confirm targets in `deps/decompiled/<version>/` before patching
 - `AccessTools.Method`/`Field` over string literals; `TargetMethod()` must return valid `MethodBase`
 - try/catch in patch bodies; `ModLog.Warn(Feature, …)` on recoverable failure
 

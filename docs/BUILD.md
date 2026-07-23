@@ -4,6 +4,7 @@ You need **Docker** only. No local Python, Node.js, .NET SDK, or MIMESIS install
 
 ```bash
 make deps          # first time only — downloads reference assemblies (ops container)
+make decompile     # game assemblies → deps/decompiled/<version>/ (ilspycmd in Docker)
 make debug         # mod → dist/debug/ (+ webinterface)
 make release       # mod → dist/prod/ (+ webinterface)
 make webinterface  # Svelte UI only → dist/webinterface/debug/
@@ -20,7 +21,7 @@ make clean         # empty dist/debug, prod, webinterface, thunderstore (host on
 | Image | Used for |
 |-------|----------|
 | `mpe-ops:local` | deps bootstrap, locale validation, web staging, Thunderstore packaging |
-| `mcr.microsoft.com/dotnet/sdk:10.0` | mod/tools compile, C# format |
+| `mcr.microsoft.com/dotnet/sdk:10.0` | mod/tools compile, C# format, decompile (ilspycmd) |
 | `node:22-alpine` | webinterface Vite build, Svelte type-check |
 
 **Package caches** (named Docker volumes, persist across runs):
@@ -43,6 +44,8 @@ If `PathConfig.props` or `MIMESIS_PATH` is set, the game install is mounted read
 ```bash
 SKIP_WEB=1 make debug
 COPY_TO_MODS=1 MIMESIS_PATH="/path/to/MIMESIS" make debug
+make decompile DECOMPILE_ARGS="--force"
+make decompile DECOMPILE_ARGS="--all-managed"
 make webinterface CONFIG=Release
 ```
 
