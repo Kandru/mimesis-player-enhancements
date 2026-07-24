@@ -1,3 +1,5 @@
+using Mimic;
+
 namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyPatches
@@ -48,7 +50,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 ("FinalPrice/ItemElement", AccessTools.PropertyGetter(typeof(ItemElement), nameof(ItemElement.FinalPrice))),
                 ("toItemInfo/ConsumableItemElement", AccessTools.Method(typeof(ConsumableItemElement), nameof(ConsumableItemElement.toItemInfo))),
                 ("toItemInfo/MiscellanyItemElement", AccessTools.Method(typeof(MiscellanyItemElement), nameof(MiscellanyItemElement.toItemInfo))),
-                ("GetMeanPrice/ItemMasterInfo", AccessTools.Method(typeof(ItemMasterInfo), nameof(ItemMasterInfo.GetMeanPrice))),
                 ("GetNewItemElement/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.GetNewItemElement))),
                 ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
                 ("InitShopItems/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))),
@@ -56,6 +57,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 ("OnEnterChannel/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnEnterChannel))),
                 ("OnRequestStartSession/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnRequestStartSession))),
                 ("HandleReinforceItem/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.HandleReinforceItem))),
+                ("ReinforceCost/InventoryItem", AccessTools.PropertyGetter(typeof(InventoryItem), nameof(InventoryItem.ReinforceCost))),
             ]);
         }
     }

@@ -3,6 +3,8 @@ using System.Reflection.Emit;
 
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L538-584
+    // game@0.3.1 Assembly-CSharp/Bifrost.Cooked/ItemEquipmentInfo.cs:L78
     [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.HandleReinforceItem))]
     internal static class VPlayerHandleReinforceItemPatch
     {

@@ -10,8 +10,15 @@ namespace MimesisPlayerEnhancement.Features.Economy
         private static bool _scrapScalingAnnounced;
         private static int _staticScrapPriceCacheGeneration;
         private static int _trackedSessionPlayerCount = -1;
-        private static readonly Dictionary<ScaledMeanPriceKey, int> _scaledMeanPriceByMasterId = [];
         private static readonly Dictionary<StaticScrapPriceKey, int> _staticScrapPriceByValue = [];
+        private static readonly Dictionary<int, ScrapPricingKind> _scrapPricingKindByMasterId = [];
+
+        private enum ScrapPricingKind : byte
+        {
+            Static = 0,
+            GaugeScaled = 1,
+            OverflowCapable = 2,
+        }
 
         internal static bool IsEnabled()
         {
@@ -65,7 +72,9 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
         internal static void ApplyStartupMoney(MaintenanceRoom room, ref int currency)
         {
-            if (!IsEnabled() || StartupMoneyLoadGuard.IsActive)
+            if (!IsEnabled()
+                || StartupMoneyLoadGuard.IsActive
+                || StartupMoneyLoadGuard.SuppressStartupScale)
             {
                 return;
             }
@@ -85,8 +94,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
             _scrapEffectiveMultiplier = FeatureToggleGate.NeutralMultiplier;
             _scrapScalingAnnounced = false;
             _staticScrapPriceCacheGeneration++;
-            _scaledMeanPriceByMasterId.Clear();
             _staticScrapPriceByValue.Clear();
+            _scrapPricingKindByMasterId.Clear();
         }
 
         internal static void OnSessionEnded()
@@ -162,31 +171,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             return EconomyResolver.ScaleAmount(vanilla, effective);
         }
 
-        internal static int ScaleCachedScrapMeanPrice(int masterId, int vanillaMean)
-        {
-            if (!IsEnabled() || vanillaMean == 0 || masterId <= 0)
-            {
-                return vanillaMean;
-            }
-
-            float effective = ResolveScrapEffectiveMultiplier(out int playerCount);
-            if (effective == 1f)
-            {
-                return vanillaMean;
-            }
-
-            ScaledMeanPriceKey meanKey = new(masterId, playerCount);
-            if (_scaledMeanPriceByMasterId.TryGetValue(meanKey, out int cached))
-            {
-                return cached;
-            }
-
-            AnnounceScrapScalingOnce(playerCount, effective);
-            int scaled = EconomyResolver.ScaleAmount(vanillaMean, effective);
-            _scaledMeanPriceByMasterId[meanKey] = scaled;
-            return scaled;
-        }
-
         internal static int ScaleReinforcePrice(MaintenanceRoom room, int vanilla)
         {
             if (!IsEnabled())
@@ -195,6 +179,17 @@ namespace MimesisPlayerEnhancement.Features.Economy
             }
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
+            return ScaleForType(MoneyType.ReinforcePrice, vanilla, playerCount);
+        }
+
+        internal static int ScaleReinforcePrice(int vanilla)
+        {
+            if (!IsEnabled())
+            {
+                return vanilla;
+            }
+
+            int playerCount = SessionPlayerCountHelper.ResolveFromSession();
             return ScaleForType(MoneyType.ReinforcePrice, vanilla, playerCount);
         }
 
@@ -223,19 +218,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 out scaledPrice);
         }
 
-        private readonly struct ScaledMeanPriceKey(int masterId, int playerCount) : IEquatable<ScaledMeanPriceKey>
-        {
-            private readonly int _masterId = masterId;
-            private readonly int _playerCount = playerCount;
-
-            public bool Equals(ScaledMeanPriceKey other) =>
-                _masterId == other._masterId && _playerCount == other._playerCount;
-
-            public override bool Equals(object? obj) => obj is ScaledMeanPriceKey other && Equals(other);
-
-            public override int GetHashCode() => HashCode.Combine(_masterId, _playerCount);
-        }
-
         private readonly struct StaticScrapPriceKey(int masterId, int vanillaPrice, int generation, int playerCount)
             : IEquatable<StaticScrapPriceKey>
         {
@@ -262,18 +244,33 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 return false;
             }
 
-            ItemMasterInfo? info = HubGameDataAccess.Excel?.GetItemInfo(item.ItemMasterID);
-            if (info is not ItemEquipmentInfo equipmentInfo)
+            ScrapPricingKind kind = ResolveScrapPricingKind(item.ItemMasterID);
+            return kind == ScrapPricingKind.GaugeScaled
+                || (kind == ScrapPricingKind.OverflowCapable && equipment.RemainAmount == -1);
+        }
+
+        private static ScrapPricingKind ResolveScrapPricingKind(int masterId)
+        {
+            if (_scrapPricingKindByMasterId.TryGetValue(masterId, out ScrapPricingKind cached))
             {
-                return false;
+                return cached;
             }
 
-            if (equipment.RemainAmount == -1 && equipmentInfo.OverflowPrice != 0)
+            ScrapPricingKind kind = ScrapPricingKind.Static;
+            if (HubGameDataAccess.Excel?.GetItemInfo(masterId) is ItemEquipmentInfo equipmentInfo)
             {
-                return true;
+                if (equipmentInfo.PriceIncPerGauge > 0)
+                {
+                    kind = ScrapPricingKind.GaugeScaled;
+                }
+                else if (equipmentInfo.OverflowPrice != 0)
+                {
+                    kind = ScrapPricingKind.OverflowCapable;
+                }
             }
 
-            return equipmentInfo.PriceIncPerGauge > 0;
+            _scrapPricingKindByMasterId[masterId] = kind;
+            return kind;
         }
 
         private static float ResolveScrapEffectiveMultiplier(out int playerCount)

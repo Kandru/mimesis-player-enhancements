@@ -77,18 +77,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         }
 
         [Fact]
-        public void ItemMasterInfo_GetMeanPrice_exists()
-        {
-            using MimesisMetadataContext context = CreateContext();
-            Type type = context.RequireType("ItemMasterInfo");
-
-            MethodInfo? method = type.GetMethod("GetMeanPrice", InstanceMember);
-
-            Assert.NotNull(method);
-            Assert.Equal("Int32", method.ReturnType.Name);
-        }
-
-        [Fact]
         public void IVroom_GetNewItemElement_exists()
         {
             using MimesisMetadataContext context = CreateContext();
@@ -98,6 +86,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
 
             Assert.NotNull(method);
             Assert.Equal("ItemElement", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void InventoryItem_ReinforceCost_property_has_getter()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("InventoryItem");
+
+            PropertyInfo? property = type.GetProperty("ReinforceCost", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.NotNull(property.GetGetMethod(nonPublic: true));
+            Assert.Equal("Int32", property.PropertyType.Name);
         }
 
         [Theory]

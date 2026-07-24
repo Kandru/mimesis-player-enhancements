@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L43-112
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.InitMaintenenceRoom))]
     internal static class VRoomManagerInitMaintenenceRoomStartupMoneyPatch
     {

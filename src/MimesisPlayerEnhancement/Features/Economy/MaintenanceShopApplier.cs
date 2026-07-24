@@ -192,8 +192,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
             ApplyBuyPrices(room);
             ApplyDiscounts(room);
-            state.AppliedConfigGeneration = _configGeneration;
-            state.AppliedPlayerCount = playerCount;
+            MarkApplied(room, playerCount);
         }
 
         private static void MarkDirty(MaintenanceRoom room)
@@ -206,14 +205,16 @@ namespace MimesisPlayerEnhancement.Features.Economy
             GetState(room).AppliedConfigGeneration = -1;
         }
 
-        private static void MarkApplied(MaintenanceRoom room)
+        private static void MarkApplied(MaintenanceRoom room, int? playerCount = null)
         {
             if (room == null)
             {
                 return;
             }
 
-            GetState(room).AppliedConfigGeneration = Volatile.Read(ref _configGeneration);
+            RoomState state = GetState(room);
+            state.AppliedConfigGeneration = Volatile.Read(ref _configGeneration);
+            state.AppliedPlayerCount = playerCount ?? SessionPlayerCountHelper.ResolveFromRoom(room);
         }
 
         private static void ClearBasePrices(MaintenanceRoom room)
@@ -258,7 +259,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
                 if (!basePrices.TryGetValue(entry.Key, out int basePrice))
                 {
-                    basePrice = GetBasePrice(info.Price, info.DiscountRate);
+                    basePrice = MaintenanceShopPricing.GetBasePrice(info.Price, info.DiscountRate);
                     basePrices[entry.Key] = basePrice;
                 }
 
@@ -271,7 +272,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 }
                 else
                 {
-                    newPrice = ApplyDiscountRate(scaledBase, info.DiscountRate);
+                    newPrice = MaintenanceShopPricing.ApplyDiscountRate(scaledBase, info.DiscountRate);
                 }
 
                 if (info.Price == newPrice)
@@ -332,22 +333,22 @@ namespace MimesisPlayerEnhancement.Features.Economy
                     continue;
                 }
 
-                int basePrice = GetBasePrice(info.Price, info.DiscountRate);
+                int basePrice = MaintenanceShopPricing.GetBasePrice(info.Price, info.DiscountRate);
                 if (basePrice <= 0)
                 {
                     continue;
                 }
 
-                if (!RollDiscount(chancePercent))
+                if (!MaintenanceShopPricing.RollDiscount(chancePercent))
                 {
                     info.DiscountRate = 0f;
                     info.Price = basePrice;
                     continue;
                 }
 
-                int discountPercent = RollDiscountPercent(minPercent, maxPercent);
+                int discountPercent = MaintenanceShopPricing.RollDiscountPercent(minPercent, maxPercent);
                 info.DiscountRate = discountPercent / 100f;
-                info.Price = ApplyDiscountRate(basePrice, info.DiscountRate);
+                info.Price = MaintenanceShopPricing.ApplyDiscountRate(basePrice, info.DiscountRate);
                 discounted++;
             }
 
@@ -358,33 +359,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 ModLog.Debug(Feature, $"Shop discounts applied — {discounted}/{priceForItems.Count} items discounted " +
                     $"(chance={chancePercent}%, range={minPercent}-{maxPercent}%)");
             }
-        }
-
-        private static int GetBasePrice(int price, float discountRate)
-        {
-            return price <= 0 ? 0 : discountRate is <= 0f or >= 1f ? price : Math.Max(1, (int)Math.Round(price / (1f - discountRate)));
-        }
-
-        private static int ApplyDiscountRate(int basePrice, float discountRate)
-        {
-            if (basePrice <= 0)
-            {
-                return 0;
-            }
-
-            return discountRate is <= 0f or >= 1f
-                ? basePrice
-                : Math.Max(1, (int)Math.Round(basePrice * (1f - discountRate)));
-        }
-
-        private static bool RollDiscount(int chancePercent)
-        {
-            return chancePercent >= 100 || chancePercent > 0 && SimpleRandUtil.Next(0, 10000) < chancePercent * 100;
-        }
-
-        private static int RollDiscountPercent(int minPercent, int maxPercent)
-        {
-            return maxPercent <= minPercent ? minPercent : SimpleRandUtil.Next(minPercent, maxPercent + 1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
