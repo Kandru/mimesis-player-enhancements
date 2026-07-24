@@ -19,6 +19,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             MimicEmoteProps.MimicEmotePropsResolver.RefreshConfigCache();
             MimicHorn.MimicHornResolver.RefreshConfigCache();
             Patches.MimicDecisionAgentPatchSupport.ApplyTuningToAllActiveAgents();
+            Patches.MimicHornPatchSupport.ApplyRecorderTuningToAllVoiceManagers();
 
             bool masterEnabled = MimicVoiceTuningResolver.IsMasterEnabled;
             MimicVoiceTuningMode voiceMode = MimicVoiceTuningResolver.Mode;

@@ -3,6 +3,7 @@ using DLAgent;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicEmoteProps;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicSocial;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicTrust;
+using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
@@ -101,11 +102,39 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             }
         }
 
+        internal static void SyncTuning(DLDecisionAgent agent)
+        {
+            if (MimicTrustResolver.ShouldApplyCustom)
+            {
+                ApplyTrustTuning(agent);
+            }
+            else
+            {
+                RevertTrustTuning(agent);
+            }
+
+            if (MimicSocialResolver.ShouldApplyCustom)
+            {
+                ApplySocialTuning(agent);
+            }
+            else
+            {
+                RevertSocialTuning(agent);
+            }
+
+            if (MimicEmotePropsResolver.ShouldApplyCustom)
+            {
+                ApplyEmotePropsTuning(agent);
+            }
+            else
+            {
+                RevertEmotePropsTuning(agent);
+            }
+        }
+
         internal static void ApplyTuningToAllActiveAgents()
         {
-            if (!MimicTrustResolver.ShouldApplyCustom
-                && !MimicSocialResolver.ShouldApplyCustom
-                && !MimicEmotePropsResolver.ShouldApplyCustom)
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
@@ -116,7 +145,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             {
                 if (agent != null)
                 {
-                    ApplyTuning(agent);
+                    SyncTuning(agent);
                 }
             }
         }
@@ -166,6 +195,42 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             SetFloat(UseChargerProbField, agent, MimicEmotePropsResolver.UseChargerChance);
             SetFloat(UseTransmitterProbField, agent, MimicEmotePropsResolver.UseTransmitterChance);
             SetFloat(UseShutterSwitchProbField, agent, MimicEmotePropsResolver.UseShutterSwitchChance);
+        }
+
+        private static void RevertTrustTuning(DLDecisionAgent agent)
+        {
+            SetFloat(OutdoorTrustScoreMultiplierField, agent, MimicTrustResolver.VanillaOutdoorMultiplier);
+            SetFloat(TrustScoreLookingDeltaField, agent, MimicTrustResolver.VanillaLookingDelta);
+            SetFloat(TrustScoreNotLookingDeltaField, agent, MimicTrustResolver.VanillaNotLookingDelta);
+            SetFloat(TrustScoreApproachDeltaField, agent, MimicTrustResolver.VanillaApproachDelta);
+            SetFloat(TrustScoreMaintainDeltaField, agent, MimicTrustResolver.VanillaMaintainDelta);
+            SetFloat(TrustScoreWalkAwayDeltaField, agent, MimicTrustResolver.VanillaWalkAwayDelta);
+            SetFloat(TrustScoreSprintAwayDeltaField, agent, MimicTrustResolver.VanillaSprintAwayDelta);
+            SetFloat(TrustScoreHitDamageMultiplierField, agent, MimicTrustResolver.VanillaHitDamageMultiplier);
+            SetFloat(TrustScoreFriendlyThresholdField, agent, MimicTrustResolver.VanillaFriendlyThreshold);
+            SetFloat(TrustScoreDistrustThresholdField, agent, MimicTrustResolver.VanillaDistrustThreshold);
+            SetFloat(ChaseModeActivationDistanceField, agent, MimicTrustResolver.VanillaChaseActivationDistance);
+            SetFloat(ChaseForceRunDistanceField, agent, MimicTrustResolver.VanillaChaseForceRunDistance);
+            SetFloat(TrustScoreInitialField, agent, MimicTrustResolver.VanillaInitialTrust);
+            SetFloat(TrustScoreBehaviorTrustThresholdField, agent, MimicTrustResolver.VanillaBehaviorTrust);
+        }
+
+        private static void RevertSocialTuning(DLDecisionAgent agent)
+        {
+            SetFloat(MimicRunawayProbField, agent, MimicSocialResolver.VanillaRunawayChance);
+            SetFloat(JumpRespondProbField, agent, MimicSocialResolver.VanillaJumpCopyChance);
+            SetFloat(CopyTargetSlotChangeProbField, agent, MimicSocialResolver.VanillaSlotFollowChangeChance);
+        }
+
+        private static void RevertEmotePropsTuning(DLDecisionAgent agent)
+        {
+            SetFloat(EmoteRespondProbField, agent, MimicEmotePropsResolver.VanillaEmoteRespondChance);
+            SetFloat(EmoteSuggestProbField, agent, MimicEmotePropsResolver.VanillaEmoteSuggestChance);
+            SetFloat(ReactToSprinklerProbField, agent, MimicEmotePropsResolver.VanillaReactToSprinklerChance);
+            SetFloat(UseTrapSwitchProbField, agent, MimicEmotePropsResolver.VanillaUseTrapSwitchChance);
+            SetFloat(UseChargerProbField, agent, MimicEmotePropsResolver.VanillaUseChargerChance);
+            SetFloat(UseTransmitterProbField, agent, MimicEmotePropsResolver.VanillaUseTransmitterChance);
+            SetFloat(UseShutterSwitchProbField, agent, MimicEmotePropsResolver.VanillaUseShutterSwitchChance);
         }
 
         private static float ReadFloat(FieldInfo? field, DLDecisionAgent agent, float fallback)

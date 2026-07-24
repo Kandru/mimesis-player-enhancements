@@ -1,6 +1,7 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicHorn;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession;
+using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
@@ -19,14 +20,42 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 
         internal static void ApplyRecorderTuning(MimicHornRecorder recorder)
         {
-            if (!MimicHornResolver.ShouldApplyCustom)
+            if (MimicHornResolver.ShouldApplyCustom)
+            {
+                MaxDurationField?.SetValue(recorder, MimicHornResolver.MaxRecordSeconds);
+                RecordingIntervalField?.SetValue(recorder, MimicHornResolver.RecordingGapSeconds);
+                MaxRecordsCountField?.SetValue(recorder, MimicHornResolver.MaxStoredRecords);
+                return;
+            }
+
+            MaxDurationField?.SetValue(recorder, MimicHornResolver.VanillaMaxRecordSeconds);
+            RecordingIntervalField?.SetValue(recorder, MimicHornResolver.VanillaRecordingGapSeconds);
+            MaxRecordsCountField?.SetValue(recorder, MimicHornResolver.VanillaMaxStoredRecords);
+        }
+
+        internal static void ApplyRecorderTuningToAllVoiceManagers()
+        {
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {
                 return;
             }
 
-            MaxDurationField?.SetValue(recorder, MimicHornResolver.MaxRecordSeconds);
-            RecordingIntervalField?.SetValue(recorder, MimicHornResolver.RecordingGapSeconds);
-            MaxRecordsCountField?.SetValue(recorder, MimicHornResolver.MaxStoredRecords);
+            FieldInfo? recorderField = AccessTools.Field(typeof(VoiceManager), "_mimicHornRecorder");
+            if (recorderField == null)
+            {
+                return;
+            }
+
+            foreach (VoiceManager voiceManager in UnityEngine.Object.FindObjectsByType<VoiceManager>(
+                         UnityEngine.FindObjectsInactive.Exclude,
+                         UnityEngine.FindObjectsSortMode.None))
+            {
+                if (voiceManager != null
+                    && recorderField.GetValue(voiceManager) is MimicHornRecorder recorder)
+                {
+                    ApplyRecorderTuning(recorder);
+                }
+            }
         }
     }
 
@@ -38,11 +67,6 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         {
             try
             {
-                if (!MimicHornResolver.ShouldApplyCustom)
-                {
-                    return;
-                }
-
                 FieldInfo? recorderField = AccessTools.Field(typeof(VoiceManager), "_mimicHornRecorder");
                 if (recorderField?.GetValue(__instance) is MimicHornRecorder recorder)
                 {

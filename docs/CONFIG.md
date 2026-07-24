@@ -322,7 +322,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 **Only the host needs this mod enabled for the whole lobby to get the effect. Joining clients do not need it.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
 
-**Live apply:** Changes take effect on the next mimic voice attempt, AI activation, inventory copy, or E-possession — no restart required. Active sessions are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked while possessed.
+**Live apply:** Changes take effect on the next mimic voice attempt, AI activation, inventory copy, or E-possession — no restart required. Trust, social, emote, and horn settings sync to active mimics when config is saved. Voice replies and possession sessions already in progress are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked while possessed.
 
 ### Voice (`MimicVoiceTuningMode`)
 

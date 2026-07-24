@@ -337,7 +337,7 @@ namespace MimesisPlayerEnhancement
             LootMultiplicatorConfig.WireValidation(logger);
             EconomyConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
-            MimicTuningConfig.WireValidation(logger);
+            MimicTuningConfig.WireValidation();
             PlayerTuningConfig.WireValidation(logger);
             DungeonRandomizerConfig.WireValidation(logger);
             WeatherConfig.WireValidation(logger);

@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 {
     internal static class MimicTuningConfig
     {
+        private const string Feature = "MimicTuning";
+
         internal const string SectionId = "MimesisPlayerEnhancement_MimicTuning";
 
         private static MelonPreferences_Category _category = null!;
@@ -310,38 +312,38 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             RefreshAllCaches();
         }
 
-        internal static void WireValidation(MelonLogger.Instance logger)
+        internal static void WireValidation()
         {
             ModConfig.EnableMimicTuning.OnEntryValueChanged.Subscribe((_, _) =>
                 NotifyAndRefresh(ModConfig.EnableMimicTuning));
             ModConfig.MimicVoiceTuningMode.OnEntryValueChanged.Subscribe((_, value) =>
-                OnVoiceModeChanged(logger, value));
+                OnVoiceModeChanged(value));
             ModConfig.PeriodicVoiceIntervalMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
-                OnIntervalMultiplierChanged(logger, value));
+                OnIntervalMultiplierChanged(value));
             ModConfig.PlayerVoiceResponseChancePercent.OnEntryValueChanged.Subscribe((_, value) =>
-                OnChanceChanged(logger, value));
+                OnChanceChanged(value));
             ModConfig.PlayerVoiceResponseCooldownSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnCooldownChanged(logger, value));
+                OnCooldownChanged(value));
             ModConfig.PlayerVoiceResponseDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnDelayRangeChanged(logger, value, ModConfig.PlayerVoiceResponseDelayMinSeconds, ModConfig.PlayerVoiceResponseDelayMaxSeconds));
+                OnDelayRangeChanged(value, ModConfig.PlayerVoiceResponseDelayMinSeconds, ModConfig.PlayerVoiceResponseDelayMaxSeconds));
             ModConfig.PlayerVoiceResponseDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnDelayRangeChanged(logger, value, ModConfig.PlayerVoiceResponseDelayMinSeconds, ModConfig.PlayerVoiceResponseDelayMaxSeconds));
+                OnDelayRangeChanged(value, ModConfig.PlayerVoiceResponseDelayMinSeconds, ModConfig.PlayerVoiceResponseDelayMaxSeconds));
             ModConfig.PlayerVoiceResponseMaxDistance.OnEntryValueChanged.Subscribe((_, value) =>
-                OnDistanceChanged(logger, value));
+                OnDistanceChanged(value));
             ModConfig.MimicInventoryCopyMode.OnEntryValueChanged.Subscribe((_, value) =>
-                OnInventoryModeChanged(logger, value));
+                OnInventoryModeChanged(value));
             ModConfig.MimicInventoryCopyPickRule.OnEntryValueChanged.Subscribe((_, value) =>
-                OnInventoryPickRuleChanged(logger, value));
+                OnInventoryPickRuleChanged(value));
             ModConfig.EnableMimicPossessionTuning.OnEntryValueChanged.Subscribe((_, _) =>
                 NotifyAndRefresh(ModConfig.EnableMimicPossessionTuning));
             ModConfig.RandomizeMimicPossessionDuration.OnEntryValueChanged.Subscribe((_, _) =>
                 NotifyAndRefresh(ModConfig.RandomizeMimicPossessionDuration));
             ModConfig.MimicPossessionMinTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMinTimeSeconds));
+                OnMimicPossessionDurationSecondsChanged(value, ModConfig.MimicPossessionMinTimeSeconds));
             ModConfig.MimicPossessionMaxTimeSeconds.OnEntryValueChanged.Subscribe((_, value) =>
-                OnMimicPossessionDurationSecondsChanged(logger, value, ModConfig.MimicPossessionMaxTimeSeconds));
+                OnMimicPossessionDurationSecondsChanged(value, ModConfig.MimicPossessionMaxTimeSeconds));
             ModConfig.MimicPossessionCooltimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
-                OnMimicPossessionCooltimeMultiplierChanged(logger, value));
+                OnMimicPossessionCooltimeMultiplierChanged(value));
 
             WireNotify(ModConfig.ClipReuseCooldownSeconds);
             WireNotify(ModConfig.DeathMatchClipReuseCooldownSeconds);
@@ -477,11 +479,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             RefreshAllCaches();
         }
 
-        private static void OnVoiceModeChanged(MelonLogger.Instance logger, string value)
+        private static void OnVoiceModeChanged(string value)
         {
             if (!IsValidVoiceMode(value))
             {
-                logger.Warning("MimicVoiceTuningMode must be Vanilla or Custom; resetting to Vanilla.");
+                ModLog.Warn(Feature, "MimicVoiceTuningMode must be Vanilla or Custom; resetting to Vanilla.");
                 ModConfig.MimicVoiceTuningMode.Value = nameof(MimicVoiceTuningMode.Vanilla);
                 return;
             }
@@ -489,11 +491,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.MimicVoiceTuningMode);
         }
 
-        private static void OnInventoryModeChanged(MelonLogger.Instance logger, string value)
+        private static void OnInventoryModeChanged(string value)
         {
             if (!IsValidInventoryMode(value))
             {
-                logger.Warning("MimicInventoryCopyMode must be Vanilla or Custom; resetting to Vanilla.");
+                ModLog.Warn(Feature, "MimicInventoryCopyMode must be Vanilla or Custom; resetting to Vanilla.");
                 ModConfig.MimicInventoryCopyMode.Value = nameof(MimicInventoryCopyMode.Vanilla);
                 return;
             }
@@ -501,11 +503,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.MimicInventoryCopyMode);
         }
 
-        private static void OnInventoryPickRuleChanged(MelonLogger.Instance logger, string value)
+        private static void OnInventoryPickRuleChanged(string value)
         {
             if (!IsValidPickRule(value))
             {
-                logger.Warning("MimicInventoryCopyPickRule must be MinDistance, MaxDistance, or Random; resetting to MinDistance.");
+                ModLog.Warn(Feature, "MimicInventoryCopyPickRule must be MinDistance, MaxDistance, or Random; resetting to MinDistance.");
                 ModConfig.MimicInventoryCopyPickRule.Value = nameof(BTTargetPickRule.MinDistance);
                 return;
             }
@@ -513,11 +515,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.MimicInventoryCopyPickRule);
         }
 
-        private static void OnIntervalMultiplierChanged(MelonLogger.Instance logger, float value)
+        private static void OnIntervalMultiplierChanged(float value)
         {
             if (value < 0.05f)
             {
-                logger.Warning("PeriodicVoiceIntervalMultiplier must be >= 0.05; resetting to 0.05.");
+                ModLog.Warn(Feature, "PeriodicVoiceIntervalMultiplier must be >= 0.05; resetting to 0.05.");
                 ModConfig.PeriodicVoiceIntervalMultiplier.Value = 0.05f;
                 return;
             }
@@ -525,11 +527,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.PeriodicVoiceIntervalMultiplier);
         }
 
-        private static void OnChanceChanged(MelonLogger.Instance logger, int value)
+        private static void OnChanceChanged(int value)
         {
             if (value is < 0 or > 100)
             {
-                logger.Warning("PlayerVoiceResponseChancePercent must be 0–100; clamping.");
+                ModLog.Warn(Feature, "PlayerVoiceResponseChancePercent must be 0–100; clamping.");
                 ModConfig.PlayerVoiceResponseChancePercent.Value = Math.Clamp(value, 0, 100);
                 return;
             }
@@ -537,11 +539,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.PlayerVoiceResponseChancePercent);
         }
 
-        private static void OnCooldownChanged(MelonLogger.Instance logger, float value)
+        private static void OnCooldownChanged(float value)
         {
             if (value < 0f)
             {
-                logger.Warning("PlayerVoiceResponseCooldownSeconds must be >= 0; resetting to 0.");
+                ModLog.Warn(Feature, "PlayerVoiceResponseCooldownSeconds must be >= 0; resetting to 0.");
                 ModConfig.PlayerVoiceResponseCooldownSeconds.Value = 0f;
                 return;
             }
@@ -549,11 +551,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(ModConfig.PlayerVoiceResponseCooldownSeconds);
         }
 
-        private static void OnDistanceChanged(MelonLogger.Instance logger, float value)
+        private static void OnDistanceChanged(float value)
         {
             if (value < 1f)
             {
-                logger.Warning("PlayerVoiceResponseMaxDistance must be >= 1; resetting to 1.");
+                ModLog.Warn(Feature, "PlayerVoiceResponseMaxDistance must be >= 1; resetting to 1.");
                 ModConfig.PlayerVoiceResponseMaxDistance.Value = 1f;
                 return;
             }
@@ -562,14 +564,13 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
         }
 
         private static void OnDelayRangeChanged(
-            MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> minEntry,
             MelonPreferences_Entry<float> maxEntry)
         {
             if (value < 0f)
             {
-                logger.Warning($"{minEntry.Identifier} must be >= 0; resetting to 0.");
+                ModLog.Warn(Feature, $"{minEntry.Identifier} must be >= 0; resetting to 0.");
                 minEntry.Value = 0f;
                 return;
             }
@@ -596,13 +597,13 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             || string.Equals(value, nameof(BTTargetPickRule.Random), StringComparison.OrdinalIgnoreCase);
 
         private static void OnMimicPossessionDurationSecondsChanged(
-            MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> entry)
         {
             if (value < MimicPossessionResolver.MinDurationSeconds)
             {
-                logger.Warning(
+                ModLog.Warn(
+                    Feature,
                     $"{entry.Identifier} must be at least {MimicPossessionResolver.MinDurationSeconds}; resetting.");
                 entry.Value = MimicPossessionResolver.MinDurationSeconds;
                 return;
@@ -610,7 +611,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
             if (value > MimicPossessionResolver.MaxDurationSeconds)
             {
-                logger.Warning(
+                ModLog.Warn(
+                    Feature,
                     $"{entry.Identifier} must be at most {MimicPossessionResolver.MaxDurationSeconds}; resetting.");
                 entry.Value = MimicPossessionResolver.MaxDurationSeconds;
                 return;
@@ -620,7 +622,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             float max = ModConfig.MimicPossessionMaxTimeSeconds.Value;
             if (max < min)
             {
-                logger.Warning(
+                ModLog.Warn(
+                    Feature,
                     "MimicPossessionMaxTimeSeconds must be >= MimicPossessionMinTimeSeconds; syncing max to min.");
                 ModConfig.MimicPossessionMaxTimeSeconds.Value = min;
             }
@@ -629,11 +632,12 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             NotifyAndRefresh(entry);
         }
 
-        private static void OnMimicPossessionCooltimeMultiplierChanged(MelonLogger.Instance logger, float value)
+        private static void OnMimicPossessionCooltimeMultiplierChanged(float value)
         {
             if (value < MimicPossessionResolver.MinCooltimeMultiplier)
             {
-                logger.Warning(
+                ModLog.Warn(
+                    Feature,
                     $"MimicPossessionCooltimeMultiplier must be at least {MimicPossessionResolver.MinCooltimeMultiplier}; resetting.");
                 ModConfig.MimicPossessionCooltimeMultiplier.Value = MimicPossessionResolver.MinCooltimeMultiplier;
                 return;
@@ -641,7 +645,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
 
             if (value > MimicPossessionResolver.MaxCooltimeMultiplier)
             {
-                logger.Warning(
+                ModLog.Warn(
+                    Feature,
                     $"MimicPossessionCooltimeMultiplier must be at most {MimicPossessionResolver.MaxCooltimeMultiplier}; resetting.");
                 ModConfig.MimicPossessionCooltimeMultiplier.Value = MimicPossessionResolver.MaxCooltimeMultiplier;
                 return;
