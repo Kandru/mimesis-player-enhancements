@@ -1,70 +1,88 @@
 # Privacy
 
-**Scope:** Your game only (local) · **Config:** [`MimesisPlayerEnhancement_Privacy`](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)
+Blocks automatic outbound data from your local game install: Relu session and gameplay logs, replay capture and upload, Unity crash reports, and Krafton creator-code SDK login. **Your game only** — each player must enable it on their own install; it does not change the lobby for others. Settings are global-only (not per-save). Steam lobbies, invites, voice, and multiplayer sync are not blocked. Manual in-game feedback submission still works.
 
-Mimesis seems to send some data to servers that are not required to play with friends. The in-game privacy policy do not seem to not turn these automatic uploads off either. This feature lets you block them for your piece of mind.
+**Config:** [`MimesisPlayerEnhancement_Privacy`](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)
 
-## What the vanilla game sends (without this mod)
+## Configuration
 
-### Relu game servers (`mimesisapi.relugameservice.com`)
+All keys live in `[MimesisPlayerEnhancement_Privacy]`. Sub-flags apply only when `EnablePrivacy` is `true`. The game reloads the cfg file while running; most toggles apply immediately. Restart the game if you change `BlockKraftonGppSdk` after startup.
 
-| When | What leaves your PC |
-|------|---------------------|
-| Login | Small “entered lobby” log with device ID and session ID |
-| Host creates a tram / join room / enter tram / open public lobby | Similar milestone logs tied to your session |
-| End of dungeon or maintenance transitions | Detailed gameplay diary: deaths, loot, HP, contamination, scraps collected, shop purchases, session economics |
+### `EnablePrivacy`
 
-### Replay storage (`mimesisapi.relugameservice.com`)
+Master switch for this feature. When `false`, every option below is ignored and vanilla outbound behavior returns.
 
-| When | What leaves your PC |
-|------|---------------------|
-| ~1 in 400 runs with 4+ players | Full session replay (network packets, voice lines, dungeon context) |
-| Quit or crash while recording | Replay upload may run synchronously |
-| Feedback with replay attached | Replay files uploaded with your report (only if recording was active) |
+| Value | Meaning |
+|---|---|
+| `false` | Privacy blocks are off (vanilla behavior). |
+| `true` | Sub-flags below control what is blocked. |
 
-### Bug and feedback reports (`userreport.relugameservice.com`)
+Default: `false`
 
-Only when **you** open the in-game feedback form and submit it:
+### `BlockReluTelemetry`
 
-- Title and description you write
-- Steam name and ID, country, PC specs (CPU, GPU, RAM, OS)
-- Dungeon seed and your world position
-- Zipped `player.log` files (the game scans for mod loaders)
-- Optional replay file attachment
+Blocks session lifecycle logs and gameplay event diaries sent to `mimesisapi.relugameservice.com` (login milestones, tram/lobby events, end-of-run stats). Applies live when config changes.
 
-**This mod does NOT block feedback submission.**
+| Value | Meaning |
+|---|---|
+| `true` | Relu API requests are not sent. |
+| `false` | Vanilla Relu telemetry runs (when `EnablePrivacy` is on). |
 
-### Unity crash reports
+Default: `true`
 
-Only when the game crashes:
+### `BlockReplayUpload`
 
-- Crash dump to Unity’s backend
-- Extra metadata: nickname, session info, voice address, dungeon seed, death reason, build version
+Blocks sending replay files to Relu storage (random sampling, quit/crash upload paths, feedback replay attachments). Does not delete replay files already on disk.
 
-### Krafton creator-code service
+| Value | Meaning |
+|---|---|
+| `true` | Replay uploads are skipped. |
+| `false` | Vanilla replay uploads can run (when `EnablePrivacy` is on). |
 
-On every launch the game logs into Krafton GPP over Steam (for creator codes). If you disable this you cannot use the custom skins.
+Default: `true`
 
-### What is NOT covered here
+### `BlockReplayRecording`
 
-- **Steam login, lobbies, and invites** — needed to find and join friends
-- **In-game voice and multiplayer sync** — needed to play together
+Prevents replay files from being created (no voice/network capture). Also stops feedback from attaching a replay file. Pair with `BlockReplayUpload` if old files remain on disk.
 
-## What this mod can block
+| Value | Meaning |
+|---|---|
+| `true` | No new replay files; recording hooks are blocked. |
+| `false` | Vanilla replay recording can run (when `EnablePrivacy` is on). |
 
-| Config key | Blocks |
-|------------|--------|
-| `EnablePrivacy` | Master switch — when off, everything below is ignored and vanilla behavior returns |
-| `BlockReluTelemetry` | Relu session logs and gameplay event diary |
-| `BlockReplayUpload` | Sending replay files to Relu storage |
-| `BlockReplayRecording` | Creating replay files at all (prevents feedback replay attachments too) |
+Default: `true`
 
-| `BlockCrashReports` | Unity crash report uploads |
-| `StripCrashReportMetadata` | Metadata attached to crash reports (only relevant if crash reports stay on) |
-| `BlockKraftonGppSdk` | Krafton GPP login on startup |
+### `BlockCrashReports`
 
-## Feedback and bug reports (your choice)
+Disables Unity crash report uploads from your install. Applies live when config changes.
 
-If `BlockReplayRecording` is on, no replay file exists to attach to the feedback report. If `BlockReplayUpload` is on, replay uploads are blocked even when old replay files remain on disk. If you experience issues with the game first disable this (and other) mods, check again and submit feedback.
+| Value | Meaning |
+|---|---|
+| `true` | Unity crash reports are disabled. |
+| `false` | Vanilla crash report uploads can run (when `EnablePrivacy` is on). |
+
+Default: `true`
+
+### `StripCrashReportMetadata`
+
+When crash reports stay enabled (`BlockCrashReports` = `false`), ignores `CrashReportHandler.SetUserMetadata` calls so nickname, session info, dungeon seed, and similar fields are not attached.
+
+| Value | Meaning |
+|---|---|
+| `true` | Crash metadata is stripped. |
+| `false` | Vanilla metadata attachment runs (when `EnablePrivacy` is on). |
+
+Default: `true`
+
+### `BlockKraftonGppSdk`
+
+Skips Krafton GPP SDK initialization on startup (creator-code login). Custom skins that depend on this path will not work. Changing this after the game has started may not take effect until restart.
+
+| Value | Meaning |
+|---|---|
+| `true` | Krafton GPP login does not run. |
+| `false` | Vanilla Krafton GPP init runs (when `EnablePrivacy` is on). |
+
+Default: `true`
 
 **Full config keys →** [Privacy](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)

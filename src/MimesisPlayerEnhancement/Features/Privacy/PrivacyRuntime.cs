@@ -4,7 +4,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy
     {
         private const string Feature = "Privacy";
 
-        private static bool _loggedReluTelemetry;
         private static bool _loggedReplayUpload;
         private static bool _loggedReplayRecording;
         private static bool _loggedCrashReports;
@@ -21,16 +20,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy
         internal static bool IsPrivacyEnabled => ModConfig.EnablePrivacy.Value;
 
         internal static bool BlocksReluTelemetry => _blockReluTelemetry;
-
-        internal static bool ShouldBlockReluTelemetry()
-        {
-            if (_blockReluTelemetry)
-            {
-                LogOnce(ref _loggedReluTelemetry, "Relu telemetry blocked — session logs and gameplay event logs will not be sent.");
-            }
-
-            return _blockReluTelemetry;
-        }
 
         internal static bool ShouldBlockReplayUpload()
         {
@@ -51,8 +40,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
             return _blockReplayRecording;
         }
-
-        internal static bool ShouldBlockCrashReports() => _blockCrashReports;
 
         internal static bool ShouldStripCrashReportMetadata()
         {
@@ -128,7 +115,6 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
         private static void ResetLogFlags()
         {
-            _loggedReluTelemetry = false;
             _loggedReplayUpload = false;
             _loggedReplayRecording = false;
             _loggedCrashReports = false;

@@ -32,6 +32,15 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav` beside vanilla saves (Steam Auto-Cloud).
 
+### Who needs to enable it
+
+| Phrase | Meaning |
+|--------|---------|
+| **Host only** | Only the host must enable it for the whole lobby to get the effect. Joining clients do not need the feature (or mod) on. |
+| **Your game only** | Affects only the install that enables it. Other players in the lobby are unchanged unless they enable it too. |
+
+**Global only** / **Save-scoped** (above) is separate — whether keys appear in per-save override UI, not who needs the mod.
+
 ## Quick reference
 
 | Section | Feature | Scope |
@@ -41,7 +50,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host only |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host only |
-| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Only the host must enable this for the whole lobby to get the effect |
+| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host only |
 | [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host only |
 | [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host only |
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host only |
@@ -54,8 +63,6 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host only |
 | [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host only |
 | [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host only |
-
-**Host only:** only the host must enable it for the whole lobby to get the effect. **Your game only:** only affects your own game client; each player who wants it must enable it on their machine.
 
 ### Apply timing
 
@@ -85,7 +92,7 @@ Mod-wide settings that are not owned by a single feature.
 
 ## User Interface — `[MimesisPlayerEnhancement_Ui]`
 
-**Local UI.** Global-only preferences for mod presentation. Not available in per-save override UI or quick presets.
+**Your game only.** Global-only preferences for mod presentation on your install. Not available in per-save override UI or quick presets.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -114,7 +121,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## Privacy — `[MimesisPlayerEnhancement_Privacy]`
 
-**Local client.** Global-only preferences that block automatic outbound data from your game install. Not available in per-save override UI or quick presets. Manual feedback and bug-report submission still works; `BlockReplayRecording` and `BlockReplayUpload` can prevent automatic replay capture and replay attachments from being created or uploaded.
+**Your game only.** Affects only your install; other players in the lobby are unchanged unless they enable it too. Global-only preferences that block automatic outbound data from your game install. Not available in per-save override UI or quick presets. Manual feedback and bug-report submission still works; `BlockReplayRecording` and `BlockReplayUpload` can prevent automatic replay capture and replay attachments from being created or uploaded.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -142,7 +149,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
-Only the host must enable it for the whole lobby to get the effect. Joining clients do not need the mod. Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
+**Host only.** Joining clients do not need the mod. Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -159,7 +166,7 @@ Only the host must enable it for the whole lobby to get the effect. Joining clie
 
 ## Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
-Only the host must enable this for the whole lobby to get the effect. Keep mimic voice recordings across save and load.
+**Host only.** Keep mimic voice recordings across save and load.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -167,7 +174,7 @@ Only the host must enable this for the whole lobby to get the effect. Keep mimic
 
 ## Statistics — `[MimesisPlayerEnhancement_Statistics]`
 
-**Host-only.** Track session stats and a per-save-game statistics page (current-run leaderboard, per-zone breakdown, train value credited to first item carrier, combat breakdowns, trap deaths, dungeon exit outcomes, and all-time totals). Run-scoped stats reset when the party restarts at zone 1; `RunRestarts` is tracked per player. Stats load from disk when a save is loaded, stay in memory during gameplay, and are written on vanilla save (including auto-save).
+**Host only.** Track session stats and a per-save-game statistics page (current-run leaderboard, per-zone breakdown, train value credited to first item carrier, combat breakdowns, trap deaths, dungeon exit outcomes, and all-time totals). Run-scoped stats reset when the party restarts at zone 1; `RunRestarts` is tracked per player. Stats load from disk when a save is loaded, stay in memory during gameplay, and are written on vanilla save (including auto-save).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -177,7 +184,7 @@ Only the host must enable this for the whole lobby to get the effect. Keep mimic
 
 ## Player Announcements — `[MimesisPlayerEnhancement_PlayerAnnouncements]`
 
-Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod. Bottom-left messages for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
+**Host only.** Joiners do not need the mod. Bottom-left messages for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -185,7 +192,7 @@ Only the host must enable this for the whole lobby to get the effect. Joiners do
 
 ## Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
-Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod or matching config. Lets players join a lobby after a session has already started — but only while the party is at the service station (maintenance room) or on the tram between dungeons. Players cannot connect during a dungeon.
+**Host only.** Joiners do not need the mod or matching config. Lets players join a lobby after a session has already started — but only while the party is at the service station (maintenance room) or on the tram between dungeons. Players cannot connect during a dungeon.
 
 While joiners are still loading after a valid connection, tram departure is blocked for `JoinConnectionGraceSeconds`; players who do not finish loading in time are kicked (host is never kicked).
 
@@ -203,7 +210,7 @@ When the lobby is public, the browse list shows join status in the lobby name �
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
-**Host-only.** Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets; wave timing can be overridden in seconds (see Periodic Spawn Wait Mode). Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent spawns, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
+**Host only.** Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets; wave timing can be overridden in seconds (see Periodic Spawn Wait Mode). Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent spawns, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
 
 Each **Auto Scale … By Player Count** toggle stacks with its per-type multiplier using `SpawnScalingPlayerCountScaleRate` per player above 4 (`0.10` = +10% per extra player). Set `0.25` to approximate the old `players / 4` curve.
 
@@ -277,7 +284,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-Only the host must enable this feature. Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
+**Host only.** Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
 
 | Setting | What it affects |
 |---------|-----------------|
@@ -310,7 +317,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 
-**Host-only.** When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
+**Host only.** When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -320,7 +327,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
-**Only the host needs this mod enabled for the whole lobby to get the effect. Joining clients do not need it.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
+**Host only.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
 
 **Live apply:** Changes take effect on the next mimic voice attempt, AI activation, inventory copy, or E-possession — no restart required. Trust, social, emote, and horn settings sync to active mimics when config is saved. Voice replies and possession sessions already in progress are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked while possessed.
 
@@ -425,7 +432,7 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
 
-**Host-only.** Randomizes dungeon selection when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on.
+**Host only.** Randomizes dungeon selection when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on.
 
 **Layers:**
 
@@ -457,7 +464,7 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`
 
-**Host-only.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Clients without the mod stay in sync via vanilla network messages.
+**Host only.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Clients without the mod stay in sync via vanilla network messages.
 
 **Weather modes** (`WeatherMode`):
 
