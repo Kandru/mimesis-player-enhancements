@@ -68,7 +68,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
         }
 
         [Fact]
-        public void ReplacePlayerCapLiteralFour_leaves_ldc_i4_4_without_following_branch()
+        public void ReplacePlayerCapLiteralFour_leaves_ldc_i4_4_without_following_branch_or_store()
         {
             var instructions = new List<CodeInstruction>
             {
@@ -81,6 +81,45 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
                 .ToList();
 
             Assert.Equal(OpCodes.Ldc_I4_4, result[0].opcode);
+        }
+
+        [Fact]
+        public void ReplacePlayerCapLiteralFour_swaps_ldc_i4_4_before_store()
+        {
+            var instructions = new List<CodeInstruction>
+            {
+                new(OpCodes.Ldc_I4_4),
+                new(OpCodes.Stloc_0),
+            };
+
+            List<CodeInstruction> result = MaxPlayerCountIl
+                .ReplacePlayerCapLiteralFour(instructions, GetMaxPlayersMethod)
+                .ToList();
+
+            Assert.Equal(OpCodes.Call, result[0].opcode);
+            Assert.Same(GetMaxPlayersMethod, result[0].operand);
+            Assert.Equal(OpCodes.Stloc_0, result[1].opcode);
+        }
+
+        [Fact]
+        public void ReplaceAllPlayerCapLiteralFour_swaps_every_ldc_i4_4()
+        {
+            var instructions = new List<CodeInstruction>
+            {
+                new(OpCodes.Ldc_I4_4),
+                new(OpCodes.Call, GetMaxPlayersMethod),
+                new(OpCodes.Ldc_I4_4),
+                new(OpCodes.Ret),
+            };
+
+            List<CodeInstruction> result = MaxPlayerCountIl
+                .ReplaceAllPlayerCapLiteralFour(instructions, GetMaxPlayersMethod)
+                .ToList();
+
+            Assert.Equal(OpCodes.Call, result[0].opcode);
+            Assert.Same(GetMaxPlayersMethod, result[0].operand);
+            Assert.Equal(OpCodes.Call, result[2].opcode);
+            Assert.Same(GetMaxPlayersMethod, result[2].operand);
         }
 
         private static class TestFields

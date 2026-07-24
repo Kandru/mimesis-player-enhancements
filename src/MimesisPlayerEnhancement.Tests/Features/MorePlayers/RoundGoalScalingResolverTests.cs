@@ -91,5 +91,24 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
 
             Assert.Equal((int)Math.Round(center * 1.1f), max);
         }
+
+        [Fact]
+        public void RollQuota_returns_zero_for_non_positive_stage_count()
+        {
+            Assert.Equal(0, RoundGoalScalingResolver.RollQuota(0, DefaultBase, DefaultExponent, 1f, DefaultSpread));
+        }
+
+        [Fact]
+        public void RollQuota_stays_within_min_max_inclusive()
+        {
+            int min = RoundGoalScalingResolver.ComputeMin(2, DefaultBase, DefaultExponent, 1f, DefaultSpread);
+            int max = RoundGoalScalingResolver.ComputeMax(2, DefaultBase, DefaultExponent, 1f, DefaultSpread);
+
+            for (int i = 0; i < 40; i++)
+            {
+                int quota = RoundGoalScalingResolver.RollQuota(2, DefaultBase, DefaultExponent, 1f, DefaultSpread);
+                Assert.InRange(quota, min, max);
+            }
+        }
     }
 }

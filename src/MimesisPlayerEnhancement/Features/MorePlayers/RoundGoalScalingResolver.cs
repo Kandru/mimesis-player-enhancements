@@ -87,10 +87,23 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             return Mathf.Max(min, Mathf.RoundToInt(center * (1f + spread)));
         }
 
-        internal static int RollQuota(int stageCount)
+        internal static int RollQuota(int stageCount) =>
+            RollQuota(
+                stageCount,
+                ModConfig.RoundGoalBasePerZone.Value,
+                ModConfig.RoundGoalCurveExponent.Value,
+                ModConfig.RoundGoalMoneyMultiplier.Value,
+                ModConfig.RoundGoalRandomSpreadPercent.Value);
+
+        internal static int RollQuota(
+            int stageCount,
+            float basePerZone,
+            float curveExponent,
+            float moneyMultiplier,
+            int spreadPercent)
         {
-            int min = ComputeMin(stageCount);
-            int max = ComputeMax(stageCount);
+            int min = ComputeMin(stageCount, basePerZone, curveExponent, moneyMultiplier, spreadPercent);
+            int max = ComputeMax(stageCount, basePerZone, curveExponent, moneyMultiplier, spreadPercent);
             if (min <= 0 || max <= 0)
             {
                 return 0;

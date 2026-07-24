@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L931-993
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class SetRemoteVolumeControllerPrefix
     {
@@ -24,16 +25,19 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L706-741
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))]
     internal static class SetPingImageTranspiler
     {
         [HarmonyTranspiler]
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
+            // Rewrites both `if (num > 4)` and `num = 4`.
             return MaxPlayerCountIl.ReplacePlayerCapLiteralFour(instructions, MorePlayersPatchHelpers.GetMaxPlayersMethod);
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L607-657
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
     internal static class OnEnablePostfix
     {
@@ -44,6 +48,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L931-993
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class SetRemoteVolumeControllerPostfix
     {

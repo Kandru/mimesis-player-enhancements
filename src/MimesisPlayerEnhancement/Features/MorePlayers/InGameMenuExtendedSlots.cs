@@ -190,14 +190,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             button.onClick.AddListener(() => handler());
         }
 
-        internal static void ResizeTempVolumeList(UIPrefab_InGameMenu menu)
-        {
-            int cap = ModConfig.EnableMorePlayers.Value
-                ? MorePlayersPatchHelpers.GetMaxPlayers()
-                : VanillaPlayerRows;
-            ResizeTempVolumeList(menu, cap);
-        }
-
         private static void ResizeTempVolumeList(UIPrefab_InGameMenu menu, int cap)
         {
             FieldInfo? field = AccessTools.Field(typeof(UIPrefab_InGameMenu), "tempVolumeList");

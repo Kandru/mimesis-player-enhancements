@@ -2,6 +2,18 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L136-155
+    [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.AddPlayerSteamID))]
+    internal static class GameSessionInfoAddPlayerSteamIDTranspiler
+    {
+        [HarmonyTranspiler]
+        internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return MaxPlayerCountIl.ReplaceConstMaxPlayerCount(instructions, MorePlayersPatchHelpers.GetMaxPlayersMethod);
+        }
+    }
+
+    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L267-280
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))]
     internal static class GameSessionInfoRefreshTargetCurrencyPatch
     {
@@ -41,6 +53,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L281-294
     [HarmonyPatch(typeof(GameSessionInfo), "ClampTargetCurrencyToMin")]
     internal static class GameSessionInfoClampTargetCurrencyToMinPatch
     {

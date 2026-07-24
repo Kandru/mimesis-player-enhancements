@@ -75,6 +75,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         internal static void OnSessionEnded()
         {
             MorePlayersPatchHelpers.ResetSessionState();
+            InGameMenuDebugPreview.OnSessionEnded();
         }
     }
 }
