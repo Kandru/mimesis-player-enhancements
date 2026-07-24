@@ -63,6 +63,27 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
         }
 
         [Fact]
+        public void GetDeathMatchClipReuseCooldownSeconds_transpiler_target_resolves_parameterless_overload()
+        {
+            MethodInfo? method = MimicVoiceTuningPatchSupport.GetDeathMatchClipReuseCooldownSecondsMethod;
+
+            Assert.NotNull(method);
+            Assert.Empty(method.GetParameters());
+            Assert.Equal(typeof(float), method.ReturnType);
+        }
+
+        [Fact]
+        public void ResolveMuteLocalPlayerVoice_transpiler_target_resolves_bool_overload()
+        {
+            MethodInfo? method = MimicVoiceTuningPatchSupport.ResolveMuteLocalPlayerVoiceMethod;
+
+            Assert.NotNull(method);
+            Assert.Single(method.GetParameters());
+            Assert.Equal(typeof(bool), method.GetParameters()[0].ParameterType);
+            Assert.Equal(typeof(bool), method.ReturnType);
+        }
+
+        [Fact]
         public void ObserverRpcPlayOnActor_mute_prefix_target_resolves()
         {
             MethodInfo? method = AccessTools.Method(

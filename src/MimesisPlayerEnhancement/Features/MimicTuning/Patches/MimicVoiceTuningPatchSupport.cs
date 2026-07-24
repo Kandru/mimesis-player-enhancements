@@ -4,18 +4,21 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
     internal static class MimicVoiceTuningPatchSupport
     {
+        private const string PreparedMimicVoiceSpawnTypeName =
+            "Mimic.Voice.MimicVoiceSpawner+PreparedMimicVoiceSpawn";
+
         internal static readonly FieldInfo? AsServerField =
             AccessTools.Field(typeof(VoiceManager), "_asServer");
 
         internal static readonly FieldInfo? LastMimicVoiceTimeField =
             AccessTools.Field(typeof(VoiceManager), "_lastMimicVoiceTime");
 
-        // String AccessTools: typeof(PreparedMimicVoiceSpawn) TypeLoadExceptions under the slim test Managed set.
+        // Avoid typeof(PreparedMimicVoiceSpawn): TypeLoadException under the slim test Managed set.
         internal static readonly FieldInfo? PreparedVoiceContextField =
-            AccessTools.Field("Mimic.Voice.MimicVoiceSpawner+PreparedMimicVoiceSpawn:Context");
+            FieldByTypeName(PreparedMimicVoiceSpawnTypeName, "Context");
 
         internal static readonly FieldInfo? PreparedVoiceMuteField =
-            AccessTools.Field("Mimic.Voice.MimicVoiceSpawner+PreparedMimicVoiceSpawn:MuteLocalPlayerVoice");
+            FieldByTypeName(PreparedMimicVoiceSpawnTypeName, "MuteLocalPlayerVoice");
 
         internal static readonly FieldInfo? MinRequiredSpeechsField =
             AccessTools.Field(typeof(MimicVoiceSpawner), "minRequiredSpeechs");
@@ -101,5 +104,12 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 
         internal static bool IsDeathMatchArea(SpeechType_Area speechTypeArea) =>
             speechTypeArea == SpeechType_Area.DeathMatch;
+
+        private static FieldInfo? FieldByTypeName(string typeName, string fieldName)
+        {
+            Type? type = AccessTools.TypeByName(typeName);
+            return type == null ? null : AccessTools.Field(type, fieldName);
+        }
     }
 }
+

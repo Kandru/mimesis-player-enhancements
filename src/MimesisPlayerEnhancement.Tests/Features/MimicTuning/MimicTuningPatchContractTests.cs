@@ -110,9 +110,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             using MimesisMetadataContext context = CreateContext();
             Type type = context.RequireType("SpeechEventAdditionalGameData");
 
-            FieldInfo? field = type.GetField(fieldName, InstanceMember);
+            FieldInfo? field = type.GetField(fieldName, StaticMember);
 
             Assert.NotNull(field);
+            Assert.True(field.IsStatic);
         }
 
         [Fact]
