@@ -3,7 +3,6 @@ using DLAgent;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicEmoteProps;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicSocial;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicTrust;
-using MimesisPlayerEnhancement.Util;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches

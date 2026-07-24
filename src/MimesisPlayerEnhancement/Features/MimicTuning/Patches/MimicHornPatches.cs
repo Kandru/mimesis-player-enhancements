@@ -1,7 +1,5 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.MimicTuning.MimicHorn;
-using MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession;
-using MimesisPlayerEnhancement.Util;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {

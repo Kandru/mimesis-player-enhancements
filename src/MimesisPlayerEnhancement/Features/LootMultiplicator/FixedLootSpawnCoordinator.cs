@@ -39,10 +39,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             ])
             ?? throw new InvalidOperationException("IVroom.GetNewItemElement not found");
 
-        private static readonly MethodInfo ExecuteLootingObjectSpawnMethod =
-            AccessTools.Method(typeof(IVroom), "ExecuteLootingObjectSpawn", [typeof(SpawnedActorData)])
-            ?? throw new InvalidOperationException("IVroom.ExecuteLootingObjectSpawn not found");
-
         private static readonly MethodInfo MemberwiseCloneMethod =
             AccessTools.Method(typeof(object), "MemberwiseClone")
             ?? throw new InvalidOperationException("object.MemberwiseClone not found");
@@ -347,12 +343,20 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
                 try
                 {
-                    ExecuteLootingObjectSpawn(room, spawnData);
-                    activated++;
+                    if (TrySpawnFixedLoot(room, spawnData, isRespawn: false))
+                    {
+                        activated++;
+                        continue;
+                    }
+
+                    spawnDatas.Remove(key);
+                    state.UnregisterSlot(key, spawnData);
+                    ModLog.Warn(Feature, $"Fixed loot marker activation failed — master={marker.masterID}, marker={marker.ID}");
                 }
                 catch (Exception ex)
                 {
                     spawnDatas.Remove(key);
+                    state.UnregisterSlot(key, spawnData);
                     ModLog.Warn(Feature, $"Fixed loot marker activation failed — master={marker.masterID}, marker={marker.ID}: {ex.Message}");
                 }
             }
@@ -383,16 +387,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             SetField(data, AccessToolsField(typeof(SpawnedActorData), "SpawnType"), marker.spawnType);
 
             return data;
-        }
-
-        private static void ExecuteLootingObjectSpawn(DungeonRoom room, SpawnedActorData spawnData)
-        {
-            if (room is not IVroom vroom)
-            {
-                throw new InvalidOperationException("DungeonRoom is not IVroom");
-            }
-
-            _ = ExecuteLootingObjectSpawnMethod.Invoke(vroom, [spawnData]);
         }
 
         private static bool TrySpawnFixedLoot(DungeonRoom room, SpawnedActorData spawnData, bool isRespawn)
@@ -584,6 +578,19 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             {
                 _slots.Add(new SpawnSlot(key, data));
                 _spawnDataToRoom[data] = Room;
+            }
+
+            internal void UnregisterSlot(string key, FixedSpawnedActorData data)
+            {
+                _ = _spawnDataToRoom.Remove(data);
+                for (int i = _slots.Count - 1; i >= 0; i--)
+                {
+                    if (_slots[i].Key == key && ReferenceEquals(_slots[i].Data, data))
+                    {
+                        _slots.RemoveAt(i);
+                        return;
+                    }
+                }
             }
 
             public bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)

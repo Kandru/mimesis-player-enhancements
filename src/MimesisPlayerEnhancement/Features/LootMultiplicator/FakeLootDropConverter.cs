@@ -69,8 +69,9 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                     info.remainGauge,
                     info.price);
             }
-            catch
+            catch (Exception ex)
             {
+                ModLog.Warn(Feature, $"Fake ActorDying drop conversion failed — master={template.ItemMasterID}: {ex.Message}");
                 return null;
             }
         }
