@@ -210,13 +210,13 @@ When the lobby is public, the browse list shows join status in the lobby name �
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
-**Host only.** Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets; wave timing can be overridden in seconds (see Periodic Spawn Wait Mode). Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent spawns, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
+Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scale dungeon monster and trap spawn budgets by type. Periodic jakos and mimics use native threat/count budgets; wave timing can be overridden in seconds (see Periodic Spawn Wait Mode). Map-placed bosses, specials, and traps activate unused alternate markers for extra concurrent spawns, then schedule bonus encounters one-at-a-time after a kill (never duplicate spawns at load).
 
 Each **Auto Scale … By Player Count** toggle stacks with its per-type multiplier using `SpawnScalingPlayerCountScaleRate` per player above 4 (`0.10` = +10% per extra player). Set `0.25` to approximate the old `players / 4` curve.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableSpawnScaling` | bool | `false` | — | Scale dungeon monster and trap spawn budgets by type. Host only. |
+| `EnableSpawnScaling` | bool | `false` | — | Scale dungeon monster and trap spawn budgets by type. |
 | `SpawnScalingPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0. |
 | `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
 | `MimicSpawnMultiplier` | float | `1.0` | ≥ `0` | Total mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). |
