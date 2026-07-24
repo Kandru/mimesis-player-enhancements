@@ -77,6 +77,45 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
         }
 
         [Fact]
+        public void MimicVoiceSpawner_minRequiredSpeechs_field_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("MimicVoiceSpawner");
+
+            FieldInfo? field = type.GetField("minRequiredSpeechs", InstanceMember);
+
+            Assert.NotNull(field);
+            Assert.Equal("Int32", field.FieldType.Name);
+        }
+
+        [Theory]
+        [InlineData("Context")]
+        [InlineData("MuteLocalPlayerVoice")]
+        public void MimicVoiceSpawner_PreparedMimicVoiceSpawn_fields_exist(string fieldName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type parent = context.RequireType("MimicVoiceSpawner");
+            Type nested = RequireNestedType(parent, "PreparedMimicVoiceSpawn");
+
+            FieldInfo? field = nested.GetField(fieldName, InstanceMember);
+
+            Assert.NotNull(field);
+        }
+
+        [Theory]
+        [InlineData("playTimeInterval")]
+        [InlineData("deathMatchPlayTimeInterval")]
+        public void SpeechEventAdditionalGameData_interval_fields_exist(string fieldName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("SpeechEventAdditionalGameData");
+
+            FieldInfo? field = type.GetField(fieldName, InstanceMember);
+
+            Assert.NotNull(field);
+        }
+
+        [Fact]
         public void MimicVoiceSpawner_SpawnPreparedMimicVoice_exists()
         {
             using MimesisMetadataContext context = CreateContext();
@@ -308,5 +347,14 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             string managedPath = ManagedAssemblyPaths.Resolve();
             return new MimesisMetadataContext(managedPath);
         }
+
+        private static Type RequireNestedType(Type parent, string nestedName)
+        {
+            Type? nested = parent.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public)
+                .FirstOrDefault(candidate => string.Equals(candidate.Name, nestedName, StringComparison.Ordinal));
+
+            return nested ?? throw new InvalidOperationException($"Nested type not found: {parent.Name}+{nestedName}");
+        }
     }
 }
+
