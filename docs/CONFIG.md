@@ -177,7 +177,7 @@ Only the host must enable this for the whole lobby to get the effect. Keep mimic
 
 ## Player Announcements — `[MimesisPlayerEnhancement_PlayerAnnouncements]`
 
-**Host-only.** Bottom-left messages for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
+Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod. Bottom-left messages for dungeon run settings at shift start, boss spawn alerts, and your per-map stats when you die.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

@@ -1,21 +1,16 @@
 # Player Announcements
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_PlayerAnnouncements`](../CONFIG.md#player-announcements--mimesisplayerenhancement_playerannouncements)
+Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod. Shows bottom-left toasts for dungeon run settings when a shift starts, boss and special spawn alerts during the run, and a personal map-run stats recap when you die. These are extra hints on top of the game's own messages — they do not replace vanilla connect or system text.
 
-Shows small on-screen messages to keep everyone informed. These are extra hints on top of the game's own messages — they do not replace vanilla connect or system text.
+## Configuration
 
-## Dungeon run settings
+### `ShowPlayerAnnouncements`
 
-At shift start, a summary of active dungeon-related mod settings (spawn scaling, loot, economy, etc.) appears in the bottom-left corner.
+Master toggle for all Player Announcements toasts. Per-map death stats also require [Statistics](./statistics.md) enabled. Toast display time is controlled locally by `ModToastDurationSeconds` in [User Interface](./user-interface.md); it does not live in this section. The game reloads config while running; unset uses the default below. No restart needed for this setting.
 
-## Boss spawn alerts
+| Value | Meaning |
+|---|---|
+| `true` | Show announcement toasts |
+| `false` | Hide all Player Announcements toasts |
 
-When a boss spawns, players receive an on-screen alert.
-
-## Death stats recap
-
-When you die, a recap of your personal stats for that map appears. Per-map death stats also require [Statistics](./statistics.md) enabled.
-
-`ShowPlayerAnnouncements` is the master toggle for all announcement types.
-
-**Full config keys →** [Player Announcements](../CONFIG.md#player-announcements--mimesisplayerenhancement_playerannouncements)
+Default: `true`
