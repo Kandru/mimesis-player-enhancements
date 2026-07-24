@@ -1,19 +1,26 @@
 # Join Anytime
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_JoinAnytime`](../CONFIG.md#join-anytime--mimesisplayerenhancement_joinanytime)
+Normally, friends have to be in the lobby before a run starts. Join Anytime lets people connect after you've already begun — but only while the party is at the service station (maintenance room) or on the tram between dungeons. Players cannot connect during a dungeon. Only the host must enable this for the whole lobby to get the effect; joiners do not need the mod or matching config. When the lobby is public, the browse list shows whether you can join now or how long until the party is back at the tram (for example `[join now]` or `[join in ~12 min]`). Hosts can also toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run; those settings are saved per save game.
 
-Normally, friends have to be in the lobby before a run starts. Join Anytime lets people connect after you've already begun. **Joiners do not need this mod** — only the host does.
+## Configuration
 
-## Late join flow
+### `EnableJoinAnytime`
 
-Late joiners cannot be dropped straight into an active dungeon. They wait on the tram map until the party finishes the current dungeon; when everyone returns to the tram, the next lever pull starts the next run together.
+Turns late join on or off. When on, new players can connect only while the host is in the maintenance room or on the tram between dungeons. Connection is blocked during an active dungeon run. Applies immediately when you save the config file; no game restart needed. If the key is missing from your config, the default below is used.
 
-Joiners can connect whenever you are not inside a dungeon (maintenance, tram, etc.).
+| Value | Meaning |
+|---|---|
+| `true` | Late join enabled for the lobby |
+| `false` | Vanilla behavior — no late join |
 
-## Connection grace period
+Default: `true`
 
-`JoinConnectionGraceSeconds` blocks tram departure after a player connects while they finish loading. Players who do not become ready in time are kicked — the host is never kicked.
+### `JoinConnectionGraceSeconds`
 
-Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run. Lobby title and public/private preference are saved with the game in `MMGameData{N}.mpe-slot.sav` (per save).
+After a player connects, tram departure is blocked for this many seconds while they finish loading. Players who do not become ready in time are kicked; the host is never kicked. Applies immediately to new connections; changing the value does not reset timers already running for players mid-load. Minimum 1 second. If the key is missing, the default below is used.
 
-**Full config keys →** [Join Anytime](../CONFIG.md#join-anytime--mimesisplayerenhancement_joinanytime)
+| Value | Meaning |
+|---|---|
+| Integer ≥ `1` | Grace period length in seconds |
+
+Default: `30`

@@ -185,18 +185,20 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## Join Anytime — `[MimesisPlayerEnhancement_JoinAnytime]`
 
-**Host-only.** Lets players join a lobby after a session has already started. **Joiners do not need this mod** — only the host does.
+Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod or matching config. Lets players join a lobby after a session has already started — but only while the party is at the service station (maintenance room) or on the tram between dungeons. Players cannot connect during a dungeon.
 
-Late joiners cannot be dropped straight into an active dungeon. Instead, they wait on the tram map until the party finishes the current dungeon; when everyone returns to the tram, the next lever pull starts the next run together. While joiners are still loading, tram departure is blocked for `JoinConnectionGraceSeconds`; players who do not finish loading in time are kicked (host is never kicked).
+While joiners are still loading after a valid connection, tram departure is blocked for `JoinConnectionGraceSeconds`; players who do not finish loading in time are kicked (host is never kicked).
+
+When the lobby is public, the browse list shows join status in the lobby name — `[join now]` when joins are open (maintenance or tram), or `[join in ~X min]` based on remaining dungeon time while the party is still inside a run.
 
 **Limitations:**
 
-- Joiners **do not** land mid-dungeon; they sit out the current run in the tram.
+- Players **cannot** connect while the party is in a dungeon.
 - Hosts can toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run — not only in the maintenance room. Lobby title and public/private preference are saved with the game (per save game).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableJoinAnytime` | bool | `true` | — | Let players join after a session has already started. |
+| `EnableJoinAnytime` | bool | `true` | — | Let players join after a session has started, but only at the service station or on the tram between dungeons (not mid-dungeon). |
 | `JoinConnectionGraceSeconds` | int | `30` | ≥ `1` | After a player connects, block tram departure for this many seconds while they finish loading. Players who do not become ready in time are kicked (host is never kicked). |
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
