@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         internal static void Run(string context, Action action)
         {
-            if (!ModConfig.EnableStatistics.Value || !StatisticsTracker.CanTrack())
+            if (!StatisticsTracker.CanTrack())
             {
                 return;
             }

@@ -1,8 +1,8 @@
-using System.Reflection;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L369-395
     [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.HandlePutIntoToilet))]
     internal static class VPlayerHandlePutIntoToiletPatches
     {
@@ -30,27 +30,21 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    [HarmonyPatch]
-    internal static class InventoryControllerOnAddItemByLootingPatches
+    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L586-602
+    [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.Revive))]
+    public static class VPlayerRevivePatches
     {
-        private static readonly FieldInfo? SelfField =
-            AccessTools.Field(typeof(InventoryController), "_self");
-
-        private static MethodBase TargetMethod() =>
-            AccessTools.Method(typeof(InventoryController), "OnAddItemByLooting", [typeof(ItemElement)])
-            ?? throw new InvalidOperationException("InventoryController.OnAddItemByLooting not found");
-
         [HarmonyPostfix]
-        public static void Postfix(InventoryController __instance, ItemElement itemElement)
+        public static void Postfix(VPlayer __instance, bool __result)
         {
-            StatisticsPatchGuard.Run("InventoryController.OnAddItemByLooting", () =>
+            StatisticsPatchGuard.Run(nameof(VPlayer.Revive), () =>
             {
-                if (itemElement == null || SelfField?.GetValue(__instance) is not VPlayer player)
+                if (!__result)
                 {
                     return;
                 }
 
-                TrainDepositTracker.OnItemPickedUp(itemElement, player.SteamID);
+                StatisticsTracker.OnPlayerRevived(__instance.SteamID);
             });
         }
     }

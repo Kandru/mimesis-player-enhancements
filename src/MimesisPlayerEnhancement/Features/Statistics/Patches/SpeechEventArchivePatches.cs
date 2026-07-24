@@ -1,7 +1,8 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L111-126
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
-    internal static class StatisticsLocalJoinPatch
+    internal static class StatisticsSpeechEventArchivePatches
     {
         [HarmonyPostfix]
         private static void Postfix(SpeechEventArchive __instance)
@@ -22,16 +23,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
             }
 
             StatisticsMessages.OnLocalPlayerArchiveStarted();
-        }
-    }
-
-    [HarmonyPatch(typeof(UIPrefab_PlayerEnterInfo), nameof(UIPrefab_PlayerEnterInfo.AddPlayerInfo))]
-    internal static class StatisticsGamePlayerInfoPatch
-    {
-        [HarmonyPostfix]
-        private static void Postfix(string userName, bool isEntering)
-        {
-            StatisticsMessages.OnGamePlayerInfoShown(userName, isEntering);
         }
     }
 }

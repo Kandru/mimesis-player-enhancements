@@ -2,13 +2,34 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L602-624
+    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.TerminateSession))]
+    internal static class VRoomManagerTerminateSessionPatches
+    {
+        [HarmonyPostfix]
+        public static void Postfix()
+        {
+            StatisticsPatchGuard.Run(nameof(VRoomManager.TerminateSession), () =>
+            {
+                GameSessionInfo? session = GameSessionAccess.TryGetGameSessionInfo();
+                if (session != null && session.StageCount <= 1)
+                {
+                    StatisticsRunTracker.OnRunRestart();
+                }
+            });
+        }
+    }
+
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L748-759
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnRegistPlayer))]
     public static class VRoomManagerRegisterPatches
     {
+        private const string Feature = "Statistics";
+
         [HarmonyPostfix]
         public static void Postfix(ulong steamID, MsgErrorCode __result)
         {
-            StatisticsPatchGuard.Run(nameof(VRoomManager.OnRegistPlayer), () =>
+            try
             {
                 if (__result != MsgErrorCode.Success || steamID == 0)
                 {
@@ -28,7 +49,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
                 }
 
                 PlayerPresenceEvents.OnPlayerRegistered(steamID, slotId);
-            });
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"{nameof(VRoomManager.OnRegistPlayer)} failed — {ex.Message}");
+            }
         }
     }
 }

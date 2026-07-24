@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L245-255
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.IncreaseStageCount))]
     internal static class GameSessionInfoIncreaseStageCountPatches
     {
@@ -13,6 +14,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L304-322
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.Reset))]
     internal static class GameSessionInfoResetPatches
     {
@@ -22,23 +24,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
             StatisticsPatchGuard.Run(nameof(GameSessionInfo.Reset), () =>
             {
                 if (__instance.StageCount <= 1)
-                {
-                    StatisticsRunTracker.OnRunRestart();
-                }
-            });
-        }
-    }
-
-    [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.TerminateSession))]
-    internal static class VRoomManagerTerminateSessionPatches
-    {
-        [HarmonyPostfix]
-        public static void Postfix()
-        {
-            StatisticsPatchGuard.Run(nameof(VRoomManager.TerminateSession), () =>
-            {
-                GameSessionInfo? session = GameSessionAccess.TryGetGameSessionInfo();
-                if (session != null && session.StageCount <= 1)
                 {
                     StatisticsRunTracker.OnRunRestart();
                 }

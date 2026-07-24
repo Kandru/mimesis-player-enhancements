@@ -17,6 +17,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             long playerUid;
             bool isLocal;
+            string? playerId = null;
             try
             {
                 playerUid = archive.PlayerUID;
@@ -31,12 +32,25 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             {
                 try
                 {
-                    return !string.IsNullOrEmpty(archive.PlayerId);
+                    playerId = archive.PlayerId;
                 }
                 catch
                 {
                     return false;
                 }
+            }
+
+            return IsIdentityReady(playerUid, isLocal, playerId);
+        }
+
+        /// <summary>
+        /// Pure readiness check for archive identity fields (test seam).
+        /// </summary>
+        internal static bool IsIdentityReady(long playerUid, bool isLocal, string? playerId)
+        {
+            if (!isLocal && playerUid == 0)
+            {
+                return !string.IsNullOrEmpty(playerId);
             }
 
             return true;

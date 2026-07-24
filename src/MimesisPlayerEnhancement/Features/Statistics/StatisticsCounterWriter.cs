@@ -63,24 +63,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
-        internal static void AppendLifetimeOnDeath(ulong steamId, long lifetimeMs, bool notify = true)
-        {
-            if (steamId == 0 || lifetimeMs <= 0)
-            {
-                return;
-            }
-
-            Modify(steamId, counters =>
-            {
-                if (counters.LifetimesOnDeathMs.Count >= StatCounters.MaxLifetimeSamples)
-                {
-                    counters.LifetimesOnDeathMs.RemoveAt(0);
-                }
-
-                counters.LifetimesOnDeathMs.Add(lifetimeMs);
-            }, notify);
-        }
-
         internal static void AddConnectedSeconds(ulong steamId, long seconds)
         {
             if (steamId == 0 || seconds <= 0)

@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private const float GracePeriodCheckIntervalSeconds = 5f;
         private static float _nextConnectedTimeFlushTime;
         private static float _nextGracePeriodCheckTime;
+        private static bool _hasOpenGraceSessions;
 
         private static bool _wasEnabled;
 
@@ -35,10 +36,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatisticsVoiceCounter.Clear();
             _nextConnectedTimeFlushTime = 0f;
             _nextGracePeriodCheckTime = 0f;
+            _hasOpenGraceSessions = false;
             StatisticsMessages.ClearRuntimeState();
             StatisticsRunTracker.ClearRuntimeState();
             StatisticsDeathHandler.ClearRuntimeState();
             TrainDepositTracker.ClearDungeonState();
+            StatisticsDisplayNameResolver.ClearRuntimeState();
+            StatisticsWriteQueue.Clear();
         }
 
         internal static void HandleArchiveStarted(SpeechEventArchive archive, int slotId)
@@ -59,9 +63,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            OnPlayerRegistered(steamId, slotId);
+            PlayerPresenceEvents.OnPlayerRegistered(steamId, slotId);
         }
 
+        /// <summary>
+        /// Stats-only connect hook. Presence (<see cref="PlayerPresenceEvents"/>) owns
+        /// <see cref="PlayerRegistry"/> connected state and must run first.
+        /// </summary>
         public static void OnPlayerRegistered(ulong steamId, int slotId)
         {
             if (!ModConfig.EnableStatistics.Value)
@@ -79,11 +87,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (PlayerRegistry.IsConnected(steamId))
-            {
-                return;
-            }
-
             PlayerRegistry.LoadForSlot(slotId);
 
             PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
@@ -92,6 +95,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             {
                 SaveSlotDocumentStore.UpsertPlayer(steamId, displayName);
             }
+
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
 
@@ -105,6 +109,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 doc.CurrentSession.ReconnectCount++;
                 doc.CurrentSession.LastConnectedAtUtc = now;
                 doc.CurrentSession.LastDisconnectedAtUtc = null;
+                _hasOpenGraceSessions = HasOpenDisconnectedSessions();
             }
             else
             {
@@ -112,7 +117,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 doc.CurrentSession = NewSession(now);
             }
 
-            PlayerRegistry.SetConnectedSince(steamId, now);
             StatisticsVoiceCounter.EnsureBaseline(steamId);
             PlayerRegistry.BumpRevision();
 
@@ -124,6 +128,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             PlayerLifecycleCoordinator.NotifyStatisticsConnect(steamId, BuildSessionConnectContribution(doc, isNewSession, reconnectCount));
         }
 
+        /// <summary>
+        /// Stats-only disconnect hook. Flushes session counters while the player is still
+        /// marked connected; presence clears registry online state afterward if needed.
+        /// </summary>
         public static void OnPlayerUnregistered(ulong steamId)
         {
             if (!CanTrack())
@@ -161,6 +169,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             {
                 doc.CurrentSession.LastDisconnectedAtUtc = DateTime.UtcNow;
                 doc.CurrentSession.IsOpen = true;
+                _hasOpenGraceSessions = true;
             }
 
             PlayerRegistry.BumpRevision();
@@ -178,17 +187,17 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             bool hasConnected = PlayerRegistry.HasAnyConnected();
-            bool hasGraceSessions = HasOpenDisconnectedSessions();
-            if (!hasConnected && !hasGraceSessions)
+            if (!hasConnected && !_hasOpenGraceSessions)
             {
                 return;
             }
 
             bool changed = false;
-            if (hasGraceSessions && UnityEngine.Time.time >= _nextGracePeriodCheckTime)
+            if (_hasOpenGraceSessions && UnityEngine.Time.time >= _nextGracePeriodCheckTime)
             {
                 _nextGracePeriodCheckTime = UnityEngine.Time.time + GracePeriodCheckIntervalSeconds;
                 changed = FinalizeExpiredGraceSessions();
+                _hasOpenGraceSessions = HasOpenDisconnectedSessions();
             }
 
             if (hasConnected && UnityEngine.Time.time >= _nextConnectedTimeFlushTime)
