@@ -1,261 +1,112 @@
 # Dungeon Randomizer
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_DungeonRandomizer`](../CONFIG.md#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer)
+Randomizes which dungeon the tram picks, which map variant loads, and — optionally — the procedural layout seed (map flavor). Only the host must enable this for the whole lobby to get the effect; joining clients do not need the mod. The host applies pick, variant, and seed before departure; all players receive the same choices over the network.
 
-Shakes up repeat runs by randomizing which dungeon the tram picks, which map variant loads, and — optionally — the procedural **map flavor** (room layout shape). Off by default; each layer has its own toggle.
+Settings use a scene snapshot captured when you enter a gameplay scene (maintenance, tram, dungeon, deathmatch). Changes during an active scene are deferred until that scene ends. Turning the master toggle off applies immediately.
 
-Settings use a scene snapshot captured at dungeon enter. Changes during an active scene are deferred until that scene ends.
+## Configuration
 
-## How dungeon layout works
+### `EnableDungeonRandomizer`
 
-MIMESIS builds each dungeon **locally on every player** from a shared **dungeon seed** sent when the tram departs. The host cannot edit room geometry after generation and have it sync — only the seed (plus dungeon ID and map variant) is networked. All players with the same game data and seed get the same room graph.
+Master toggle for all three layers: dungeon pick, map variant, and map flavor. When off, vanilla tram rolls and seeds apply.
 
-The mod's **map flavor** setting does not change the dungeon type or flow asset. It picks one of up to **500** pre-tested seeds for that dungeon's layout flow, biased toward a structural style you choose. Each run still varies within that style because the mod randomly picks one seed from the pool.
+| Value | Meaning |
+|---|---|
+| `false` | Vanilla dungeon selection (default) |
+| `true` | Apply enabled sub-layers below |
 
-## Dungeon pick
+Default: `false`
 
-`RandomizeDungeonPick` overrides tram dungeon master ID selection.
+### `RandomizeDungeonPick`
 
-`DungeonPickPoolMode`:
+Overrides which dungeon master ID the tram roll selects. Has no effect when the master toggle is off.
 
-- `WidenVanilla` — keep vanilla cycle weights; optionally allow repeats sooner via `IgnoreDungeonExcludeList`.
-- `AllActiveUniform` — pick uniformly from all active dungeons.
+| Value | Meaning |
+|---|---|
+| `false` | Keep vanilla tram dungeon pick |
+| `true` | Apply pool mode, allowlist/blocklist, and reroll exclude rules |
 
-`DungeonAllowlist` / `DungeonBlocklist` filter the pool (allowlist wins when non-empty).
+Default: `true`
 
-## Map variant
+### `DungeonPickPoolMode`
 
-`RandomizeMapVariant` picks map variants uniformly from each dungeon's `MapIDs` on the host before departure. The chosen variant is synced to all players.
+How the tram builds its dungeon pool when `RandomizeDungeonPick` is on. Invalid values reset to `WidenVanilla` at load.
 
-## Map flavor (`DungeonSeedFlavor`)
+| Value | Meaning |
+|---|---|
+| `WidenVanilla` | Keep vanilla cycle weights when the vanilla result is still eligible; otherwise pick from the filtered active pool |
+| `AllActiveUniform` | Pick uniformly from all active dungeons (ignores the cycle table) |
 
-Replaces the old `RandomizeDungeonSeed` toggle. Controls how the host picks the procedural dungeon seed when a run starts.
+Default: `WidenVanilla`
 
-- **`Vanilla`** — the host uses the game's normal random seed roll. No curated bias.
-- **Any other flavor** — before the seed is sent to players, the host replaces it with a random pick from **up to 500 precomputed seeds** for that dungeon's DunGen flow (e.g. all Factory Sector 1 layouts share one pool). Pools are baked into the mod and refreshed by a developer tool when the game updates — not editable in settings. The merge step keeps the **top 500** seeds by flavor score (best examples, not a random sample from a wider band).
+### `DungeonAllowlist`
 
-Config and TOML use the **enum name** (`Compact`, `DeepMaze`, …). Human-readable labels in the web dashboard come from `l10n` (`en.json` / `de.json`). To add a flavor: add an enum member in `DungeonSeedFlavor`, add matching `options` keys in both locale files, then rescan and regenerate pools.
+Comma-separated dungeon master IDs. When non-empty, only listed IDs are eligible — allowlist wins over blocklist. Empty means no allowlist filter. Stored as raw IDs, not display names.
 
-Flavors only affect **layout shape** (room count, branching, connectivity, footprint). They do not change enemy counts, loot tables, weather, or quota. Room counts stay within each dungeon flow's designed min/max; flavors pick the best examples inside those bounds.
+Default: `""` (unset = no allowlist)
 
-### Size & footprint
+### `DungeonBlocklist`
 
-#### `Compact` — fewest rooms
+Comma-separated dungeon master IDs to exclude from the pool. Applied in both pool modes. Ignored when allowlist is non-empty.
 
-Lowest **total room count**. Main path and branches are both kept short.
+Default: `""` (unset = no blocklist)
 
-**Good for:** faster clears, smaller teams, speed-focused shifts.
+### `IgnoreDungeonExcludeList`
 
-**Feels like:** tight, efficient maps with less to sweep.
+On a tram **reroll** only (not the first roll), clears the game's recent-dungeon exclude list before picking. Requires master toggle on, `RandomizeDungeonPick` on, and `DungeonPickPoolMode` = `WidenVanilla`. The first tram pick still respects vanilla excludes.
 
-#### `Expansive` — most rooms
+| Value | Meaning |
+|---|---|
+| `false` | Rerolls keep the recent-dungeon exclude list |
+| `true` | Rerolls ignore recent-dungeon excludes (when gates above are met) |
 
-Highest **total room count** within the flow's limits.
+Default: `true`
 
-**Good for:** exploration, larger teams, maximising searchable space.
+### `RandomizeMapVariant`
 
-**Feels like:** the biggest valid version of this dungeon type.
+Before departure, the host picks a map variant uniformly from the chosen dungeon's `MapIDs`. The result syncs to all players. Has no effect when the master toggle is off.
 
-#### `ShortMainPath` — shortest critical path
+| Value | Meaning |
+|---|---|
+| `false` | Keep vanilla map variant |
+| `true` | Uniform random pick from available map IDs |
 
-Lowest **main-path room count** (start-to-goal spine), regardless of how many branch rooms exist.
+Default: `true`
 
-**Good for:** reaching the exit quickly, speed goals, less mandatory forward travel.
+### `DungeonSeedFlavor`
 
-**Feels like:** a short express route — side rooms may still exist but the core run is brief.
+Controls how the host picks the procedural dungeon seed sent at departure. `Vanilla` uses the game's normal roll. Any other value replaces the seed with a random pick from up to **500** pre-tested seeds per DunGen layout flow (baked into the mod, not editable in settings). Layout shape only — not enemy counts, loot, weather, or quota. Invalid flavor names reset to `Vanilla` at load. Web dashboard labels come from l10n; config/TOML use the enum name.
 
-**Unlike `Compact`:** branch wings can remain; only the spine is minimised.
+Multiplayer: clients do not need the mod but must have matching game data to build the same layout from the seed. If no pool exists for a flow, or a multi-flow dungeon cannot match the same flow at load, the host falls back to the vanilla seed and logs a warning. On rare DunGen failure the game retries with `Seed++` up to **3** times (4 attempts total); the curated seed may be abandoned.
 
-#### `LongMainPath` — longest critical path
-
-Highest **main-path room count** — the longest start-to-goal spine.
-
-**Good for:** extended forward travel, marathon shifts, teams that stay on the critical route.
-
-**Feels like:** a long haul through the dungeon — side rooms may exist but the spine dominates.
-
-**Unlike `ShortMainPath`:** maximises mandatory forward distance instead of minimising it.
-
-#### `Sprawling` — spread out
-
-Largest **physical footprint** (dungeon bounds volume) — rooms are geographically distant.
-
-**Good for:** teams using teleporters, long sightlines, spread-out search patterns.
-
-**Feels like:** walking more metres even if room count is average.
-
-#### `Dense` — packed together
-
-Smallest **footprint per room** — many rooms in a tight cluster.
-
-**Good for:** fast rotation between areas, close-quarters navigation, minimap looks "chunky".
-
-**Feels like:** compact real-estate — less empty space between rooms.
-
-#### `Cramped` — many rooms, tiny footprint
-
-Many **total rooms** packed into the **smallest bounds volume per room**.
-
-**Good for:** claustrophobic navigation, rapid room-to-room rotation in a small area.
-
-**Feels like:** a packed warren — lots to search without walking far.
-
-**Unlike `Dense`:** prioritises high room count in a tight space, not just small footprint alone.
-
-### Shape & connectivity
-
-#### `Linear` — corridor spine
-
-Long **main path relative to branch rooms** (high main/branch ratio).
-
-**Good for:** groups staying together, predictable forward progress.
-
-**Feels like:** a strong spine with short or rare detours.
-
-#### `MinimalBranches` — fewest side rooms
-
-Lowest **branch room count** — almost everything is on the main route.
-
-**Good for:** no-fork decision making, minimal "check the side path" moments.
-
-**Unlike `Linear`:** scored on absolute branch tiles, not ratio — can pair with a long or short main path.
-
-#### `Branching` — side paths
-
-Most **branch rooms and branch depth** combined.
-
-**Good for:** teams that fan out, optional loot wings.
-
-**Feels like:** frequent forks off the critical path.
-
-#### `BroadBranches` — many shallow side wings
-
-Many **branch rooms** with **low maximum branch depth** — wide but not deep.
-
-**Good for:** optional nearby detours, teams that peel off briefly and rejoin.
-
-**Feels like:** lots of short side pockets off the main route.
-
-**Unlike `Deep`:** many branches that do not extend far from the spine.
-
-#### `Deep` — deep branches
-
-Deepest **branch chains** (most steps from main path into a side wing).
-
-**Good for:** nested side areas, multi-room detours.
-
-**Feels like:** side paths that keep going.
-
-#### `Open` — highly connected
-
-Most **doorway connections** between rooms.
-
-**Good for:** loop-back routes, fluid movement, fewer one-way dead runs.
-
-**Feels like:** a web — many ways to move between neighbours.
-
-#### `Maze` — dead-end heavy
-
-Most **unused doorways** (cul-de-sacs and alcoves).
-
-**Good for:** search-heavy runs, checking many small dead ends for loot.
-
-**Feels like:** lots of "check this nook" moments — not necessarily deep, but fiddly.
-
-#### `Loopy` — circular routes
-
-Highest **connections per room** — many loop-back paths, few dead ends.
-
-**Good for:** fluid movement, teams circling back without backtracking.
-
-**Feels like:** you can often go around a block instead of reversing.
-
-#### `DeadEnds` — stub corridors
-
-Many **unused doorways per room** relative to low **connection count** — stubby cul-de-sacs.
-
-**Good for:** meticulous room-by-room search, finding tucked-away loot.
-
-**Unlike `Maze`:** scored on dead-end density, not absolute unused doorway count.
-
-### Composites — combined traits
-
-Each composite is ranked separately (up to 500 seeds per flow, randomly sampled when more qualify), not a mix of two other pools.
-
-#### `TightCorridor` — small + linear
-
-**Compact** then **linear**: fewest rooms, then best main/branch ratio among those.
-
-**Good for:** fastest co-op clears with minimal side exploration.
-
-**Feels like:** a short, straight job — small and focused.
-
-#### `Labyrinth` — big + branchy + deep
-
-**Expansive**, then **branching/deep**: most rooms, then most side structure.
-
-**Good for:** maximum dungeon — full exploration, large teams, long shifts.
-
-**Feels like:** the "full meal" layout for that flow.
-
-#### `Honeycomb` — connected + compact space
-
-**Open per unit space**: most connections relative to footprint, favouring smaller total area.
-
-**Good for:** tight maps where you can still loop between rooms quickly.
-
-**Feels like:** dense web — lots of links in a small area.
-
-#### `WideOpen` — connected + spread out
-
-**Open**, then **sprawling**: many connections across a large footprint.
-
-**Good for:** large teams with multiple loop routes across a wide map.
-
-**Feels like:** an open campus — room to spread out, many paths between areas.
-
-#### `StableCompact` — reliable + small
-
-**Reliable**, then **compact**: cleanest generation first, then fewest rooms among those.
-
-**Good for:** multiplayer speedruns where layout must sync and stay small.
-
-**Feels like:** dependably tight — no weird gen failures, minimal sweep.
-
-#### `DeepMaze` — deep + dead-ends
-
-**Deep**, then **maze**: deepest branches with many dead-end doorways.
-
-**Good for:** hardcore search, thorough looting, players who like disorienting wings.
-
-**Feels like:** nested cul-de-sacs — confusing side areas that keep branching.
-
-### Quality
-
-#### `Reliable` — stable generation
-
-Fewest **DunGen retries**; seeds that fail generation are excluded.
-
-**Good for:** avoiding rare broken layouts, consistent multiplayer builds.
-
-**Feels like:** dependable vanilla-quality generation.
-
-#### `Balanced` — intentionally average
-
-Closest to the **median** room count, branch score, and connection count across scanned seeds.
-
-**Good for:** runs that avoid extreme layouts — neither tiny nor sprawling.
-
-**Feels like:** a typical dungeon for that flow — no strong bias toward any extreme.
-
-**Unlike `Vanilla`:** still curated from pre-tested seeds; avoids outlier layouts rather than using a fully random game roll.
-
-## Multiplayer notes
-
-- Map flavor, dungeon pick, and map variant are applied on the **host** before `MoveToDungeonSig` — all clients receive the same seed.
-- Clients do **not** need the mod for vanilla seeds; they **do** need matching game data to interpret the same seed identically.
-- If no seed pool exists yet for a flow (e.g. before the developer scanner has been run for a game version), the mod falls back to the vanilla host seed and logs a warning.
-- For dungeon masters with **multiple DunGen flow candidates**, the host only picks pool seeds that re-derive the same flow at load (`SyncRandom(seed)` → `GetRandomDungenName`). If none match, it falls back to the vanilla seed and logs a warning.
-- On rare DunGen generation failure, the game retries with `Seed++` up to **3** times (4 attempts total). The mod logs each failure in **red** when `EnableDungeonRandomizer` is on — the curated seed may be abandoned for `seed + 1`.
+| Value | Meaning |
+|---|---|
+| `Vanilla` | Game's normal random seed — no curated bias |
+| `Compact` | Fewest total rooms |
+| `Expansive` | Most total rooms within flow limits |
+| `ShortMainPath` | Shortest start-to-goal main path |
+| `LongMainPath` | Longest start-to-goal main path |
+| `Sprawling` | Largest physical footprint (spread-out rooms) |
+| `Dense` | Smallest footprint per room (tight cluster) |
+| `Cramped` | Many rooms packed into the smallest bounds per room |
+| `Linear` | Long main path relative to branch rooms |
+| `MinimalBranches` | Fewest branch rooms |
+| `Branching` | Most branch rooms and branch depth |
+| `BroadBranches` | Many shallow side wings (wide, not deep) |
+| `Deep` | Deepest branch chains off the main path |
+| `Open` | Most doorway connections between rooms |
+| `Maze` | Most unused doorways and cul-de-sacs |
+| `Loopy` | Highest connections per room; loop-back routes |
+| `DeadEnds` | Many stub corridors per room |
+| `TightCorridor` | Compact, then most linear among those |
+| `Labyrinth` | Expansive, then most branchy and deep |
+| `Honeycomb` | Most connections per unit space, favouring compact area |
+| `WideOpen` | Most connections across a large footprint |
+| `StableCompact` | Most reliable generation, then fewest rooms |
+| `DeepMaze` | Deepest branches, then most dead-end doorways |
+| `Reliable` | Fewest DunGen generation retries |
+| `Balanced` | Closest to median room count, branching, and connectivity |
+
+Default: `Vanilla`
 
 **Full config keys →** [Dungeon Randomizer](../CONFIG.md#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer)

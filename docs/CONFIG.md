@@ -432,7 +432,7 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Dungeon Randomizer — `[MimesisPlayerEnhancement_DungeonRandomizer]`
 
-**Host only.** Randomizes dungeon selection when enabled. Off by default — set `EnableDungeonRandomizer = true` to turn it on.
+**Only the host needs to enable this — the whole lobby gets the effect.** Randomizes dungeon selection when enabled: tram pick, map variant, and curated procedural seed (map flavor). Joining clients do not need the mod; pick, variant, and seed sync via vanilla network messages. Off by default — set `EnableDungeonRandomizer = true` to turn it on. Settings use a scene snapshot; mid-scene value changes are deferred until the scene ends (master toggle off applies immediately).
 
 **Layers:**
 
@@ -446,19 +446,19 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 | Value | Behavior |
 |-------|----------|
-| `WidenVanilla` | Keep vanilla cycle weights; optionally allow repeats sooner via `IgnoreDungeonExcludeList` |
+| `WidenVanilla` | Keep vanilla cycle weights when eligible; on tram **reroll** only, optionally clear recent-dungeon excludes via `IgnoreDungeonExcludeList` |
 | `AllActiveUniform` | Pick uniformly from all active dungeons (ignores the cycle table) |
 
 `DungeonAllowlist` and `DungeonBlocklist` filter the pool regardless of mode. Allowlist wins when non-empty: only listed IDs are eligible.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDungeonRandomizer` | bool | `false` | — | Randomize dungeon selection: tram pick, map variant, and map flavor seeds. Host only. |
+| `EnableDungeonRandomizer` | bool | `false` | — | Master toggle: tram pick, map variant, and map flavor seeds for the whole lobby. Only the host must enable it. |
 | `RandomizeDungeonPick` | bool | `true` | — | Override tram dungeon master ID selection. |
 | `DungeonPickPoolMode` | string | `WidenVanilla` | `WidenVanilla`, `AllActiveUniform` | How the tram dungeon pool is built (see table above). |
 | `DungeonAllowlist` | string | `""` | — | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |
 | `DungeonBlocklist` | string | `""` | — | Comma-separated dungeon master IDs to exclude. |
-| `IgnoreDungeonExcludeList` | bool | `true` | — | With `WidenVanilla`, do not exclude recently played dungeons from the tram roll. |
+| `IgnoreDungeonExcludeList` | bool | `true` | — | On tram **reroll** only: with `WidenVanilla`, clear recent-dungeon excludes before pick. Requires master toggle, `RandomizeDungeonPick`, and `WidenVanilla`. First pick still uses excludes. |
 | `DungeonSeedFlavor` | string | `Vanilla` | See [wiki](./wiki/features/dungeon-randomizer.md) | Curated procedural seed style. Config value is the enum name (`Compact`, `Maze`, …). Web dashboard labels come from l10n. Non-`Vanilla` picks from up to 500 baked seeds per layout flow (synced via network). |
 | `RandomizeMapVariant` | bool | `true` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
 

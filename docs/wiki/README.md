@@ -20,7 +20,7 @@
 | [Dungeon Time](./features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
 | [Mimic Tuning](./features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | [Player Tuning](./features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |
-| [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
+| [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (24 curated layout styles) | Only the host (lobby-wide) |
 | [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Only the host (lobby-wide) |
 
 **Host only** — only the host must enable it (or needs the mod, if always-on) for the whole lobby to get the effect. Joiners do not need the mod. **Your game only** — applies on each player's own client; does not change the lobby for others.
