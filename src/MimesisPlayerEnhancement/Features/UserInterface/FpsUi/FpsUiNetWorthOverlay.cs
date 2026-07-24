@@ -68,7 +68,26 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            Activate();
+            if (!FpsUiInventoryLayoutHelper.IsInventoryVisible())
+            {
+                _labelRoot?.SetActive(false);
+                return;
+            }
+
+            if (!HasValidWidget())
+            {
+                Activate();
+                return;
+            }
+
+            if (!RefreshLayout())
+            {
+                _labelRoot?.SetActive(false);
+                return;
+            }
+
+            ApplyTotal(_resolvedTotal == UnsetTotal ? 0 : _resolvedTotal);
+            _labelRoot!.SetActive(true);
         }
 
         internal static void OnInventoryHidden()

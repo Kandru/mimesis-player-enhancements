@@ -377,6 +377,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
         private static CustomLoadingScreenContext? PredictContext(string? sceneName)
         {
+            return PredictContextFromSceneName(
+                sceneName,
+                CustomLoadingScreenSession.LastTransitionContext,
+                sessionLive: IsGameSessionLive(),
+                tramWaitingPresent: UnityEngine.Object.FindAnyObjectByType<InTramWaitingScene>() != null);
+        }
+
+        /// <summary>Pure scene-name → context prediction for tests and <see cref="PredictContext"/>.</summary>
+        internal static CustomLoadingScreenContext? PredictContextFromSceneName(
+            string? sceneName,
+            CustomLoadingScreenContext? previousTransition,
+            bool sessionLive,
+            bool tramWaitingPresent)
+        {
             string name = sceneName?.Trim() ?? "";
             if (name.Length == 0)
             {
@@ -386,7 +400,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             if (name.Contains("InTramWaiting", StringComparison.OrdinalIgnoreCase)
                 || name.Contains("tram", StringComparison.OrdinalIgnoreCase))
             {
-                return CustomLoadingScreenSession.LastTransitionContext == CustomLoadingScreenContext.DungeonStart
+                return previousTransition == CustomLoadingScreenContext.DungeonStart
                     ? CustomLoadingScreenContext.DungeonEnd
                     : CustomLoadingScreenContext.TramScene;
             }
@@ -407,8 +421,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
 
             // Leaving the tram waiting room for an unknown map means a dungeon is loading — but only
             // while a session is actually live. Post-session LoadScene (leave/quit) must not re-apply.
-            if (IsGameSessionLive()
-                && UnityEngine.Object.FindAnyObjectByType<InTramWaitingScene>() != null)
+            if (sessionLive && tramWaitingPresent)
             {
                 return CustomLoadingScreenContext.DungeonStart;
             }

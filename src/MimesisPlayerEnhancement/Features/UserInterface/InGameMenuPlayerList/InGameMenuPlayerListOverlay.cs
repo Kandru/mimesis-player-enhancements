@@ -128,6 +128,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList
             }
         }
 
+        internal static void OnSessionEnded()
+        {
+            foreach (OverlayState state in States.Values.ToList())
+            {
+                if (state.Menu != null)
+                {
+                    RevertToVanilla(state.Menu);
+                }
+            }
+
+            States.Clear();
+        }
+
         private static void RevertToVanilla(UIPrefab_InGameMenu menu)
         {
             Hide(menu);

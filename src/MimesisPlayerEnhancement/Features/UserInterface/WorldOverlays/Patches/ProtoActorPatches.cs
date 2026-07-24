@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4256-4266
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.DestroyActor))]
     internal static class DestroyActorPrefix
     {
@@ -22,6 +23,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L6864-6906
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.OnActorDeath))]
     internal static class OnActorDeathPrefix
     {
@@ -46,6 +48,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4511-4532
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.UpdateHp))]
     internal static class UpdateHpPostfix
     {
@@ -76,6 +79,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L8565-8603
     [HarmonyPatch]
     internal static class HitTargetSigPostfix
     {
@@ -103,6 +107,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L8525-8532
     [HarmonyPatch]
     internal static class ActorDamagedSigPostfix
     {

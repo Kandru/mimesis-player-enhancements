@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGame.cs:L121-125
     [HarmonyPatch(typeof(UIPrefab_InGame), "Start")]
     internal static class InGameStartPostfix
     {
@@ -19,6 +20,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGame.cs:L135-146
     [HarmonyPatch(typeof(UIPrefab_InGame), "OnShow")]
     internal static class InGameOnShowPostfix
     {
@@ -40,6 +42,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L97-116
     [HarmonyPatch]
     internal static class InGameHidePostfix
     {
@@ -67,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGame.cs:L179-227
     [HarmonyPatch(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnHpChanged))]
     internal static class InGameOnHpChangedPrefix
     {
@@ -93,6 +97,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGame.cs:L229-239
     [HarmonyPatch(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.OnContaChanged))]
     internal static class InGameOnContaChangedPrefix
     {
@@ -119,6 +124,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_InGame.cs:L275-288
     [HarmonyPatch(typeof(UIPrefab_InGame), nameof(UIPrefab_InGame.SetVisibleOxyGauge))]
     internal static class InGameSetVisibleOxyGaugePostfix
     {

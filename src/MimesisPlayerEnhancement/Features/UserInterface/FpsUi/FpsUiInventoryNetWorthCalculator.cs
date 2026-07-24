@@ -84,21 +84,37 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
         internal static int ComputeItemSellPrice(InventoryItem item) => ResolveSellPrice(item);
 
+        /// <summary>Pure equipment sell-price math (gauge overflow / per-gauge bonus).</summary>
+        internal static int ComputeEquipmentSellPrice(
+            int basePrice,
+            int remainGauge,
+            int overflowPrice,
+            int priceIncPerGauge)
+        {
+            if (remainGauge == -1 && overflowPrice != 0)
+            {
+                return overflowPrice;
+            }
+
+            if (priceIncPerGauge > 0)
+            {
+                return (int)(basePrice + priceIncPerGauge * remainGauge * 0.01);
+            }
+
+            return basePrice;
+        }
+
         private static int ResolveSellPrice(InventoryItem item)
         {
             ItemMasterInfo info = item.MasterInfo;
             int price = item.Price;
             if (info is ItemEquipmentInfo equipInfo)
             {
-                if (item.RemainGauge == -1 && equipInfo.OverflowPrice != 0)
-                {
-                    return equipInfo.OverflowPrice;
-                }
-
-                if (equipInfo.PriceIncPerGauge > 0)
-                {
-                    return (int)(price + equipInfo.PriceIncPerGauge * item.RemainGauge * 0.01);
-                }
+                return ComputeEquipmentSellPrice(
+                    price,
+                    item.RemainGauge,
+                    equipInfo.OverflowPrice,
+                    equipInfo.PriceIncPerGauge);
             }
 
             return price;

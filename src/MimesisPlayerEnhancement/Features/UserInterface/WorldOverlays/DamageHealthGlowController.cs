@@ -1,4 +1,3 @@
-using System.Linq;
 using ReluProtocol.Enum;
 using UnityEngine;
 
@@ -14,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private const float FadeOutDurationSeconds = 0.25f;
 
         private readonly Dictionary<int, ActiveGlow> _active = new();
+        private readonly List<int> _tickKeys = [];
 
         internal bool HasActiveDamageGlows => _active.Count > 0;
 
@@ -72,9 +72,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return;
             }
 
+            CopyActiveKeys();
             float now = Time.time;
-            foreach (int actorId in _active.Keys.ToList())
+            for (int i = 0; i < _tickKeys.Count; i++)
             {
+                int actorId = _tickKeys[i];
                 if (!_active.TryGetValue(actorId, out ActiveGlow? glow))
                 {
                     continue;
@@ -107,13 +109,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal void TearDown()
         {
-            foreach (int actorId in _active.Keys.ToList())
+            CopyActiveKeys();
+            for (int i = 0; i < _tickKeys.Count; i++)
             {
-                Release(actorId, stopPaint: true);
+                Release(_tickKeys[i], stopPaint: true);
             }
 
             _active.Clear();
+            _tickKeys.Clear();
             WorldOverlayVisibility.ClearCache();
+        }
+
+        private void CopyActiveKeys()
+        {
+            _tickKeys.Clear();
+            foreach (int actorId in _active.Keys)
+            {
+                _tickKeys.Add(actorId);
+            }
         }
 
         private static bool CanApply(ProtoActor actor) =>

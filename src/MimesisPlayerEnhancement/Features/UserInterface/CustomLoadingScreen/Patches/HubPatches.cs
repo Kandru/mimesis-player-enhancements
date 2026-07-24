@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Hub.cs:L763-780
     [HarmonyPatch(typeof(Hub), nameof(Hub.LoadScene))]
     internal static class HubLoadScenePatch
     {

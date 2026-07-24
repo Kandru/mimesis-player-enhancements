@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerList.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefab_SurvivalResult.cs:L185-188
     [HarmonyPatch]
     internal static class UIPrefabSurvivalResultOnEnablePatch
     {
@@ -31,6 +32,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L80-95
     [HarmonyPatch(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))]
     internal static class UIPrefabSurvivalResultShowPostfix
     {
@@ -53,6 +55,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_SurvivalResult.cs:L190-309
     [HarmonyPatch]
     internal static class UIPrefabSurvivalResultPatchParameterPatch
     {
@@ -106,6 +109,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_SurvivalResult.cs:L190-309
     [HarmonyPatch]
     internal static class UIPrefabSurvivalResultPatchParameterCapturePostfix
     {

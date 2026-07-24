@@ -8,6 +8,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
     {
         private static readonly Dictionary<string, AudioClip> ClipsByFileName = new(StringComparer.OrdinalIgnoreCase);
 
+        internal static bool HasCachedClips => ClipsByFileName.Count > 0;
+
         internal static AudioClip? TryGetCachedClip(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))

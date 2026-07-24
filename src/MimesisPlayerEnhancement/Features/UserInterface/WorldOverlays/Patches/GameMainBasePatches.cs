@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L3984-4032
     [HarmonyPatch]
     internal static class FieldHitTargetSigPostfix
     {
@@ -29,6 +30,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L4035-4089
     [HarmonyPatch]
     internal static class ProjectileHitTargetSigPostfix
     {

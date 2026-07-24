@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Audio/AudioManager.cs:L189-197
     [HarmonyPatch(typeof(Mimic.Audio.AudioManager), nameof(Mimic.Audio.AudioManager.PlaySfx), [typeof(string)])]
     internal static class AudioManagerPlaySfxPatch
     {
@@ -15,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Audio/AudioManager.cs:L209-218
     [HarmonyPatch(typeof(Mimic.Audio.AudioManager), nameof(Mimic.Audio.AudioManager.PlaySfxTransform), [typeof(string), typeof(UnityEngine.Transform)])]
     internal static class AudioManagerPlaySfxTransformPatch
     {

@@ -2,6 +2,7 @@ using ModUtility;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GamePlayScene.cs:L265-319
     [HarmonyPatch(typeof(GamePlayScene), "Start")]
     internal static class GamePlaySceneStartPatch
     {
@@ -19,6 +20,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ModUtility/ModHelper.cs:L41-44
     [HarmonyPatch(typeof(ModHelper), nameof(ModHelper.InvokeTimingCallback))]
     internal static class ModHelperInvokeTimingCallbackPatch
     {
@@ -42,6 +44,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1115-1158
     [HarmonyPatch(typeof(GameMainBase), "OnDestroy")]
     internal static class GameMainBaseOnDestroyRoundStartSoundPatch
     {

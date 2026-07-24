@@ -20,12 +20,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                 return false;
             }
 
-            return CanShow(actor.ActorID, actor.transform.position, TargetCheckHeight);
+            return CanShowCached(actor.ActorID, actor.transform.position, TargetCheckHeight);
         }
 
         internal static bool CanShow(Vector3 targetBasePosition, float targetHeight = TargetCheckHeight)
         {
             return Evaluate(targetBasePosition, targetHeight);
+        }
+
+        /// <summary>Actor-keyed LOS with the same 0.1s cache as <see cref="CanShow(ProtoActor)"/>,
+        /// for floaters that track a moving world position under a stable actor id.</summary>
+        internal static bool CanShow(int actorId, Vector3 targetBasePosition, float targetHeight = TargetCheckHeight)
+        {
+            return CanShowCached(actorId, targetBasePosition, targetHeight);
         }
 
         internal static void ClearCache()
@@ -38,7 +45,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
             ActorCache.Remove(actorId);
         }
 
-        private static bool CanShow(int actorId, Vector3 targetBasePosition, float targetHeight)
+        private static bool CanShowCached(int actorId, Vector3 targetBasePosition, float targetHeight)
         {
             float now = Time.time;
             if (ActorCache.TryGetValue(actorId, out CachedResult cached) && now < cached.NextCheckTime)

@@ -152,6 +152,21 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             RevertToVanilla(state);
         }
 
+        internal static void OnSessionEnded()
+        {
+            if (_debugActive)
+            {
+                DebugHide();
+            }
+
+            foreach (SpectatorListState state in States.Values.ToList())
+            {
+                RevertToVanilla(state);
+            }
+
+            States.Clear();
+        }
+
         internal static bool DebugShow(IReadOnlyList<string> fakeNames)
         {
             EnsureSpectatorHudAvailable();

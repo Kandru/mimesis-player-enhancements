@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1184-1194
     [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.EndSceneLoading))]
     internal static class GameMainBaseEndSceneLoadingPatch
     {

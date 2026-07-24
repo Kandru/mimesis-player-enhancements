@@ -3,6 +3,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
     /// <summary>The exiting cutscene / video player calls <c>FadeOut(black)</c> on a full-screen
     /// image that sits above the normal loading UI. While we hold a custom departure screen,
     /// skip that fade so the custom image stays visible on top.</summary>
+    // game@0.3.1 Assembly-CSharp/UIManager.cs:L255-262
     [HarmonyPatch(typeof(UIManager), nameof(UIManager.FadeOut))]
     internal static class UIManagerFadeOutPatch
     {

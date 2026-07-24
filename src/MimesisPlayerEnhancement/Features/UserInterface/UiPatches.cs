@@ -11,6 +11,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             _ = GameNetworkApi.GetGameAssembly();
 
+            // Umbrella registration: ExtendedSaveSlots, ModVersionDisplay, and MenuMirror live
+            // outside Features/UserInterface/ but share the Ui FeatureModule lifecycle.
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNamespacePatchTypes(typeof(UiPatches))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(LoadingWaitPlayerListPatches)))
@@ -88,6 +90,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         internal static void OnSessionEnded()
         {
             MenuMirrorController.OnSessionEnded();
+            SpectatorPlayerGrid.OnSessionEnded();
+            InGameMenuPlayerListOverlay.OnSessionEnded();
+            SurvivalResultDebugPreview.OnSessionEnded();
             LoadingWaitPlayerListRuntime.OnSessionEnded();
             CustomLoadingScreenRuntime.OnSessionEnded();
             ExtendedSaveSlotsRuntime.OnSessionEnded();

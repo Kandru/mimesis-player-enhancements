@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefab_Scene_Loading.cs:L81-130
     [HarmonyPatch(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingScene))]
     internal static class UIPrefabSceneLoadingSetLoadingScenePatch
     {
@@ -18,6 +19,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_Scene_Loading.cs:L132-135
     [HarmonyPatch(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingText))]
     internal static class UIPrefabSceneLoadingSetLoadingTextPatch
     {
@@ -36,6 +38,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L80-95
     [HarmonyPatch(typeof(UIPrefabScript), nameof(UIPrefabScript.Show))]
     internal static class UIPrefabSceneLoadingShowPatch
     {
@@ -63,6 +66,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
     /// departure sequence starts — after any exiting cutscene in the tram, seconds before
     /// <c>Hub.LoadScene</c>. Showing the custom loading screen here lets the departure fade
     /// land directly on the custom image instead of a black gap.</summary>
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L140-152
     [HarmonyPatch(typeof(UIPrefabScript), nameof(UIPrefabScript.Cor_Hide))]
     internal static class UIPrefabGameStatusCorHidePatch
     {
@@ -86,6 +90,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen.Pa
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L97-116
     [HarmonyPatch(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))]
     internal static class UIPrefabSceneLoadingHidePatch
     {

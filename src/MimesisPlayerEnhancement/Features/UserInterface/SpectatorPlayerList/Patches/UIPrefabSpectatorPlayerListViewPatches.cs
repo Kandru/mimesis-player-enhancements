@@ -3,6 +3,7 @@ using System.Threading;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefab_Spectator_PlayerListView.cs:L25-41
     [HarmonyPatch(typeof(UIPrefab_Spectator_PlayerListView), "Start")]
     internal static class PlayerListViewStartPostfix
     {
@@ -27,6 +28,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList.Pa
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefab_Spectator_PlayerListView.cs:L43-86
     [HarmonyPatch(typeof(UIPrefab_Spectator_PlayerListView), nameof(UIPrefab_Spectator_PlayerListView.UpdatePlayerListView))]
     internal static class PlayerListViewUpdatePrefix
     {
@@ -56,6 +58,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList.Pa
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L97-116
     [HarmonyPatch]
     internal static class PlayerListViewHidePostfix
     {

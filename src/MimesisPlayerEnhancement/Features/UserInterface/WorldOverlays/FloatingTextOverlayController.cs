@@ -119,7 +119,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
                     + active.DriftDirection * (DriftSpeed * elapsed)
                     + Vector3.up * (RiseSpeed * elapsed);
 
-                bool visible = !_requiresVisibility || WorldOverlayVisibility.CanShow(position);
+                bool visible = !_requiresVisibility
+                    || WorldOverlayVisibility.CanShow(active.ActorId, position);
                 active.Widget.Root.SetActive(visible);
                 if (!visible)
                 {
