@@ -23,7 +23,7 @@
 | [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
 | [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
 
-**Host only:** only the host must enable it for the whole lobby to get the effect. Joining players do not need the mod or that setting. **Your game only:** only affects your own game client; each player who wants it must enable it on their machine.
+**Host only:** only the host must enable it for the whole lobby to get the effect. Joining clients do not need the mod. **Your game only:** only affects your own game client; each player who wants it must enable it on their machine.
 
 ## Configuration
 

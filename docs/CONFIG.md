@@ -142,7 +142,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
-**Host-only.** Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
+Only the host must enable it for the whole lobby to get the effect. Joining clients do not need the mod. Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
