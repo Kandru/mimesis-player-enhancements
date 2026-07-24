@@ -1,7 +1,31 @@
+using System.Reflection;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
+    // game@0.3.1 Assembly-CSharp/IVroom.cs:L769-826
+    [HarmonyPatch]
+    internal static class IVroomOnUpdateRoomLoadingHandshakePatch
+    {
+        private const string Feature = "JoinAnytime";
+
+        private static MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(IVroom), nameof(IVroom.OnUpdate), [typeof(long)]);
+
+        [HarmonyPrefix]
+        private static void Prefix(IVroom __instance)
+        {
+            try
+            {
+                JoinAnytimeRoomLoadingHandshake.TryCompleteEnterHandshake(__instance);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Room loading handshake failed — {ex.Message}");
+            }
+        }
+    }
+
     /// <summary>
     /// Route after SyncEnterRoom sends AllMemberEnterRoomSig — client needs that flag before
     /// MoveToWaitingRoomSig (CycleCount != 0 waits on EnteringCompleteAll in MaintenanceScene).

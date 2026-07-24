@@ -40,6 +40,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             JoinAnytimeConnectingTracker.Reset();
             JoinAnytimeLobbyController.OnSessionEnded();
             JoinAnytimeRoomTools.InvalidateWaitingRoomPrepareCache();
+            JoinAnytimeRoomLoadingHandshake.ResetSessionState();
         }
     }
 }

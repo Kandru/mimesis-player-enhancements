@@ -155,6 +155,60 @@ namespace MimesisPlayerEnhancement.Tests.Features.JoinAnytime
         }
 
         [Fact]
+        public void IVroom_OnUpdate_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("IVroom");
+
+            MethodInfo? method = type.GetMethod("OnUpdate", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("Int64", parameters[0].ParameterType.Name);
+        }
+
+        [Theory]
+        [InlineData("_startNotified")]
+        [InlineData("_levelLoadCompleteActorIDs")]
+        [InlineData("_vPlayerDict")]
+        public void IVroom_loading_handshake_fields_exist(string fieldName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("IVroom");
+
+            FieldInfo? field = type.GetField(fieldName, InstanceMember);
+
+            Assert.NotNull(field);
+        }
+
+        [Fact]
+        public void IVroom_GetMemberCount_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("IVroom");
+
+            MethodInfo? method = type.GetMethod("GetMemberCount", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Int32", method.ReturnType.Name);
+            Assert.Empty(method.GetParameters());
+        }
+
+        [Fact]
+        public void VPlayer_LevelLoadCompleted_property_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("VPlayer");
+
+            PropertyInfo? property = type.GetProperty("LevelLoadCompleted", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.Equal("Boolean", property.PropertyType.Name);
+        }
+
+        [Fact]
         public void MaintenanceScene_TryInitHostMaintenenceRoom_exists()
         {
             using MimesisMetadataContext context = CreateContext();
