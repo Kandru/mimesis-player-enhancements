@@ -58,9 +58,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static readonly HashSet<ulong> _restoreGiveUpWarnedSteamIds = [];
 
+        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L35
         private static readonly System.Reflection.FieldInfo? RecordedTimeField =
             AccessTools.Field(typeof(SpeechEvent), "RecordedTime");
 
+        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L51
         private static readonly System.Reflection.FieldInfo? LastPlayedTimeField =
             AccessTools.Field(typeof(SpeechEvent), "LastPlayedTime");
 
@@ -130,17 +132,31 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             PlayerRegistry.SyncRosterToDocument();
         }
 
-        internal static void OnSessionEnded()
+        /// <param name="clearArchiveRegistry">
+        /// True only for real session teardown. Mid-session disable via config must leave
+        /// live <see cref="SpeechEventArchive"/> registrations intact.
+        /// </param>
+        internal static void OnSessionEnded(bool clearArchiveRegistry = false)
         {
             if (!ModConfig.EnablePersistence.Value)
             {
                 Reset();
+                if (clearArchiveRegistry)
+                {
+                    SpeechEventArchiveRegistry.Clear();
+                }
+
                 return;
             }
 
             if (!MimesisSaveManager.IsHost())
             {
                 Reset();
+                if (clearArchiveRegistry)
+                {
+                    SpeechEventArchiveRegistry.Clear();
+                }
+
                 return;
             }
 
@@ -155,6 +171,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             Reset();
+            if (clearArchiveRegistry)
+            {
+                SpeechEventArchiveRegistry.Clear();
+            }
+
             SpeechEventArchivePatches.InvalidatePoolLoaded();
         }
 
@@ -590,7 +611,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
                 if (string.IsNullOrEmpty(playerId) && collectedEvents.Count > 0)
                 {
-                    playerId = ResolveDominantPlayerName(collectedEvents);
+                    List<string?> names = [];
+                    foreach (SpeechEvent collected in collectedEvents)
+                    {
+                        names.Add(collected?.PlayerName);
+                    }
+
+                    playerId = SpeechEventMatchResolver.ResolveDominantPlayerName(names);
                 }
 
                 if (steamId != 0 && !string.IsNullOrEmpty(playerId))
@@ -1122,32 +1149,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
         }
 
-        private static string? ResolveDominantPlayerName(IReadOnlyList<SpeechEvent> events)
-        {
-            Dictionary<string, int> counts = [];
-            string? dominant = null;
-            int max = 0;
-
-            foreach (SpeechEvent ev in events)
-            {
-                if (ev == null || string.IsNullOrEmpty(ev.PlayerName))
-                {
-                    continue;
-                }
-
-                counts.TryGetValue(ev.PlayerName, out int count);
-                count++;
-                counts[ev.PlayerName] = count;
-                if (count > max)
-                {
-                    max = count;
-                    dominant = ev.PlayerName;
-                }
-            }
-
-            return dominant;
-        }
-
         private static void PushLiveVoiceIdsToRegistry()
         {
             HashSet<ulong> steamIds = [];
@@ -1232,7 +1233,13 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                     HashSet<long> seenIds = [];
                     if (SpeechEventInjector.CollectFromArchive(archive, seenIds, archiveEvents) > 0)
                     {
-                        string? dominantVoiceId = ResolveDominantPlayerName(archiveEvents);
+                        List<string?> names = [];
+                        foreach (SpeechEvent archiveEvent in archiveEvents)
+                        {
+                            names.Add(archiveEvent?.PlayerName);
+                        }
+
+                        string? dominantVoiceId = SpeechEventMatchResolver.ResolveDominantPlayerName(names);
                         if (!string.IsNullOrEmpty(dominantVoiceId))
                         {
                             return dominantVoiceId;
@@ -1278,33 +1285,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             bool isLocal,
             bool useDisconnectedMapping = false)
         {
-            HashSet<string> matchedPlayerNames = [];
-
-            if (!string.IsNullOrEmpty(playerId))
-            {
-                if (_byPlayerName.ContainsKey(playerId))
-                {
-                    _ = matchedPlayerNames.Add(playerId);
-                }
-                else if (useDisconnectedMapping)
-                {
-                    _ = matchedPlayerNames.Add(playerId);
-                }
-            }
-
             ulong steamId = GameSessionAccess.ResolveSteamId(playerUID, isLocal);
-
-            AddMappedVoiceId(matchedPlayerNames, steamId, _disconnectedPlayerMappings, useDisconnectedMapping);
-
-            IReadOnlyDictionary<ulong, string> registryMappings = PlayerRegistry.GetVoiceMappings();
-            if (useDisconnectedMapping)
-            {
-                AddMappedVoiceId(matchedPlayerNames, steamId, registryMappings, requirePoolMatch: false);
-            }
-            else
-            {
-                AddMappedVoiceId(matchedPlayerNames, steamId, registryMappings, requirePoolMatch: true);
-            }
+            HashSet<string> matchedPlayerNames = SpeechEventMatchResolver.ResolveMatchedPlayerNames(
+                playerId,
+                steamId,
+                PlayerRegistry.GetVoiceMappings(),
+                _disconnectedPlayerMappings,
+                _byPlayerName.Keys,
+                useDisconnectedMapping);
 
             if (matchedPlayerNames.Count == 0)
             {
@@ -1333,72 +1321,49 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 steamId = GameSessionAccess.GetLocalSteamId();
             }
 
-            if (!IsKnownSavePlayer(steamId))
-            {
-                return;
-            }
-
             HashSet<string> mappedToOthers = CollectPoolVoiceIdsMappedToOtherSteamIds(steamId);
-            List<string> unmapped = [];
-            foreach (string poolName in _byPlayerName.Keys)
+            Dictionary<string, int> eventCounts = [];
+            foreach (KeyValuePair<string, List<long>> kvp in _byPlayerName)
             {
-                if (!string.IsNullOrEmpty(poolName) && !mappedToOthers.Contains(poolName))
-                {
-                    unmapped.Add(poolName);
-                }
-            }
-
-            if (unmapped.Count == 0)
-            {
-                return;
+                eventCounts[kvp.Key] = kvp.Value.Count;
             }
 
             IReadOnlyList<PlayerStatisticsDocument> stats = PlayerRegistry.GetAllStatistics();
-            if (stats.Count == 1 && stats[0].SteamId == steamId)
-            {
-                foreach (string poolName in unmapped)
-                {
-                    _ = matchedPlayerNames.Add(poolName);
-                }
+            bool isSoloSaveForSteam = stats.Count == 1 && stats[0].SteamId == steamId;
+            int before = matchedPlayerNames.Count;
 
+            SpeechEventMatchResolver.InferUnmappedPoolVoiceIds(
+                matchedPlayerNames,
+                steamId,
+                isKnownSavePlayer: IsKnownSavePlayer(steamId),
+                isSoloSaveForSteam: isSoloSaveForSteam,
+                poolVoiceIds: _byPlayerName.Keys,
+                mappedToOtherSteamIds: mappedToOthers,
+                eventCountsByVoiceId: eventCounts);
+
+            int added = matchedPlayerNames.Count - before;
+            if (added <= 0)
+            {
+                return;
+            }
+
+            if (isSoloSaveForSteam)
+            {
                 ModLog.Debug(
                     Feature,
-                    $"Solo-save unmapped pool inference — steamId={steamId}, pooledVoiceIds={unmapped.Count}");
+                    $"Solo-save unmapped pool inference — steamId={steamId}, pooledVoiceIds={added}");
                 return;
             }
 
-            string? dominant = ResolveDominantPoolVoiceId(unmapped);
-            if (string.IsNullOrEmpty(dominant))
+            string? inferred = null;
+            foreach (string name in matchedPlayerNames)
             {
-                return;
+                inferred = name;
             }
 
-            _ = matchedPlayerNames.Add(dominant);
             ModLog.Debug(
                 Feature,
-                $"Unmapped pool voice inference — steamId={steamId}, pooledVoiceId='{dominant}'");
-        }
-
-        private static string? ResolveDominantPoolVoiceId(IReadOnlyList<string> poolVoiceIds)
-        {
-            string? dominant = null;
-            int dominantCount = 0;
-
-            foreach (string poolVoiceId in poolVoiceIds)
-            {
-                if (!_byPlayerName.TryGetValue(poolVoiceId, out List<long>? eventIds))
-                {
-                    continue;
-                }
-
-                if (eventIds.Count > dominantCount)
-                {
-                    dominantCount = eventIds.Count;
-                    dominant = poolVoiceId;
-                }
-            }
-
-            return dominant;
+                $"Unmapped pool voice inference — steamId={steamId}, pooledVoiceId='{inferred}'");
         }
 
         private static bool IsKnownSavePlayer(ulong steamId) =>
@@ -1438,23 +1403,6 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             }
 
             return mapped;
-        }
-
-        private static void AddMappedVoiceId(
-            HashSet<string> matchedPlayerNames,
-            ulong steamId,
-            IReadOnlyDictionary<ulong, string> mappingSource,
-            bool requirePoolMatch)
-        {
-            if (steamId == 0 || !mappingSource.TryGetValue(steamId, out string oldDissonanceId))
-            {
-                return;
-            }
-
-            if (!requirePoolMatch || _byPlayerName.ContainsKey(oldDissonanceId))
-            {
-                _ = matchedPlayerNames.Add(oldDissonanceId);
-            }
         }
     }
 }

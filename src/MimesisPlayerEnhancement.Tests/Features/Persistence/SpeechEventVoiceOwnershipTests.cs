@@ -35,5 +35,27 @@ namespace MimesisPlayerEnhancement.Tests.Features.Persistence
 
             Assert.Equal(expected, canPrune);
         }
+
+        [Fact]
+        public void FilterOwnedPlayerNames_keeps_only_valid_voice_ids()
+        {
+            HashSet<string> validVoiceIds = new(StringComparer.Ordinal) { "voice-a", "voice-c" };
+
+            List<string> owned = SpeechEventVoiceOwnership.FilterOwnedPlayerNames(
+                ["voice-a", null, "voice-b", "voice-c", ""],
+                validVoiceIds);
+
+            Assert.Equal(["voice-a", "voice-c"], owned);
+        }
+
+        [Fact]
+        public void FilterOwnedPlayerNames_passthrough_when_valid_set_empty()
+        {
+            List<string> owned = SpeechEventVoiceOwnership.FilterOwnedPlayerNames(
+                ["voice-a", "voice-b"],
+                []);
+
+            Assert.Equal(["voice-a", "voice-b"], owned);
+        }
     }
 }

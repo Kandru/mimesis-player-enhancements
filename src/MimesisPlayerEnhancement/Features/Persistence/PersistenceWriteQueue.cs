@@ -18,23 +18,29 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private sealed class PendingSlotSave
         {
-            internal List<SpeechEvent>? LatestEvents;
+            internal List<SpeechEventCapturedRecord>? LatestRecords;
+            internal string SpeechPath = string.Empty;
             internal Task? PrepareTask;
         }
 
         /// <summary>
-        /// Captures speech events on the game thread, then serializes and writes on a worker.
+        /// Captures speech event bytes on the game thread, then packs and writes on a worker.
         /// </summary>
         internal static void EnqueueSave(int slotId, List<SpeechEvent> speechEvents)
         {
+            List<SpeechEventCapturedRecord> records = SpeechEventFileStore.CaptureRecords(speechEvents);
+            string speechPath = SaveSidecarPaths.GetSpeechPath(slotId) ?? string.Empty;
+            ModLog.Debug(Feature, $"Captured {records.Count} SpeechEvents for slot {slotId}");
+
             PendingSlotSave pending = InFlightBySlot.GetOrAdd(slotId, static _ => new PendingSlotSave());
             lock (pending)
             {
-                pending.LatestEvents = speechEvents;
+                pending.LatestRecords = records;
+                pending.SpeechPath = speechPath;
 
                 if (pending.PrepareTask is { IsCompleted: false })
                 {
-                    ModLog.Debug(Feature, $"Coalescing slot {slotId} save — serialize already in flight.");
+                    ModLog.Debug(Feature, $"Coalescing slot {slotId} save — pack/write already in flight.");
                     return;
                 }
 
@@ -60,21 +66,23 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static void PrepareAndWrite(int slotId, PendingSlotSave pending)
         {
-            List<SpeechEvent>? events;
+            List<SpeechEventCapturedRecord>? records;
+            string speechPath;
             lock (pending)
             {
-                events = pending.LatestEvents;
-                pending.LatestEvents = null;
+                records = pending.LatestRecords;
+                speechPath = pending.SpeechPath;
+                pending.LatestRecords = null;
             }
 
             try
             {
-                if (events == null)
+                if (records == null)
                 {
                     return;
                 }
 
-                SpeechEventSaveSnapshot snapshot = SpeechEventFileStore.Serialize(slotId, events);
+                SpeechEventSaveSnapshot snapshot = SpeechEventFileStore.BuildSnapshot(speechPath, records);
                 WriteSnapshot(snapshot);
             }
             catch (Exception ex)
@@ -89,7 +97,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
         {
             lock (pending)
             {
-                if (pending.LatestEvents == null)
+                if (pending.LatestRecords == null)
                 {
                     pending.PrepareTask = null;
                     _ = InFlightBySlot.TryRemove(slotId, out _);

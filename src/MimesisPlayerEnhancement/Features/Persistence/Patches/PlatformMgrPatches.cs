@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
+    // game@0.3.1 Assembly-CSharp/PlatformMgr.cs:L167-173
     [HarmonyPatch(typeof(PlatformMgr), nameof(PlatformMgr.Delete))]
     internal static class PlatformMgrPatches
     {

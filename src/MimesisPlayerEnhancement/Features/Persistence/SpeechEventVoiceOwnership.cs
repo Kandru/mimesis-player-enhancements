@@ -64,8 +64,14 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 return events;
             }
 
-            HashSet<string> validVoiceIds = CollectValidVoiceIds(slotId);
-            if (!CanPruneOrphans(validVoiceIds))
+            return FilterOwnedEvents(events, CollectValidVoiceIds(slotId));
+        }
+
+        internal static List<SpeechEvent> FilterOwnedEvents(
+            List<SpeechEvent> events,
+            HashSet<string> validVoiceIds)
+        {
+            if (events.Count == 0 || !CanPruneOrphans(validVoiceIds))
             {
                 return events;
             }
@@ -76,6 +82,36 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 if (ev != null && IsOwnedVoiceId(ev.PlayerName, validVoiceIds))
                 {
                     owned.Add(ev);
+                }
+            }
+
+            return owned;
+        }
+
+        internal static List<string> FilterOwnedPlayerNames(
+            IReadOnlyList<string?> playerNames,
+            HashSet<string> validVoiceIds)
+        {
+            if (playerNames.Count == 0 || !CanPruneOrphans(validVoiceIds))
+            {
+                List<string> passthrough = [];
+                foreach (string? name in playerNames)
+                {
+                    if (name != null)
+                    {
+                        passthrough.Add(name);
+                    }
+                }
+
+                return passthrough;
+            }
+
+            List<string> owned = [];
+            foreach (string? playerName in playerNames)
+            {
+                if (IsOwnedVoiceId(playerName, validVoiceIds))
+                {
+                    owned.Add(playerName!);
                 }
             }
 

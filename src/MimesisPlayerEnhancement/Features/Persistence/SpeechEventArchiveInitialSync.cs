@@ -8,6 +8,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
     {
         private const string Feature = "Persistence";
 
+        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L413-415
         private static readonly System.Reflection.MethodInfo? RequestInitialSyncMethod =
             AccessTools.Method(typeof(SpeechEventArchive), "ServerRpcRequestInitialSync");
 

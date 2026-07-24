@@ -6,6 +6,12 @@ using ReluReplay.Serializer;
 
 namespace MimesisPlayerEnhancement.Features.Persistence
 {
+    internal sealed class SpeechEventCapturedRecord
+    {
+        internal byte[] Meta = [];
+        internal byte[] Audio = [];
+    }
+
     internal static class SpeechEventFileStore
     {
         private const string Feature = "Persistence";
@@ -82,48 +88,72 @@ namespace MimesisPlayerEnhancement.Features.Persistence
             return stream.Read(countBytes, 0, 4) == 4 ? BitConverter.ToInt32(countBytes, 0) : 0;
         }
 
-        internal static SpeechEventSaveSnapshot Serialize(int slotId, List<SpeechEvent> speechEvents)
+        /// <summary>
+        /// Copies meta/audio off live <see cref="SpeechEvent"/> instances (call on the game thread).
+        /// </summary>
+        internal static List<SpeechEventCapturedRecord> CaptureRecords(IReadOnlyList<SpeechEvent> speechEvents)
         {
-            string? speechPath = SaveSidecarPaths.GetSpeechPath(slotId);
+            List<SpeechEventCapturedRecord> records = [];
+            if (speechEvents.Count == 0)
+            {
+                return records;
+            }
+
+            foreach (SpeechEvent ev in speechEvents)
+            {
+                if (ev == null)
+                {
+                    continue;
+                }
+
+                byte[]? metaData = ReplayableSndEvent.GetDataFromSndEvent(ev);
+                if (metaData == null || metaData.Length == 0)
+                {
+                    continue;
+                }
+
+                byte[] audioData = ev.CompressedAudioData ?? [];
+                records.Add(new SpeechEventCapturedRecord
+                {
+                    Meta = (byte[])metaData.Clone(),
+                    Audio = audioData.Length == 0 ? [] : (byte[])audioData.Clone(),
+                });
+            }
+
+            return records;
+        }
+
+        /// <summary>
+        /// Packs already-captured records into a v3 speech sidecar payload (safe off the game thread).
+        /// </summary>
+        internal static SpeechEventSaveSnapshot BuildSnapshot(
+            string speechPath,
+            IReadOnlyList<SpeechEventCapturedRecord> records)
+        {
             byte[]? speechBytes = null;
             int serializedCount = 0;
-            long totalAudioBytes = 0;
 
-            if (speechEvents.Count > 0 && !string.IsNullOrEmpty(speechPath))
+            if (records.Count > 0 && !string.IsNullOrEmpty(speechPath))
             {
                 using MemoryStream ms = new();
                 using BinaryWriter bw = new(ms);
 
                 bw.Write(FileMagic);
                 bw.Write(FileFormatVersion);
+                bw.Write(records.Count);
 
-                List<(byte[] meta, byte[] audio)> serializedEvents = [];
-                foreach (SpeechEvent ev in speechEvents)
+                foreach (SpeechEventCapturedRecord record in records)
                 {
-                    byte[] metaData = ReplayableSndEvent.GetDataFromSndEvent(ev);
-                    if (metaData == null || metaData.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    byte[] audioData = ev.CompressedAudioData ?? [];
-                    serializedEvents.Add((metaData, audioData));
-                }
-
-                serializedCount = serializedEvents.Count;
-                bw.Write(serializedCount);
-
-                foreach ((byte[] metaData, byte[] audioData) in serializedEvents)
-                {
+                    byte[] metaData = record.Meta ?? [];
+                    byte[] audioData = record.Audio ?? [];
                     bw.Write(metaData.Length);
                     bw.Write(metaData);
                     bw.Write(audioData.Length);
                     bw.Write(audioData);
-                    totalAudioBytes += audioData.Length;
                 }
 
+                serializedCount = records.Count;
                 speechBytes = ms.ToArray();
-                ModLog.Debug(Feature, $"Serialized {serializedCount} SpeechEvents, audio={totalAudioBytes / 1024}KB");
             }
 
             return new SpeechEventSaveSnapshot
@@ -132,6 +162,12 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 SpeechBytes = speechBytes,
                 SerializedCount = serializedCount,
             };
+        }
+
+        internal static SpeechEventSaveSnapshot Serialize(int slotId, List<SpeechEvent> speechEvents)
+        {
+            string speechPath = SaveSidecarPaths.GetSpeechPath(slotId) ?? string.Empty;
+            return BuildSnapshot(speechPath, CaptureRecords(speechEvents));
         }
 
         internal static List<SpeechEvent>? Load(int slotId)

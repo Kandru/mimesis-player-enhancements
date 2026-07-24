@@ -80,7 +80,7 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: PersistenceRuntime.RefreshFromConfig,
                 onUpdate: SpeechEventPoolManager.ProcessDeferredUpdates,
                 onDeinitialize: PersistenceWriteQueue.FlushAllSync,
-                onSessionEnded: SpeechEventPoolManager.OnSessionEnded),
+                onSessionEnded: () => SpeechEventPoolManager.OnSessionEnded(clearArchiveRegistry: true)),
             new FeatureModule("Statistics", StatisticsPatches.Apply,
                 syncFromConfig: StatisticsTracker.RefreshFromConfig,
                 onUpdate: () =>
