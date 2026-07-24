@@ -252,6 +252,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Locale = GameLocaleAccess.GetCurrentLanguage(),
                     SessionScene = WebDashboardSessionScene.Resolve(GameSessionAccess.TryGetPdata()?.main),
                     BlindModeEnabled = WebDashboardMinimapBlindMode.Enabled,
+                    CanViewSaveSettings = WebDashboardGameState.CanViewSaveSettings(),
                 },
             };
 

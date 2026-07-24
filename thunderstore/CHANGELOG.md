@@ -3,6 +3,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.20
 - draft: expose new Mimic tuning options since game version 0.3.1
 - draft: DungeonTime to "slow down" or "speed up" the clock in order to simply stop at 12pm (currently more time would mean game would count up to 1am or longer depending on the amount of players and chosen settings)
+- draft: host sends configuration to modded clients (for feature-parity during party)
 
 ## 26.7.19
 Fast update for Mimesis v0.3.1 - literally untested!!! In case of any errors please report them via Github :)

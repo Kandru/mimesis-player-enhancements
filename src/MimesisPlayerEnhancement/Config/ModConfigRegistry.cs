@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using MelonLoader;
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 using MimesisPlayerEnhancement.Features.UserInterface;
 
 namespace MimesisPlayerEnhancement
@@ -248,7 +249,9 @@ namespace MimesisPlayerEnhancement
 
         internal static void SaveToFile()
         {
-            if (!ModConfig.IsInitialized || SaveSlotConfigStore.IsApplyingOverrides)
+            if (!ModConfig.IsInitialized
+                || SaveSlotConfigStore.IsApplyingOverrides
+                || HostConfigMirror.IsApplyingRemoteMirror)
             {
                 return;
             }

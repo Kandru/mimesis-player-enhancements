@@ -28,6 +28,7 @@ import { isLobbyRoute, isRouteAccessible } from '../playerHelpers';
 import { readCachedGlobalSettings, writeCachedGlobalSettings } from '../settingsCache';
   import {
   canEditSaveSettings,
+  canViewSaveSettings,
   isValidSteamId,
   isChangelogPending,
   OFFLINE_ROUTES,
@@ -414,6 +415,12 @@ class DashboardStore {
       isHost: this.status.isHost,
       saveSlotId: previousSaveSlotId,
     });
+    const wasSaveViewable = canViewSaveSettings({
+      isConnected: wasConnected,
+      isHost: this.status.isHost,
+      saveSlotId: previousSaveSlotId,
+      canViewSaveSettings: this.status.canViewSaveSettings,
+    });
     const previousSessionScene = this.lastSessionScene;
     this.status = payload.status || this.status;
     if (payload.playersLiveOnly) {
@@ -451,6 +458,8 @@ class DashboardStore {
     } else if (this.status.isConnected && !wasConnected) {
       void this.prefetchDashboardData();
     } else if (canEditSaveSettings(this.status) && !wasSaveEditable) {
+      void this.prefetchDashboardData(true);
+    } else if (canViewSaveSettings(this.status) && !wasSaveViewable) {
       void this.prefetchDashboardData(true);
     } else if (this.status.isConnected && this.route === 'minimap') {
       this.applyMinimapFilter();
@@ -713,7 +722,7 @@ class DashboardStore {
     void this.loadGlobalSettings(true, force);
     void this.loadItemCatalog();
     void this.loadDungeonCatalog();
-    if (canEditSaveSettings(this.status)) {
+    if (canViewSaveSettings(this.status)) {
       void this.loadSaveProfileData(force);
       void this.loadSaveSettings(true, force);
     }
@@ -742,7 +751,7 @@ class DashboardStore {
   }
 
   async loadSaveSettings(background = false, force = false) {
-    if (!canEditSaveSettings(this.status)) return;
+    if (!canViewSaveSettings(this.status)) return;
     if (!force && this.settingsSave) return;
     if (this.saveSettingsPromise) return this.saveSettingsPromise;
 
@@ -768,7 +777,7 @@ class DashboardStore {
 
   async loadPageData(force = false) {
     const onGlobal = this.route === 'global-settings';
-    const onSettings = this.route === 'settings' && canEditSaveSettings(this.status);
+    const onSettings = this.route === 'settings' && canViewSaveSettings(this.status);
     const settingsActivelyEditing =
       onSettings
       && (this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom');
@@ -815,7 +824,9 @@ class DashboardStore {
       if (onSettings) {
         await this.loadSaveProfileData(force);
         const showSavePanel =
-          this.settingsSubRoute === 'customize' || this.saveProfile?.profile?.mode === 'custom';
+          !canEditSaveSettings(this.status)
+          || this.settingsSubRoute === 'customize'
+          || this.saveProfile?.profile?.mode === 'custom';
         if (showSavePanel) {
           await this.loadSaveSettings(false, force);
         }
@@ -852,7 +863,7 @@ class DashboardStore {
   }
 
   async loadSaveProfileData(force = false) {
-    if (!canEditSaveSettings(this.status)) return;
+    if (!canViewSaveSettings(this.status)) return;
     if (!force && this.saveProfile) return;
     if (this.saveProfilePromise) return this.saveProfilePromise;
 

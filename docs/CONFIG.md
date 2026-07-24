@@ -23,6 +23,8 @@ Each feature section has a master toggle (where applicable) plus feature-specifi
 
 **Quick settings:** Each save slot can use global defaults, a built-in/user quick preset, or fully custom overrides.
 
+**Host mirror (modded clients):** While connected to a host with the mod, other modded clients receive the host’s effective save-scoped gameplay config in memory (profile metadata + values). Game-local keys (`Ui`, `Privacy`, `DisablePlayerCollision`, debug logging, etc.) are not mirrored. Clients can view lobby settings in the web dashboard read-only; only the host can edit save overrides. Vanilla clients are unaffected.
+
 ### Global-only vs save-scoped keys
 
 | Scope | Sections / keys |

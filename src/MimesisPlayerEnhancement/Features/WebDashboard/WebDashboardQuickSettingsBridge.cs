@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
@@ -11,6 +12,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardSaveProfileResponseDto BuildSaveProfile(int slotId)
         {
+            if (!WebDashboardGameState.IsHost() && HostConfigMirror.IsActive)
+            {
+                return new WebDashboardSaveProfileResponseDto
+                {
+                    Profile = ToProfileDto(HostConfigMirror.MirroredProfile),
+                    ConfigVersion = ModConfig.Version,
+                };
+            }
+
             if (MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);

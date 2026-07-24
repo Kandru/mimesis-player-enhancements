@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 using ReluNetwork.ConstEnum;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -87,14 +88,38 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return IsConnected() && IsHost() && GetSaveSlotId() >= 0;
         }
 
+        internal static bool CanViewSaveSettings()
+        {
+            if (!IsConnected())
+            {
+                return false;
+            }
+
+            if (IsHost() && GetHostSaveSlotId() >= 0)
+            {
+                return true;
+            }
+
+            return HostConfigMirror.IsActive && HostConfigMirror.MirroredSlotId >= 0;
+        }
+
         internal static int GetSaveSlotId()
         {
-            if (!IsConnected() || !IsHost())
+            if (!IsConnected())
             {
                 return -1;
             }
 
-            // Sidecars load from ApplyLoadedGameData(saveGameData.SlotID) — authoritative for this session.
+            if (IsHost())
+            {
+                return GetHostSaveSlotId();
+            }
+
+            return HostConfigMirror.IsActive ? HostConfigMirror.MirroredSlotId : -1;
+        }
+
+        private static int GetHostSaveSlotId()
+        {
             int activeSlotId = SaveSlotConfigStore.ActiveSlotId;
             if (activeSlotId >= 0 && GameSessionAccess.IsValidSaveSlotId(activeSlotId))
             {

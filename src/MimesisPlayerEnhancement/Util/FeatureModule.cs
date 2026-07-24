@@ -1,4 +1,5 @@
 using MimesisPlayerEnhancement.Config;
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.UserInterface;
 
@@ -91,6 +92,11 @@ namespace MimesisPlayerEnhancement.Util
                 onSessionEnded: StatisticsTracker.OnSessionEnded),
             new FeatureModule("SaveSlotSidecar", SaveSlotSidecarPersistencePatches.Apply,
                 onSessionEnded: SaveSlotSidecarPersistence.OnSessionEnded),
+            new FeatureModule("HostConfigSync", HostConfigSyncPatches.Apply,
+                onUpdate: HostConfigSyncRuntime.OnUpdate,
+                sessionScope: SessionScope.ClientAllowed,
+                onSessionStarted: HostConfigSyncRuntime.OnSessionStarted,
+                onSessionEnded: HostConfigSyncRuntime.OnSessionEnded),
 
             new FeatureModule("MoreVoices", MoreVoicesPatches.Apply, MoreVoicesPatches.RefreshFromConfig,
                 onDeinitialize: VoicePerformanceRuntime.ClearAll,

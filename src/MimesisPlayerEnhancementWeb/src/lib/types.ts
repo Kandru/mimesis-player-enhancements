@@ -12,6 +12,7 @@ export interface StatusDto {
   locale: string;
   sessionScene?: string;
   blindModeEnabled?: boolean;
+  canViewSaveSettings?: boolean;
 }
 
 export interface ChangelogAcknowledgeResult {

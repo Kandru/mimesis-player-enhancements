@@ -1,4 +1,5 @@
 using MelonLoader;
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
@@ -38,6 +39,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardSettingsDto BuildSaveSettings(int slotId)
         {
+            if (!WebDashboardGameState.IsHost() && HostConfigMirror.IsActive)
+            {
+                return BuildMirroredSaveSettings();
+            }
+
             if (MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
@@ -66,6 +72,31 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     slotId == SaveSlotConfigStore.ActiveSlotId
                         ? SaveSlotConfigStore.ActiveProfile
                         : SaveSlotConfigProfile.TryReadProfileForSlot(slotId)),
+            };
+        }
+
+        private static WebDashboardSettingsDto BuildMirroredSaveSettings()
+        {
+            int slotId = HostConfigMirror.MirroredSlotId;
+            if (!ModConfig.IsInitialized)
+            {
+                return new WebDashboardSettingsDto
+                {
+                    ConfigPath = "host-sync",
+                    ConfigVersion = ModConfig.Version,
+                    SaveSlotId = slotId,
+                    Scope = "save",
+                };
+            }
+
+            return new WebDashboardSettingsDto
+            {
+                ConfigPath = "host-sync",
+                ConfigVersion = ModConfig.Version,
+                SaveSlotId = slotId,
+                Scope = "save",
+                Sections = BuildSections(WebDashboardConfigScope.Save, saveSlotId: slotId),
+                Profile = WebDashboardQuickSettingsBridge.ToProfileDto(HostConfigMirror.MirroredProfile),
             };
         }
 

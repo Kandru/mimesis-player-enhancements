@@ -3,7 +3,7 @@ import { formatDuration } from './utils';
 
 export const LOBBY_ROUTES = ['players', 'minimap', 'leaderboard', 'settings', 'player'] as const;
 
-export const HOST_ONLY_LOBBY_ROUTES = ['leaderboard', 'settings', 'player'] as const;
+export const HOST_ONLY_LOBBY_ROUTES = ['leaderboard', 'player'] as const;
 
 export function isLobbyRoute(route: string) {
   return (LOBBY_ROUTES as readonly string[]).includes(route);

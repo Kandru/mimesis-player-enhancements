@@ -15,6 +15,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Locale = "en";
         public string SessionScene = "";
         public bool BlindModeEnabled;
+        public bool CanViewSaveSettings;
     }
 
     internal sealed class WebDashboardSessionStatsDto

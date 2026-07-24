@@ -105,6 +105,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     JoinAnytimeRoutingCount = snapshot.Status.JoinAnytimeRoutingCount,
                     Locale = WebDashboardRequestLocale.Current,
                     SessionScene = snapshot.Status.SessionScene,
+                    BlindModeEnabled = snapshot.Status.BlindModeEnabled,
+                    CanViewSaveSettings = snapshot.Status.CanViewSaveSettings,
                 };
                 WriteJson(context, 200, WebDashboardJson.SerializeStatus(status));
                 return;
@@ -300,7 +302,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/settings/save" && method == "GET")
             {
-                if (!WebDashboardGameState.CanEditSaveSettings())
+                if (!WebDashboardGameState.CanViewSaveSettings())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;
@@ -379,7 +381,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (path == "/api/settings/save/profile" && method == "GET")
             {
-                if (!WebDashboardGameState.CanEditSaveSettings())
+                if (!WebDashboardGameState.CanViewSaveSettings())
                 {
                     WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
                     return;

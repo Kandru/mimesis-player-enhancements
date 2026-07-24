@@ -51,6 +51,20 @@ export function canEditSaveSettings(status: {
   return status.isConnected && status.isHost && status.saveSlotId >= 0;
 }
 
+/** Mirrors WebDashboardGameState.CanViewSaveSettings on the server. */
+export function canViewSaveSettings(status: {
+  isConnected: boolean;
+  isHost: boolean;
+  saveSlotId: number;
+  canViewSaveSettings?: boolean;
+}) {
+  if (status.canViewSaveSettings === true) {
+    return true;
+  }
+
+  return canEditSaveSettings(status);
+}
+
 export function parseHash(): {
   route: string;
   settingsSubRoute: string;

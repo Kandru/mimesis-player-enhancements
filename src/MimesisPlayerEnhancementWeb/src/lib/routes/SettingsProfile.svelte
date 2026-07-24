@@ -4,7 +4,11 @@
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
   import { navigate } from '$lib/utils';
+  import { canEditSaveSettings } from '$lib/utils';
   import type { QuickPresetDto } from '$lib/types';
+
+  const saveEditable = $derived(canEditSaveSettings(dashboard.status));
+  const showReadonlySavePanel = $derived(!saveEditable && dashboard.settingsSave != null);
 
   const profile = $derived(dashboard.saveProfile?.profile);
   const builtins = $derived(dashboard.quickPresets.filter((p) => p.isBuiltin));
@@ -150,7 +154,7 @@
 
   {#if dashboard.loadingSaveProfile}
     <p class="text-sm text-gray-500 dark:text-gray-300">{t('dashboard.loading')}</p>
-  {:else}
+  {:else if saveEditable}
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <button
         type="button"
@@ -225,7 +229,11 @@
     </div>
   {/if}
 
-  {#if showCustomizePanel}
+  {#if showReadonlySavePanel}
+    <SettingsPanel settings={dashboard.settingsSave} scope="save" intro={saveIntro} />
+  {/if}
+
+  {#if showCustomizePanel && saveEditable}
     <div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
       {#if profile?.mode === 'quick'}
         <p class="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">

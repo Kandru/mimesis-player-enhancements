@@ -7,7 +7,7 @@
     { route: 'players', label: t('dashboard.nav_players'), icon: 'users' },
     { route: 'leaderboard', label: t('dashboard.nav_statistics'), icon: 'chart', host: true },
     { route: 'minimap', label: t('dashboard.nav_minimap'), icon: 'map' },
-    { route: 'settings', label: t('dashboard.nav_settings'), icon: 'settings', host: true },
+    { route: 'settings', label: t('dashboard.nav_settings'), icon: 'settings' },
   ]);
 
   const globalLinks = $derived([

@@ -65,6 +65,7 @@ Register every feature in `FeatureModules.All` — see [AGENTS.md](../AGENTS.md#
 - Global toggles/values: `[MimesisPlayerEnhancement]` and `[MimesisPlayerEnhancement_{FeatureName}]`.
 - Per-save overrides: `SaveSlotConfigStore` runtime apply + `SaveSlotDocumentStore` (`MMGameData{N}.mpe-slot.sav`); loaded at save load, flushed on vanilla save.
 - Runtime edits: `GlobalConfigStore` (global) or `SaveSlotConfigStore` (per slot); `ModConfig.Changed` triggers selective `SyncFromConfig`.
+- **Host → client mirror:** When connected, modded clients announce via `mpe.hello`; the host pushes effective save-scoped gameplay values (`HostConfigSync` in `Config/HostConfigSync/`) over mod-only `AdminCommandReq` chunks. Ui/Privacy/WebDashboard/local-effect keys stay client-owned; vanilla clients receive nothing. Clients apply in memory only (no sidecar write); session end restores local global config.
 - **Scene-boundary apply:** DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling read frozen config snapshots for the current scene. Mid-scene edits (e.g. web dashboard) defer until the scene ends (maintenance, tram, dungeon, or deathmatch). Turning a master `Enable*` toggle **off** still applies immediately. See `Util/SceneScopedConfigGate.cs`.
 
 ## Web dashboard (Svelte)
