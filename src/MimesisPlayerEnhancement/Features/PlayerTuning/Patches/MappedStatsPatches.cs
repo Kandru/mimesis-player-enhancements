@@ -2,6 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
 {
+    // game@0.3.1 Assembly-CSharp/MappedStats.cs:L12-49
     [HarmonyPatch(typeof(MappedStats), nameof(MappedStats.LoadBaseStats))]
     internal static class MappedStatsLoadBaseStatsPatch
     {
@@ -22,30 +23,6 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"LoadBaseStats postfix failed — {ex.Message}");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(InventoryController), nameof(InventoryController.OnChangeInventory))]
-    internal static class InventoryControllerOnChangeInventoryPatch
-    {
-        private const string Feature = "PlayerTuning";
-
-        [HarmonyPostfix]
-        public static void Postfix(InventoryController __instance)
-        {
-            try
-            {
-                if (!PlayerTuningApplier.ShouldApply)
-                {
-                    return;
-                }
-
-                PlayerTuningApplier.ApplyInventoryWeightPenalty(__instance);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"OnChangeInventory postfix failed — {ex.Message}");
             }
         }
     }

@@ -54,7 +54,10 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         internal static float GetMaxCarryWeightMultiplier(PlayerTuningConfigSnapshot config) =>
             config.Enabled ? config.MaxCarryWeightMultiplier : 1f;
 
+        /// <summary>
+        /// Local-only pass-through; not gated by <see cref="GetIsFeatureEnabled"/>.
+        /// </summary>
         internal static bool GetDisablePlayerCollision(PlayerTuningConfigSnapshot config) =>
-            config.Enabled && config.DisablePlayerCollision;
+            config.DisablePlayerCollision;
     }
 }

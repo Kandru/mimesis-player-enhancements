@@ -4,16 +4,16 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
     {
         private const string Feature = "PlayerTuning";
 
-        internal static void InfoAppliedRuntimeTuning()
+        internal static void InfoAppliedRuntimeTuning(PlayerTuningConfigSnapshot config)
         {
             ModLog.Info(
                 Feature,
-                $"Runtime tuning applied — speed={PlayerTuningResolver.MoveSpeedMultiplier:0.##}×, " +
-                $"maxStamina={PlayerTuningResolver.MaxStaminaMultiplier:0.##}×, " +
-                $"drain={PlayerTuningResolver.StaminaDrainMultiplier:0.##}×, " +
-                $"regen={PlayerTuningResolver.StaminaRegenMultiplier:0.##}×, " +
-                $"regenDelay={PlayerTuningResolver.StaminaRegenDelayMultiplier:0.##}×, " +
-                $"carryWeight={PlayerTuningResolver.MaxCarryWeightMultiplier:0.##}×");
+                $"Runtime tuning applied — speed={PlayerTuningResolver.GetMoveSpeedMultiplier(config):0.##}×, " +
+                $"maxStamina={PlayerTuningResolver.GetMaxStaminaMultiplier(config):0.##}×, " +
+                $"drain={PlayerTuningResolver.GetStaminaDrainMultiplier(config):0.##}×, " +
+                $"regen={PlayerTuningResolver.GetStaminaRegenMultiplier(config):0.##}×, " +
+                $"regenDelay={PlayerTuningResolver.GetStaminaRegenDelayMultiplier(config):0.##}×, " +
+                $"carryWeight={PlayerTuningResolver.GetMaxCarryWeightMultiplier(config):0.##}×");
         }
 
         internal static void DebugRestoredRuntimeTuning(string reason)

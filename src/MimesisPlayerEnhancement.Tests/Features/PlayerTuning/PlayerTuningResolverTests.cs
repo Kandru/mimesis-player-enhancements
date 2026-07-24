@@ -187,14 +187,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.PlayerTuning
         }
 
         [Theory]
-        [InlineData(true, true, true)]
-        [InlineData(true, false, false)]
-        [InlineData(false, true, false)]
-        [InlineData(false, false, false)]
-        public void GetDisablePlayerCollision_requires_both_flags(
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public void GetDisablePlayerCollision_is_not_feature_gated(
             bool enabled,
-            bool disableCollision,
-            bool expected)
+            bool disableCollision)
         {
             PlayerTuningConfigSnapshot config = Config(
                 enabled: enabled,
@@ -202,7 +201,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.PlayerTuning
 
             bool result = PlayerTuningResolver.GetDisablePlayerCollision(config);
 
-            Assert.Equal(expected, result);
+            Assert.Equal(disableCollision, result);
         }
 
         [Fact]

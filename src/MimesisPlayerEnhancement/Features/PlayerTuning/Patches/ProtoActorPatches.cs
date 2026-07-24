@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4561-4575
     [HarmonyPatch(typeof(ProtoActor), "SetControlMode")]
     internal static class ProtoActorSetControlModePatch
     {
@@ -8,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
-            if (!PlayerTuningResolver.IsFeatureEnabled)
+            if (!PlayerTuningResolver.DisablePlayerCollision)
             {
                 return;
             }
@@ -24,6 +25,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4212-4234
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsOtherPlayer))]
     internal static class ProtoActorSetAsOtherPlayerPatch
     {
@@ -32,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
-            if (!PlayerTuningResolver.IsFeatureEnabled)
+            if (!PlayerTuningResolver.DisablePlayerCollision)
             {
                 return;
             }
@@ -48,6 +50,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4236-4254
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsMonster))]
     internal static class ProtoActorSetAsMonsterPatch
     {
@@ -56,7 +59,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
-            if (!PlayerTuningResolver.IsFeatureEnabled)
+            if (!PlayerTuningResolver.DisablePlayerCollision)
             {
                 return;
             }
@@ -72,6 +75,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4678-4694
     [HarmonyPatch(typeof(ProtoActor), "SetupMonsterCapsuleCollider")]
     internal static class ProtoActorSetupMonsterCapsuleColliderPatch
     {
@@ -80,7 +84,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance, int masterID)
         {
-            if (!PlayerTuningResolver.IsFeatureEnabled)
+            if (!PlayerTuningResolver.DisablePlayerCollision)
             {
                 return;
             }
@@ -96,6 +100,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L6908-6950
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.OnActorRevive))]
     internal static class ProtoActorOnActorRevivePatch
     {
@@ -104,7 +109,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         [HarmonyPostfix]
         public static void Postfix(ProtoActor __instance)
         {
-            if (!PlayerTuningResolver.IsFeatureEnabled)
+            if (!PlayerTuningResolver.DisablePlayerCollision)
             {
                 return;
             }

@@ -1,6 +1,6 @@
 # Player Tuning
 
-Scale how players move, use stamina, and carry loot. **Host only** means only the host must enable the feature — the whole lobby gets the effect. Joining clients do not need the mod; stats sync from the host. Changes apply at runtime when config is saved (no restart). The host reloads player stats after each save.
+Scale how players move, use stamina, and carry loot. **Host only** means only the host must enable the feature — the whole lobby gets the effect. Joining clients do not need the mod; stats sync from the host. Changes apply at runtime when config is saved (no restart). The host reloads player stats after each save. Collision pass-through is local per client and independent of the host master toggle.
 
 **Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
 
@@ -98,7 +98,7 @@ Default: `1`
 
 ### `DisablePlayerCollision`
 
-**Local effect only** — not shared across the lobby. On your client, disables capsule colliders on other players and mimics so you can walk through them (e.g. a crowded tram). Regular monsters and walls stay solid. Requires `EnablePlayerTuning` on the host and the mod installed on your machine for the pass-through to work.
+**Local effect only** — not shared across the lobby. On your client, disables capsule colliders on other players and mimics so you can walk through them (e.g. a crowded tram). Regular monsters and walls stay solid. **Not** gated by `EnablePlayerTuning` — needs the mod installed on your machine; each client controls their own pass-through.
 
 | Value | Meaning |
 |---|---|

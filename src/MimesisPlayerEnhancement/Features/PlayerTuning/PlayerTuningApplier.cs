@@ -38,16 +38,29 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         private static long _vanillaStaminaRegenDelayRemain;
         private static bool _runtimeTuningApplied;
         private static bool _wasApplying;
+        private static float _appliedMoveSpeedMultiplier = 1f;
+        private static float _appliedMaxStaminaMultiplier = 1f;
+        private static float _appliedStaminaDrainMultiplier = 1f;
+        private static float _appliedStaminaRegenMultiplier = 1f;
+        private static float _appliedStaminaRegenDelayMultiplier = 1f;
+        private static float _appliedMaxCarryWeightMultiplier = 1f;
 
         internal static bool ShouldApply =>
             HostApplyGate.ShouldApplyHostOnlyFeature(() => PlayerTuningResolver.IsFeatureEnabled);
 
         internal static void RefreshFromConfig()
         {
-            if (ShouldApply)
+            PlayerTuningConfigSnapshot config = PlayerTuningConfigSnapshot.CaptureFromModConfig();
+            bool shouldApply = HostApplyGate.ShouldApplyHostOnlyFeature(
+                () => PlayerTuningResolver.GetIsFeatureEnabled(config));
+
+            if (shouldApply)
             {
-                ApplyRuntimeTuning();
-                RefreshAllPlayers();
+                if (TryApplyRuntimeTuning(config))
+                {
+                    RefreshAllPlayers();
+                }
+
                 _wasApplying = true;
             }
             else if (_wasApplying || _runtimeTuningApplied)
@@ -72,20 +85,41 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
         {
             if (_runtimeTuningApplied)
             {
-                RestoreRuntimeTuning("session ended");
+                if (TryWriteVanillaConsts())
+                {
+                    _runtimeTuningApplied = false;
+                    ClearAppliedMultipliers();
+                    _vanillaCached = false;
+                    PlayerTuningLog.DebugRestoredRuntimeTuning("session ended");
+                }
+                else
+                {
+                    // Keep cached vanilla so a later re-read cannot treat mutated consts as baseline.
+                    // Clear applied so the next session re-writes from the preserved vanilla cache.
+                    _runtimeTuningApplied = false;
+                    ClearAppliedMultipliers();
+                    PlayerTuningLog.DebugSkipped("session ended — restore deferred, Consts unavailable");
+                }
+            }
+            else
+            {
+                _vanillaCached = false;
             }
 
             _wasApplying = false;
-            _vanillaCached = false;
         }
 
-        private static int GetEffectiveMaxCarryWeight()
+        private static int GetEffectiveMaxCarryWeight(PlayerTuningConfigSnapshot config)
         {
             EnsureVanillaCached();
-            return ScalingMath.ScaleCount(_vanillaMaxCarryWeight, PlayerTuningResolver.MaxCarryWeightMultiplier);
+            return ScalingMath.ScaleCount(
+                _vanillaMaxCarryWeight,
+                PlayerTuningResolver.GetMaxCarryWeightMultiplier(config));
         }
 
-        private static int ComputeMoveSpeedDecreaseRateByWeight(int totalWeight)
+        private static int ComputeMoveSpeedDecreaseRateByWeight(
+            int totalWeight,
+            PlayerTuningConfigSnapshot config)
         {
             ExcelDataManager? excel = HubGameDataAccess.Excel;
             if (excel == null)
@@ -94,7 +128,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             }
 
             int effectiveMax = ShouldApply
-                ? GetEffectiveMaxCarryWeight()
+                ? GetEffectiveMaxCarryWeight(config)
                 : _vanillaMaxCarryWeight;
 
             return PlayerTuningWeightPenaltyLogic.ComputeRate(
@@ -110,14 +144,17 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 return;
             }
 
+            PlayerTuningConfigSnapshot config = PlayerTuningConfigSnapshot.CaptureFromModConfig();
             if (!_runtimeTuningApplied)
             {
-                ApplyRuntimeTuning();
+                TryApplyRuntimeTuning(config);
             }
 
-            ScaleStatElement(mappedStats, StatType.MoveSpeedWalk, PlayerTuningResolver.MoveSpeedMultiplier);
-            ScaleStatElement(mappedStats, StatType.MoveSpeedRun, PlayerTuningResolver.MoveSpeedMultiplier);
-            ScaleStatElement(mappedStats, StatType.Stamina, PlayerTuningResolver.MaxStaminaMultiplier);
+            float moveSpeed = PlayerTuningResolver.GetMoveSpeedMultiplier(config);
+            float maxStamina = PlayerTuningResolver.GetMaxStaminaMultiplier(config);
+            ScaleStatElement(mappedStats, StatType.MoveSpeedWalk, moveSpeed);
+            ScaleStatElement(mappedStats, StatType.MoveSpeedRun, moveSpeed);
+            ScaleStatElement(mappedStats, StatType.Stamina, maxStamina);
         }
 
         internal static void ApplyInventoryWeightPenalty(InventoryController inventory)
@@ -127,7 +164,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 return;
             }
 
-            int rate = ComputeMoveSpeedDecreaseRateByWeight(inventory.TotalWeight);
+            PlayerTuningConfigSnapshot config = PlayerTuningConfigSnapshot.CaptureFromModConfig();
+            int rate = ComputeMoveSpeedDecreaseRateByWeight(inventory.TotalWeight, config);
             if (InventorySelfField?.GetValue(inventory) is VCreature creature)
             {
                 creature.StatControlUnit?.SetMoveSpeedDecreaseRateByWeight(rate);
@@ -146,38 +184,58 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             mappedStats.elements[statType].Set(scaled);
         }
 
-        private static void ApplyRuntimeTuning()
+        /// <summary>
+        /// Writes scaled consts when needed. Returns true when player stats should be refreshed
+        /// (first apply or any host-gated multiplier changed).
+        /// </summary>
+        private static bool TryApplyRuntimeTuning(PlayerTuningConfigSnapshot config)
         {
             if (!ShouldApply || !EnsureVanillaCached())
             {
-                return;
+                return false;
+            }
+
+            float moveSpeed = PlayerTuningResolver.GetMoveSpeedMultiplier(config);
+            float maxStamina = PlayerTuningResolver.GetMaxStaminaMultiplier(config);
+            float drain = PlayerTuningResolver.GetStaminaDrainMultiplier(config);
+            float regen = PlayerTuningResolver.GetStaminaRegenMultiplier(config);
+            float regenDelay = PlayerTuningResolver.GetStaminaRegenDelayMultiplier(config);
+            float carryWeight = PlayerTuningResolver.GetMaxCarryWeightMultiplier(config);
+
+            bool multipliersUnchanged = _runtimeTuningApplied
+                && _appliedMoveSpeedMultiplier == moveSpeed
+                && _appliedMaxStaminaMultiplier == maxStamina
+                && _appliedStaminaDrainMultiplier == drain
+                && _appliedStaminaRegenMultiplier == regen
+                && _appliedStaminaRegenDelayMultiplier == regenDelay
+                && _appliedMaxCarryWeightMultiplier == carryWeight;
+            if (multipliersUnchanged)
+            {
+                return false;
             }
 
             DataConsts? consts = HubGameDataAccess.Excel?.Consts;
             if (consts == null)
             {
                 PlayerTuningLog.DebugSkipped("ExcelDataManager.Consts unavailable");
-                return;
+                return false;
             }
 
-            SetConstLong(consts, RunStaminaConsumeValueField, ScaleLong(
-                _vanillaRunStaminaConsumeValue,
-                PlayerTuningResolver.StaminaDrainMultiplier));
-            SetConstLong(consts, StaminaRegenValueField, ScaleLong(
-                _vanillaStaminaRegenValue,
-                PlayerTuningResolver.StaminaRegenMultiplier));
-            SetConstLong(consts, StaminaRegenDelayEmptyField, ScaleLong(
-                _vanillaStaminaRegenDelayEmpty,
-                PlayerTuningResolver.StaminaRegenDelayMultiplier));
-            SetConstLong(consts, StaminaRegenDelayRemainField, ScaleLong(
-                _vanillaStaminaRegenDelayRemain,
-                PlayerTuningResolver.StaminaRegenDelayMultiplier));
-            SetConstInt(consts, MaxCarryWeightField, ScalingMath.ScaleCount(
-                _vanillaMaxCarryWeight,
-                PlayerTuningResolver.MaxCarryWeightMultiplier));
+            SetConstLong(consts, RunStaminaConsumeValueField, ScaleLong(_vanillaRunStaminaConsumeValue, drain));
+            SetConstLong(consts, StaminaRegenValueField, ScaleLong(_vanillaStaminaRegenValue, regen));
+            SetConstLong(consts, StaminaRegenDelayEmptyField, ScaleLong(_vanillaStaminaRegenDelayEmpty, regenDelay));
+            SetConstLong(consts, StaminaRegenDelayRemainField, ScaleLong(_vanillaStaminaRegenDelayRemain, regenDelay));
+            SetConstInt(consts, MaxCarryWeightField, ScalingMath.ScaleCount(_vanillaMaxCarryWeight, carryWeight));
 
             _runtimeTuningApplied = true;
-            PlayerTuningLog.InfoAppliedRuntimeTuning();
+            _appliedMoveSpeedMultiplier = moveSpeed;
+            _appliedMaxStaminaMultiplier = maxStamina;
+            _appliedStaminaDrainMultiplier = drain;
+            _appliedStaminaRegenMultiplier = regen;
+            _appliedStaminaRegenDelayMultiplier = regenDelay;
+            _appliedMaxCarryWeightMultiplier = carryWeight;
+            PlayerTuningLog.InfoAppliedRuntimeTuning(config);
+            return true;
         }
 
         private static void RestoreRuntimeTuning(string reason)
@@ -187,10 +245,28 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 return;
             }
 
+            if (!TryWriteVanillaConsts())
+            {
+                PlayerTuningLog.DebugSkipped($"{reason} — restore deferred, Consts unavailable");
+                return;
+            }
+
+            _runtimeTuningApplied = false;
+            ClearAppliedMultipliers();
+            PlayerTuningLog.DebugRestoredRuntimeTuning(reason);
+        }
+
+        private static bool TryWriteVanillaConsts()
+        {
+            if (!_vanillaCached)
+            {
+                return false;
+            }
+
             DataConsts? consts = HubGameDataAccess.Excel?.Consts;
             if (consts == null)
             {
-                return;
+                return false;
             }
 
             SetConstLong(consts, RunStaminaConsumeValueField, _vanillaRunStaminaConsumeValue);
@@ -198,8 +274,17 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
             SetConstLong(consts, StaminaRegenDelayEmptyField, _vanillaStaminaRegenDelayEmpty);
             SetConstLong(consts, StaminaRegenDelayRemainField, _vanillaStaminaRegenDelayRemain);
             SetConstInt(consts, MaxCarryWeightField, _vanillaMaxCarryWeight);
-            _runtimeTuningApplied = false;
-            PlayerTuningLog.DebugRestoredRuntimeTuning(reason);
+            return true;
+        }
+
+        private static void ClearAppliedMultipliers()
+        {
+            _appliedMoveSpeedMultiplier = 1f;
+            _appliedMaxStaminaMultiplier = 1f;
+            _appliedStaminaDrainMultiplier = 1f;
+            _appliedStaminaRegenMultiplier = 1f;
+            _appliedStaminaRegenDelayMultiplier = 1f;
+            _appliedMaxCarryWeightMultiplier = 1f;
         }
 
         private static bool EnsureVanillaCached()
@@ -209,6 +294,8 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning
                 return true;
             }
 
+            // Never sample consts as vanilla while a prior apply may still be live in memory
+            // without a successful write-back (session-end deferral keeps the prior cache).
             DataConsts? consts = HubGameDataAccess.Excel?.Consts;
             if (consts == null)
             {
