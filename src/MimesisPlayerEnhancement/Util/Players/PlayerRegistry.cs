@@ -1,7 +1,7 @@
 using System.Threading;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
-namespace MimesisPlayerEnhancement.Features.Players
+namespace MimesisPlayerEnhancement.Util.Players
 {
     internal sealed class PlayerRecord
     {
@@ -165,9 +165,9 @@ namespace MimesisPlayerEnhancement.Features.Players
         internal static IReadOnlyList<PlayerStatisticsDocument> GetAllStatistics()
         {
             List<PlayerStatisticsDocument> documents = [];
-            foreach (PlayerStatisticsDocument document in SnapshotStatistics().Values)
+            foreach (PlayerRecord record in Records.Values)
             {
-                documents.Add(document);
+                documents.Add(record.Statistics);
             }
 
             return documents;
@@ -256,8 +256,13 @@ namespace MimesisPlayerEnhancement.Features.Players
                 return;
             }
 
+            bool changed = record.IsOnline || record.ConnectedSinceUtc.HasValue;
             record.IsOnline = false;
             record.ConnectedSinceUtc = null;
+            if (changed)
+            {
+                BumpRevision();
+            }
         }
 
         internal static bool IsConnected(ulong steamId)
@@ -287,8 +292,13 @@ namespace MimesisPlayerEnhancement.Features.Players
             }
 
             PlayerRecord record = GetOrCreate(steamId);
+            bool changed = !record.IsOnline || record.ConnectedSinceUtc != since;
             record.ConnectedSinceUtc = since;
             record.IsOnline = true;
+            if (changed)
+            {
+                BumpRevision();
+            }
         }
 
         internal static void MergeLiveSessionRoster()

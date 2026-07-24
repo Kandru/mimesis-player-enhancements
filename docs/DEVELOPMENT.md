@@ -10,7 +10,7 @@ Architecture and conventions for working on Mimesis Player Enhancement. For AI a
 | `src/MimesisPlayerEnhancement/Features/{FeatureName}/` | One folder per feature |
 | `src/MimesisPlayerEnhancement/Config/` | `ModConfig`, per-save overrides, sidecar coordination |
 | `src/MimesisPlayerEnhancement/Ui/` | Shared uGUI/TMP toolkit (`MimesisPlayerEnhancement.Ui`) |
-| `src/MimesisPlayerEnhancement/Util/` | Cross-feature helpers (`HarmonyPatchHelper`, gates, session access) |
+| `src/MimesisPlayerEnhancement/Util/` | Cross-feature helpers (`HarmonyPatchHelper`, gates, session access, `Util/Players` roster SSoT) |
 | `src/MimesisInspectionTool/`, `src/MimesisReflectionTool/` | Dev-time metadata / MelonLoader reflection (`make tools`) |
 | `deps/reference/` | Bootstrap game assemblies; `deps/decompiled/` for patch design (gitignored) |
 | `dist/debug/`, `dist/prod/`, `dist/webinterface/` | Build output (not committed) |

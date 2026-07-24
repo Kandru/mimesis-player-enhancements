@@ -1,7 +1,7 @@
-using MimesisPlayerEnhancement.Features.Players;
+using MimesisPlayerEnhancement.Util.Players;
 using Xunit;
 
-namespace MimesisPlayerEnhancement.Tests.Features.Players
+namespace MimesisPlayerEnhancement.Tests.Util.Players
 {
     public sealed class VoiceEventStatsTests
     {

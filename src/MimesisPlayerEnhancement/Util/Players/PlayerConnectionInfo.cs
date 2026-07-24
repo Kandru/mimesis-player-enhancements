@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.Players
+namespace MimesisPlayerEnhancement.Util.Players
 {
     internal sealed class PlayerConnectionInfo
     {

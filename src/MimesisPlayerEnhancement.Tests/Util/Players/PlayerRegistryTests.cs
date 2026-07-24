@@ -1,8 +1,8 @@
-using MimesisPlayerEnhancement.Features.Players;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
+using MimesisPlayerEnhancement.Util.Players;
 using Xunit;
 
-namespace MimesisPlayerEnhancement.Tests.Features.Players
+namespace MimesisPlayerEnhancement.Tests.Util.Players
 {
     public sealed class PlayerRegistryTests
     {
@@ -127,6 +127,54 @@ namespace MimesisPlayerEnhancement.Tests.Features.Players
 
             Assert.False(PlayerRegistry.IsConnected(ConnectionSteamId));
             Assert.False(PlayerRegistry.TryGetConnectedSince(ConnectionSteamId, out _));
+        }
+
+        [Fact]
+        public void SetConnectedSince_bumps_revision_when_coming_online()
+        {
+            const ulong steamId = 0x5031;
+            int before = PlayerRegistry.Revision;
+
+            PlayerRegistry.SetConnectedSince(steamId, DateTime.UtcNow);
+
+            Assert.True(PlayerRegistry.Revision > before);
+        }
+
+        [Fact]
+        public void SetConnectedSince_does_not_bump_revision_for_same_timestamp_while_online()
+        {
+            const ulong steamId = 0x5032;
+            DateTime connectedAt = new(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+            PlayerRegistry.SetConnectedSince(steamId, connectedAt);
+            int afterFirst = PlayerRegistry.Revision;
+
+            PlayerRegistry.SetConnectedSince(steamId, connectedAt);
+
+            Assert.Equal(afterFirst, PlayerRegistry.Revision);
+        }
+
+        [Fact]
+        public void MarkDisconnected_bumps_revision_when_leaving_online()
+        {
+            const ulong steamId = 0x5033;
+            PlayerRegistry.SetConnectedSince(steamId, DateTime.UtcNow);
+            int before = PlayerRegistry.Revision;
+
+            PlayerRegistry.MarkDisconnected(steamId);
+
+            Assert.True(PlayerRegistry.Revision > before);
+        }
+
+        [Fact]
+        public void MarkDisconnected_does_not_bump_revision_when_already_offline()
+        {
+            const ulong steamId = 0x5034;
+            _ = PlayerRegistry.GetOrCreate(steamId);
+            int before = PlayerRegistry.Revision;
+
+            PlayerRegistry.MarkDisconnected(steamId);
+
+            Assert.Equal(before, PlayerRegistry.Revision);
         }
 
         [Fact]

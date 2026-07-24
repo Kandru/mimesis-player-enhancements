@@ -2,7 +2,7 @@ using System.Reflection;
 using MimesisPlayerEnhancement.Tests.Infrastructure;
 using Xunit;
 
-namespace MimesisPlayerEnhancement.Tests.Features.Players
+namespace MimesisPlayerEnhancement.Tests.Util.Players
 {
     public sealed class PlayersPatchContractTests
     {

@@ -15,7 +15,7 @@ Refs: `AGENTS.md` · `deps/decompiled/` · `deps/reference/Managed/` · `docs/DE
 
 `resolve → inventory(prod+tests) → gap map → [refactor?] → tests → make test → report`
 
-Scope: `Features/{Name}/` · `Tests/Features/{Name}/` · `FeatureModules.All` · config. `Ui`→`UserInterface`. Patches elsewhere (e.g. `UiPatches`) → contracts under feature test folder.
+Scope: `Features/{Name}/` · `Tests/Features/{Name}/` · `FeatureModules.All` · config. `Ui`→`UserInterface`; `Players`→`Util/Players` + `Tests/Util/Players`. Patches elsewhere (e.g. `UiPatches`) → contracts under feature test folder.
 
 ## Gap map
 

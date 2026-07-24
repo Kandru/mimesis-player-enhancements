@@ -12,7 +12,7 @@ READ-ONLY. No edits unless user asks. Siblings: `test-feature` · `extend-featur
 
 ## Scope
 
-`{Name}` → `Features/{Name}/` · `Tests/Features/{Name}/` (`Ui`→`UserInterface`) · `FeatureModules.All` · `{Name}Config`/`ModConfig` · web if any. Missing → list matches, stop.
+`{Name}` → `Features/{Name}/` · `Tests/Features/{Name}/` (`Ui`→`UserInterface`; shared roster SSoT `Players`→`Util/Players` + `Tests/Util/Players`) · `FeatureModules.All` · `{Name}Config`/`ModConfig` · web if any. Missing → list matches, stop.
 
 ## Pipeline
 

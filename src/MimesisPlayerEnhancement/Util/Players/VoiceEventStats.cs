@@ -1,14 +1,15 @@
 using System.Net;
-using System.Reflection;
 using FishNet.Object.Synchronizing;
 
-namespace MimesisPlayerEnhancement.Features.Players
+namespace MimesisPlayerEnhancement.Util.Players
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L60,L73-79
+    // game@0.3.1 Assembly-CSharp/SessionContext.cs:L38,L48,L54,L304-307
+    // game@0.3.1 Assembly-CSharp/Hub.cs:L90,L114
+    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1068-1071
+    // game@0.3.1 Assembly-CSharp/ISession.cs:L27
     internal static class VoiceEventStats
     {
-        private const BindingFlags InstanceMemberFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         internal static int GetVoiceLineCount(SpeechEventArchive? archive)
         {
             if (archive == null)
@@ -555,16 +556,8 @@ namespace MimesisPlayerEnhancement.Features.Players
         {
             try
             {
-                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-                FieldInfo? mainField = pdata?.GetType().GetField("main", InstanceMemberFlags);
-                object? main = mainField?.GetValue(pdata);
-                if (main == null)
-                {
-                    return null;
-                }
-
-                MethodInfo getMap = main.GetType().GetMethod("GetProtoActorMap", InstanceMemberFlags);
-                if (getMap?.Invoke(main, null) is not Dictionary<int, ProtoActor> map)
+                Dictionary<int, ProtoActor>? map = GameSessionAccess.TryGetPdata()?.main?.GetProtoActorMap();
+                if (map == null)
                 {
                     return null;
                 }
