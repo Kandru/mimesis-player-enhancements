@@ -1,22 +1,16 @@
 # Persistence
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_Persistence`](../CONFIG.md#persistence--mimesisplayerenhancement_persistence)
+Keeps mimic voice recordings across save and load. Only the host must enable this for the whole lobby to get the effect. On vanilla save (including auto-save), recordings go to `MMGameData{N}.mpe-speech.sav` and Steam ID → voice UUID mappings go into the slot document; both are restored when that save is loaded. Use it with [More Voices](./more-voices.md) — Persistence stores what More Voices lets the game keep in the first place.
 
-Without persistence, mimic voice recordings are lost when you quit or load a different save. This feature writes those recordings to disk when you save the game and restores them when you load that save — so mimics remember voices across play sessions.
+## Configuration
 
-## Save and restore
+### `EnablePersistence`
 
-`EnablePersistence` controls whether mimic voice data is written on vanilla save (including auto-save) and loaded when you open that save slot. Works together with [More Voices](./more-voices.md) — persistence stores what More Voices allows the game to record in the first place.
+Turns save/load/restore of mimic voices on or off on the host. When off, the in-memory pool is cleared and no speech file is written or loaded; existing speech files stay on disk until the save slot is deleted. Config reloads while the game is running — no restart.
 
-Each save slot uses two mod files for voice data:
+| Value | Meaning |
+|---|---|
+| `true` | Host saves voices on game save and restores them when the slot loads (lobby gets the effect) |
+| `false` | Host does not load, restore, or write speech data |
 
-| File | Contents |
-|------|----------|
-| `MMGameData{N}.mpe-speech.sav` | Binary voice recordings (MPEV format) |
-| `MMGameData{N}.mpe-slot.sav` | Player roster including `voiceId` (Dissonance player UUID per Steam ID) |
-
-Speech events and voice UUID mappings are written together on vanilla save (including auto-save): recordings go to the speech file; Steam ID → `voiceId` mappings are stored in the slot document’s `players` section and flushed with other per-save sidecar data.
-
-Voice event counts shown in the save slot picker are read from the binary speech file header — no separate metadata sidecar.
-
-**Full config keys →** [Persistence](../CONFIG.md#persistence--mimesisplayerenhancement_persistence)
+Default: `true`

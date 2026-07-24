@@ -41,7 +41,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host only |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host only |
-| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host only |
+| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Only the host must enable this for the whole lobby to get the effect |
 | [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host only |
 | [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host only |
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host only |
@@ -159,7 +159,7 @@ Only the host must enable it for the whole lobby to get the effect. Joining clie
 
 ## Persistence — `[MimesisPlayerEnhancement_Persistence]`
 
-**Host-only.** Keep mimic voice recordings across save and load.
+Only the host must enable this for the whole lobby to get the effect. Keep mimic voice recordings across save and load.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

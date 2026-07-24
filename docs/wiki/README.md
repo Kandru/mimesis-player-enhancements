@@ -6,7 +6,7 @@
 |---------|--------------|-------------------|
 | [More Players](./features/more-players.md) | Play with larger groups beyond the four-player limit | Host only |
 | [More Voices](./features/more-voices.md) | Let mimics remember many more player voice lines | Host only |
-| [Persistence](./features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
+| [Persistence](./features/persistence.md) | Keep mimic voice recordings across gaming sessions | Only the host must enable this for the whole lobby to get the effect |
 | [Join Anytime](./features/join-anytime.md) | Let friends join at the service station or tram between dungeons | Host only |
 | [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration, and more | Your game only |
 | [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Your game only |
