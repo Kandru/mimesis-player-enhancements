@@ -113,6 +113,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
+        /// <summary>
+        /// Strict host check for join-anytime network/lobby work.
+        /// Unlike <see cref="Util.HostApplyGate"/>, null pdata / solo fallbacks are not treated as host.
+        /// </summary>
         internal static bool IsHost()
         {
             return GameSessionAccess.TryGetPdata()?.ClientMode == NetworkClientMode.Host;

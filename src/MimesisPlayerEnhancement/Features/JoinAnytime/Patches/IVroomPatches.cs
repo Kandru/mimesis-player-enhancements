@@ -1,8 +1,29 @@
-using System.Reflection;
 using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
+    /// <summary>
+    /// Route after SyncEnterRoom sends AllMemberEnterRoomSig — client needs that flag before
+    /// MoveToWaitingRoomSig (CycleCount != 0 waits on EnteringCompleteAll in MaintenanceScene).
+    /// </summary>
+    // game@0.3.1 Assembly-CSharp/IVroom.cs:L2498-2506
+    [HarmonyPatch]
+    internal static class IVroomOnAllMemberEnteredLateJoinPatch
+    {
+        private static System.Reflection.MethodBase? TargetMethod() =>
+            AccessTools.Method(typeof(IVroom), "OnAllMemberEntered");
+
+        [HarmonyPostfix]
+        private static void Postfix(IVroom __instance)
+        {
+            if (__instance is MaintenanceRoom)
+            {
+                LateJoinManager.OnMaintenanceAllMembersEntered(__instance);
+            }
+        }
+    }
+
+    // game@0.3.1 Assembly-CSharp/IVroom.cs:L3078-3730
     [HarmonyPatch(typeof(IVroom), "RunEventActionInternal")]
     internal static class IVroomRunEventActionInternalPatch
     {
@@ -46,6 +67,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/IVroom.cs:L1650-1907
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.HandleLevelObject))]
     internal static class IVroomHandleLevelObjectTramLeverPatch
     {
@@ -89,54 +111,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             JoinAnytimeUserMessages.OnWaitingRoomStartBlocked(__instance, actorID);
             __result = MsgErrorCode.CantAction;
             return false;
-        }
-    }
-
-    [HarmonyPatch]
-    internal static class NewTramLeverLevelObjectIsTriggerablePatch
-    {
-        private static MethodBase? TargetMethod() =>
-            AccessTools.Method(typeof(NewTramLeverLevelObject), "IsTriggerable", [typeof(ProtoActor), typeof(int)]);
-
-        [HarmonyPostfix]
-        private static void Postfix(ref bool __result)
-        {
-            if (!__result || !ModConfig.EnableJoinAnytime.Value)
-            {
-                return;
-            }
-
-            if (GameSessionAccess.TryGetPdata()?.main is not InTramWaitingScene)
-            {
-                return;
-            }
-
-            if (!JoinAnytimeRoomTools.ShouldBlockWaitingRoomStartGame())
-            {
-                return;
-            }
-
-            __result = false;
-        }
-    }
-
-    [HarmonyPatch(typeof(NewTramLeverLevelObject), nameof(NewTramLeverLevelObject.OnChangeLevelObjectStateSig))]
-    internal static class NewTramLeverLevelObjectOnChangeLevelObjectStateSigPatch
-    {
-        [HarmonyPostfix]
-        private static void Postfix(int actorId, int prevState, int currentState)
-        {
-            if (!ModConfig.EnableJoinAnytime.Value)
-            {
-                return;
-            }
-
-            if (currentState != (int)NewTramLeverState.Open)
-            {
-                return;
-            }
-
-            JoinAnytimeUserMessages.OnLocalTramLeverOpened(actorId);
         }
     }
 }

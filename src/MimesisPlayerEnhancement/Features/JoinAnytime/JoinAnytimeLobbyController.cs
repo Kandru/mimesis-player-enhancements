@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using MelonLoader;
 using UnityEngine;
 
@@ -13,10 +12,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly Regex DisplaySuffixPattern = new(
-            @"\s*(\[(join now|join in \d+ min|open|wait \d+ min)\])?\s*\(\d+/\d+\)$",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly MethodInfo? GetL10NTextMethod =
             typeof(Hub).GetMethod(
@@ -42,8 +37,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static readonly Type? TmpTextType =
             Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
-
-        private const string DefaultBaseLobbyName = "Train";
 
         private static string _baseLobbyName = string.Empty;
         private static string _lastPublishedName = string.Empty;
@@ -289,7 +282,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            _baseLobbyName = StripDisplaySuffix(rawName.Trim());
+            _baseLobbyName = JoinAnytimeLobbyNameLogic.StripDisplaySuffix(rawName.Trim());
             if (persist)
             {
                 PersistLobbyRuntimeState(baseLobbyName: _baseLobbyName);
@@ -298,27 +291,89 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void ApplyLobbyPresence(SteamInviteDispatcher dispatcher, bool wantsPublic)
         {
-            if (!wantsPublic)
+            JoinAnytimePublicPresenceKind kind = JoinAnytimeLobbyPresenceLogic.Resolve(
+                wantsPublic,
+                JoinAnytimeRoomTools.ResolveHostPhase(),
+                JoinAnytimeRoomTools.GetSessionPlayerCount(),
+                Math.Min(4, MorePlayersPatchHelpers.GetMaxPlayers()));
+
+            switch (kind)
+            {
+                case JoinAnytimePublicPresenceKind.InLobbyPublicWaiting:
+                    dispatcher.SetPresenceInLobbyPublicWaiting();
+                    break;
+                case JoinAnytimePublicPresenceKind.InLobbyPublic:
+                    dispatcher.SetPresenceInLobbyPublic();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Clears join-anytime Steam name/metadata/group-size overrides when the feature is disabled mid-session.
+        /// Public-room intent from the host toggle is also dropped so browse no longer shows join tags.
+        /// </summary>
+        internal static void RevertSteamOverridesOnDisable()
+        {
+            if (!IsHost())
             {
                 return;
             }
 
-            JoinAnytimeSessionPhase phase = JoinAnytimeRoomTools.ResolveHostPhase();
-            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            int waitingThreshold = Math.Min(4, MorePlayersPatchHelpers.GetMaxPlayers());
+            SteamInviteDispatcher? dispatcher = JoinAnytimeHub.GetSteamInviteDispatcher();
+            if (dispatcher == null)
+            {
+                return;
+            }
 
-            if (phase == JoinAnytimeSessionPhase.Maintenance && sessionCount >= waitingThreshold)
+            string baseName = ResolveBaseLobbyName();
+            bool steamStillPublic = JoinAnytimeHub.ReadPublicRoomFromSteam(dispatcher);
+
+            try
             {
-                dispatcher.SetPresenceInLobbyPublic();
+                dispatcher.SetLobbyName(baseName);
             }
-            else if (phase == JoinAnytimeSessionPhase.Maintenance)
+            catch (Exception ex)
             {
-                dispatcher.SetPresenceInLobbyPublicWaiting();
+                ModLog.Debug(Feature, $"Disable lobby name revert failed — {ex.Message}");
             }
-            else
+
+            try
             {
-                dispatcher.SetPresenceInLobbyPublic();
+                dispatcher.UpdateLobbyData(JoinAnytimeLobbyMetadata.JoinPhaseKey, string.Empty);
+                dispatcher.UpdateLobbyData(JoinAnytimeLobbyMetadata.JoinOpenKey, string.Empty);
             }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"Disable lobby metadata clear failed — {ex.Message}");
+            }
+
+            try
+            {
+                dispatcher.UpdatePlayerGroupSize(JoinAnytimeRoomTools.GetSessionPlayerCount());
+            }
+            catch (Exception ex)
+            {
+                ModLog.Debug(Feature, $"Disable player group size revert failed — {ex.Message}");
+            }
+
+            // Drop join-anytime public forcing; host can re-enable public via the ESC toggle after.
+            if (steamStillPublic || _hostWantsPublicMatchmaking)
+            {
+                JoinAnytimeHub.SyncIsPublicRoomField(dispatcher, isPublic: false);
+                JoinAnytimeHub.SyncIsPublicLobby(isPublic: false);
+                WritePublicRoomSteamData(dispatcher, isPublic: false);
+                try
+                {
+                    dispatcher.SetLobbyPublic(false);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Debug(Feature, $"Disable SetLobbyPublic(false) failed — {ex.Message}");
+                }
+            }
+
+            _lastPublishedName = string.Empty;
+            ModLog.Debug(Feature, $"Reverted join-anytime Steam lobby overrides — baseName={baseName}");
         }
 
         internal static bool ShouldBlockPublicRoomClose()
@@ -421,13 +476,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             bool joinsOpen,
             int advertisedCount)
         {
-            string phaseKey = phase switch
-            {
-                JoinAnytimeSessionPhase.Maintenance => JoinAnytimeLobbyMetadata.PhaseMaintenance,
-                JoinAnytimeSessionPhase.Tram => JoinAnytimeLobbyMetadata.PhaseTram,
-                JoinAnytimeSessionPhase.Dungeon => JoinAnytimeLobbyMetadata.PhaseDungeon,
-                _ => string.Empty,
-            };
+            string phaseKey = JoinAnytimeLobbyNameLogic.ToPhaseKey(phase);
 
             try
             {
@@ -579,20 +628,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         private static string BuildDisplayLobbyName(
             JoinAnytimeSessionPhase phase,
-            int waitMinutes)
-        {
-            int sessionCount = JoinAnytimeRoomTools.GetSessionPlayerCount();
-            string baseName = ResolveBaseLobbyName();
-            string tag = phase == JoinAnytimeSessionPhase.Dungeon && waitMinutes > 0
-                ? $" [join in {waitMinutes} min]"
-                : phase is JoinAnytimeSessionPhase.Maintenance
-                    or JoinAnytimeSessionPhase.Tram
-                    or JoinAnytimeSessionPhase.Dungeon
-                    ? " [join now]"
-                    : string.Empty;
-
-            return $"{baseName}{tag} ({sessionCount}/{MorePlayersPatchHelpers.GetMaxPlayers()})";
-        }
+            int waitMinutes) =>
+            JoinAnytimeLobbyNameLogic.BuildDisplayLobbyName(
+                ResolveBaseLobbyName(),
+                phase,
+                waitMinutes,
+                JoinAnytimeRoomTools.GetSessionPlayerCount(),
+                MorePlayersPatchHelpers.GetMaxPlayers());
 
         internal static void OnHostSceneReady()
         {
@@ -720,7 +762,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static string ResolveBaseLobbyName()
         {
             return string.IsNullOrWhiteSpace(_baseLobbyName)
-                ? DefaultBaseLobbyName
+                ? JoinAnytimeLobbyNameLogic.DefaultBaseLobbyName
                 : _baseLobbyName.Trim();
         }
 
@@ -750,16 +792,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             SaveSlotSidecarPersistence.EnsureSaveSlotLoaded(slotId);
             ApplyPersistedLobbySettings(slotId);
-        }
-
-        private static string StripDisplaySuffix(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return DisplaySuffixPattern.Replace(value, string.Empty).TrimEnd();
         }
 
         private static void CaptureBaseFromDispatcher(SteamInviteDispatcher dispatcher)

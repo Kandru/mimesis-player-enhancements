@@ -47,23 +47,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         internal static bool AreJoinsOpen()
         {
             Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-            if (pdata?.ClientMode != NetworkClientMode.Host)
-            {
-                return false;
-            }
+            bool isHost = pdata?.ClientMode == NetworkClientMode.Host;
+            bool inJoinableHostScene = pdata?.main is MaintenanceScene or InTramWaitingScene;
+            bool hasVRoomManager = TryGetVRoomManager(out VRoomManager? vroomManager);
+            int sessionState = hasVRoomManager
+                ? (int)vroomManager!.GetGameSessionInfo().GameSessionState
+                : 0;
 
-            if (pdata.main is not MaintenanceScene and not InTramWaitingScene)
-            {
-                return false;
-            }
-
-            if (!TryGetVRoomManager(out VRoomManager? vroomManager))
-            {
-                return true;
-            }
-
-            VGameSessionState state = vroomManager!.GetGameSessionInfo().GameSessionState;
-            return state is not (VGameSessionState.OnPlaying or VGameSessionState.DeathMatch or VGameSessionState.AfterGame);
+            return JoinAnytimeRoomGateLogic.ResolveJoinsOpen(
+                isHost,
+                inJoinableHostScene,
+                hasVRoomManager,
+                sessionState);
         }
 
         internal static bool TryGetActiveDungeonWaitMinutes(out int minutes)
@@ -81,49 +76,35 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static WaitingRoomBlockReason GetWaitingRoomBlockReason()
         {
-            if (JoinAnytimeConnectingTracker.HasPending())
+            bool hasVRoomManager = TryGetVRoomManager(out VRoomManager? vroomManager) && vroomManager != null;
+            int sessionState = 0;
+            bool occupiedDungeonBlocksDeparture = false;
+            int sessionPlayers = 0;
+            int waitingPlayers = 0;
+
+            if (hasVRoomManager)
             {
-                return WaitingRoomBlockReason.PlayersConnecting;
+                GameSessionInfo sessionInfo = vroomManager!.GetGameSessionInfo();
+                sessionState = (int)sessionInfo.GameSessionState;
+                if (TryScanRooms(vroomManager, out RoomScanResult scan)
+                    && scan.DungeonPlayerCount > 0
+                    && scan.ActiveDungeonRoom is DungeonRoom activeDungeon
+                    && !activeDungeon.IsSessionEnding)
+                {
+                    occupiedDungeonBlocksDeparture = true;
+                }
+
+                sessionPlayers = vroomManager.GetPlayerCountInSession();
+                waitingPlayers = vroomManager.GetRoomMemberCount(VRoomType.Waiting);
             }
 
-            if (!TryGetVRoomManager(out VRoomManager? vroomManager) || vroomManager == null)
-            {
-                return WaitingRoomBlockReason.None;
-            }
-
-            GameSessionInfo sessionInfo = vroomManager.GetGameSessionInfo();
-            VGameSessionState sessionState = sessionInfo.GameSessionState;
-            if (sessionState is VGameSessionState.OnPlaying or VGameSessionState.AfterGame)
-            {
-                return WaitingRoomBlockReason.ActiveDungeon;
-            }
-
-            if (sessionState is VGameSessionState.DeathMatch)
-            {
-                return WaitingRoomBlockReason.None;
-            }
-
-            if (TryScanRooms(vroomManager, out RoomScanResult scan)
-                && scan.DungeonPlayerCount > 0
-                && scan.ActiveDungeonRoom is DungeonRoom activeDungeon
-                && !activeDungeon.IsSessionEnding)
-            {
-                return WaitingRoomBlockReason.ActiveDungeon;
-            }
-
-            int sessionPlayers = vroomManager.GetPlayerCountInSession();
-            if (sessionPlayers <= 0)
-            {
-                return WaitingRoomBlockReason.None;
-            }
-
-            int waitingPlayers = vroomManager.GetRoomMemberCount(VRoomType.Waiting);
-            if (waitingPlayers < sessionPlayers)
-            {
-                return WaitingRoomBlockReason.PlayersSplit;
-            }
-
-            return WaitingRoomBlockReason.None;
+            return JoinAnytimeRoomGateLogic.ResolveWaitingRoomBlockReason(
+                JoinAnytimeConnectingTracker.HasPending(),
+                hasVRoomManager,
+                sessionState,
+                occupiedDungeonBlocksDeparture,
+                sessionPlayers,
+                waitingPlayers);
         }
 
         internal static bool ShouldBlockWaitingRoomStartGame() =>

@@ -22,9 +22,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             bool enabled = ModConfig.EnableJoinAnytime.Value;
             if (_wasEnabled && !enabled)
             {
+                JoinAnytimeLobbyController.RevertSteamOverridesOnDisable();
                 LateJoinManager.Reset();
                 JoinAnytimeConnectingTracker.Reset();
                 JoinAnytimeLobbyController.OnSessionEnded();
+                JoinAnytimeRoomTools.InvalidateWaitingRoomPrepareCache();
             }
 
             _wasEnabled = enabled;
@@ -37,6 +39,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             LateJoinManager.Reset();
             JoinAnytimeConnectingTracker.Reset();
             JoinAnytimeLobbyController.OnSessionEnded();
+            JoinAnytimeRoomTools.InvalidateWaitingRoomPrepareCache();
         }
     }
 }

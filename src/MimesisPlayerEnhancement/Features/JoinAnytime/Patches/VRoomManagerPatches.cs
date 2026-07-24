@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L474-508
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
     internal static class VRoomManagerPendMoveToDungeonPatch
     {
@@ -12,17 +13,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
-    internal static class DungeonRoomOnAllMemberEnteredLobbyPatch
-    {
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
-            JoinAnytimeLobbyController.RefreshLobbyState(force: true);
-        }
-    }
-
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L681-691
     [HarmonyPatch(typeof(VRoomManager), "BroadcastRoomReady")]
     internal static class VRoomManagerBroadcastRoomReadyPatch
     {
@@ -38,6 +29,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L114-140
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.InitWaitingRoom))]
     internal static class VRoomManagerInitWaitingRoomPatch
     {
@@ -49,6 +41,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L583-600
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))]
     internal static class VRoomManagerOnDungeonFinishedPatch
     {
@@ -64,6 +57,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L372-409
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
     internal static class VRoomManagerEnterWaitingRoomPatch
     {
@@ -95,26 +89,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    /// <summary>
-    /// Route after SyncEnterRoom sends AllMemberEnterRoomSig — client needs that flag before
-    /// MoveToWaitingRoomSig (CycleCount != 0 waits on EnteringCompleteAll in MaintenanceScene).
-    /// </summary>
-    [HarmonyPatch]
-    internal static class IVroomOnAllMemberEnteredLateJoinPatch
-    {
-        private static System.Reflection.MethodBase? TargetMethod() =>
-            AccessTools.Method(typeof(IVroom), "OnAllMemberEntered");
-
-        [HarmonyPostfix]
-        private static void Postfix(IVroom __instance)
-        {
-            if (__instance is MaintenanceRoom)
-            {
-                LateJoinManager.OnMaintenanceAllMembersEntered(__instance);
-            }
-        }
-    }
-
+    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L332-370
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))]
     internal static class VRoomManagerEnterMaintenenceRoomPatch
     {
@@ -122,43 +97,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         private static void Prefix(SessionContext context, int hashCode)
         {
             LateJoinManager.OnServerEnterMaintenance(context);
-        }
-    }
-
-    [HarmonyPatch(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")]
-    internal static class MaintenanceSceneTryInitHostMaintenenceRoomPatch
-    {
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            JoinAnytimeLobbyController.OnHostSceneReady();
-        }
-    }
-
-    [HarmonyPatch]
-    internal static class InTramWaitingSceneStartPatch
-    {
-        private static System.Reflection.MethodBase? TargetMethod() =>
-            AccessTools.Method(typeof(InTramWaitingScene), "Start");
-
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            JoinAnytimeLobbyController.OnHostSceneReady();
-            JoinAnytimeLobbyController.ApplyHostPublicLobbyIntent();
-        }
-    }
-
-    [HarmonyPatch]
-    internal static class GamePlaySceneStartPatch
-    {
-        private static System.Reflection.MethodBase? TargetMethod() =>
-            AccessTools.Method(typeof(GamePlayScene), "Start");
-
-        [HarmonyPostfix]
-        private static void Postfix()
-        {
-            JoinAnytimeLobbyController.OnHostSceneReady();
         }
     }
 }
