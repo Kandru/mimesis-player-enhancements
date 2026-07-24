@@ -1,7 +1,7 @@
 global using System;
 global using System.Collections.Generic;
-global using MimesisPlayerEnhancement.Util.Players;
 global using MimesisPlayerEnhancement.Util;
+global using MimesisPlayerEnhancement.Util.Players;
 global using Mimic.Actors;
 global using ReluProtocol;
 global using Steamworks;
