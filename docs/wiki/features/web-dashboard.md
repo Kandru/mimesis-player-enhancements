@@ -1,45 +1,30 @@
 # Web Dashboard
 
-**Scope:** Host process · **Config:** [`MimesisPlayerEnhancement_WebDashboard`](../CONFIG.md#web-dashboard--mimesisplayerenhancement_webdashboard)
+Serves a local browser page for connected players, a live minimap, leaderboards, moderation, host cheats, and mod settings. **Host only** — only the host needs this mod for the lobby to get the dashboard; joiners do not. It always tries to start (no on/off toggle). Default URL: `http://127.0.0.1:8001/` — or use the yellow Management button on the main/ESC menu (opens the real bound URL).
 
-While the game is running, open a page in your web browser to see who is connected, watch player positions on a live minimap during dungeon runs, browse leaderboards, and use moderation tools. You can also change mod settings from the browser instead of editing the config file by hand.
+## Configuration
 
-Default URL: `http://127.0.0.1:8001/`
+Keys live in `[MimesisPlayerEnhancement_WebDashboard]` inside `MimesisPlayerEnhancement.cfg` (global only). They are not shown in the dashboard settings UI and cannot be changed through the dashboard API. Changes apply when the config reloads (HTTP server restarts). Unset keys use the defaults below.
 
-## Views
+### `WebDashboardListenAddress`
 
-| View | Who can see it | What it shows |
-|------|----------------|---------------|
-| **Global Settings** | Host or idle (no session) | Global defaults; written to disk immediately. Under **Debug logging**, UI overlay preview toggles force-show player-list layouts while in a session (tram, maintenance, or dungeon). |
-| **Settings** | Host in an active save | Per-save overrides (in `mpe-slot.sav`); applied live; written on vanilla save |
-| **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, ban status |
-| **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs |
-| **Leaderboard** | Host only | Per-save stats leaderboard (requires **Statistics**) |
-| **Player stats** | Host only | Per-player statistics for the active save (requires **Statistics**) |
-| **Moderation** | Host only | Kick, ban, unban, respawn, and heal actions |
+IP or hostname the HTTP server binds to. Keep loopback for local-only access; non-loopback binds log a network-exposure warning and anyone on that network can reach the dashboard with no login.
 
-## Blind mode
+| Value | Meaning |
+|---|---|
+| `127.0.0.1` | Local machine only (recommended) |
+| `0.0.0.0` or a LAN IP | Reachable on the network — no authentication |
 
-Header toggle (host only, on by default). Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers during dungeon and deathmatch runs while you are alive. Automatically inactive in maintenance and tram. While dead, blind mode lifts temporarily so you can review others' stats.
+Default: `127.0.0.1`
 
-## Moderation
+### `WebDashboardListenPort`
 
-Host-only actions on the Players page: kick, ban, unban, respawn, heal, and item spawn.
+Preferred TCP port. Valid range `1`–`65535`; out of range resets to `8001`. If the preferred port is busy, the mod tries the next 20 ports and keeps listening there, but does not rewrite this saved preferred port. If none are free, the dashboard stays off and a red error is logged. The Management button always opens the port actually in use.
 
-## Player cheats
+| Value | Meaning |
+|---|---|
+| `1`–`65535` | Preferred starting port |
+| Busy preferred port | Try preferred … preferred+20; bind first free |
+| Invalid / out of range | Reset to `8001` |
 
-Per-player buttons (host only): **Godmode** prevents death and freezes toxicity; **Noclip** lets that player fly with normal movement controls. Both turn off when blind mode is active or the player dies. Full noclip flight requires the target player to have this mod on their client.
-
-## Management button
-
-While the dashboard server runs, a yellow **Management** button appears on the main menu and ESC menu (between Settings and Quit). Opens the dashboard in the Steam overlay browser, falling back to the system browser.
-
-## Security
-
-Default bind is `127.0.0.1` (loopback) — only your machine can connect. Binding to `0.0.0.0` or a LAN IP exposes the dashboard to anyone on that network with no login. Listen address and port are cfg-file only (not editable from inside the dashboard).
-
-## UI overlay debug previews
-
-In **Global Settings → Mimesis Player Enhancement → Debug logging**, four toggles force-show the mod's real player-list UIs (spectator, loading-wait, ESC menu, survival result) filled with static fake players up to the current max-player count. Use them to check alignment and layout. Available only while connected and in an active session scene; press again to hide. Previews do not update from live voice or roster data and reset when the session ends.
-
-**Full config keys →** [Web Dashboard](../CONFIG.md#web-dashboard--mimesisplayerenhancement_webdashboard)
+Default: `8001`

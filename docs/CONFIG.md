@@ -505,7 +505,7 @@ A continuous brightness slider is not available; pick a preset above for darker 
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
-**Host process.** Serves a local HTTP dashboard from the game process. The mod always attempts to start it on game launch and config reload. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). If the configured port is already in use, the mod tries the next 20 ports automatically. If none are free, the dashboard does not run and a red error is logged. Available whenever the game is running (not only during an active session).
+**Host only.** Only the host needs this mod for the lobby to get the dashboard; joiners do not. Serves a local HTTP dashboard from the game. The mod always attempts to start it on game launch and config reload. Open `http://<ListenAddress>:<ListenPort>/` in a browser (default: `http://127.0.0.1:8001/`). If the configured port is already in use, the mod tries the next 20 ports automatically. If none are free, the dashboard does not run and a red error is logged. Available whenever the game is running (not only during an active session).
 
 **Management menu button:** While the dashboard server is running, a yellow **Management** button appears on the main menu and the ESC menu (between Settings and Quit). Clicking it opens the dashboard in the Steam overlay browser, falling back to the system browser when the overlay is unavailable. The button opens the **actual** bound URL (which may differ from the configured port when a fallback port was used). The button disappears when the server is not running.
 
@@ -519,13 +519,13 @@ A continuous brightness slider is not available; pick a preset above for darker 
 | **Settings** | Host in an active save | Per-save-game overrides; applied live in memory; written on vanilla save |
 | **Players** | Anyone who can reach the URL | Connected players with avatars, host/local badges, network grade, and ban status |
 | **Minimap** | Anyone who can reach the URL | Live player positions during dungeon runs |
-| **Leaderboard** | Host only | Per-save-game stats leaderboard (requires **Statistics** enabled) |
-| **Player stats** | Host only | Per-player statistics for the active save game (requires **Statistics** enabled) |
-| **Moderation** | Host only | Kick, ban, unban, respawn, and heal actions |
+| **Leaderboard** | Session host | Per-save-game stats leaderboard (requires **Statistics** enabled) |
+| **Player stats** | Session host | Per-player statistics for the active save game (requires **Statistics** enabled) |
+| **Moderation** | Session host | Kick, ban, unban, respawn, and heal actions |
 
-**Blind mode** (header toggle, host only): on by default for fairness. Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers during **dungeon and deathmatch runs** while you are alive. It is automatically inactive in the maintenance bay and tram scene. While you are dead, blind mode is temporarily lifted so you can review others' stats; it restores automatically on revive unless you turned it off manually.
+**Blind mode** (header toggle, session host): on by default for fairness. Hides alive/dead status, session stats, vitals, and respawn actions to avoid spoilers during **dungeon and deathmatch runs** while you are alive. It is automatically inactive in the maintenance bay and tram scene. While you are dead, blind mode is temporarily lifted so you can review others' stats; it restores automatically on revive unless you turned it off manually.
 
-**Player cheats** (per-player buttons on the Players page, host only): **Godmode** prevents the selected player from dying and freezes their toxicity level; **Noclip** lets that player fly with normal movement controls. Both appear next to Heal/Respawn for alive in-game players and are automatically turned off when blind mode is active or when the player dies.
+**Player cheats** (per-player buttons on the Players page, session host): **Godmode** prevents the selected player from dying and freezes their toxicity level; **Noclip** lets that player fly with normal movement controls. Both appear next to Heal/Respawn for alive in-game players and are automatically turned off when blind mode is active or when the player dies.
 
 **Noclip and remote players:** The host can toggle noclip for any in-game player. The server always relaxes movement validation for noclip players. **Full flight** (disabling collision and flying with normal movement controls) requires the target player to have this mod installed on their client; without it, they only get partial server-side movement acceptance and cannot walk through walls locally.
 
