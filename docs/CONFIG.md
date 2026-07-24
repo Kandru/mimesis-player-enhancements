@@ -55,6 +55,8 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host |
 | [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host process |
 
+**Scope:** `Host` means only the host must enable the feature.
+
 ### Apply timing
 
 | Timing | Features |
@@ -273,7 +275,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-**Host-only.** Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
+Only the host must enable this feature. Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
 
 | Setting | What it affects |
 |---------|-----------------|
@@ -289,7 +291,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableEconomy` | bool | `false` | — | Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. Host only. |
+| `EnableEconomy` | bool | `false` | — | Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. |
 | `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
 | `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money. |
 | `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Startup money multiplier on new save or session reset. Does not apply when loading a save. |
@@ -302,7 +304,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | `ShopDiscountChancePercent` | int | `0` | `0`–`100` | Chance per shop item to receive a discount in the min–max range (`0` = vanilla shop discounts, `100` = every item discounted). |
 | `AutoScaleReinforcePriceByPlayerCount` | bool | `true` | — | Player-count scaling for reinforce costs. |
 | `ReinforcePriceMultiplier` | float | `1.0` | ≥ `0` | Reinforce price multiplier. |
-| `RetainUnspentCurrencyBetweenCycles` | bool | `false` | — | Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. Host only. |
+| `RetainUnspentCurrencyBetweenCycles` | bool | `false` | — | Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. |
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 

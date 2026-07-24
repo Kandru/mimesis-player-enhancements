@@ -23,6 +23,8 @@
 | [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
 | [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
 
+**Host only:** only the host must enable the feature. **Your game only:** local UI or client settings on your install only.
+
 ## Configuration
 
 Settings live in `<Mimesis Steam folder>/UserData/MimesisPlayerEnhancement.cfg`. The game reloads the file while running. See the [full config reference](../CONFIG.md) for every key, default, and apply timing.
