@@ -128,13 +128,13 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Players — `[MimesisPlayerEnhancement_MorePlayers]`
 
-**Host-only.** Raise the vanilla 4-player multiplayer session cap and optionally scale tram repair quotas beyond vanilla stage 5.
+**Host only** — only the host must enable it for the whole lobby to get the effect. Joining players do not need the mod or that setting. Raise the vanilla 4-player multiplayer session cap and optionally scale tram repair quotas beyond vanilla stage 5.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `32` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
-| `EnableScalingRoundGoals` | bool | `true` | — | Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. Host only. |
+| `EnableScalingRoundGoals` | bool | `true` | — | Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. |
 | `RoundGoalBasePerZone` | float | `200` | ≥ `0` | Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier). |
 | `RoundGoalMoneyMultiplier` | float | `1.0` | ≥ `0` | Global multiplier on the computed tram repair quota. |
 | `RoundGoalRandomSpreadPercent` | int | `10` | `0`–`100` | Random ±% band around the computed center quota when departing maintenance (save load uses the low bound). |
