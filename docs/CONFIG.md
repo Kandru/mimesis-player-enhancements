@@ -72,7 +72,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time, Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
 | **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
-| **Global UI** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers |
+| **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, custom loading screens and landing sounds |
 
 ---
 
@@ -106,14 +106,14 @@ Mod-wide settings that are not owned by a single feature.
 | `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage numbers remain visible. |
 | `EnableFpsUi` | bool | `true` | — | Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged. |
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
-| `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Client-only. |
+| `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Your game only. |
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
-| `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Client-only. |
-| `RoundStartSoundVolume` | float | `0.8` | `0`–`1` | Playback volume for custom dungeon landing sounds (`Random` or `Specific` mode). Does not affect the tram-stop sting or vanilla mode. Client-only. |
-| `CustomLoadingScreenMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). Client-only. |
+| `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Your game only. |
+| `RoundStartSoundVolume` | float | `0.8` | `0`–`1` | Playback volume for custom dungeon landing sounds (`Random` or `Specific` mode). Does not affect the tram-stop sting or vanilla mode. Your game only. |
+| `CustomLoadingScreenMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). Your game only. |
 | `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme folder that has assets under the current transition context (for example `GTA/Dungeon/background.png`). Empty or invalid values reset to the first discovered theme. |
-| `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). Client-only. |
-| `CustomLoadingScreenMotion` | bool | `true` | — | Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. Client-only. |
+| `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). Your game only. |
+| `CustomLoadingScreenMotion` | bool | `true` | — | Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. Your game only. |
 
 List-style settings (`LootAllowlist`, `DungeonAllowlist`, `WeatherCyclePresets`, and the random pools above) use searchable multi-select pickers in the web dashboard. Values are stored as comma-separated ids, not localized labels.
 

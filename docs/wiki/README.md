@@ -8,7 +8,7 @@
 | [More Voices](./features/more-voices.md) | Let mimics remember many more player voice lines | Host only |
 | [Persistence](./features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
 | [Join Anytime](./features/join-anytime.md) | Let friends join at the service station or tram between dungeons | Host only |
-| [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration, and more | Your game only |
+| [User Interface](./features/user-interface.md) | Save picker, HUD overlays, damage effects, FPS UI, loading screens, landing sounds | Your game only |
 | [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Your game only |
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |

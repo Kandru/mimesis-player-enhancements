@@ -1,6 +1,6 @@
 # Custom Assets
 
-**Scope:** Your game only (local) · **Config:** [`MimesisPlayerEnhancement_Ui`](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)
+**Scope:** Your game only · **Config:** [`MimesisPlayerEnhancement_Ui`](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)
 
 Replace scene loading overlay art and the dungeon landing melody with your own embedded files. Both features are client-only — each player chooses their own themes and sounds.
 
