@@ -1,3 +1,4 @@
+using System.IO;
 using MimesisPlayerEnhancement.Config.QuickSettings;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
@@ -5,6 +6,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotPickerExtraStats
     {
+        private static readonly Dictionary<int, string> Line3Cache = new();
+
+        internal static void ClearCache() => Line3Cache.Clear();
+
+        internal static void InvalidateSlot(int slotId) => Line3Cache.Remove(slotId);
+
         internal static void PopulateLine3Text(IReadOnlyList<SaveSlotEntry> entries)
         {
             foreach (SaveSlotEntry entry in entries)
@@ -15,26 +22,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal static string FormatLine3(int slotId)
         {
-            List<string> parts = [];
-
-            SaveConfigProfileState profile = SaveSlotConfigProfile.TryReadProfileForSlot(slotId);
-            parts.Add(SaveSlotConfigProfile.GetDisplayLabel(profile));
-
-            LeaderboardDocument? leaderboard = LoadLeaderboard(slotId);
-            if (leaderboard?.Entries is { Count: > 0 } entries)
+            if (Line3Cache.TryGetValue(slotId, out string? cached))
             {
-                AppendLeaderboardSummary(parts, entries);
+                return cached;
             }
 
-            int voiceEvents = SpeechEventFileStore.TryGetSavedSpeechEventCount(slotId);
-            if (voiceEvents > 0)
-            {
-                parts.Add(ModL10n.Get("saveslots.voice_events", new Dictionary<string, object> { ["count"] = voiceEvents }));
-            }
-
-            return parts.Count == 0
-                ? ModL10n.Get("saveslots.no_statistics")
-                : string.Join(" · ", parts);
+            string text = BuildLine3(slotId);
+            Line3Cache[slotId] = text;
+            return text;
         }
 
         internal static float ComputeRowHeight()
@@ -45,6 +40,44 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             const float line3Height = 18f;
 
             return verticalPadding + line1Height + line2Height + line3Height + verticalPadding;
+        }
+
+        private static string BuildLine3(int slotId)
+        {
+            List<string> parts = [];
+
+            SaveConfigProfileState profile = TryReadProfileIfPresent(slotId);
+            parts.Add(SaveSlotConfigProfile.GetDisplayLabel(profile));
+
+            LeaderboardDocument? leaderboard = LoadLeaderboard(slotId);
+            if (leaderboard?.Entries is { Count: > 0 } entries)
+            {
+                AppendLeaderboardSummary(parts, entries);
+            }
+
+            if (SpeechEventFileStore.HasSpeechEventsFile(slotId))
+            {
+                int voiceEvents = SpeechEventFileStore.TryGetSavedSpeechEventCount(slotId);
+                if (voiceEvents > 0)
+                {
+                    parts.Add(ModL10n.Get("saveslots.voice_events", new Dictionary<string, object> { ["count"] = voiceEvents }));
+                }
+            }
+
+            return parts.Count == 0
+                ? ModL10n.Get("saveslots.no_statistics")
+                : string.Join(" · ", parts);
+        }
+
+        private static SaveConfigProfileState TryReadProfileIfPresent(int slotId)
+        {
+            string? path = SaveSidecarPaths.GetSlotDocumentPath(slotId);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                return new SaveConfigProfileState();
+            }
+
+            return SaveSlotConfigProfile.TryReadProfileForSlot(slotId);
         }
 
         private static void AppendLeaderboardSummary(List<string> parts, List<LeaderboardEntry> entries)
@@ -98,6 +131,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static LeaderboardDocument? LoadLeaderboard(int slotId)
         {
+            string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                return null;
+            }
+
             Dictionary<ulong, PlayerStatisticsDocument> players = [];
             StatisticsStore.LoadAllPlayersForSlot(slotId, players);
             return players.Count == 0 ? null : LeaderboardBuilder.Build(slotId, players.Values);

@@ -10,11 +10,12 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         internal static readonly FieldInfo? LastMimicVoiceTimeField =
             AccessTools.Field(typeof(VoiceManager), "_lastMimicVoiceTime");
 
+        // String AccessTools: typeof(PreparedMimicVoiceSpawn) TypeLoadExceptions under the slim test Managed set.
         internal static readonly FieldInfo? PreparedVoiceContextField =
-            AccessTools.Field(typeof(MimicVoiceSpawner.PreparedMimicVoiceSpawn), "Context");
+            AccessTools.Field("Mimic.Voice.MimicVoiceSpawner+PreparedMimicVoiceSpawn:Context");
 
         internal static readonly FieldInfo? PreparedVoiceMuteField =
-            AccessTools.Field(typeof(MimicVoiceSpawner.PreparedMimicVoiceSpawn), "MuteLocalPlayerVoice");
+            AccessTools.Field("Mimic.Voice.MimicVoiceSpawner+PreparedMimicVoiceSpawn:MuteLocalPlayerVoice");
 
         internal static readonly FieldInfo? MinRequiredSpeechsField =
             AccessTools.Field(typeof(MimicVoiceSpawner), "minRequiredSpeechs");

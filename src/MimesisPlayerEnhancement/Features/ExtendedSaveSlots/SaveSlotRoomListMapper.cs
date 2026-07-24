@@ -2,19 +2,11 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotRoomListMapper
     {
-        internal static List<SaveSlotEntry> BuildSaveEntries()
-        {
-            List<SaveSlotEntry> entries = [];
-            SaveSlotEntry? autosave = SaveSlotDiscovery.TryLoadAutosave();
-            if (autosave != null)
-            {
-                entries.Add(autosave);
-            }
+        internal static SaveSlotDiscoveryResult BuildPickerSnapshot() =>
+            SaveSlotDiscovery.DiscoverForPicker();
 
-            entries.AddRange(SaveSlotDiscovery.GetManualSaves());
-            entries.Sort(static (a, b) => a.SlotId.CompareTo(b.SlotId));
-            return entries;
-        }
+        internal static List<SaveSlotEntry> BuildSaveEntries() =>
+            BuildPickerSnapshot().Entries;
 
         internal static string FormatLine1(SaveSlotEntry entry)
         {

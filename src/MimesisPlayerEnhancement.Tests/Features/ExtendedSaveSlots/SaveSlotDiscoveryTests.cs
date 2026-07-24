@@ -22,5 +22,31 @@ namespace MimesisPlayerEnhancement.Tests.Features.ExtendedSaveSlots
                 SaveSlotDiscovery.GetMaxManualSlots(extendedEnabled: true)
                     > SaveSlotDiscovery.GetMaxManualSlots(extendedEnabled: false));
         }
+
+        [Theory]
+        [InlineData(new int[0], 3, 1)]
+        [InlineData(new[] { 1 }, 3, 2)]
+        [InlineData(new[] { 1, 2 }, 3, 3)]
+        [InlineData(new[] { 1, 2, 3 }, 3, -1)]
+        [InlineData(new[] { 1, 2, 3 }, 99, 4)]
+        [InlineData(new[] { 2, 3 }, 3, 1)]
+        [InlineData(new[] { 1, 3 }, 3, 2)]
+        public void FindFirstFreeManualSlot_returns_lowest_unoccupied(
+            int[] occupied,
+            int maxManual,
+            int expected)
+        {
+            int free = SaveSlotDiscovery.FindFirstFreeManualSlot(occupied, maxManual);
+
+            Assert.Equal(expected, free);
+        }
+
+        [Fact]
+        public void FindFirstFreeManualSlot_returns_minus_one_when_max_below_minimum()
+        {
+            int free = SaveSlotDiscovery.FindFirstFreeManualSlot([], maxManual: 0);
+
+            Assert.Equal(-1, free);
+        }
     }
 }

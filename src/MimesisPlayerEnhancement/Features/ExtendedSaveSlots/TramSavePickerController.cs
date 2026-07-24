@@ -6,12 +6,20 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private const string Feature = "ExtendedSaveSlots";
 
+        private enum MenuMode
+        {
+            Unknown,
+            Extended,
+            Vanilla,
+        }
+
         private static readonly Action<string> HostButtonHandler = static _ => { };
 
         private static MainMenu? _mainMenu;
         private static UIPrefab_MainMenu? _mainMenuUi;
         private static SaveSlotPickerPanel? _panel;
         private static string? _hostButtonLabel;
+        private static MenuMode _menuMode = MenuMode.Unknown;
 
         internal static bool IsActive => ModConfig.EnableExtendedSaveSlots.Value;
 
@@ -30,6 +38,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _mainMenu = null;
             _mainMenuUi = null;
             _hostButtonLabel = null;
+            _menuMode = MenuMode.Unknown;
+            SaveSlotGameAccess.ClearCachedUi();
+            SaveSlotPickerExtraStats.ClearCache();
         }
 
         internal static bool TryGetCachedSave(int slotId, out MMSaveGameData? data)
@@ -80,6 +91,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             ConfigureExtendedMainMenuButtons();
             ApplyFunnyHostButtonLabel();
             HideLoadButtonViaMirror();
+            _menuMode = MenuMode.Extended;
         }
 
         internal static void ApplyVanillaMode()
@@ -96,6 +108,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             _hostButtonLabel = null;
 
+            // Never applied extended wiring — leave the game's MainMenu.Start handlers alone.
+            if (_menuMode != MenuMode.Extended)
+            {
+                _menuMode = MenuMode.Vanilla;
+                MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
+                return;
+            }
+
             // Restore layout first so vanilla tram buttons regain their prefab spacing
             // before labels/handlers are rewired.
             MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
@@ -104,6 +124,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             {
                 VanillaMainMenuWiring.Restore(_mainMenu, _mainMenuUi);
             }
+
+            _menuMode = MenuMode.Vanilla;
         }
 
         internal static void TryHandleHostButtonClick(UIPrefab_MainMenu mainMenuUi)
@@ -147,6 +169,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void TryOpenVanillaNewTram()
         {
+            // game@0.3.1 Assembly-CSharp/UIPrefab_NewTram.cs InitSaveInfoList
             Type? newTramType = AccessTools.TypeByName("UIPrefab_NewTram");
             if (newTramType == null)
             {
@@ -154,7 +177,8 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 return;
             }
 
-            UIPrefabScript? newTram = FindUiInstance(newTramType);
+            UIPrefabScript? newTram = FindUiInstance(newTramType)
+                ?? SaveSlotGameAccess.TryFindHiddenNewTram() as UIPrefabScript;
             if (newTram == null)
             {
                 ModLog.Warn(Feature, "Vanilla New Tram UI instance not found.");

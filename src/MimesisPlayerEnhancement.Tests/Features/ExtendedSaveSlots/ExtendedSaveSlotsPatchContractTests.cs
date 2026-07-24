@@ -66,6 +66,41 @@ namespace MimesisPlayerEnhancement.Tests.Features.ExtendedSaveSlots
         }
 
         [Fact]
+        public void MainMenu_TryLoadSaveAndCreateRoom_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("MainMenu");
+
+            MethodInfo? method = type.GetMethods(InstanceMember)
+                .FirstOrDefault(candidate =>
+                    candidate.Name == "TryLoadSaveAndCreateRoom"
+                    && candidate.GetParameters().Length == 2
+                    && candidate.GetParameters()[0].ParameterType.Name == "UIPrefab_LoadTram"
+                    && candidate.GetParameters()[1].ParameterType.Name == "Int32");
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void MainMenu_HandleNewGameSlotSelection_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("MainMenu");
+
+            MethodInfo? method = type.GetMethods(InstanceMember)
+                .FirstOrDefault(candidate =>
+                    candidate.Name == "HandleNewGameSlotSelection"
+                    && candidate.GetParameters().Length == 3
+                    && candidate.GetParameters()[0].ParameterType.Name == "UIPrefab_NewTram"
+                    && candidate.GetParameters()[1].ParameterType.Name == "UIPrefab_NewTramPopUp"
+                    && candidate.GetParameters()[2].ParameterType.Name == "Int32");
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
         public void UIManager_Update_exists()
         {
             using MimesisMetadataContext context = CreateContext();

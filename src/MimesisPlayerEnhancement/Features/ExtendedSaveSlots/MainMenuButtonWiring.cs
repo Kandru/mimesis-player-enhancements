@@ -12,6 +12,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
+        // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs dictElements / onButtonClick / SetOnButtonClick
         private static readonly FieldInfo? DictElementsField =
             AccessTools.Field(typeof(UIPrefabScript), "dictElements");
 
@@ -21,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private static readonly MethodInfo? SetOnButtonClickMethod =
             AccessTools.Method(typeof(UIPrefabScript), "SetOnButtonClick");
 
+        // game@0.3.1 Assembly-CSharp/UIElementMarker.cs asButton / name
         private static readonly Type? MarkerType = AccessTools.TypeByName("UIElementMarker");
 
         private static readonly FieldInfo? MarkerButtonField =

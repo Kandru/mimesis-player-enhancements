@@ -7,8 +7,20 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
+        // game@0.3.1 Assembly-CSharp PlatformMgr.Load (generic)
         private static readonly MethodInfo? LoadSaveMethod =
             AccessTools.Method(typeof(PlatformMgr), "Load")?.MakeGenericMethod(typeof(MMSaveGameData));
+
+        private static UIPrefab_LoadTram? _loadTram;
+        private static UIPrefab_NewTram? _newTram;
+        private static UIPrefab_NewTramPopUp? _newTramPopUp;
+
+        internal static void ClearCachedUi()
+        {
+            _loadTram = null;
+            _newTram = null;
+            _newTramPopUp = null;
+        }
 
         internal static string GetL10NText(string key, params object[] formattingArgs)
         {
@@ -22,6 +34,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return GameSessionAccess.TryGetPdata();
         }
 
+        // game@0.3.1 Assembly-CSharp/Hub.cs inputman
         internal static object? TryGetInputManager()
         {
             if (Hub.s == null)
@@ -55,14 +68,38 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         }
 
 #pragma warning disable CS0618
-        internal static UIPrefab_LoadTram? TryFindHiddenLoadTram() =>
-            UnityEngine.Object.FindObjectOfType<UIPrefab_LoadTram>(true);
+        internal static UIPrefab_LoadTram? TryFindHiddenLoadTram()
+        {
+            if (_loadTram != null)
+            {
+                return _loadTram;
+            }
 
-        internal static UIPrefab_NewTram? TryFindHiddenNewTram() =>
-            UnityEngine.Object.FindObjectOfType<UIPrefab_NewTram>(true);
+            _loadTram = UnityEngine.Object.FindObjectOfType<UIPrefab_LoadTram>(true);
+            return _loadTram;
+        }
 
-        internal static UIPrefab_NewTramPopUp? TryFindHiddenNewTramPopUp() =>
-            UnityEngine.Object.FindObjectOfType<UIPrefab_NewTramPopUp>(true);
+        internal static UIPrefab_NewTram? TryFindHiddenNewTram()
+        {
+            if (_newTram != null)
+            {
+                return _newTram;
+            }
+
+            _newTram = UnityEngine.Object.FindObjectOfType<UIPrefab_NewTram>(true);
+            return _newTram;
+        }
+
+        internal static UIPrefab_NewTramPopUp? TryFindHiddenNewTramPopUp()
+        {
+            if (_newTramPopUp != null)
+            {
+                return _newTramPopUp;
+            }
+
+            _newTramPopUp = UnityEngine.Object.FindObjectOfType<UIPrefab_NewTramPopUp>(true);
+            return _newTramPopUp;
+        }
 #pragma warning restore CS0618
     }
 }

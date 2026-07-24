@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots.Patches
 {
+    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L154-179
     [HarmonyPatch(typeof(UIPrefabScript), "OnButtonClick", typeof(string))]
     internal static class MainMenuHostButtonClickPrefix
     {

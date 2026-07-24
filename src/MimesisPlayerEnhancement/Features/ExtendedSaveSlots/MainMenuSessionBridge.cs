@@ -6,7 +6,10 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private const string Feature = "ExtendedSaveSlots";
 
+        // game@0.3.1 Assembly-CSharp/MainMenu.cs:L51-61
         private static MethodInfo? _tryLoadSaveAndCreateRoom;
+
+        // game@0.3.1 Assembly-CSharp/MainMenu.cs:L106-117
         private static MethodInfo? _handleNewGameSlotSelection;
 
         internal static void TryLoadSaveAndCreateRoom(
@@ -23,7 +26,12 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             TramSavePickerController.Panel?.Close();
 
-            loadTram.InitSaveInfoList();
+            // Prefer picker cache via LoadTram prefixes; InitSaveInfoList only for cache miss (slots 0–3).
+            if (!TramSavePickerController.TryGetCachedSave(slotId, out _))
+            {
+                loadTram.InitSaveInfoList();
+            }
+
             _ = method.Invoke(menu, [loadTram, slotId]);
         }
 

@@ -146,6 +146,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 return;
             }
 
+            SaveSlotPickerExtraStats.InvalidateSlot(slotId);
             ClearSelection();
             RefreshSaveList();
             UpdateActionButtons();
@@ -173,16 +174,16 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _saveCache.Clear();
             _entriesBySlot.Clear();
 
-            List<SaveSlotEntry> entries = SaveSlotRoomListMapper.BuildSaveEntries();
-            SaveSlotPickerExtraStats.PopulateLine3Text(entries);
-            _firstFreeManualSlot = SaveSlotDiscovery.FindFirstFreeManualSlot();
-            foreach (SaveSlotEntry entry in entries)
+            SaveSlotDiscoveryResult snapshot = SaveSlotRoomListMapper.BuildPickerSnapshot();
+            _firstFreeManualSlot = snapshot.FirstFreeManualSlot;
+            foreach (SaveSlotEntry entry in snapshot.Entries)
             {
+                entry.Line3Text = string.Empty;
                 _saveCache[entry.SlotId] = entry.Data;
                 _entriesBySlot[entry.SlotId] = entry;
             }
 
-            _ui.RebuildRows(entries);
+            _ui.RebuildRows(snapshot.Entries, populateLine3Lazily: true);
         }
 
         private void WireUiHandlers(SaveSlotPickerUi ui)

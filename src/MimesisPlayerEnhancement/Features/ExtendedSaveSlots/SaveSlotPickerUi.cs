@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
@@ -9,6 +10,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private GameObject? _emptyLabel;
         private readonly List<SaveSlotPickerRow> _rows = [];
         private SaveSlotPickerRow? _selectedRow;
+        private Coroutine? _line3PopulateCoroutine;
 
         internal Button BackButton { get; private set; } = null!;
         internal Button NewTramButton { get; private set; } = null!;
@@ -48,8 +50,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         internal SaveSlotPickerRow? GetSelectedRow() => _selectedRow;
 
-        internal void RebuildRows(IReadOnlyList<SaveSlotEntry> entries)
+        internal void RebuildRows(IReadOnlyList<SaveSlotEntry> entries, bool populateLine3Lazily = false)
         {
+            StopLine3Populate();
             ClearRows();
 
             if (entries.Count == 0)
@@ -82,6 +85,19 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             }
 
             _scrollList.ScrollToTop();
+
+            if (populateLine3Lazily)
+            {
+                _line3PopulateCoroutine = StartCoroutine(PopulateLine3Coroutine(entries));
+            }
+            else
+            {
+                SaveSlotPickerExtraStats.PopulateLine3Text(entries);
+                foreach (SaveSlotPickerRow row in _rows)
+                {
+                    row.RefreshText();
+                }
+            }
         }
 
         internal void SetSelection(SaveSlotPickerRow? row)
@@ -103,6 +119,35 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             ModButton.SetEnabled(LoadButton, loadEnabled, _assets.TextColor, _assets.DisabledTextColor);
             ModButton.SetEnabled(DeleteButton, deleteEnabled, _assets.TextColor, _assets.DisabledTextColor);
             ModButton.SetEnabled(NewTramButton, newTramEnabled, _assets.TextColor, _assets.DisabledTextColor);
+        }
+
+        private IEnumerator PopulateLine3Coroutine(IReadOnlyList<SaveSlotEntry> entries)
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                SaveSlotEntry entry = entries[i];
+                entry.Line3Text = SaveSlotPickerExtraStats.FormatLine3(entry.SlotId);
+
+                if (i < _rows.Count && _rows[i] != null && _rows[i].SlotId == entry.SlotId)
+                {
+                    _rows[i].RefreshText();
+                }
+                else
+                {
+                    foreach (SaveSlotPickerRow row in _rows)
+                    {
+                        if (row != null && row.SlotId == entry.SlotId)
+                        {
+                            row.RefreshText();
+                            break;
+                        }
+                    }
+                }
+
+                yield return null;
+            }
+
+            _line3PopulateCoroutine = null;
         }
 
         private void Build(Transform root, UIPrefab_LoadTram loadTram)
@@ -172,12 +217,27 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _selectedRow = null;
         }
 
+        private void StopLine3Populate()
+        {
+            if (_line3PopulateCoroutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_line3PopulateCoroutine);
+            _line3PopulateCoroutine = null;
+        }
+
         private static string? ReadButtonLabel(GameObject buttonRoot)
         {
             Component? text = ModUiText.FindTextComponent(buttonRoot);
             return ModUiText.GetText(text);
         }
 
-        private void OnDestroy() => ClearRows();
+        private void OnDestroy()
+        {
+            StopLine3Populate();
+            ClearRows();
+        }
     }
 }
