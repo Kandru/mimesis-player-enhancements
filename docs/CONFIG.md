@@ -320,7 +320,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
-**Host-only.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
+**Only the host needs this mod enabled for the whole lobby to get the effect. Joining clients do not need it.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
 
 **Live apply:** Changes take effect on the next mimic voice attempt, AI activation, inventory copy, or E-possession — no restart required. Active sessions are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked while possessed.
 
@@ -328,9 +328,9 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableMimicTuning` | bool | `false` | — | Master toggle. Host only. |
+| `EnableMimicTuning` | bool | `false` | — | Master toggle. Only the host needs this mod for the whole lobby. |
 | `MimicVoiceTuningMode` | string | `Vanilla` | `Vanilla`, `Custom` | Voice subgroup mode. |
-| `PeriodicVoiceIntervalMultiplier` | float | `1.0` | ≥ `0.05` | Custom: scales **periodic** ambient waits only. |
+| `PeriodicVoiceIntervalMultiplier` | float | `1.0` | `0.05`–`10` | Custom: scales **periodic** ambient waits only. |
 | `PlayerVoiceResponseChancePercent` | int | `100` | `0`–`100` | Custom: chance mimics answer when you speak. |
 | `PlayerVoiceResponseCooldownSeconds` | float | `3.0` | ≥ `0` | Custom: min seconds between answers to player speech. |
 | `PlayerVoiceResponseDelayMinSeconds` / `MaxSeconds` | float | `0.2` | ≥ `0` | Custom: reply delay range. |
@@ -356,7 +356,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 |-----|------|---------|-------------|
 | `MimicTrustMode` | string | `Vanilla` | `Vanilla` / `Custom` |
 | `TrustOutdoorMultiplier` | float | `2` | Outdoor trust-delta multiplier. |
-| `TrustLookingDelta` … `TrustHitDamageMultiplier` | float | game | Indoor base trust deltas. |
+| `TrustLookingDelta` … `TrustHitDamageMultiplier` | float | `-3` / `3` / `0.5` / `0` / `5` / `-11` / `-0.5` | Indoor base trust deltas (vanilla). |
 | `TrustFriendlyThreshold` / `TrustDistrustThreshold` | float | `90` / `10` | Trust gauge thresholds. |
 | `TrustScoreValueMode` | string | `Vanilla` | `Vanilla` / `Fixed` / `Random` for initial (50) and behavior (70) **raw 0–100** scores. |
 | `TrustInitialFixed` / `TrustBehaviorFixed` | float | `50` / `70` | Fixed mode values. |
