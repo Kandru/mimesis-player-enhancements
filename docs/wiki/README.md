@@ -11,7 +11,7 @@
 | [User Interface](./features/user-interface.md) | Save picker, HUD overlays, damage effects, FPS UI, loading screens, landing sounds | Your game only |
 | [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Your game only |
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
-| [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
+| [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Only the host must enable it (whole lobby gets the effect) |
 | [Web Dashboard](./features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
 | [Player Announcements](./features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |
 | [Spawn Scaling](./features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host only |
