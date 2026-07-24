@@ -18,6 +18,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L55
     [HarmonyPatch]
     internal static class BlockReplayRecorderUseRecordPatch
     {
@@ -35,6 +36,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L173-205
     [HarmonyPatch]
     internal static class BlockReplayRecorderReadyRecordingPatch
     {
@@ -49,6 +51,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L149-171
     [HarmonyPatch]
     internal static class BlockReplayRecorderReadyRecordingForDeathMatchPatch
     {
@@ -63,6 +66,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L370-375
     [HarmonyPatch]
     internal static class BlockReplayRecorderStartRecordingPatch
     {
@@ -77,6 +81,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L405-427
     [HarmonyPatch]
     internal static class BlockReplayRecorderCopyReplayToFeedbackFilesPatch
     {
@@ -91,6 +96,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L585-623
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadReplayDataToStoragePatch
     {
@@ -103,6 +109,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L400-403
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadReplayDataToStorageSyncPatch
     {
@@ -117,6 +124,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L438-489
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadReplayFilesPatch
     {
@@ -129,6 +137,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L492-515
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadSavedFeedbackFilesPatch
     {
@@ -141,6 +150,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L522-526
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadFeedbackReplayFilePathPatch
     {
@@ -153,6 +163,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
             !ReplayRecorderUploadBlockHelper.TryBlockUpload(PrivacyRuntime.ShouldBlockReplayUpload(), ref __result);
     }
 
+    // game@0.3.1 Assembly-CSharp/ReluReplay.Recorder/ReplayRecorder.cs:L528-539
     [HarmonyPatch]
     internal static class BlockReplayRecorderUploadFeedbackReplayFileBytesPatch
     {

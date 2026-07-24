@@ -2,6 +2,8 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Privacy
 {
+    // game@0.3.1 Assembly-CSharp/APIRequestHandler.cs:L33,L37,L271-275
+    // game@0.3.1 Assembly-CSharp/Hub.cs:L520
     internal static class ReluTelemetryGate
     {
         private const string Feature = "Privacy";

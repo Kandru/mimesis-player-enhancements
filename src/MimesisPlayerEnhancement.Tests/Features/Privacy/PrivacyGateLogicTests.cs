@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Privacy
 {
     public sealed class PrivacyGateLogicTests
     {
-        private static PrivacySceneConfig Config(
+        private static PrivacyConfigSnapshot Config(
             bool masterEnabled = true,
             bool blockReluTelemetry = true,
             bool blockReplayUpload = true,

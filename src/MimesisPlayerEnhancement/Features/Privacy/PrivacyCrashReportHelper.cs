@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Privacy
 {
+    // UnityEngine.CrashReportHandler.CrashReportHandler (CrashReportHandlerModule)
     internal static class PrivacyCrashReportHelper
     {
         private static readonly Type? CrashReportHandlerType =

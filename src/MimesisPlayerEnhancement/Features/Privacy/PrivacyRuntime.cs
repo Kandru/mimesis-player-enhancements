@@ -96,7 +96,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
         private static void RefreshCache()
         {
-            PrivacyBlockFlags flags = PrivacyGateLogic.Compute(new PrivacySceneConfig(
+            PrivacyBlockFlags flags = PrivacyGateLogic.Compute(new PrivacyConfigSnapshot(
                 masterEnabled: ModConfig.IsInitialized && IsPrivacyEnabled,
                 blockReluTelemetry: ModConfig.BlockReluTelemetry.Value,
                 blockReplayUpload: ModConfig.BlockReplayUpload.Value,

@@ -1,8 +1,8 @@
 namespace MimesisPlayerEnhancement.Features.Privacy
 {
-    internal readonly struct PrivacySceneConfig
+    internal readonly struct PrivacyConfigSnapshot
     {
-        internal PrivacySceneConfig(
+        internal PrivacyConfigSnapshot(
             bool masterEnabled,
             bool blockReluTelemetry,
             bool blockReplayUpload,
@@ -68,7 +68,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy
 
     internal static class PrivacyGateLogic
     {
-        internal static PrivacyBlockFlags Compute(PrivacySceneConfig config) =>
+        internal static PrivacyBlockFlags Compute(PrivacyConfigSnapshot config) =>
             new(
                 blockReluTelemetry: config.MasterEnabled && config.BlockReluTelemetry,
                 blockReplayUpload: config.MasterEnabled && config.BlockReplayUpload,
