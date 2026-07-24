@@ -1,5 +1,3 @@
-using Mimic;
-
 namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyPatches
@@ -10,13 +8,10 @@ namespace MimesisPlayerEnhancement.Features.Economy
         {
             _ = GameNetworkApi.GetGameAssembly();
 
-            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
+            HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
                 HarmonyPatchHelper.GetNamespacePatchTypes(typeof(EconomyPatches)));
-
-            LogPatchAudit(harmony);
-            HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
 
         internal static void OnSessionEnded()
@@ -39,26 +34,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             {
                 MaintenanceShopApplier.RestoreVanillaPrices();
             }
-        }
-
-        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
-        {
-            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
-            [
-                ("set_Currency/IVroom", AccessTools.PropertySetter(typeof(IVroom), nameof(IVroom.Currency))),
-                ("InitMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.InitMaintenenceRoom))),
-                ("FinalPrice/ItemElement", AccessTools.PropertyGetter(typeof(ItemElement), nameof(ItemElement.FinalPrice))),
-                ("toItemInfo/ConsumableItemElement", AccessTools.Method(typeof(ConsumableItemElement), nameof(ConsumableItemElement.toItemInfo))),
-                ("toItemInfo/MiscellanyItemElement", AccessTools.Method(typeof(MiscellanyItemElement), nameof(MiscellanyItemElement.toItemInfo))),
-                ("GetNewItemElement/IVroom", AccessTools.Method(typeof(IVroom), nameof(IVroom.GetNewItemElement))),
-                ("TryGetShopItemPrice/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))),
-                ("InitShopItems/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))),
-                ("ApplyLoadedGameData/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ApplyLoadedGameData))),
-                ("OnEnterChannel/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnEnterChannel))),
-                ("OnRequestStartSession/MaintenanceRoom", AccessTools.Method(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnRequestStartSession))),
-                ("HandleReinforceItem/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.HandleReinforceItem))),
-                ("ReinforceCost/InventoryItem", AccessTools.PropertyGetter(typeof(InventoryItem), nameof(InventoryItem.ReinforceCost))),
-            ]);
         }
     }
 }

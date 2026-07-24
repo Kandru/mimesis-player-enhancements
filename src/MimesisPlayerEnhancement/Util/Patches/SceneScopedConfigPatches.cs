@@ -6,26 +6,10 @@ namespace MimesisPlayerEnhancement.Util.Patches
 
         public static void Apply(HarmonyLib.Harmony harmony)
         {
-            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
+            HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
                 HarmonyPatchHelper.GetNestedPatchTypes(typeof(SceneScopedConfigPatches)));
-
-            LogPatchAudit(harmony);
-            HarmonyPatchHelper.LogPatchSummary(Feature, result);
-        }
-
-        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
-        {
-            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
-            [
-                ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
-                ("EnterMaintenenceRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))),
-                ("EnterDungeon/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterDungeon))),
-                ("EnterDeathMatchRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterDeathMatchRoom))),
-                ("SetDungeonState/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "SetDungeonState")),
-                ("OnDungeonFinished/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))),
-            ]);
         }
 
         // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L372-409

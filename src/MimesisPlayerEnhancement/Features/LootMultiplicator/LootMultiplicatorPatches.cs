@@ -10,13 +10,10 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         {
             _ = GameNetworkApi.GetGameAssembly();
 
-            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
+            HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
                 HarmonyPatchHelper.GetNamespacePatchTypes(typeof(LootMultiplicatorPatches)));
-
-            LootMultiplicatorPatchHelpers.LogPatchAudit(harmony);
-            HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
 
         /// <summary>Called via FeatureModule.SyncFromConfig when the LootMultiplicator section changes.</summary>

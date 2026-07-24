@@ -84,19 +84,5 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator.Patches
             }
         }
 
-        internal static void LogPatchAudit(HarmonyLib.Harmony harmony)
-        {
-            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
-            [
-                ("InitSpawn/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "InitSpawn")),
-                ("ManageSpawnData/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "ManageSpawnData")),
-                ("GetDropItemList/ItemDropInfo", AccessTools.Method(typeof(ItemDropInfo), "GetDropItemList")),
-                ("ExecuteLootingObjectSpawn/IVroom", ResolveExecuteLootingObjectSpawnMethod()),
-                ("SpawnLootingObject/IVroom", ResolveSpawnLootingObjectMethod()),
-                ("OnActorDead/SpawnedActorData", AccessTools.Method(typeof(SpawnedActorData), "OnActorDead")),
-                ("BarterItem/InventoryController", AccessTools.Method(typeof(InventoryController), "BarterItem", [typeof(PosWithRot)])),
-                ("ExtractRoomInfo/DeathMatchRoom", AccessTools.Method(typeof(DeathMatchRoom), "ExtractRoomInfo", [typeof(bool)])),
-            ]);
-        }
     }
 }

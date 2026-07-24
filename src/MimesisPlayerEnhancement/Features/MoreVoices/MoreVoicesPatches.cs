@@ -24,13 +24,10 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ModLog.Warn(Feature, "ServerRpcBroadcastNewEventWithRemoval not found — hub sync may not apply");
             }
 
-            HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
+            HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
                 Feature,
                 HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MoreVoicesPatches)));
-
-            LogPatchAudit(harmony);
-            HarmonyPatchHelper.LogPatchSummary(Feature, result);
         }
 
         /// <summary>Updates voice limits on all live archives after config changes.</summary>
@@ -109,38 +106,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             {
                 ModLog.Debug(Feature, "Voice limit disable complete — no active archives to restore.");
             }
-        }
-
-        private static void LogPatchAudit(HarmonyLib.Harmony harmony)
-        {
-            HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
-            [
-                ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "OnStartClient")),
-                ("RemoveLowerValueEventsIfExceeded/SpeechEventArchive",
-                    AccessTools.Method(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")),
-                ("PickBestMatch/SpeechEventAdditionalGameData",
-                    AccessTools.Method(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))),
-                ("SetVoiceMode/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))),
-                ("EndPossessionToMimic/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.EndPossessionToMimic))),
-                ("EnterWaitingRoom/VRoomManager", AccessTools.Method(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))),
-                ("HandleLevelLoadComplete/VPlayer", AccessTools.Method(typeof(VPlayer), nameof(VPlayer.HandleLevelLoadComplete))),
-                ("AddEvent/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "AddEvent")),
-                ("OnSpeechEventRecorded/SpeechEventArchive",
-                    AccessTools.Method(typeof(SpeechEventArchive), "OnSpeechEventRecorded")),
-                ("GetWarmedUpSpeechEvents/SpeechEventArchive",
-                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.GetWarmedUpSpeechEvents))),
-                ("WarmedUpCount/SpeechEventArchive",
-                    AccessTools.PropertyGetter(typeof(SpeechEventArchive), nameof(SpeechEventArchive.WarmedUpCount))),
-                ("OnStopClient/SpeechEventArchive (voice cache)",
-                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))),
-                ("CreateAudioClip/SpeechEventArchive", SpeechEventArchivePatchSupport.CreateAudioClipMethod),
-                ("RpcLogic___ObserverRpcPlayOnActor/SpeechEventArchive", SpeechEventArchivePatchSupport.ObserverRpcPlayOnActorLogicMethod),
-                ("RpcLogic___ObserverRpcPlayOnNonMimicMonster/SpeechEventArchive", SpeechEventArchivePatchSupport.ObserverRpcPlayOnNonMimicLogicMethod),
-                ("GetAllDissonancePlayers/MimicVoiceSpawner",
-                    AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllDissonancePlayers")),
-                ("GetAllMimicActors/MimicVoiceSpawner",
-                    AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllMimicActors")),
-            ]);
         }
     }
 }
