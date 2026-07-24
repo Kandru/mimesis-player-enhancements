@@ -36,26 +36,26 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 
 | Section | Feature | Scope |
 |---------|---------|-------|
-| [Global](#global--mimesisplayerenhancement) | Debug logging | Local / all players |
-| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers | Local UI |
-| [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local client |
-| [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host |
-| [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host |
-| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host |
-| [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host |
-| [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host |
-| [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host |
-| [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host |
-| [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host |
-| [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host |
-| [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host |
-| [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host |
-| [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host |
-| [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host |
-| [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host |
-| [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host process |
+| [Global](#global--mimesisplayerenhancement) | Debug logging | Your game only |
+| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers | Your game only |
+| [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
+| [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host only |
+| [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host only |
+| [Persistence](#persistence--mimesisplayerenhancement_persistence) | Save mimic voices across load | Host only |
+| [Statistics](#statistics--mimesisplayerenhancement_statistics) | Per-save-game stats and leaderboard | Host only |
+| [Player Announcements](#player-announcements--mimesisplayerenhancement_playerannouncements) | Dungeon/boss/death messages | Host only |
+| [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host only |
+| [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host only |
+| [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host only |
+| [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host only |
+| [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host only |
+| [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host only |
+| [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host only |
+| [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host only |
+| [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host only |
+| [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host only |
 
-**Scope:** `Host` means only the host must enable the feature.
+**Host only:** only the host must enable it for the whole lobby to get the effect. **Your game only:** only affects your own game client; each player who wants it must enable it on their machine.
 
 ### Apply timing
 

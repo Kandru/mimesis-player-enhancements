@@ -6,7 +6,18 @@ Local presentation options that do not require other players to install the mod.
 
 ## Save picker
 
-`EnableExtendedSaveSlots` replaces the vanilla New/Load Tram flow with a unified scrollable save picker supporting up to 99 manual slots. When off, vanilla Tram menus return.
+Replaces the vanilla separate New Tram and Load Tram menus with one scrollable save picker. Use it when you want more than the game’s three manual saves (up to 99), plus autosave, without leaving the main menu flow.
+
+### `EnableExtendedSaveSlots`
+
+When on, the main-menu Host button opens the unified picker (manual slots 1–99, autosave slot 0). When off, the usual New/Load Tram menus come back. Slot count is fixed in the mod (not a separate setting). Your game only — not in per-save overrides. Changing the value applies on the next main-menu refresh (no game restart required); unset uses the default below.
+
+| Value | Meaning |
+|---|---|
+| `true` | Unified save picker; manual slots 1–99 |
+| `false` | Vanilla New/Load Tram (manual slots 1–3) |
+
+Default: `true`
 
 ## Spectator list
 

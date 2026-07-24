@@ -2,13 +2,13 @@
 
 ## Features
 
-| Feature | What it does | Who needs the mod? |
-|---------|--------------|-------------------|
+| Feature | What it does | Scope |
+|---------|--------------|-------|
 | [More Players](./features/more-players.md) | Play with larger groups beyond the four-player limit | Host only |
 | [More Voices](./features/more-voices.md) | Let mimics remember many more player voice lines | Host only |
 | [Persistence](./features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
 | [Join Anytime](./features/join-anytime.md) | Let friends join after you've already started | Host only |
-| [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration | Your game only |
+| [User Interface](./features/user-interface.md) | Extended save picker, HUD overlays, toast duration, and more | Your game only |
 | [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Your game only |
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [Statistics](./features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
@@ -23,7 +23,7 @@
 | [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
 | [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
 
-**Host only:** only the host must enable the feature. **Your game only:** local UI or client settings on your install only.
+**Host only:** only the host must enable it for the whole lobby to get the effect. **Your game only:** only affects your own game client; each player who wants it must enable it on their machine.
 
 ## Configuration
 
