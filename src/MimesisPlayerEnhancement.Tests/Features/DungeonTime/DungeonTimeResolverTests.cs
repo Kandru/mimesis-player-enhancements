@@ -115,5 +115,37 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
 
             Assert.Equal(5_000L, bonusMilliseconds);
         }
+
+        [Theory]
+        [InlineData(0, 10_000, 1d)]
+        [InlineData(600_000, 0, 1d)]
+        [InlineData(600_000, 20_000, 600_000d / 620_000d)]
+        [InlineData(100_000, 100_000, 0.5d)]
+        public void GetDisplayScale_maps_vanilla_remaining_over_extended(
+            long vanillaRemainingMs,
+            long bonusMs,
+            double expectedScale)
+        {
+            double scale = DungeonTimeResolver.GetDisplayScale(vanillaRemainingMs, bonusMs);
+
+            Assert.Equal(expectedScale, scale, 10);
+        }
+
+        [Theory]
+        [InlineData(1000, 600_000, 620_000, 967)]
+        [InlineData(1000, 100_000, 200_000, 500)]
+        [InlineData(1000, 600_000, 600_000, 1000)]
+        [InlineData(0, 600_000, 620_000, 0)]
+        [InlineData(1000, 0, 620_000, 1000)]
+        public void ScaleElapsedDelta_scales_or_passes_through(
+            long deltaMs,
+            long vanillaRemainingMs,
+            long extendedRemainingMs,
+            long expectedScaledDelta)
+        {
+            long scaled = DungeonTimeResolver.ScaleElapsedDelta(deltaMs, vanillaRemainingMs, extendedRemainingMs);
+
+            Assert.Equal(expectedScaledDelta, scaled);
+        }
     }
 }

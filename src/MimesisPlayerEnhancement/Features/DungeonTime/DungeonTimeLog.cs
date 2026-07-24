@@ -8,14 +8,16 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             int playerCount,
             long bonusMs,
             long newSessionEndTime,
+            long vanillaRemainingMs,
             DungeonTimeSceneConfig config)
         {
             double bonusSeconds = bonusMs / 1000d;
+            double displayScale = DungeonTimeResolver.GetDisplayScale(vanillaRemainingMs, bonusMs);
             ModLog.Info(
                 Feature,
                 $"Shift extended — players={playerCount}, baseline={config.DungeonTimeBaselinePlayerCount}, " +
                 $"+{bonusSeconds:0.##}s ({config.ExtraShiftSecondsPerPlayerAboveBaseline:0.##}s/player above baseline), " +
-                $"newSessionEndTime={newSessionEndTime}");
+                $"displayScale={displayScale:0.####}, newSessionEndTime={newSessionEndTime}");
         }
 
         internal static void DebugSkipped(string reason)

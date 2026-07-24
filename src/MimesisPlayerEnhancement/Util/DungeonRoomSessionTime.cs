@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Util
 {
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L33-35
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L33-37
     internal static class DungeonRoomSessionTime
     {
         // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L33
@@ -14,6 +14,11 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly FieldInfo CurrentTimeField =
             AccessTools.Field(typeof(DungeonRoom), "_currentTime")
             ?? throw new InvalidOperationException("DungeonRoom._currentTime not found");
+
+        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L37
+        private static readonly FieldInfo ElapsedTimeField =
+            AccessTools.Field(typeof(DungeonRoom), "_elapsedTime")
+            ?? throw new InvalidOperationException("DungeonRoom._elapsedTime not found");
 
         internal static bool TryGetRemainingMilliseconds(DungeonRoom room, out long remainingMs)
         {
@@ -41,6 +46,16 @@ namespace MimesisPlayerEnhancement.Util
             newEndTime = endTime + bonusMs;
             SessionEndTimeField.SetValue(room, newEndTime);
             return true;
+        }
+
+        internal static long GetElapsedMilliseconds(DungeonRoom room)
+        {
+            return (long)ElapsedTimeField.GetValue(room);
+        }
+
+        internal static void SetElapsedMilliseconds(DungeonRoom room, long elapsedMs)
+        {
+            ElapsedTimeField.SetValue(room, elapsedMs);
         }
     }
 }

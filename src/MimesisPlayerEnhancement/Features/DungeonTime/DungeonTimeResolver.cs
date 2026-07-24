@@ -22,5 +22,32 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         {
             return (long)(GetBonusSeconds(playerCount, config) * 1000d);
         }
+
+        /// <summary>
+        /// Real-time display-clock scale so Start→end still spans the extended shift:
+        /// vanillaRemaining / (vanillaRemaining + bonus).
+        /// </summary>
+        internal static double GetDisplayScale(long vanillaRemainingMs, long bonusMs)
+        {
+            if (vanillaRemainingMs <= 0 || bonusMs <= 0)
+            {
+                return 1d;
+            }
+
+            return (double)vanillaRemainingMs / (vanillaRemainingMs + bonusMs);
+        }
+
+        /// <summary>
+        /// Scales one OnUpdate delta for <c>_elapsedTime</c> while <c>_currentTime</c> stays real-time.
+        /// </summary>
+        internal static long ScaleElapsedDelta(long deltaMs, long vanillaRemainingMs, long extendedRemainingMs)
+        {
+            if (deltaMs <= 0 || vanillaRemainingMs <= 0 || extendedRemainingMs <= vanillaRemainingMs)
+            {
+                return deltaMs;
+            }
+
+            return deltaMs * vanillaRemainingMs / extendedRemainingMs;
+        }
     }
 }

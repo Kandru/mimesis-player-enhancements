@@ -24,6 +24,22 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         }
 
         [Fact]
+        public void DungeonRoom_OnUpdate_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type dungeonRoom = context.RequireType("DungeonRoom");
+
+            MethodInfo? method = dungeonRoom.GetMethod("OnUpdate", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.False(method.IsStatic);
+            Assert.Equal("Void", method.ReturnType.Name);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("Int64", parameters[0].ParameterType.Name);
+        }
+
+        [Fact]
         public void DungeonRoom_GetMemberCount_exists()
         {
             using MimesisMetadataContext context = CreateContext();
@@ -40,6 +56,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         [Theory]
         [InlineData("_sessionEndTime")]
         [InlineData("_currentTime")]
+        [InlineData("_elapsedTime")]
         public void DungeonRoom_session_time_fields_are_Int64(string fieldName)
         {
             using MimesisMetadataContext context = CreateContext();

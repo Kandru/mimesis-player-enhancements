@@ -2,6 +2,8 @@
 
 Extends the real dungeon shift clock when more players are present than a baseline. Only the host needs to turn this on; once enabled, everyone in the run gets the longer shift. Applied once when all members have entered the dungeon room. Useful so larger groups get a fairer window to finish a run.
 
+When time is extended, the host also slows the in-game day clock (tram/alarm, start→24:00) so that display day still fills the longer real shift instead of running past the usual end and counting up. Clients do not need the mod — they follow the host’s normal hourly time sync (no extra sub-hour syncs; those would fight client-side sky interpolation).
+
 ## Configuration
 
 Section: `[MimesisPlayerEnhancement_DungeonTime]`. Changes during an active gameplay scene are held until that scene ends (turning the feature **off** still applies immediately). Missing keys use the defaults below.

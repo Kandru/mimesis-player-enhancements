@@ -34,6 +34,14 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
+            if (!DungeonRoomSessionTime.TryGetRemainingMilliseconds(room, out long vanillaRemainingMs)
+                || vanillaRemainingMs <= 0)
+            {
+                DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
+                DungeonTimeLog.DebugSkipped("no remaining session time to scale");
+                return;
+            }
+
             if (!DungeonRoomSessionTime.TryExtendEndTime(room, bonusMs, out long newEndTime))
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
@@ -41,8 +49,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
+            DungeonTimeRuntime.ArmDisplayScale(room, vanillaRemainingMs, bonusMs);
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-            DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime, config);
+            DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime, vanillaRemainingMs, config);
         }
     }
 }
