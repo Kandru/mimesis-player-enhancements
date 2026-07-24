@@ -1,0 +1,41 @@
+name: Prune old releases
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/Version.cs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune old releases and tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: 3
+        run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+
+          mapfile -t all_tags < <(gh api "repos/${repo}/tags" --paginate -q '.[].name' | sort -V -r)
+          if ((${#all_tags[@]} <= KEEP)); then
+            echo "Only ${#all_tags[@]} tag(s) — nothing to prune."
+            exit 0
+          fi
+
+          keep=("${all_tags[@]:0:KEEP}")
+          delete=("${all_tags[@]:KEEP}")
+          echo "Keeping: ${keep[*]}"
+          echo "Deleting: ${delete[*]}"
+
+          for tag in "${delete[@]}"; do
+            gh release delete "$tag" --yes 2>/dev/null || true
+          done
+          for tag in "${delete[@]}"; do
+            gh api -X DELETE "repos/${repo}/git/refs/tags/${tag}"
+          done
