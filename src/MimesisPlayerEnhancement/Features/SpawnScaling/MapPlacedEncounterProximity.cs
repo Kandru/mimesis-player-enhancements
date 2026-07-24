@@ -51,6 +51,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return false;
             }
 
+            // game@0.3.1 Assembly-CSharp/IVroom.cs:L592-607
             List<(VActor actor, double distance)> playersInRange =
                 room.GetPlayerActorsInRange(spawnPos, 0f, minDistance, ignoreHeight: true);
 

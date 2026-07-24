@@ -8,13 +8,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnScalingRoomLookup
     {
+        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L79
         private static readonly FieldInfo DungeonSpaceGroupField =
             AccessTools.Field(typeof(DungeonRoom), "_dungeonSpaceGroup")
             ?? throw new InvalidOperationException("DungeonRoom._dungeonSpaceGroup not found");
 
+        // Optional legacy field; removed in 0.3.1.
         private static readonly FieldInfo? SpaceGroupField =
             AccessTools.Field(typeof(DungeonRoom), "_spaceGroup");
 
+        // game@0.3.1 Assembly-CSharp/VSpaceTileGroup.cs:L14
         private static readonly FieldInfo TilesField =
             AccessTools.Field(typeof(VSpaceTileGroup), "m_tiles")
             ?? throw new InvalidOperationException("VSpaceTileGroup.m_tiles not found");

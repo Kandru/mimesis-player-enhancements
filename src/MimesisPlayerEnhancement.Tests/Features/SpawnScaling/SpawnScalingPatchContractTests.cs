@@ -94,6 +94,25 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         }
 
         [Fact]
+        public void IVroom_GetPlayerActorsInRange_exists_with_expected_signature()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type ivroom = context.RequireType("IVroom");
+
+            MethodInfo? method = ivroom.GetMethods(InstanceMember)
+                .FirstOrDefault(candidate =>
+                    candidate.Name == "GetPlayerActorsInRange"
+                    && candidate.GetParameters().Length == 4
+                    && candidate.GetParameters()[0].ParameterType.Name == "Vector3"
+                    && candidate.GetParameters()[1].ParameterType.Name == "Single"
+                    && candidate.GetParameters()[2].ParameterType.Name == "Single"
+                    && candidate.GetParameters()[3].ParameterType.Name == "Boolean");
+
+            Assert.NotNull(method);
+            Assert.Equal("List`1", method.ReturnType.Name);
+        }
+
+        [Fact]
         public void DungeonRoom_SpecialMonsterSpawnGroup_nested_type_exists()
         {
             using MimesisMetadataContext context = CreateContext();

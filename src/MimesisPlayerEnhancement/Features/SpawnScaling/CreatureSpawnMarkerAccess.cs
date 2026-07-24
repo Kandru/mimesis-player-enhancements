@@ -11,9 +11,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         private static readonly PropertyInfo? HubDynamicDataManProperty =
             typeof(Hub).GetProperty("dynamicDataMan", InstanceFlags);
 
+        // game@0.3.1 Assembly-CSharp/DynamicDataManager.cs:L485-488
         private static readonly MethodInfo? GetAllMonsterSpawnPointsMethod =
             AccessTools.Method(typeof(DynamicDataManager), "GetAllMonsterSpawnPoints");
 
+        // game@0.3.1 Assembly-CSharp/DynamicDataManager.cs:L490-493
         private static readonly MethodInfo? GetAllSpecialMonsterSpawnPointsMethod =
             AccessTools.Method(typeof(DynamicDataManager), "GetAllSpecialMonsterSpawnPoints");
 

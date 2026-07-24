@@ -37,7 +37,7 @@ namespace MimesisPlayerEnhancement.Util
         private static bool _deferInfoLogged;
 
         private static Action<string>? _deferredModuleSyncAction;
-        private static Action? _dungeonRunEndCleanup;
+        private static readonly List<Action> DungeonRunEndCleanups = [];
 
         internal static SceneScopeKind ActiveKind => _activeKind;
 
@@ -56,14 +56,30 @@ namespace MimesisPlayerEnhancement.Util
             _deferredModuleSyncAction = syncAction;
         }
 
-        internal static void SetDungeonRunEndCleanup(Action? cleanup)
+        /// <summary>Registers a dungeon-run-end cleanup. Multiple features may subscribe; duplicates are ignored.</summary>
+        internal static void RegisterDungeonRunEndCleanup(Action cleanup)
         {
-            _dungeonRunEndCleanup = cleanup;
+            if (cleanup == null || DungeonRunEndCleanups.Contains(cleanup))
+            {
+                return;
+            }
+
+            DungeonRunEndCleanups.Add(cleanup);
         }
 
         internal static void InvokeDungeonRunEndCleanup()
         {
-            _dungeonRunEndCleanup?.Invoke();
+            for (int i = 0; i < DungeonRunEndCleanups.Count; i++)
+            {
+                try
+                {
+                    DungeonRunEndCleanups[i]();
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"Dungeon run end cleanup failed — {ex.Message}");
+                }
+            }
         }
 
         internal static void Initialize()

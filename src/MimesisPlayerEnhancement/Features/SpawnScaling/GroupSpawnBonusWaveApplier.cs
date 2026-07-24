@@ -16,7 +16,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            if (!TryFindRoomForGroup(groupData, out _, out RoomSpawnScalingState? state))
+            if (!TryFindRoomForGroup(groupData.GroupID, out _, out RoomSpawnScalingState? state))
             {
                 return;
             }
@@ -45,23 +45,20 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         }
 
         private static bool TryFindRoomForGroup(
-            GroupSpawnData groupData,
+            int groupId,
             out DungeonRoom room,
             out RoomSpawnScalingState state)
         {
             foreach (KeyValuePair<DungeonRoom, RoomSpawnScalingState> entry in RoomSpawnScalingRegistry.EnumerateAll())
             {
-                if (SpawnScalingFields.GroupSpawnDatasField.GetValue(entry.Key) is not System.Collections.IDictionary groups)
+                if (!entry.Value.TracksBonusGroup(groupId))
                 {
                     continue;
                 }
 
-                if (groups.Contains(groupData.GroupID))
-                {
-                    room = entry.Key;
-                    state = entry.Value;
-                    return true;
-                }
+                room = entry.Key;
+                state = entry.Value;
+                return true;
             }
 
             room = null!;

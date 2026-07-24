@@ -39,5 +39,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
             Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
             Assert.Null(bound.MaxValue);
         }
+
+        [Theory]
+        [InlineData("InitialPeriodicSpawnWaitSeconds")]
+        [InlineData("InitialPeriodicSpawnWaitMinSeconds")]
+        [InlineData("InitialPeriodicSpawnWaitMaxSeconds")]
+        [InlineData("PeriodicSpawnIntervalSeconds")]
+        [InlineData("PeriodicSpawnIntervalMinSeconds")]
+        [InlineData("PeriodicSpawnIntervalMaxSeconds")]
+        public void Periodic_spawn_wait_entries_have_minimum_zero(string entryId)
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, entryId, out ModConfigEntryBound bound));
+            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Null(bound.MaxValue);
+        }
     }
 }

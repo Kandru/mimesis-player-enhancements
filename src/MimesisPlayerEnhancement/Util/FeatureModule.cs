@@ -112,9 +112,13 @@ namespace MimesisPlayerEnhancement.Util
                 syncFromConfig: SpawnScalingPatches.RefreshFromConfig,
                 onUpdate: () =>
                 {
-                    if (ModConfig.EnableSpawnScaling.Value) { MapPlacedEncounterScheduler.ProcessPendingEncounters(); }
+                    if (SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+                    {
+                        MapPlacedEncounterScheduler.ProcessPendingEncounters();
+                    }
                 },
-                throttledUpdate: true),
+                throttledUpdate: true,
+                onSessionEnded: SpawnScalingPatches.OnSessionEnded),
             new FeatureModule("LootMultiplicator", LootMultiplicatorPatches.Apply,
                 syncFromConfig: LootMultiplicatorPatches.RefreshFromConfig,
                 onUpdate: () =>

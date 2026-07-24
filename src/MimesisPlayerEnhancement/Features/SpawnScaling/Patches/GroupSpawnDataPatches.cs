@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
 {
+    // game@0.3.1 Assembly-CSharp/GroupSpawnData.cs:L62-79
     [HarmonyPatch(typeof(GroupSpawnData), "OnMemberDead")]
     internal static class GroupSpawnDataOnMemberDeadPatch
     {

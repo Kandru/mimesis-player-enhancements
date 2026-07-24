@@ -20,6 +20,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
             typeof(ReasonOfSpawn),
         ];
 
+        // game@0.3.1 Assembly-CSharp/IVroom.cs:L3920-3930
         internal static MethodBase? ResolveSpawnMonsterMethod()
         {
             return AccessTools.Method(typeof(IVroom), "SpawnMonster", SpawnMonsterParameterTypes);

@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         public static void Apply(HarmonyLib.Harmony harmony)
         {
             _ = GameNetworkApi.GetGameAssembly();
-            SceneScopedConfigGate.SetDungeonRunEndCleanup(OnDungeonRunEnded);
+            SceneScopedConfigGate.RegisterDungeonRunEndCleanup(ResetRuntimeState);
 
             HarmonyPatchHelper.PatchApplyResult result = HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -25,11 +25,17 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         {
             if (!ModConfig.EnableSpawnScaling.Value)
             {
-                MapPlacedEncounterScheduler.ClearPendingEncounters();
+                ResetRuntimeState();
             }
         }
 
-        private static void OnDungeonRunEnded()
+        /// <summary>Called via FeatureModule.onSessionEnded.</summary>
+        public static void OnSessionEnded()
+        {
+            ResetRuntimeState();
+        }
+
+        internal static void ResetRuntimeState()
         {
             MapPlacedEncounterScheduler.ClearPendingEncounters();
             MapPlacedEncounterProximity.ClearCaches();
@@ -37,6 +43,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
+            // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L206-315
+            // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L317-534
+            // game@0.3.1 Assembly-CSharp/SpawnedActorData.cs:L136-140
+            // game@0.3.1 Assembly-CSharp/GroupSpawnData.cs:L62-79
+            // game@0.3.1 Assembly-CSharp/IVroom.cs:L3920-3930
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("InitSpawn/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "InitSpawn")),

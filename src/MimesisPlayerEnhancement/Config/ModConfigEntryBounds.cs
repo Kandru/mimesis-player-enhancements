@@ -88,6 +88,12 @@ namespace MimesisPlayerEnhancement
                 "SpecialSpawnMultiplier",
                 "TrapSpawnMultiplier",
                 "OtherSpawnMultiplier",
+                "InitialPeriodicSpawnWaitSeconds",
+                "InitialPeriodicSpawnWaitMinSeconds",
+                "InitialPeriodicSpawnWaitMaxSeconds",
+                "PeriodicSpawnIntervalSeconds",
+                "PeriodicSpawnIntervalMinSeconds",
+                "PeriodicSpawnIntervalMaxSeconds",
                 "MapPlacedEncounterDelayMinSeconds",
                 "MapPlacedEncounterDelayMaxSeconds",
                 "MapPlacedEncounterMinPlayerDistanceMeters");

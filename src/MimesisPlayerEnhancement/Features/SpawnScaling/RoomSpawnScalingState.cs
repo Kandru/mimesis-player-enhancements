@@ -115,6 +115,12 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return true;
         }
 
+        /// <summary>True when this room configured bonus waves for the group (including exhausted credits).</summary>
+        internal bool TracksBonusGroup(int groupId)
+        {
+            return _bonusGroupWavesByGroupId.ContainsKey(groupId);
+        }
+
         internal readonly struct EncounterSlot
         {
             internal EncounterSlot(int markerId, FixedSpawnedActorData data)

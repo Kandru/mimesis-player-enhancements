@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
 {
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L206-315
     [HarmonyPatch(typeof(DungeonRoom), "InitSpawn")]
     internal static class DungeonRoomInitSpawnPatch
     {
@@ -25,6 +26,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L317-534
     [HarmonyPatch(typeof(DungeonRoom), "ManageSpawnData")]
     internal static class DungeonRoomManageSpawnDataPatch
     {

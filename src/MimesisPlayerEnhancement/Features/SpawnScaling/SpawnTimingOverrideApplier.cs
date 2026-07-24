@@ -79,37 +79,22 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnTimingOverrides overrides = new()
             {
                 NormalMonsterSpawnTryCount = needsTryRateOverride && jakoMultiplier > 1f
-                    ? ScaleTimingCount(info.NormalMonsterSpawnTryCount, jakoMultiplier)
+                    ? SpawnTimingScaleResolver.ScaleTryCount(info.NormalMonsterSpawnTryCount, jakoMultiplier)
                     : info.NormalMonsterSpawnTryCount,
                 NormalMonsterSpawnRate = needsTryRateOverride && jakoMultiplier > 1f
-                    ? ScaleTimingRate(info.NormalMonsterSpawnRate, jakoMultiplier)
+                    ? SpawnTimingScaleResolver.ScaleRate(info.NormalMonsterSpawnRate, jakoMultiplier)
                     : info.NormalMonsterSpawnRate,
                 NormalMonsterSpawnPeriod = jakoPeriod,
                 MimicSpawnTryCount = needsTryRateOverride && mimicMultiplier > 1f
-                    ? ScaleTimingCount(info.MimicSpawnTryCount, mimicMultiplier)
+                    ? SpawnTimingScaleResolver.ScaleTryCount(info.MimicSpawnTryCount, mimicMultiplier)
                     : info.MimicSpawnTryCount,
                 MimicSpawnRate = needsTryRateOverride && mimicMultiplier > 1f
-                    ? ScaleTimingRate(info.MimicSpawnRate, mimicMultiplier)
+                    ? SpawnTimingScaleResolver.ScaleRate(info.MimicSpawnRate, mimicMultiplier)
                     : info.MimicSpawnRate,
                 MimicSpawnPeriod = mimicPeriod,
             };
 
             state.TimingOverrides = overrides;
-        }
-
-        private static int ScaleTimingCount(int vanilla, float multiplier)
-        {
-            return ScalingMath.ScaleCount(vanilla, multiplier);
-        }
-
-        private static int ScaleTimingRate(int vanilla, float multiplier)
-        {
-            if (vanilla <= 0 || multiplier <= 1f)
-            {
-                return vanilla;
-            }
-
-            return Math.Min(10000, (int)Math.Round(vanilla * multiplier));
         }
     }
 }
