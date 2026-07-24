@@ -4,6 +4,27 @@ namespace MimesisPlayerEnhancement.Features.Weather
     {
         private const string Feature = "Weather";
 
+        private static string? _cachedCsv;
+        private static List<string>? _cachedPresets;
+
+        internal static void InvalidateCache()
+        {
+            _cachedCsv = null;
+            _cachedPresets = null;
+        }
+
+        internal static IReadOnlyList<string> GetOrderedPresets(string? csv)
+        {
+            if (_cachedPresets != null && string.Equals(_cachedCsv, csv, StringComparison.Ordinal))
+            {
+                return _cachedPresets;
+            }
+
+            _cachedCsv = csv;
+            _cachedPresets = ParseOrderedPresets(csv);
+            return _cachedPresets;
+        }
+
         internal static List<string> ParseOrderedPresets(string? csv)
         {
             List<string> presets = [];

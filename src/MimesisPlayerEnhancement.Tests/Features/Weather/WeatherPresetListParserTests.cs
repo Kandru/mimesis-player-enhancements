@@ -39,5 +39,32 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
 
             Assert.Equal(["Sunny", "Rain"], presets);
         }
+
+        [Fact]
+        public void GetOrderedPresets_returns_cached_instance_for_same_csv()
+        {
+            WeatherPresetListParser.InvalidateCache();
+
+            IReadOnlyList<string> first = WeatherPresetListParser.GetOrderedPresets("Sunny,Rain");
+            IReadOnlyList<string> second = WeatherPresetListParser.GetOrderedPresets("Sunny,Rain");
+
+            Assert.Same(first, second);
+            Assert.Equal(["Sunny", "Rain"], first);
+        }
+
+        [Fact]
+        public void GetOrderedPresets_reparses_after_invalidate_or_csv_change()
+        {
+            WeatherPresetListParser.InvalidateCache();
+
+            IReadOnlyList<string> first = WeatherPresetListParser.GetOrderedPresets("Sunny,Rain");
+            WeatherPresetListParser.InvalidateCache();
+            IReadOnlyList<string> afterInvalidate = WeatherPresetListParser.GetOrderedPresets("Sunny,Rain");
+            IReadOnlyList<string> afterChange = WeatherPresetListParser.GetOrderedPresets("Rain,Squall");
+
+            Assert.NotSame(first, afterInvalidate);
+            Assert.Equal(["Sunny", "Rain"], afterInvalidate);
+            Assert.Equal(["Rain", "Squall"], afterChange);
+        }
     }
 }

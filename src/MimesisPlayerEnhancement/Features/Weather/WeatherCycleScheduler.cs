@@ -22,7 +22,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return;
             }
 
-            List<string> presets = WeatherPresetListParser.ParseOrderedPresets(ModConfig.WeatherCyclePresets.Value);
+            IReadOnlyList<string> presets = WeatherPresetListParser.GetOrderedPresets(ModConfig.WeatherCyclePresets.Value);
             if (presets.Count == 0)
             {
                 Stop(room);
@@ -51,7 +51,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return;
             }
 
-            List<string> presets = WeatherPresetListParser.ParseOrderedPresets(ModConfig.WeatherCyclePresets.Value);
+            IReadOnlyList<string> presets = WeatherPresetListParser.GetOrderedPresets(ModConfig.WeatherCyclePresets.Value);
             long nowMs = GameSessionAccess.TryGetTimeUtil()?.GetCurrentTickMilliSec() ?? 0;
             foreach (KeyValuePair<DungeonRoom, WeatherRoomState> entry in WeatherRoomAccess.RoomStates.EnumerateAll())
             {
@@ -81,7 +81,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
         private static void ApplyCurrentCycleStep(
             DungeonRoom room,
             WeatherRoomState state,
-            List<string> presets,
+            IReadOnlyList<string> presets,
             bool scheduleNext)
         {
             if (presets.Count == 0)
@@ -121,3 +121,4 @@ namespace MimesisPlayerEnhancement.Features.Weather
         }
     }
 }
+

@@ -25,9 +25,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
 
     internal static class WeatherRoomAccess
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly FieldInfo WeatherField =
             AccessTools.Field(typeof(DungeonRoom), "_weather")
             ?? throw new InvalidOperationException("DungeonRoom._weather not found");
@@ -74,10 +71,18 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal static DungeonMasterInfo? GetDungeonMasterInfo(DungeonRoom room) =>
             DungeonMasterInfoField.GetValue(room) as DungeonMasterInfo;
 
-        internal static bool IsPlaying(DungeonRoom room)
+        internal static bool IsPlaying(DungeonRoom room) =>
+            StateField.GetValue(room) is DungeonState.OnPlaying;
+
+        internal static void ApplySchedule(
+            DungeonWeather weather,
+            List<int> weatherByHour,
+            List<bool> forecastByHour,
+            bool isRandomOccured)
         {
-            object? state = StateField.GetValue(room);
-            return state != null && state.ToString() == "OnPlaying";
+            WeatherByHourField.SetValue(weather, weatherByHour);
+            WeatherForecastByHourField.SetValue(weather, forecastByHour);
+            IsRandomOccuredField.SetValue(weather, isRandomOccured);
         }
 
         internal static void ResetPrevSyncTime(DungeonRoom room) =>
@@ -147,9 +152,11 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return;
             }
 
-            WeatherByHourField.SetValue(weather, new List<int>(snapshot.WeatherByHour));
-            WeatherForecastByHourField.SetValue(weather, new List<bool>(snapshot.WeatherForecastByHour));
-            IsRandomOccuredField.SetValue(weather, snapshot.IsRandomOccured);
+            ApplySchedule(
+                weather,
+                new List<int>(snapshot.WeatherByHour),
+                new List<bool>(snapshot.WeatherForecastByHour),
+                snapshot.IsRandomOccured);
             ResetPrevSyncTime(room);
         }
     }

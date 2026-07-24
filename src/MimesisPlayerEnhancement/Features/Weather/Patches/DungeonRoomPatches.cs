@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Weather.Patches
 {
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L100-119
     [HarmonyPatch(typeof(DungeonRoom), MethodType.Constructor, [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty)])]
     internal static class DungeonRoomConstructorPatch
     {
@@ -33,6 +34,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L1018-1021
     [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
     internal static class DungeonRoomOnAllMemberEnteredPatch
     {
@@ -52,6 +54,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L871-876
     [HarmonyPatch(typeof(DungeonRoom), "GetCurrentTime")]
     internal static class DungeonRoomGetCurrentTimePatch
     {
@@ -62,7 +65,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         {
             try
             {
-                if (!WeatherTimeResolver.UsesOverrideStartTime())
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => WeatherTimeResolver.UsesOverrideStartTime()))
                 {
                     return;
                 }
@@ -76,6 +79,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L705-748
     [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
     internal static class DungeonRoomOnUpdatePatch
     {
@@ -83,8 +87,9 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
 
         // Runs every dungeon frame — only when start-time override or realtime tram clock can run.
         private static bool IsContextNeeded =>
-            WeatherTimeResolver.UsesOverrideStartTime()
-            || (WeatherResolver.IsFeatureEnabled && ModConfig.EnableRealtimeTramClock.Value);
+            HostApplyGate.ShouldApplyHostOnlyFeature(() =>
+                WeatherTimeResolver.UsesOverrideStartTime()
+                || (WeatherResolver.IsFeatureEnabled && ModConfig.EnableRealtimeTramClock.Value));
 
         [HarmonyPrefix]
         public static void Prefix(DungeonRoom __instance)
@@ -116,6 +121,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L607-617
     [HarmonyPatch(typeof(DungeonRoom), "SetDungeonState")]
     internal static class DungeonRoomSetDungeonStatePatch
     {

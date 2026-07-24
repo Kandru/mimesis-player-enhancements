@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace MimesisPlayerEnhancement.Features.Weather
 {
@@ -29,10 +28,8 @@ namespace MimesisPlayerEnhancement.Features.Weather
             try
             {
                 List<int> rebuiltHours = BuildNonRandomSchedule(contaInfo, randomSeed, overrideDefaultWeatherId);
-                List<bool> rebuiltForecast = Enumerable.Repeat(false, 24).ToList();
-                AccessTools.Field(typeof(DungeonWeather), "_weatherByHour")?.SetValue(weather, rebuiltHours);
-                AccessTools.Field(typeof(DungeonWeather), "_weatherForecastByHour")?.SetValue(weather, rebuiltForecast);
-                AccessTools.Field(typeof(DungeonWeather), "_isRandomOccured")?.SetValue(weather, false);
+                List<bool> rebuiltForecast = new(new bool[24]);
+                WeatherRoomAccess.ApplySchedule(weather, rebuiltHours, rebuiltForecast, isRandomOccured: false);
             }
             catch (Exception ex)
             {
@@ -48,7 +45,12 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 defaultWeatherId = overrideDefaultWeatherId;
             }
 
-            List<int> weatherByHour = Enumerable.Repeat(defaultWeatherId, 24).ToList();
+            List<int> weatherByHour = new(24);
+            for (int i = 0; i < 24; i++)
+            {
+                weatherByHour.Add(defaultWeatherId);
+            }
+
             Random random = new(randomSeed);
             ImmutableArray<WeatherTimeInfo>.Enumerator enumerator = contaInfo.WeatherChanges.GetEnumerator();
             while (enumerator.MoveNext())

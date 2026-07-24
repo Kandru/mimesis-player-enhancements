@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Weather.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VWorldUtil.cs:L102-109
     [HarmonyPatch(typeof(VWorldUtil), nameof(VWorldUtil.ConvertTimeToSeconds), [typeof(string)])]
     internal static class VWorldUtilConvertTimeToSecondsPatch
     {
@@ -15,7 +16,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
                     return;
                 }
 
-                if (!WeatherTimeResolver.UsesOverrideStartTime())
+                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => WeatherTimeResolver.UsesOverrideStartTime()))
                 {
                     return;
                 }
