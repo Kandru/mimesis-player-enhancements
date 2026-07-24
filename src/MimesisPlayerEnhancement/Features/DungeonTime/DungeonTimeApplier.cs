@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             }
 
             int playerCount = room.GetMemberCount();
-            long bonusMs = (long)(DungeonTimeResolver.GetBonusSeconds(playerCount, config) * 1000d);
+            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
             if (bonusMs <= 0)
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);

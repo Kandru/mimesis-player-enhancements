@@ -6,35 +6,36 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
     public sealed class MimicTuningModeHelpersTests
     {
         [Theory]
-        [InlineData("Fixed", MimicTuningValueMode.Fixed)]
-        [InlineData("Random", MimicTuningValueMode.Random)]
-        [InlineData("Vanilla", MimicTuningValueMode.Vanilla)]
-        [InlineData(null, MimicTuningValueMode.Vanilla)]
-        public void ParseValueMode_maps_values(string? value, MimicTuningValueMode expected)
+        [InlineData("Fixed", "Fixed")]
+        [InlineData("Random", "Random")]
+        [InlineData("Vanilla", "Vanilla")]
+        [InlineData(null, "Vanilla")]
+        public void ParseValueMode_maps_values(string? value, string expected)
         {
-            Assert.Equal(expected, MimicTuningModeHelpers.ParseValueMode(value));
+            Assert.Equal(expected, MimicTuningModeHelpers.ParseValueMode(value).ToString());
         }
 
         [Theory]
-        [InlineData("Random", MimicTuningIntervalMode.Random)]
-        [InlineData("Vanilla", MimicTuningIntervalMode.Vanilla)]
-        public void ParseIntervalMode_maps_values(string? value, MimicTuningIntervalMode expected)
+        [InlineData("Random", "Random")]
+        [InlineData("Vanilla", "Vanilla")]
+        public void ParseIntervalMode_maps_values(string? value, string expected)
         {
-            Assert.Equal(expected, MimicTuningModeHelpers.ParseIntervalMode(value));
+            Assert.Equal(expected, MimicTuningModeHelpers.ParseIntervalMode(value).ToString());
         }
 
         [Theory]
-        [InlineData(MimicTuningValueMode.Vanilla, 50f, 80f, 10f, 20f, 50f)]
-        [InlineData(MimicTuningValueMode.Fixed, 50f, 80f, 10f, 20f, 80f)]
-        [InlineData(MimicTuningValueMode.Random, 50f, 80f, 70f, 70f, 70f)]
+        [InlineData("Vanilla", 50f, 80f, 10f, 20f, 50f)]
+        [InlineData("Fixed", 50f, 80f, 10f, 20f, 80f)]
+        [InlineData("Random", 50f, 80f, 70f, 70f, 70f)]
         public void ResolveTrustScore_returns_expected_points(
-            MimicTuningValueMode mode,
+            string modeName,
             float vanilla,
             float fixedValue,
             float randomMin,
             float randomMax,
             float expected)
         {
+            MimicTuningValueMode mode = MimicTuningModeHelpers.ParseValueMode(modeName);
             float result = MimicTuningModeHelpers.ResolveTrustScore(
                 mode,
                 vanilla,

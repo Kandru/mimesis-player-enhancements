@@ -72,14 +72,48 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         [InlineData(5, 10_000L)]
         [InlineData(6, 20_000L)]
         [InlineData(8, 40_000L)]
-        public void Bonus_milliseconds_match_applier_conversion(int playerCount, long expectedMilliseconds)
+        public void GetBonusMilliseconds_matches_seconds_conversion(int playerCount, long expectedMilliseconds)
         {
             DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 10f);
 
-            double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount, config);
-            long bonusMilliseconds = (long)(bonusSeconds * 1000d);
+            long bonusMilliseconds = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
 
             Assert.Equal(expectedMilliseconds, bonusMilliseconds);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(4)]
+        [InlineData(8)]
+        public void GetBonusMilliseconds_returns_zero_when_feature_disabled(int playerCount)
+        {
+            DungeonTimeSceneConfig config = Config(false, baseline: 4, extraPerPlayer: 10f);
+
+            long bonusMilliseconds = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
+
+            Assert.Equal(0L, bonusMilliseconds);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(4)]
+        public void GetBonusMilliseconds_returns_zero_when_player_count_at_or_below_baseline(int playerCount)
+        {
+            DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 10f);
+
+            long bonusMilliseconds = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
+
+            Assert.Equal(0L, bonusMilliseconds);
+        }
+
+        [Fact]
+        public void GetBonusMilliseconds_supports_fractional_extra_seconds_per_player()
+        {
+            DungeonTimeSceneConfig config = Config(true, baseline: 1, extraPerPlayer: 2.5f);
+
+            long bonusMilliseconds = DungeonTimeResolver.GetBonusMilliseconds(playerCount: 3, config);
+
+            Assert.Equal(5_000L, bonusMilliseconds);
         }
     }
 }

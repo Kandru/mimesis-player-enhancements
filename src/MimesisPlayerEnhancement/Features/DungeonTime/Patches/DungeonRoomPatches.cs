@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
 {
+    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L1018-1021
     [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
     internal static class DungeonRoomOnAllMemberEnteredPatch
     {

@@ -2,11 +2,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal static class DungeonTimeResolver
     {
-        internal static double GetBonusSeconds(int playerCount)
-        {
-            return GetBonusSeconds(playerCount, SceneScopedConfigGate.DungeonTime);
-        }
-
         internal static double GetBonusSeconds(int playerCount, DungeonTimeSceneConfig config)
         {
             if (!config.EnableDungeonTime)
@@ -23,9 +18,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             return (playerCount - baseline) * config.ExtraShiftSecondsPerPlayerAboveBaseline;
         }
 
-        internal static long GetBonusMilliseconds(int playerCount)
+        internal static long GetBonusMilliseconds(int playerCount, DungeonTimeSceneConfig config)
         {
-            return (long)(GetBonusSeconds(playerCount) * 1000d);
+            return (long)(GetBonusSeconds(playerCount, config) * 1000d);
         }
     }
 }

@@ -19,6 +19,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
         {
+            // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L1018-1021
             HarmonyPatchHelper.LogPatchAudit(Feature, harmony,
             [
                 ("OnAllMemberEntered/DungeonRoom", AccessTools.Method(typeof(DungeonRoom), "OnAllMemberEntered")),
