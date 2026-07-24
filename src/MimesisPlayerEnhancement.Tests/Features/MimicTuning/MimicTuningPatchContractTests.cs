@@ -254,6 +254,55 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             Assert.Equal("Int32", field.FieldType.Name);
         }
 
+        [Fact]
+        public void AIController_PlayMimicRandomHorn_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("AIController");
+
+            MethodInfo? method = type.GetMethod("PlayMimicRandomHorn", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Single", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void DLDecisionAgent_OnEnable_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("DLDecisionAgent");
+
+            MethodInfo? method = type.GetMethod("OnEnable", InstanceMember);
+
+            Assert.NotNull(method);
+        }
+
+        [Fact]
+        public void PossessionController_IsPossessable_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("PossessionController");
+
+            MethodInfo? method = type.GetMethod("IsPossessable", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Boolean", method.ReturnType.Name);
+        }
+
+        [Theory]
+        [InlineData("_trustScoreInitial")]
+        [InlineData("_mimicRunawayProb")]
+        [InlineData("_chaseModeActivationDistance")]
+        public void DLDecisionAgent_tuning_fields_exist(string fieldName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("DLDecisionAgent");
+
+            FieldInfo? field = type.GetField(fieldName, InstanceMember);
+
+            Assert.NotNull(field);
+        }
+
         private static MimesisMetadataContext CreateContext()
         {
             string managedPath = ManagedAssemblyPaths.Resolve();

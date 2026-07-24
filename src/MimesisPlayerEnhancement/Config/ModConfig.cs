@@ -136,6 +136,69 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> MimicInventoryCopyMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> MimicInventoryCopyPickRule { get; internal set; } = null!;
 
+        public static MelonPreferences_Entry<float> ClipReuseCooldownSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DeathMatchClipReuseCooldownSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> SpeakAudienceRangeMeters { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> PostReplyIntervalMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PostReplyIntervalFixedSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PostReplyIntervalMinSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> PostReplyIntervalMaxSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> MinRequiredSpeechClips { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> HearOwnVoiceFromMimic { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> VoiceInitIntervalMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoiceInitIntervalMin { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoiceInitIntervalMax { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> VoicePeriodicIntervalMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoicePeriodicIntervalMin { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoicePeriodicIntervalMax { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> VoiceDeathMatchIntervalMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoiceDeathMatchIntervalMin { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoiceDeathMatchIntervalMax { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<string> MimicTrustMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustOutdoorMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustLookingDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustNotLookingDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustApproachDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustMaintainDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustWalkAwayDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustSprintAwayDelta { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustHitDamageMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustFriendlyThreshold { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustDistrustThreshold { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> TrustScoreValueMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustInitialFixed { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustInitialRandomMin { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustInitialRandomMax { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustBehaviorFixed { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustBehaviorRandomMin { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrustBehaviorRandomMax { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> ChaseActivationDistanceMeters { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> ChaseForceRunDistanceMeters { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<string> MimicSocialMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> MimicRunawayChance { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> JumpCopyChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> SlotFollowChangeChancePercent { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<float> PossessionRangeMeters { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> PossessionBtGateMode { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<string> MimicEmotePropsMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> EmoteRespondChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> EmoteSuggestChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> ReactToSprinklerChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> UseTrapSwitchChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> UseChargerChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> UseTransmitterChancePercent { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> UseShutterSwitchChancePercent { get; internal set; } = null!;
+
+        public static MelonPreferences_Entry<string> HornImitationMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> AllowHornImitation { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> HornMaxRecordSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> HornRecordingGapSeconds { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> HornMaxStoredRecords { get; internal set; } = null!;
+
         public static MelonPreferences_Entry<bool> EnablePlayerTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MoveSpeedMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> NoClipSpeedMultiplier { get; internal set; } = null!;

@@ -70,5 +70,35 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             Assert.Equal("0", bound.MinValue);
             Assert.Equal("100", bound.MaxValue);
         }
+
+        [Fact]
+        public void MimicRunawayChance_allows_zero_through_one()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "MimicRunawayChance", out ModConfigEntryBound bound));
+            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal(1f, float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData("TrustInitialFixed")]
+        [InlineData("TrustBehaviorFixed")]
+        public void Trust_score_fields_use_0_through_100(string key)
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, key, out ModConfigEntryBound bound));
+            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal(100f, float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void PossessionRangeMeters_uses_resolver_bounds()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "PossessionRangeMeters", out ModConfigEntryBound bound));
+            Assert.Equal(
+                MimicPossessionResolver.MinPossessionRangeMeters,
+                float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal(
+                MimicPossessionResolver.MaxPossessionRangeMeters,
+                float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
+        }
     }
 }

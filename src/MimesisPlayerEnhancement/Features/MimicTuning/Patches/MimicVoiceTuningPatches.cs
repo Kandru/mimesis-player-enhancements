@@ -1,6 +1,11 @@
 using System.Collections;
 using System.Reflection;
 using System.Reflection.Emit;
+using Mimic.Voice;
+using Mimic.Voice.SpeechSystem;
+using MimesisPlayerEnhancement.Features.MimicTuning.MimicVoiceTuning;
+using ReluProtocol.Enum;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
 {
@@ -127,6 +132,23 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             }
         }
 
+        [HarmonyPatch(typeof(MimicVoiceSpawner), "Awake")]
+        internal static class MimicVoiceSpawnerAwakePostfix
+        {
+            [HarmonyPostfix]
+            internal static void Postfix(MimicVoiceSpawner __instance)
+            {
+                try
+                {
+                    MimicVoiceTuningPatchSupport.ApplyMinRequiredSpeechs(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"MimicVoiceSpawner Awake postfix failed — {ex.Message}");
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(MimicVoiceSpawner), nameof(MimicVoiceSpawner.PrepareNearbyMimicReplies))]
         internal static class PrepareNearbyMimicRepliesTranspiler
         {
@@ -151,20 +173,128 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
             }
         }
 
+        [HarmonyPatch(typeof(MimicVoiceSpawner), "TryPickHeuristicSpeechEvent")]
+        internal static class TryPickHeuristicSpeechEventTranspiler
+        {
+            [HarmonyTranspiler]
+            internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                if (MimicVoiceTuningPatchSupport.GetSpeakAudienceRangeMetersMethod == null)
+                {
+                    return instructions;
+                }
+
+                List<CodeInstruction> codes = [.. instructions];
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    if (codes[i].opcode == OpCodes.Ldc_R4 && codes[i].operand is float value && Math.Abs(value - 15f) < 0.0001f)
+                    {
+                        codes[i] = new CodeInstruction(
+                            OpCodes.Call,
+                            MimicVoiceTuningPatchSupport.GetSpeakAudienceRangeMetersMethod);
+                    }
+                }
+
+                return codes;
+            }
+        }
+
+        [HarmonyPatch(typeof(SpeechEventArchive), "ObserverRpcPlayOnActor")]
+        internal static class ObserverRpcPlayOnActorMutePrefix
+        {
+            [HarmonyPrefix]
+            internal static void Prefix(ref bool muteLocalPlayerVoice)
+            {
+                try
+                {
+                    muteLocalPlayerVoice = MimicVoiceTuningResolver.ResolveMuteLocalPlayerVoice(muteLocalPlayerVoice);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"ObserverRpcPlayOnActor mute prefix failed — {ex.Message}");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(MimicVoiceSpawner), "AddOrRemoveContexts")]
+        internal static class AddOrRemoveContextsPostfix
+        {
+            [HarmonyPostfix]
+            internal static void Postfix(MimicVoiceSpawner __instance)
+            {
+                try
+                {
+                    MimicVoiceTuningInitIntervalApplier.ApplyToSpawner(__instance);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"AddOrRemoveContexts postfix failed — {ex.Message}");
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(MimicVoiceSpawner), "PickRandomInterval")]
         internal static class PickRandomIntervalPatch
         {
-            [HarmonyPostfix]
-            internal static void Postfix(ref float __result)
+            [HarmonyPrefix]
+            internal static bool Prefix(
+                bool periodic,
+                MMMimicMonsterTable.Row monsterTableRow,
+                SpeechType_Area speechType_Area,
+                ref float __result)
             {
                 try
                 {
                     if (!MimicVoiceTuningResolver.ShouldApplyCustom)
                     {
+                        return true;
+                    }
+
+                    if (!periodic)
+                    {
+                        if (MimicVoiceTuningResolver.TryResolvePostReplyIntervalSeconds(out float postReplySeconds))
+                        {
+                            __result = postReplySeconds;
+                            return false;
+                        }
+
+                        return true;
+                    }
+
+                    if (MimicVoiceTuningPatchSupport.IsDeathMatchArea(speechType_Area)
+                        && MimicVoiceTuningResolver.TryResolveDeathMatchIntervalSeconds(out float deathMatchSeconds))
+                    {
+                        __result = Mathf.Max(0f, deathMatchSeconds);
+                        return false;
+                    }
+
+                    if (!MimicVoiceTuningPatchSupport.IsDeathMatchArea(speechType_Area)
+                        && MimicVoiceTuningResolver.TryResolvePeriodicIntervalSeconds(out float periodicSeconds))
+                    {
+                        __result = Mathf.Max(0f, periodicSeconds);
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"PickRandomInterval prefix failed — {ex.Message}");
+                    return true;
+                }
+            }
+
+            [HarmonyPostfix]
+            internal static void Postfix(bool periodic, ref float __result)
+            {
+                try
+                {
+                    if (!periodic || !MimicVoiceTuningResolver.ShouldApplyCustom)
+                    {
                         return;
                     }
 
-                    __result = MimicVoiceTuningResolver.ScaleIntervalSeconds(__result);
+                    __result = MimicVoiceTuningResolver.ScalePeriodicIntervalSeconds(__result);
                 }
                 catch (Exception ex)
                 {
@@ -174,7 +304,24 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         }
 
         [HarmonyPatch(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))]
-        internal static class PickBestMatchPatch
+        internal static class PickBestMatchTranspiler
+        {
+            [HarmonyTranspiler]
+            internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                IEnumerable<CodeInstruction> codes = ReplaceStaticIntervalField(
+                    instructions,
+                    MimicVoiceTuningPatchSupport.PlayTimeIntervalField,
+                    MimicVoiceTuningPatchSupport.GetClipReuseCooldownSecondsMethod);
+                return ReplaceStaticIntervalField(
+                    codes,
+                    MimicVoiceTuningPatchSupport.DeathMatchPlayTimeIntervalField,
+                    MimicVoiceTuningPatchSupport.GetDeathMatchClipReuseCooldownSecondsMethod);
+            }
+        }
+
+        [HarmonyPatch(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))]
+        internal static class PickBestMatchPostfix
         {
             [HarmonyPostfix]
             internal static void Postfix(
@@ -241,6 +388,28 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                     ModLog.Warn(Feature, $"SpawnPreparedMimicVoice postfix failed — {ex.Message}");
                 }
             }
+        }
+
+        private static IEnumerable<CodeInstruction> ReplaceStaticIntervalField(
+            IEnumerable<CodeInstruction> instructions,
+            FieldInfo? field,
+            MethodInfo? replacementMethod)
+        {
+            if (field == null || replacementMethod == null)
+            {
+                return instructions;
+            }
+
+            List<CodeInstruction> codes = [.. instructions];
+            for (int i = 0; i < codes.Count; i++)
+            {
+                if (codes[i].opcode == OpCodes.Ldsfld && ReferenceEquals(codes[i].operand, field))
+                {
+                    codes[i] = new CodeInstruction(OpCodes.Call, replacementMethod);
+                }
+            }
+
+            return codes;
         }
     }
 }

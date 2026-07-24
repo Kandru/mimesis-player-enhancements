@@ -1,5 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.7.20
+- draft: expose new Mimic tuning options since game version 0.3.1
+
 ## 26.7.19
 Fast update for Mimesis v0.3.1 - literally untested!!! In case of any errors please report them via Github :)
 

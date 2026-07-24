@@ -374,82 +374,362 @@
     },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic-Tuning",
-      "_description": "Passe Mimic-Stimme, Inventar-Kopie und Besitz-Timing an. Nur Host.",
+      "_description": "Passe Mimic-Stimme, Vertrauen, soziales Verhalten, Inventar, Besitz, Emotes und Horn-Nachahmung an. Nur Host.",
       "_groups": {
-        "mimicPossession": "Mimic-Übernahme"
+        "mimicVoice": "Stimme",
+        "mimicTrust": "Vertrauen & Verfolgung",
+        "mimicSocial": "Soziales Verhalten",
+        "mimicPossession": "Mimic-Besitz",
+        "mimicEmoteProps": "Emotes & Requisiten",
+        "mimicHorn": "Horn-Nachahmung"
       },
       "EnableMimicTuning": {
         "title": "Mimic-Tuning aktivieren",
-        "description": "Stimme, Inventar-Kopie und Besitz-Timing anpassen. Nur Host."
+        "description": "Hauptschalter für alle Mimic-Tuning-Gruppen. Nur Host."
       },
       "MimicVoiceTuningMode": {
-        "title": "Stimm-Modus",
-        "description": "Vanilla behält Spiel-Timing. Custom nutzt die Einstellungen unten.",
+        "title": "Voice Tuning Mode",
+        "description": "Vanilla keeps game voice timing. Custom uses the voice settings below.",
         "options": {
           "Vanilla": "Vanilla",
           "Custom": "Custom"
         }
       },
       "PeriodicVoiceIntervalMultiplier": {
-        "title": "Stimm-Intervall-Multiplikator",
-        "description": "Nur Custom: wie oft Mimics zwischen Zeilen sprechen (1 = Vanilla, 0,5 ≈ doppelt so oft)."
+        "title": "Ambient Interval Multiplier",
+        "description": "Custom only: scales periodic ambient waits between lines (1 = vanilla). Does not affect post-reply delays."
       },
       "PlayerVoiceResponseChancePercent": {
-        "title": "Antwort-Chance (%)",
-        "description": "Nur Custom: Chance, dass ein Mimic eine Spielerzeile wiederholt (0–100)."
+        "title": "Voice Response Chance (%)",
+        "description": "Custom only: chance a nearby mimic repeats a player line after they speak."
       },
       "PlayerVoiceResponseCooldownSeconds": {
-        "title": "Antwort-Abklingzeit (Sekunden)",
-        "description": "Nur Custom: Mindestsekunden zwischen Mimic-Antworten (Vanilla ist 3)."
+        "title": "Voice Response Cooldown (seconds)",
+        "description": "Custom only: minimum seconds between mimic replies when you speak."
       },
       "PlayerVoiceResponseDelayMinSeconds": {
-        "title": "Antwort-Verzögerung Min (Sekunden)",
-        "description": "Nur Custom: kürzeste Pause vor einer Mimic-Antwort."
+        "title": "Voice Response Delay Min (seconds)",
+        "description": "Custom only: shortest pause before a mimic replies to your speech."
       },
       "PlayerVoiceResponseDelayMaxSeconds": {
-        "title": "Antwort-Verzögerung Max (Sekunden)",
-        "description": "Nur Custom: längste Pause vor einer Mimic-Antwort. Muss ≥ Min sein."
+        "title": "Voice Response Delay Max (seconds)",
+        "description": "Custom only: longest pause before a mimic replies. Must be ≥ min."
       },
       "PlayerVoiceResponseMaxDistance": {
-        "title": "Antwort-Reichweite (m)",
-        "description": "Nur Custom: wie weit Mimics hören und reagieren (Vanilla ist 20)."
+        "title": "Voice Response Range (m)",
+        "description": "Custom only: how far mimics can hear and answer when you speak (vanilla 20)."
+      },
+      "ClipReuseCooldownSeconds": {
+        "title": "Clip Reuse Cooldown (seconds)",
+        "description": "Custom only: seconds before the same voice clip can play again (vanilla 60)."
+      },
+      "DeathMatchClipReuseCooldownSeconds": {
+        "title": "DM Clip Reuse Cooldown (seconds)",
+        "description": "Custom only: clip reuse cooldown in deathmatch areas (vanilla 3)."
+      },
+      "SpeakAudienceRangeMeters": {
+        "title": "Ambient Audience Range (m)",
+        "description": "Custom only: a player must be within this range before a mimic speaks on its own (vanilla 15)."
+      },
+      "PostReplyIntervalMode": {
+        "title": "Post-Reply Wait Mode",
+        "description": "Custom only: wait after a mimic answers you (vanilla random 2–4 s).",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed",
+          "Random": "Random"
+        }
+      },
+      "PostReplyIntervalFixedSeconds": {
+        "title": "Post-Reply Fixed Wait (seconds)",
+        "description": "Fixed mode: seconds to wait after a mimic answers you."
+      },
+      "PostReplyIntervalMinSeconds": {
+        "title": "Post-Reply Random Min (seconds)",
+        "description": "Random mode: shortest post-reply wait."
+      },
+      "PostReplyIntervalMaxSeconds": {
+        "title": "Post-Reply Random Max (seconds)",
+        "description": "Random mode: longest post-reply wait."
+      },
+      "MinRequiredSpeechClips": {
+        "title": "Min Warmed Clips",
+        "description": "Custom only: warmed player clips required before mimics speak (vanilla 3)."
+      },
+      "HearOwnVoiceFromMimic": {
+        "title": "Eigene Stimme von Mimics hören",
+        "description": "Nur Custom: ob du deine eigenen Aufnahmen von Mimics hörst.",
+        "options": {
+          "Vanilla": "Vanilla (meist stumm)",
+          "AlwaysHear": "Immer hören",
+          "OnlyWhenSingleplayer": "Nur in Singleplayer-Lobbys"
+        }
+      },
+      "VoiceInitIntervalMode": {
+        "title": "Init Ambient Wait Mode",
+        "description": "Custom only: first ambient wait after mimic spawn.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Random"
+        }
+      },
+      "VoiceInitIntervalMin": {
+        "title": "Init Wait Min (seconds)",
+        "description": "Random init wait minimum (vanilla 4)."
+      },
+      "VoiceInitIntervalMax": {
+        "title": "Init Wait Max (seconds)",
+        "description": "Random init wait maximum (vanilla 7)."
+      },
+      "VoicePeriodicIntervalMode": {
+        "title": "Periodic Ambient Wait Mode",
+        "description": "Custom only: later ambient waits between lines.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Random"
+        }
+      },
+      "VoicePeriodicIntervalMin": {
+        "title": "Periodic Wait Min (seconds)",
+        "description": "Random periodic wait minimum (vanilla 2)."
+      },
+      "VoicePeriodicIntervalMax": {
+        "title": "Periodic Wait Max (seconds)",
+        "description": "Random periodic wait maximum (vanilla 8)."
+      },
+      "VoiceDeathMatchIntervalMode": {
+        "title": "DM Ambient Wait Mode",
+        "description": "Custom only: ambient waits in deathmatch areas.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Random"
+        }
+      },
+      "VoiceDeathMatchIntervalMin": {
+        "title": "DM Wait Min (seconds)",
+        "description": "Random DM wait minimum (vanilla 2)."
+      },
+      "VoiceDeathMatchIntervalMax": {
+        "title": "DM Wait Max (seconds)",
+        "description": "Random DM wait maximum (vanilla 8)."
+      },
+      "MimicTrustMode": {
+        "title": "Trust Tuning Mode",
+        "description": "Vanilla keeps game trust. Custom uses trust and chase settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
+      },
+      "TrustOutdoorMultiplier": {
+        "title": "Outdoor Trust Multiplier",
+        "description": "Custom only: multiplies trust deltas outdoors (vanilla 2)."
+      },
+      "TrustLookingDelta": {
+        "title": "Trust Delta: Looking",
+        "description": "Custom only: trust change when the player looks at the mimic (vanilla -3)."
+      },
+      "TrustNotLookingDelta": {
+        "title": "Trust Delta: Not Looking",
+        "description": "Custom only: trust change when the player does not look (vanilla +3)."
+      },
+      "TrustApproachDelta": {
+        "title": "Trust Delta: Approaching",
+        "description": "Custom only: trust change when the player approaches."
+      },
+      "TrustMaintainDelta": {
+        "title": "Trust Delta: Maintaining",
+        "description": "Custom only: trust change while distance is steady."
+      },
+      "TrustWalkAwayDelta": {
+        "title": "Trust Delta: Walking Away",
+        "description": "Custom only: trust change when the player walks away."
+      },
+      "TrustSprintAwayDelta": {
+        "title": "Trust Delta: Sprinting Away",
+        "description": "Custom only: trust change when the player sprints away."
+      },
+      "TrustHitDamageMultiplier": {
+        "title": "Trust Hit Damage Multiplier",
+        "description": "Custom only: trust impact per damage when hit."
+      },
+      "TrustFriendlyThreshold": {
+        "title": "Friendly Trust Threshold",
+        "description": "Custom only: trust score treated as friendly (vanilla 90)."
+      },
+      "TrustDistrustThreshold": {
+        "title": "Distrust Threshold",
+        "description": "Custom only: trust score treated as distrust (vanilla 10)."
+      },
+      "TrustScoreValueMode": {
+        "title": "Trust Score Mode",
+        "description": "Custom only: how initial and behavior-trust scores are chosen (0–100 points).",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed",
+          "Random": "Random"
+        }
+      },
+      "TrustInitialFixed": {
+        "title": "Initial Trust (Fixed)",
+        "description": "Fixed mode: starting trust score (vanilla 50)."
+      },
+      "TrustInitialRandomMin": {
+        "title": "Initial Trust Random Min",
+        "description": "Random mode: minimum initial trust roll."
+      },
+      "TrustInitialRandomMax": {
+        "title": "Initial Trust Random Max",
+        "description": "Random mode: maximum initial trust roll."
+      },
+      "TrustBehaviorFixed": {
+        "title": "Behavior Trust (Fixed)",
+        "description": "Fixed mode: behavior-trust threshold (vanilla 70)."
+      },
+      "TrustBehaviorRandomMin": {
+        "title": "Behavior Trust Random Min",
+        "description": "Random mode: minimum behavior-trust roll."
+      },
+      "TrustBehaviorRandomMax": {
+        "title": "Behavior Trust Random Max",
+        "description": "Random mode: maximum behavior-trust roll."
+      },
+      "ChaseActivationDistanceMeters": {
+        "title": "Chase Activation Distance (m)",
+        "description": "Custom only: distance before follow treats target as too far (vanilla 8)."
+      },
+      "ChaseForceRunDistanceMeters": {
+        "title": "Chase Force Run Distance (m)",
+        "description": "Custom only: distance that forces running during trust eval (vanilla 10)."
+      },
+      "MimicSocialMode": {
+        "title": "Social Mimicry Mode",
+        "description": "Vanilla keeps game social mimicry. Custom uses settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
+      },
+      "MimicRunawayChance": {
+        "title": "Fluchtchance vor Mimics",
+        "description": "Nur Custom: wie oft andere Kreaturen fliehen, wenn sie einen Mimic sehen (0–1)."
+      },
+      "JumpCopyChancePercent": {
+        "title": "Jump Copy Chance (%)",
+        "description": "Custom only: chance mimics copy a nearby player jump."
+      },
+      "SlotFollowChangeChancePercent": {
+        "title": "Slot Follow Change Chance (%)",
+        "description": "Custom only: chance mimics follow inventory slot changes."
       },
       "MimicInventoryCopyMode": {
-        "title": "Inventar-Kopie-Modus",
-        "description": "Vanilla nutzt Spielregeln. Custom nutzt die Auswahlregel unten.",
+        "title": "Inventory Copy Mode",
+        "description": "Vanilla uses game rules. Custom uses the pick rule below.",
         "options": {
           "Vanilla": "Vanilla",
           "Custom": "Custom"
         }
       },
       "MimicInventoryCopyPickRule": {
-        "title": "Inventar-Kopie-Ziel",
-        "description": "Nur Custom: welches Spieler-Inventar Mimics kopieren.",
+        "title": "Inventory Copy Target",
+        "description": "Custom only: which player's inventory mimics copy.",
         "options": {
-          "MinDistance": "Nächster Spieler",
-          "MaxDistance": "Entferntester Spieler",
-          "Random": "Zufälliger Spieler"
+          "MinDistance": "Nearest player",
+          "MaxDistance": "Farthest player",
+          "Random": "Random player"
         }
       },
       "EnableMimicPossessionTuning": {
-        "title": "Besitz-Tuning aktivieren",
-        "description": "Dauer und Abklingzeit bei Mimic-Besitz toter Spieler anpassen. Nur Host."
+        "title": "Enable Possession Tuning",
+        "description": "Tune E-possession range, BT gate, duration, and cooldown."
       },
       "RandomizeMimicPossessionDuration": {
-        "title": "Besitz-Dauer randomisieren",
-        "description": "Zufällige Sprechdauer zwischen Min und Max unten."
+        "title": "Randomize Possession Duration",
+        "description": "Roll speak duration between min and max per possession."
       },
       "MimicPossessionMinTimeSeconds": {
-        "title": "Besitz Mindestzeit (Sekunden)",
-        "description": "Kürzeste Sprechdauer bei Randomisierung (Vanilla ist 12)."
+        "title": "Possession Min Time (seconds)",
+        "description": "Shortest speak duration when randomized."
       },
       "MimicPossessionMaxTimeSeconds": {
-        "title": "Besitz Höchstzeit (Sekunden)",
-        "description": "Längste Sprechdauer bei Randomisierung (Vanilla ist 12)."
+        "title": "Possession Max Time (seconds)",
+        "description": "Longest speak duration when randomized."
       },
       "MimicPossessionCooltimeMultiplier": {
-        "title": "Besitz-Abklingzeit-Multiplikator",
-        "description": "Wartezeit nach Besitz vor dem nächsten E-Besitz (1 = Vanilla)."
+        "title": "Possession Cooldown Multiplier",
+        "description": "Post-possession cooldown multiplier (1 = vanilla)."
+      },
+      "PossessionRangeMeters": {
+        "title": "Possession Range (m)",
+        "description": "Max distance for E-possession of a mimic (default 10)."
+      },
+      "PossessionBtGateMode": {
+        "title": "Possession BT Gate",
+        "description": "Vanilla requires calm BTs. Always allows any alive, non-silenced mimic.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Always": "Always"
+        }
+      },
+      "MimicEmotePropsMode": {
+        "title": "Emote & Props Mode",
+        "description": "Vanilla keeps game chances. Custom sets per-action percentages.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
+      },
+      "EmoteRespondChancePercent": {
+        "title": "Emote Respond Chance (%)",
+        "description": "Custom only: chance to respond to player emotes."
+      },
+      "EmoteSuggestChancePercent": {
+        "title": "Emote Suggest Chance (%)",
+        "description": "Custom only: chance to suggest emotes."
+      },
+      "ReactToSprinklerChancePercent": {
+        "title": "Sprinkler React Chance (%)",
+        "description": "Custom only: chance to react to sprinklers."
+      },
+      "UseTrapSwitchChancePercent": {
+        "title": "Trap Switch Chance (%)",
+        "description": "Custom only: chance to use trap switches."
+      },
+      "UseChargerChancePercent": {
+        "title": "Charger Use Chance (%)",
+        "description": "Custom only: chance to use chargers."
+      },
+      "UseTransmitterChancePercent": {
+        "title": "Transmitter Use Chance (%)",
+        "description": "Custom only: chance to use transmitters."
+      },
+      "UseShutterSwitchChancePercent": {
+        "title": "Shutter Switch Chance (%)",
+        "description": "Custom only: chance to use shutter switches."
+      },
+      "HornImitationMode": {
+        "title": "Horn Imitation Mode",
+        "description": "Vanilla keeps game horn recording. Custom uses settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Custom"
+        }
+      },
+      "AllowHornImitation": {
+        "title": "Allow Horn Imitation",
+        "description": "Custom only: whether mimics may replay recorded tram horns."
+      },
+      "HornMaxRecordSeconds": {
+        "title": "Horn Max Record (seconds)",
+        "description": "Custom only: max length of one horn recording."
+      },
+      "HornRecordingGapSeconds": {
+        "title": "Horn Recording Gap (seconds)",
+        "description": "Custom only: idle gap before starting a new horn record."
+      },
+      "HornMaxStoredRecords": {
+        "title": "Horn Max Stored Records",
+        "description": "Custom only: how many horn patterns are kept."
       }
     },
     "MimesisPlayerEnhancement_Economy": {

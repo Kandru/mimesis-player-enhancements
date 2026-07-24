@@ -14,6 +14,11 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             MimicVoiceTuningResolver.RefreshConfigCache();
             MimicInventoryCopyResolver.RefreshConfigCache();
             MimicPossessionResolver.RefreshConfigCache();
+            MimicTrust.MimicTrustResolver.RefreshConfigCache();
+            MimicSocial.MimicSocialResolver.RefreshConfigCache();
+            MimicEmoteProps.MimicEmotePropsResolver.RefreshConfigCache();
+            MimicHorn.MimicHornResolver.RefreshConfigCache();
+            Patches.MimicDecisionAgentPatchSupport.ApplyTuningToAllActiveAgents();
 
             bool masterEnabled = MimicVoiceTuningResolver.IsMasterEnabled;
             MimicVoiceTuningMode voiceMode = MimicVoiceTuningResolver.Mode;
@@ -71,6 +76,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning
             MimicPossessionSessions.ClearAll();
             Patches.MimicPossessionPatchSupport.ClearProgressBarRestartStates();
             MimicVoiceTuning.MimicVoiceTuningPlaybackTrace.ClearAll();
+            MimicVoiceTuning.MimicVoiceTuningInitIntervalApplier.Clear();
         }
     }
 }

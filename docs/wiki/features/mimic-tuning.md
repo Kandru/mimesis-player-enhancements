@@ -2,35 +2,65 @@
 
 **Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_MimicTuning`](../CONFIG.md#mimic-tuning--mimesisplayerenhancement_mimictuning)
 
-Tune mimic behavior on the host: how often mimics replay archived player voices, which player inventory they copy for decoy loadouts, and — when you are dead — how long each **E** possession through a mimic lasts and how long you wait before the next one.
+Tune mimic voice, trust/follow behavior, social mimicry, inventory copy, possession, emotes/props, and horn imitation on the host. Off by default. Each subgroup uses **Vanilla / Custom** (or mode-specific dropdowns) and applies on the next relevant game action — no restart required.
 
-Off by default. Changes take effect on the next mimic voice attempt, inventory copy, or E-possession — no restart required. Already-playing audio, cloned inventories, and active possession sessions are not reverted.
+With `EnableMimicTuning = true`, archived mimic voice is stopped when a mimic enters possessed state and blocked while possessed.
 
-With `EnableMimicTuning = true`, archived mimic voice lines are stopped when a mimic enters possessed state and blocked from replaying while possessed (local audio cleanup during E-possession).
+## Voice (`mimicVoice`)
 
-## Voice tuning
+`MimicVoiceTuningMode`: `Vanilla` | `Custom`
 
-`MimicVoiceTuningMode`: `Vanilla` uses game timing; `Custom` applies the response keys below.
+**Player replies** (when you speak):
 
-- `PeriodicVoiceIntervalMultiplier` — scales ambient mimic voice cooldown (`0.5` ≈ twice as chatty).
-- `PlayerVoiceResponseChancePercent` — chance a nearby mimic replays a line after a player speaks.
-- `PlayerVoiceResponseCooldownSeconds` — minimum seconds between mimic reactions (vanilla is 3).
-- `PlayerVoiceResponseDelayMinSeconds` / `MaxSeconds` — random pause before a mimic replies.
-- `PlayerVoiceResponseMaxDistance` — max range for mimics to react (vanilla is 20 m).
+- `PlayerVoiceResponseChancePercent`, cooldown, delay min/max, `PlayerVoiceResponseMaxDistance` (vanilla 20 m)
+
+**Ambient speech** (Custom):
+
+- `PeriodicVoiceIntervalMultiplier` — scales **periodic** table waits only (not post-reply delays)
+- `SpeakAudienceRangeMeters` (vanilla 15 m) — a player must be within this range before a mimic picks an ambient line
+- `ClipReuseCooldownSeconds` / `DeathMatchClipReuseCooldownSeconds` — how long before the same clip can play again
+- `MinRequiredSpeechClips` — warmed clips required before mimics speak
+- `HearOwnVoiceFromMimic`: `Vanilla` | `AlwaysHear` | `OnlyWhenSingleplayer` — `OnlyWhenSingleplayer` uses lobby player count, not proximity
+- Table intervals (each `Vanilla` | `Random` with min/max): init (4–7 s), periodic (2–8 s), deathmatch (2–8 s)
+- `PostReplyIntervalMode`: `Vanilla` | `Fixed` | `Random` — wait after a mimic answers you (vanilla 2–4 s; separate from ambient multiplier)
+
+## Trust & chase (`mimicTrust`)
+
+`MimicTrustMode`: `Vanilla` | `Custom`
+
+- Trust **deltas** (indoor base) and `TrustOutdoorMultiplier` (vanilla ×2 outdoors)
+- Friendly/distrust thresholds (90 / 10)
+- `TrustScoreValueMode`: `Vanilla` | `Fixed` | `Random` — raw 0–100 points for initial trust (vanilla 50) and behavior-trust threshold (vanilla 70), not multipliers
+- `ChaseActivationDistanceMeters` (8 m) / `ChaseForceRunDistanceMeters` (10 m) — follow leash during checkfriendly
+
+## Social mimicry (`mimicSocial`)
+
+`MimicSocialMode`: `Vanilla` | `Custom`
+
+- `MimicRunawayChance` (0–1, default 0.5) — how often **other** creatures flee when they see a mimic (0 = never, 1 = always)
+- `JumpCopyChancePercent` / `SlotFollowChangeChancePercent` — mimic copies player jumps / inventory slot changes
 
 ## Inventory copy
 
-`MimicInventoryCopyMode`: `Vanilla` uses behavior-tree pick rules; `Custom` forces `MimicInventoryCopyPickRule`:
+Unchanged: `MimicInventoryCopyMode` + `MimicInventoryCopyPickRule`.
 
-- `MinDistance` — copy nearest player's inventory.
-- `MaxDistance` — copy farthest player's inventory.
-- `Random` — random player pick.
+## Possession (`mimicPossession`)
 
-## Possession timing
+`EnableMimicPossessionTuning` (requires master toggle):
 
-When dead and pressing **E** to speak through a mimic, vanilla uses a fixed 12-second speak window and fixed cooldown. `EnableMimicPossessionTuning` (requires master toggle) enables:
+- Duration randomization + cooldown multiplier (unchanged)
+- `PossessionRangeMeters` (default 10 m) — max E-possession distance
+- `PossessionBtGateMode`: `Vanilla` | `Always` — `Always` allows possession on any alive, non-silenced mimic (skips BT whitelist)
 
-- `RandomizeMimicPossessionDuration` — roll speak duration between min/max seconds per possession.
-- `MimicPossessionCooltimeMultiplier` — post-possession cooldown multiplier (`1` = vanilla).
+## Emote & props (`mimicEmoteProps`)
+
+`MimicEmotePropsMode`: `Vanilla` | `Custom` — per-action chance % (respond, suggest, sprinkler, trap switch, charger, transmitter, shutter).
+
+## Horn imitation (`mimicHorn`)
+
+`HornImitationMode`: `Vanilla` | `Custom`
+
+- `AllowHornImitation` (Custom) — whether mimics may replay recorded tram horns
+- `HornMaxRecordSeconds`, `HornRecordingGapSeconds`, `HornMaxStoredRecords`
 
 **Full config keys →** [Mimic Tuning](../CONFIG.md#mimic-tuning--mimesisplayerenhancement_mimictuning)

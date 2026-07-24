@@ -37,6 +37,28 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
         }
 
         [Theory]
+        [InlineData(10f, false, 10f)]
+        [InlineData(10f, true, 20f)]
+        public void ScalePeriodicIntervalSeconds_matches_scale_helper(
+            float vanilla,
+            bool shouldApplyCustom,
+            float expected)
+        {
+            float result = MimicVoiceTuningResolver.ScaleIntervalSeconds(
+                vanilla,
+                shouldApplyCustom,
+                2f);
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void GetClipReuseCooldownSeconds_returns_vanilla_when_not_custom()
+        {
+            Assert.Equal(60f, MimicVoiceTuningResolver.GetClipReuseCooldownSeconds());
+        }
+
+        [Theory]
         [InlineData(false, 50f, 20f)]
         [InlineData(true, 50f, 50f)]
         public void GetResponseMaxDistance_returns_configured_or_vanilla(

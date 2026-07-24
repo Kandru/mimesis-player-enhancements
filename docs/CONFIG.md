@@ -316,45 +316,92 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
-**Host-only.** Tune how often mimics replay archived player voice lines, which player inventory mimics copy for decoy loadouts, and dead-player mimic possession timing. Off by default. Voice and inventory subfeatures use a **Vanilla / Custom** mode dropdown (default **Vanilla**). Custom keys apply only when that subfeature is set to Custom.
+**Host-only.** Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Subgroups use **Vanilla / Custom** (or mode-specific dropdowns). Custom keys apply only when that subgroup mode is Custom (or the listed dependency).
 
-**Live apply:** Changes take effect on the next mimic voice attempt, `CopyInventory` call, or E-possession — no restart required. Already-playing audio, already-cloned inventories, and active possession sessions are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked from replaying while the mimic remains possessed.
+**Live apply:** Changes take effect on the next mimic voice attempt, AI activation, inventory copy, or E-possession — no restart required. Active sessions are not reverted. When `EnableMimicTuning = true`, archived mimic voice is stopped on E-possession start and blocked while possessed.
 
-### Voice tuning (`MimicVoiceTuningMode`)
+### Voice (`MimicVoiceTuningMode`)
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableMimicTuning` | bool | `false` | — | Master toggle for mimic voice and inventory-copy tuning. Host only. |
-| `MimicVoiceTuningMode` | string | `Vanilla` | `Vanilla`, `Custom` | Vanilla uses game voice timing. Custom applies the response keys below. |
-| `PeriodicVoiceIntervalMultiplier` | float | `1.0` | ≥ `0.05` | Custom only: scales ambient mimic voice cooldown between lines (`0.5` ≈ twice as chatty). |
-| `PlayerVoiceResponseChancePercent` | int | `100` | `0`–`100` | Custom only: chance a nearby mimic replays a line after a player speaks. |
-| `PlayerVoiceResponseCooldownSeconds` | float | `3.0` | ≥ `0` | Custom only: minimum seconds between mimic reactions to player speech (vanilla is 3). |
-| `PlayerVoiceResponseDelayMinSeconds` | float | `0.2` | ≥ `0` | Custom only: shortest random pause before a mimic replies. |
-| `PlayerVoiceResponseDelayMaxSeconds` | float | `0.2` | ≥ `0` | Custom only: longest random pause before a mimic replies. Must be ≥ min. |
-| `PlayerVoiceResponseMaxDistance` | float | `20.0` | ≥ `1` | Custom only: max range for mimics to react when a player speaks (vanilla is 20 m). |
+| `EnableMimicTuning` | bool | `false` | — | Master toggle. Host only. |
+| `MimicVoiceTuningMode` | string | `Vanilla` | `Vanilla`, `Custom` | Voice subgroup mode. |
+| `PeriodicVoiceIntervalMultiplier` | float | `1.0` | ≥ `0.05` | Custom: scales **periodic** ambient waits only. |
+| `PlayerVoiceResponseChancePercent` | int | `100` | `0`–`100` | Custom: chance mimics answer when you speak. |
+| `PlayerVoiceResponseCooldownSeconds` | float | `3.0` | ≥ `0` | Custom: min seconds between answers to player speech. |
+| `PlayerVoiceResponseDelayMinSeconds` / `MaxSeconds` | float | `0.2` | ≥ `0` | Custom: reply delay range. |
+| `PlayerVoiceResponseMaxDistance` | float | `20.0` | ≥ `1` | Custom: max range when **you** speak (vanilla 20 m). |
+| `ClipReuseCooldownSeconds` | float | `60` | ≥ `0` | Custom: clip reuse cooldown (vanilla 60). |
+| `DeathMatchClipReuseCooldownSeconds` | float | `3` | ≥ `0` | Custom: DM clip reuse (vanilla 3). |
+| `SpeakAudienceRangeMeters` | float | `15` | ≥ `1` | Custom: player must be this close for **ambient** lines (vanilla 15). |
+| `PostReplyIntervalMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | Custom: wait after mimic answers you (vanilla 2–4 s). |
+| `PostReplyIntervalFixedSeconds` | float | `3` | ≥ `0` | Fixed post-reply wait. |
+| `PostReplyIntervalMinSeconds` / `MaxSeconds` | float | `2` / `4` | ≥ `0` | Random post-reply range. |
+| `MinRequiredSpeechClips` | int | `3` | `0`–`50` | Custom: warmed clips before mimics speak. |
+| `HearOwnVoiceFromMimic` | string | `Vanilla` | `Vanilla`, `AlwaysHear`, `OnlyWhenSingleplayer` | Custom: mute own voice from mimics; singleplayer uses lobby count. |
+| `VoiceInitIntervalMode` | string | `Vanilla` | `Vanilla`, `Random` | Custom: first ambient wait (vanilla table 4–7 s). |
+| `VoiceInitIntervalMin` / `Max` | float | `4` / `7` | ≥ `0` | Random init wait range. |
+| `VoicePeriodicIntervalMode` | string | `Vanilla` | `Vanilla`, `Random` | Custom: periodic ambient waits (vanilla 2–8 s). |
+| `VoicePeriodicIntervalMin` / `Max` | float | `2` / `8` | ≥ `0` | Random periodic range. |
+| `VoiceDeathMatchIntervalMode` | string | `Vanilla` | `Vanilla`, `Random` | Custom: DM ambient waits (vanilla 2–8 s). |
+| `VoiceDeathMatchIntervalMin` / `Max` | float | `2` / `8` | ≥ `0` | Random DM range. |
 
-Voice debug lines (source player name, pick reason, clip metadata — no transcript; mimic voice is replayed audio) require `EnableDebugLogging = true` in the global section and `MimicVoiceTuningMode = Custom`.
+### Trust & chase (`MimicTrustMode`)
 
-**Example — more natural responses:** `PlayerVoiceResponseChancePercent = 60`, `PlayerVoiceResponseDelayMinSeconds = 0.4`, `PlayerVoiceResponseDelayMaxSeconds = 1.2`, `PlayerVoiceResponseCooldownSeconds = 4`.
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `MimicTrustMode` | string | `Vanilla` | `Vanilla` / `Custom` |
+| `TrustOutdoorMultiplier` | float | `2` | Outdoor trust-delta multiplier. |
+| `TrustLookingDelta` … `TrustHitDamageMultiplier` | float | game | Indoor base trust deltas. |
+| `TrustFriendlyThreshold` / `TrustDistrustThreshold` | float | `90` / `10` | Trust gauge thresholds. |
+| `TrustScoreValueMode` | string | `Vanilla` | `Vanilla` / `Fixed` / `Random` for initial (50) and behavior (70) **raw 0–100** scores. |
+| `TrustInitialFixed` / `TrustBehaviorFixed` | float | `50` / `70` | Fixed mode values. |
+| `TrustInitialRandomMin/Max` / `TrustBehaviorRandomMin/Max` | float | `50`/`70` | Random mode ranges. |
+| `ChaseActivationDistanceMeters` | float | `8` | Chase activation distance. |
+| `ChaseForceRunDistanceMeters` | float | `10` | Force-run distance during trust eval. |
+
+### Social mimicry (`MimicSocialMode`)
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `MimicSocialMode` | string | `Vanilla` | `Vanilla` / `Custom` |
+| `MimicRunawayChance` | float | `0.5` | `0`–`1`: how often **other** creatures flee from mimics. |
+| `JumpCopyChancePercent` | int | `80` | `0`–`100`: mimic jump-copy chance. |
+| `SlotFollowChangeChancePercent` | int | `80` | `0`–`100`: slot-follow change chance. |
 
 ### Inventory copy (`MimicInventoryCopyMode`)
 
-| Key | Type | Default | Range | Description |
-|-----|------|---------|-------|-------------|
-| `MimicInventoryCopyMode` | string | `Vanilla` | `Vanilla`, `Custom` | Vanilla uses behavior-tree pick rules. Custom forces the pick rule below. |
-| `MimicInventoryCopyPickRule` | string | `MinDistance` | `MinDistance`, `MaxDistance`, `Random` | Custom only: which player inventory mimics copy. |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `MimicInventoryCopyMode` | string | `Vanilla` | `Vanilla` / `Custom` |
+| `MimicInventoryCopyPickRule` | string | `MinDistance` | Custom: `MinDistance`, `MaxDistance`, `Random` |
 
-### Possession tuning (`EnableMimicPossessionTuning`)
+### Possession (`EnableMimicPossessionTuning`)
 
-When you are dead and press **E** to speak through a nearby mimic, vanilla uses a fixed speak window (12 seconds) and a fixed cooldown before the next possession. Enable this sub-toggle to randomize the speak window per possession and/or scale the cooldown. Requires `EnableMimicTuning = true`.
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `EnableMimicPossessionTuning` | bool | `false` | Sub-toggle (requires master). |
+| `RandomizeMimicPossessionDuration` | bool | `false` | Random speak window per possession. |
+| `MimicPossessionMinTimeSeconds` / `MaxTimeSeconds` | float | `12` | Rolled duration bounds. |
+| `MimicPossessionCooltimeMultiplier` | float | `1` | Post-possession cooldown multiplier. |
+| `PossessionRangeMeters` | float | `10` | Max E-possession distance (m). |
+| `PossessionBtGateMode` | string | `Vanilla` | `Vanilla` (BT whitelist) / `Always` (any alive, non-silenced mimic). |
 
-| Key | Type | Default | Range | Description |
-|-----|------|---------|-------|-------------|
-| `EnableMimicPossessionTuning` | bool | `false` | — | Sub-toggle for mimic possession timing tweaks. |
-| `RandomizeMimicPossessionDuration` | bool | `false` | — | Roll a random speak duration per E-possession between the min and max seconds below. |
-| `MimicPossessionMinTimeSeconds` | float | `12.0` | `0.1`–`120` | Minimum rolled speak duration in seconds (vanilla is 12). |
-| `MimicPossessionMaxTimeSeconds` | float | `12.0` | `0.1`–`120` | Maximum rolled speak duration in seconds (vanilla is 12). Must be ≥ `MimicPossessionMinTimeSeconds`. |
-| `MimicPossessionCooltimeMultiplier` | float | `1.0` | `0.1`–`10.0` | Post-possession cooldown multiplier (`1` = vanilla, `2` = double). Independent of the random duration toggle. |
+### Emote & props (`MimicEmotePropsMode`)
+
+Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChancePercent` (30), `ReactToSprinklerChancePercent`, `UseTrapSwitchChancePercent`, `UseChargerChancePercent`, `UseTransmitterChancePercent`, `UseShutterSwitchChancePercent` (all 100 by default).
+
+### Horn imitation (`HornImitationMode`)
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `HornImitationMode` | string | `Vanilla` | `Vanilla` / `Custom` |
+| `AllowHornImitation` | bool | `true` | Custom: allow mimic horn replay. |
+| `HornMaxRecordSeconds` | float | `5` | Max record length. |
+| `HornRecordingGapSeconds` | float | `1` | Idle gap before new record. |
+| `HornMaxStoredRecords` | int | `10` | Stored horn patterns. |
+
+**Clarifications:** `MimicRunawayChance` controls other AIs fleeing **from** mimics, not mimics running away. `SpeakAudienceRangeMeters` gates ambient speech; `PlayerVoiceResponseMaxDistance` gates replies when you speak. `PeriodicVoiceIntervalMultiplier` does not scale post-reply waits.
 
 ## Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 

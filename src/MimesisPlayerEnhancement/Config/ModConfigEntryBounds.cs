@@ -1,4 +1,6 @@
 using System.Globalization;
+using MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession;
+using MimesisPlayerEnhancement.Features.PlayerTuning;
 
 namespace MimesisPlayerEnhancement
 {
@@ -114,9 +116,56 @@ namespace MimesisPlayerEnhancement
                 "PeriodicVoiceIntervalMultiplier",
                 "PlayerVoiceResponseCooldownSeconds",
                 "PlayerVoiceResponseDelayMinSeconds",
-                "PlayerVoiceResponseDelayMaxSeconds");
+                "PlayerVoiceResponseDelayMaxSeconds",
+                "ClipReuseCooldownSeconds",
+                "DeathMatchClipReuseCooldownSeconds",
+                "SpeakAudienceRangeMeters",
+                "PostReplyIntervalFixedSeconds",
+                "PostReplyIntervalMinSeconds",
+                "PostReplyIntervalMaxSeconds",
+                "VoiceInitIntervalMin",
+                "VoiceInitIntervalMax",
+                "VoicePeriodicIntervalMin",
+                "VoicePeriodicIntervalMax",
+                "VoiceDeathMatchIntervalMin",
+                "VoiceDeathMatchIntervalMax");
             Float(MimicTuning, "PlayerVoiceResponseMaxDistance", 1f);
             IntRange(MimicTuning, "PlayerVoiceResponseChancePercent", 0, 100);
+            IntRange(MimicTuning, "MinRequiredSpeechClips", 0, 50);
+            FloatRange(MimicTuning, "TrustOutdoorMultiplier", 0f, 10f);
+            FloatRange(MimicTuning, "TrustLookingDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustNotLookingDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustApproachDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustMaintainDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustWalkAwayDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustSprintAwayDelta", -100f, 100f);
+            FloatRange(MimicTuning, "TrustHitDamageMultiplier", -100f, 100f);
+            FloatRange(MimicTuning, "TrustFriendlyThreshold", 0f, 100f);
+            FloatRange(MimicTuning, "TrustDistrustThreshold", 0f, 100f);
+            FloatRange(MimicTuning, "TrustInitialFixed", 0f, 100f);
+            FloatRange(MimicTuning, "TrustInitialRandomMin", 0f, 100f);
+            FloatRange(MimicTuning, "TrustInitialRandomMax", 0f, 100f);
+            FloatRange(MimicTuning, "TrustBehaviorFixed", 0f, 100f);
+            FloatRange(MimicTuning, "TrustBehaviorRandomMin", 0f, 100f);
+            FloatRange(MimicTuning, "TrustBehaviorRandomMax", 0f, 100f);
+            FloatRange(MimicTuning, "ChaseActivationDistanceMeters", 0.1f, 200f);
+            FloatRange(MimicTuning, "ChaseForceRunDistanceMeters", 0.1f, 200f);
+            FloatRange(MimicTuning, "MimicRunawayChance", 0f, 1f);
+            IntRange(MimicTuning, "JumpCopyChancePercent", 0, 100);
+            IntRange(MimicTuning, "SlotFollowChangeChancePercent", 0, 100);
+            FloatRange(MimicTuning, "PossessionRangeMeters",
+                MimicPossessionResolver.MinPossessionRangeMeters,
+                MimicPossessionResolver.MaxPossessionRangeMeters);
+            IntRange(MimicTuning, "EmoteRespondChancePercent", 0, 100);
+            IntRange(MimicTuning, "EmoteSuggestChancePercent", 0, 100);
+            IntRange(MimicTuning, "ReactToSprinklerChancePercent", 0, 100);
+            IntRange(MimicTuning, "UseTrapSwitchChancePercent", 0, 100);
+            IntRange(MimicTuning, "UseChargerChancePercent", 0, 100);
+            IntRange(MimicTuning, "UseTransmitterChancePercent", 0, 100);
+            IntRange(MimicTuning, "UseShutterSwitchChancePercent", 0, 100);
+            FloatRange(MimicTuning, "HornMaxRecordSeconds", 0.1f, 60f);
+            FloatRange(MimicTuning, "HornRecordingGapSeconds", 0.1f, 30f);
+            IntRange(MimicTuning, "HornMaxStoredRecords", 1, 100);
 
             IntRange(WebDashboard, "WebDashboardListenPort", 1, 65535);
         }

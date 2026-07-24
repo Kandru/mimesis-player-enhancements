@@ -11,6 +11,9 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
         internal const float MaxDurationSeconds = 120f;
         internal const float MinCooltimeMultiplier = 0.1f;
         internal const float MaxCooltimeMultiplier = 10f;
+        internal const float VanillaPossessionRangeMeters = 10f;
+        internal const float MinPossessionRangeMeters = 1f;
+        internal const float MaxPossessionRangeMeters = 200f;
         private const float VanillaEpsilon = 0.001f;
 
         private static bool _cachedEnable;
@@ -18,6 +21,8 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
         private static float _cachedCooltimeMultiplier;
         private static float _cachedMinDurationSeconds = VanillaPossessionDurationSeconds;
         private static float _cachedMaxDurationSeconds = VanillaPossessionDurationSeconds;
+        private static float _cachedPossessionRangeMeters = VanillaPossessionRangeMeters;
+        private static PossessionBtGateMode _cachedBtGateMode = PossessionBtGateMode.Vanilla;
 
         internal static bool IsEnabled => _cachedEnable;
 
@@ -33,6 +38,38 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
 
         internal static bool ShouldScaleCooltime =>
             ShouldApplyHost && !IsVanillaMultiplier(_cachedCooltimeMultiplier);
+
+        internal static bool ShouldBypassBtGate =>
+            ShouldApplyHost && _cachedBtGateMode == PossessionBtGateMode.Always;
+
+        internal static float GetPossessionRangeMeters() => _cachedPossessionRangeMeters;
+
+        internal static float GetPossessionRangeSqrMeters()
+        {
+            float meters = _cachedPossessionRangeMeters;
+            return meters * meters;
+        }
+
+        internal static float GetRuntimePossessionRangeMeters()
+        {
+            if (TryGetConsts(out Bifrost.ConstEnum.DataConsts consts) && consts.C_PossessionDistance > 0)
+            {
+                return consts.C_PossessionDistance;
+            }
+
+            return VanillaPossessionRangeMeters;
+        }
+
+        internal static bool ShouldOverridePossessionRange()
+        {
+            if (!ShouldApplyHost)
+            {
+                return false;
+            }
+
+            float runtimeMeters = GetRuntimePossessionRangeMeters();
+            return Math.Abs(_cachedPossessionRangeMeters - runtimeMeters) > VanillaEpsilon;
+        }
 
         internal static bool IsVanillaMultiplier(float multiplier) =>
             Math.Abs(multiplier - 1f) < VanillaEpsilon;
@@ -210,6 +247,13 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.MimicPossession
             {
                 _cachedMaxDurationSeconds = _cachedMinDurationSeconds;
             }
+
+            _cachedPossessionRangeMeters = Mathf.Clamp(
+                ModConfig.PossessionRangeMeters?.Value ?? VanillaPossessionRangeMeters,
+                MinPossessionRangeMeters,
+                MaxPossessionRangeMeters);
+            _cachedBtGateMode = MimicTuningModeHelpers.ParsePossessionBtGateMode(
+                ModConfig.PossessionBtGateMode?.Value);
         }
     }
 }

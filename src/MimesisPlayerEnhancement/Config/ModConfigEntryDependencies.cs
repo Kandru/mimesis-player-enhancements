@@ -119,7 +119,69 @@ namespace MimesisPlayerEnhancement
                 case "PlayerVoiceResponseDelayMinSeconds":
                 case "PlayerVoiceResponseDelayMaxSeconds":
                 case "PlayerVoiceResponseMaxDistance":
+                case "ClipReuseCooldownSeconds":
+                case "DeathMatchClipReuseCooldownSeconds":
+                case "SpeakAudienceRangeMeters":
+                case "PostReplyIntervalMode":
+                case "MinRequiredSpeechClips":
+                case "HearOwnVoiceFromMimic":
+                case "VoiceInitIntervalMode":
+                case "VoicePeriodicIntervalMode":
+                case "VoiceDeathMatchIntervalMode":
                     dependency = new ModConfigEntryDependency("MimicVoiceTuningMode", "Custom");
+                    return true;
+                case "PostReplyIntervalFixedSeconds":
+                    dependency = new ModConfigEntryDependency("PostReplyIntervalMode", "Fixed");
+                    return true;
+                case "PostReplyIntervalMinSeconds":
+                case "PostReplyIntervalMaxSeconds":
+                    dependency = new ModConfigEntryDependency("PostReplyIntervalMode", "Random");
+                    return true;
+                case "VoiceInitIntervalMin":
+                case "VoiceInitIntervalMax":
+                    dependency = new ModConfigEntryDependency("VoiceInitIntervalMode", "Random");
+                    return true;
+                case "VoicePeriodicIntervalMin":
+                case "VoicePeriodicIntervalMax":
+                    dependency = new ModConfigEntryDependency("VoicePeriodicIntervalMode", "Random");
+                    return true;
+                case "VoiceDeathMatchIntervalMin":
+                case "VoiceDeathMatchIntervalMax":
+                    dependency = new ModConfigEntryDependency("VoiceDeathMatchIntervalMode", "Random");
+                    return true;
+                case "TrustOutdoorMultiplier":
+                case "TrustLookingDelta":
+                case "TrustNotLookingDelta":
+                case "TrustApproachDelta":
+                case "TrustMaintainDelta":
+                case "TrustWalkAwayDelta":
+                case "TrustSprintAwayDelta":
+                case "TrustHitDamageMultiplier":
+                case "TrustFriendlyThreshold":
+                case "TrustDistrustThreshold":
+                case "TrustScoreValueMode":
+                case "ChaseActivationDistanceMeters":
+                case "ChaseForceRunDistanceMeters":
+                    dependency = new ModConfigEntryDependency("MimicTrustMode", "Custom");
+                    return true;
+                case "TrustInitialFixed":
+                    dependency = new ModConfigEntryDependency("TrustScoreValueMode", "Fixed");
+                    return true;
+                case "TrustInitialRandomMin":
+                case "TrustInitialRandomMax":
+                    dependency = new ModConfigEntryDependency("TrustScoreValueMode", "Random");
+                    return true;
+                case "TrustBehaviorFixed":
+                    dependency = new ModConfigEntryDependency("TrustScoreValueMode", "Fixed");
+                    return true;
+                case "TrustBehaviorRandomMin":
+                case "TrustBehaviorRandomMax":
+                    dependency = new ModConfigEntryDependency("TrustScoreValueMode", "Random");
+                    return true;
+                case "MimicRunawayChance":
+                case "JumpCopyChancePercent":
+                case "SlotFollowChangeChancePercent":
+                    dependency = new ModConfigEntryDependency("MimicSocialMode", "Custom");
                     return true;
                 case "MimicInventoryCopyPickRule":
                     dependency = new ModConfigEntryDependency("MimicInventoryCopyMode", "Custom");
@@ -132,7 +194,24 @@ namespace MimesisPlayerEnhancement
                     dependency = new ModConfigEntryDependency("RandomizeMimicPossessionDuration");
                     return true;
                 case "MimicPossessionCooltimeMultiplier":
+                case "PossessionRangeMeters":
+                case "PossessionBtGateMode":
                     dependency = new ModConfigEntryDependency("EnableMimicPossessionTuning");
+                    return true;
+                case "EmoteRespondChancePercent":
+                case "EmoteSuggestChancePercent":
+                case "ReactToSprinklerChancePercent":
+                case "UseTrapSwitchChancePercent":
+                case "UseChargerChancePercent":
+                case "UseTransmitterChancePercent":
+                case "UseShutterSwitchChancePercent":
+                    dependency = new ModConfigEntryDependency("MimicEmotePropsMode", "Custom");
+                    return true;
+                case "AllowHornImitation":
+                case "HornMaxRecordSeconds":
+                case "HornRecordingGapSeconds":
+                case "HornMaxStoredRecords":
+                    dependency = new ModConfigEntryDependency("HornImitationMode", "Custom");
                     return true;
                 default:
                     return false;
