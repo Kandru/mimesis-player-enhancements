@@ -2,6 +2,9 @@ using DunGen;
 
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
+    // game@0.3.1 Assembly-CSharp/DunGen/RuntimeDungeon.cs:L36-46
+    // game@0.3.1 Assembly-CSharp/GamePlayScene.cs:L469-476
+    // Observes vanilla GamePlayScene Seed++ retries; does not re-run generation.
     [HarmonyPatch(typeof(RuntimeDungeon), nameof(RuntimeDungeon.Generate))]
     internal static class RuntimeDungeonGeneratePatch
     {

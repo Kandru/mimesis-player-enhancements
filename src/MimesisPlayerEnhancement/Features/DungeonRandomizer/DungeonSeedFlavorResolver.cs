@@ -42,31 +42,67 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 return vanillaSeed;
             }
 
+            return ResolveSeedFromPool(
+                vanillaSeed,
+                flavor,
+                flowId,
+                pool,
+                maxRate,
+                candidate => GetDerivedFlowId(info, maxRate, candidate));
+        }
+
+        internal static int ResolveSeedFromPool(
+            int vanillaSeed,
+            DungeonSeedFlavor flavor,
+            string flowId,
+            ReadOnlySpan<int> pool,
+            int maxRate,
+            Func<int, string> deriveFlowId,
+            bool logResult = true)
+        {
+            if (pool.Length == 0)
+            {
+                return vanillaSeed;
+            }
+
+            int startIndex = new GameMainBase.SyncRandom(vanillaSeed ^ unchecked((int)flavor)).Next(0, pool.Length);
             int skipped = 0;
             for (int offset = 0; offset < pool.Length; offset++)
             {
                 int index = (startIndex + offset) % pool.Length;
                 int candidate = pool[index];
-                string derivedFlowId = GetDerivedFlowId(info, maxRate, candidate);
+                string derivedFlowId = deriveFlowId(candidate);
                 if (string.Equals(derivedFlowId, flowId, StringComparison.Ordinal))
                 {
-                    DungeonRandomizerLog.InfoSeedFlavorApplied(
-                        flavor,
-                        flowId,
-                        vanillaSeed,
-                        candidate,
-                        pool.Length,
-                        skipped);
+                    if (logResult)
+                    {
+                        DungeonRandomizerLog.InfoSeedFlavorApplied(
+                            flavor,
+                            flowId,
+                            vanillaSeed,
+                            candidate,
+                            pool.Length,
+                            skipped);
+                    }
+
                     return candidate;
                 }
 
-                DungeonRandomizerLog.DebugSeedCandidateSkipped(flowId, index, candidate, derivedFlowId);
+                if (logResult)
+                {
+                    DungeonRandomizerLog.DebugSeedCandidateSkipped(flowId, index, candidate, derivedFlowId);
+                }
+
                 skipped++;
             }
 
-            ModLog.Warn(
-                Feature,
-                $"Seed flavor '{flavor}' has no flow-consistent seed in pool for '{flowId}' — using vanilla seed");
+            if (logResult)
+            {
+                ModLog.Warn(
+                    Feature,
+                    $"Seed flavor '{flavor}' has no flow-consistent seed in pool for '{flowId}' — using vanilla seed");
+            }
+
             return vanillaSeed;
         }
 

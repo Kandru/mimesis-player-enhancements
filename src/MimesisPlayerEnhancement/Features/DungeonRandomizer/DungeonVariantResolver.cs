@@ -2,19 +2,34 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 {
     internal static class DungeonVariantResolver
     {
-        internal static int? ResolveMapId(DungeonMasterInfo info, int vanillaMapId)
+        internal static int? ResolveMapId(DungeonMasterInfo info, int vanillaMapId) =>
+            ResolveMapId(SceneScopedConfigGate.DungeonRandomizer, info, vanillaMapId, TryPickUniformMapId);
+
+        internal static int? ResolveMapId(
+            DungeonRandomizerSceneConfig config,
+            DungeonMasterInfo info,
+            int vanillaMapId,
+            Func<IReadOnlyList<int>, int?> pickMapId) =>
+            ResolveMapId(config, info.ID, info.MapIDs, vanillaMapId, pickMapId);
+
+        internal static int? ResolveMapId(
+            DungeonRandomizerSceneConfig config,
+            int dungeonId,
+            IReadOnlyList<int> mapIds,
+            int vanillaMapId,
+            Func<IReadOnlyList<int>, int?> pickMapId,
+            bool logResult = true)
         {
-            DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;
             int? mapId = DungeonMapVariantPickLogic.Resolve(
                 config.RandomizeMapVariant,
-                info.ID,
-                info.MapIDs,
+                dungeonId,
+                mapIds,
                 vanillaMapId,
-                TryPickUniformMapId);
+                pickMapId);
 
-            if (mapId.HasValue)
+            if (logResult && mapId.HasValue)
             {
-                DungeonRandomizerLog.InfoMapVariantChanged(info.ID, vanillaMapId, mapId.Value);
+                DungeonRandomizerLog.InfoMapVariantChanged(dungeonId, vanillaMapId, mapId.Value);
             }
 
             return mapId;

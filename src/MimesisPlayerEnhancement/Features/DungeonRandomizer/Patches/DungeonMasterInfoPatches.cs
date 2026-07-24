@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
+    // game@0.3.1 Assembly-CSharp/DungeonMasterInfo.cs:L85-96
     [HarmonyPatch(typeof(DungeonMasterInfo), nameof(DungeonMasterInfo.PickMapID))]
     internal static class DungeonMasterInfoPickMapIdPatch
     {

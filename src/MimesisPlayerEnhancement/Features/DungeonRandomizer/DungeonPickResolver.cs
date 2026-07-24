@@ -22,15 +22,27 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             DungeonRandomizerSceneConfig config = SceneScopedConfigGate.DungeonRandomizer;
             GetFilters(config, out HashSet<int> allowlist, out HashSet<int> blocklist);
             IReadOnlyList<int> activePool = DungeonDataAccess.GetFilteredActiveDungeonIds(allowlist, blocklist);
-            DungeonPickPoolMode mode = DungeonIdListParser.ParsePoolMode(config.DungeonPickPoolMode);
+            return ResolvePick(
+                vanillaResult,
+                excludeDungeonIds,
+                config,
+                allowlist,
+                blocklist,
+                activePool,
+                TryPickFromPool);
+        }
 
-            if (mode == DungeonPickPoolMode.WidenVanilla
-                && DungeonPickLogic.IsEligible(vanillaResult, allowlist, blocklist)
-                && !DungeonDataAccess.IsExcluded(vanillaResult, excludeDungeonIds))
-            {
-                ModLog.Debug(Feature, $"Dungeon pick (WidenVanilla): keeping vanilla result {vanillaResult}");
-                return vanillaResult;
-            }
+        internal static int ResolvePick(
+            int vanillaResult,
+            IReadOnlyList<int> excludeDungeonIds,
+            DungeonRandomizerSceneConfig config,
+            HashSet<int> allowlist,
+            HashSet<int> blocklist,
+            IReadOnlyList<int> activePool,
+            Func<IReadOnlyList<int>, int?> pickFromPool,
+            bool logResult = true)
+        {
+            DungeonPickPoolMode mode = DungeonIdListParser.ParsePoolMode(config.DungeonPickPoolMode);
 
             int result = DungeonPickLogic.Resolve(
                 vanillaResult,
@@ -39,7 +51,12 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
                 allowlist,
                 blocklist,
                 activePool,
-                TryPickFromPool);
+                pickFromPool);
+
+            if (!logResult)
+            {
+                return result;
+            }
 
             if (result != vanillaResult)
             {

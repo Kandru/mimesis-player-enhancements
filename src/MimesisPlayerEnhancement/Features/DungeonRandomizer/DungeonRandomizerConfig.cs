@@ -75,7 +75,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
             if (!DungeonSeedFlavorUtil.TryParse(value, out _))
             {
                 logger.Warning($"DungeonSeedFlavor must be a known flavor name; resetting to Vanilla.");
-                ModConfig.DungeonSeedFlavor.Value = "Vanilla";
+                ModConfig.DungeonSeedFlavor.Value = NormalizeSeedFlavor(value);
                 return;
             }
 
@@ -84,15 +84,23 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
         private static void OnDungeonPickPoolModeChanged(MelonLogger.Instance logger, string value)
         {
-            if (!string.Equals(value, "WidenVanilla", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(value, "AllActiveUniform", StringComparison.OrdinalIgnoreCase))
+            if (!IsValidPoolMode(value))
             {
                 logger.Warning("DungeonPickPoolMode must be WidenVanilla or AllActiveUniform; resetting to WidenVanilla.");
-                ModConfig.DungeonPickPoolMode.Value = "WidenVanilla";
+                ModConfig.DungeonPickPoolMode.Value = DefaultPoolMode;
                 return;
             }
 
             ModConfig.NotifyChanged(ModConfig.DungeonPickPoolMode);
         }
+
+        internal static bool IsValidPoolMode(string? value) =>
+            string.Equals(value, "WidenVanilla", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "AllActiveUniform", StringComparison.OrdinalIgnoreCase);
+
+        internal static string DefaultPoolMode => "WidenVanilla";
+
+        internal static string NormalizeSeedFlavor(string? value) =>
+            DungeonSeedFlavorUtil.TryParse(value, out _) ? value! : "Vanilla";
     }
 }

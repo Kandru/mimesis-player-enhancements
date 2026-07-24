@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VWaitingRoom.cs:L179-221
     [HarmonyPatch(typeof(VWaitingRoom), nameof(VWaitingRoom.RollDiceDungeon))]
     internal static class VWaitingRoomRollDiceDungeonPatch
     {

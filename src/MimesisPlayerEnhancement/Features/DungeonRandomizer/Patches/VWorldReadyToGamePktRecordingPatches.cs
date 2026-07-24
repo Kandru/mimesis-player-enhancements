@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
+    // game@0.3.1 Assembly-CSharp/VWorld.cs:L2033-2039
     [HarmonyPatch(typeof(VWorld), nameof(VWorld.ReadyToGamePktRecording))]
     internal static class VWorldReadyToGamePktRecordingSeedPatch
     {
