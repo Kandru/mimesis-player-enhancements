@@ -21,7 +21,7 @@
 | [Mimic Tuning](./features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | [Player Tuning](./features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |
 | [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
-| [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
+| [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Only the host (lobby-wide) |
 
 **Host only** means only the host must enable it for the whole lobby to get the effect. Clients do not need the mod. **Your game only** — each player enables it on their own install; other players in the lobby are unchanged unless they enable it too.
 

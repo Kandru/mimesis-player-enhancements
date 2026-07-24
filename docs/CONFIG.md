@@ -464,7 +464,7 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`
 
-**Host only.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Clients without the mod stay in sync via vanilla network messages.
+**Only the host needs to enable this — the whole lobby gets the effect.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Joining clients without the mod stay in sync via vanilla network messages.
 
 **Weather modes** (`WeatherMode`):
 
@@ -489,11 +489,11 @@ Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
 | `Night` | **21:00** | ~24:00 | Dark (moonlit) |
 | `Midnight` | **00:00** | ~24:00 | Darkest at start |
 
-A continuous brightness slider is not available host-only; pick a preset above for darker or brighter runs.
+A continuous brightness slider is not available; pick a preset above for darker or brighter runs.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableWeather` | bool | `false` | — | Master toggle. Host only. |
+| `EnableWeather` | bool | `false` | — | Master toggle. Only the host needs to enable this. |
 | `WeatherMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Cycle` | Weather control mode. |
 | `FixedWeatherPreset` | string | `Sunny` | `Sunny`, `Rain`, `HeavyRain`, `Squall` | Preset when mode is Fixed. |
 | `DisableRandomWeather` | bool | `false` | — | Vanilla mode — strip random weather rolls. |
@@ -501,7 +501,7 @@ A continuous brightness slider is not available host-only; pick a preset above f
 | `WeatherCycleMinDelaySeconds` | float | `300` | ≥ `0` | Cycle min real seconds between steps. |
 | `WeatherCycleMaxDelaySeconds` | float | `600` | ≥ min | Cycle max real seconds between steps. |
 | `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). |
-| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableWeather`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Host only. |
+| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableWeather`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Only the host needs to enable this. |
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
