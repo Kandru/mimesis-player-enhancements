@@ -1,15 +1,40 @@
 # Dungeon Time
 
-**Scope:** Host only · **Config:** [`MimesisPlayerEnhancement_DungeonTime`](../CONFIG.md#dungeon-time--mimesisplayerenhancement_dungeontime)
+Extends the real dungeon shift clock when more players are present than a baseline. Only the host needs to turn this on; once enabled, everyone in the run gets the longer shift. Applied once when all members have entered the dungeon room. Useful so larger groups get a fairer window to finish a run.
 
-Adds extra time to each dungeon shift when you have more players than a baseline count. For example, with default settings, every player above four adds ten seconds to the clock. Gives bigger groups a fairer window to finish a run.
+## Configuration
 
-## Baseline and bonus
+Section: `[MimesisPlayerEnhancement_DungeonTime]`. Changes during an active gameplay scene are held until that scene ends (turning the feature **off** still applies immediately). Missing keys use the defaults below.
 
-When a dungeon shift starts (all members entered), the real shift deadline extends by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`.
+### `EnableDungeonTime`
 
-Applied once per dungeon room — late [Join Anytime](./join-anytime.md) arrivals do not add more time.
+Master switch on the host's config. When the host leaves this off, no bonus time is added for the session. Joining players do not need their own copy enabled.
 
-Value changes during an active gameplay scene are deferred until that scene ends (same as Spawn Scaling, Economy, etc.).
+| Value | Meaning |
+|---|---|
+| `true` | Host enables extra shift time for the whole party when above baseline |
+| `false` | No extra time |
 
-**Full config keys →** [Dungeon Time](../CONFIG.md#dungeon-time--mimesisplayerenhancement_dungeontime)
+Default: `false`
+
+### `DungeonTimeBaselinePlayerCount`
+
+Player count at or below which no extra time is added. Vanilla party size is 4. Values below 1 are rejected and reset to 1.
+
+| Value | Meaning |
+|---|---|
+| `1`… | Minimum allowed; each player above this count can earn bonus seconds |
+| `4` | Typical baseline — matches a full vanilla squad |
+
+Default: `4`
+
+### `ExtraShiftSecondsPerPlayerAboveBaseline`
+
+Real seconds added to the shift deadline for each player above the baseline. Example: baseline 4, this value 10, and 6 players → +20 seconds. `0` disables the bonus while leaving the feature enabled. Negative values are rejected and reset to 0.
+
+| Value | Meaning |
+|---|---|
+| `0` | No bonus seconds (even if enabled and above baseline) |
+| `> 0` | Seconds per extra player (fractions allowed) |
+
+Default: `10.0`
