@@ -236,7 +236,7 @@ Each **Auto Scale … By Player Count** toggle stacks with its per-type multipli
 
 ## Loot Multiplicator — `[MimesisPlayerEnhancement_LootMultiplicator]`
 
-**Host-only.** Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle using `LootMultiplicatorPlayerCountScaleRate` per player above 4.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod. Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle using `LootMultiplicatorPlayerCountScaleRate` per player above 4. Values below `1` do not reduce loot quantity today.
 
 ### Map loot types
 
@@ -263,7 +263,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableLootMultiplicator` | bool | `false` | — | Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only. |
+| `EnableLootMultiplicator` | bool | `false` | — | Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only — only the host must enable this for the whole lobby; joining clients do not need the mod. |
 | `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0. |
 | `AutoScaleMapLootByPlayerCount` | bool | `true` | — | Player-count scaling for map loot. |
 | `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for map-placed pickup loot: fixed-marker copies/respawns/stacks, random-pool spawn count (via scrap budget), and consumable stacks. With allowlist/blocklist, pair with `AutoScaleMapLootBudgetForFilter` (default on) so this still targets spawn count. |

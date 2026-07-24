@@ -15,7 +15,7 @@
 | [Web Dashboard](./features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host enables for lobby |
 | [Player Announcements](./features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host enables for lobby |
 | [Spawn Scaling](./features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host enables for lobby |
-| [Loot Multiplicator](./features/loot-multiplicator.md) | More or less loot on the map | Host enables for lobby |
+| [Loot Multiplicator](./features/loot-multiplicator.md) | Scale map loot and enemy drops; filter items; convert mimic decoys to real loot | Host enables for lobby |
 | [Economy](./features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host enables for lobby |
 | [Dungeon Time](./features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host enables for lobby |
 | [Mimic Tuning](./features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host enables for lobby |
