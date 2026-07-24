@@ -164,20 +164,13 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static void CommitPendingOnSceneEnd()
         {
+            // Keep DeferredModules until FlushDeferredModuleSync so SyncFromConfig still runs.
             ApplyPendingToActive();
-            DeferredModules.Clear();
-            _deferInfoLogged = false;
         }
 
         internal static void FlushDeferredModuleSync(Action<string> syncAction)
         {
-            if (DeferredModules.Count == 0)
-            {
-                return;
-            }
-
-            string[] modules = [.. DeferredModules];
-            DeferredModules.Clear();
+            string[] modules = SceneScopedConfigDeferralLogic.TakeModulesForDeferredSync(DeferredModules);
             _deferInfoLogged = false;
 
             foreach (string moduleName in modules)

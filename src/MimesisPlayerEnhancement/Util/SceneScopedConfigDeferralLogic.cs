@@ -75,5 +75,21 @@ namespace MimesisPlayerEnhancement.Util
                 string.Equals(keyChange.SectionId, sectionId, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(keyChange.Key, masterToggleKey, StringComparison.OrdinalIgnoreCase));
         }
+
+        /// <summary>
+        /// Snapshot deferred module names for SyncFromConfig, then clear the set.
+        /// Must run after pending snapshots are applied; commit must not clear deferred names first.
+        /// </summary>
+        internal static string[] TakeModulesForDeferredSync(HashSet<string> deferredModules)
+        {
+            if (deferredModules.Count == 0)
+            {
+                return [];
+            }
+
+            string[] modules = [.. deferredModules];
+            deferredModules.Clear();
+            return modules;
+        }
     }
 }

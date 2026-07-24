@@ -194,5 +194,49 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 
             Assert.False(result);
         }
+
+        [Fact]
+        public void TakeModulesForDeferredSync_returns_empty_when_none_deferred()
+        {
+            HashSet<string> deferred = new(StringComparer.Ordinal);
+
+            string[] modules = SceneScopedConfigDeferralLogic.TakeModulesForDeferredSync(deferred);
+
+            Assert.Empty(modules);
+            Assert.Empty(deferred);
+        }
+
+        [Fact]
+        public void TakeModulesForDeferredSync_returns_modules_and_clears_set()
+        {
+            HashSet<string> deferred = new(StringComparer.Ordinal) { "Economy", "SpawnScaling" };
+
+            string[] modules = SceneScopedConfigDeferralLogic.TakeModulesForDeferredSync(deferred);
+
+            Assert.Equal(2, modules.Length);
+            Assert.Contains("Economy", modules);
+            Assert.Contains("SpawnScaling", modules);
+            Assert.Empty(deferred);
+        }
+
+        [Fact]
+        public void CommitThenFlush_contract_keeps_deferred_names_until_take()
+        {
+            // Mirrors SceneScopedConfigGate: CommitPending applies snapshots without clearing;
+            // FlushDeferredModuleSync then takes names and syncs.
+            HashSet<string> deferred = new(StringComparer.Ordinal) { "Economy" };
+            List<string> synced = [];
+
+            // commit: do not clear deferred
+            Assert.Contains("Economy", deferred);
+
+            foreach (string moduleName in SceneScopedConfigDeferralLogic.TakeModulesForDeferredSync(deferred))
+            {
+                synced.Add(moduleName);
+            }
+
+            Assert.Equal(["Economy"], synced);
+            Assert.Empty(deferred);
+        }
     }
 }

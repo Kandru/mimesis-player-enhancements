@@ -25,7 +25,7 @@ Mod.cs (MelonMod entry)
   ├── Harmony → FeatureModules.All[].ApplyPatches
   ├── SyncFromConfig → FeatureModules.All[].SyncFromConfig (full or affected modules)
   ├── OnUpdate → modules; throttled modules batched on an interval
-  ├── SaveSlotConfigLifecycle.Tick (sidecar retry load, session-end teardown)
+  ├── SessionLifecycle.Tick (sidecar retry load, session-end teardown)
   └── OnDeinitializeMelon → FeatureModules.All[].OnDeinitialize
 ```
 
@@ -129,7 +129,7 @@ Account-wide: `MMGameData.mpe-quick-presets.sav` (quick settings preset catalog)
 
 | Phase | Behavior |
 |-------|----------|
-| **Save load** | `GameSessionInfoLoadPatches` → `OnSaveSlotLoaded` (always loads all sidecar kinds); `SaveSlotConfigLifecycle` retries via `EnsureSaveSlotLoaded` if host was not ready |
+| **Save load** | `GameSessionInfoLoadPatches` → `OnSaveSlotLoaded` (always loads all sidecar kinds); `SessionLifecycle` retries via `EnsureSaveSlotLoaded` if host was not ready |
 | **Gameplay** | In-memory only; stores mark dirty on change |
 | **Vanilla save** | `MaintenanceRoom.SaveGameData` success → `OnGameSaved` always binds slot, syncs players, and flushes all sidecars (sync on manual save) |
 | **Session end** | `SessionJoined` false → `OnSessionEnded` clears runtime state, reloads global config (**no disk write**) |

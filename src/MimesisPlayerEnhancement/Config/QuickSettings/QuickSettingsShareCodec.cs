@@ -20,11 +20,19 @@ namespace MimesisPlayerEnhancement
 
         internal static string Encode(string name, Dictionary<string, Dictionary<string, string>> values)
         {
+            return EncodePayload(name, FilterAllowedValues(values));
+        }
+
+        /// <summary>
+        /// Encode already-normalized values without ModConfigRegistry filtering (tests / trusted callers).
+        /// </summary>
+        internal static string EncodePayload(string name, Dictionary<string, Dictionary<string, string>> values)
+        {
             JObject root = new()
             {
                 ["v"] = 1,
                 ["name"] = name ?? "",
-                ["values"] = SerializeValues(FilterAllowedValues(values)),
+                ["values"] = SerializeValues(values),
             };
 
             byte[] jsonBytes = Encoding.UTF8.GetBytes(root.ToString(Newtonsoft.Json.Formatting.None));
@@ -34,61 +42,36 @@ namespace MimesisPlayerEnhancement
 
         internal static bool TryDecode(string shareString, out SharePayload payload, out string? error)
         {
+            if (!TryDecodePayload(shareString, out payload, out error))
+            {
+                return false;
+            }
+
+            payload.Values = FilterAllowedValues(payload.Values);
+            if (payload.Values.Count == 0)
+            {
+                error = ModL10n.Get("api.quick_share_empty");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Decode share string to raw values without ModConfigRegistry filtering (tests / inspection).
+        /// </summary>
+        internal static bool TryDecodePayload(string shareString, out SharePayload payload, out string? error)
+        {
             payload = new SharePayload();
             error = null;
 
-            if (string.IsNullOrWhiteSpace(shareString))
+            if (!TryDecodeRoot(shareString, out JObject root, out error))
             {
-                error = ModL10n.Get("api.quick_share_invalid");
-                return false;
-            }
-
-            string trimmed = shareString.Trim();
-            if (!trimmed.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                error = ModL10n.Get("api.quick_share_invalid");
-                return false;
-            }
-
-            string encoded = trimmed[Prefix.Length..];
-            byte[] compressed;
-            try
-            {
-                compressed = Base64UrlDecode(encoded);
-            }
-            catch (Exception ex)
-            {
-                error = ModL10n.Get("api.quick_share_invalid") + " " + ex.Message;
-                return false;
-            }
-
-            byte[] jsonBytes;
-            try
-            {
-                jsonBytes = Decompress(compressed);
-            }
-            catch (Exception ex)
-            {
-                error = ModL10n.Get("api.quick_share_invalid") + " " + ex.Message;
-                return false;
-            }
-
-            JObject? root = ModJson.Deserialize<JObject>(Encoding.UTF8.GetString(jsonBytes));
-            if (root == null)
-            {
-                error = ModL10n.Get("api.quick_share_invalid");
-                return false;
-            }
-
-            int version = root.Value<int?>("v") ?? 0;
-            if (version != 1)
-            {
-                error = ModL10n.Get("api.quick_share_unsupported_version");
                 return false;
             }
 
             payload.Name = root.Value<string>("name") ?? "";
-            payload.Values = ParseValues(root["values"] as JObject);
+            payload.Values = ParseValuesRaw(root["values"] as JObject);
             if (payload.Values.Count == 0)
             {
                 error = ModL10n.Get("api.quick_share_empty");
@@ -143,7 +126,66 @@ namespace MimesisPlayerEnhancement
             return root;
         }
 
-        private static Dictionary<string, Dictionary<string, string>> ParseValues(JObject? valuesObject)
+        private static bool TryDecodeRoot(string shareString, out JObject root, out string? error)
+        {
+            root = new JObject();
+            error = null;
+
+            if (string.IsNullOrWhiteSpace(shareString))
+            {
+                error = ModL10n.Get("api.quick_share_invalid");
+                return false;
+            }
+
+            string trimmed = shareString.Trim();
+            if (!trimmed.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                error = ModL10n.Get("api.quick_share_invalid");
+                return false;
+            }
+
+            string encoded = trimmed[Prefix.Length..];
+            byte[] compressed;
+            try
+            {
+                compressed = Base64UrlDecode(encoded);
+            }
+            catch (Exception ex)
+            {
+                error = ModL10n.Get("api.quick_share_invalid") + " " + ex.Message;
+                return false;
+            }
+
+            byte[] jsonBytes;
+            try
+            {
+                jsonBytes = Decompress(compressed);
+            }
+            catch (Exception ex)
+            {
+                error = ModL10n.Get("api.quick_share_invalid") + " " + ex.Message;
+                return false;
+            }
+
+            JObject? parsed = ModJson.Deserialize<JObject>(Encoding.UTF8.GetString(jsonBytes));
+            if (parsed == null)
+            {
+                error = ModL10n.Get("api.quick_share_invalid");
+                return false;
+            }
+
+            int version = parsed.Value<int?>("v") ?? 0;
+            if (version != 1)
+            {
+                error = ModL10n.Get("api.quick_share_unsupported_version");
+                return false;
+            }
+
+            root = parsed;
+            return true;
+        }
+
+        private static Dictionary<string, Dictionary<string, string>> ParseValuesRaw(JObject? valuesObject)
         {
             Dictionary<string, Dictionary<string, string>> values = QuickSettingsValuesBuilder.CreateMap();
             if (valuesObject == null)
@@ -169,7 +211,7 @@ namespace MimesisPlayerEnhancement
                 }
             }
 
-            return FilterAllowedValues(values);
+            return values;
         }
 
         private static byte[] Compress(byte[] input)
