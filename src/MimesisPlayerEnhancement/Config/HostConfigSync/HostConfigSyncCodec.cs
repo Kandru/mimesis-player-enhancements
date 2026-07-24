@@ -7,6 +7,19 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
     {
         internal const int ProtocolVersion = 1;
         internal const int ChunkPayloadBytes = 1024;
+
+        /// <summary>Max chars accepted per chunk on receive (send uses <see cref="ChunkPayloadBytes"/>).</summary>
+        internal const int MaxReceivedChunkPayloadChars = 4096;
+
+        /// <summary>Max chunks per snapshot (~512 KB at 1 KB/chunk).</summary>
+        internal const int MaxChunkCount = 512;
+
+        /// <summary>Max reassembled JSON length before deserialize.</summary>
+        internal const int MaxTotalSnapshotChars = 512 * 1024;
+
+        /// <summary>Max section/key pairs accepted after deserialize (legit save overrides are far smaller).</summary>
+        internal const int MaxSnapshotEntryCount = 2048;
+
         private const string Feature = "HostConfigSync";
 
         internal static bool ShouldSyncKey(string sectionId, string key)
@@ -118,7 +131,67 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
             }
 
             payload = args[(fourth + 1)..];
-            return chunkCount > 0 && chunkIndex >= 0 && chunkIndex < chunkCount;
+            if (chunkCount > MaxChunkCount || chunkCount <= 0 || chunkIndex < 0 || chunkIndex >= chunkCount)
+            {
+                return false;
+            }
+
+            if (payload.Length > MaxReceivedChunkPayloadChars)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        internal static bool TryCountSnapshotEntries(HostConfigSyncEnvelope envelope, out int entryCount)
+        {
+            entryCount = 0;
+            if (envelope?.Values == null)
+            {
+                return true;
+            }
+
+            foreach (KeyValuePair<string, Dictionary<string, string>> section in envelope.Values)
+            {
+                if (section.Value == null)
+                {
+                    continue;
+                }
+
+                entryCount += section.Value.Count;
+                if (entryCount > MaxSnapshotEntryCount)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        internal static int SumChunkPayloadChars(IReadOnlyDictionary<int, string> chunksByIndex)
+        {
+            int total = 0;
+            foreach (string part in chunksByIndex.Values)
+            {
+                if (part == null)
+                {
+                    continue;
+                }
+
+                total += part.Length;
+                if (total > MaxTotalSnapshotChars)
+                {
+                    return total;
+                }
+            }
+
+            return total;
+        }
+
+        internal static bool IsWithinTotalSnapshotLimit(int totalChars)
+        {
+            return totalChars >= 0 && totalChars <= MaxTotalSnapshotChars;
         }
 
         internal static bool TryReassembleChunks(
@@ -133,7 +206,13 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 return false;
             }
 
-            System.Text.StringBuilder builder = new();
+            int totalChars = SumChunkPayloadChars(chunksByIndex);
+            if (!IsWithinTotalSnapshotLimit(totalChars))
+            {
+                return false;
+            }
+
+            System.Text.StringBuilder builder = new(totalChars);
             for (int i = 0; i < chunkCount; i++)
             {
                 if (!chunksByIndex.TryGetValue(i, out string? part))

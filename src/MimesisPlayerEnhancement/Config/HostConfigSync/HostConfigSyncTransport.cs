@@ -164,7 +164,7 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                     out int chunkCount,
                     out string payload))
             {
-                ModLog.Debug(Feature, "Ignored malformed config chunk.");
+                ModLog.Debug(Feature, "Ignored malformed or oversized config chunk.");
                 return true;
             }
 
@@ -188,6 +188,13 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
             }
 
             _receiveChunks[chunkIndex] = payload;
+            if (!HostConfigSyncCodec.IsWithinTotalSnapshotLimit(HostConfigSyncCodec.SumChunkPayloadChars(_receiveChunks)))
+            {
+                ModLog.Warn(Feature, "Rejected config snapshot — total payload exceeds limit.");
+                _receiveChunks.Clear();
+                return true;
+            }
+
             if (_receiveChunks.Count < chunkCount)
             {
                 return true;
@@ -206,6 +213,12 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
             if (envelope == null)
             {
                 ModLog.Warn(Feature, "Config snapshot decode failed.");
+                return true;
+            }
+
+            if (!HostConfigSyncCodec.TryCountSnapshotEntries(envelope, out _))
+            {
+                ModLog.Warn(Feature, "Rejected config snapshot — too many entries.");
                 return true;
             }
 

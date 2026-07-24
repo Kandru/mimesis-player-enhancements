@@ -34,6 +34,12 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 return false;
             }
 
+            if (!HostConfigSyncCodec.TryCountSnapshotEntries(envelope, out _))
+            {
+                ModLog.Warn(Feature, "Ignoring config snapshot — too many entries.");
+                return false;
+            }
+
             if (envelope.Rev < Revision && IsActive)
             {
                 ModLog.Debug(Feature, $"Ignoring stale config snapshot — rev={envelope.Rev}, active={Revision}.");

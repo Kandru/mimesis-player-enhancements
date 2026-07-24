@@ -90,6 +90,56 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
+        public void TryParseChunkArgs_rejects_oversized_chunk_count_and_payload()
+        {
+            string hugePayload = new string('a', HostConfigSyncCodec.MaxReceivedChunkPayloadChars + 1);
+            string oversizePayloadArgs = HostConfigSyncCodec.FormatChunkArgs(1, 0, 1, hugePayload);
+            Assert.False(HostConfigSyncCodec.TryParseChunkArgs(
+                oversizePayloadArgs,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _));
+
+            string oversizeCountArgs =
+                $"{HostConfigSyncCodec.ProtocolVersion}|1|0|{HostConfigSyncCodec.MaxChunkCount + 1}|x";
+            Assert.False(HostConfigSyncCodec.TryParseChunkArgs(
+                oversizeCountArgs,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _));
+        }
+
+        [Fact]
+        public void TryReassembleChunks_rejects_total_size_above_limit()
+        {
+            Dictionary<int, string> chunks = new()
+            {
+                [0] = new string('x', HostConfigSyncCodec.MaxTotalSnapshotChars),
+                [1] = "y",
+            };
+
+            Assert.False(HostConfigSyncCodec.TryReassembleChunks(chunks, revision: 1, chunkCount: 2, out _));
+        }
+
+        [Fact]
+        public void TryCountSnapshotEntries_rejects_too_many_keys()
+        {
+            HostConfigSyncEnvelope envelope = new();
+            Dictionary<string, string> section = new(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < HostConfigSyncCodec.MaxSnapshotEntryCount + 1; i++)
+            {
+                section[$"Key{i}"] = "true";
+            }
+
+            envelope.Values["MimesisPlayerEnhancement_Economy"] = section;
+            Assert.False(HostConfigSyncCodec.TryCountSnapshotEntries(envelope, out _));
+        }
+
+        [Fact]
         public void IsCompatibleModVersion_accepts_same_major()
         {
             string local = VersionInfo.ModuleVersion;
