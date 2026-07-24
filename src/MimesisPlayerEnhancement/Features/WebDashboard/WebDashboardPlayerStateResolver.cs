@@ -2,66 +2,119 @@ using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
+    internal enum WebDashboardActivityRoomKind
+    {
+        Unknown = 0,
+        MaintenanceRoom = 1,
+        WaitingRoom = 2,
+    }
+
+    internal enum WebDashboardActivitySceneKind
+    {
+        Unknown = 0,
+        Maintenance = 1,
+        GamePlay = 2,
+        TramWaiting = 3,
+        DeathMatch = 4,
+    }
+
     internal static class WebDashboardPlayerStateResolver
     {
         internal static void ApplyActivityState(WebDashboardPlayerDto dto, SessionContext? context)
         {
-            dto.ActivityState = ResolveStateCode(dto, context);
-            dto.ActivityDetail = ResolveDetail(dto, context);
-        }
-
-        private static string ResolveStateCode(WebDashboardPlayerDto dto, SessionContext? context)
-        {
             if (dto.PlayerUid == 0)
             {
-                return "connecting";
+                dto.ActivityState = "connecting";
+                dto.ActivityDetail = string.Empty;
+                return;
             }
 
             VPlayer? vPlayer = ResolveVPlayer(dto, context);
-            if (vPlayer == null)
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            GameMainBase? main = pdata?.main;
+
+            dto.ActivityState = ResolveActivityState(
+                dto.PlayerUid,
+                hasPlayer: vPlayer != null,
+                levelLoadCompleted: vPlayer?.LevelLoadCompleted == true,
+                hasLateJoinLabel: !string.IsNullOrWhiteSpace(dto.LateJoinLabel),
+                roomKind: ClassifyRoom(vPlayer?.VRoom),
+                sceneKind: ClassifyScene(main));
+            dto.ActivityDetail = ResolveDetail(dto, vPlayer, pdata);
+        }
+
+        internal static string ResolveActivityState(
+            long playerUid,
+            bool hasPlayer,
+            bool levelLoadCompleted,
+            bool hasLateJoinLabel,
+            WebDashboardActivityRoomKind roomKind,
+            WebDashboardActivitySceneKind sceneKind)
+        {
+            if (playerUid == 0 || !hasPlayer)
             {
                 return "connecting";
             }
 
-            if (!vPlayer.LevelLoadCompleted)
+            if (!levelLoadCompleted)
             {
                 return "loading";
             }
 
-            if (!string.IsNullOrWhiteSpace(dto.LateJoinLabel))
+            if (hasLateJoinLabel)
             {
                 return "late_join";
             }
 
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-            GameMainBase? main = pdata?.main;
-
-            return vPlayer.VRoom switch
+            return (roomKind, sceneKind) switch
             {
-                MaintenanceRoom => main is MaintenanceScene ? "maintenance_room" : "maintenance",
-                VWaitingRoom => "tram",
-                _ when main is GamePlayScene => "dungeon",
-                _ when main is InTramWaitingScene => "tram",
-                _ when main is MaintenanceScene => "maintenance_bay",
-                _ when main is DeathMatchScene => "death_match",
+                (WebDashboardActivityRoomKind.MaintenanceRoom, WebDashboardActivitySceneKind.Maintenance)
+                    => "maintenance_room",
+                (WebDashboardActivityRoomKind.MaintenanceRoom, _) => "maintenance",
+                (WebDashboardActivityRoomKind.WaitingRoom, _) => "tram",
+                (_, WebDashboardActivitySceneKind.GamePlay) => "dungeon",
+                (_, WebDashboardActivitySceneKind.TramWaiting) => "tram",
+                (_, WebDashboardActivitySceneKind.Maintenance) => "maintenance_bay",
+                (_, WebDashboardActivitySceneKind.DeathMatch) => "death_match",
                 _ => "online",
             };
         }
 
-        private static string ResolveDetail(WebDashboardPlayerDto dto, SessionContext? context)
+        internal static string ResolveLoadingSceneKeyFromTypeName(string? typeName)
         {
-            if (dto.PlayerUid == 0)
+            return typeName switch
+            {
+                nameof(InTramWaitingScene) => "tram",
+                nameof(MaintenanceScene) => "maintenance",
+                nameof(GamePlayScene) => "dungeon",
+                nameof(DeathMatchScene) => "death_match",
+                null or "" => "session",
+                _ => typeName,
+            };
+        }
+
+        private static string ResolveLoadingSceneKey(GameMainBase? main)
+        {
+            return main switch
+            {
+                InTramWaitingScene => "tram",
+                MaintenanceScene => "maintenance",
+                GamePlayScene => "dungeon",
+                DeathMatchScene => "death_match",
+                null => "session",
+                _ => main.GetType().Name,
+            };
+        }
+
+        private static string ResolveDetail(
+            WebDashboardPlayerDto dto,
+            VPlayer? vPlayer,
+            Hub.PersistentData? pdata)
+        {
+            if (dto.PlayerUid == 0 || vPlayer == null)
             {
                 return string.Empty;
             }
-
-            VPlayer? vPlayer = ResolveVPlayer(dto, context);
-            if (vPlayer == null)
-            {
-                return string.Empty;
-            }
-
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
 
             if (!vPlayer.LevelLoadCompleted)
             {
@@ -89,7 +142,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return string.Empty;
             }
 
-            if (pdata?.main is not GamePlayScene gps)
+            if (pdata?.main is not GamePlayScene)
             {
                 return string.Empty;
             }
@@ -115,16 +168,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return vPlayer;
         }
 
-        private static string ResolveLoadingSceneKey(GameMainBase? main)
+        private static WebDashboardActivityRoomKind ClassifyRoom(IVroom? room)
+        {
+            return room switch
+            {
+                MaintenanceRoom => WebDashboardActivityRoomKind.MaintenanceRoom,
+                VWaitingRoom => WebDashboardActivityRoomKind.WaitingRoom,
+                _ => WebDashboardActivityRoomKind.Unknown,
+            };
+        }
+
+        private static WebDashboardActivitySceneKind ClassifyScene(GameMainBase? main)
         {
             return main switch
             {
-                InTramWaitingScene => "tram",
-                MaintenanceScene => "maintenance",
-                GamePlayScene => "dungeon",
-                DeathMatchScene => "death_match",
-                null => "session",
-                _ => main.GetType().Name,
+                MaintenanceScene => WebDashboardActivitySceneKind.Maintenance,
+                GamePlayScene => WebDashboardActivitySceneKind.GamePlay,
+                InTramWaitingScene => WebDashboardActivitySceneKind.TramWaiting,
+                DeathMatchScene => WebDashboardActivitySceneKind.DeathMatch,
+                _ => WebDashboardActivitySceneKind.Unknown,
             };
         }
     }

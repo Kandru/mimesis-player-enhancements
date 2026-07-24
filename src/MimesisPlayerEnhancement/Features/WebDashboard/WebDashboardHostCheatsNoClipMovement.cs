@@ -28,26 +28,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly FieldInfo HubConsoleField =
             typeof(Hub).GetField("console", InstanceFlags)!;
 
-        private static readonly MethodInfo RotateByInputMethod =
-            AccessTools.Method(typeof(ProtoActor), "RotateByInput")!;
+        private static readonly Action<ProtoActor> RotateByInput =
+            CreateInstanceAction(AccessTools.Method(typeof(ProtoActor), "RotateByInput")!);
 
-        private static readonly MethodInfo GetMovementInputMethod =
-            AccessTools.Method(typeof(ProtoActor), "GetMovementInput")!;
+        private static readonly Func<ProtoActor, Vector2> GetMovementInput =
+            CreateInstanceFunc<Vector2>(AccessTools.Method(typeof(ProtoActor), "GetMovementInput")!);
 
-        private static readonly MethodInfo ProcessSprintKeyMethod =
-            AccessTools.Method(typeof(ProtoActor), "ProcessSprintKey", [typeof(bool)])!;
+        private static readonly Func<ProtoActor, bool, bool> ProcessSprintKey =
+            (Func<ProtoActor, bool, bool>)Delegate.CreateDelegate(
+                typeof(Func<ProtoActor, bool, bool>),
+                null,
+                AccessTools.Method(typeof(ProtoActor), "ProcessSprintKey", [typeof(bool)])!);
 
-        private static readonly MethodInfo CalculateSpeedMethod =
-            AccessTools.Method(typeof(ProtoActor), "CaculateSpeed")!;
+        private static readonly Func<ProtoActor, float> CalculateSpeed =
+            CreateInstanceFunc<float>(AccessTools.Method(typeof(ProtoActor), "CaculateSpeed")!);
 
-        private static readonly MethodInfo EnableCcMethod =
-            AccessTools.Method(typeof(ProtoActor), "EnableCCWithSafeSpawnIfAvatar")!;
+        private static readonly Action<ProtoActor> EnableCc =
+            CreateInstanceAction(AccessTools.Method(typeof(ProtoActor), "EnableCCWithSafeSpawnIfAvatar")!);
 
-        private static readonly PropertyInfo WalkSpeedProperty =
-            AccessTools.Property(typeof(ProtoActor), "walkSpeed")!;
+        private static readonly Func<ProtoActor, float> GetWalkSpeed =
+            CreateInstanceGetter<float>(AccessTools.Property(typeof(ProtoActor), "walkSpeed")!);
 
-        private static readonly PropertyInfo RunSpeedProperty =
-            AccessTools.Property(typeof(ProtoActor), "runSpeed")!;
+        private static readonly Func<ProtoActor, float> GetRunSpeed =
+            CreateInstanceGetter<float>(AccessTools.Property(typeof(ProtoActor), "runSpeed")!);
 
         private static Type? _consoleIsActiveMethodOwner;
         private static MethodInfo? _consoleIsActiveMethod;
@@ -134,12 +137,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Apply(ProtoActor actor)
         {
-            RotateByInputMethod.Invoke(actor, null);
+            RotateByInput(actor);
 
-            Vector2 movementInput = (Vector2)(GetMovementInputMethod.Invoke(actor, null) ?? Vector2.zero);
-            _ = (bool)(ProcessSprintKeyMethod.Invoke(actor, [actor.isSprinting]) ?? false);
-            float speed = (float)(CalculateSpeedMethod.Invoke(actor, null) ?? 0f);
-            speed *= PlayerTuningResolver.NoClipSpeedMultiplier;
+            Vector2 movementInput = GetMovementInput(actor);
+            _ = ProcessSprintKey(actor, actor.isSprinting);
+            float speed = CalculateSpeed(actor) * PlayerTuningResolver.NoClipSpeedMultiplier;
 
             Transform? camRoot = CamRootField.GetValue(actor) as Transform;
             if (camRoot == null)
@@ -168,9 +170,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Vector3 velocity = moveDirection.sqrMagnitude > 0.0001f
                         ? moveDirection.normalized * speed
                         : Vector3.zero;
-                    float walkSpeed = WalkSpeedProperty.GetValue(actor) is float walk ? walk : speed;
-                    float runSpeed = RunSpeedProperty.GetValue(actor) is float run ? run : speed;
-                    puppet.Move(velocity, walkSpeed, runSpeed);
+                    puppet.Move(velocity, GetWalkSpeed(actor), GetRunSpeed(actor));
                 }
             }
             catch
@@ -181,7 +181,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void RestoreCharacterController(ProtoActor actor)
         {
-            EnableCcMethod.Invoke(actor, null);
+            EnableCc(actor);
         }
 
         internal static void TryRestoreActor(long playerUid)
@@ -228,6 +228,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 enabledProperty.SetValue(controller, enabled);
             }
+        }
+
+        private static Action<ProtoActor> CreateInstanceAction(MethodInfo method)
+        {
+            return (Action<ProtoActor>)Delegate.CreateDelegate(typeof(Action<ProtoActor>), null, method);
+        }
+
+        private static Func<ProtoActor, T> CreateInstanceFunc<T>(MethodInfo method)
+        {
+            return (Func<ProtoActor, T>)Delegate.CreateDelegate(typeof(Func<ProtoActor, T>), null, method);
+        }
+
+        private static Func<ProtoActor, T> CreateInstanceGetter<T>(PropertyInfo property)
+        {
+            MethodInfo getter = property.GetGetMethod(nonPublic: true)
+                ?? throw new InvalidOperationException($"Getter missing for {property.DeclaringType?.Name}.{property.Name}");
+            return CreateInstanceFunc<T>(getter);
         }
     }
 }

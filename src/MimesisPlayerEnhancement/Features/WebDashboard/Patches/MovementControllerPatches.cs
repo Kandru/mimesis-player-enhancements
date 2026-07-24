@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1008-1028
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.CheckFallDamage))]
     internal static class CheckFallDamagePatch
     {
@@ -11,6 +12,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static bool Prefix(MovementController __instance, ref float __result)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return true;
+            }
+
             if (CreatureField.GetValue(__instance) is VCreature creature
                 && WebDashboardHostCheatsRuntime.IsNoClipActive(creature))
             {
@@ -22,6 +28,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1030-1119
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStart))]
     internal static class DirectMoveStartPatch
     {
@@ -31,6 +38,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static void Prefix(MovementController __instance)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return;
+            }
+
             if (CreatureField.GetValue(__instance) is VCreature creature)
             {
                 WebDashboardHostCheatsRuntime.BeginMoveValidationBypass(creature);
@@ -51,6 +63,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1121-1161
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStop))]
     internal static class DirectMoveStopPatch
     {
@@ -60,6 +73,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static void Prefix(MovementController __instance)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return;
+            }
+
             if (CreatureField.GetValue(__instance) is VCreature creature)
             {
                 WebDashboardHostCheatsRuntime.BeginMoveValidationBypass(creature);

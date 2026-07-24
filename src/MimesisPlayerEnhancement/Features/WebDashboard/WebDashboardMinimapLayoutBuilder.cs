@@ -24,6 +24,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSnapshotCache.MarkDirty();
         }
 
+        internal static void ClearOnSessionEnded()
+        {
+            _cachedRunKey = "";
+            _rebuildRequested = false;
+            Current = new WebDashboardMinimapLayoutDto();
+            LayoutVersion = 0;
+            WebDashboardMinimapTileRegistry.Clear();
+            WebDashboardMinimapFloorRegistry.Clear();
+        }
+
         internal static void EnsureLayout()
         {
             Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();

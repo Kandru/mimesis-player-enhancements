@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
+    // game@0.3.1 Assembly-CSharp/StatManager.cs:L663-672
     [HarmonyPatch(typeof(StatManager), nameof(StatManager.AddMutableStat))]
     internal static class BlockContaAddMutableStatPatch
     {
@@ -18,6 +19,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/StatManager.cs:L655-661
     [HarmonyPatch(typeof(StatManager), nameof(StatManager.SetMutableStat))]
     internal static class BlockContaSetMutableStatPatch
     {
@@ -32,7 +34,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 
         internal static bool ShouldBlock(StatManager instance, MutableStatType type)
         {
-            if (type != MutableStatType.Conta || SelfField == null)
+            if (type != MutableStatType.Conta
+                || !WebDashboardHostCheatsRuntime.HasActiveGodMode
+                || SelfField == null)
             {
                 return false;
             }

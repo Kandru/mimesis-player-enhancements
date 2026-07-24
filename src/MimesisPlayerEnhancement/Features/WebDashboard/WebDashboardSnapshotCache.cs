@@ -74,6 +74,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSnapshotEventCache.Clear();
             WebDashboardHostCheatsRuntime.DisableAll("session ended");
             WebDashboardCatalogCache.Invalidate();
+            WebDashboardMinimapLayoutBuilder.ClearOnSessionEnded();
         }
 
         internal static void MarkDirty()

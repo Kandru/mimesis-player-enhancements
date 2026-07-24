@@ -17,6 +17,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             !_roomTransitionSuspend
             && (NoClipPlayerUids.Count > 0 || WebDashboardHostCheatsClientRuntime.IsLocalNoClipEnabled());
 
+        internal static bool HasActiveGodMode =>
+            !_roomTransitionSuspend && GodModePlayerUids.Count > 0;
+
         internal static VCreature? MoveValidationCreature => _moveValidationCreature;
 
         internal static bool IsGodModeEnabled(long playerUid) =>
@@ -238,7 +241,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool IsNoClipActiveInRoom(IVroom room)
         {
-            if (_roomTransitionSuspend)
+            if (_roomTransitionSuspend || NoClipPlayerUids.Count == 0)
             {
                 return false;
             }

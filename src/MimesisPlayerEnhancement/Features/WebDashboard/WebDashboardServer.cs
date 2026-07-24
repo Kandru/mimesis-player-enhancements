@@ -162,6 +162,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void StartBoundListener(HttpListener listener, string prefix, int configuredPort)
         {
+            // Ensure any prior accept loop has fully exited before publishing a new listener.
+            JoinListenerThread();
+
             _listener = listener;
             _listenUrl = prefix;
             _running = true;
@@ -170,7 +173,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardSnapshotCache.MarkDirty();
             WebDashboardSnapshotCache.Refresh(_listenUrl);
 
-            _listenerThread = new Thread(ListenLoop)
+            HttpListener boundListener = listener;
+            _listenerThread = new Thread(() => ListenLoop(boundListener))
             {
                 IsBackground = true,
                 Name = "MimesisWebDashboard",
@@ -242,16 +246,36 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            _listenerThread = null;
+            JoinListenerThread();
         }
 
-        private static void ListenLoop()
+        private static void JoinListenerThread()
         {
-            while (_running && _listener != null)
+            Thread? thread = _listenerThread;
+            _listenerThread = null;
+            if (thread == null || !thread.IsAlive || thread == Thread.CurrentThread)
+            {
+                return;
+            }
+
+            try
+            {
+                _ = thread.Join(1000);
+            }
+            catch
+            {
+                /* shutting down */
+            }
+        }
+
+        private static void ListenLoop(HttpListener listener)
+        {
+            // Capture the bound listener so a restart cannot make this loop accept on a newer one.
+            while (_running)
             {
                 try
                 {
-                    HttpListenerContext context = _listener.GetContext();
+                    HttpListenerContext context = listener.GetContext();
                     _ = ThreadPool.QueueUserWorkItem(_ => WebDashboardRouter.Handle(context));
                 }
                 catch (HttpListenerException) when (!_running)
@@ -264,10 +288,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
                 catch (Exception ex)
                 {
-                    if (_running)
+                    if (!_running)
                     {
-                        ModLog.Warn(Feature, $"Accept loop error: {ex.Message}");
+                        break;
                     }
+
+                    ModLog.Warn(Feature, $"Accept loop error: {ex.Message}");
                 }
             }
         }

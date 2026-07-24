@@ -19,6 +19,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly AutoResetEvent BroadcastSignal = new(false);
         private static Thread? _broadcastThread;
         private static volatile bool _shuttingDown;
+        private static int _broadcastGeneration;
         private static volatile bool _pendingSnapshotBroadcast;
         private static volatile bool _pendingMinimapBroadcast;
         private static int _clientCount;
@@ -38,13 +39,24 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             lock (Gate)
             {
-                if (_broadcastThread != null && _broadcastThread.IsAlive)
+                if (_broadcastThread != null && _broadcastThread.IsAlive && !_shuttingDown)
+                {
+                    return;
+                }
+            }
+
+            StopBroadcastThread();
+
+            lock (Gate)
+            {
+                if (_broadcastThread != null && _broadcastThread.IsAlive && !_shuttingDown)
                 {
                     return;
                 }
 
+                int generation = Interlocked.Increment(ref _broadcastGeneration);
                 _shuttingDown = false;
-                _broadcastThread = new Thread(BroadcastLoop)
+                _broadcastThread = new Thread(() => BroadcastLoop(generation))
                 {
                     IsBackground = true,
                     Name = "MimesisWebDashboardSse",
@@ -166,10 +178,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Shutdown()
         {
-            _shuttingDown = true;
             _pendingSnapshotBroadcast = false;
             _pendingMinimapBroadcast = false;
-            _ = BroadcastSignal.Set();
 
             List<SseClient> toClose;
             lock (Gate)
@@ -188,27 +198,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 TryClose(client);
             }
 
-            Thread? thread = _broadcastThread;
-            _broadcastThread = null;
-            if (thread != null && thread.IsAlive && thread != Thread.CurrentThread && !_shuttingDown)
+            StopBroadcastThread();
+        }
+
+        private static void StopBroadcastThread()
+        {
+            _shuttingDown = true;
+            _ = Interlocked.Increment(ref _broadcastGeneration);
+            _ = BroadcastSignal.Set();
+
+            Thread? thread;
+            lock (Gate)
             {
-                try
-                {
-                    _ = thread.Join(500);
-                }
-                catch
-                {
-                    /* shutting down */
-                }
+                thread = _broadcastThread;
+                _broadcastThread = null;
+            }
+
+            if (thread == null || !thread.IsAlive || thread == Thread.CurrentThread)
+            {
+                return;
+            }
+
+            try
+            {
+                _ = thread.Join(500);
+            }
+            catch
+            {
+                /* shutting down */
             }
         }
 
-        private static void BroadcastLoop()
+        private static void BroadcastLoop(int generation)
         {
-            while (!_shuttingDown)
+            while (!_shuttingDown && Volatile.Read(ref _broadcastGeneration) == generation)
             {
                 _ = BroadcastSignal.WaitOne(LoopWaitMs);
-                if (_shuttingDown)
+                if (_shuttingDown || Volatile.Read(ref _broadcastGeneration) != generation)
                 {
                     break;
                 }

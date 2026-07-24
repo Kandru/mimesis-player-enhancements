@@ -2,6 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L53-63
     [HarmonyPatch]
     internal static class ValidateMoveSpeedPatch
     {
@@ -16,6 +17,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static bool Prefix(object __instance, ref bool __result)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return true;
+            }
+
             VCreature? owner = OwnerField.GetValue(__instance) as VCreature;
             if (owner != null && WebDashboardHostCheatsRuntime.IsNoClipActive(owner))
             {
@@ -27,6 +33,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L106-173
     [HarmonyPatch]
     internal static class DirectMoveStartMovePatch
     {
@@ -41,6 +48,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static void Prefix(object __instance, ref PosWithRot prevPos, ref PosWithRot currPos)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return;
+            }
+
             if (OwnerField.GetValue(__instance) is not VCreature owner
                 || !WebDashboardHostCheatsRuntime.IsNoClipActive(owner))
             {
@@ -51,6 +63,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/MovementController.cs:L76-104
     [HarmonyPatch]
     internal static class DirectMoveStopMovePatch
     {
@@ -65,6 +78,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         [HarmonyPrefix]
         private static void Prefix(object __instance, ref PosWithRot prevPos, ref PosWithRot currPos)
         {
+            if (!WebDashboardHostCheatsRuntime.HasActiveNoClip)
+            {
+                return;
+            }
+
             if (OwnerField.GetValue(__instance) is not VCreature owner
                 || !WebDashboardHostCheatsRuntime.IsNoClipActive(owner))
             {
