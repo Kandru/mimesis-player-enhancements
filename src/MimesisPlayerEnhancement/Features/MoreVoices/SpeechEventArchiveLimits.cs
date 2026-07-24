@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// <summary>
     /// Maps mod config to <see cref="SpeechEventArchive"/> voice pool fields.
     /// Game logic: indoor cap = maxEvents - maxDeathMatchEvents - maxOutDoorEvents
-    /// (see deps/decompiled/.../SpeechEventArchive.cs, RemoveLowerValueEventsIfExceeded).
+    /// (game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L210-255).
     /// </summary>
     internal static class SpeechEventArchiveLimits
     {
@@ -64,6 +64,10 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
         }
 
+        /// <summary>True when new caps are lower than previous in any bucket (re-trim needed).</summary>
+        internal static bool ShouldRetrimAfterCapChange(EffectiveCaps before, EffectiveCaps after) =>
+            after.AnyDecreasedComparedTo(before);
+
         internal static bool FieldsAvailable =>
             MaxEventsField != null && MaxDeathMatchField != null && MaxOutDoorField != null;
 
@@ -112,7 +116,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         internal static PoolLimits? ResolveFromConfig()
         {
             return Resolve(new MoreVoicesLimitsConfig(
-                ModConfig.EnableMoreVoices.Value,
+                MoreVoicesRuntime.ShouldApply(),
                 MoreVoicesUnify.IsActive,
                 ModConfig.MaxIndoorVoiceEvents.Value,
                 ModConfig.MaxOutdoorVoiceEvents.Value,
@@ -171,7 +175,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 }
 
                 EffectiveCaps after = ToEffectiveCaps(limits);
-                if (retrimOnDecrease && after.AnyDecreasedComparedTo(before))
+                if (retrimOnDecrease && ShouldRetrimAfterCapChange(before, after))
                 {
                     TryRetrimLocalArchive(archive);
                 }
@@ -219,7 +223,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 }
 
                 EffectiveCaps after = ToEffectiveCaps(limits.Value);
-                if (retrimOnDecrease && before.AnyDecreasedComparedTo(after))
+                if (retrimOnDecrease && ShouldRetrimAfterCapChange(before, after))
                 {
                     TryRetrimLocalArchive(archive);
                 }

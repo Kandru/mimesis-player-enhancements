@@ -1,4 +1,3 @@
-using System.Reflection;
 using FishNet.Object.Synchronizing;
 
 namespace MimesisPlayerEnhancement.Features.MoreVoices
@@ -6,31 +5,27 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// <summary>
     /// Unified voice pool eviction when indoor/outdoor caps are merged.
     /// Deathmatch keeps its own cap; all other events share one bucket.
+    /// Ranking matches vanilla EvaluateValue (game@0.3.1 …/SpeechEventArchive.cs:L312-315).
     /// </summary>
     internal static class SpeechEventArchiveUnifiedEviction
     {
-        private static readonly MethodInfo? EvaluateValueMethod =
-            AccessTools.Method(typeof(SpeechEventArchive), "EvaluateValue");
-
         private static readonly List<SpeechEvent> _deathMatchEvents = [];
         private static readonly List<SpeechEvent> _sharedEvents = [];
         private static readonly List<long> _removedIds = [];
         private static readonly HashSet<long> _removedIdSet = [];
 
-        internal static bool IsAvailable => EvaluateValueMethod != null;
-
         internal static List<long> TryEvict(SpeechEventArchive archive)
         {
             _removedIds.Clear();
-            if (archive == null || !IsAvailable)
+            if (archive == null)
             {
-                return _removedIds;
+                return CopyRemovedIds();
             }
 
             SyncList<SpeechEvent>? events = archive.events;
             if (events == null || events.Count == 0)
             {
-                return _removedIds;
+                return CopyRemovedIds();
             }
 
             _deathMatchEvents.Clear();
@@ -52,8 +47,8 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             int deathMatchCap = ModConfig.MaxDeathMatchVoiceEvents.Value;
             int sharedCap = ModConfig.MaxIndoorVoiceEvents.Value + ModConfig.MaxOutdoorVoiceEvents.Value;
 
-            CollectRemovals(archive, _sharedEvents, sharedCap);
-            CollectRemovals(archive, _deathMatchEvents, deathMatchCap);
+            CollectRemovals(_sharedEvents, sharedCap, _removedIds);
+            CollectRemovals(_deathMatchEvents, deathMatchCap, _removedIds);
 
             if (_removedIds.Count > 0)
             {
@@ -72,10 +67,13 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 }
             }
 
-            return _removedIds;
+            return CopyRemovedIds();
         }
 
-        private static void CollectRemovals(SpeechEventArchive archive, List<SpeechEvent> bucket, int cap)
+        /// <summary>
+        /// Keeps the highest-value events (vanilla: least played) and appends overflow ids.
+        /// </summary>
+        internal static void CollectRemovals(List<SpeechEvent> bucket, int cap, List<long> removedIds)
         {
             if (bucket.Count <= cap)
             {
@@ -83,31 +81,19 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
 
             int removeCount = bucket.Count - cap;
-            bucket.Sort((a, b) => CompareValue(archive, b, a));
+            bucket.Sort(CompareValueDescending);
             for (int i = bucket.Count - removeCount; i < bucket.Count; i++)
             {
-                _removedIds.Add(bucket[i].Id);
+                removedIds.Add(bucket[i].Id);
             }
         }
 
-        private static int CompareValue(SpeechEventArchive archive, SpeechEvent left, SpeechEvent right)
-        {
-            float leftValue = Evaluate(archive, left);
-            float rightValue = Evaluate(archive, right);
-            return leftValue.CompareTo(rightValue);
-        }
+        /// <summary>Vanilla EvaluateValue: higher (less negative) means more valuable.</summary>
+        internal static float EvaluateValue(SpeechEvent speechEvent) => -speechEvent.AudioPlayedCount;
 
-        private static float Evaluate(SpeechEventArchive archive, SpeechEvent speechEvent)
-        {
-            try
-            {
-                object?[] args = [speechEvent];
-                return (float)EvaluateValueMethod!.Invoke(archive, args)!;
-            }
-            catch
-            {
-                return 0f;
-            }
-        }
+        private static int CompareValueDescending(SpeechEvent left, SpeechEvent right) =>
+            EvaluateValue(right).CompareTo(EvaluateValue(left));
+
+        private static List<long> CopyRemovedIds() => [.. _removedIds];
     }
 }

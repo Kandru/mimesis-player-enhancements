@@ -149,7 +149,7 @@ The mod version is always prepended to the version text on the main menu and in-
 
 ## More Voices — `[MimesisPlayerEnhancement_MoreVoices]`
 
-**Host only.** Joining clients do not need the mod. Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
+**Host only.** Joining clients do not need the mod. A client with MoreVoices enabled in TOML still does not apply the feature while connected as a participant (no host-settings sync yet). Raise per-player mimic voice recording limits above vanilla caps and optionally record in hub scenes or during mimic possession.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

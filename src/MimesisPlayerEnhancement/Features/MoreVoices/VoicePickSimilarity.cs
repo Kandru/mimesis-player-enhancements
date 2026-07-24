@@ -17,8 +17,9 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private const int WeightCrowShop = 1;
         private const int WeightPlayTime = 1;
 
-        private static readonly MethodInfo? IsOneHandScrapMethod =
-            AccessTools.Method(typeof(SpeechEventAdditionalGameData), "IsOneHandScrap");
+        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventAdditionalGameData.cs:L486-508
+        private static readonly Func<int, bool>? IsOneHandScrap =
+            CreateIsOneHandScrapDelegate();
 
         internal readonly struct ScrapCounts
         {
@@ -34,7 +35,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static ScrapCounts CountScrap(List<int>? scrapObjects)
         {
-            if (scrapObjects == null || scrapObjects.Count == 0 || IsOneHandScrapMethod == null)
+            if (scrapObjects == null || scrapObjects.Count == 0 || IsOneHandScrap == null)
             {
                 return new ScrapCounts(0, 0);
             }
@@ -46,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 bool isOneHand;
                 try
                 {
-                    isOneHand = (bool)IsOneHandScrapMethod.Invoke(null, [scrapObjects[i]])!;
+                    isOneHand = IsOneHandScrap(scrapObjects[i]);
                 }
                 catch
                 {
@@ -206,6 +207,24 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
 
             return normalized;
+        }
+
+        private static Func<int, bool>? CreateIsOneHandScrapDelegate()
+        {
+            MethodInfo? method = AccessTools.Method(typeof(SpeechEventAdditionalGameData), "IsOneHandScrap");
+            if (method == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return (Func<int, bool>)Delegate.CreateDelegate(typeof(Func<int, bool>), method);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

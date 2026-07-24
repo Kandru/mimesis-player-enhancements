@@ -11,8 +11,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private const string Feature = "MoreVoices";
         private const int ProfileEventThreshold = 500;
         private const long ProfileElapsedMsThreshold = 2;
-        private const float PlayTimeInterval = 60f;
-        private const float DeathMatchPlayTimeInterval = 3f;
         private const float CrossAreaFallbackChance = 0.25f;
         private const float OutdoorCrossIndoorChance = 0.25f;
         private const float TrapMonsterFallbackChance = 0.10f;
@@ -122,9 +120,11 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 return false;
             }
 
-            float playTimeIntervalTemp = curGameData.Area == SpeechType_Area.DeathMatch
-                ? DeathMatchPlayTimeInterval + playTimeIntervalRandom
-                : PlayTimeInterval;
+            float playTimeIntervalTemp = ResolvePlayTimeInterval(
+                curGameData.Area,
+                playTimeIntervalRandom,
+                MimicVoiceTuningResolver.GetClipReuseCooldownSeconds(),
+                MimicVoiceTuningResolver.GetDeathMatchClipReuseCooldownSeconds());
 
             float now = GameSessionAccess.GetCurrentTickSec();
             if (!TryBuildCandidatePoolSinglePass(allEvents, curGameData, now, playTimeIntervalTemp, out string poolReason))
@@ -166,6 +166,17 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
 
             return TryPickIncomingMatch(curGameData, out speechEvent, out mimickingPlayerID, out pickReason);
+        }
+
+        internal static float ResolvePlayTimeInterval(
+            SpeechType_Area area,
+            float playTimeIntervalRandom,
+            float clipReuseCooldownSeconds,
+            float deathMatchClipReuseCooldownSeconds)
+        {
+            return VoiceEventContext.IsDeathMatch(area)
+                ? deathMatchClipReuseCooldownSeconds + playTimeIntervalRandom
+                : clipReuseCooldownSeconds;
         }
 
         private static bool TryBuildCandidatePoolSinglePass(

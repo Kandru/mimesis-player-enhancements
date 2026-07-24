@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     {
         private const string Feature = "MoreVoices";
 
-        internal static bool IsFeatureActive() => ModConfig.EnableMoreVoices.Value;
+        internal static bool IsFeatureActive() => MoreVoicesRuntime.ShouldApply();
 
         internal static bool IsMaintenanceRecordingEnabled() =>
             IsFeatureActive() && ModConfig.RecordVoiceInMaintenance.Value;
@@ -49,26 +49,34 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             return false;
         }
 
-        internal static bool ShouldSyncRecordedEvent(bool isForce)
+        internal static bool ShouldSyncRecordedEvent(bool isForce) =>
+            ShouldSyncRecordedEvent(
+                isForce,
+                GameSessionAccess.TryGetPdata()?.serverRoomState,
+                ShouldRecordInCurrentHubScene());
+
+        internal static bool ShouldSyncRecordedEvent(
+            bool isForce,
+            Hub.PersistentData.eServerRoomState? serverRoomState,
+            bool shouldRecordInHubScene)
         {
             if (isForce)
             {
                 return true;
             }
 
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-            if (pdata == null)
+            if (serverRoomState == null)
             {
                 return false;
             }
 
-            if (pdata.serverRoomState == Hub.PersistentData.eServerRoomState.InGame)
+            if (serverRoomState == Hub.PersistentData.eServerRoomState.InGame)
             {
                 return true;
             }
 
-            return pdata.serverRoomState == Hub.PersistentData.eServerRoomState.PreGame
-                   && ShouldRecordInCurrentHubScene();
+            return serverRoomState == Hub.PersistentData.eServerRoomState.PreGame
+                   && shouldRecordInHubScene;
         }
 
         internal static bool ShouldResumeRecordingAfterPossession()
@@ -82,20 +90,19 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             return MoreVoicesVoiceAccess.TryGetVoiceMode(voiceman) == VoiceMode.Player;
         }
 
-        internal static bool VanillaWouldSyncRecordedEvent(bool isForce)
+        internal static bool VanillaWouldSyncRecordedEvent(bool isForce) =>
+            VanillaWouldSyncRecordedEvent(isForce, GameSessionAccess.TryGetPdata()?.serverRoomState);
+
+        internal static bool VanillaWouldSyncRecordedEvent(
+            bool isForce,
+            Hub.PersistentData.eServerRoomState? serverRoomState)
         {
-            if (Hub.s == null)
+            if (serverRoomState == null)
             {
                 return false;
             }
 
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-            if (pdata == null)
-            {
-                return false;
-            }
-
-            return pdata.serverRoomState == Hub.PersistentData.eServerRoomState.InGame || isForce;
+            return serverRoomState == Hub.PersistentData.eServerRoomState.InGame || isForce;
         }
 
         internal static void ApplyRecordingState()

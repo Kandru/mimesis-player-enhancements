@@ -1,5 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Voice/MimicVoiceSpawner.cs:L296-314
     [HarmonyPatch(typeof(MimicVoiceSpawner), "GetAllDissonancePlayers")]
     internal static class GetAllDissonancePlayersPatch
     {
@@ -16,6 +17,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
+    // game@0.3.1 Assembly-CSharp/Mimic.Voice/MimicVoiceSpawner.cs:L284-294
     [HarmonyPatch(typeof(MimicVoiceSpawner), "GetAllMimicActors")]
     internal static class GetAllMimicActorsPatch
     {

@@ -38,13 +38,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         {
             VoicePerformanceRuntime.RefreshFromConfig();
 
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
-            {
-                MoreVoicesRecording.ApplyRecordingState();
-                return;
-            }
-
-            if (ModConfig.EnableMoreVoices.Value)
+            if (MoreVoicesRuntime.ShouldApply())
             {
                 SpeechEventArchiveLimits.PoolLimits? limits = SpeechEventArchiveLimits.ResolveFromConfig();
                 if (limits != null)
@@ -79,37 +73,42 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
             }
             else if (_wasApplying)
             {
-                int restored = 0;
-                foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
-                {
-                    if (archive == null)
-                    {
-                        continue;
-                    }
-
-                    if (SpeechEventArchiveLimits.TryRestoreVanilla(archive, retrimOnDecrease: true))
-                    {
-                        restored++;
-                    }
-                }
-
+                RestoreVanillaLimitsOnActiveArchives();
                 _wasApplying = false;
-                if (restored > 0)
-                {
-                    var vanillaCaps = SpeechEventArchiveLimits.ToEffectiveCaps(new SpeechEventArchiveLimits.PoolLimits(
-                        SpeechEventArchiveLimits.VanillaMaxEvents,
-                        SpeechEventArchiveLimits.VanillaMaxDeathMatchEvents,
-                        SpeechEventArchiveLimits.VanillaMaxOutDoorEvents));
-                    ModLog.Info(Feature, $"Restored vanilla voice limits on {restored} archive(s) — " +
-                        SpeechEventArchiveLimits.FormatEffectiveCaps(vanillaCaps));
-                }
-                else
-                {
-                    ModLog.Debug(Feature, "Voice limit disable complete — no active archives to restore.");
-                }
             }
 
             MoreVoicesRecording.ApplyRecordingState();
+        }
+
+        private static void RestoreVanillaLimitsOnActiveArchives()
+        {
+            int restored = 0;
+            foreach (SpeechEventArchive archive in SpeechEventArchiveRegistry.EnumerateActive())
+            {
+                if (archive == null)
+                {
+                    continue;
+                }
+
+                if (SpeechEventArchiveLimits.TryRestoreVanilla(archive, retrimOnDecrease: true))
+                {
+                    restored++;
+                }
+            }
+
+            if (restored > 0)
+            {
+                var vanillaCaps = SpeechEventArchiveLimits.ToEffectiveCaps(new SpeechEventArchiveLimits.PoolLimits(
+                    SpeechEventArchiveLimits.VanillaMaxEvents,
+                    SpeechEventArchiveLimits.VanillaMaxDeathMatchEvents,
+                    SpeechEventArchiveLimits.VanillaMaxOutDoorEvents));
+                ModLog.Info(Feature, $"Restored vanilla voice limits on {restored} archive(s) — " +
+                    SpeechEventArchiveLimits.FormatEffectiveCaps(vanillaCaps));
+            }
+            else
+            {
+                ModLog.Debug(Feature, "Voice limit disable complete — no active archives to restore.");
+            }
         }
 
         private static void LogPatchAudit(HarmonyLib.Harmony harmony)
@@ -119,9 +118,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                 ("OnStartClient/SpeechEventArchive", AccessTools.Method(typeof(SpeechEventArchive), "OnStartClient")),
                 ("RemoveLowerValueEventsIfExceeded/SpeechEventArchive",
                     AccessTools.Method(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")),
-                ("RemoveLowerValueEventsIfExceeded/SpeechEventArchive (unified)",
-                    AccessTools.Method(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")),
-                ("PickBestMatch/SpeechEventAdditionalGameData (unify)",
+                ("PickBestMatch/SpeechEventAdditionalGameData",
                     AccessTools.Method(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))),
                 ("SetVoiceMode/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))),
                 ("EndPossessionToMimic/VoiceManager", AccessTools.Method(typeof(VoiceManager), nameof(VoiceManager.EndPossessionToMimic))),
@@ -134,8 +131,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.GetWarmedUpSpeechEvents))),
                 ("WarmedUpCount/SpeechEventArchive",
                     AccessTools.PropertyGetter(typeof(SpeechEventArchive), nameof(SpeechEventArchive.WarmedUpCount))),
-                ("OnStartClient/SpeechEventArchive (voice cache)",
-                    AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStartClient))),
                 ("OnStopClient/SpeechEventArchive (voice cache)",
                     AccessTools.Method(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))),
                 ("CreateAudioClip/SpeechEventArchive", SpeechEventArchivePatchSupport.CreateAudioClipMethod),
@@ -145,8 +140,6 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
                     AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllDissonancePlayers")),
                 ("GetAllMimicActors/MimicVoiceSpawner",
                     AccessTools.Method(typeof(MimicVoiceSpawner), "GetAllMimicActors")),
-                ("PickBestMatch/SpeechEventAdditionalGameData",
-                    AccessTools.Method(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))),
             ]);
         }
     }

@@ -75,6 +75,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.MoreVoices
         }
 
         [Fact]
+        public void ShouldRetrimAfterCapChange_true_only_when_any_cap_decreases()
+        {
+            var before = new SpeechEventArchiveLimits.EffectiveCaps(indoor: 100, deathMatch: 25, outdoor: 50);
+            var decreased = new SpeechEventArchiveLimits.EffectiveCaps(indoor: 90, deathMatch: 25, outdoor: 50);
+            var increased = new SpeechEventArchiveLimits.EffectiveCaps(indoor: 110, deathMatch: 25, outdoor: 50);
+            var unchanged = new SpeechEventArchiveLimits.EffectiveCaps(indoor: 100, deathMatch: 25, outdoor: 50);
+
+            Assert.True(SpeechEventArchiveLimits.ShouldRetrimAfterCapChange(before, decreased));
+            Assert.False(SpeechEventArchiveLimits.ShouldRetrimAfterCapChange(before, increased));
+            Assert.False(SpeechEventArchiveLimits.ShouldRetrimAfterCapChange(before, unchanged));
+        }
+
+        [Fact]
         public void FormatEffectiveCaps_split_mode_lists_each_bucket()
         {
             var caps = new SpeechEventArchiveLimits.EffectiveCaps(indoor: 100, deathMatch: 25, outdoor: 50);
