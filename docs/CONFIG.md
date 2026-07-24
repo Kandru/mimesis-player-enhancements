@@ -409,11 +409,11 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Player Tuning — `[MimesisPlayerEnhancement_PlayerTuning]`
 
-**Host-only.** Scales player movement and stamina on the server. Joining clients do not need the mod — stats sync from the host automatically. Changes apply at runtime when config is saved (host reloads player stats).
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod; stats sync from the host automatically. Scales player movement, stamina, and carry weight on the server. Changes apply at runtime when config is saved (host reloads player stats; no restart).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnablePlayerTuning` | bool | `false` | — | Scale player move speed, stamina, and carry weight. Joining clients do not need the mod. Host only. |
+| `EnablePlayerTuning` | bool | `false` | — | Master toggle. Scale player move speed, stamina, and carry weight for everyone in the lobby. Host only — only the host must enable it for the whole lobby to get the effect. |
 | `MoveSpeedMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales walk and run base speed (`1` = vanilla, `2` = double). |
 | `NoClipSpeedMultiplier` | float | `3.0` | `0.1`–`5.0` | Scales dashboard noclip fly speed relative to the player's current walk/run speed (`3` = triple). Only applies while noclip is active. |
 | `MaxStaminaMultiplier` | float | `1.0` | `0.1`–`5.0` | Scales maximum stamina. |

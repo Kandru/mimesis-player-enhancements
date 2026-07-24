@@ -1,27 +1,108 @@
 # Player Tuning
 
-**Scope:** Host only · Your game only (local) · **Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
+Scale how players move, use stamina, and carry loot. **Host only** means only the host must enable the feature — the whole lobby gets the effect. Joining clients do not need the mod; stats sync from the host. Changes apply at runtime when config is saved (no restart). The host reloads player stats after each save.
 
-Tweak how players move and survive: walk/run speed, stamina pool, sprint drain, stamina recovery, and carry weight. Changes apply to everyone in the session from the host side — joining clients do not need the mod; stats sync automatically.
+**Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
 
-## Movement
+## Configuration
 
-- `MoveSpeedMultiplier` — scales walk and run base speed (`1` = vanilla, `2` = double).
-- `NoClipSpeedMultiplier` — scales dashboard noclip fly speed relative to current walk/run speed. Only applies while noclip is active.
+### `EnablePlayerTuning`
 
-## Stamina
+Master toggle for movement, stamina, and carry weight scaling. When off, those multipliers behave as vanilla (`1`). Requires the host to enable it; everyone in the lobby gets the scaled stats.
 
-- `MaxStaminaMultiplier` — maximum stamina pool.
-- `StaminaDrainMultiplier` — sprint stamina cost per tick (`0.5` = half drain).
-- `StaminaRegenMultiplier` — stamina recovered per regen tick.
-- `StaminaRegenDelayMultiplier` — wait before regen starts after sprinting (`0.5` = regen starts sooner).
+| Value | Meaning |
+|---|---|
+| `false` | Vanilla move speed, stamina, and carry weight (default) |
+| `true` | Apply the multiplier settings below |
 
-## Carry weight
+Default: `false`
 
-`MaxCarryWeightMultiplier` scales maximum carry weight and the encumbrance slowdown threshold (`1` = vanilla, `2` = double).
+### `MoveSpeedMultiplier`
 
-## Player collision
+Scales walk and run base speed for all players. Only applies when `EnablePlayerTuning` is on. Values outside `0.1`–`5.0` are clamped on save.
 
-`DisablePlayerCollision` (local client effect, requires `EnablePlayerTuning`) disables capsule colliders on other players and mimics so you can walk through them — useful in a crowded tram. Regular monsters and walls remain solid.
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla speed |
+| `2` | Double speed |
+| `0.5` | Half speed |
 
-**Full config keys →** [Player Tuning](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
+Default: `1`
+
+### `NoClipSpeedMultiplier`
+
+Scales web dashboard noclip fly speed relative to the player's current walk/run speed. Only applies while noclip is active. **Not** gated by `EnablePlayerTuning` — it still affects noclip when the master toggle is off.
+
+| Value | Meaning |
+|---|---|
+| `3` | Triple fly speed (default) |
+| `1` | Same as normal movement speed |
+
+Default: `3`
+
+### `MaxStaminaMultiplier`
+
+Scales maximum stamina pool. Only applies when `EnablePlayerTuning` is on.
+
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla max stamina |
+| `2` | Double max stamina |
+
+Default: `1`
+
+### `StaminaDrainMultiplier`
+
+Scales sprint stamina cost per tick. Only applies when `EnablePlayerTuning` is on. Lower values mean stamina lasts longer while sprinting.
+
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla drain |
+| `0.5` | Half drain (sprint longer) |
+| `2` | Double drain |
+
+Default: `1`
+
+### `StaminaRegenMultiplier`
+
+Scales how much stamina is recovered per regen tick. Only applies when `EnablePlayerTuning` is on.
+
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla regen rate |
+| `2` | Double regen rate |
+
+Default: `1`
+
+### `StaminaRegenDelayMultiplier`
+
+Scales the wait before stamina regen starts after sprinting. Only applies when `EnablePlayerTuning` is on. Lower values mean regen starts sooner.
+
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla delay |
+| `0.5` | Regen starts sooner |
+
+Default: `1`
+
+### `MaxCarryWeightMultiplier`
+
+Scales maximum carry weight and the encumbrance slowdown threshold. Only applies when `EnablePlayerTuning` is on.
+
+| Value | Meaning |
+|---|---|
+| `1` | Vanilla carry limit |
+| `2` | Double carry limit |
+
+Default: `1`
+
+### `DisablePlayerCollision`
+
+**Local effect only** — not shared across the lobby. On your client, disables capsule colliders on other players and mimics so you can walk through them (e.g. a crowded tram). Regular monsters and walls stay solid. Requires `EnablePlayerTuning` on the host and the mod installed on your machine for the pass-through to work.
+
+| Value | Meaning |
+|---|---|
+| `true` | Walk through other players and mimics on your client (default) |
+| `false` | Normal collision with other players and mimics |
+
+Default: `true`

@@ -19,7 +19,7 @@
 | [Economy](./features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
 | [Dungeon Time](./features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
 | [Mimic Tuning](./features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
-| [Player Tuning](./features/player-tuning.md) | Change movement speed, stamina, and carry weight | Host only |
+| [Player Tuning](./features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |
 | [Dungeon Randomizer](./features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (18 layout styles) | Host only |
 | [Weather](./features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
 
