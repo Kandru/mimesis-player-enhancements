@@ -27,6 +27,7 @@
         "damageHealthGlow": "Damage health outline",
         "floatingDamage": "Floating damage numbers",
         "fpsUi": "FPS UI",
+        "inventorySlotOptimization": "Inventory slot optimization",
         "roundStartSound": "Dungeon landing sound",
         "customLoadingScreen": "Custom loading screens"
       },
@@ -69,6 +70,23 @@
       "EnableFpsUiInventoryNetWorth": {
         "title": "Enable Inventory Net Worth",
         "description": "Show total sell value of your inventory above the hotbar. Works with or without FPS UI. Client-only."
+      },
+      "EnableInventorySlotOptimization": {
+        "title": "Enable Inventory Slot Optimization",
+        "description": "Client-only hotbar display and slot selection: left-packed hotbar, pickup selection, and select-next after drop. Does not change server inventory or other players."
+      },
+      "InventoryPickupSelectMode": {
+        "title": "Pickup Slot Selection",
+        "description": "After picking up an item into another slot, switch to that slot. Client-only.",
+        "options": {
+          "Vanilla": "Vanilla (keep current slot)",
+          "WeaponsOnly": "Weapons only",
+          "Always": "Always select picked-up item"
+        }
+      },
+      "EnableInventorySelectNextOnRemove": {
+        "title": "Select Next Slot on Remove",
+        "description": "When the selected slot becomes empty (drop, toilet, vending insert), advance to the next occupied slot. Client-only."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon Landing Sound",

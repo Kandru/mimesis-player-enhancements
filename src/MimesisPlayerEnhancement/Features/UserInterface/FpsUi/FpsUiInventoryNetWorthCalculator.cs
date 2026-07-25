@@ -1,5 +1,3 @@
-using Mimic;
-
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {
     internal static class FpsUiInventoryNetWorthCalculator

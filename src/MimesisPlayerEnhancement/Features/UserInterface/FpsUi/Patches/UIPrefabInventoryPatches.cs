@@ -1,5 +1,4 @@
 using System.Reflection;
-using Mimic;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {

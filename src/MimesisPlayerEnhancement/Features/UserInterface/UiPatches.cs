@@ -22,7 +22,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ModVersionDisplayPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(WorldOverlayPatches)))
-                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsUiPatches)));
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsUiPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventorySlotOptimizationPatches)));
 
             HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,

@@ -41,6 +41,7 @@ namespace MimesisPlayerEnhancement
                 [(MimicTuningSectionId, "HornImitationMode")] = ["Vanilla", "Custom"],
                 [(UiSectionId, "RoundStartSoundMode")] = ["Vanilla", "Random", "Specific"],
                 [(UiSectionId, "CustomLoadingScreenMode")] = ["Vanilla", "Random", "Specific"],
+                [(UiSectionId, "InventoryPickupSelectMode")] = ["Vanilla", "WeaponsOnly", "Always"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)
@@ -372,6 +373,9 @@ namespace MimesisPlayerEnhancement
                     ["FloatingDamageDurationSeconds"] = "floatingDamage",
                     ["EnableFpsUi"] = "fpsUi",
                     ["EnableFpsUiInventoryNetWorth"] = "fpsUi",
+                    ["EnableInventorySlotOptimization"] = "inventorySlotOptimization",
+                    ["InventoryPickupSelectMode"] = "inventorySlotOptimization",
+                    ["EnableInventorySelectNextOnRemove"] = "inventorySlotOptimization",
                     ["RoundStartSoundMode"] = "roundStartSound",
                     ["RoundStartSoundRandomPool"] = "roundStartSound",
                     ["RoundStartSoundVariant"] = "roundStartSound",

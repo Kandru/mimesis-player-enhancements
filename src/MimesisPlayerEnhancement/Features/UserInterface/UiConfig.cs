@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private const float MaxRoundStartSoundVolume = 1f;
         private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
+        private static readonly string[] ValidInventoryPickupSelectModes = ["Vanilla", "WeaponsOnly", "Always"];
 
         private static MelonPreferences_Category _category = null!;
 
@@ -61,6 +62,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.EnableFpsUiInventoryNetWorth = ModConfig.CreateTrackedEntry(_category,
                 "EnableFpsUiInventoryNetWorth",
+                true);
+
+            ModConfig.EnableInventorySlotOptimization = ModConfig.CreateTrackedEntry(_category,
+                "EnableInventorySlotOptimization",
+                true);
+
+            ModConfig.InventoryPickupSelectMode = ModConfig.CreateTrackedEntry(_category,
+                "InventoryPickupSelectMode",
+                "Always");
+
+            ModConfig.EnableInventorySelectNextOnRemove = ModConfig.CreateTrackedEntry(_category,
+                "EnableInventorySelectNextOnRemove",
                 true);
 
             ModConfig.RoundStartSoundMode = ModConfig.CreateTrackedEntry(_category,
@@ -131,6 +144,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUi));
             ModConfig.EnableFpsUiInventoryNetWorth.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableFpsUiInventoryNetWorth));
+            ModConfig.EnableInventorySlotOptimization.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableInventorySlotOptimization));
+            ModConfig.InventoryPickupSelectMode.OnEntryValueChanged.Subscribe((_, value) =>
+                OnInventoryPickupSelectModeChanged(logger, value));
+            ModConfig.EnableInventorySelectNextOnRemove.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableInventorySelectNextOnRemove));
             ModConfig.RoundStartSoundMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundModeChanged(logger, value));
             ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
@@ -208,6 +227,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.NotifyChanged(ModConfig.RoundStartSoundVolume);
+        }
+
+        private static void OnInventoryPickupSelectModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidInventoryPickupSelectModes, value))
+            {
+                logger.Warning("InventoryPickupSelectMode must be Vanilla, WeaponsOnly, or Always; resetting to Always.");
+                ModConfig.InventoryPickupSelectMode.Value = "Always";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.InventoryPickupSelectMode);
         }
 
         private static void OnRoundStartSoundModeChanged(MelonLogger.Instance logger, string value)

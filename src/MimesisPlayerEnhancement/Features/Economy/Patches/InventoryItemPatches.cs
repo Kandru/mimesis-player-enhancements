@@ -1,5 +1,3 @@
-using Mimic;
-
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
     // game@0.3.1 Assembly-CSharp/Mimic/InventoryItem.cs:L118-128

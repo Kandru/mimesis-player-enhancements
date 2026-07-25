@@ -48,7 +48,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | Section | Feature | Scope |
 |---------|---------|-------|
 | [Global](#global--mimesisplayerenhancement) | Debug logging | Your game only |
-| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers | Your game only |
+| [User Interface](#user-interface--mimesisplayerenhancement_ui) | Toast duration, save picker, spectator list, damage health outline, damage numbers, inventory slot optimization | Your game only |
 | [Privacy](#privacy--mimesisplayerenhancement_privacy) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Your game only |
 | [More Players](#more-players--mimesisplayerenhancement_moreplayers) | Raise the 4-player session cap | Host only |
 | [More Voices](#more-voices--mimesisplayerenhancement_morevoices) | Raise mimic voice recording limits | Host only |
@@ -108,6 +108,9 @@ Mod-wide settings that are not owned by a single feature.
 | `FloatingDamageDurationSeconds` | float | `2.0` | `1`–`3` | How long floating damage numbers remain visible. |
 | `EnableFpsUi` | bool | `true` | — | Replace the top-left health bar and conta gauge with a Counter-Strike-style numeric health readout and toxicity percentage, positioned left of the inventory hotbar. The full-screen conta vignette is unchanged. |
 | `EnableFpsUiInventoryNetWorth` | bool | `true` | — | Show the total sell value of all items in your inventory above the hotbar, styled like the weight readout below it. Independent of the FPS vitals HUD. |
+| `EnableInventorySlotOptimization` | bool | `true` | — | Master toggle for client-only hotbar behavior: left-packed hotbar display, pickup slot selection, and select-next after drop/remove. Does not change server inventory or affect other players. |
+| `InventoryPickupSelectMode` | string | `Always` | `Vanilla`, `WeaponsOnly`, `Always` | After pickup, request the server active slot for the picked-up item (`Always`), only for weapons (`WeaponsOnly`), or vanilla (`Vanilla`). Your game only. |
+| `EnableInventorySelectNextOnRemove` | bool | `true` | — | After drop/toilet/vending remove, request the next occupied slot (right first, then left). Hotbar is shown left-packed locally. Your game only. |
 | `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Your game only. |
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
 | `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Your game only. |
@@ -567,6 +570,9 @@ EnableFloatingDamageNumbers = true
 FloatingDamageDurationSeconds = 2.0
 EnableFpsUi = true
 EnableFpsUiInventoryNetWorth = true
+EnableInventorySlotOptimization = true
+InventoryPickupSelectMode = Always
+EnableInventorySelectNextOnRemove = true
 
 [MimesisPlayerEnhancement_Privacy]
 EnablePrivacy = false

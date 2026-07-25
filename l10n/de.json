@@ -27,6 +27,7 @@
         "damageHealthGlow": "Schadens-Gesundheitsumriss",
         "floatingDamage": "Schwebende Schadenszahlen",
         "fpsUi": "FPS-UI",
+        "inventorySlotOptimization": "Inventar-Slot-Optimierung",
         "roundStartSound": "Dungeon-Landesound",
         "customLoadingScreen": "Benutzerdefinierte Ladebildschirme"
       },
@@ -69,6 +70,23 @@
       "EnableFpsUiInventoryNetWorth": {
         "title": "Inventar-Nettowert anzeigen",
         "description": "Zeigt den Gesamt-Verkaufswert deines Inventars oberhalb der Hotbar. Mit oder ohne FPS-UI. Nur Client."
+      },
+      "EnableInventorySlotOptimization": {
+        "title": "Inventar-Slot-Optimierung aktivieren",
+        "description": "Nur Client: Hotbar links gepackt anzeigen, Slot-Auswahl beim Aufsammeln und nach Ablegen. Kein Server-Inventar, keine anderen Spieler betroffen."
+      },
+      "InventoryPickupSelectMode": {
+        "title": "Slot-Auswahl beim Aufsammeln",
+        "description": "Nach dem Aufsammeln in einen anderen Slot zu diesem Slot wechseln. Nur Client.",
+        "options": {
+          "Vanilla": "Vanilla (aktuellen Slot halten)",
+          "WeaponsOnly": "Nur Waffen",
+          "Always": "Aufgesammeltes Item immer auswählen"
+        }
+      },
+      "EnableInventorySelectNextOnRemove": {
+        "title": "Nächsten Slot bei Entfernen wählen",
+        "description": "Wenn der gewählte Slot leer wird (ablegen, Toilette, Automat), zum nächsten belegten Slot wechseln. Nur Client."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon-Landesound",
