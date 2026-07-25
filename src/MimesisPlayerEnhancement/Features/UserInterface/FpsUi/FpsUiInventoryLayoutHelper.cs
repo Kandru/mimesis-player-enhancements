@@ -35,6 +35,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         ];
 
         private const float WeightOnlyRowGapPixels = 1f;
+        private const float MinInventoryChromeHeightPixels = 10f;
 
         internal static UIPrefab_Inventory? TryGetInventoryUi()
         {
@@ -171,14 +172,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         }
 
         /// <summary>
-        /// Place <paramref name="target"/> at the inventory hotbar top, using the same
-        /// <see cref="UIPrefab_Inventory.UE_InvenFrame1"/> bounds as the FPS detox line.
-        /// Horizontal bounds and row height follow the kg row; bottom padding is mirrored to the top.
+        /// Hotbar chrome is measured and tall enough to mirror net worth to the inventory top edge.
         /// </summary>
-        internal static bool LayoutRowAtInventoryTop(
-            RectTransform sourceRow,
-            RectTransform target,
-            float topNudgePixels = 0f)
+        internal static bool IsInventoryChromeReady(RectTransform sourceRow)
         {
             RectTransform? strip = sourceRow.parent as RectTransform;
             if (strip == null)
@@ -186,8 +182,45 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
+            Canvas.ForceUpdateCanvases();
+            if (!TryMeasureInventoryChromeBounds(
+                    strip,
+                    sourceRow,
+                    out float frameMinY,
+                    out float frameMaxY,
+                    out bool measuredHotbar)
+                || !measuredHotbar
+                || !TryMeasureBoundsInParent(strip, sourceRow, out float _, out float _, out float _, out float rowMaxY))
+            {
+                return false;
+            }
+
+            return IsPlausibleNetWorthChrome(frameMinY, frameMaxY, rowMaxY);
+        }
+
+        /// <summary>
+        /// Place <paramref name="target"/> at the inventory hotbar top, using the same
+        /// <see cref="UIPrefab_Inventory.UE_InvenFrame1"/> bounds as the FPS detox line.
+        /// Horizontal bounds and row height follow the kg row; bottom padding is mirrored to the top.
+        /// </summary>
+        internal static bool LayoutRowAtInventoryTop(
+            RectTransform sourceRow,
+            RectTransform target,
+            float topNudgePixels,
+            out bool mirroredToTop)
+        {
+            RectTransform? strip = sourceRow.parent as RectTransform;
+            if (strip == null)
+            {
+                mirroredToTop = false;
+                return false;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
             if (!TryMeasureBoundsInParent(strip, sourceRow, out float rowMinX, out float rowMaxX, out float rowMinY, out float rowMaxY))
             {
+                mirroredToTop = false;
                 return false;
             }
 
@@ -198,17 +231,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                     out float frameMaxY,
                     out bool measuredHotbar))
             {
+                mirroredToTop = false;
                 return false;
             }
 
             float rowHeight = Mathf.Max(rowMaxY - rowMinY, sourceRow.rect.height, 1f);
             float placedMinY;
             float placedMaxY;
+            mirroredToTop = false;
             if (measuredHotbar)
             {
                 float bottomPadding = rowMinY - frameMinY;
                 placedMaxY = frameMaxY - Mathf.Max(bottomPadding, 0f) + topNudgePixels;
                 placedMinY = placedMaxY - rowHeight;
+
+                // Mirror math can overlap the kg row when frame bounds are tight; stack above instead.
+                if (placedMinY < rowMaxY)
+                {
+                    placedMinY = rowMaxY + WeightOnlyRowGapPixels + topNudgePixels;
+                    placedMaxY = placedMinY + rowHeight;
+                }
+                else
+                {
+                    mirroredToTop = IsPlausibleNetWorthPlacement(frameMinY, frameMaxY, rowMaxY, placedMinY);
+                }
             }
             else
             {
@@ -225,22 +271,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 placedMinY,
                 placedMaxY);
 
-            // Mirror math can overlap the kg row when frame bounds are tight; stack above instead.
-            if (!IsRowAboveRow(strip, target, sourceRow))
-            {
-                placedMinY = rowMaxY + WeightOnlyRowGapPixels + topNudgePixels;
-                placedMaxY = placedMinY + rowHeight;
-                ApplyRowPlacement(
-                    strip,
-                    sourceRow,
-                    target,
-                    rowMinX,
-                    rowMaxX,
-                    placedMinY,
-                    placedMaxY);
-            }
-
             return true;
+        }
+
+        private static bool IsPlausibleNetWorthChrome(float frameMinY, float frameMaxY, float rowMaxY)
+        {
+            return frameMaxY > rowMaxY
+                && frameMaxY - rowMaxY >= MinInventoryChromeHeightPixels
+                && frameMaxY - frameMinY >= MinInventoryChromeHeightPixels;
+        }
+
+        private static bool IsPlausibleNetWorthPlacement(
+            float frameMinY,
+            float frameMaxY,
+            float rowMaxY,
+            float placedMinY)
+        {
+            return IsPlausibleNetWorthChrome(frameMinY, frameMaxY, rowMaxY)
+                && placedMinY >= rowMaxY + MinInventoryChromeHeightPixels;
         }
 
         private static void ApplyRowPlacement(
@@ -277,21 +325,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             {
                 element.ignoreLayout = true;
             }
-        }
-
-        internal static bool IsRowAboveRow(
-            RectTransform parent,
-            RectTransform above,
-            RectTransform below,
-            float minGapPixels = 1f)
-        {
-            if (!TryMeasureBoundsInParent(parent, above, out float _, out float _, out float aboveMinY, out float _)
-                || !TryMeasureBoundsInParent(parent, below, out float _, out float _, out float _, out float belowMaxY))
-            {
-                return false;
-            }
-
-            return aboveMinY >= belowMaxY - minGapPixels;
         }
 
         /// <summary>

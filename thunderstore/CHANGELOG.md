@@ -4,6 +4,8 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - feature: better inventory-handling (when adding/removing items)
 - improvement: waiting screens now properly show the players we are waiting for complete their game load cycle
 - fix: traps should respawn properly again / distinguish better between naming of settings
+- fix: dungeon loot filter/scaling timing (allowlist/denylist had no effect on spawned loot, only on mimics loot)
+- fix: inventory net-worth label now aligns to the top edge of inventory instead of stacking directly above the kg readout (waits for inventory chrome layout before showing)
 - draft: expose new Mimic tuning options since game version 0.3.1
 - draft: DungeonTime to "slow down" or "speed up" the clock in order to simply stop at 12pm (currently more time would mean game would count up to 1am or longer depending on the amount of players and chosen settings)
 - draft: host sends configuration to modded clients (for feature-parity during party)
@@ -38,7 +40,6 @@ Ooops.. quick bug fix relase for 26.7.15 (crashes sometimes when loading savegam
 - improvement: searchable settings picker (instead of a simple input field in settings)
 - improvement: the custom dungeon landing sound is at 80% volume per default now
 - fix: dungeon loot-multiplicator errored when allowlist/denylist was empty but selected
-- fix: dungeon loot filter/scaling timing (allowlist/denylist had no effect on spawned loot, only on mimics loot)
 - draft: first overhaul of all configuration titles, descriptions and translations (it's a start)
 - draft: show players & minimap when joining lobby as a client (not as an host)
 - draft: show notifications on the top right instead of bottom right (webinterface)

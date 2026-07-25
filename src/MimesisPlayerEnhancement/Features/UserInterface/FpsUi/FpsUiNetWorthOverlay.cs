@@ -17,6 +17,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static bool _loggedEnsureFailure;
         private static Vector2 _lastSourceAnchoredPosition = new(float.NaN, float.NaN);
         private static Vector2 _lastSourceRectSize = new(float.NaN, float.NaN);
+        private static float _lastFrameMinY = float.NaN;
+        private static float _lastFrameMaxY = float.NaN;
 
         internal static bool IsEnabled() => ModConfig.EnableFpsUiInventoryNetWorth.Value;
 
@@ -79,14 +81,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            if (!RefreshLayout())
+            if (!RefreshLayout(out bool layoutSettled))
             {
                 _labelRoot?.SetActive(false);
                 return;
             }
 
             ApplyTotal(_resolvedTotal == UnsetTotal ? 0 : _resolvedTotal);
-            _labelRoot!.SetActive(true);
+            _labelRoot!.SetActive(layoutSettled);
         }
 
         internal static void OnInventoryHidden()
@@ -146,14 +148,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return;
             }
 
-            if (!RefreshLayout())
+            if (!RefreshLayout(out bool layoutSettled))
             {
                 _labelRoot?.SetActive(false);
                 return;
             }
 
             ApplyTotal(_resolvedTotal == UnsetTotal ? 0 : _resolvedTotal);
-            _labelRoot!.SetActive(true);
+            _labelRoot!.SetActive(layoutSettled);
         }
 
         private static int ResolveTotal(IReadOnlyList<InventoryItem> inventoryItems)
@@ -213,6 +215,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 return false;
             }
 
+            if (!FpsUiInventoryLayoutHelper.IsInventoryChromeReady(sourceRow))
+            {
+                return false;
+            }
+
             _loggedEnsureFailure = false;
             _labelRoot = UnityEngine.Object.Instantiate(
                 sourceRow.gameObject,
@@ -241,8 +248,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             return true;
         }
 
-        private static bool RefreshLayout()
+        private static bool RefreshLayout(out bool layoutSettled)
         {
+            layoutSettled = false;
             if (!HasValidWidget())
             {
                 return false;
@@ -255,36 +263,62 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
                 ? FpsUiInventoryLayoutHelper.ResolveWeightRowRect(weightAnchor)
                 : null;
             RectTransform? cloneRect = _labelRoot!.GetComponent<RectTransform>();
-            if (sourceRow == null || cloneRect == null)
+            RectTransform? strip = sourceRow?.parent as RectTransform;
+            if (sourceRow == null || cloneRect == null || strip == null)
             {
                 return false;
             }
 
             Vector2 anchoredPosition = sourceRow.anchoredPosition;
             Vector2 rectSize = sourceRow.rect.size;
-            if (anchoredPosition == _lastSourceAnchoredPosition
-                && rectSize == _lastSourceRectSize)
+            Canvas.ForceUpdateCanvases();
+            if (!FpsUiInventoryLayoutHelper.TryMeasureInventoryChromeBounds(
+                    strip,
+                    sourceRow,
+                    out float frameMinY,
+                    out float frameMaxY,
+                    out _))
             {
+                return false;
+            }
+
+            if (anchoredPosition == _lastSourceAnchoredPosition
+                && rectSize == _lastSourceRectSize
+                && frameMinY == _lastFrameMinY
+                && frameMaxY == _lastFrameMaxY)
+            {
+                layoutSettled = true;
                 return true;
             }
 
             bool laidOut = FpsUiInventoryLayoutHelper.LayoutRowAtInventoryTop(
                 sourceRow,
                 cloneRect,
-                TopEdgeNudgePixels);
-            if (laidOut)
+                TopEdgeNudgePixels,
+                out bool mirroredToTop);
+            if (!laidOut)
+            {
+                return false;
+            }
+
+            layoutSettled = mirroredToTop;
+            if (mirroredToTop)
             {
                 _lastSourceAnchoredPosition = anchoredPosition;
                 _lastSourceRectSize = rectSize;
+                _lastFrameMinY = frameMinY;
+                _lastFrameMaxY = frameMaxY;
             }
 
-            return laidOut;
+            return true;
         }
 
         private static void InvalidateLayoutCache()
         {
             _lastSourceAnchoredPosition = new Vector2(float.NaN, float.NaN);
             _lastSourceRectSize = new Vector2(float.NaN, float.NaN);
+            _lastFrameMinY = float.NaN;
+            _lastFrameMaxY = float.NaN;
         }
 
         private static void ReleaseWidget(bool preserveTotals = false)
