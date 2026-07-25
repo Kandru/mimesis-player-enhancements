@@ -1,10 +1,17 @@
 name: Prune old releases
 
 on:
+  # After a release exists — Version.cs push alone races ahead of tag creation
+  # and often sees ≤ KEEP tags, so nothing is deleted.
+  release:
+    types: [published]
   push:
     branches: [main]
     paths:
       - 'src/Version.cs'
+  schedule:
+    # Catch orphan drafts / tags if a release publish path fails mid-flight.
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -22,20 +29,58 @@ jobs:
           set -euo pipefail
           repo="${{ github.repository }}"
 
-          mapfile -t all_tags < <(gh api "repos/${repo}/tags" --paginate -q '.[].name' | sort -V -r)
-          if ((${#all_tags[@]} <= KEEP)); then
-            echo "Only ${#all_tags[@]} tag(s) — nothing to prune."
-            exit 0
+          # Mod version tags only (skip e.g. reference-libs-*).
+          is_mod_tag() {
+            [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          }
+
+          mapfile -t all_tags < <(
+            gh api "repos/${repo}/tags" --paginate -q '.[].name' \
+              | while IFS= read -r t; do
+                  is_mod_tag "$t" && printf '%s\n' "$t"
+                done \
+              | sort -V -r
+          )
+
+          declare -A keep_set=()
+          if ((${#all_tags[@]} > 0)); then
+            keep=("${all_tags[@]:0:KEEP}")
+            for tag in "${keep[@]}"; do
+              keep_set["$tag"]=1
+            done
           fi
 
-          keep=("${all_tags[@]:0:KEEP}")
-          delete=("${all_tags[@]:KEEP}")
-          echo "Keeping: ${keep[*]}"
-          echo "Deleting: ${delete[*]}"
+          if ((${#all_tags[@]} > KEEP)); then
+            delete=("${all_tags[@]:KEEP}")
+            echo "Keeping: ${keep[*]}"
+            echo "Deleting: ${delete[*]}"
 
-          for tag in "${delete[@]}"; do
-            gh release delete "$tag" --yes 2>/dev/null || true
-          done
-          for tag in "${delete[@]}"; do
-            gh api -X DELETE "repos/${repo}/git/refs/tags/${tag}"
-          done
+            for tag in "${delete[@]}"; do
+              echo "Deleting release + tag: ${tag}"
+              # Prefer one-shot cleanup; fall back to tag-only if no release exists.
+              if ! gh release delete "$tag" --yes --cleanup-tag; then
+                echo "No release for ${tag} (or delete failed) — removing tag ref if present"
+                gh api -X DELETE "repos/${repo}/git/refs/tags/${tag}" || true
+              fi
+            done
+          else
+            echo "Only ${#all_tags[@]} mod tag(s) — nothing to prune by keep count."
+            if ((${#all_tags[@]} > 0)); then
+              echo "Keeping: ${keep[*]}"
+            fi
+          fi
+
+          # Drafts are omitted from the public release list and may lack a stable
+          # tag; always remove them so failed publish attempts do not pile up.
+          while IFS=$'\t' read -r id tag; do
+            [[ -z "${id:-}" ]] && continue
+            echo "Deleting draft release id=${id} tag=${tag:-none}"
+            gh api -X DELETE "repos/${repo}/releases/${id}"
+            if [[ -n "${tag:-}" ]] && is_mod_tag "$tag" && [[ -z "${keep_set[$tag]:-}" ]]; then
+              echo "Deleting orphan tag from draft: ${tag}"
+              gh api -X DELETE "repos/${repo}/git/refs/tags/${tag}" || true
+            fi
+          done < <(
+            gh api "repos/${repo}/releases" --paginate \
+              -q '.[] | select(.draft == true) | [.id, (.tag_name // "")] | @tsv'
+          )
