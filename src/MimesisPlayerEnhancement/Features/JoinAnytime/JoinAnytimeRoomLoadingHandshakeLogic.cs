@@ -1,7 +1,9 @@
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     /// <summary>
-    /// Pure decision for host room-enter sync when every in-room player has finished loading.
+    /// Pure gate for host room-enter sync. See <see cref="JoinAnytimeRoomLoadingHandshake"/>.
+    /// Do not compare against <c>GetSessionCount</c> / <c>GetRoomTypeMemberCount</c> here — that is
+    /// the vanilla mismatch this feature avoids.
     /// </summary>
     internal static class JoinAnytimeRoomLoadingHandshakeLogic
     {

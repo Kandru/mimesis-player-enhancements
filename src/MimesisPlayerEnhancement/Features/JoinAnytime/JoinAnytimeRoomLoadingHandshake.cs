@@ -3,8 +3,17 @@ using System.Reflection;
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     /// <summary>
-    /// Host-side fix for vanilla waiting on inflated session counts instead of in-room load completion.
-    /// Always active (not gated on <see cref="ModConfig.EnableJoinAnytime"/>).
+    /// Host-only workaround for vanilla IVroom.OnUpdate (~L808): it waits until
+    /// <c>_levelLoadCompleteActorIDs.Count == GetRoomTypeMemberCount</c> before calling
+    /// <c>OnAllMemberEntered</c> (which sends AllMemberEnterRoomSig and clears STRING_LOADING_WAIT).
+    /// GetRoomTypeMemberCount delegates to SessionManager.GetSessionCount (live transports minus
+    /// maintenance), not players physically in this room — so the equality often fails for ~40s
+    /// (worse with 4 players / spread load times / mid-transfer sessions). Clients then sit on
+    /// "waiting for other survivors" even when every in-room VPlayer has LevelLoadCompleted.
+    /// <para>
+    /// Fix: fire OnAllMemberEntered when every non-dummy VPlayer in <c>_vPlayerDict</c> has
+    /// LevelLoadCompleted. Always active — not gated on EnableJoinAnytime.
+    /// </para>
     /// </summary>
     internal static class JoinAnytimeRoomLoadingHandshake
     {
@@ -48,11 +57,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            // Count in-room VPlayers only — not SessionManager.GetSessionCount (vanilla expected side).
             if (!TryCountRoomMembers(room, out int expectedMembers, out int loadedMembers))
             {
                 return;
             }
 
+            // ResetEnvironment clears _startNotified but not _levelLoadCompleteActorIDs; prune on recycle.
             PruneStaleLevelLoadIds(room);
 
             if (!JoinAnytimeRoomLoadingHandshakeLogic.ResolveReadyToEnter(expectedMembers, loadedMembers))
@@ -60,6 +71,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
+            // Diagnostic only — do not use vanillaExpected for the start decision.
             int vanillaExpected = GameSessionAccess.TryGetVWorld()
                 ?.GetRoomTypeMemberCount(room.Property.vRoomType) ?? -1;
             int loadCompleteIdCount = GetLevelLoadCompleteIdCount(room);

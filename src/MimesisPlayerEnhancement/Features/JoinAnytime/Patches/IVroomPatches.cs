@@ -3,6 +3,8 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
+    // Vanilla IVroom.OnUpdate gates AllMemberEnterRoomSig on session count vs per-room load IDs;
+    // prefix here so we can start as soon as in-room players are loaded (see JoinAnytimeRoomLoadingHandshake).
     // game@0.3.1 Assembly-CSharp/IVroom.cs:L769-826
     [HarmonyPatch]
     internal static class IVroomOnUpdateRoomLoadingHandshakePatch
