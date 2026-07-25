@@ -56,16 +56,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return !FullyReadyUids.Contains(playerUid);
         }
 
-        internal static bool ShouldDeferRegistration(VPlayer? player)
-        {
-            if (player == null)
-            {
-                return false;
-            }
-
-            return ShouldDeferRegistration(player.UID);
-        }
-
         internal static bool ShouldDeferRegistrationBySteamId(ulong steamId)
         {
             if (steamId == 0)

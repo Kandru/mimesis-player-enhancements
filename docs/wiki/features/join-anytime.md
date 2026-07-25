@@ -24,3 +24,5 @@ After a player connects, tram departure is blocked for this many seconds while t
 | Integer ≥ `1` | Grace period length in seconds |
 
 Default: `30`
+
+`JoinConnectionGraceSeconds` applies to new late joins finishing load. Brief disconnects use vanilla seamless reconnect (about 18 seconds host hold, about 20 seconds client retry) and are not subject to this grace timer.

@@ -53,6 +53,35 @@ namespace MimesisPlayerEnhancement.Tests.Features.JoinAnytime
         }
 
         [Fact]
+        public void SessionManager_HandleTransportDrop_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("SessionManager");
+
+            MethodInfo? method = type.GetMethod("HandleTransportDrop", InstanceMember);
+
+            Assert.NotNull(method);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Equal(2, parameters.Length);
+            Assert.Equal("Int64", parameters[0].ParameterType.Name);
+            Assert.Equal("DisconnectReason", parameters[1].ParameterType.Name);
+        }
+
+        [Fact]
+        public void SessionManager_FinalizeDormantExpiry_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("SessionManager");
+
+            MethodInfo? method = type.GetMethod("FinalizeDormantExpiry", InstanceMember);
+
+            Assert.NotNull(method);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("DormantSnapshot", parameters[0].ParameterType.Name);
+        }
+
+        [Fact]
         public void VPlayer_HandleLevelLoadComplete_exists()
         {
             using MimesisMetadataContext context = CreateContext();
