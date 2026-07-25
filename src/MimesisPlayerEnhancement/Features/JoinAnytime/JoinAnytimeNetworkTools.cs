@@ -4,63 +4,36 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
     {
         private const string Feature = "JoinAnytime";
 
-        internal static bool RouteToTram(VPlayer player, bool allowResend = false)
+        internal static bool RouteToTram(VPlayer player)
         {
+            if (player == null)
+            {
+                return false;
+            }
+
             if (player.VRoom is VWaitingRoom)
             {
                 LateJoinRouteTracker.MarkInWaitingRoom(player.UID);
                 return true;
             }
 
-            return RouteToTram(player.UID, msg => player.SendToMe(msg), player, allowResend);
-        }
-
-        internal static bool RouteToTram(SessionContext context, bool allowResend = false)
-        {
-            long uid = context.GetPlayerUID();
-            if (uid == 0)
+            long uid = player.UID;
+            LateJoinRoutePhase phase = LateJoinRouteTracker.GetPhase(uid);
+            if (phase is LateJoinRoutePhase.AwaitingClient or LateJoinRoutePhase.InWaitingRoom)
             {
-                return false;
-            }
-
-            if (SessionContextAccess.GetVPlayer(context) is VPlayer livePlayer)
-            {
-                return RouteToTram(livePlayer, allowResend);
-            }
-
-            return RouteToTram(uid, msg => { _ = context.Send(msg); }, player: null, allowResend);
-        }
-
-        private static bool RouteToTram(
-            long uid,
-            Action<IMsg> send,
-            VPlayer? player,
-            bool allowResend)
-        {
-            if (LateJoinRouteTracker.HasCompletedServerRoute(uid))
-            {
-                if (!allowResend)
-                {
-                    return LateJoinRouteTracker.GetPhase(uid) != LateJoinRoutePhase.InMaintenance;
-                }
-
-                ModLog.Debug(
-                    Feature,
-                    $"Resending route to tram for uid={uid} — phase={LateJoinRouteTracker.GetPhase(uid)}");
+                // Client owns the transition after server release — never resend route packets.
+                return true;
             }
 
             if (!JoinAnytimeRoomTools.TryEnsureWaitingRoom(out IVroom? waitingRoom))
             {
                 ModLog.Warn(Feature, $"RouteToTram failed — waiting room unavailable for uid={uid}");
-                LateJoinRouteTracker.SetRoutePending(uid, pending: true);
                 return false;
             }
 
-            LateJoinRouteTracker.SetRoutePending(uid, pending: false);
-
             ModLog.Info(Feature, $"Route to tram uid={uid} — waitingRoomUID={waitingRoom!.RoomID}");
 
-            send(new MakeRoomCompleteSig
+            player.SendToMe(new MakeRoomCompleteSig
             {
                 nextRoomInfo = new RoomInfo
                 {
@@ -68,20 +41,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     roomUID = waitingRoom.RoomID,
                 },
             });
+            player.SendToMe(new MoveToWaitingRoomSig());
 
-            send(new MoveToWaitingRoomSig());
-
-            if (player?.VRoom is MaintenanceRoom)
+            if (player.VRoom is MaintenanceRoom)
             {
-                int actorId = player.ObjectID;
-                LateJoinRouteTracker.RecordMaintenanceActorId(uid, actorId);
-                send(new LeaveRoomSig { actorID = actorId });
+                player.SendToMe(new LeaveRoomSig { actorID = player.ObjectID });
                 JoinAnytimeRoomTools.ReleaseLateJoinerFromMaintenance(player);
-            }
-            else if (LateJoinRouteTracker.TryGetMaintenanceActorId(uid, out int actorId))
-            {
-                ModLog.Debug(Feature, $"Resending maintenance LeaveRoomSig for uid={uid} — actorId={actorId}");
-                send(new LeaveRoomSig { actorID = actorId });
             }
 
             LateJoinRouteTracker.MarkAwaitingClient(uid);

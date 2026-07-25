@@ -8,57 +8,27 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     internal static class SessionManagerRemovePatch
     {
         [HarmonyPrefix]
-        private static void Prefix(SessionManager __instance, long sessionID)
-        {
-            if (!ModConfig.EnableJoinAnytime.Value)
-            {
-                return;
-            }
-
-            if (!SessionContextAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
-                || context == null)
-            {
-                return;
-            }
-
-            long uid = context.GetPlayerUID();
-            if (uid == 0)
-            {
-                return;
-            }
-
-            ulong steamId = context.PlayerInfoSnapshot?.SteamID ?? context.SteamID;
-            JoinAnytimeSessionDisconnect.OnSessionLeaving(uid, steamId, abandonIfDeferred: true);
-        }
+        private static void Prefix(SessionManager __instance, long sessionID) =>
+            JoinAnytimeSessionDisconnect.OnSessionLeaving(__instance, sessionID, abandonIfDeferred: true);
     }
 
     // game@0.3.1 Assembly-CSharp/SessionManager.cs:L92-105
+    // Transport drops may enter a dormant snapshot (grace reconnect) without calling Remove.
     [HarmonyPatch(typeof(SessionManager), nameof(SessionManager.HandleTransportDrop))]
     internal static class SessionManagerHandleTransportDropPatch
     {
         [HarmonyPrefix]
         private static void Prefix(SessionManager __instance, long sessionID, DisconnectReason reason)
         {
-            if (!ModConfig.EnableJoinAnytime.Value)
-            {
-                return;
-            }
-
-            if (!SessionContextAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
+            if (!ModConfig.EnableJoinAnytime.Value
+                || !SessionContextAccess.TryGetSessionContextBySessionId(__instance, sessionID, out SessionContext? context)
                 || context == null)
             {
                 return;
             }
 
-            long uid = context.GetPlayerUID();
-            if (uid == 0)
-            {
-                return;
-            }
-
-            ulong steamId = context.PlayerInfoSnapshot?.SteamID ?? context.SteamID;
             bool abandonIfDeferred = !JoinAnytimeReconnectLogic.IsGraceEligible(context, reason);
-            JoinAnytimeSessionDisconnect.OnSessionLeaving(uid, steamId, abandonIfDeferred);
+            JoinAnytimeSessionDisconnect.OnSessionLeaving(context, abandonIfDeferred);
         }
     }
 
@@ -72,18 +42,12 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         [HarmonyPrefix]
         private static void Prefix(SessionManager.DormantSnapshot snap)
         {
-            if (!ModConfig.EnableJoinAnytime.Value || snap == null)
+            if (snap == null)
             {
                 return;
             }
 
-            long uid = snap.PlayerUID;
-            if (uid == 0)
-            {
-                return;
-            }
-
-            JoinAnytimeSessionDisconnect.OnSessionLeaving(uid, snap.SteamID, abandonIfDeferred: true);
+            JoinAnytimeSessionDisconnect.OnSessionLeaving(snap.PlayerUID, snap.SteamID, abandonIfDeferred: true);
         }
     }
 }

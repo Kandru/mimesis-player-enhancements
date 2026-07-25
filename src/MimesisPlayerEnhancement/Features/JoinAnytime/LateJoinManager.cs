@@ -34,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            RouteAllMaintenanceLateJoiners(allowResend: true);
+            RouteAllMaintenanceLateJoiners();
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     return;
                 }
 
-                TryRoutePlayer(player, allowResend: false, logFirstAttempt: true);
+                TryRoutePlayer(player, logFirstAttempt: true);
             });
         }
 
@@ -120,7 +120,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static void TryRoutePlayer(VPlayer player, bool allowResend, bool logFirstAttempt = false)
+        private static void TryRoutePlayer(VPlayer player, bool logFirstAttempt = false)
         {
             if (!IsEnabled || player == null || player.IsHost || !ShouldRouteToTram())
             {
@@ -140,8 +140,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            LateJoinRoutePhase phase = LateJoinRouteTracker.GetPhase(player.UID);
-            if (phase == LateJoinRoutePhase.AwaitingClient && !allowResend)
+            // After ReleaseLateJoinerFromMaintenance the server waits for EnterWaitingRoomReq.
+            // Resending MakeRoomComplete/MoveToWaitingRoom/LeaveRoom resets the client transition.
+            if (LateJoinRouteTracker.GetPhase(player.UID) == LateJoinRoutePhase.AwaitingClient)
             {
                 return;
             }
@@ -151,17 +152,13 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return;
             }
 
-            bool resend = allowResend
-                || LateJoinRouteTracker.IsRoutePending(player.UID)
-                || phase == LateJoinRoutePhase.AwaitingClient;
-
-            if (logFirstAttempt && phase != LateJoinRoutePhase.AwaitingClient)
+            if (logFirstAttempt)
             {
                 ModLog.Info(
                     Feature,
                     $"Late joiner in maintenance — uid={player.UID} hostScene={GameSessionAccess.TryGetPdata()?.main?.GetType().Name ?? "null"}");
             }
-            else if (LateJoinRouteTracker.GetStuckSeconds(player.UID) > 0f && resend)
+            else if (LateJoinRouteTracker.GetStuckSeconds(player.UID) > 0f)
             {
                 ModLog.Info(
                     Feature,
@@ -169,10 +166,10 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             LateJoinRouteTracker.RecordAttempt(player.UID);
-            JoinAnytimeNetworkTools.RouteToTram(player, resend);
+            JoinAnytimeNetworkTools.RouteToTram(player);
         }
 
-        private static void RouteAllMaintenanceLateJoiners(bool allowResend)
+        private static void RouteAllMaintenanceLateJoiners()
         {
             SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
             if (sessionManager == null)
@@ -188,7 +185,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
-                TryRoutePlayer(player, allowResend);
+                TryRoutePlayer(player);
             }
         }
 
@@ -202,53 +199,23 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
             {
-                long uid = context.GetPlayerUID();
-                if (uid == 0)
-                {
-                    continue;
-                }
-
                 VPlayer? player = SessionContextAccess.GetVPlayer(context);
-                if (player != null)
+                if (player == null || player.IsHost)
                 {
-                    if (player.IsHost)
-                    {
-                        continue;
-                    }
-
-                    if (player.VRoom is VWaitingRoom)
-                    {
-                        LateJoinRouteTracker.MarkInWaitingRoom(uid);
-                        continue;
-                    }
-
-                    if (player.VRoom is MaintenanceRoom && player.LevelLoadCompleted)
-                    {
-                        TryRoutePlayer(player, allowResend: true);
-                    }
-
+                    // No VPlayer after maintenance release until EnterWaitingRoomReq — wait.
                     continue;
                 }
 
-                if (LateJoinRouteTracker.GetPhase(uid) != LateJoinRoutePhase.AwaitingClient)
+                if (player.VRoom is VWaitingRoom)
                 {
+                    LateJoinRouteTracker.MarkInWaitingRoom(player.UID);
                     continue;
                 }
 
-                if (!LateJoinRouteTracker.CanAttempt(uid, RouteRetryIntervalSeconds))
+                if (player.VRoom is MaintenanceRoom && player.LevelLoadCompleted)
                 {
-                    continue;
+                    TryRoutePlayer(player);
                 }
-
-                if (LateJoinRouteTracker.GetStuckSeconds(uid) > 0f)
-                {
-                    ModLog.Info(
-                        Feature,
-                        $"Late joiner limbo retry — uid={uid} stuckFor={LateJoinRouteTracker.GetStuckSeconds(uid):F1}s attempts={LateJoinRouteTracker.GetAttemptCount(uid)}");
-                }
-
-                LateJoinRouteTracker.RecordAttempt(uid);
-                JoinAnytimeNetworkTools.RouteToTram(context, allowResend: true);
             }
         }
 

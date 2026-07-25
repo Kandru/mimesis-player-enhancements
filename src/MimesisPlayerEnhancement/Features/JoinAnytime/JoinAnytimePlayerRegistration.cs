@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            if (steamId != 0 && DeferredSteamIds.Contains(steamId))
+            if (DeferredSteamIds.Contains(steamId))
             {
                 return true;
             }

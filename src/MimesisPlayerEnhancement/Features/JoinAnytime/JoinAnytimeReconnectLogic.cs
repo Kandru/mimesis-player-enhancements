@@ -48,11 +48,11 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return false;
             }
 
-            return reason == DisconnectReason.ByServer
-                || reason is DisconnectReason.ConnectionError
-                    or DisconnectReason.Undefined
-                    or DisconnectReason.PacketError
-                    or DisconnectReason.TransientDrop;
+            return reason is DisconnectReason.ByServer
+                or DisconnectReason.ConnectionError
+                or DisconnectReason.Undefined
+                or DisconnectReason.PacketError
+                or DisconnectReason.TransientDrop;
         }
     }
 }

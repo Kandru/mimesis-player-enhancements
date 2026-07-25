@@ -74,28 +74,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        internal static void RecordMaintenanceActorId(long uid, int actorId)
-        {
-            if (uid == 0 || actorId == 0)
-            {
-                return;
-            }
-
-            GetOrCreate(uid).MaintenanceActorId = actorId;
-        }
-
-        internal static bool TryGetMaintenanceActorId(long uid, out int actorId)
-        {
-            if (StatesByUid.TryGetValue(uid, out RouteState? state) && state.MaintenanceActorId != 0)
-            {
-                actorId = state.MaintenanceActorId;
-                return true;
-            }
-
-            actorId = 0;
-            return false;
-        }
-
         internal static void MarkInWaitingRoom(long uid)
         {
             RouteState state = GetOrCreate(uid);
@@ -106,14 +84,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 NotifyDashboardIfChanged();
             }
         }
-
-        internal static void SetRoutePending(long uid, bool pending)
-        {
-            GetOrCreate(uid).RoutePending = pending;
-        }
-
-        internal static bool IsRoutePending(long uid) =>
-            StatesByUid.TryGetValue(uid, out RouteState? state) && state.RoutePending;
 
         internal static void RecordAttempt(long uid)
         {
@@ -130,10 +100,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             return Time.time >= state.LastAttemptTime + retryIntervalSeconds;
         }
-
-        internal static bool HasCompletedServerRoute(long uid) =>
-            StatesByUid.TryGetValue(uid, out RouteState? state)
-            && state.Phase is LateJoinRoutePhase.AwaitingClient or LateJoinRoutePhase.InWaitingRoom;
 
         internal static LateJoinRoutePhase GetPhase(long uid) =>
             StatesByUid.TryGetValue(uid, out RouteState? state) ? state.Phase : LateJoinRoutePhase.None;
@@ -263,8 +229,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
             internal int AttemptCount { get; private set; }
 
-            internal bool RoutePending { get; set; }
-
             internal void SetPhase(LateJoinRoutePhase phase)
             {
                 Phase = phase;
@@ -273,12 +237,8 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     FirstAttemptTime = 0f;
                     LastAttemptTime = 0f;
                     AttemptCount = 0;
-                    MaintenanceActorId = 0;
-                    RoutePending = false;
                 }
             }
-
-            internal int MaintenanceActorId { get; set; }
 
             internal void RecordAttempt()
             {

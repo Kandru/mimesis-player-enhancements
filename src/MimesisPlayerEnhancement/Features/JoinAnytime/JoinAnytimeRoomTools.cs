@@ -152,8 +152,6 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                 return true;
             }
 
-            LateJoinRouteTracker.RecordMaintenanceActorId(player.UID, player.ObjectID);
-
             ModLog.Info(Feature, $"Releasing late joiner uid={player.UID} from maintenance — awaiting EnterWaitingRoomReq");
 
             // Queue removal on the room executor; do not flush here. Vanilla maintenance→tram
