@@ -1,6 +1,7 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.21
+- fix: allow kick/ban yet again (v0.3.1 changed stuff so it did not work anymore)
 - draft: add custom disco ball song possibilities (no custom songs yet)
 
 ## 26.7.20
