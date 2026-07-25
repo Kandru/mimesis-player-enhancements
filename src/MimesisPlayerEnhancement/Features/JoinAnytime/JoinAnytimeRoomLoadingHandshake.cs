@@ -3,18 +3,33 @@ using System.Reflection;
 namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     /// <summary>
-    /// Host-only workaround for vanilla IVroom.OnUpdate (~L808): it waits until
-    /// <c>_levelLoadCompleteActorIDs.Count == GetRoomTypeMemberCount</c> before calling
-    /// <c>OnAllMemberEntered</c> (which sends AllMemberEnterRoomSig and clears STRING_LOADING_WAIT).
-    /// GetRoomTypeMemberCount delegates to SessionManager.GetSessionCount (live transports minus
-    /// maintenance), not players physically in this room — so the equality often fails for ~40s
-    /// (worse with 4 players / spread load times / mid-transfer sessions). Clients then sit on
-    /// "waiting for other survivors" even when every in-room VPlayer has LevelLoadCompleted.
-    /// <para>
-    /// Fix: fire OnAllMemberEntered when every non-dummy VPlayer in <c>_vPlayerDict</c> has
-    /// LevelLoadCompleted. Always active — not gated on EnableJoinAnytime.
-    /// </para>
+    /// Host-only workaround for vanilla <c>IVroom.OnUpdate</c> (~L808 in 0.3.1).
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Vanilla behavior:</b> while <c>_startNotified</c> is false and within a ~40s window, start
+    /// only when <c>_levelLoadCompleteActorIDs.Count == GetRoomTypeMemberCount</c>. After the window,
+    /// it periodically force-starts. <c>OnAllMemberEntered</c> sends <c>AllMemberEnterRoomSig</c> and
+    /// clears the client "waiting for other survivors" loading UI.
+    /// </para>
+    /// <para>
+    /// <b>Why we intervene:</b> that ID==session-count equality often stays false even when every
+    /// player who should be in the room already has <c>LevelLoadCompleted</c> (stale load-complete
+    /// Steam IDs after room recycle; JoinAnytime AwaitingClient sessions inflating
+    /// <c>GetSessionCount</c> for Waiting/Game). Clients then sit on the wait UI for up to ~40s.
+    /// </para>
+    /// <para>
+    /// <b>Our rule:</b> early-start when all non-dummy VPlayers in this room's <c>_vPlayerDict</c>
+    /// are loaded <i>and</i> in-room count covers the session expectation for this room type, after
+    /// subtracting JoinAnytime AwaitingClient limbo (those players have no VPlayer and are not
+    /// entering this room). Always active — not gated on <c>EnableJoinAnytime</c>.
+    /// </para>
+    /// <para>
+    /// <b>Do not</b> early-start merely because the sole arrived host is loaded while a transferring
+    /// teammate is not in <c>_vPlayerDict</c> yet (dungeon→maintenance race). That desyncs vanilla
+    /// clients: loading screen stuck, can move/hear, invisible to host.
+    /// </para>
+    /// </remarks>
     internal static class JoinAnytimeRoomLoadingHandshake
     {
         private const string Feature = "JoinAnytime";
@@ -31,73 +46,68 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
         private static readonly MethodInfo? OnAllMemberEnteredMethod =
             AccessTools.Method(typeof(IVroom), "OnAllMemberEntered");
 
-        private static readonly HashSet<long> LoggedMismatchRoomIds = [];
+        private static readonly HashSet<long> LoggedStartRoomIds = [];
 
-        internal static void ResetSessionState()
-        {
-            LoggedMismatchRoomIds.Clear();
-        }
+        internal static void ResetSessionState() => LoggedStartRoomIds.Clear();
 
         internal static void TryCompleteEnterHandshake(IVroom room)
         {
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature())
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature()
+                || room == null
+                || OnAllMemberEnteredMethod == null)
             {
                 return;
             }
 
-            if (room == null
-                || StartNotifiedField?.GetValue(room) is not false
-                || OnAllMemberEnteredMethod == null)
+            if (StartNotifiedField?.GetValue(room) is not false)
             {
-                if (room != null && StartNotifiedField?.GetValue(room) is true)
+                if (StartNotifiedField?.GetValue(room) is true)
                 {
-                    LoggedMismatchRoomIds.Remove(room.RoomID);
+                    LoggedStartRoomIds.Remove(room.RoomID);
                 }
 
                 return;
             }
 
-            // Count in-room VPlayers only — not SessionManager.GetSessionCount (vanilla expected side).
-            if (!TryCountRoomMembers(room, out int expectedMembers, out int loadedMembers))
+            if (VPlayerDictField?.GetValue(room) is not VActorDict<int, VPlayer> players)
             {
                 return;
             }
 
-            // ResetEnvironment clears _startNotified but not _levelLoadCompleteActorIDs; prune on recycle.
-            PruneStaleLevelLoadIds(room);
+            // ResetEnvironment clears _startNotified but can leave stale Steam IDs in the set.
+            PruneStaleLevelLoadIds(room, players);
 
-            if (!JoinAnytimeRoomLoadingHandshakeLogic.ResolveReadyToEnter(expectedMembers, loadedMembers))
+            CountRoomMembers(players, out int roomMembers, out int loadedMembers);
+
+            // GetRoomTypeMemberCount → GetSessionCount: Maintenance = all sessions; Waiting/Game =
+            // sessions minus players currently in a maintenance room. AwaitingClient limbo has no
+            // VPlayer, so vanilla does NOT exclude it for Waiting/Game — subtract it here or the
+            // 40s hang returns whenever a late joiner is mid-route.
+            int sessionExpected = GameSessionAccess.TryGetVWorld()
+                ?.GetRoomTypeMemberCount(room.Property.vRoomType) ?? 0;
+            int adjustedExpected = JoinAnytimeRoomLoadingHandshakeLogic.AdjustSessionExpected(
+                sessionExpected,
+                LateJoinRouteTracker.CountAwaitingClient());
+
+            if (!JoinAnytimeRoomLoadingHandshakeLogic.ResolveReadyToEnter(
+                    roomMembers,
+                    loadedMembers,
+                    adjustedExpected))
             {
                 return;
             }
 
-            // Diagnostic only — do not use vanillaExpected for the start decision.
-            int vanillaExpected = GameSessionAccess.TryGetVWorld()
-                ?.GetRoomTypeMemberCount(room.Property.vRoomType) ?? -1;
-            int loadCompleteIdCount = GetLevelLoadCompleteIdCount(room);
-            if (vanillaExpected != loadCompleteIdCount)
-            {
-                LogMismatchOnce(
-                    room.RoomID,
-                    vanillaExpected,
-                    loadCompleteIdCount,
-                    expectedMembers,
-                    loadedMembers);
-            }
-
+            LogStartOnce(room.RoomID, sessionExpected, adjustedExpected, roomMembers, loadedMembers);
             OnAllMemberEnteredMethod.Invoke(room, null);
         }
 
-        private static bool TryCountRoomMembers(IVroom room, out int expectedMembers, out int loadedMembers)
+        private static void CountRoomMembers(
+            VActorDict<int, VPlayer> players,
+            out int roomMembers,
+            out int loadedMembers)
         {
-            expectedMembers = 0;
+            roomMembers = 0;
             loadedMembers = 0;
-
-            if (VPlayerDictField?.GetValue(room) is not VActorDict<int, VPlayer> players)
-            {
-                return false;
-            }
-
             foreach (VPlayer player in players.Values)
             {
                 if (player == null || player.IsDummy)
@@ -105,20 +115,17 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
                     continue;
                 }
 
-                expectedMembers++;
+                roomMembers++;
                 if (player.LevelLoadCompleted)
                 {
                     loadedMembers++;
                 }
             }
-
-            return true;
         }
 
-        private static void PruneStaleLevelLoadIds(IVroom room)
+        private static void PruneStaleLevelLoadIds(IVroom room, VActorDict<int, VPlayer> players)
         {
-            if (LevelLoadCompleteIdsField?.GetValue(room) is not HashSet<ulong> loadCompleteIds
-                || VPlayerDictField?.GetValue(room) is not VActorDict<int, VPlayer> players)
+            if (LevelLoadCompleteIdsField?.GetValue(room) is not HashSet<ulong> loadCompleteIds)
             {
                 return;
             }
@@ -126,15 +133,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             HashSet<ulong> liveSteamIds = [];
             foreach (VPlayer player in players.Values)
             {
-                if (player == null || player.IsDummy)
+                if (player is { IsDummy: false, SteamID: not 0 })
                 {
-                    continue;
-                }
-
-                ulong steamId = player.SteamID;
-                if (steamId != 0)
-                {
-                    liveSteamIds.Add(steamId);
+                    liveSteamIds.Add(player.SteamID);
                 }
             }
 
@@ -147,35 +148,22 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
         }
 
-        private static int GetLevelLoadCompleteIdCount(IVroom room) =>
-            LevelLoadCompleteIdsField?.GetValue(room) is HashSet<ulong> loadCompleteIds
-                ? loadCompleteIds.Count
-                : -1;
-
-        private static void LogMismatchOnce(
+        private static void LogStartOnce(
             long roomId,
-            int vanillaExpected,
-            int loadCompleteIdCount,
-            int expectedMembers,
+            int sessionExpected,
+            int adjustedExpected,
+            int roomMembers,
             int loadedMembers)
         {
-            if (!LoggedMismatchRoomIds.Add(roomId))
+            if (!LoggedStartRoomIds.Add(roomId))
             {
                 return;
             }
 
-            ModLog.Warn(
+            ModLog.Info(
                 Feature,
-                $"Loading handshake — early start room={roomId} vanillaExpected={vanillaExpected} "
-                + $"loadCompleteIds={loadCompleteIdCount} roomMembers={expectedMembers} loaded={loadedMembers}");
-
-            if (ModConfig.EnableDebugLogging.Value)
-            {
-                ModLog.Debug(
-                    Feature,
-                    $"Loading handshake — vanilla waits until loadCompleteIds == GetRoomTypeMemberCount; "
-                    + $"room uses in-room LevelLoadCompleted instead (room={roomId})");
-            }
+                $"Loading handshake — start room={roomId} sessionExpected={sessionExpected} "
+                + $"adjustedExpected={adjustedExpected} roomMembers={roomMembers} loaded={loadedMembers}");
         }
     }
 }

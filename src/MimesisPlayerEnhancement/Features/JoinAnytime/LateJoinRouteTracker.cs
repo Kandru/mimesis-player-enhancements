@@ -137,6 +137,25 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             return count;
         }
 
+        /// <summary>
+        /// Late joiners released from maintenance with no VPlayer yet. They still count toward
+        /// <c>GetSessionCount</c> for Waiting/Game (not in the maintenance room member tally) and
+        /// must not block the loading handshake for the active party.
+        /// </summary>
+        internal static int CountAwaitingClient()
+        {
+            int count = 0;
+            foreach (RouteState state in StatesByUid.Values)
+            {
+                if (state.Phase == LateJoinRoutePhase.AwaitingClient)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
         internal static void ApplyDashboardFields(WebDashboard.Models.WebDashboardPlayerDto dto, SessionContext? context)
         {
             if (!ModConfig.EnableJoinAnytime.Value || dto.IsHost || dto.PlayerUid == 0)
