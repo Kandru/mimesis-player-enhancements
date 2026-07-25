@@ -6,6 +6,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: traps should respawn properly again / distinguish better between naming of settings
 - fix: dungeon loot filter/scaling timing (allowlist/denylist had no effect on spawned loot, only on mimics loot)
 - fix: inventory net-worth label now aligns to the top edge of inventory instead of stacking directly above the kg readout (waits for inventory chrome layout before showing)
+- fix: settings page does not show a section as changed when only the feature toggle differs, "reset all" does not disable the feature anymore
 - draft: expose new Mimic tuning options since game version 0.3.1
 - draft: DungeonTime to "slow down" or "speed up" the clock in order to simply stop at 12pm (currently more time would mean game would count up to 1am or longer depending on the amount of players and chosen settings)
 - draft: host sends configuration to modded clients (for feature-parity during party)

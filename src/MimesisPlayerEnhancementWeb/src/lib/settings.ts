@@ -208,11 +208,11 @@ export function sectionHasModifiedEntries(
   settings: SettingsDto | null,
   scope: 'global' | 'save',
 ) {
-  const candidates = [
-    ...(section.featureToggle ? [section.featureToggle] : []),
-    ...section.entries.filter((entry) => entryVisible(section, entry, settings)),
-  ];
-  return candidates.some((entry) => entryIsModified(entry, scope));
+  // Master Enable* toggle is shown in the section nav; ignore it for the
+  // "changed" marker so enabling a feature alone does not flag the section.
+  return section.entries
+    .filter((entry) => entryVisible(section, entry, settings))
+    .some((entry) => entryIsModified(entry, scope));
 }
 
 export function sectionResettableEntries(
@@ -225,12 +225,10 @@ export function sectionResettableEntries(
   searchContext?: SettingsSearchContext,
 ) {
   const entries: ConfigEntryDto[] = [];
-  const candidates = [
-    ...(section.featureToggle ? [section.featureToggle] : []),
-    ...section.entries.filter(
-      (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query, searchContext),
-    ),
-  ];
+  // Exclude the master Enable* toggle — Reset all should not turn features off.
+  const candidates = section.entries.filter(
+    (entry) => entryVisible(section, entry, settings) && matchesSettingsQuery(entry, section.title, query, searchContext),
+  );
 
   for (const entry of candidates) {
     if (!entryIsModified(entry, scope)) continue;

@@ -544,9 +544,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return true;
             }
 
+            // Section-wide reset must not flip the master Enable* toggle off;
+            // that state is controlled from the settings nav, not Reset all.
+            ModConfigRegistry.TryGetFeatureToggleKey(sectionId, out string featureToggleKey);
+
             foreach (string entryKey in ModConfigRegistry.GetEntryOrder(sectionId))
             {
                 if (!ModConfigRegistry.TryGetEntry(sectionId, entryKey, out MelonPreferences_Entry? entry) || entry == null)
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(featureToggleKey)
+                    && string.Equals(entryKey, featureToggleKey, StringComparison.Ordinal))
                 {
                     continue;
                 }
