@@ -1,5 +1,6 @@
 using System.Reflection;
 using ReluProtocol.Enum;
+using ReluServerBase.Threading;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -13,6 +14,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly FieldInfo? BannedSteamIdsField =
             typeof(SessionManager).GetField("_bannedSteamIDs", InstanceMemberFlags);
+
+        private static readonly FieldInfo? DormantSnapshotsField =
+            typeof(SessionManager).GetField("_dormantSnapshots", InstanceMemberFlags);
+
+        private static readonly FieldInfo? SessionManagerCommandExecutorField =
+            typeof(SessionManager).GetField("_commandExecutor", InstanceMemberFlags);
+
+        private static readonly MethodInfo? RemoveInternalMethod =
+            typeof(SessionManager).GetMethod(
+                "RemoveInternal",
+                InstanceMemberFlags,
+                binder: null,
+                types: [typeof(long), typeof(DisconnectReason)],
+                modifiers: null);
 
         private static readonly FieldInfo? EnterPktHashCodeField =
             typeof(SessionContext).GetField("_enterPktHashCode", InstanceMemberFlags);
@@ -162,8 +177,59 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool TryGetSessionId(SessionContext context, out long sessionId) =>
             SessionContextAccess.TryGetSessionId(context, out sessionId);
 
-        internal static void DisconnectSession(SessionManager sessionManager, long sessionId, DisconnectReason reason) =>
-            SessionContextAccess.DisconnectSession(sessionManager, sessionId, reason);
+        internal static bool TryForceDisconnect(
+            SessionManager sessionManager,
+            long playerUid,
+            DisconnectReason reason)
+        {
+            if (playerUid == 0
+                || SessionManagerCommandExecutorField?.GetValue(sessionManager) is not CommandExecutor executor
+                || RemoveInternalMethod == null
+                || !TryGetSessionContextByUid(playerUid, out SessionContext? targetContext)
+                || targetContext == null
+                || !TryGetSessionId(targetContext, out long sessionId))
+            {
+                return false;
+            }
+
+            ulong steamId = targetContext.SteamID;
+            long capturedSessionId = sessionId;
+            long capturedPlayerUid = playerUid;
+            DisconnectReason capturedReason = reason;
+
+            if (!executor.Invoke(() =>
+                {
+                    ClearDormantSnapshot(sessionManager, steamId);
+
+                    KickPlayerSig sig = new()
+                    {
+                        kickPlayerUID = capturedPlayerUid,
+                    };
+                    foreach (SessionContext context in EnumerateSessionContexts(sessionManager))
+                    {
+                        context.Send(sig);
+                    }
+
+                    RemoveInternalMethod.Invoke(sessionManager, [capturedSessionId, capturedReason]);
+                }))
+            {
+                return false;
+            }
+
+            executor.Execute();
+            return true;
+        }
+
+        private static void ClearDormantSnapshot(SessionManager sessionManager, ulong steamId)
+        {
+            if (steamId == 0
+                || DormantSnapshotsField?.GetValue(sessionManager) is not System.Collections.IDictionary dormant)
+            {
+                return;
+            }
+
+            dormant.Remove(steamId);
+        }
 
         internal static bool TryGetLocalVPlayer(out VPlayer? player)
         {

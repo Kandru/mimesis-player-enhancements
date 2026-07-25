@@ -66,33 +66,23 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static WebDashboardActionResult Kick(SessionManager sessionManager, WebDashboardPendingAction action)
         {
-            if (!TryResolveTarget(action, out SessionContext? targetContext, out long playerUid))
+            if (!TryResolveTarget(action, out _, out long playerUid) || playerUid == 0)
             {
                 return Fail(L("player_not_found"));
             }
 
-            if (!TryGetHostKickContext(sessionManager, out VPlayer? hostPlayer, out int hashCode))
-            {
-                return Fail(L("host_context_unavailable"));
-            }
-
-            if (!WebDashboardSessionAccess.TryGetSessionId(targetContext!, out long sessionId))
-            {
-                return Fail(L("session_id_unavailable"));
-            }
-
             try
             {
-                // HandleKickPlayerReq always adds to _bannedSteamIDs; disconnect without banning instead.
-                return DisconnectPlayer(
-                    sessionManager,
-                    hostPlayer!,
-                    playerUid,
-                    hashCode,
-                    sessionId,
-                    DisconnectReason.KickByServer,
-                    "Kicked",
-                    L("player_kicked"));
+                if (!WebDashboardSessionAccess.TryForceDisconnect(
+                        sessionManager,
+                        playerUid,
+                        DisconnectReason.KickByServer))
+                {
+                    return Fail(L("kick_failed"));
+                }
+
+                ModLog.Info(Feature, $"Kicked player uid={playerUid}.");
+                return Ok(L("player_kicked"));
             }
             catch (System.Exception ex)
             {
@@ -108,69 +98,52 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return Fail(L("invalid_steam_id"));
             }
 
-            if (!WebDashboardSessionAccess.TryAddBan(sessionManager, action.SteamId))
-            {
-                return WebDashboardSessionAccess.IsBanned(sessionManager, action.SteamId)
-                    ? Ok(L("player_already_banned"))
-                    : Fail(L("ban_failed"));
-            }
-
-            ModLog.Info(Feature, $"Banned steam={action.SteamId}.");
-
-            if (TryResolveTarget(action, out SessionContext? targetContext, out long playerUid)
+            if (TryResolveTarget(action, out _, out long playerUid)
                 && playerUid != 0
-                && TryGetHostKickContext(sessionManager, out VPlayer? hostPlayer, out int hashCode)
-                && WebDashboardSessionAccess.TryGetSessionId(targetContext!, out long sessionId))
+                && TryGetHostKickContext(sessionManager, out VPlayer? hostPlayer, out int hashCode))
             {
                 try
                 {
-                    WebDashboardActionResult disconnectResult = DisconnectPlayer(
-                        sessionManager,
-                        hostPlayer!,
-                        playerUid,
-                        hashCode,
-                        sessionId,
-                        DisconnectReason.KickByHost,
-                        "Banned and kicked",
-                        L("player_banned"));
-                    if (!disconnectResult.Success)
+                    MsgErrorCode result = sessionManager.HandleKickPlayerReq(hostPlayer!, playerUid, hashCode);
+                    WebDashboardActionResult mapped = MapBanKickResult(result);
+                    if (mapped.Success)
                     {
-                        return Ok(L("player_banned_offline"));
+                        ModLog.Info(Feature, $"Banned player uid={playerUid}.");
                     }
 
-                    return disconnectResult;
+                    return mapped;
                 }
                 catch (System.Exception ex)
                 {
-                    ModLog.Warn(Feature, $"Ban disconnect failed: {ex.Message}");
-                    return Ok(L("player_banned_offline"));
+                    ModLog.Warn(Feature, $"Ban failed: {ex.Message}");
+                    return Fail(L("ban_failed"));
                 }
             }
 
+            if (WebDashboardSessionAccess.IsBanned(sessionManager, action.SteamId))
+            {
+                return Ok(L("player_already_banned"));
+            }
+
+            if (!WebDashboardSessionAccess.TryAddBan(sessionManager, action.SteamId))
+            {
+                return Fail(L("ban_failed"));
+            }
+
+            ModLog.Info(Feature, $"Banned steam={action.SteamId} (offline).");
             return Ok(L("player_banned"));
         }
 
-        private static WebDashboardActionResult DisconnectPlayer(
-            SessionManager sessionManager,
-            VPlayer hostPlayer,
-            long playerUid,
-            int hashCode,
-            long sessionId,
-            DisconnectReason reason,
-            string logAction,
-            string successMessage)
+        private static WebDashboardActionResult MapBanKickResult(MsgErrorCode result)
         {
-            hostPlayer.SendToMe(new KickPlayerRes(hashCode)
+            return result switch
             {
-                kickPlayerUID = playerUid,
-            });
-            sessionManager.BroadcastToAll(new KickPlayerSig
-            {
-                kickPlayerUID = playerUid,
-            });
-            WebDashboardSessionAccess.DisconnectSession(sessionManager, sessionId, reason);
-            ModLog.Info(Feature, $"{logAction} player uid={playerUid}.");
-            return Ok(successMessage);
+                MsgErrorCode.Success => Ok(L("player_banned")),
+                MsgErrorCode.SessionNotFound => Fail(L("player_not_found")),
+                MsgErrorCode.PermissionDenied => Fail(L("host_only")),
+                MsgErrorCode.InvalidErrorCode => Fail(L("cannot_moderate_host")),
+                _ => Fail(L("ban_failed")),
+            };
         }
 
         private static WebDashboardActionResult Respawn(WebDashboardPendingAction action)

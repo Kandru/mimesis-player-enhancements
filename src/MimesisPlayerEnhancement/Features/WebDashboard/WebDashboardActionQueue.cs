@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardActionQueue
     {
+        private const string Feature = "WebDashboard";
+
         private static readonly ConcurrentQueue<WebDashboardPendingAction> Pending = new();
 
         internal static void Enqueue(WebDashboardPendingAction action)
@@ -16,7 +18,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             while (Pending.TryDequeue(out WebDashboardPendingAction? action))
             {
-                _ = WebDashboardModerationService.Execute(action);
+                WebDashboardActionResult result = WebDashboardModerationService.Execute(action);
+                if (!result.Success)
+                {
+                    ModLog.Warn(Feature, $"Moderation {action.Type} failed — {result.Message}");
+                }
             }
         }
     }
