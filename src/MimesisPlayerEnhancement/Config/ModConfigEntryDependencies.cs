@@ -178,11 +178,6 @@ namespace MimesisPlayerEnhancement
                 case "TrustBehaviorRandomMax":
                     dependency = new ModConfigEntryDependency("TrustScoreValueMode", "Random");
                     return true;
-                case "MimicRunawayChance":
-                case "JumpCopyChancePercent":
-                case "SlotFollowChangeChancePercent":
-                    dependency = new ModConfigEntryDependency("MimicSocialMode", "Custom");
-                    return true;
                 case "MimicInventoryCopyPickRule":
                     dependency = new ModConfigEntryDependency("MimicInventoryCopyMode", "Custom");
                     return true;

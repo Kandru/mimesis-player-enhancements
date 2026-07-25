@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Features.MimicTuning;
 using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using Xunit;
@@ -56,6 +57,21 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 
             Assert.Equal("RoundStartSoundMode", entry.DependsOnKey);
             Assert.Equal("Specific", entry.DependsOnValue);
+        }
+
+        [Theory]
+        [InlineData("MimicRunawayChance")]
+        [InlineData("JumpCopyChancePercent")]
+        [InlineData("SlotFollowChangeChancePercent")]
+        public void ApplyToEntry_mimic_social_custom_keys_have_no_dashboard_visibility_dependency(string key)
+        {
+            WebDashboardConfigSectionDto section = Section(MimicTuningConfig.SectionId);
+            WebDashboardConfigEntryDto entry = Entry(key);
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Null(entry.DependsOnKey);
+            Assert.Null(entry.DependsOnValue);
         }
     }
 }
