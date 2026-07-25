@@ -1,6 +1,8 @@
 # More Players
 
-The base game limits sessions to four players. This feature raises that cap so larger groups can play together. Only the host must enable it for the whole lobby to get the effect; joining players do not need the mod or that setting. Config section: [`MimesisPlayerEnhancement_MorePlayers`](../CONFIG.md#more-players--mimesisplayerenhancement_moreplayers).
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+
+The base game limits sessions to four players. This feature raises that cap so larger groups can play together.
 
 ## Configuration
 

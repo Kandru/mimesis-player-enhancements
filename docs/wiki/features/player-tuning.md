@@ -1,8 +1,8 @@
 # Player Tuning
 
-Scale how players move, use stamina, and carry loot. **Host only** means only the host must enable the feature — the whole lobby gets the effect. Joining clients do not need the mod; stats sync from the host. Changes apply at runtime when config is saved (no restart). The host reloads player stats after each save. Collision pass-through is local per client and independent of the host master toggle.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
 
-**Config:** [`MimesisPlayerEnhancement_PlayerTuning`](../CONFIG.md#player-tuning--mimesisplayerenhancement_playertuning)
+Scale how players move, use stamina, and carry loot. Changes apply at runtime when config is saved (no restart necessary).
 
 ## Configuration
 

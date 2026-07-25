@@ -4,8 +4,6 @@
 
 Scales map loot and enemy death drops, optionally filters which items can spawn, and can turn mimic inventory decoys into real pickup loot. Use it when you want more loot in larger groups or tighter control over what appears. Most settings apply at the start of the next dungeon scene; turning the feature off applies immediately.
 
-**Config section:** [`MimesisPlayerEnhancement_LootMultiplicator`](../CONFIG.md#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator)
-
 ## Configuration
 
 ### `EnableLootMultiplicator`

@@ -1,10 +1,8 @@
 # User Interface
 
-**Scope:** Your game only · **Config:** [`MimesisPlayerEnhancement_Ui`](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)
+**Local only** — each player needs to enable this in the settings for this to take effect.
 
-Each player chooses their own presentation on their install. There is no master toggle — turn individual options on or off in `[MimesisPlayerEnhancement_Ui]`. These keys are global-only (not in per-save overrides). The game reloads the config file while running; no restart needed.
-
-The mod version is always prepended to the version text on the main menu and in-game menu (not configurable). When [More Players](more-players.md) is enabled on the **host** and more than four players finish a run, the survival-result screen uses an expanded grid layout instead of the vanilla four-slot dialog — that behavior is **Host only**, not a User Interface key.
+Adjusts the user interface in different parts to make the game more appealing or usable with more players.
 
 ## Configuration
 

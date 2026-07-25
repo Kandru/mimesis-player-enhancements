@@ -1,6 +1,8 @@
 # Player Announcements
 
-Only the host must enable this for the whole lobby to get the effect. Joiners do not need the mod. Shows bottom-left toasts for dungeon run settings when a shift starts, boss and special spawn alerts during the run, and a personal map-run stats recap when you die. These are extra hints on top of the game's own messages — they do not replace vanilla connect or system text.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+
+Shows bottom-left toasts for dungeon run settings when a shift starts, boss and special spawn alerts during the run, and a personal map-run stats recap when you die. These are extra hints on top of the game's own messages on the bottom left.
 
 ## Configuration
 

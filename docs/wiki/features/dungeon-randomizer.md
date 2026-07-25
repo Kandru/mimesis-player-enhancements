@@ -1,8 +1,10 @@
 # Dungeon Randomizer
 
-Randomizes which dungeon the tram picks, which map variant loads, and — optionally — the procedural layout seed (map flavor). Only the host must enable this for the whole lobby to get the effect; joining clients do not need the mod. The host applies pick, variant, and seed before departure; all players receive the same choices over the network.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
 
-Settings use a scene snapshot captured when you enter a gameplay scene (maintenance, tram, dungeon, deathmatch). Changes during an active scene are deferred until that scene ends. Turning the master toggle off applies immediately.
+Randomizes which dungeon the tram picks, which map variant loads, and — optionally — the procedural layout seed (map flavor). The host applies pick, variant, and seed before departure; all players receive the same choices.
+
+Changes during dungeons are deferred until the dungeon ends.
 
 ## Configuration
 

@@ -1,8 +1,8 @@
 # Privacy
 
-Blocks automatic outbound data from your local game install: Relu session and gameplay logs, replay capture and upload, Unity crash reports, and Krafton creator-code SDK login. **Your game only** — each player must enable it on their own install; it does not change the lobby for others. Settings are global-only (not per-save). Steam lobbies, invites, voice, and multiplayer sync are not blocked. Manual in-game feedback submission still works.
+**Local only** — each player needs to enable this in the settings for this to take effect.
 
-**Config:** [`MimesisPlayerEnhancement_Privacy`](../CONFIG.md#privacy--mimesisplayerenhancement_privacy)
+Blocks automatic outbound data from your local game install: Relu session and gameplay logs, replay capture and upload, Unity crash reports, and Krafton creator-code SDK login. Steam lobbies, invites, voice, and multiplayer sync are not blocked. Manual in-game feedback submission still works.
 
 ## Configuration
 

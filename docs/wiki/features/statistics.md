@@ -1,6 +1,8 @@
 # Statistics
 
-Tracks per-player statistics for each save: combat by enemy type, trap deaths, train value (credited to the first player who picked up an item), dungeon exit outcomes, median life time on death, and a weighted team value score for ranking. Only the host must enable Statistics for the whole lobby to get the effect — joiners do not need the mod or this setting. Stats are kept in three layers: **current run** (resets when the party restarts at zone 1), **all-time totals** (survive run restarts), and **session** (connect/disconnect with a grace window).
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+
+Tracks per-player statistics for each save: combat by enemy type, trap deaths, train value (credited to the first player who picked up an item), dungeon exit outcomes, median life time on death, and a weighted team value score for ranking. Stats are kept in three layers: **current run** (resets when the party restarts at zone 1), **all-time totals** (survive run restarts), and **session** (connect/disconnect with a grace window).
 
 ## Configuration
 

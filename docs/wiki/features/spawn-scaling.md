@@ -1,11 +1,8 @@
 # Spawn Scaling
 
-Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scales dungeon monster and trap spawn budgets by type, optionally with party size. Changes mid-scene wait until the scene ends; turning the feature off applies immediately. Budgets take effect on the next dungeon or room init from the scene snapshot.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
 
-**Timing settings are separate:**
-- **Ambient jako & mimic waves** — `AmbientMonsterWaveMode` and its delay/interval keys
-- **Trap respawn** — `TrapRespawnMode` and its delay keys
-- **Boss/special bonus spawns** — `BonusEncounterDelay*` (when spawn multipliers add extra encounters after a kill)
+cales dungeon monster and trap spawn budgets by type, optionally with party size. Changes inside the dungeon wait until the dungeon ends; turning the feature off applies immediately.
 
 ## Configuration
 

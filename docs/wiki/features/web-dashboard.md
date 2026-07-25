@@ -1,6 +1,8 @@
 # Web Dashboard
 
-Serves a local browser page for connected players, a live minimap, leaderboards, moderation, host cheats, and mod settings. **Host only** — only the host needs this mod for the lobby to get the dashboard; joiners do not. It always tries to start (no on/off toggle). Default URL: `http://127.0.0.1:8001/` — or use the yellow Management button on the main/ESC menu (opens the real bound URL).
+**Local only** — each player needs to enable this in the settings for this to take effect.
+
+Serves a local browser page for connected players, a live minimap, leaderboards, moderation, host cheats, and mod settings. Default URL: `http://127.0.0.1:8001/` — or use the yellow Management button on the main/ESC menu (opens the webinterface via the steam overlay browser).
 
 ## Configuration
 
