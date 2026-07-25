@@ -28,7 +28,7 @@ Overrides which dungeon master ID the tram roll selects. Has no effect when the 
 | `false` | Keep vanilla tram dungeon pick |
 | `true` | Apply pool mode, allowlist/blocklist, and reroll exclude rules |
 
-Default: `true`
+Default: `false`
 
 ### `DungeonPickPoolMode`
 
@@ -73,7 +73,7 @@ Before departure, the host picks a map variant uniformly from the chosen dungeon
 | `false` | Keep vanilla map variant |
 | `true` | Uniform random pick from available map IDs |
 
-Default: `true`
+Default: `false`
 
 ### `DungeonSeedFlavor`
 

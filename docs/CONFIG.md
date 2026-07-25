@@ -101,7 +101,7 @@ Mod-wide settings that are not owned by a single feature.
 | `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
 | `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
-| `EnableLoadingWaitPlayerList` | bool | `false` | — | During multiplayer dungeon loading, show a spectator-style player roster while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; still-loading players are red. Fades out with the custom loading screen. |
+| `EnableLoadingWaitPlayerList` | bool | `true` | — | During multiplayer dungeon loading, show a spectator-style player roster while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; still-loading players are red. Fades out with the custom loading screen. |
 | `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Show the ESC menu player list in a right-side overlay (join-code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls. Independent of More Players. |
 | `EnableDamageHealthGlow` | bool | `true` | — | Tint other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fade out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
@@ -145,7 +145,7 @@ The mod version is always prepended to the version text on the main menu and in-
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
-| `MaxPlayers` | int | `32` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
+| `MaxPlayers` | int | `16` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
 | `EnableScalingRoundGoals` | bool | `true` | — | Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. |
 | `RoundGoalBasePerZone` | float | `200` | ≥ `0` | Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier). |
 | `RoundGoalMoneyMultiplier` | float | `1.0` | ≥ `0` | Global multiplier on the computed tram repair quota. |
@@ -466,13 +466,13 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableDungeonRandomizer` | bool | `false` | — | Master toggle: tram pick, map variant, and map flavor seeds for the whole lobby. Only the host must enable it. |
-| `RandomizeDungeonPick` | bool | `true` | — | Override tram dungeon master ID selection. |
+| `RandomizeDungeonPick` | bool | `false` | — | Override tram dungeon master ID selection. |
 | `DungeonPickPoolMode` | string | `WidenVanilla` | `WidenVanilla`, `AllActiveUniform` | How the tram dungeon pool is built (see table above). |
 | `DungeonAllowlist` | string | `""` | — | Comma-separated dungeon master IDs. When non-empty, only these IDs are eligible. |
 | `DungeonBlocklist` | string | `""` | — | Comma-separated dungeon master IDs to exclude. |
 | `IgnoreDungeonExcludeList` | bool | `true` | — | On tram **reroll** only: with `WidenVanilla`, clear recent-dungeon excludes before pick. Requires master toggle, `RandomizeDungeonPick`, and `WidenVanilla`. First pick still uses excludes. |
 | `DungeonSeedFlavor` | string | `Vanilla` | See [wiki](./wiki/features/dungeon-randomizer.md) | Curated procedural seed style. Config value is the enum name (`Compact`, `Maze`, …). Web dashboard labels come from l10n. Non-`Vanilla` picks from up to 500 baked seeds per layout flow (synced via network). |
-| `RandomizeMapVariant` | bool | `true` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
+| `RandomizeMapVariant` | bool | `false` | — | Pick map variants uniformly from each dungeon's `MapIDs`. |
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`
 
@@ -568,7 +568,7 @@ EnableDebugLogging = false
 ModToastDurationSeconds = 5.0
 EnableExtendedSaveSlots = true
 EnableExtendedSpectatorPlayerList = true
-EnableLoadingWaitPlayerList = false
+EnableLoadingWaitPlayerList = true
 EnableExtendedInGameMenuPlayerList = true
 EnableDamageHealthGlow = true
 EnableFloatingDamageNumbers = true
@@ -590,7 +590,7 @@ BlockKraftonGppSdk = true
 
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false
-MaxPlayers = 32
+MaxPlayers = 16
 
 [MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true
@@ -663,8 +663,9 @@ DisablePlayerCollision = true
 
 [MimesisPlayerEnhancement_DungeonRandomizer]
 EnableDungeonRandomizer = false
-RandomizeDungeonPick = true
+RandomizeDungeonPick = false
 DungeonPickPoolMode = "WidenVanilla"
+RandomizeMapVariant = false
 
 [MimesisPlayerEnhancement_WebDashboard]
 WebDashboardListenAddress = "127.0.0.1"

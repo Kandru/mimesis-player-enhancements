@@ -47,7 +47,7 @@ During multiplayer dungeon loading, show a spaced player list centered in the bo
 | `true` | Show wait-phase player roster |
 | `false` | No roster |
 
-Default: `false`
+Default: `true`
 
 ### `EnableExtendedInGameMenuPlayerList`
 

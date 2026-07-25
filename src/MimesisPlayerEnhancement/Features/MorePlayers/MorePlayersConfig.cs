@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
             ModConfig.MaxPlayers = ModConfig.CreateTrackedEntry(_category,
                 "MaxPlayers",
-                32);
+                16);
 
             ModConfig.EnableScalingRoundGoals = ModConfig.CreateTrackedEntry(_category,
                 "EnableScalingRoundGoals",

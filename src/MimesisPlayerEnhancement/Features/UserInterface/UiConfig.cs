@@ -38,7 +38,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.EnableLoadingWaitPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableLoadingWaitPlayerList",
-                false);
+                true);
 
             ModConfig.EnableExtendedInGameMenuPlayerList = ModConfig.CreateTrackedEntry(_category,
                 "EnableExtendedInGameMenuPlayerList",

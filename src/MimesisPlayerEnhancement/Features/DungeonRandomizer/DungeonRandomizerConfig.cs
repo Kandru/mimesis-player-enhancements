@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
             ModConfig.RandomizeDungeonPick = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeDungeonPick",
-                true);
+                false);
 
             ModConfig.DungeonPickPoolMode = ModConfig.CreateTrackedEntry(_category,
                 "DungeonPickPoolMode",
@@ -44,7 +44,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonRandomizer
 
             ModConfig.RandomizeMapVariant = ModConfig.CreateTrackedEntry(_category,
                 "RandomizeMapVariant",
-                true);
+                false);
 
             ModConfig.DungeonSeedFlavor = ModConfig.CreateTrackedEntry(_category,
                 "DungeonSeedFlavor",

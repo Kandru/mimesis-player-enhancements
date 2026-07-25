@@ -27,9 +27,9 @@ Maximum players allowed in a session, host included. The host's session enforces
 |---|---|
 | `1` | Solo |
 | `2` | Host plus one other player |
-| `32` (default) | Up to 32 players |
+| `16` (default) | Up to 16 players |
 
-Default: `32`
+Default: `16`
 
 Minimum `1`. No upper limit in code. Applies live to the server socket and lobby UI when More Players is enabled. Unset key uses the default.
 
