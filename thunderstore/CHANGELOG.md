@@ -1,7 +1,7 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.7.20
-- draft: waiting screens now properly show the players we are waiting for complete their game load cycle
+- improvement: waiting screens now properly show the players we are waiting for complete their game load cycle
 - draft: expose new Mimic tuning options since game version 0.3.1
 - draft: DungeonTime to "slow down" or "speed up" the clock in order to simply stop at 12pm (currently more time would mean game would count up to 1am or longer depending on the amount of players and chosen settings)
 - draft: host sends configuration to modded clients (for feature-parity during party)

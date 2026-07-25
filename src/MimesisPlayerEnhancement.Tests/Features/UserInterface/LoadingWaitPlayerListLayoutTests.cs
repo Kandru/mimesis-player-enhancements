@@ -5,6 +5,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
 {
     public sealed class LoadingWaitPlayerListLayoutTests
     {
+        private const float FontSize = 20f;
+        private const float RowHeight = 26f;
+        private const float RowGap = 10f;
+        private const float BandHeight = 162f;
+        private const float WideWidth = 1600f;
+        private const float NarrowWidth = 320f;
+
         [Fact]
         public void BuildGreedyRows_wraps_when_row_exceeds_available_width()
         {
@@ -20,7 +27,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 measureText: null,
                 players,
                 availableWidth: 140f,
-                fontSize: 18f);
+                fontSize: FontSize);
 
             Assert.True(rows.Count > 1);
             int covered = 0;
@@ -31,7 +38,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                     players,
                     row.StartIndex,
                     row.Count,
-                    fontSize: 18f);
+                    fontSize: FontSize);
                 Assert.True(rowWidth <= 140f);
                 covered += row.Count;
             }
@@ -40,74 +47,76 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Fact]
-        public void Resolve_uses_larger_font_for_few_players()
+        public void Resolve_uses_single_row_for_four_short_names_on_wide_band()
         {
             List<LoadingWaitPlayerEntry> players =
             [
-                new() { DisplayName = "Alpha" },
-                new() { DisplayName = "Bravo" },
+                new() { DisplayName = "A" },
+                new() { DisplayName = "B" },
+                new() { DisplayName = "C" },
+                new() { DisplayName = "D" },
             ];
 
-            LoadingWaitLayoutMetrics few = LoadingWaitPlayerListLayout.Resolve(
-                measureText: null,
-                players,
-                availableWidth: 1600f,
-                bandHeight: 200f,
-                templateFontSize: 18f,
-                rowGap: 8f);
-
-            LoadingWaitLayoutMetrics many = LoadingWaitPlayerListLayout.Resolve(
-                measureText: null,
-                Enumerable.Range(1, 10).Select(index => new LoadingWaitPlayerEntry
-                {
-                    DisplayName = $"Player {index:00}",
-                }).ToList(),
-                availableWidth: 1600f,
-                bandHeight: 200f,
-                templateFontSize: 18f,
-                rowGap: 8f);
-
-            Assert.True(few.FontSize > many.FontSize);
-            Assert.Single(few.Rows);
-        }
-
-        [Fact]
-        public void Resolve_never_exceeds_max_font_size()
-        {
             LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
                 measureText: null,
-                [new() { DisplayName = "A" }],
-                availableWidth: 4000f,
-                bandHeight: 400f,
-                templateFontSize: 40f,
-                rowGap: 8f);
+                players,
+                availableWidth: WideWidth,
+                bandHeight: BandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
 
-            Assert.True(metrics.FontSize <= LoadingWaitPlayerListLayout.MaxFontSize);
-            Assert.Equal(LoadingWaitPlayerListLayout.MaxFontSize, metrics.FontSize);
+            Assert.Single(metrics.Rows);
         }
 
         [Fact]
-        public void Resolve_keeps_multiple_rows_instead_of_collapsing_to_one_line()
+        public void Resolve_wraps_long_names_to_multiple_rows()
         {
-            List<LoadingWaitPlayerEntry> players = Enumerable.Range(1, 8)
-                .Select(index => new LoadingWaitPlayerEntry { DisplayName = $"LongPlayerName{index:00}" })
+            List<LoadingWaitPlayerEntry> players =
+            [
+                new() { DisplayName = "VeryLongPlayerNameOne" },
+                new() { DisplayName = "VeryLongPlayerNameTwo" },
+                new() { DisplayName = "VeryLongPlayerNameThree" },
+                new() { DisplayName = "VeryLongPlayerNameFour" },
+            ];
+
+            LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
+                measureText: null,
+                players,
+                availableWidth: 600f,
+                bandHeight: BandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
+
+            Assert.True(metrics.Rows.Count > 1);
+        }
+
+        [Fact]
+        public void Resolve_balances_players_evenly_across_rows()
+        {
+            List<LoadingWaitPlayerEntry> players = Enumerable.Range(1, 10)
+                .Select(index => new LoadingWaitPlayerEntry { DisplayName = $"Player {index:00}" })
                 .ToList();
 
             LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
                 measureText: null,
                 players,
                 availableWidth: 420f,
-                bandHeight: 220f,
-                templateFontSize: 20f,
-                rowGap: 10f);
+                bandHeight: BandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
 
             Assert.True(metrics.Rows.Count > 1);
-            Assert.True(metrics.FontSize <= LoadingWaitPlayerListLayout.MaxFontSize);
-            Assert.True(metrics.FontSize >= LoadingWaitPlayerListLayout.MinFontSize);
+            int minCount = metrics.Rows.Min(row => row.Count);
+            int maxCount = metrics.Rows.Max(row => row.Count);
+            Assert.True(maxCount - minCount <= 1);
+            Assert.Equal(players.Count, CountCoveredPlayers(metrics.Rows));
         }
 
         [Fact]
-        public void Resolve_wraps_to_multiple_rows_when_width_is_tight()
+        public void Resolve_wraps_on_narrow_width_without_dropping_players()
         {
             List<LoadingWaitPlayerEntry> players = Enumerable.Range(1, 6)
                 .Select(index => new LoadingWaitPlayerEntry { DisplayName = $"Player {index:00}" })
@@ -116,12 +125,14 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
                 measureText: null,
                 players,
-                availableWidth: 320f,
-                bandHeight: 200f,
-                templateFontSize: 18f,
-                rowGap: 8f);
+                availableWidth: NarrowWidth,
+                bandHeight: BandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
 
             Assert.True(metrics.Rows.Count > 1);
+            Assert.Equal(players.Count, CountCoveredPlayers(metrics.Rows));
         }
 
         [Fact]
@@ -140,9 +151,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 measureText: null,
                 players,
                 availableWidth: 900f,
-                bandHeight: 200f,
-                templateFontSize: 18f,
-                rowGap: 8f);
+                bandHeight: BandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
 
             int covered = 0;
             foreach (LoadingWaitLayoutRow row in metrics.Rows)
@@ -155,44 +167,81 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Fact]
+        public void ResolveMaxRowCount_fits_rows_within_band_height()
+        {
+            int maxRows = LoadingWaitPlayerListLayout.ResolveMaxRowCount(
+                bandHeight: 162f,
+                rowHeight: RowHeight,
+                rowGap: RowGap);
+
+            Assert.Equal(4, maxRows);
+
+            float contentHeight = (maxRows * RowHeight) + ((maxRows - 1) * RowGap);
+            Assert.True(contentHeight <= 162f + 0.01f);
+        }
+
+        [Fact]
+        public void Resolve_caps_rows_to_band_height()
+        {
+            List<LoadingWaitPlayerEntry> players = Enumerable.Range(1, 32)
+                .Select(index => new LoadingWaitPlayerEntry { DisplayName = $"P{index:00}" })
+                .ToList();
+            const float tightBandHeight = 72f;
+
+            LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
+                measureText: null,
+                players,
+                availableWidth: WideWidth,
+                bandHeight: tightBandHeight,
+                rowGap: RowGap,
+                fontSize: FontSize,
+                rowHeight: RowHeight);
+
+            int maxRows = LoadingWaitPlayerListLayout.ResolveMaxRowCount(
+                tightBandHeight,
+                RowHeight,
+                RowGap);
+            Assert.True(metrics.Rows.Count <= maxRows);
+        }
+
+        [Fact]
         public void ResolveRowY_stacks_rows_with_distinct_y()
         {
             float bandBottomY = 0f;
             float bandHeight = 200f;
-            float rowHeight = 26f;
             float rowGap = 10f;
             int rowCount = 3;
 
             float bottomRowY = LoadingWaitPlayerListLayout.ResolveRowY(
                 0,
                 rowCount,
-                rowHeight,
+                RowHeight,
                 rowGap,
                 bandBottomY,
                 bandHeight);
             float middleRowY = LoadingWaitPlayerListLayout.ResolveRowY(
                 1,
                 rowCount,
-                rowHeight,
+                RowHeight,
                 rowGap,
                 bandBottomY,
                 bandHeight);
             float topRowY = LoadingWaitPlayerListLayout.ResolveRowY(
                 2,
                 rowCount,
-                rowHeight,
+                RowHeight,
                 rowGap,
                 bandBottomY,
                 bandHeight);
 
-            Assert.Equal(rowHeight + rowGap, middleRowY - bottomRowY, 0.01f);
-            Assert.Equal(rowHeight + rowGap, topRowY - middleRowY, 0.01f);
+            Assert.Equal(RowHeight + rowGap, middleRowY - bottomRowY, 0.01f);
+            Assert.Equal(RowHeight + rowGap, topRowY - middleRowY, 0.01f);
             Assert.True(topRowY > middleRowY);
             Assert.True(middleRowY > bottomRowY);
 
-            float contentHeight = (rowCount * rowHeight) + ((rowCount - 1) * rowGap);
+            float contentHeight = (rowCount * RowHeight) + ((rowCount - 1) * rowGap);
             float expectedMiddleCenter = bandBottomY + (bandHeight * 0.5f);
-            float actualMiddleCenter = middleRowY + (rowHeight * 0.5f);
+            float actualMiddleCenter = middleRowY + (RowHeight * 0.5f);
             Assert.Equal(expectedMiddleCenter, actualMiddleCenter, 0.01f);
         }
 
@@ -211,6 +260,17 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 Assert.Equal(expectedCounts[index], rows[index].Count);
                 start += expectedCounts[index];
             }
+        }
+
+        private static int CountCoveredPlayers(IReadOnlyList<LoadingWaitLayoutRow> rows)
+        {
+            int covered = 0;
+            foreach (LoadingWaitLayoutRow row in rows)
+            {
+                covered += row.Count;
+            }
+
+            return covered;
         }
     }
 }

@@ -14,8 +14,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 return EstimateFallback(text, fontSize);
             }
 
-            ApplyFontSize(textComponent, fontSize);
-
             MethodInfo? method = ResolveGetPreferredValuesMethod(textComponent.GetType());
             if (method == null)
             {
@@ -25,7 +23,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             try
             {
                 ModUiText.SetText(textComponent, text);
-
                 object?[] args = method.GetParameters().Length == 1
                     ? [text]
                     : [text, fontSize, 0, 0f];
@@ -41,19 +38,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
 
             return EstimateFallback(text, fontSize);
-        }
-
-        internal static void ApplyFontSize(Component? textComponent, float fontSize)
-        {
-            if (textComponent == null)
-            {
-                return;
-            }
-
-            PropertyInfo? sizeProperty = textComponent.GetType().GetProperty(
-                "fontSize",
-                BindingFlags.Instance | BindingFlags.Public);
-            sizeProperty?.SetValue(textComponent, fontSize);
         }
 
         private static MethodInfo? ResolveGetPreferredValuesMethod(System.Type textType)

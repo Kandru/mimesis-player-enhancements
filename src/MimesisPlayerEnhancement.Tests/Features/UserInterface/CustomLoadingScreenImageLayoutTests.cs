@@ -99,6 +99,28 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Fact]
+        public void ResolveContentWidth_uses_full_parent_width_on_cover()
+        {
+            float width = CustomLoadingScreenImageLayout.ResolveContentWidth(
+                parentWidth: 1920f,
+                parentHeight: 1080f,
+                imageAspect: 16f / 9f);
+
+            Assert.Equal(1920f, width, precision: 1);
+        }
+
+        [Fact]
+        public void ResolveContentWidth_uses_image_height_times_aspect_on_ultrawide()
+        {
+            float width = CustomLoadingScreenImageLayout.ResolveContentWidth(
+                parentWidth: 2560f,
+                parentHeight: 1080f,
+                imageAspect: 16f / 9f);
+
+            Assert.Equal(1080f * (16f / 9f), width, precision: 1);
+        }
+
+        [Fact]
         public void ResolveWaitPlayerBand_uses_full_bottom_fraction_when_uv_is_uncropped()
         {
             const float boundsHeight = 1080f;
@@ -142,7 +164,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         public void ResolveWaitPlayerBand_intersects_visible_uv_on_cover_vertical_crop()
         {
             const float boundsHeight = 900f;
-            // Mild vertical crop so the bottom 20% design band still intersects the visible UV.
+            // Mild vertical crop so the bottom 15% design band still intersects the visible UV.
             Rect verticalCropUv = CustomLoadingScreenImageLayout.ComputeCoverUvRect(
                 imageAspect: 0.9f,
                 screenAspect: 1f);

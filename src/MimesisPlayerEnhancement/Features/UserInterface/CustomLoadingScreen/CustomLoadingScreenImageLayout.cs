@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private const float AspectEpsilon = 0.001f;
 
         internal const float FallbackImageAspect = 16f / 9f;
-        internal const float WaitPlayerBandDesignFraction = 0.2f;
+        internal const float WaitPlayerBandDesignFraction = 0.15f;
 
         internal static CustomLoadingScreenScaleMode ResolveMode(float screenAspect) =>
             screenAspect >= CustomLoadingScreenConstants.UltrawideAspectThreshold
@@ -161,20 +161,48 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             target.anchoredPosition = Vector2.zero;
             target.localScale = Vector3.one;
 
-            float screenAspect = GetScreenAspect(parent);
-            if (ResolveMode(screenAspect) == CustomLoadingScreenScaleMode.Cover)
-            {
-                target.offsetMin = new Vector2(0f, 0f);
-                target.offsetMax = new Vector2(0f, 0f);
-                return;
-            }
-
-            float parentWidth = parent.rect.width;
-            float parentHeight = parent.rect.height;
-            float targetWidth = parentHeight * imageAspect;
-            float horizontalInset = Mathf.Max((parentWidth - targetWidth) * 0.5f, 0f);
+            float contentWidth = ResolveContentWidth(parent.rect.width, parent.rect.height, imageAspect);
+            float horizontalInset = Mathf.Max((parent.rect.width - contentWidth) * 0.5f, 0f);
             target.offsetMin = new Vector2(horizontalInset, 0f);
             target.offsetMax = new Vector2(-horizontalInset, 0f);
+        }
+
+        internal static float ResolveContentWidth(float parentWidth, float parentHeight, float imageAspect)
+        {
+            if (parentWidth <= AspectEpsilon || parentHeight <= AspectEpsilon)
+            {
+                return 0f;
+            }
+
+            float screenAspect = parentWidth / parentHeight;
+            return ResolveMode(screenAspect) == CustomLoadingScreenScaleMode.FitHeight
+                ? parentHeight * imageAspect
+                : parentWidth;
+        }
+
+        internal static bool TryResolveContentWidth(
+            Transform loadingRoot,
+            RectTransform referenceRect,
+            out float contentWidth)
+        {
+            contentWidth = 0f;
+            RectTransform? parentRect = referenceRect.parent as RectTransform ?? referenceRect;
+            Canvas.ForceUpdateCanvases();
+
+            if (TryGetOverlayImage(loadingRoot, out RawImage rawImage, out _))
+            {
+                float imageWidth = rawImage.rectTransform.rect.width;
+                if (imageWidth > AspectEpsilon)
+                {
+                    contentWidth = imageWidth;
+                    return true;
+                }
+            }
+
+            float imageAspect = FallbackImageAspect;
+            TryResolveImageAspect(loadingRoot, out imageAspect);
+            contentWidth = ResolveContentWidth(parentRect.rect.width, parentRect.rect.height, imageAspect);
+            return contentWidth > AspectEpsilon;
         }
 
         internal static Rect ComputeCoverUvRect(float imageAspect, float screenAspect)
