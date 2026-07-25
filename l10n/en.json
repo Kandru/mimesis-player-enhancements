@@ -33,31 +33,31 @@
       },
       "ModToastDurationSeconds": {
         "title": "Message Duration (seconds)",
-        "description": "How long mod messages stay visible before fading. Vanilla join/leave messages are unchanged (~2 seconds). Client-only."
+        "description": "How long mod messages stay visible before fading. Vanilla join/leave messages are unchanged (~2 seconds)."
       },
       "EnableExtendedSaveSlots": {
         "title": "Enable Extended Save Slots",
-        "description": "Replace separate New/Load Tram menus with one save picker (up to 99 manual slots). Client-only."
+        "description": "Replace separate New/Load Tram menus with one save picker (up to 99 manual slots)."
       },
       "EnableExtendedSpectatorPlayerList": {
         "title": "Enable Extended Spectator List",
-        "description": "Show a two-column spectator list that scales to screen height. Living players first, then dead. Client-only."
+        "description": "Show a two-column spectator list that scales to screen height. Living players first, then dead."
       },
       "EnableLoadingWaitPlayerList": {
         "title": "Loading Wait Player List",
-        "description": "Show a player roster on the loading screen while waiting for others. Client-only."
+        "description": "Show a player roster on the loading screen while waiting for others."
       },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Enable Extended Menu List",
-        "description": "Pin the join-code button at the top and stretch the ESC menu player list with a scrollbar when needed. Client-only."
+        "description": "Pin the join-code button at the top and stretch the ESC menu player list with a scrollbar when needed."
       },
       "EnableDamageHealthGlow": {
         "title": "Enable Damage Health Outline",
-        "description": "Briefly outline other players, mimics, and monsters in a health-colored glow when they take damage — green when healthy, red when low, blood-red on a kill. Never on your own character. Client-only."
+        "description": "Briefly outline other players, mimics, and monsters in a health-colored glow when they take damage — green when healthy, red when low, blood-red on a kill. Never on your own character."
       },
       "EnableFloatingDamageNumbers": {
         "title": "Enable Floating Damage Numbers",
-        "description": "Show red floating damage numbers when others take damage. Never on your own character. Client-only."
+        "description": "Show red floating damage numbers when others take damage. Never on your own character."
       },
       "FloatingDamageDurationSeconds": {
         "title": "Damage Number Duration (seconds)",
@@ -65,11 +65,11 @@
       },
       "EnableFpsUi": {
         "title": "Enable FPS UI",
-        "description": "Replace the top-left health bar with numeric health and toxicity readouts beside the hotbar. Client-only."
+        "description": "Replace the top-left health bar with numeric health and toxicity readouts beside the hotbar."
       },
       "EnableFpsUiInventoryNetWorth": {
         "title": "Enable Inventory Net Worth",
-        "description": "Show total sell value of your inventory above the hotbar. Works with or without FPS UI. Client-only."
+        "description": "Show total sell value of your inventory above the hotbar. Works with or without FPS UI."
       },
       "EnableInventorySlotOptimization": {
         "title": "Enable Inventory Slot Optimization",
@@ -77,7 +77,7 @@
       },
       "InventoryPickupSelectMode": {
         "title": "Pickup Slot Selection",
-        "description": "After picking up an item into another slot, switch to that slot. Client-only.",
+        "description": "After picking up an item into another slot, switch to that slot.",
         "options": {
           "Vanilla": "Vanilla (keep current slot)",
           "WeaponsOnly": "Weapons only",
@@ -86,11 +86,11 @@
       },
       "EnableInventorySelectNextOnRemove": {
         "title": "Select Next Slot on Remove",
-        "description": "When the selected slot becomes empty (drop, toilet, vending insert), advance to the next occupied slot. Client-only."
+        "description": "When the selected slot becomes empty (drop, toilet, vending insert), advance to the next occupied slot."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon Landing Sound",
-        "description": "Replace the melody that plays right after the tram stops. Departure and end-of-run horns stay vanilla. Client-only.",
+        "description": "Replace the melody that plays right after the tram stops. Departure and end-of-run horns stay vanilla.",
         "options": {
           "Vanilla": "Vanilla (game sound)",
           "Random": "Random Sound",
@@ -103,15 +103,15 @@
       },
       "RoundStartSoundRandomPool": {
         "title": "Landing Sound Pool",
-        "description": "Random Sound mode only — which sounds can be picked. Leave empty for all sounds. Client-only."
+        "description": "Random Sound mode only — which sounds can be picked. Leave empty for all sounds."
       },
       "RoundStartSoundVolume": {
         "title": "Landing Sound Volume",
-        "description": "Playback volume for custom dungeon landing sounds (Random or Specific mode). Does not affect the tram-stop sting or vanilla mode. Client-only."
+        "description": "Playback volume for custom dungeon landing sounds (Random or Specific mode). Does not affect the tram-stop sting or vanilla mode."
       },
       "CustomLoadingScreenMode": {
         "title": "Loading Screen Mode",
-        "description": "Replace loading screen art with custom themes. Client-only.",
+        "description": "Replace loading screen art with custom themes.",
         "options": {
           "Vanilla": "Vanilla (game art)",
           "Random": "Random Theme",
@@ -124,11 +124,11 @@
       },
       "CustomLoadingScreenRandomPool": {
         "title": "Loading Screen Pool",
-        "description": "Random Theme mode only — which themes can be picked. Leave empty for all themes. Client-only."
+        "description": "Random Theme mode only — which themes can be picked. Leave empty for all themes."
       },
       "CustomLoadingScreenMotion": {
         "title": "Loading Screen Motion",
-        "description": "Slow pan/zoom on single-frame loading images. Frame sequences always animate. Client-only."
+        "description": "Slow pan/zoom on single-frame loading images. Frame sequences always animate."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -171,18 +171,18 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon Randomizer",
-      "_description": "Randomize tram dungeon picks, map variants, and procedural map flavor. Host only.",
+      "_description": "Randomize tram dungeon picks, map variants, and procedural map flavor.",
       "_groups": {
         "dungeonPick": "Dungeon selection",
         "dungeonSeed": "Map layout style"
       },
       "EnableDungeonRandomizer": {
         "title": "Enable Dungeon Randomizer",
-        "description": "Randomize dungeon picks, map variants, and map layout style. Host only."
+        "description": "Randomize dungeon picks, map variants, and map layout style."
       },
       "RandomizeDungeonPick": {
         "title": "Randomize Dungeon Pick",
-        "description": "Override which dungeon is rolled on the tram. Host only."
+        "description": "Override which dungeon is rolled on the tram."
       },
       "DungeonPickPoolMode": {
         "title": "Dungeon Pool Mode",
@@ -194,23 +194,23 @@
       },
       "DungeonAllowlist": {
         "title": "Dungeon Allowlist",
-        "description": "Comma-separated dungeon IDs. When set, only these dungeons can be picked. Host only."
+        "description": "Comma-separated dungeon IDs. When set, only these dungeons can be picked."
       },
       "DungeonBlocklist": {
         "title": "Dungeon Blocklist",
-        "description": "Comma-separated dungeon IDs to exclude from the pool. Host only."
+        "description": "Comma-separated dungeon IDs to exclude from the pool."
       },
       "IgnoreDungeonExcludeList": {
         "title": "Ignore Recent Dungeons",
-        "description": "With Widen vanilla cycle, allow recently played dungeons to appear again. Host only."
+        "description": "With Widen vanilla cycle, allow recently played dungeons to appear again."
       },
       "RandomizeMapVariant": {
         "title": "Randomize Map Variant",
-        "description": "Pick map variants evenly instead of using vanilla selection. Host only."
+        "description": "Pick map variants evenly instead of using vanilla selection."
       },
       "DungeonSeedFlavor": {
         "title": "Map Layout Style",
-        "description": "Procedural map style. Non-vanilla picks from pre-tested seeds per dungeon. Host only.",
+        "description": "Procedural map style. Non-vanilla picks from pre-tested seeds per dungeon.",
         "options": {
           "Vanilla": "Vanilla — game default seed",
           "Compact": "Compact — fewest rooms",
@@ -242,10 +242,10 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon Time",
-      "_description": "Extend shift deadlines when more players are in the session. Host only.",
+      "_description": "Extend shift deadlines when more players are in the session.",
       "EnableDungeonTime": {
         "title": "Enable Dungeon Time",
-        "description": "Add extra shift time when more players are in the session. Host only."
+        "description": "Add extra shift time when more players are in the session."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline Player Count",
@@ -258,7 +258,7 @@
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Weather",
-      "_description": "Fixed, cycling, or vanilla weather plus synced start time for lighting. Host only.",
+      "_description": "Fixed, cycling, or vanilla weather plus synced start time for lighting.",
       "_groups": {
         "weatherMode": "Weather mode",
         "weatherCycle": "Weather cycle",
@@ -266,11 +266,11 @@
       },
       "EnableWeather": {
         "title": "Enable Weather",
-        "description": "Control dungeon weather, cycling presets, and start time. Host only."
+        "description": "Control dungeon weather, cycling presets, and start time."
       },
       "WeatherMode": {
         "title": "Weather Mode",
-        "description": "How weather changes during a run. Host only.",
+        "description": "How weather changes during a run.",
         "options": {
           "Vanilla": "Vanilla (game schedule)",
           "Fixed": "Fixed (one preset)",
@@ -289,23 +289,23 @@
       },
       "DisableRandomWeather": {
         "title": "Disable Random Weather",
-        "description": "Vanilla mode only — keep scheduled changes but remove random weather. Host only."
+        "description": "Vanilla mode only — keep scheduled changes but remove random weather."
       },
       "WeatherCyclePresets": {
         "title": "Cycle Presets",
-        "description": "Cycle mode only — comma-separated preset names in order (Sunny, Rain, HeavyRain, Squall). Host only."
+        "description": "Cycle mode only — comma-separated preset names in order (Sunny, Rain, HeavyRain, Squall)."
       },
       "WeatherCycleMinDelaySeconds": {
         "title": "Cycle Min Delay (seconds)",
-        "description": "Shortest wait before the next weather change. Host only."
+        "description": "Shortest wait before the next weather change."
       },
       "WeatherCycleMaxDelaySeconds": {
         "title": "Cycle Max Delay (seconds)",
-        "description": "Longest wait before the next weather change. Host only."
+        "description": "Longest wait before the next weather change."
       },
       "StartTimePreset": {
         "title": "Start Time",
-        "description": "In-game clock at dungeon start (lighting only; shift deadline unchanged). Host only.",
+        "description": "In-game clock at dungeon start (lighting only; shift deadline unchanged).",
         "options": {
           "Vanilla": "Vanilla (~10:00 → 24:00, default)",
           "Morning": "Morning (08:00 → 24:00, bright)",
@@ -317,24 +317,24 @@
       },
       "EnableRealtimeTramClock": {
         "title": "Realtime Tram Clock",
-        "description": "Update the tram console clock every in-game minute during a run. Requires Enable Weather. Host only."
+        "description": "Update the tram console clock every in-game minute during a run. Requires Enable Weather."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Join Anytime",
-      "_description": "Let friends join after a session has already started. Host only.",
+      "_description": "Let friends join after a session has already started.",
       "EnableJoinAnytime": {
         "title": "Enable Join Anytime",
-        "description": "Let players join after a session has already started. Host only."
+        "description": "Let players join after a session has already started."
       },
       "JoinConnectionGraceSeconds": {
         "title": "Join Grace Period (seconds)",
-        "description": "Block tram departure while a connecting player loads. Players who aren't ready in time are kicked (host is never kicked). Host only."
+        "description": "Block tram departure while a connecting player loads. Players who aren't ready in time are kicked (host is never kicked)."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot Multiplier",
-      "_description": "Adjust map loot and enemy drops; scale with player count or filter item types. Host only.",
+      "_description": "Adjust map loot and enemy drops; scale with player count or filter item types.",
       "_groups": {
         "lootFilter": "Item filter",
         "AutoScaleMapLootByPlayerCount": "Map loot scaling",
@@ -342,7 +342,7 @@
       },
       "EnableLootMultiplicator": {
         "title": "Enable Loot Multiplier",
-        "description": "Scale map loot and enemy drops, and optionally turn mimic fake drops into real loot. Host only."
+        "description": "Scale map loot and enemy drops, and optionally turn mimic fake drops into real loot."
       },
       "LootMultiplicatorPlayerCountScaleRate": {
         "title": "Loot Scale Rate",
@@ -392,7 +392,7 @@
     },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic Tuning",
-      "_description": "Tune mimic voice, trust, social mimicry, inventory copy, possession, emotes, and horn imitation. Host only.",
+      "_description": "Tune mimic voice, trust, social mimicry, inventory copy, possession, emotes, and horn imitation.",
       "_groups": {
         "mimicVoice": "Voice",
         "mimicTrust": "Trust & chase",
@@ -403,7 +403,7 @@
       },
       "EnableMimicTuning": {
         "title": "Enable Mimic Tuning",
-        "description": "Master toggle for mimic tuning subgroups. Host only."
+        "description": "Master toggle for mimic tuning subgroups."
       },
       "MimicVoiceTuningMode": {
         "title": "Voice Tuning Mode",
@@ -752,7 +752,7 @@
     },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Economy",
-      "_description": "Tune starting cash, scrap value, shop prices, and optional currency retention. Host only.",
+      "_description": "Tune starting cash, scrap value, shop prices, and optional currency retention.",
       "_groups": {
         "AutoScaleStartupMoneyByPlayerCount": "Startup money scaling",
         "AutoScaleScrapSellValueByPlayerCount": "Scrap value scaling",
@@ -761,7 +761,7 @@
       },
       "EnableEconomy": {
         "title": "Enable Economy",
-        "description": "Scale money, scrap value, shop prices, and reinforce costs. Optionally keep unspent cash between cycles. Host only."
+        "description": "Scale money, scrap value, shop prices, and reinforce costs. Optionally keep unspent cash between cycles."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Economy Scale Rate",
@@ -813,18 +813,18 @@
       },
       "RetainUnspentCurrencyBetweenCycles": {
         "title": "Keep Unspent Cash",
-        "description": "Keep leftover maintenance cash when leaving for the next dungeon. Does not affect tram repair cost. Host only."
+        "description": "Keep leftover maintenance cash when leaving for the next dungeon. Does not affect tram repair cost."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {
       "_section": "More Players",
-      "_description": "Raise the vanilla four-player session cap for larger groups. Host only.",
+      "_description": "Raise the vanilla four-player session cap for larger groups.",
       "_groups": {
         "EnableScalingRoundGoals": "Scaling round goals"
       },
       "EnableMorePlayers": {
         "title": "Enable More Players",
-        "description": "Raise the player cap above 4. Host only."
+        "description": "Raise the player cap above 4."
       },
       "MaxPlayers": {
         "title": "Max Players",
@@ -832,7 +832,7 @@
       },
       "EnableScalingRoundGoals": {
         "title": "Enable Scaling Round Goals",
-        "description": "Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. Host only."
+        "description": "Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players."
       },
       "RoundGoalBasePerZone": {
         "title": "Round Goal Base",
@@ -853,13 +853,13 @@
     },
     "MimesisPlayerEnhancement_MoreVoices": {
       "_section": "More Voices",
-      "_description": "Store many more recorded player voice lines for mimics per run. Host only.",
+      "_description": "Store many more recorded player voice lines for mimics per run.",
       "_groups": {
         "EnableVoicePerformanceCache": "Performance cache"
       },
       "EnableMoreVoices": {
         "title": "Enable More Voices",
-        "description": "Store more recorded player voice lines for mimics. Host only."
+        "description": "Store more recorded player voice lines for mimics."
       },
       "UnifyIndoorOutdoorVoices": {
         "title": "Unify Indoor/Outdoor Voices",
@@ -891,7 +891,7 @@
       },
       "EnableVoicePerformanceCache": {
         "title": "Enable Performance Cache",
-        "description": "Cache voice data to reduce lag with large voice pools. Host only."
+        "description": "Cache voice data to reduce lag with large voice pools."
       },
       "VoiceClipCacheMaxEntries": {
         "title": "Voice Cache Size",
@@ -900,26 +900,26 @@
     },
     "MimesisPlayerEnhancement_Persistence": {
       "_section": "Persistence",
-      "_description": "Save and restore mimic voice recordings across save/load. Host only.",
+      "_description": "Save and restore mimic voice recordings across save/load.",
       "EnablePersistence": {
         "title": "Enable Voice Persistence",
-        "description": "Save and restore mimic voice recordings across save/load. Host only."
+        "description": "Save and restore mimic voice recordings across save/load."
       }
     },
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
       "_section": "Player Announcements",
-      "_description": "On-screen tips for dungeon settings, boss spawns, and personal death stats. Host only.",
+      "_description": "On-screen tips for dungeon settings, boss spawns, and personal death stats.",
       "ShowPlayerAnnouncements": {
         "title": "Show Player Messages",
-        "description": "Show tips for dungeon settings, boss spawns, and your stats when you die. Does not replace game messages. Host only."
+        "description": "Show tips for dungeon settings, boss spawns, and your stats when you die. Does not replace game messages."
       }
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Player Tuning",
-      "_description": "Adjust movement speed, stamina, and carry weight for everyone in the session. Host only.",
+      "_description": "Adjust movement speed, stamina, and carry weight for everyone in the session.",
       "EnablePlayerTuning": {
         "title": "Enable Player Tuning",
-        "description": "Scale move speed, stamina, and carry weight for everyone. Clients don't need the mod. Host only."
+        "description": "Scale move speed, stamina, and carry weight for everyone. Clients don't need the mod."
       },
       "MoveSpeedMultiplier": {
         "title": "Move Speed Multiplier",
@@ -951,12 +951,12 @@
       },
       "DisablePlayerCollision": {
         "title": "Disable Player Collision",
-        "description": "Walk through other players and mimics on your client (e.g. crowded tram). Monsters and walls stay solid. Client-only."
+        "description": "Walk through other players and mimics on your client (e.g. crowded tram). Monsters and walls stay solid."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn Scaling",
-      "_description": "Scale monster and trap spawn budgets by type or player count. Host only.",
+      "_description": "Scale monster and trap spawn budgets by type or player count.",
       "_groups": {
         "ambientMonsterWaveTiming": "Ambient jako & mimic waves",
         "trapRespawn": "Trap respawn",
@@ -970,7 +970,7 @@
       },
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
-        "description": "Scale monster and trap spawns by type or player count. Host only."
+        "description": "Scale monster and trap spawns by type or player count."
       },
       "SpawnScalingPlayerCountScaleRate": {
         "title": "Spawn Scale Rate",
@@ -1097,10 +1097,10 @@
     },
     "MimesisPlayerEnhancement_Statistics": {
       "_section": "Statistics",
-      "_description": "Track deaths, kills, play time, mimic encounters, and more per save. Host only.",
+      "_description": "Track deaths, kills, play time, mimic encounters, and more per save.",
       "EnableStatistics": {
         "title": "Enable Player Statistics",
-        "description": "Track deaths, kills, play time, and more per save slot. Host only."
+        "description": "Track deaths, kills, play time, and more per save slot."
       },
       "SessionReconnectGraceMinutes": {
         "title": "Reconnect Grace (minutes)",
@@ -1108,7 +1108,7 @@
       },
       "ShowStatisticsToasts": {
         "title": "Show Statistics Messages",
-        "description": "Show stats messages on join/leave and session intro. Does not replace game connect messages. Host only."
+        "description": "Show stats messages on join/leave and session intro. Does not replace game connect messages."
       }
     },
     "MimesisPlayerEnhancement_WebDashboard": {

@@ -33,31 +33,31 @@
       },
       "ModToastDurationSeconds": {
         "title": "Nachrichtendauer (Sekunden)",
-        "description": "Wie lange Mod-Nachrichten sichtbar bleiben, bevor sie ausblenden. Vanilla-Join/Leave-Nachrichten bleiben unverändert (~2 Sekunden). Nur Client."
+        "description": "Wie lange Mod-Nachrichten sichtbar bleiben, bevor sie ausblenden. Vanilla-Join/Leave-Nachrichten bleiben unverändert (~2 Sekunden)."
       },
       "EnableExtendedSaveSlots": {
         "title": "Erweiterte Save-Slots aktivieren",
-        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen Save-Picker (bis 99 manuelle Slots). Nur Client."
+        "description": "Ersetzt separate New/Load-Tram-Menüs durch einen Save-Picker (bis 99 manuelle Slots)."
       },
       "EnableExtendedSpectatorPlayerList": {
         "title": "Erweiterte Spectator-Liste aktivieren",
-        "description": "Zeigt eine zweispaltige Spectator-Liste, die mit der Bildschirmhöhe skaliert. Lebende zuerst, dann Tote. Nur Client."
+        "description": "Zeigt eine zweispaltige Spectator-Liste, die mit der Bildschirmhöhe skaliert. Lebende zuerst, dann Tote."
       },
       "EnableLoadingWaitPlayerList": {
         "title": "Lade-Warte-Spielerliste",
-        "description": "Spielerliste auf dem Ladebildschirm während des Wartens auf andere. Nur Client."
+        "description": "Spielerliste auf dem Ladebildschirm während des Wartens auf andere."
       },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Erweiterte Menü-Liste aktivieren",
-        "description": "Setzt den Join-Code-Button oben und dehnt die ESC-Menü-Spielerliste mit Scrollleiste aus. Nur Client."
+        "description": "Setzt den Join-Code-Button oben und dehnt die ESC-Menü-Spielerliste mit Scrollleiste aus."
       },
       "EnableDamageHealthGlow": {
         "title": "Schadens-Gesundheitsumriss aktivieren",
-        "description": "Umriss um andere Spieler, Mimics und Monster bei Schaden — grün bei voller Gesundheit, rot bei wenig, blutrot bei Kill. Nie auf dem eigenen Charakter. Nur Client."
+        "description": "Umriss um andere Spieler, Mimics und Monster bei Schaden — grün bei voller Gesundheit, rot bei wenig, blutrot bei Kill. Nie auf dem eigenen Charakter."
       },
       "EnableFloatingDamageNumbers": {
         "title": "Schwebende Schadenszahlen aktivieren",
-        "description": "Zeigt rote Schadenszahlen, wenn andere Schaden nehmen. Nie auf dem eigenen Charakter. Nur Client."
+        "description": "Zeigt rote Schadenszahlen, wenn andere Schaden nehmen. Nie auf dem eigenen Charakter."
       },
       "FloatingDamageDurationSeconds": {
         "title": "Schadenszahlen-Dauer (Sekunden)",
@@ -65,11 +65,11 @@
       },
       "EnableFpsUi": {
         "title": "FPS-UI aktivieren",
-        "description": "Ersetzt die Lebensbalken oben links durch numerische Lebens- und Toxizitätswerte neben der Hotbar. Nur Client."
+        "description": "Ersetzt die Lebensbalken oben links durch numerische Lebens- und Toxizitätswerte neben der Hotbar."
       },
       "EnableFpsUiInventoryNetWorth": {
         "title": "Inventar-Nettowert anzeigen",
-        "description": "Zeigt den Gesamt-Verkaufswert deines Inventars oberhalb der Hotbar. Mit oder ohne FPS-UI. Nur Client."
+        "description": "Zeigt den Gesamt-Verkaufswert deines Inventars oberhalb der Hotbar. Mit oder ohne FPS-UI."
       },
       "EnableInventorySlotOptimization": {
         "title": "Inventar-Slot-Optimierung aktivieren",
@@ -77,7 +77,7 @@
       },
       "InventoryPickupSelectMode": {
         "title": "Slot-Auswahl beim Aufsammeln",
-        "description": "Nach dem Aufsammeln in einen anderen Slot zu diesem Slot wechseln. Nur Client.",
+        "description": "Nach dem Aufsammeln in einen anderen Slot zu diesem Slot wechseln.",
         "options": {
           "Vanilla": "Vanilla (aktuellen Slot halten)",
           "WeaponsOnly": "Nur Waffen",
@@ -86,11 +86,11 @@
       },
       "EnableInventorySelectNextOnRemove": {
         "title": "Nächsten Slot bei Entfernen wählen",
-        "description": "Wenn der gewählte Slot leer wird (ablegen, Toilette, Automat), zum nächsten belegten Slot wechseln. Nur Client."
+        "description": "Wenn der gewählte Slot leer wird (ablegen, Toilette, Automat), zum nächsten belegten Slot wechseln."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon-Landesound",
-        "description": "Ersetzt die Melodie direkt nach dem Tram-Stop. Abfahrts- und End-of-Run-Hörner bleiben Vanilla. Nur Client.",
+        "description": "Ersetzt die Melodie direkt nach dem Tram-Stop. Abfahrts- und End-of-Run-Hörner bleiben Vanilla.",
         "options": {
           "Vanilla": "Vanilla (Spielsound)",
           "Random": "Zufälliger Sound",
@@ -103,15 +103,15 @@
       },
       "RoundStartSoundRandomPool": {
         "title": "Landesound-Pool",
-        "description": "Nur bei Modus „Zufälliger Sound“ — welche Sounds gewählt werden dürfen. Leer lassen = alle Sounds. Nur Client."
+        "description": "Nur bei Modus „Zufälliger Sound“ — welche Sounds gewählt werden dürfen. Leer lassen = alle Sounds."
       },
       "RoundStartSoundVolume": {
         "title": "Landesound-Lautstärke",
-        "description": "Wiedergabelautstärke für eigene Dungeon-Landesounds (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Tram-Stop-Sting oder Vanilla-Modus. Nur Client."
+        "description": "Wiedergabelautstärke für eigene Dungeon-Landesounds (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Tram-Stop-Sting oder Vanilla-Modus."
       },
       "CustomLoadingScreenMode": {
         "title": "Ladebildschirm-Modus",
-        "description": "Ersetzt Ladebildschirm-Grafiken durch eigene Themes. Nur Client.",
+        "description": "Ersetzt Ladebildschirm-Grafiken durch eigene Themes.",
         "options": {
           "Vanilla": "Vanilla (Spielgrafik)",
           "Random": "Zufälliges Theme",
@@ -124,11 +124,11 @@
       },
       "CustomLoadingScreenRandomPool": {
         "title": "Ladebildschirm-Pool",
-        "description": "Nur bei Modus „Zufälliges Theme“ — welche Themes gewählt werden dürfen. Leer lassen = alle Themes. Nur Client."
+        "description": "Nur bei Modus „Zufälliges Theme“ — welche Themes gewählt werden dürfen. Leer lassen = alle Themes."
       },
       "CustomLoadingScreenMotion": {
         "title": "Ladebildschirm-Bewegung",
-        "description": "Langsames Pan/Zoom bei Einzelbild-Ladegrafiken. Frame-Sequenzen animieren immer. Nur Client."
+        "description": "Langsames Pan/Zoom bei Einzelbild-Ladegrafiken. Frame-Sequenzen animieren immer."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -171,18 +171,18 @@
     },
     "MimesisPlayerEnhancement_DungeonRandomizer": {
       "_section": "Dungeon-Randomizer",
-      "_description": "Randomisiere Tram-Dungeon-Würfe, Kartenvarianten und Karten-Layout-Stil. Nur Host.",
+      "_description": "Randomisiere Tram-Dungeon-Würfe, Kartenvarianten und Karten-Layout-Stil.",
       "_groups": {
         "dungeonPick": "Dungeon-Auswahl",
         "dungeonSeed": "Karten-Layout"
       },
       "EnableDungeonRandomizer": {
         "title": "Dungeon-Randomizer aktivieren",
-        "description": "Randomisiert Dungeon-Auswahl, Kartenvarianten und Layout-Stil. Nur Host."
+        "description": "Randomisiert Dungeon-Auswahl, Kartenvarianten und Layout-Stil."
       },
       "RandomizeDungeonPick": {
         "title": "Dungeon-Pick randomisieren",
-        "description": "Überschreibt, welcher Dungeon auf der Tram gewürfelt wird. Nur Host."
+        "description": "Überschreibt, welcher Dungeon auf der Tram gewürfelt wird."
       },
       "DungeonPickPoolMode": {
         "title": "Dungeon-Pool-Modus",
@@ -194,23 +194,23 @@
       },
       "DungeonAllowlist": {
         "title": "Dungeon-Allowlist",
-        "description": "Kommagetrennte Dungeon-IDs. Wenn gesetzt, nur diese Dungeons. Nur Host."
+        "description": "Kommagetrennte Dungeon-IDs. Wenn gesetzt, nur diese Dungeons."
       },
       "DungeonBlocklist": {
         "title": "Dungeon-Blocklist",
-        "description": "Kommagetrennte Dungeon-IDs, die aus dem Pool ausgeschlossen werden. Nur Host."
+        "description": "Kommagetrennte Dungeon-IDs, die aus dem Pool ausgeschlossen werden."
       },
       "IgnoreDungeonExcludeList": {
         "title": "Kürzliche Dungeons erlauben",
-        "description": "Bei erweitertem Vanilla-Zyklus kürzlich gespielte Dungeons wieder zulassen. Nur Host."
+        "description": "Bei erweitertem Vanilla-Zyklus kürzlich gespielte Dungeons wieder zulassen."
       },
       "RandomizeMapVariant": {
         "title": "Map-Variante randomisieren",
-        "description": "Wählt Kartenvarianten gleichmäßig statt Vanilla-Auswahl. Nur Host."
+        "description": "Wählt Kartenvarianten gleichmäßig statt Vanilla-Auswahl."
       },
       "DungeonSeedFlavor": {
         "title": "Karten-Layout-Stil",
-        "description": "Prozeduraler Kartenstil. Nicht-Vanilla wählt aus vorgeprüften Seeds pro Dungeon. Nur Host.",
+        "description": "Prozeduraler Kartenstil. Nicht-Vanilla wählt aus vorgeprüften Seeds pro Dungeon.",
         "options": {
           "Vanilla": "Vanilla — Spiel-Standard-Seed",
           "Compact": "Kompakt — wenigste Räume",
@@ -242,10 +242,10 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon-Zeit",
-      "_description": "Verlängere Schichtfristen bei mehr Spielern in der Sitzung. Nur Host.",
+      "_description": "Verlängere Schichtfristen bei mehr Spielern in der Sitzung.",
       "EnableDungeonTime": {
         "title": "Dungeon-Zeit aktivieren",
-        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind. Nur Host."
+        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline-Spieleranzahl",
@@ -258,7 +258,7 @@
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Wetter",
-      "_description": "Festes, zyklisches oder Vanilla-Wetter plus Startzeit für Beleuchtung. Nur Host.",
+      "_description": "Festes, zyklisches oder Vanilla-Wetter plus Startzeit für Beleuchtung.",
       "_groups": {
         "weatherMode": "Wetter-Modus",
         "weatherCycle": "Wetterzyklus",
@@ -266,11 +266,11 @@
       },
       "EnableWeather": {
         "title": "Wetter aktivieren",
-        "description": "Steuert Dungeon-Wetter, Zyklus-Presets und Startzeit. Nur Host."
+        "description": "Steuert Dungeon-Wetter, Zyklus-Presets und Startzeit."
       },
       "WeatherMode": {
         "title": "Wetter-Modus",
-        "description": "Wie sich das Wetter während eines Laufs ändert. Nur Host.",
+        "description": "Wie sich das Wetter während eines Laufs ändert.",
         "options": {
           "Vanilla": "Vanilla (Spielplan)",
           "Fixed": "Fixed (ein Preset)",
@@ -289,23 +289,23 @@
       },
       "DisableRandomWeather": {
         "title": "Zufallswetter deaktivieren",
-        "description": "Nur Vanilla-Modus — geplante Wechsel behalten, Zufallswetter entfernen. Nur Host."
+        "description": "Nur Vanilla-Modus — geplante Wechsel behalten, Zufallswetter entfernen."
       },
       "WeatherCyclePresets": {
         "title": "Zyklus-Presets",
-        "description": "Nur Cycle-Modus — kommagetrennte Preset-Namen (Sunny, Rain, HeavyRain, Squall). Nur Host."
+        "description": "Nur Cycle-Modus — kommagetrennte Preset-Namen (Sunny, Rain, HeavyRain, Squall)."
       },
       "WeatherCycleMinDelaySeconds": {
         "title": "Zyklus Mindestverzögerung (Sekunden)",
-        "description": "Kürzeste Wartezeit bis zum nächsten Wetterwechsel. Nur Host."
+        "description": "Kürzeste Wartezeit bis zum nächsten Wetterwechsel."
       },
       "WeatherCycleMaxDelaySeconds": {
         "title": "Zyklus Höchstverzögerung (Sekunden)",
-        "description": "Längste Wartezeit bis zum nächsten Wetterwechsel. Nur Host."
+        "description": "Längste Wartezeit bis zum nächsten Wetterwechsel."
       },
       "StartTimePreset": {
         "title": "Startzeit",
-        "description": "Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; Schichtfrist unverändert). Nur Host.",
+        "description": "Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; Schichtfrist unverändert).",
         "options": {
           "Vanilla": "Vanilla (~10:00 → 24:00, Standard)",
           "Morning": "Morgen (08:00 → 24:00, hell)",
@@ -317,24 +317,24 @@
       },
       "EnableRealtimeTramClock": {
         "title": "Tram-Uhr in Echtzeit",
-        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Erfordert Wetter aktivieren. Nur Host."
+        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Erfordert Wetter aktivieren."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
       "_section": "Jederzeit beitreten",
-      "_description": "Erlaube Freunden, nach Sitzungsstart beizutreten. Nur Host.",
+      "_description": "Erlaube Freunden, nach Sitzungsstart beizutreten.",
       "EnableJoinAnytime": {
         "title": "Jederzeit beitreten aktivieren",
-        "description": "Erlaubt Spielern, nach Sitzungsstart beizutreten. Nur Host."
+        "description": "Erlaubt Spielern, nach Sitzungsstart beizutreten."
       },
       "JoinConnectionGraceSeconds": {
         "title": "Beitritts-Gnadenzeit (Sekunden)",
-        "description": "Blockiert Tram-Abfahrt, während ein Spieler lädt. Nicht rechtzeitig Bereite werden gekickt (Host nie). Nur Host."
+        "description": "Blockiert Tram-Abfahrt, während ein Spieler lädt. Nicht rechtzeitig Bereite werden gekickt (Host nie)."
       }
     },
     "MimesisPlayerEnhancement_LootMultiplicator": {
       "_section": "Loot-Multiplikator",
-      "_description": "Passe Karten-Loot und Gegner-Drops an; skaliere mit Spieleranzahl oder filtere Item-Typen. Nur Host.",
+      "_description": "Passe Karten-Loot und Gegner-Drops an; skaliere mit Spieleranzahl oder filtere Item-Typen.",
       "_groups": {
         "lootFilter": "Item-Filter",
         "AutoScaleMapLootByPlayerCount": "Kartenbeute-Skalierung",
@@ -342,7 +342,7 @@
       },
       "EnableLootMultiplicator": {
         "title": "Loot-Multiplikator aktivieren",
-        "description": "Skaliert Karten-Loot und Gegner-Drops und kann Mimic-Fake-Drops in echten Loot umwandeln. Nur Host."
+        "description": "Skaliert Karten-Loot und Gegner-Drops und kann Mimic-Fake-Drops in echten Loot umwandeln."
       },
       "LootMultiplicatorPlayerCountScaleRate": {
         "title": "Loot-Skalierungsrate",
@@ -392,7 +392,7 @@
     },
     "MimesisPlayerEnhancement_MimicTuning": {
       "_section": "Mimic-Tuning",
-      "_description": "Passe Mimic-Stimme, Vertrauen, soziales Verhalten, Inventar, Besitz, Emotes und Horn-Nachahmung an. Nur Host.",
+      "_description": "Passe Mimic-Stimme, Vertrauen, soziales Verhalten, Inventar, Besitz, Emotes und Horn-Nachahmung an.",
       "_groups": {
         "mimicVoice": "Stimme",
         "mimicTrust": "Vertrauen & Verfolgung",
@@ -403,7 +403,7 @@
       },
       "EnableMimicTuning": {
         "title": "Mimic-Tuning aktivieren",
-        "description": "Hauptschalter für alle Mimic-Tuning-Gruppen. Nur Host."
+        "description": "Hauptschalter für alle Mimic-Tuning-Gruppen."
       },
       "MimicVoiceTuningMode": {
         "title": "Voice Tuning Mode",
@@ -752,7 +752,7 @@
     },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Wirtschaft",
-      "_description": "Stelle Startgeld, Schrottwert, Shop-Preise und optionalen Währungserhalt ein. Nur Host.",
+      "_description": "Stelle Startgeld, Schrottwert, Shop-Preise und optionalen Währungserhalt ein.",
       "_groups": {
         "AutoScaleStartupMoneyByPlayerCount": "Startgeld-Skalierung",
         "AutoScaleScrapSellValueByPlayerCount": "Schrottwert-Skalierung",
@@ -761,7 +761,7 @@
       },
       "EnableEconomy": {
         "title": "Wirtschaft aktivieren",
-        "description": "Skaliert Geld, Schrottwert, Shop-Preise und Verstärkungskosten. Optional Geld zwischen Zyklen behalten. Nur Host."
+        "description": "Skaliert Geld, Schrottwert, Shop-Preise und Verstärkungskosten. Optional Geld zwischen Zyklen behalten."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Wirtschafts-Skalierungsrate",
@@ -813,18 +813,18 @@
       },
       "RetainUnspentCurrencyBetweenCycles": {
         "title": "Ungenutztes Geld behalten",
-        "description": "Behält übriges Maintenance-Geld beim Abfahren zur nächsten Dungeon-Runde. Beeinflusst nicht Tram-Reparatur. Nur Host."
+        "description": "Behält übriges Maintenance-Geld beim Abfahren zur nächsten Dungeon-Runde. Beeinflusst nicht Tram-Reparatur."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {
       "_section": "Mehr Spieler",
-      "_description": "Erhöhe das Vanilla-Vier-Spieler-Limit für größere Gruppen. Nur Host.",
+      "_description": "Erhöhe das Vanilla-Vier-Spieler-Limit für größere Gruppen.",
       "_groups": {
         "EnableScalingRoundGoals": "Skalierende Rundenziele"
       },
       "EnableMorePlayers": {
         "title": "Mehr Spieler aktivieren",
-        "description": "Erhöht das Spielerlimit über 4. Nur Host."
+        "description": "Erhöht das Spielerlimit über 4."
       },
       "MaxPlayers": {
         "title": "Max. Spieler",
@@ -832,7 +832,7 @@
       },
       "EnableScalingRoundGoals": {
         "title": "Skalierende Runden-Ziele aktivieren",
-        "description": "Skaliert die Tram-Reparatur-Quote nach Zone statt bei Stage 5 zu deckeln. Erfordert Mehr Spieler. Nur Host."
+        "description": "Skaliert die Tram-Reparatur-Quote nach Zone statt bei Stage 5 zu deckeln. Erfordert Mehr Spieler."
       },
       "RoundGoalBasePerZone": {
         "title": "Runden-Ziel-Basis",
@@ -853,13 +853,13 @@
     },
     "MimesisPlayerEnhancement_MoreVoices": {
       "_section": "Mehr Stimmen",
-      "_description": "Speichere deutlich mehr aufgezeichnete Spielerstimmen für Mimics pro Run. Nur Host.",
+      "_description": "Speichere deutlich mehr aufgezeichnete Spielerstimmen für Mimics pro Run.",
       "_groups": {
         "EnableVoicePerformanceCache": "Performance-Cache"
       },
       "EnableMoreVoices": {
         "title": "Mehr Stimmen aktivieren",
-        "description": "Speichert mehr aufgezeichnete Spielerstimmen für Mimics. Nur Host."
+        "description": "Speichert mehr aufgezeichnete Spielerstimmen für Mimics."
       },
       "UnifyIndoorOutdoorVoices": {
         "title": "Indoor/Outdoor-Stimmen vereinheitlichen",
@@ -891,7 +891,7 @@
       },
       "EnableVoicePerformanceCache": {
         "title": "Performance-Cache aktivieren",
-        "description": "Zwischenspeichert Stimmdaten, um Lag bei großen Pools zu reduzieren. Nur Host."
+        "description": "Zwischenspeichert Stimmdaten, um Lag bei großen Pools zu reduzieren."
       },
       "VoiceClipCacheMaxEntries": {
         "title": "Stimmen-Cache-Größe",
@@ -900,26 +900,26 @@
     },
     "MimesisPlayerEnhancement_Persistence": {
       "_section": "Persistenz",
-      "_description": "Speichere und stelle Mimik-Stimmaufnahmen über Speichern/Laden wieder her. Nur Host.",
+      "_description": "Speichere und stelle Mimik-Stimmaufnahmen über Speichern/Laden wieder her.",
       "EnablePersistence": {
         "title": "Stimmen-Persistenz aktivieren",
-        "description": "Speichert und stellt Mimic-Stimmaufnahmen über Speichern/Laden wieder her. Nur Host."
+        "description": "Speichert und stellt Mimic-Stimmaufnahmen über Speichern/Laden wieder her."
       }
     },
     "MimesisPlayerEnhancement_PlayerAnnouncements": {
       "_section": "Spieler-Nachrichten",
-      "_description": "Hinweise zu Dungeon-Einstellungen, Boss-Spawns und persönlichen Todesstatistiken. Nur Host.",
+      "_description": "Hinweise zu Dungeon-Einstellungen, Boss-Spawns und persönlichen Todesstatistiken.",
       "ShowPlayerAnnouncements": {
         "title": "Spieler-Nachrichten anzeigen",
-        "description": "Zeigt Hinweise zu Dungeon-Einstellungen, Boss-Spawns und deinen Stats beim Tod. Ersetzt nicht Spielnachrichten. Nur Host."
+        "description": "Zeigt Hinweise zu Dungeon-Einstellungen, Boss-Spawns und deinen Stats beim Tod. Ersetzt nicht Spielnachrichten."
       }
     },
     "MimesisPlayerEnhancement_PlayerTuning": {
       "_section": "Spieler-Tuning",
-      "_description": "Passe Bewegungsgeschwindigkeit, Ausdauer und Traggewicht für alle in der Sitzung an. Nur Host.",
+      "_description": "Passe Bewegungsgeschwindigkeit, Ausdauer und Traggewicht für alle in der Sitzung an.",
       "EnablePlayerTuning": {
         "title": "Spieler-Tuning aktivieren",
-        "description": "Skaliert Bewegung, Ausdauer und Tragegewicht für alle. Clients brauchen den Mod nicht. Nur Host."
+        "description": "Skaliert Bewegung, Ausdauer und Tragegewicht für alle. Clients brauchen den Mod nicht."
       },
       "MoveSpeedMultiplier": {
         "title": "Bewegungs-Multiplikator",
@@ -951,12 +951,12 @@
       },
       "DisablePlayerCollision": {
         "title": "Spieler-Kollision deaktivieren",
-        "description": "Durch andere Spieler und Mimics laufen auf deinem Client (z. B. volle Tram). Monster und Wände bleiben solid. Nur Client."
+        "description": "Durch andere Spieler und Mimics laufen auf deinem Client (z. B. volle Tram). Monster und Wände bleiben solid."
       }
     },
     "MimesisPlayerEnhancement_SpawnScaling": {
       "_section": "Spawn-Skalierung",
-      "_description": "Skaliere Monster- und Fallen-Spawns nach Typ oder Spieleranzahl. Nur Host.",
+      "_description": "Skaliere Monster- und Fallen-Spawns nach Typ oder Spieleranzahl.",
       "_groups": {
         "ambientMonsterWaveTiming": "Ambient-Jako- & Mimic-Wellen",
         "trapRespawn": "Fallen-Respawn",
@@ -970,7 +970,7 @@
       },
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
-        "description": "Skaliert Monster- und Fallen-Spawns nach Typ oder Spieleranzahl. Nur Host."
+        "description": "Skaliert Monster- und Fallen-Spawns nach Typ oder Spieleranzahl."
       },
       "SpawnScalingPlayerCountScaleRate": {
         "title": "Spawn-Skalierungsrate",
@@ -1097,10 +1097,10 @@
     },
     "MimesisPlayerEnhancement_Statistics": {
       "_section": "Statistiken",
-      "_description": "Verfolge Tode, Kills, Spielzeit, Mimik-Begegnungen und mehr pro Spielstand. Nur Host.",
+      "_description": "Verfolge Tode, Kills, Spielzeit, Mimik-Begegnungen und mehr pro Spielstand.",
       "EnableStatistics": {
         "title": "Spielerstatistiken aktivieren",
-        "description": "Verfolgt Tode, Kills, Spielzeit und mehr pro Save-Slot. Nur Host."
+        "description": "Verfolgt Tode, Kills, Spielzeit und mehr pro Save-Slot."
       },
       "SessionReconnectGraceMinutes": {
         "title": "Wiederverbindungs-Frist (Minuten)",
@@ -1108,7 +1108,7 @@
       },
       "ShowStatisticsToasts": {
         "title": "Statistik-Nachrichten anzeigen",
-        "description": "Zeigt Statistik-Nachrichten bei Join/Leave und Sitzungsintro. Ersetzt nicht Spiel-Verbindungsnachrichten. Nur Host."
+        "description": "Zeigt Statistik-Nachrichten bei Join/Leave und Sitzungsintro. Ersetzt nicht Spiel-Verbindungsnachrichten."
       }
     },
     "MimesisPlayerEnhancement_WebDashboard": {

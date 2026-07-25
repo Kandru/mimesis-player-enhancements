@@ -20,7 +20,7 @@ Config entry shape:
 "config": {
   "MimesisPlayerEnhancement_LootMultiplicator": {
     "_section": "Loot Multiplier",
-    "_description": "Adjust map loot and enemy drops; scale with player count or filter item types. Host only.",
+    "_description": "Adjust map loot and enemy drops; scale with player count or filter item types.",
     "EnableLootMultiplicator": {
       "title": "Enable Loot Multiplier",
       "description": "Scale map loot and enemy death drops..."
@@ -36,7 +36,7 @@ Config entry shape:
 ```json
 "MimesisPlayerEnhancement_Ui": {
   "_section": "User Interface",
-  "_description": "Extended save picker and local HUD tweaks. Client-only.",
+  "_description": "Extended save picker and local HUD tweaks.",
   "_groups": {
     "fpsUi": "FPS UI",
     "roundStartSound": "Dungeon landing sound"
