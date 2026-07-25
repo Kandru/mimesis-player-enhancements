@@ -59,7 +59,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             int playerCount = room.GetMemberCount();
             SpawnScalingSceneConfig config = SceneScopedConfigGate.Spawn;
 
-            if (!NeedsMapPlacedEncounterScaling(spawnDatas, playerCount, config))
+            bool needsDensityScaling = NeedsMapPlacedEncounterScaling(spawnDatas, playerCount, config);
+            bool needsTrapSlotRegistration = TrapRespawnDelayResolver.IsForceRespawnActive(config)
+                && HasMapPlacedTrapMarkers(spawnDatas);
+
+            if (!needsDensityScaling && !needsTrapSlotRegistration)
             {
                 return;
             }
@@ -78,6 +82,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 {
                     state.RegisterSlot(markerId, spawnData);
                 }
+            }
+
+            if (!needsDensityScaling)
+            {
+                return;
             }
 
             Dictionary<int, List<MapMarker_CreatureSpawnPoint>>? markersByMasterId = null;
@@ -181,7 +190,18 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             bool creditConsumed = state.TryConsumeCredit(spawnData.MasterID);
-            if (!ShouldScheduleEncounter(spawnData, creditConsumed))
+            SpawnCategory category = SpawnCategoryLookup.GetCategory(spawnData.MasterID);
+            bool hasRespawnBudget = MapPlacedEncounterScheduleResolver.HasRespawnBudget(
+                spawnData.SpawnType,
+                spawnData.MaxRespawnCount,
+                spawnData.CurrentSpawnCount,
+                spawnData.EnableReset);
+
+            if (!MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
+                    ResolveRoomConfig(room),
+                    category,
+                    creditConsumed,
+                    hasRespawnBudget))
             {
                 if (creditConsumed)
                 {
@@ -191,7 +211,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            ScheduleEncounter(room, spawnData, spawnData.MasterID);
+            ScheduleEncounter(
+                room,
+                spawnData,
+                spawnData.MasterID,
+                useTrapRespawnRules: category == SpawnCategory.Trap
+                    && TrapRespawnDelayResolver.IsForceRespawnActive(ResolveRoomConfig(room))
+                    && !creditConsumed);
         }
 
         internal static void ProcessPendingEncounters()
@@ -227,12 +253,23 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     continue;
                 }
 
-                if (MapPlacedEncounterProximity.IsPlayerBlockingSpawn(pending.Room, pending.Data.PosVector))
+                SpawnScalingSceneConfig config = ResolveRoomConfig(pending.Room);
+                if (pending.UseTrapRespawnRules
+                    ? MapPlacedEncounterProximity.ShouldBlockTrapRespawn(pending.Room, pending.Data, throttle: false)
+                    : config.BonusEncounterMinPlayerDistanceMeters > 0f
+                        && MapPlacedEncounterProximity.IsPlayerBlockingSpawn(
+                            pending.Room,
+                            pending.Data.PosVector,
+                            config.BonusEncounterMinPlayerDistanceMeters))
                 {
                     if (ModConfig.EnableDebugLogging.Value)
                     {
-                        ModLog.Debug(Feature, $"Bonus encounter waiting — master={pending.MasterId}, marker={pending.Data.Index}, " +
-                            $"players within {ResolveRoomConfig(pending.Room).MapPlacedEncounterMinPlayerDistanceMeters:0.#}m");
+                        float minDistance = pending.UseTrapRespawnRules
+                            ? TrapRespawnDelayResolver.ResolveMinPlayerDistanceMeters(config)
+                            : config.BonusEncounterMinPlayerDistanceMeters;
+                        SpawnCategory category = SpawnCategoryLookup.GetCategory(pending.MasterId);
+                        ModLog.Debug(Feature, $"Pending encounter waiting — category={SpawnCategoryLookup.Format(category)}, master={pending.MasterId}, marker={pending.Data.Index}, " +
+                            $"players within {minDistance:0.#}m");
                     }
 
                     DeferNextAttempt(i, pending, now);
@@ -301,26 +338,29 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return registered;
         }
 
+        private static bool HasMapPlacedTrapMarkers(IDictionary spawnDatas)
+        {
+            foreach (DictionaryEntry entry in spawnDatas)
+            {
+                if (entry.Value is not FixedSpawnedActorData spawnData || !IsMapPlacedCreature(spawnData))
+                {
+                    continue;
+                }
+
+                if (SpawnCategoryLookup.GetCategory(spawnData.MasterID) == SpawnCategory.Trap)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool IsMapPlacedCreature(SpawnedActorData spawnData)
         {
             return spawnData is FixedSpawnedActorData
                 && (spawnData.MarkerType.Equals(MapMarkerType.Creature)
                     || spawnData.MarkerType.Equals(MapMarkerType.SpecialMonster));
-        }
-
-        private static bool ShouldScheduleEncounter(SpawnedActorData spawnData, bool creditConsumed)
-        {
-            return creditConsumed
-                || SpawnCategoryLookup.GetCategory(spawnData.MasterID) == SpawnCategory.Trap
-                || HasRespawnBudget(spawnData);
-        }
-
-        private static bool HasRespawnBudget(SpawnedActorData spawnData)
-        {
-            return !spawnData.SpawnType.Equals(SpawnType.OnStartMap)
-                && (spawnData.MaxRespawnCount == 0
-                    || spawnData.CurrentSpawnCount < spawnData.MaxRespawnCount
-                    || spawnData.EnableReset);
         }
 
         private static bool TrySpawnEncounter(DungeonRoom room, SpawnedActorData spawnData)
@@ -357,7 +397,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
         }
 
-        private static void ScheduleEncounter(DungeonRoom room, SpawnedActorData spawnData, int masterId)
+        private static void ScheduleEncounter(
+            DungeonRoom room,
+            SpawnedActorData spawnData,
+            int masterId,
+            bool useTrapRespawnRules)
         {
             foreach (PendingEncounterSpawn pending in PendingEncounters)
             {
@@ -368,21 +412,43 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             SpawnScalingSceneConfig config = ResolveRoomConfig(room);
-            float minDelay = config.MapPlacedEncounterDelayMinSeconds;
-            float maxDelay = config.MapPlacedEncounterDelayMaxSeconds;
-            float delay = minDelay >= maxDelay ? minDelay : UnityEngine.Random.Range(minDelay, maxDelay);
-            if (spawnData.SpawnWaitTime > 0)
-            {
-                delay = Math.Max(delay, spawnData.SpawnWaitTime / 1000f);
-            }
+            float delay = ResolveEncounterDelay(config, spawnData, masterId, useTrapRespawnRules);
 
-            PendingEncounters.Add(new PendingEncounterSpawn(room, spawnData, masterId, Time.time + delay));
+            PendingEncounters.Add(new PendingEncounterSpawn(room, spawnData, masterId, Time.time + delay, useTrapRespawnRules));
 
             if (ModConfig.EnableDebugLogging.Value)
             {
                 ModLog.Debug(Feature, $"Bonus encounter scheduled — master={masterId}, marker={spawnData.Index}, " +
                     $"pos={SpawnScalingLog.FormatLocation(room, spawnData.PosVector)}, delay={delay:0.0}s");
             }
+        }
+
+        private static float ResolveEncounterDelay(
+            SpawnScalingSceneConfig config,
+            SpawnedActorData spawnData,
+            int masterId,
+            bool useTrapRespawnRules)
+        {
+            SpawnCategory category = SpawnCategoryLookup.GetCategory(masterId);
+            float delay;
+
+            if (useTrapRespawnRules && category == SpawnCategory.Trap)
+            {
+                delay = TrapRespawnDelayResolver.ResolveDelaySeconds(config);
+            }
+            else
+            {
+                float minDelay = config.BonusEncounterDelayMinSeconds;
+                float maxDelay = config.BonusEncounterDelayMaxSeconds;
+                delay = minDelay >= maxDelay ? minDelay : UnityEngine.Random.Range(minDelay, maxDelay);
+            }
+
+            if (spawnData.SpawnWaitTime > 0)
+            {
+                delay = Math.Max(delay, spawnData.SpawnWaitTime / 1000f);
+            }
+
+            return delay;
         }
 
         private static void DeferNextAttempt(int index, PendingEncounterSpawn pending, float now)
@@ -422,12 +488,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnedActorData data,
                 int masterId,
                 float executeAt,
+                bool useTrapRespawnRules,
                 float? nextAttemptAt = null)
             {
                 Room = room;
                 Data = data;
                 MasterId = masterId;
                 ExecuteAt = executeAt;
+                UseTrapRespawnRules = useTrapRespawnRules;
                 NextAttemptAt = nextAttemptAt ?? executeAt;
             }
 
@@ -437,13 +505,15 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             internal int MasterId { get; }
 
+            internal bool UseTrapRespawnRules { get; }
+
             internal float ExecuteAt { get; }
 
             internal float NextAttemptAt { get; }
 
             internal PendingEncounterSpawn WithNextAttemptAt(float nextAttemptAt)
             {
-                return new PendingEncounterSpawn(Room, Data, MasterId, ExecuteAt, nextAttemptAt);
+                return new PendingEncounterSpawn(Room, Data, MasterId, ExecuteAt, UseTrapRespawnRules, nextAttemptAt);
             }
         }
     }

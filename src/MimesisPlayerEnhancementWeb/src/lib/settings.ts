@@ -124,7 +124,19 @@ export function entryVisible(
   ];
   const dep = all.find((e) => e.key === entry.dependsOnKey);
   if (!dep) return true;
-  if (entry.dependsOnValue != null) return dep.value === entry.dependsOnValue;
+  if (entry.dependsOnValue != null) {
+    const depValue = dep.value ?? '';
+    if (entry.dependsOnValue.startsWith('!=')) {
+      const excluded = entry.dependsOnValue.slice(2);
+      return depValue.toLowerCase() !== excluded.toLowerCase();
+    }
+    if (entry.dependsOnValue.startsWith('>')) {
+      const threshold = Number(entry.dependsOnValue.slice(1));
+      const numericValue = Number(depValue);
+      return !Number.isNaN(numericValue) && numericValue > threshold;
+    }
+    return depValue === entry.dependsOnValue;
+  }
   return dep.value === 'true' || dep.value === 'True';
 }
 

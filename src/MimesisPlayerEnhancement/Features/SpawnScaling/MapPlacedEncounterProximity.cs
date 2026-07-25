@@ -6,11 +6,13 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     {
         private static readonly Dictionary<SpawnedActorData, CachedBlockResult> CreatureBlockCache = [];
         private static readonly Dictionary<SpawnedActorData, CachedBlockResult> LootBlockCache = [];
+        private static readonly Dictionary<SpawnedActorData, CachedBlockResult> TrapBlockCache = [];
 
         internal static void ClearCaches()
         {
             CreatureBlockCache.Clear();
             LootBlockCache.Clear();
+            TrapBlockCache.Clear();
         }
 
         internal static bool ShouldBlockBonusEncounterSpawn(
@@ -18,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnedActorData? spawnData,
             bool throttle = true)
         {
-            float minDistance = ResolveMinPlayerDistanceMeters(room);
+            float minDistance = ResolveBonusEncounterMinPlayerDistanceMeters(room);
             return minDistance > 0f
                 && room != null
                 && spawnData != null
@@ -26,12 +28,25 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 && IsPlayerBlockingSpawnCached(room, spawnData, CreatureBlockCache, throttle, minDistance);
         }
 
+        internal static bool ShouldBlockTrapRespawn(
+            DungeonRoom? room,
+            SpawnedActorData? spawnData,
+            bool throttle = true)
+        {
+            float minDistance = ResolveTrapRespawnMinPlayerDistanceMeters(room);
+            return minDistance > 0f
+                && room != null
+                && spawnData != null
+                && IsTrapRespawnCandidate(spawnData, room)
+                && IsPlayerBlockingSpawnCached(room, spawnData, TrapBlockCache, throttle, minDistance);
+        }
+
         internal static bool ShouldBlockBonusLootRespawn(
             DungeonRoom? room,
             SpawnedActorData? spawnData,
             bool throttle = true)
         {
-            float minDistance = ResolveMinPlayerDistanceMeters(room);
+            float minDistance = ResolveBonusEncounterMinPlayerDistanceMeters(room);
             return minDistance > 0f
                 && room != null
                 && spawnData != null
@@ -41,7 +56,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static bool IsPlayerBlockingSpawn(DungeonRoom room, Vector3 spawnPos)
         {
-            return IsPlayerBlockingSpawn(room, spawnPos, ResolveMinPlayerDistanceMeters(room));
+            return IsPlayerBlockingSpawn(room, spawnPos, ResolveBonusEncounterMinPlayerDistanceMeters(room));
         }
 
         internal static bool IsPlayerBlockingSpawn(DungeonRoom room, Vector3 spawnPos, float minDistance)
@@ -96,16 +111,26 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return blocked;
         }
 
-        private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
+        private static float ResolveBonusEncounterMinPlayerDistanceMeters(DungeonRoom? room)
+        {
+            return ResolveSpawnConfig(room).BonusEncounterMinPlayerDistanceMeters;
+        }
+
+        private static float ResolveTrapRespawnMinPlayerDistanceMeters(DungeonRoom? room)
+        {
+            return TrapRespawnDelayResolver.ResolveMinPlayerDistanceMeters(ResolveSpawnConfig(room));
+        }
+
+        private static SpawnScalingSceneConfig ResolveSpawnConfig(DungeonRoom? room)
         {
             if (room != null
                 && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? state)
                 && state.HasSnapshot)
             {
-                return state.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+                return state.Snapshot;
             }
 
-            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
+            return SceneScopedConfigGate.Spawn;
         }
 
         private readonly struct CachedBlockResult
@@ -121,8 +146,21 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             internal float NextCheckAt { get; }
         }
 
+        private static bool IsTrapRespawnCandidate(SpawnedActorData spawnData, DungeonRoom room)
+        {
+            return spawnData is FixedSpawnedActorData
+                && SpawnCategoryLookup.GetCategory(spawnData.MasterID) == SpawnCategory.Trap
+                && TrapRespawnDelayResolver.IsForceRespawnActive(ResolveSpawnConfig(room))
+                && spawnData.ActorID == 0;
+        }
+
         private static bool IsBonusCreatureEncounter(SpawnedActorData spawnData)
         {
+            if (SpawnCategoryLookup.GetCategory(spawnData.MasterID) == SpawnCategory.Trap)
+            {
+                return false;
+            }
+
             return spawnData is FixedSpawnedActorData
                 && (spawnData.MarkerType.Equals(MapMarkerType.Creature)
                     || spawnData.MarkerType.Equals(MapMarkerType.SpecialMonster))

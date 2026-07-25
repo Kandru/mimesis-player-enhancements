@@ -958,7 +958,9 @@
       "_section": "Spawn-Skalierung",
       "_description": "Skaliere Monster- und Fallen-Spawns nach Typ oder Spieleranzahl. Nur Host.",
       "_groups": {
-        "periodicSpawnWait": "Spawn-Wellen-Timing",
+        "ambientMonsterWaveTiming": "Ambient-Jako- & Mimic-Wellen",
+        "trapRespawn": "Fallen-Respawn",
+        "bonusEncounterTiming": "Boss- & Spezial-Bonus-Spawns",
         "AutoScaleMimicSpawnsByPlayerCount": "Mimic-Spawn-Skalierung",
         "AutoScaleBossSpawnsByPlayerCount": "Boss-Spawn-Skalierung",
         "AutoScaleJakoSpawnsByPlayerCount": "Jako-Spawn-Skalierung",
@@ -1012,52 +1014,77 @@
       },
       "TrapSpawnMultiplier": {
         "title": "Fallen-Spawn-Multiplikator",
-        "description": "Karten-Fallen und Bonus-Begegnungen nach Auslösung/Kill (1 = Vanilla, 2 = doppelt)."
+        "description": "Karten-Fallen: ungenutzte Marker beim Laden und Bonus-Begegnungen nach Auslösung/Kill (1 = Vanilla, 2 = doppelt)."
       },
-      "PeriodicSpawnWaitMode": {
-        "title": "Spawn-Wellen-Timing",
-        "description": "Verzögerung vor der ersten Monster-Welle und Abstand zwischen Wellen. Vanilla nutzt Dungeon-Daten; Fixed und Random nutzen Einstellungen unten.",
+      "TrapRespawnMode": {
+        "title": "Fallen-Respawn-Modus",
+        "description": "Ob geleerte Kartenfallen an ihrem Marker respawnen. Getrennt von Ambient-Monster-Wellen und Boss-/Spezial-Bonus-Spawns. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Fallen-Verzögerungen unten.",
         "options": {
           "Vanilla": "Vanilla",
           "Fixed": "Feste Sekunden",
           "Random": "Zufällige Sekunden"
         }
       },
-      "InitialPeriodicSpawnWaitSeconds": {
-        "title": "Erste Welle Verzögerung (Sekunden)",
-        "description": "Fixed-Modus: Sekunden nach Dungeon-Start bis zur ersten Spawn-Welle."
+      "TrapRespawnDelaySeconds": {
+        "title": "Fallen-Respawn-Verzögerung (Sekunden)",
+        "description": "Fixed-Modus: Sekunden nach dem Leeren einer Falle, bis sie am Marker respawnen kann."
       },
-      "InitialPeriodicSpawnWaitMinSeconds": {
-        "title": "Erste Welle Min (Sekunden)",
-        "description": "Random-Modus: kürzeste Wartezeit vor der ersten Welle."
+      "TrapRespawnDelayMinSeconds": {
+        "title": "Fallen-Respawn Min (Sekunden)",
+        "description": "Random-Modus: kürzeste Wartezeit nach dem Leeren einer Falle."
       },
-      "InitialPeriodicSpawnWaitMaxSeconds": {
-        "title": "Erste Welle Max (Sekunden)",
-        "description": "Random-Modus: längste Wartezeit vor der ersten Welle."
+      "TrapRespawnDelayMaxSeconds": {
+        "title": "Fallen-Respawn Max (Sekunden)",
+        "description": "Random-Modus: längste Wartezeit nach dem Leeren einer Falle."
       },
-      "PeriodicSpawnIntervalSeconds": {
-        "title": "Wellen-Intervall (Sekunden)",
-        "description": "Fixed-Modus: Sekunden zwischen Spawn-Wellen."
+      "TrapRespawnMinPlayerDistanceMeters": {
+        "title": "Fallen-Respawn Mindestabstand (m)",
+        "description": "Fixed- und Random-Modus: Trap-Respawn erst, wenn keine Spieler in diesem Radius sind. Prüfung ca. einmal pro Sekunde. 0 = sofort nach Verzögerung."
       },
-      "PeriodicSpawnIntervalMinSeconds": {
-        "title": "Wellen-Intervall Min (Sekunden)",
-        "description": "Random-Modus: kürzestes Intervall zwischen Wellen."
+      "AmbientMonsterWaveMode": {
+        "title": "Ambient-Wellen-Timing-Modus",
+        "description": "Timing für periodische Ambient-Jako- (Normalmonster-) und Mimic-Spawn-Wellen. Betrifft keine Fallen, Bosse, Spezial-Gegner oder andere Karten-Begegnungen. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Ambient-Wellen-Einstellungen unten.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Feste Sekunden",
+          "Random": "Zufällige Sekunden"
+        }
       },
-      "PeriodicSpawnIntervalMaxSeconds": {
-        "title": "Wellen-Intervall Max (Sekunden)",
-        "description": "Random-Modus: längstes Intervall zwischen Wellen."
+      "AmbientMonsterWaveInitialDelaySeconds": {
+        "title": "Erste Ambient-Welle Verzögerung (Sekunden)",
+        "description": "Fixed-Modus: Sekunden nach Dungeon-Start bis zur ersten Ambient-Jako-/Mimic-Welle."
       },
-      "MapPlacedEncounterDelayMinSeconds": {
-        "title": "Begegnungs-Verzögerung Min (Sekunden)",
-        "description": "Kürzeste Wartezeit nach Räumen eines Markers bis ein Bonus-Spawn erscheinen kann."
+      "AmbientMonsterWaveInitialDelayMinSeconds": {
+        "title": "Erste Ambient-Welle Min (Sekunden)",
+        "description": "Random-Modus: kürzeste Wartezeit vor der ersten Ambient-Jako-/Mimic-Welle."
       },
-      "MapPlacedEncounterDelayMaxSeconds": {
-        "title": "Begegnungs-Verzögerung Max (Sekunden)",
-        "description": "Längste Wartezeit für diese Bonus-Spawn-Verzögerung."
+      "AmbientMonsterWaveInitialDelayMaxSeconds": {
+        "title": "Erste Ambient-Welle Max (Sekunden)",
+        "description": "Random-Modus: längste Wartezeit vor der ersten Ambient-Jako-/Mimic-Welle."
       },
-      "MapPlacedEncounterMinPlayerDistanceMeters": {
-        "title": "Begegnungs-Mindestabstand (m)",
-        "description": "Spawn erst, wenn keine Spieler in diesem Radius sind. 0 = sofort nach Verzögerung."
+      "AmbientMonsterWaveIntervalSeconds": {
+        "title": "Ambient-Wellen-Intervall (Sekunden)",
+        "description": "Fixed-Modus: Sekunden zwischen Ambient-Jako-/Mimic-Spawn-Wellen."
+      },
+      "AmbientMonsterWaveIntervalMinSeconds": {
+        "title": "Ambient-Wellen-Intervall Min (Sekunden)",
+        "description": "Random-Modus: kürzestes Intervall zwischen Ambient-Jako-/Mimic-Wellen."
+      },
+      "AmbientMonsterWaveIntervalMaxSeconds": {
+        "title": "Ambient-Wellen-Intervall Max (Sekunden)",
+        "description": "Random-Modus: längstes Intervall zwischen Ambient-Jako-/Mimic-Wellen."
+      },
+      "BonusEncounterDelayMinSeconds": {
+        "title": "Bonus-Begegnung Verzögerung Min (Sekunden)",
+        "description": "Kürzeste Wartezeit nach dem Leeren eines skalierten kartenplatzierten Bosses oder Specials, bis ein Bonus-Spawn erscheinen kann. Nicht für Fallen."
+      },
+      "BonusEncounterDelayMaxSeconds": {
+        "title": "Bonus-Begegnung Verzögerung Max (Sekunden)",
+        "description": "Längste Wartezeit für diese Bonus-Spawn-Verzögerung. Nicht für Fallen."
+      },
+      "BonusEncounterMinPlayerDistanceMeters": {
+        "title": "Bonus-Begegnung Mindestabstand (m)",
+        "description": "Bonus-Spawns für Bosse/Specials erst, wenn keine Spieler in diesem Radius sind. 0 = sofort nach Verzögerung. Nicht für Fallen."
       },
       "AutoScaleOtherSpawnsByPlayerCount": {
         "title": "Sonstige Spawns nach Spielern skalieren",

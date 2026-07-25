@@ -67,44 +67,64 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "TrapSpawnMultiplier",
                 1f);
 
-            ModConfig.PeriodicSpawnWaitMode = ModConfig.CreateTrackedEntry(_category,
-                "PeriodicSpawnWaitMode",
+            ModConfig.TrapRespawnMode = ModConfig.CreateTrackedEntry(_category,
+                "TrapRespawnMode",
                 "Vanilla");
 
-            ModConfig.InitialPeriodicSpawnWaitSeconds = ModConfig.CreateTrackedEntry(_category,
-                "InitialPeriodicSpawnWaitSeconds",
-                60f);
-
-            ModConfig.InitialPeriodicSpawnWaitMinSeconds = ModConfig.CreateTrackedEntry(_category,
-                "InitialPeriodicSpawnWaitMinSeconds",
-                30f);
-
-            ModConfig.InitialPeriodicSpawnWaitMaxSeconds = ModConfig.CreateTrackedEntry(_category,
-                "InitialPeriodicSpawnWaitMaxSeconds",
-                90f);
-
-            ModConfig.PeriodicSpawnIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
-                "PeriodicSpawnIntervalSeconds",
-                30f);
-
-            ModConfig.PeriodicSpawnIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
-                "PeriodicSpawnIntervalMinSeconds",
-                20f);
-
-            ModConfig.PeriodicSpawnIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
-                "PeriodicSpawnIntervalMaxSeconds",
-                45f);
-
-            ModConfig.MapPlacedEncounterDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
-                "MapPlacedEncounterDelayMinSeconds",
+            ModConfig.TrapRespawnDelaySeconds = ModConfig.CreateTrackedEntry(_category,
+                "TrapRespawnDelaySeconds",
                 5f);
 
-            ModConfig.MapPlacedEncounterDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
-                "MapPlacedEncounterDelayMaxSeconds",
+            ModConfig.TrapRespawnDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "TrapRespawnDelayMinSeconds",
+                5f);
+
+            ModConfig.TrapRespawnDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "TrapRespawnDelayMaxSeconds",
                 30f);
 
-            ModConfig.MapPlacedEncounterMinPlayerDistanceMeters = ModConfig.CreateTrackedEntry(_category,
-                "MapPlacedEncounterMinPlayerDistanceMeters",
+            ModConfig.TrapRespawnMinPlayerDistanceMeters = ModConfig.CreateTrackedEntry(_category,
+                "TrapRespawnMinPlayerDistanceMeters",
+                10f);
+
+            ModConfig.AmbientMonsterWaveMode = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveMode",
+                "Vanilla");
+
+            ModConfig.AmbientMonsterWaveInitialDelaySeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveInitialDelaySeconds",
+                60f);
+
+            ModConfig.AmbientMonsterWaveInitialDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveInitialDelayMinSeconds",
+                30f);
+
+            ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveInitialDelayMaxSeconds",
+                90f);
+
+            ModConfig.AmbientMonsterWaveIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveIntervalSeconds",
+                30f);
+
+            ModConfig.AmbientMonsterWaveIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveIntervalMinSeconds",
+                20f);
+
+            ModConfig.AmbientMonsterWaveIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "AmbientMonsterWaveIntervalMaxSeconds",
+                45f);
+
+            ModConfig.BonusEncounterDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "BonusEncounterDelayMinSeconds",
+                5f);
+
+            ModConfig.BonusEncounterDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "BonusEncounterDelayMaxSeconds",
+                30f);
+
+            ModConfig.BonusEncounterMinPlayerDistanceMeters = ModConfig.CreateTrackedEntry(_category,
+                "BonusEncounterMinPlayerDistanceMeters",
                 10f);
 
             ModConfig.AutoScaleOtherSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
@@ -126,9 +146,9 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AutoScaleJakoSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleJakoSpawnsByPlayerCount));
             ModConfig.AutoScaleSpecialSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleSpecialSpawnsByPlayerCount));
             ModConfig.AutoScaleTrapSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleTrapSpawnsByPlayerCount));
-            ModConfig.MapPlacedEncounterDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnMapPlacedEncounterDelayChanged(logger, value, ModConfig.MapPlacedEncounterDelayMinSeconds));
-            ModConfig.MapPlacedEncounterDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnMapPlacedEncounterDelayChanged(logger, value, ModConfig.MapPlacedEncounterDelayMaxSeconds));
-            ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnMapPlacedEncounterMinPlayerDistanceChanged(logger, value));
+            ModConfig.BonusEncounterDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMinSeconds));
+            ModConfig.BonusEncounterDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMaxSeconds));
+            ModConfig.BonusEncounterMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterMinPlayerDistanceChanged(logger, value));
             ModConfig.AutoScaleOtherSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleOtherSpawnsByPlayerCount));
 
             ModConfig.MimicSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnMultiplier));
@@ -136,13 +156,18 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.JakoSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnMultiplier));
             ModConfig.SpecialSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnMultiplier));
             ModConfig.TrapSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnMultiplier));
-            ModConfig.PeriodicSpawnWaitMode.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitModeChanged(logger, value));
-            ModConfig.InitialPeriodicSpawnWaitSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitSecondsChanged(logger, value, ModConfig.InitialPeriodicSpawnWaitSeconds));
-            ModConfig.InitialPeriodicSpawnWaitMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitRangeChanged(logger, value, ModConfig.InitialPeriodicSpawnWaitMinSeconds, ModConfig.InitialPeriodicSpawnWaitMaxSeconds));
-            ModConfig.InitialPeriodicSpawnWaitMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitRangeChanged(logger, value, ModConfig.InitialPeriodicSpawnWaitMinSeconds, ModConfig.InitialPeriodicSpawnWaitMaxSeconds));
-            ModConfig.PeriodicSpawnIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitSecondsChanged(logger, value, ModConfig.PeriodicSpawnIntervalSeconds));
-            ModConfig.PeriodicSpawnIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitRangeChanged(logger, value, ModConfig.PeriodicSpawnIntervalMinSeconds, ModConfig.PeriodicSpawnIntervalMaxSeconds));
-            ModConfig.PeriodicSpawnIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnPeriodicSpawnWaitRangeChanged(logger, value, ModConfig.PeriodicSpawnIntervalMinSeconds, ModConfig.PeriodicSpawnIntervalMaxSeconds));
+            ModConfig.TrapRespawnMode.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnModeChanged(logger, value));
+            ModConfig.TrapRespawnDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayChanged(logger, value, ModConfig.TrapRespawnDelaySeconds));
+            ModConfig.TrapRespawnDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayRangeChanged(logger, value, ModConfig.TrapRespawnDelayMinSeconds, ModConfig.TrapRespawnDelayMaxSeconds));
+            ModConfig.TrapRespawnDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayRangeChanged(logger, value, ModConfig.TrapRespawnDelayMinSeconds, ModConfig.TrapRespawnDelayMaxSeconds));
+            ModConfig.TrapRespawnMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnMinPlayerDistanceChanged(logger, value));
+            ModConfig.AmbientMonsterWaveMode.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveModeChanged(logger, value));
+            ModConfig.AmbientMonsterWaveInitialDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveSecondsChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelaySeconds));
+            ModConfig.AmbientMonsterWaveInitialDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelayMinSeconds, ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds));
+            ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelayMinSeconds, ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds));
+            ModConfig.AmbientMonsterWaveIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveSecondsChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalSeconds));
+            ModConfig.AmbientMonsterWaveIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
+            ModConfig.AmbientMonsterWaveIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
             ModConfig.OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnMultiplier));
         }
 
@@ -154,19 +179,23 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.TrackFloatEntry(ModConfig.JakoSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.SpecialSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.TrapSpawnMultiplier);
-            ModConfig.TrackFloatEntry(ModConfig.InitialPeriodicSpawnWaitSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.InitialPeriodicSpawnWaitMinSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.InitialPeriodicSpawnWaitMaxSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.PeriodicSpawnIntervalSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.PeriodicSpawnIntervalMinSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.PeriodicSpawnIntervalMaxSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.MapPlacedEncounterDelayMinSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.MapPlacedEncounterDelayMaxSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.MapPlacedEncounterMinPlayerDistanceMeters);
+            ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelaySeconds);
+            ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.TrapRespawnMinPlayerDistanceMeters);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelaySeconds);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelayMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.BonusEncounterDelayMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.BonusEncounterDelayMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.BonusEncounterMinPlayerDistanceMeters);
             ModConfig.TrackFloatEntry(ModConfig.OtherSpawnMultiplier);
         }
 
-        private static void OnMapPlacedEncounterDelayChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)
+        private static void OnBonusEncounterDelayChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)
         {
             if (value < 0f)
             {
@@ -175,46 +204,107 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            float min = ModConfig.MapPlacedEncounterDelayMinSeconds.Value;
-            float max = ModConfig.MapPlacedEncounterDelayMaxSeconds.Value;
+            float min = ModConfig.BonusEncounterDelayMinSeconds.Value;
+            float max = ModConfig.BonusEncounterDelayMaxSeconds.Value;
             if (max < min)
             {
-                logger.Warning("MapPlacedEncounterDelayMaxSeconds must be >= MapPlacedEncounterDelayMinSeconds; syncing max to min.");
-                ModConfig.MapPlacedEncounterDelayMaxSeconds.Value = min;
+                logger.Warning("BonusEncounterDelayMaxSeconds must be >= BonusEncounterDelayMinSeconds; syncing max to min.");
+                ModConfig.BonusEncounterDelayMaxSeconds.Value = min;
             }
 
             ModConfigFloatHelper.SanitizeEntry(entry);
             ModConfig.NotifyChanged(entry);
         }
 
-        private static void OnMapPlacedEncounterMinPlayerDistanceChanged(MelonLogger.Instance logger, float value)
+        private static void OnBonusEncounterMinPlayerDistanceChanged(MelonLogger.Instance logger, float value)
         {
             if (value < 0f)
             {
-                logger.Warning("MapPlacedEncounterMinPlayerDistanceMeters must be >= 0; resetting to 0.");
-                ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value = 0f;
+                logger.Warning("BonusEncounterMinPlayerDistanceMeters must be >= 0; resetting to 0.");
+                ModConfig.BonusEncounterMinPlayerDistanceMeters.Value = 0f;
                 return;
             }
 
-            ModConfigFloatHelper.SanitizeEntry(ModConfig.MapPlacedEncounterMinPlayerDistanceMeters);
-            ModConfig.NotifyChanged(ModConfig.MapPlacedEncounterMinPlayerDistanceMeters);
+            ModConfigFloatHelper.SanitizeEntry(ModConfig.BonusEncounterMinPlayerDistanceMeters);
+            ModConfig.NotifyChanged(ModConfig.BonusEncounterMinPlayerDistanceMeters);
         }
 
-        private static void OnPeriodicSpawnWaitModeChanged(MelonLogger.Instance logger, string value)
+        private static void OnTrapRespawnMinPlayerDistanceChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < 0f)
+            {
+                logger.Warning("TrapRespawnMinPlayerDistanceMeters must be >= 0; resetting to 0.");
+                ModConfig.TrapRespawnMinPlayerDistanceMeters.Value = 0f;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(ModConfig.TrapRespawnMinPlayerDistanceMeters);
+            ModConfig.NotifyChanged(ModConfig.TrapRespawnMinPlayerDistanceMeters);
+        }
+
+        private static void OnTrapRespawnModeChanged(MelonLogger.Instance logger, string value)
         {
             if (!string.Equals(value, "Vanilla", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(value, "Fixed", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(value, "Random", StringComparison.OrdinalIgnoreCase))
             {
-                logger.Warning("PeriodicSpawnWaitMode must be Vanilla, Fixed, or Random; resetting to Vanilla.");
-                ModConfig.PeriodicSpawnWaitMode.Value = "Vanilla";
+                logger.Warning("TrapRespawnMode must be Vanilla, Fixed, or Random; resetting to Vanilla.");
+                ModConfig.TrapRespawnMode.Value = "Vanilla";
                 return;
             }
 
-            ModConfig.NotifyChanged(ModConfig.PeriodicSpawnWaitMode);
+            ModConfig.NotifyChanged(ModConfig.TrapRespawnMode);
         }
 
-        private static void OnPeriodicSpawnWaitSecondsChanged(
+        private static void OnTrapRespawnDelayChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)
+        {
+            if (value < 0f)
+            {
+                logger.Warning($"{entry.Identifier} must be >= 0; resetting to 0.");
+                entry.Value = 0f;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(entry);
+            ModConfig.NotifyChanged(entry);
+        }
+
+        private static void OnTrapRespawnDelayRangeChanged(
+            MelonLogger.Instance logger,
+            float value,
+            MelonPreferences_Entry<float> minEntry,
+            MelonPreferences_Entry<float> maxEntry)
+        {
+            OnTrapRespawnDelayChanged(logger, value, minEntry);
+            OnTrapRespawnDelayChanged(logger, maxEntry.Value, maxEntry);
+
+            float min = minEntry.Value;
+            float max = maxEntry.Value;
+            if (max < min)
+            {
+                logger.Warning($"{maxEntry.Identifier} must be >= {minEntry.Identifier}; syncing max to min.");
+                maxEntry.Value = min;
+            }
+
+            ModConfig.NotifyChanged(minEntry);
+            ModConfig.NotifyChanged(maxEntry);
+        }
+
+        private static void OnAmbientMonsterWaveModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!string.Equals(value, "Vanilla", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "Fixed", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "Random", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.Warning("AmbientMonsterWaveMode must be Vanilla, Fixed, or Random; resetting to Vanilla.");
+                ModConfig.AmbientMonsterWaveMode.Value = "Vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.AmbientMonsterWaveMode);
+        }
+
+        private static void OnAmbientMonsterWaveSecondsChanged(
             MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> entry)
@@ -230,14 +320,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.NotifyChanged(entry);
         }
 
-        private static void OnPeriodicSpawnWaitRangeChanged(
+        private static void OnAmbientMonsterWaveRangeChanged(
             MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> minEntry,
             MelonPreferences_Entry<float> maxEntry)
         {
-            OnPeriodicSpawnWaitSecondsChanged(logger, value, minEntry);
-            OnPeriodicSpawnWaitSecondsChanged(logger, maxEntry.Value, maxEntry);
+            OnAmbientMonsterWaveSecondsChanged(logger, value, minEntry);
+            OnAmbientMonsterWaveSecondsChanged(logger, maxEntry.Value, maxEntry);
 
             float min = minEntry.Value;
             float max = maxEntry.Value;

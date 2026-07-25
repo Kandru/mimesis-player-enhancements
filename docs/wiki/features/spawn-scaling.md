@@ -2,6 +2,11 @@
 
 Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scales dungeon monster and trap spawn budgets by type, optionally with party size. Changes mid-scene wait until the scene ends; turning the feature off applies immediately. Budgets take effect on the next dungeon or room init from the scene snapshot.
 
+**Timing settings are separate:**
+- **Ambient jako & mimic waves** — `AmbientMonsterWaveMode` and its delay/interval keys
+- **Trap respawn** — `TrapRespawnMode` and its delay keys
+- **Boss/special bonus spawns** — `BonusEncounterDelay*` (when spawn multipliers add extra encounters after a kill)
+
 ## Configuration
 
 ### `EnableSpawnScaling`
@@ -142,69 +147,105 @@ Map-placed trap budget: unused alternate markers at load, plus bonus encounters 
 
 Default: `1.0`
 
-### `PeriodicSpawnWaitMode`
+### `TrapRespawnMode`
 
-Controls initial delay and interval between ambient jako and mimic waves. Spawn multipliers do not shorten wave intervals — timing is independent.
+Whether cleared **map traps** respawn at their marker. This is separate from ambient monster wave timing (`AmbientMonsterWaveMode`) and boss/special bonus spawns (`BonusEncounterDelay*`).
+
+| Value | Meaning |
+|---|---|
+| `Vanilla` | Use dungeon data defaults (traps typically do not respawn) |
+| `Fixed` | Use `TrapRespawnDelaySeconds` |
+| `Random` | Pick between min/max trap respawn delay |
+
+Default: `Vanilla`
+
+### `TrapRespawnDelaySeconds`
+
+Seconds after a trap is cleared before it can respawn at the marker. Used only when `TrapRespawnMode` is `Fixed`.
+
+Default: `5.0`
+
+### `TrapRespawnDelayMinSeconds`
+
+Shortest trap respawn delay. Used only when `TrapRespawnMode` is `Random`. Must be ≤ max.
+
+Default: `5.0`
+
+### `TrapRespawnDelayMaxSeconds`
+
+Longest trap respawn delay. Used only when `TrapRespawnMode` is `Random`. Must be ≥ min.
+
+Default: `30.0`
+
+### `TrapRespawnMinPlayerDistanceMeters`
+
+Fixed and Random modes: hold the trap respawn until no living players are within this radius (meters). Proximity is rechecked about once per second. Set `0` to spawn as soon as the delay ends.
+
+Default: `10.0`
+
+### `AmbientMonsterWaveMode`
+
+Controls timing for **periodic ambient jako (normal monster) and mimic spawn waves only**. Does not affect traps, bosses, specials, or other map-placed encounters. Spawn multipliers do not shorten wave intervals — timing is independent.
 
 | Value | Meaning |
 |---|---|
 | `Vanilla` | Use dungeon data defaults |
-| `Fixed` | Use the Fixed seconds keys below |
+| `Fixed` | Use the fixed ambient wave seconds keys below |
 | `Random` | Pick between min/max pairs for initial wait and interval |
 
 Default: `Vanilla`
 
-### `InitialPeriodicSpawnWaitSeconds`
+### `AmbientMonsterWaveInitialDelaySeconds`
 
-Seconds after dungeon start before the first ambient spawn wave. Used only when `PeriodicSpawnWaitMode` is `Fixed`.
+Seconds after dungeon start before the first ambient jako/mimic spawn wave. Used only when `AmbientMonsterWaveMode` is `Fixed`.
 
 Default: `60.0`
 
-### `InitialPeriodicSpawnWaitMinSeconds`
+### `AmbientMonsterWaveInitialDelayMinSeconds`
 
-Shortest initial wait before the first ambient spawn wave. Used only when `PeriodicSpawnWaitMode` is `Random`. Must be ≤ max.
+Shortest initial wait before the first ambient jako/mimic wave. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≤ max.
 
 Default: `30.0`
 
-### `InitialPeriodicSpawnWaitMaxSeconds`
+### `AmbientMonsterWaveInitialDelayMaxSeconds`
 
-Longest initial wait before the first ambient spawn wave. Used only when `PeriodicSpawnWaitMode` is `Random`. Must be ≥ min.
+Longest initial wait before the first ambient jako/mimic wave. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≥ min.
 
 Default: `90.0`
 
-### `PeriodicSpawnIntervalSeconds`
+### `AmbientMonsterWaveIntervalSeconds`
 
-Seconds between subsequent ambient jako and mimic spawn waves. Used only when `PeriodicSpawnWaitMode` is `Fixed`.
+Seconds between subsequent ambient jako/mimic spawn waves. Used only when `AmbientMonsterWaveMode` is `Fixed`.
 
 Default: `30.0`
 
-### `PeriodicSpawnIntervalMinSeconds`
+### `AmbientMonsterWaveIntervalMinSeconds`
 
-Shortest interval between ambient spawn waves. Used only when `PeriodicSpawnWaitMode` is `Random`. Must be ≤ max.
+Shortest interval between ambient jako/mimic waves. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≤ max.
 
 Default: `20.0`
 
-### `PeriodicSpawnIntervalMaxSeconds`
+### `AmbientMonsterWaveIntervalMaxSeconds`
 
-Longest interval between ambient spawn waves. Used only when `PeriodicSpawnWaitMode` is `Random`. Must be ≥ min.
+Longest interval between ambient jako/mimic waves. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≥ min.
 
 Default: `45.0`
 
-### `MapPlacedEncounterDelayMinSeconds`
+### `BonusEncounterDelayMinSeconds`
 
-Shortest wait (seconds) after a map-placed enemy or trap is cleared before the next bonus encounter can spawn at that marker. Actual delay is picked randomly between min and max.
+Shortest wait (seconds) after a scaled map-placed **boss or special** is cleared before the next bonus encounter can spawn. Not used for traps — traps use `TrapRespawnMode` instead. Actual delay is picked randomly between min and max.
 
 Default: `5.0`
 
-### `MapPlacedEncounterDelayMaxSeconds`
+### `BonusEncounterDelayMaxSeconds`
 
-Longest wait for that random delay. Must be ≥ `MapPlacedEncounterDelayMinSeconds`.
+Longest wait for that bonus spawn delay. Not used for traps. Must be ≥ `BonusEncounterDelayMinSeconds`.
 
 Default: `30.0`
 
-### `MapPlacedEncounterMinPlayerDistanceMeters`
+### `BonusEncounterMinPlayerDistanceMeters`
 
-After the delay, hold the spawn until no living players are within this radius (meters) of the marker. Set `0` to spawn as soon as the delay elapses.
+After the delay, hold boss/special bonus spawns until no living players are within this radius (meters) of the marker. Set `0` to spawn as soon as the delay elapses.
 
 Default: `10.0`
 

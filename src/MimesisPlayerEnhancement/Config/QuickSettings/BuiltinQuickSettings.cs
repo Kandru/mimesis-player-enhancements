@@ -161,7 +161,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.SetAllAutoScaleByPlayerCount(values, true);
             QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.9f);
-            QuickSettingsValuesBuilder.SetPeriodicSpawnWaitRandom(
+            QuickSettingsValuesBuilder.SetAmbientMonsterWaveRandom(
                 values,
                 initialMinSeconds: 10f,
                 initialMaxSeconds: 30f,

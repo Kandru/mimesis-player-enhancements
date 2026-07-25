@@ -1,36 +1,36 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
-    internal static class PeriodicSpawnWaitResolver
+    internal static class AmbientMonsterWaveResolver
     {
-        internal static PeriodicSpawnWaitMode ParseMode(string? value)
+        internal static AmbientMonsterWaveMode ParseMode(string? value)
         {
             if (string.Equals(value, "Fixed", StringComparison.OrdinalIgnoreCase))
             {
-                return PeriodicSpawnWaitMode.Fixed;
+                return AmbientMonsterWaveMode.Fixed;
             }
 
             if (string.Equals(value, "Random", StringComparison.OrdinalIgnoreCase))
             {
-                return PeriodicSpawnWaitMode.Random;
+                return AmbientMonsterWaveMode.Random;
             }
 
-            return PeriodicSpawnWaitMode.Vanilla;
+            return AmbientMonsterWaveMode.Vanilla;
         }
 
-        internal static PeriodicSpawnWaitMode GetMode(SpawnScalingSceneConfig config)
+        internal static AmbientMonsterWaveMode GetMode(SpawnScalingSceneConfig config)
         {
-            return ParseMode(config.PeriodicSpawnWaitMode);
+            return ParseMode(config.AmbientMonsterWaveMode);
         }
 
         internal static bool IsWaitModeActive(SpawnScalingSceneConfig config)
         {
-            return config.EnableSpawnScaling && GetMode(config) != PeriodicSpawnWaitMode.Vanilla;
+            return config.EnableSpawnScaling && GetMode(config) != AmbientMonsterWaveMode.Vanilla;
         }
 
         internal static float RollInitialWaitSeconds(SpawnScalingSceneConfig config)
         {
-            float min = config.InitialPeriodicSpawnWaitMinSeconds;
-            float max = config.InitialPeriodicSpawnWaitMaxSeconds;
+            float min = config.AmbientMonsterWaveInitialDelayMinSeconds;
+            float max = config.AmbientMonsterWaveInitialDelayMaxSeconds;
             return RollSeconds(min, max);
         }
 
@@ -38,8 +38,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         {
             return GetMode(config) switch
             {
-                PeriodicSpawnWaitMode.Fixed => config.InitialPeriodicSpawnWaitSeconds,
-                PeriodicSpawnWaitMode.Random => RollInitialWaitSeconds(config),
+                AmbientMonsterWaveMode.Fixed => config.AmbientMonsterWaveInitialDelaySeconds,
+                AmbientMonsterWaveMode.Random => RollInitialWaitSeconds(config),
                 _ => 0f,
             };
         }
@@ -53,16 +53,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         {
             return GetMode(config) switch
             {
-                PeriodicSpawnWaitMode.Fixed => SecondsToMs(config.PeriodicSpawnIntervalSeconds),
-                PeriodicSpawnWaitMode.Random => RollWaveIntervalMs(config),
+                AmbientMonsterWaveMode.Fixed => SecondsToMs(config.AmbientMonsterWaveIntervalSeconds),
+                AmbientMonsterWaveMode.Random => RollWaveIntervalMs(config),
                 _ => 0,
             };
         }
 
         private static float RollWaveIntervalSeconds(SpawnScalingSceneConfig config)
         {
-            float min = config.PeriodicSpawnIntervalMinSeconds;
-            float max = config.PeriodicSpawnIntervalMaxSeconds;
+            float min = config.AmbientMonsterWaveIntervalMinSeconds;
+            float max = config.AmbientMonsterWaveIntervalMaxSeconds;
             return RollSeconds(min, max);
         }
 

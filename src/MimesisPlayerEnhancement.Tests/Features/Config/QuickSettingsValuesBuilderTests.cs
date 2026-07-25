@@ -70,18 +70,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
-        public void SetPeriodicSpawnWaitRandom_sets_mode_and_bounds()
+        public void SetAmbientMonsterWaveRandom_sets_mode_and_bounds()
         {
             Dictionary<string, Dictionary<string, string>> map = QuickSettingsValuesBuilder.CreateMap();
 
-            QuickSettingsValuesBuilder.SetPeriodicSpawnWaitRandom(map, 1f, 2f, 3f, 4f);
+            QuickSettingsValuesBuilder.SetAmbientMonsterWaveRandom(map, 1f, 2f, 3f, 4f);
 
             Dictionary<string, string> spawn = map["MimesisPlayerEnhancement_SpawnScaling"];
-            Assert.Equal("Random", spawn["PeriodicSpawnWaitMode"]);
-            Assert.Equal("1.0", spawn["InitialPeriodicSpawnWaitMinSeconds"]);
-            Assert.Equal("2.0", spawn["InitialPeriodicSpawnWaitMaxSeconds"]);
-            Assert.Equal("3.0", spawn["PeriodicSpawnIntervalMinSeconds"]);
-            Assert.Equal("4.0", spawn["PeriodicSpawnIntervalMaxSeconds"]);
+            Assert.Equal("Random", spawn["AmbientMonsterWaveMode"]);
+            Assert.Equal("1.0", spawn["AmbientMonsterWaveInitialDelayMinSeconds"]);
+            Assert.Equal("2.0", spawn["AmbientMonsterWaveInitialDelayMaxSeconds"]);
+            Assert.Equal("3.0", spawn["AmbientMonsterWaveIntervalMinSeconds"]);
+            Assert.Equal("4.0", spawn["AmbientMonsterWaveIntervalMaxSeconds"]);
         }
     }
 }

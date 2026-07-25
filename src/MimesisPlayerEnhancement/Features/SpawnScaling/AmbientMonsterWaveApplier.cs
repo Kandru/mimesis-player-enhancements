@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal long LastMimicSpawnTime { get; }
     }
 
-    internal static class PeriodicSpawnWaitApplier
+    internal static class AmbientMonsterWaveApplier
     {
         internal static ManageSpawnDataSnapshot CaptureSnapshot(DungeonRoom room)
         {
@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static void ApplyInitialWait(DungeonRoom room, RoomSpawnScalingState state)
         {
             SpawnScalingSceneConfig config = state.HasSnapshot ? state.Snapshot : SceneScopedConfigGate.Spawn;
-            if (!config.EnableSpawnScaling || !PeriodicSpawnWaitResolver.IsWaitModeActive(config))
+            if (!config.EnableSpawnScaling || !AmbientMonsterWaveResolver.IsWaitModeActive(config))
             {
                 return;
             }
@@ -35,8 +35,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            float initialSeconds = PeriodicSpawnWaitResolver.ResolveInitialWaitSeconds(config);
-            int intervalMs = PeriodicSpawnWaitResolver.ResolveWaveIntervalMs(config);
+            float initialSeconds = AmbientMonsterWaveResolver.ResolveInitialWaitSeconds(config);
+            int intervalMs = AmbientMonsterWaveResolver.ResolveWaveIntervalMs(config);
             state.NextJakoWavePeriodMs = intervalMs;
             state.NextMimicWavePeriodMs = intervalMs;
 
@@ -48,8 +48,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnScalingFields.LastNormalMonsterSpawnTimeField.SetValue(room, lastJako);
             SpawnScalingFields.LastMimicSpawnTimeField.SetValue(room, lastMimic);
 
-            SpawnScalingLog.InfoPeriodicSpawnWaitApplied(
-                PeriodicSpawnWaitResolver.GetMode(config),
+            SpawnScalingLog.InfoAmbientMonsterWaveApplied(
+                AmbientMonsterWaveResolver.GetMode(config),
                 initialSeconds,
                 intervalMs / 1000f);
         }
@@ -62,7 +62,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             }
 
             SpawnScalingSceneConfig config = state.HasSnapshot ? state.Snapshot : SceneScopedConfigGate.Spawn;
-            if (!config.EnableSpawnScaling || !PeriodicSpawnWaitResolver.IsWaitModeActive(config))
+            if (!config.EnableSpawnScaling || !AmbientMonsterWaveResolver.IsWaitModeActive(config))
             {
                 return;
             }
@@ -72,7 +72,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            if (PeriodicSpawnWaitResolver.GetMode(config) != PeriodicSpawnWaitMode.Random)
+            if (AmbientMonsterWaveResolver.GetMode(config) != AmbientMonsterWaveMode.Random)
             {
                 return;
             }
@@ -82,15 +82,15 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (currentJako != snapshot.LastNormalMonsterSpawnTime)
             {
-                state.NextJakoWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs(config);
-                SpawnScalingLog.DebugPeriodicSpawnIntervalRerolled("jako", state.NextJakoWavePeriodMs / 1000f);
+                state.NextJakoWavePeriodMs = AmbientMonsterWaveResolver.RollWaveIntervalMs(config);
+                SpawnScalingLog.DebugAmbientMonsterWaveIntervalRerolled("jako", state.NextJakoWavePeriodMs / 1000f);
                 RefreshTimingOverridePeriod(state);
             }
 
             if (currentMimic != snapshot.LastMimicSpawnTime)
             {
-                state.NextMimicWavePeriodMs = PeriodicSpawnWaitResolver.RollWaveIntervalMs(config);
-                SpawnScalingLog.DebugPeriodicSpawnIntervalRerolled("mimic", state.NextMimicWavePeriodMs / 1000f);
+                state.NextMimicWavePeriodMs = AmbientMonsterWaveResolver.RollWaveIntervalMs(config);
+                SpawnScalingLog.DebugAmbientMonsterWaveIntervalRerolled("mimic", state.NextMimicWavePeriodMs / 1000f);
                 RefreshTimingOverridePeriod(state);
             }
         }

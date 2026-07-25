@@ -92,19 +92,19 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 $"master={masterId}, budgetsScaled={scalingApplied}, source={spawnSource}");
         }
 
-        internal static void InfoPeriodicSpawnWaitApplied(
-            PeriodicSpawnWaitMode mode,
+        internal static void InfoAmbientMonsterWaveApplied(
+            AmbientMonsterWaveMode mode,
             float initialSeconds,
             float intervalSeconds)
         {
             ModLog.Info(
                 Feature,
-                $"Periodic spawn wait applied — mode={mode}, initial={initialSeconds:0.#}s, interval={intervalSeconds:0.#}s");
+                $"Ambient monster wave timing applied — mode={mode}, initial={initialSeconds:0.#}s, interval={intervalSeconds:0.#}s");
         }
 
-        internal static void DebugPeriodicSpawnIntervalRerolled(string waveKind, float intervalSeconds)
+        internal static void DebugAmbientMonsterWaveIntervalRerolled(string waveKind, float intervalSeconds)
         {
-            ModLog.Debug(Feature, $"Periodic spawn interval re-rolled — wave={waveKind}, interval={intervalSeconds:0.#}s");
+            ModLog.Debug(Feature, $"Ambient monster wave interval re-rolled — wave={waveKind}, interval={intervalSeconds:0.#}s");
         }
     }
 }

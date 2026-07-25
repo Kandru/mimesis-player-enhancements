@@ -3,6 +3,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.20
 - feature: better inventory-handling (when adding/removing items)
 - improvement: waiting screens now properly show the players we are waiting for complete their game load cycle
+- fix: traps should respawn properly again / distinguish better between naming of settings
 - draft: expose new Mimic tuning options since game version 0.3.1
 - draft: DungeonTime to "slow down" or "speed up" the clock in order to simply stop at 12pm (currently more time would mean game would count up to 1am or longer depending on the amount of players and chosen settings)
 - draft: host sends configuration to modded clients (for feature-parity during party)

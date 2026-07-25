@@ -15,11 +15,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         public void ApplyToEntry_spawn_scaling_periodic_wait_fixed_mode_dependency()
         {
             WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");
-            WebDashboardConfigEntryDto entry = Entry("InitialPeriodicSpawnWaitSeconds");
+            WebDashboardConfigEntryDto entry = Entry("AmbientMonsterWaveInitialDelaySeconds");
 
             ModConfigEntryDependencies.ApplyToEntry(section, entry);
 
-            Assert.Equal("PeriodicSpawnWaitMode", entry.DependsOnKey);
+            Assert.Equal("AmbientMonsterWaveMode", entry.DependsOnKey);
             Assert.Equal("Fixed", entry.DependsOnValue);
         }
 
@@ -57,6 +57,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 
             Assert.Equal("RoundStartSoundMode", entry.DependsOnKey);
             Assert.Equal("Specific", entry.DependsOnValue);
+        }
+
+        [Fact]
+        public void ApplyToEntry_spawn_scaling_trap_respawn_min_distance_dependency()
+        {
+            WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");
+            WebDashboardConfigEntryDto entry = Entry("TrapRespawnMinPlayerDistanceMeters");
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Equal("TrapRespawnMode", entry.DependsOnKey);
+            Assert.Equal("!=Vanilla", entry.DependsOnValue);
         }
 
         [Theory]

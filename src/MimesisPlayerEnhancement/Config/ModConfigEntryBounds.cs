@@ -87,16 +87,20 @@ namespace MimesisPlayerEnhancement
                 "JakoSpawnMultiplier",
                 "SpecialSpawnMultiplier",
                 "TrapSpawnMultiplier",
+                "TrapRespawnDelaySeconds",
+                "TrapRespawnDelayMinSeconds",
+                "TrapRespawnDelayMaxSeconds",
+                "TrapRespawnMinPlayerDistanceMeters",
                 "OtherSpawnMultiplier",
-                "InitialPeriodicSpawnWaitSeconds",
-                "InitialPeriodicSpawnWaitMinSeconds",
-                "InitialPeriodicSpawnWaitMaxSeconds",
-                "PeriodicSpawnIntervalSeconds",
-                "PeriodicSpawnIntervalMinSeconds",
-                "PeriodicSpawnIntervalMaxSeconds",
-                "MapPlacedEncounterDelayMinSeconds",
-                "MapPlacedEncounterDelayMaxSeconds",
-                "MapPlacedEncounterMinPlayerDistanceMeters");
+                "AmbientMonsterWaveInitialDelaySeconds",
+                "AmbientMonsterWaveInitialDelayMinSeconds",
+                "AmbientMonsterWaveInitialDelayMaxSeconds",
+                "AmbientMonsterWaveIntervalSeconds",
+                "AmbientMonsterWaveIntervalMinSeconds",
+                "AmbientMonsterWaveIntervalMaxSeconds",
+                "BonusEncounterDelayMinSeconds",
+                "BonusEncounterDelayMaxSeconds",
+                "BonusEncounterMinPlayerDistanceMeters");
 
             Int(JoinAnytime, "JoinConnectionGraceSeconds", 1);
 

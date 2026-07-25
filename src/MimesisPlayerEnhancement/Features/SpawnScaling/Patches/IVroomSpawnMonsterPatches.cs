@@ -28,7 +28,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
                 return true;
             }
 
-            if (MapPlacedEncounterProximity.ShouldBlockBonusEncounterSpawn(dungeonRoom, spawnData))
+            if (MapPlacedEncounterProximity.ShouldBlockTrapRespawn(dungeonRoom, spawnData)
+                || MapPlacedEncounterProximity.ShouldBlockBonusEncounterSpawn(dungeonRoom, spawnData))
             {
                 __result = false;
                 return false;

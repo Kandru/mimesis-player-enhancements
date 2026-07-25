@@ -958,7 +958,9 @@
       "_section": "Spawn Scaling",
       "_description": "Scale monster and trap spawn budgets by type or player count. Host only.",
       "_groups": {
-        "periodicSpawnWait": "Spawn wave timing",
+        "ambientMonsterWaveTiming": "Ambient jako & mimic waves",
+        "trapRespawn": "Trap respawn",
+        "bonusEncounterTiming": "Boss & special bonus spawns",
         "AutoScaleMimicSpawnsByPlayerCount": "Mimic spawn scaling",
         "AutoScaleBossSpawnsByPlayerCount": "Boss spawn scaling",
         "AutoScaleJakoSpawnsByPlayerCount": "Jako spawn scaling",
@@ -1012,52 +1014,77 @@
       },
       "TrapSpawnMultiplier": {
         "title": "Trap Spawn Multiplier",
-        "description": "Map-placed traps and bonus encounters after trigger/kill (1 = vanilla, 2 = double)."
+        "description": "Map-placed traps: unused alternate markers at load and bonus encounters after trigger/kill (1 = vanilla, 2 = double)."
       },
-      "PeriodicSpawnWaitMode": {
-        "title": "Spawn Wave Timing",
-        "description": "Delay before the first monster wave and time between waves. Vanilla uses dungeon data; Fixed and Random use settings below.",
+      "TrapRespawnMode": {
+        "title": "Trap Respawn Mode",
+        "description": "Whether cleared map traps respawn at their marker. Separate from ambient monster waves and boss/special bonus spawns. Vanilla uses dungeon data; Fixed and Random use the trap delay settings below.",
         "options": {
           "Vanilla": "Vanilla",
           "Fixed": "Fixed seconds",
           "Random": "Random seconds"
         }
       },
-      "InitialPeriodicSpawnWaitSeconds": {
-        "title": "First Wave Delay (seconds)",
-        "description": "Fixed mode: seconds after dungeon start before the first spawn wave."
+      "TrapRespawnDelaySeconds": {
+        "title": "Trap Respawn Delay (seconds)",
+        "description": "Fixed mode: seconds after a trap is cleared before it can respawn at the marker."
       },
-      "InitialPeriodicSpawnWaitMinSeconds": {
-        "title": "First Wave Delay Min (seconds)",
-        "description": "Random mode: shortest wait before the first spawn wave."
+      "TrapRespawnDelayMinSeconds": {
+        "title": "Trap Respawn Delay Min (seconds)",
+        "description": "Random mode: shortest wait after a trap is cleared before it can respawn."
       },
-      "InitialPeriodicSpawnWaitMaxSeconds": {
-        "title": "First Wave Delay Max (seconds)",
-        "description": "Random mode: longest wait before the first spawn wave."
+      "TrapRespawnDelayMaxSeconds": {
+        "title": "Trap Respawn Delay Max (seconds)",
+        "description": "Random mode: longest wait after a trap is cleared before it can respawn."
       },
-      "PeriodicSpawnIntervalSeconds": {
-        "title": "Wave Interval (seconds)",
-        "description": "Fixed mode: seconds between spawn waves."
+      "TrapRespawnMinPlayerDistanceMeters": {
+        "title": "Trap Respawn Min Distance (m)",
+        "description": "Fixed and Random modes: hold the trap respawn until no players are within this radius. Checked about once per second. 0 = spawn as soon as the delay ends."
       },
-      "PeriodicSpawnIntervalMinSeconds": {
-        "title": "Wave Interval Min (seconds)",
-        "description": "Random mode: shortest time between spawn waves."
+      "AmbientMonsterWaveMode": {
+        "title": "Ambient Wave Timing Mode",
+        "description": "Timing for periodic ambient jako (normal monster) and mimic spawn waves only. Does not affect traps, bosses, specials, or other map-placed encounters. Vanilla uses dungeon data; Fixed and Random use the ambient wave settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed seconds",
+          "Random": "Random seconds"
+        }
       },
-      "PeriodicSpawnIntervalMaxSeconds": {
-        "title": "Wave Interval Max (seconds)",
-        "description": "Random mode: longest time between spawn waves."
+      "AmbientMonsterWaveInitialDelaySeconds": {
+        "title": "First Ambient Wave Delay (seconds)",
+        "description": "Fixed mode: seconds after dungeon start before the first ambient jako/mimic spawn wave."
       },
-      "MapPlacedEncounterDelayMinSeconds": {
-        "title": "Encounter Delay Min (seconds)",
-        "description": "Shortest wait after clearing a map marker before a bonus spawn can appear."
+      "AmbientMonsterWaveInitialDelayMinSeconds": {
+        "title": "First Ambient Wave Delay Min (seconds)",
+        "description": "Random mode: shortest wait before the first ambient jako/mimic spawn wave."
       },
-      "MapPlacedEncounterDelayMaxSeconds": {
-        "title": "Encounter Delay Max (seconds)",
-        "description": "Longest wait for that bonus spawn delay."
+      "AmbientMonsterWaveInitialDelayMaxSeconds": {
+        "title": "First Ambient Wave Delay Max (seconds)",
+        "description": "Random mode: longest wait before the first ambient jako/mimic spawn wave."
       },
-      "MapPlacedEncounterMinPlayerDistanceMeters": {
-        "title": "Encounter Min Distance (m)",
-        "description": "Hold the spawn until no players are within this radius. 0 = spawn as soon as the delay ends."
+      "AmbientMonsterWaveIntervalSeconds": {
+        "title": "Ambient Wave Interval (seconds)",
+        "description": "Fixed mode: seconds between subsequent ambient jako/mimic spawn waves."
+      },
+      "AmbientMonsterWaveIntervalMinSeconds": {
+        "title": "Ambient Wave Interval Min (seconds)",
+        "description": "Random mode: shortest time between ambient jako/mimic spawn waves."
+      },
+      "AmbientMonsterWaveIntervalMaxSeconds": {
+        "title": "Ambient Wave Interval Max (seconds)",
+        "description": "Random mode: longest time between ambient jako/mimic spawn waves."
+      },
+      "BonusEncounterDelayMinSeconds": {
+        "title": "Bonus Encounter Delay Min (seconds)",
+        "description": "Shortest wait after clearing a scaled map-placed boss or special before a bonus spawn can appear. Not used for traps."
+      },
+      "BonusEncounterDelayMaxSeconds": {
+        "title": "Bonus Encounter Delay Max (seconds)",
+        "description": "Longest wait for that bonus spawn delay. Not used for traps."
+      },
+      "BonusEncounterMinPlayerDistanceMeters": {
+        "title": "Bonus Encounter Min Distance (m)",
+        "description": "Hold boss/special bonus spawns until no players are within this radius. 0 = spawn as soon as the delay ends. Not used for traps."
       },
       "AutoScaleOtherSpawnsByPlayerCount": {
         "title": "Scale Other Spawns by Players",

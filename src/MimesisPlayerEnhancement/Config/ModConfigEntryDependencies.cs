@@ -224,15 +224,25 @@ namespace MimesisPlayerEnhancement
 
             switch (key)
             {
-                case "InitialPeriodicSpawnWaitSeconds":
-                case "PeriodicSpawnIntervalSeconds":
-                    dependency = new ModConfigEntryDependency("PeriodicSpawnWaitMode", "Fixed");
+                case "AmbientMonsterWaveInitialDelaySeconds":
+                case "AmbientMonsterWaveIntervalSeconds":
+                    dependency = new ModConfigEntryDependency("AmbientMonsterWaveMode", "Fixed");
                     return true;
-                case "InitialPeriodicSpawnWaitMinSeconds":
-                case "InitialPeriodicSpawnWaitMaxSeconds":
-                case "PeriodicSpawnIntervalMinSeconds":
-                case "PeriodicSpawnIntervalMaxSeconds":
-                    dependency = new ModConfigEntryDependency("PeriodicSpawnWaitMode", "Random");
+                case "AmbientMonsterWaveInitialDelayMinSeconds":
+                case "AmbientMonsterWaveInitialDelayMaxSeconds":
+                case "AmbientMonsterWaveIntervalMinSeconds":
+                case "AmbientMonsterWaveIntervalMaxSeconds":
+                    dependency = new ModConfigEntryDependency("AmbientMonsterWaveMode", "Random");
+                    return true;
+                case "TrapRespawnDelaySeconds":
+                    dependency = new ModConfigEntryDependency("TrapRespawnMode", "Fixed");
+                    return true;
+                case "TrapRespawnDelayMinSeconds":
+                case "TrapRespawnDelayMaxSeconds":
+                    dependency = new ModConfigEntryDependency("TrapRespawnMode", "Random");
+                    return true;
+                case "TrapRespawnMinPlayerDistanceMeters":
+                    dependency = new ModConfigEntryDependency("TrapRespawnMode", "!=Vanilla");
                     return true;
                 default:
                     return false;

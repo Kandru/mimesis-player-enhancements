@@ -523,11 +523,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         {
             if (RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? spawnState) && spawnState.HasSnapshot)
             {
-                return (spawnState.Snapshot.MapPlacedEncounterDelayMinSeconds, spawnState.Snapshot.MapPlacedEncounterDelayMaxSeconds);
+                return (spawnState.Snapshot.BonusEncounterDelayMinSeconds, spawnState.Snapshot.BonusEncounterDelayMaxSeconds);
             }
 
             SpawnScalingSceneConfig spawn = SceneScopedConfigGate.Spawn;
-            return (spawn.MapPlacedEncounterDelayMinSeconds, spawn.MapPlacedEncounterDelayMaxSeconds);
+            return (spawn.BonusEncounterDelayMinSeconds, spawn.BonusEncounterDelayMaxSeconds);
         }
 
         private static float ResolveMinPlayerDistanceMeters(DungeonRoom? room)
@@ -536,10 +536,10 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 && RoomSpawnScalingRegistry.TryGet(room, out RoomSpawnScalingState? spawnState)
                 && spawnState.HasSnapshot)
             {
-                return spawnState.Snapshot.MapPlacedEncounterMinPlayerDistanceMeters;
+                return spawnState.Snapshot.BonusEncounterMinPlayerDistanceMeters;
             }
 
-            return SceneScopedConfigGate.Spawn.MapPlacedEncounterMinPlayerDistanceMeters;
+            return SceneScopedConfigGate.Spawn.BonusEncounterMinPlayerDistanceMeters;
         }
 
         private sealed class RoomState : ISpawnDataRoomIndex

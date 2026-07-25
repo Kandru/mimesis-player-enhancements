@@ -52,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
             try
             {
                 _began = true;
-                _snapshot = PeriodicSpawnWaitApplier.CaptureSnapshot(__instance);
+                _snapshot = AmbientMonsterWaveApplier.CaptureSnapshot(__instance);
                 SpawnTimingOverrideApplier.BeginManageSpawnData(__instance);
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
             {
                 if (_snapshot != null)
                 {
-                    PeriodicSpawnWaitApplier.OnManageSpawnDataPostfix(__instance, _snapshot.Value);
+                    AmbientMonsterWaveApplier.OnManageSpawnDataPostfix(__instance, _snapshot.Value);
                 }
             }
             catch (Exception ex)

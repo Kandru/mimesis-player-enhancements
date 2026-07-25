@@ -30,9 +30,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         }
 
         [Theory]
-        [InlineData("MapPlacedEncounterDelayMinSeconds")]
-        [InlineData("MapPlacedEncounterDelayMaxSeconds")]
-        [InlineData("MapPlacedEncounterMinPlayerDistanceMeters")]
+        [InlineData("BonusEncounterDelayMinSeconds")]
+        [InlineData("BonusEncounterDelayMaxSeconds")]
+        [InlineData("BonusEncounterMinPlayerDistanceMeters")]
+        [InlineData("TrapRespawnDelaySeconds")]
+        [InlineData("TrapRespawnDelayMinSeconds")]
+        [InlineData("TrapRespawnDelayMaxSeconds")]
+        [InlineData("TrapRespawnMinPlayerDistanceMeters")]
         public void Map_placed_encounter_entries_have_minimum_zero(string entryId)
         {
             Assert.True(ModConfigEntryBounds.TryGet(SectionId, entryId, out ModConfigEntryBound bound));
@@ -41,12 +45,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         }
 
         [Theory]
-        [InlineData("InitialPeriodicSpawnWaitSeconds")]
-        [InlineData("InitialPeriodicSpawnWaitMinSeconds")]
-        [InlineData("InitialPeriodicSpawnWaitMaxSeconds")]
-        [InlineData("PeriodicSpawnIntervalSeconds")]
-        [InlineData("PeriodicSpawnIntervalMinSeconds")]
-        [InlineData("PeriodicSpawnIntervalMaxSeconds")]
+        [InlineData("AmbientMonsterWaveInitialDelaySeconds")]
+        [InlineData("AmbientMonsterWaveInitialDelayMinSeconds")]
+        [InlineData("AmbientMonsterWaveInitialDelayMaxSeconds")]
+        [InlineData("AmbientMonsterWaveIntervalSeconds")]
+        [InlineData("AmbientMonsterWaveIntervalMinSeconds")]
+        [InlineData("AmbientMonsterWaveIntervalMaxSeconds")]
         public void Periodic_spawn_wait_entries_have_minimum_zero(string entryId)
         {
             Assert.True(ModConfigEntryBounds.TryGet(SectionId, entryId, out ModConfigEntryBound bound));

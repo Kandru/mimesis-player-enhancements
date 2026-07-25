@@ -82,18 +82,23 @@ namespace MimesisPlayerEnhancement.Util
             float specialSpawnMultiplier,
             bool autoScaleTrapSpawnsByPlayerCount,
             float trapSpawnMultiplier,
+            string trapRespawnMode,
+            float trapRespawnDelaySeconds,
+            float trapRespawnDelayMinSeconds,
+            float trapRespawnDelayMaxSeconds,
+            float trapRespawnMinPlayerDistanceMeters,
             bool autoScaleOtherSpawnsByPlayerCount,
             float otherSpawnMultiplier,
-            string periodicSpawnWaitMode,
-            float initialPeriodicSpawnWaitSeconds,
-            float initialPeriodicSpawnWaitMinSeconds,
-            float initialPeriodicSpawnWaitMaxSeconds,
-            float periodicSpawnIntervalSeconds,
-            float periodicSpawnIntervalMinSeconds,
-            float periodicSpawnIntervalMaxSeconds,
-            float mapPlacedEncounterDelayMinSeconds,
-            float mapPlacedEncounterDelayMaxSeconds,
-            float mapPlacedEncounterMinPlayerDistanceMeters)
+            string ambientMonsterWaveMode,
+            float ambientMonsterWaveInitialDelaySeconds,
+            float ambientMonsterWaveInitialDelayMinSeconds,
+            float ambientMonsterWaveInitialDelayMaxSeconds,
+            float ambientMonsterWaveIntervalSeconds,
+            float ambientMonsterWaveIntervalMinSeconds,
+            float ambientMonsterWaveIntervalMaxSeconds,
+            float bonusEncounterDelayMinSeconds,
+            float bonusEncounterDelayMaxSeconds,
+            float bonusEncounterMinPlayerDistanceMeters)
         {
             EnableSpawnScaling = enableSpawnScaling;
             SpawnScalingPlayerCountScaleRate = spawnScalingPlayerCountScaleRate;
@@ -107,18 +112,23 @@ namespace MimesisPlayerEnhancement.Util
             SpecialSpawnMultiplier = specialSpawnMultiplier;
             AutoScaleTrapSpawnsByPlayerCount = autoScaleTrapSpawnsByPlayerCount;
             TrapSpawnMultiplier = trapSpawnMultiplier;
+            TrapRespawnMode = trapRespawnMode;
+            TrapRespawnDelaySeconds = trapRespawnDelaySeconds;
+            TrapRespawnDelayMinSeconds = trapRespawnDelayMinSeconds;
+            TrapRespawnDelayMaxSeconds = trapRespawnDelayMaxSeconds;
+            TrapRespawnMinPlayerDistanceMeters = trapRespawnMinPlayerDistanceMeters;
             AutoScaleOtherSpawnsByPlayerCount = autoScaleOtherSpawnsByPlayerCount;
             OtherSpawnMultiplier = otherSpawnMultiplier;
-            PeriodicSpawnWaitMode = periodicSpawnWaitMode;
-            InitialPeriodicSpawnWaitSeconds = initialPeriodicSpawnWaitSeconds;
-            InitialPeriodicSpawnWaitMinSeconds = initialPeriodicSpawnWaitMinSeconds;
-            InitialPeriodicSpawnWaitMaxSeconds = initialPeriodicSpawnWaitMaxSeconds;
-            PeriodicSpawnIntervalSeconds = periodicSpawnIntervalSeconds;
-            PeriodicSpawnIntervalMinSeconds = periodicSpawnIntervalMinSeconds;
-            PeriodicSpawnIntervalMaxSeconds = periodicSpawnIntervalMaxSeconds;
-            MapPlacedEncounterDelayMinSeconds = mapPlacedEncounterDelayMinSeconds;
-            MapPlacedEncounterDelayMaxSeconds = mapPlacedEncounterDelayMaxSeconds;
-            MapPlacedEncounterMinPlayerDistanceMeters = mapPlacedEncounterMinPlayerDistanceMeters;
+            AmbientMonsterWaveMode = ambientMonsterWaveMode;
+            AmbientMonsterWaveInitialDelaySeconds = ambientMonsterWaveInitialDelaySeconds;
+            AmbientMonsterWaveInitialDelayMinSeconds = ambientMonsterWaveInitialDelayMinSeconds;
+            AmbientMonsterWaveInitialDelayMaxSeconds = ambientMonsterWaveInitialDelayMaxSeconds;
+            AmbientMonsterWaveIntervalSeconds = ambientMonsterWaveIntervalSeconds;
+            AmbientMonsterWaveIntervalMinSeconds = ambientMonsterWaveIntervalMinSeconds;
+            AmbientMonsterWaveIntervalMaxSeconds = ambientMonsterWaveIntervalMaxSeconds;
+            BonusEncounterDelayMinSeconds = bonusEncounterDelayMinSeconds;
+            BonusEncounterDelayMaxSeconds = bonusEncounterDelayMaxSeconds;
+            BonusEncounterMinPlayerDistanceMeters = bonusEncounterMinPlayerDistanceMeters;
         }
 
         internal bool EnableSpawnScaling { get; }
@@ -145,29 +155,39 @@ namespace MimesisPlayerEnhancement.Util
 
         internal float TrapSpawnMultiplier { get; }
 
+        internal string TrapRespawnMode { get; }
+
+        internal float TrapRespawnDelaySeconds { get; }
+
+        internal float TrapRespawnDelayMinSeconds { get; }
+
+        internal float TrapRespawnDelayMaxSeconds { get; }
+
+        internal float TrapRespawnMinPlayerDistanceMeters { get; }
+
         internal bool AutoScaleOtherSpawnsByPlayerCount { get; }
 
         internal float OtherSpawnMultiplier { get; }
 
-        internal string PeriodicSpawnWaitMode { get; }
+        internal string AmbientMonsterWaveMode { get; }
 
-        internal float InitialPeriodicSpawnWaitSeconds { get; }
+        internal float AmbientMonsterWaveInitialDelaySeconds { get; }
 
-        internal float InitialPeriodicSpawnWaitMinSeconds { get; }
+        internal float AmbientMonsterWaveInitialDelayMinSeconds { get; }
 
-        internal float InitialPeriodicSpawnWaitMaxSeconds { get; }
+        internal float AmbientMonsterWaveInitialDelayMaxSeconds { get; }
 
-        internal float PeriodicSpawnIntervalSeconds { get; }
+        internal float AmbientMonsterWaveIntervalSeconds { get; }
 
-        internal float PeriodicSpawnIntervalMinSeconds { get; }
+        internal float AmbientMonsterWaveIntervalMinSeconds { get; }
 
-        internal float PeriodicSpawnIntervalMaxSeconds { get; }
+        internal float AmbientMonsterWaveIntervalMaxSeconds { get; }
 
-        internal float MapPlacedEncounterDelayMinSeconds { get; }
+        internal float BonusEncounterDelayMinSeconds { get; }
 
-        internal float MapPlacedEncounterDelayMaxSeconds { get; }
+        internal float BonusEncounterDelayMaxSeconds { get; }
 
-        internal float MapPlacedEncounterMinPlayerDistanceMeters { get; }
+        internal float BonusEncounterMinPlayerDistanceMeters { get; }
 
         internal static SpawnScalingSceneConfig CaptureFromModConfig()
         {
@@ -184,18 +204,23 @@ namespace MimesisPlayerEnhancement.Util
                 ModConfig.SpecialSpawnMultiplier.Value,
                 ModConfig.AutoScaleTrapSpawnsByPlayerCount.Value,
                 ModConfig.TrapSpawnMultiplier.Value,
+                ModConfig.TrapRespawnMode.Value ?? "",
+                ModConfig.TrapRespawnDelaySeconds.Value,
+                ModConfig.TrapRespawnDelayMinSeconds.Value,
+                ModConfig.TrapRespawnDelayMaxSeconds.Value,
+                ModConfig.TrapRespawnMinPlayerDistanceMeters.Value,
                 ModConfig.AutoScaleOtherSpawnsByPlayerCount.Value,
                 ModConfig.OtherSpawnMultiplier.Value,
-                ModConfig.PeriodicSpawnWaitMode.Value ?? "",
-                ModConfig.InitialPeriodicSpawnWaitSeconds.Value,
-                ModConfig.InitialPeriodicSpawnWaitMinSeconds.Value,
-                ModConfig.InitialPeriodicSpawnWaitMaxSeconds.Value,
-                ModConfig.PeriodicSpawnIntervalSeconds.Value,
-                ModConfig.PeriodicSpawnIntervalMinSeconds.Value,
-                ModConfig.PeriodicSpawnIntervalMaxSeconds.Value,
-                ModConfig.MapPlacedEncounterDelayMinSeconds.Value,
-                ModConfig.MapPlacedEncounterDelayMaxSeconds.Value,
-                ModConfig.MapPlacedEncounterMinPlayerDistanceMeters.Value);
+                ModConfig.AmbientMonsterWaveMode.Value ?? "",
+                ModConfig.AmbientMonsterWaveInitialDelaySeconds.Value,
+                ModConfig.AmbientMonsterWaveInitialDelayMinSeconds.Value,
+                ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds.Value,
+                ModConfig.AmbientMonsterWaveIntervalSeconds.Value,
+                ModConfig.AmbientMonsterWaveIntervalMinSeconds.Value,
+                ModConfig.AmbientMonsterWaveIntervalMaxSeconds.Value,
+                ModConfig.BonusEncounterDelayMinSeconds.Value,
+                ModConfig.BonusEncounterDelayMaxSeconds.Value,
+                ModConfig.BonusEncounterMinPlayerDistanceMeters.Value);
         }
     }
 

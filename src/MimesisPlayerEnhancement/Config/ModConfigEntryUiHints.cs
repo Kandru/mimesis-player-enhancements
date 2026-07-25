@@ -24,7 +24,8 @@ namespace MimesisPlayerEnhancement
                 [(WeatherSectionId, "WeatherMode")] = ["Vanilla", "Fixed", "Cycle"],
                 [(WeatherSectionId, "FixedWeatherPreset")] = ["Sunny", "Rain", "HeavyRain", "Squall"],
                 [(WeatherSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
-                [(SpawnScalingSectionId, "PeriodicSpawnWaitMode")] = ["Vanilla", "Fixed", "Random"],
+                [(SpawnScalingSectionId, "AmbientMonsterWaveMode")] = ["Vanilla", "Fixed", "Random"],
+                [(SpawnScalingSectionId, "TrapRespawnMode")] = ["Vanilla", "Fixed", "Random"],
                 [(MimicTuningSectionId, "MimicVoiceTuningMode")] = ["Vanilla", "Custom"],
                 [(MimicTuningSectionId, "PostReplyIntervalMode")] = ["Vanilla", "Fixed", "Random"],
                 [(MimicTuningSectionId, "HearOwnVoiceFromMimic")] = ["Vanilla", "AlwaysHear", "OnlyWhenSingleplayer"],
@@ -258,13 +259,21 @@ namespace MimesisPlayerEnhancement
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)
                 {
-                    ["PeriodicSpawnWaitMode"] = "periodicSpawnWait",
-                    ["InitialPeriodicSpawnWaitSeconds"] = "periodicSpawnWait",
-                    ["InitialPeriodicSpawnWaitMinSeconds"] = "periodicSpawnWait",
-                    ["InitialPeriodicSpawnWaitMaxSeconds"] = "periodicSpawnWait",
-                    ["PeriodicSpawnIntervalSeconds"] = "periodicSpawnWait",
-                    ["PeriodicSpawnIntervalMinSeconds"] = "periodicSpawnWait",
-                    ["PeriodicSpawnIntervalMaxSeconds"] = "periodicSpawnWait",
+                    ["AmbientMonsterWaveMode"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveInitialDelaySeconds"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveInitialDelayMinSeconds"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveInitialDelayMaxSeconds"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveIntervalSeconds"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveIntervalMinSeconds"] = "ambientMonsterWaveTiming",
+                    ["AmbientMonsterWaveIntervalMaxSeconds"] = "ambientMonsterWaveTiming",
+                    ["TrapRespawnMode"] = "trapRespawn",
+                    ["TrapRespawnDelaySeconds"] = "trapRespawn",
+                    ["TrapRespawnDelayMinSeconds"] = "trapRespawn",
+                    ["TrapRespawnDelayMaxSeconds"] = "trapRespawn",
+                    ["TrapRespawnMinPlayerDistanceMeters"] = "trapRespawn",
+                    ["BonusEncounterDelayMinSeconds"] = "bonusEncounterTiming",
+                    ["BonusEncounterDelayMaxSeconds"] = "bonusEncounterTiming",
+                    ["BonusEncounterMinPlayerDistanceMeters"] = "bonusEncounterTiming",
                 };
             }
 

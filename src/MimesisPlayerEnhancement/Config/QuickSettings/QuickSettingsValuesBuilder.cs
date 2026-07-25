@@ -111,7 +111,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "OtherSpawnMultiplier", formatted);
         }
 
-        internal static void SetPeriodicSpawnWaitRandom(
+        internal static void SetAmbientMonsterWaveRandom(
             Dictionary<string, Dictionary<string, string>> map,
             float initialMinSeconds,
             float initialMaxSeconds,
@@ -119,11 +119,11 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             float intervalMaxSeconds)
         {
             const string sectionId = "MimesisPlayerEnhancement_SpawnScaling";
-            Set(map, sectionId, "PeriodicSpawnWaitMode", "Random");
-            Set(map, sectionId, "InitialPeriodicSpawnWaitMinSeconds", ModConfigFloatHelper.Format(initialMinSeconds));
-            Set(map, sectionId, "InitialPeriodicSpawnWaitMaxSeconds", ModConfigFloatHelper.Format(initialMaxSeconds));
-            Set(map, sectionId, "PeriodicSpawnIntervalMinSeconds", ModConfigFloatHelper.Format(intervalMinSeconds));
-            Set(map, sectionId, "PeriodicSpawnIntervalMaxSeconds", ModConfigFloatHelper.Format(intervalMaxSeconds));
+            Set(map, sectionId, "AmbientMonsterWaveMode", "Random");
+            Set(map, sectionId, "AmbientMonsterWaveInitialDelayMinSeconds", ModConfigFloatHelper.Format(initialMinSeconds));
+            Set(map, sectionId, "AmbientMonsterWaveInitialDelayMaxSeconds", ModConfigFloatHelper.Format(initialMaxSeconds));
+            Set(map, sectionId, "AmbientMonsterWaveIntervalMinSeconds", ModConfigFloatHelper.Format(intervalMinSeconds));
+            Set(map, sectionId, "AmbientMonsterWaveIntervalMaxSeconds", ModConfigFloatHelper.Format(intervalMaxSeconds));
         }
 
         internal static void SetLootMultipliers(
