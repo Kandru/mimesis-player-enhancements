@@ -7,9 +7,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
     internal static class BlockContaAddMutableStatPatch
     {
         [HarmonyPrefix]
-        private static bool Prefix(StatManager __instance, MutableStatType type, ref bool __result)
+        private static bool Prefix(StatManager __instance, MutableStatType type, long delta, ref bool __result)
         {
-            if (!GodModeContaFreeze.ShouldBlock(__instance, type))
+            if (!GodModeContaFreeze.ShouldBlock(__instance, type, __instance.GetCurrentConta() + delta))
             {
                 return true;
             }
@@ -24,15 +24,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
     internal static class BlockContaSetMutableStatPatch
     {
         [HarmonyPrefix]
-        private static bool Prefix(StatManager __instance, MutableStatType type) =>
-            !GodModeContaFreeze.ShouldBlock(__instance, type);
+        private static bool Prefix(StatManager __instance, MutableStatType type, long value) =>
+            !GodModeContaFreeze.ShouldBlock(__instance, type, value);
     }
 
     internal static class GodModeContaFreeze
     {
         private static readonly FieldInfo? SelfField = AccessTools.Field(typeof(StatManager), "_self");
 
-        internal static bool ShouldBlock(StatManager instance, MutableStatType type)
+        internal static bool IsContaIncrease(long current, long proposed) =>
+            proposed > current;
+
+        internal static bool ShouldBlock(StatManager instance, MutableStatType type, long proposedConta)
         {
             if (type != MutableStatType.Conta
                 || !WebDashboardHostCheatsRuntime.HasActiveGodMode
@@ -41,8 +44,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
                 return false;
             }
 
-            return SelfField.GetValue(instance) is VCreature creature
-                && WebDashboardHostCheatsRuntime.ShouldFreezeConta(creature);
+            if (SelfField.GetValue(instance) is not VCreature creature
+                || !WebDashboardHostCheatsRuntime.ShouldFreezeConta(creature))
+            {
+                return false;
+            }
+
+            return IsContaIncrease(instance.GetCurrentConta(), proposedConta);
         }
     }
 }
