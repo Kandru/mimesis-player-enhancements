@@ -11,7 +11,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
             ulong localSteamId = LocalPlayerHelper.TryGetLocalSteamId();
-            Dictionary<ulong, string>? nameCache = TryGetSteamNameCache();
             WebDashboardLiveRoster resolvedRoster = roster ?? WebDashboardLiveRoster.Capture();
 
             foreach (WebDashboardLivePlayer entry in resolvedRoster.Enumerate())
@@ -24,11 +23,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     sessionManager,
                     context,
                     localSteamId,
-                    nameCache,
                     resolvedRoster);
                 if (dto != null)
                 {
                     playersBySteam[dto.SteamId] = dto;
+                }
+            }
+
+            // Connecting / late-join players may have a SessionContext before a ProtoActor exists
+            // on the host scene (e.g. AwaitingClient after maintenance release).
+            if (WebDashboardGameState.IsHost() && sessionManager != null)
+            {
+                foreach (SessionContext context in WebDashboardSessionAccess.EnumerateSessionContexts(sessionManager))
+                {
+                    ulong steamId;
+                    try
+                    {
+                        steamId = context.SteamID;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (steamId == 0 || playersBySteam.ContainsKey(steamId))
+                    {
+                        continue;
+                    }
+
+                    WebDashboardPlayerDto? fromSession = BuildFallbackPlayerDto(
+                        steamId,
+                        sessionManager,
+                        localSteamId,
+                        resolvedRoster);
+                    if (fromSession != null)
+                    {
+                        playersBySteam[steamId] = fromSession;
+                    }
                 }
             }
 
@@ -45,7 +76,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         steamId,
                         sessionManager,
                         localSteamId,
-                        nameCache,
                         resolvedRoster);
                     if (fallback != null)
                     {
@@ -60,7 +90,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     localSteamId,
                     sessionManager,
                     localSteamId,
-                    nameCache,
                     resolvedRoster,
                     forceHost: true);
                 if (hostFallback != null)
@@ -82,7 +111,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         bannedSteamId,
                         sessionManager,
                         localSteamId,
-                        nameCache,
                         resolvedRoster);
                     if (bannedOffline != null)
                     {
@@ -170,7 +198,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     null,
                     steamId,
                     0,
-                    TryGetSteamNameCache(),
                     WebDashboardLiveRoster.Capture(),
                     saveSlotId);
         }
@@ -179,7 +206,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             ulong steamId,
             SessionManager? sessionManager,
             ulong localSteamId,
-            Dictionary<ulong, string>? nameCache,
             WebDashboardLiveRoster roster,
             bool forceHost = false)
         {
@@ -217,7 +243,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 SteamId = steamId,
                 PlayerUid = playerUid,
-                DisplayName = ResolveDisplayNameCore(matchedContext, steamId, playerUid, nameCache, roster),
+                DisplayName = ResolveDisplayNameCore(matchedContext, steamId, playerUid, roster),
                 IsHost = isHost,
                 IsLocal = isLocal,
                 IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -309,7 +335,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             SessionManager? sessionManager,
             SessionContext? context,
             ulong localSteamId,
-            Dictionary<ulong, string>? nameCache,
             WebDashboardLiveRoster roster)
         {
             try
@@ -336,7 +361,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     SteamId = steamId,
                     PlayerUid = playerUid,
-                    DisplayName = ResolveDisplayNameCore(context, steamId, playerUid, nameCache, roster),
+                    DisplayName = ResolveDisplayNameCore(context, steamId, playerUid, roster),
                     IsHost = isHost,
                     IsLocal = isLocal,
                     IsBanned = sessionManager != null && WebDashboardSessionAccess.IsBanned(sessionManager, steamId),
@@ -417,18 +442,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return System.Math.Clamp((double)current / max * 100.0, 0.0, 100.0);
         }
 
+        private const string VanillaPlaceholderNick = "no name reluman";
+
         private static bool IsUsableName(string? name, ulong steamId)
         {
-            return !string.IsNullOrWhiteSpace(name) && name != steamId.ToString();
+            return !string.IsNullOrWhiteSpace(name)
+                   && name != steamId.ToString()
+                   && !string.Equals(name, VanillaPlaceholderNick, StringComparison.Ordinal);
         }
 
-        // Single fallback chain for live payloads: session nick → Steam name cache → actor nick
-        // → live statistics doc → name sidecar → local nick → Steam ID.
+        // Single fallback chain for live payloads: session nick → Steam persona (game ResolveNickName)
+        // → actor nick → live statistics doc → name sidecar → local nick → Steam ID.
         private static string ResolveDisplayNameCore(
             SessionContext? context,
             ulong steamId,
             long playerUid,
-            Dictionary<ulong, string>? nameCache,
             WebDashboardLiveRoster roster,
             int saveSlotId = -1)
         {
@@ -437,11 +465,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return context!.NickName;
             }
 
-            if (nameCache != null
-                && nameCache.TryGetValue(steamId, out string? cached)
-                && IsUsableName(cached, steamId))
+            string fromSteam = StatisticsDisplayNameResolver.Resolve(steamId, string.Empty);
+            if (IsUsableName(fromSteam, steamId))
             {
-                return cached;
+                return fromSteam;
             }
 
             string? fromActor = roster.ResolveNickName(playerUid, steamId);
@@ -473,15 +500,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return localNick != null && LocalPlayerHelper.IsLocalSteamId(steamId) ? localNick : steamId.ToString();
         }
 
-        // Keeps the slot document and live statistics document current after a player reconnects.
+        // Name-only: safe during JoinAnytime registration deferral (stats still wait for FullyReady).
         private static void PersistDisplayName(WebDashboardPlayerDto dto)
         {
             if (!IsUsableName(dto.DisplayName, dto.SteamId))
-            {
-                return;
-            }
-
-            if (JoinAnytime.JoinAnytimePlayerRegistration.ShouldDeferRegistration(dto.PlayerUid))
             {
                 return;
             }
@@ -830,26 +852,5 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return null;
         }
 
-        private static Dictionary<ulong, string>? TryGetSteamNameCache()
-        {
-            try
-            {
-                Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-                GameMainBase? main = pdata?.main;
-                if (main == null)
-                {
-                    return null;
-                }
-
-                FieldInfo? cacheField = main.GetType().GetField(
-                    "steamIDToNameCache",
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                return cacheField?.GetValue(main) as Dictionary<ulong, string>;
-            }
-            catch
-            {
-                return null;
-            }
-        }
     }
 }

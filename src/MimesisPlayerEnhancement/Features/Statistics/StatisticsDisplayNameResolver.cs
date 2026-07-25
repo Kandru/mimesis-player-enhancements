@@ -4,8 +4,8 @@ using System.Reflection;
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     /// <summary>
-    /// Resolves player display names from the game's steamID-to-name cache
-    /// (reflection fields cached per scene owner).
+    /// Resolves player display names via the game's <see cref="GameMainBase.ResolveNickName"/>
+    /// (Steam persona + <c>steamIDToNameCache</c>, keyed by steam id string).
     /// </summary>
     internal static class StatisticsDisplayNameResolver
     {
@@ -15,7 +15,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private static FieldInfo? _steamIdToNameCacheField;
         private static FieldInfo? _myNickNameField;
         private static object? _cachedNameCacheOwner;
-        private static Dictionary<ulong, string>? _cachedNameDictionary;
+        private static Dictionary<string, string>? _cachedNameDictionary;
 
         internal static void ClearRuntimeState()
         {
@@ -29,7 +29,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             try
             {
-                TryGetNameCache(out Dictionary<ulong, string>? cache);
                 string? localNick = null;
                 ulong localSteam = 0;
                 Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
@@ -41,6 +40,17 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     localSteam = GameSessionAccess.GetLocalSteamId();
                 }
 
+                if (steamId != 0 && pdata?.main is GameMainBase main)
+                {
+                    string seed = !string.IsNullOrWhiteSpace(fallback) ? fallback : string.Empty;
+                    string fromGame = main.ResolveNickName(steamId.ToString(), seed);
+                    if (IsUsableResolvedName(fromGame, steamId))
+                    {
+                        return fromGame;
+                    }
+                }
+
+                TryGetNameCache(out Dictionary<string, string>? cache);
                 return ResolveFromSources(steamId, cache, localNick, localSteam, fallback);
             }
             catch
@@ -52,17 +62,17 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         }
 
         /// <summary>
-        /// Pure display-name resolution (test seam).
+        /// Pure display-name resolution (test seam). Cache keys match the game: steam id strings.
         /// </summary>
         internal static string ResolveFromSources(
             ulong steamId,
-            IReadOnlyDictionary<ulong, string>? cache,
+            IReadOnlyDictionary<string, string>? cache,
             string? localNick,
             ulong localSteamId,
             string fallback)
         {
             if (cache != null
-                && cache.TryGetValue(steamId, out string? name)
+                && cache.TryGetValue(steamId.ToString(), out string? name)
                 && !string.IsNullOrWhiteSpace(name))
             {
                 return name;
@@ -86,7 +96,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             try
             {
-                if (!TryGetNameCache(out Dictionary<ulong, string>? cache) || cache == null)
+                if (!TryGetNameCache(out Dictionary<string, string>? cache) || cache == null)
                 {
                     return false;
                 }
@@ -102,10 +112,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         }
 
         /// <summary>
-        /// Pure reverse lookup from a steamId→name map (test seam).
+        /// Pure reverse lookup from a steamId-string→name map (test seam).
         /// </summary>
         internal static bool TryFindSteamIdByDisplayName(
-            IReadOnlyDictionary<ulong, string> cache,
+            IReadOnlyDictionary<string, string> cache,
             string displayName,
             out ulong steamId)
         {
@@ -115,11 +125,15 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return false;
             }
 
-            foreach (KeyValuePair<ulong, string> kvp in cache)
+            foreach (KeyValuePair<string, string> kvp in cache)
             {
-                if (string.Equals(kvp.Value, displayName, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(kvp.Value, displayName, StringComparison.OrdinalIgnoreCase))
                 {
-                    steamId = kvp.Key;
+                    continue;
+                }
+
+                if (ulong.TryParse(kvp.Key, out steamId) && steamId != 0)
+                {
                     return true;
                 }
             }
@@ -127,16 +141,19 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return false;
         }
 
+        private static bool IsUsableResolvedName(string? name, ulong steamId) =>
+            !string.IsNullOrWhiteSpace(name) && name != steamId.ToString();
+
         private static string FallbackDisplayName(ulong steamId, string fallback) =>
             string.IsNullOrWhiteSpace(fallback) ? steamId.ToString() : fallback;
 
-        private static bool TryGetNameCache([NotNullWhen(true)] out Dictionary<ulong, string>? cache)
+        private static bool TryGetNameCache([NotNullWhen(true)] out Dictionary<string, string>? cache)
         {
             cache = null;
             try
             {
                 Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
-                object? main = pdata?.GetType().GetField("main", InstanceMemberFlags)?.GetValue(pdata);
+                object? main = pdata?.main;
                 if (main == null)
                 {
                     return false;
@@ -151,7 +168,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 if (!ReferenceEquals(_cachedNameCacheOwner, main))
                 {
                     _cachedNameCacheOwner = main;
-                    _cachedNameDictionary = _steamIdToNameCacheField.GetValue(main) as Dictionary<ulong, string>;
+                    _cachedNameDictionary = _steamIdToNameCacheField.GetValue(main) as Dictionary<string, string>;
                 }
 
                 cache = _cachedNameDictionary;

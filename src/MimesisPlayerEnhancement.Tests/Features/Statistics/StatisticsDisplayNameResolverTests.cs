@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
         [Fact]
         public void ResolveFromSources_prefers_cache_name()
         {
-            var cache = new Dictionary<ulong, string> { [100] = "Cached" };
+            var cache = new Dictionary<string, string> { ["100"] = "Cached" };
 
             string name = StatisticsDisplayNameResolver.ResolveFromSources(
                 100,
@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
         {
             string name = StatisticsDisplayNameResolver.ResolveFromSources(
                 42,
-                cache: new Dictionary<ulong, string>(),
+                cache: new Dictionary<string, string>(),
                 localNick: "HostNick",
                 localSteamId: 42,
                 fallback: "Fallback");
@@ -47,10 +47,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
         [Fact]
         public void TryFindSteamIdByDisplayName_matches_case_insensitively()
         {
-            var cache = new Dictionary<ulong, string>
+            var cache = new Dictionary<string, string>
             {
-                [1] = "Alice",
-                [2] = "Bob",
+                ["1"] = "Alice",
+                ["2"] = "Bob",
             };
 
             Assert.True(StatisticsDisplayNameResolver.TryFindSteamIdByDisplayName(cache, "alice", out ulong steamId));
@@ -60,7 +60,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
         [Fact]
         public void TryFindSteamIdByDisplayName_returns_false_for_unknown_or_blank()
         {
-            var cache = new Dictionary<ulong, string> { [1] = "Alice" };
+            var cache = new Dictionary<string, string> { ["1"] = "Alice" };
 
             Assert.False(StatisticsDisplayNameResolver.TryFindSteamIdByDisplayName(cache, "Charlie", out _));
             Assert.False(StatisticsDisplayNameResolver.TryFindSteamIdByDisplayName(cache, "  ", out _));
