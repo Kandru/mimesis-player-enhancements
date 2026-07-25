@@ -29,6 +29,7 @@
         "fpsUi": "FPS UI",
         "inventorySlotOptimization": "Inventory slot optimization",
         "roundStartSound": "Dungeon landing sound",
+        "discoBallSound": "Disco ball music",
         "customLoadingScreen": "Custom loading screens"
       },
       "ModToastDurationSeconds": {
@@ -108,6 +109,27 @@
       "RoundStartSoundVolume": {
         "title": "Landing Sound Volume",
         "description": "Playback volume for custom dungeon landing sounds (Random or Specific mode). Does not affect the tram-stop sting or vanilla mode."
+      },
+      "DiscoBallSoundMode": {
+        "title": "Disco Ball Music",
+        "description": "Replace the loop that plays when the tram disco ball is turned on. The mirror-ball button click stays vanilla.",
+        "options": {
+          "Vanilla": "Vanilla (game sound)",
+          "Random": "Random Sound",
+          "Specific": "Specific Sound"
+        }
+      },
+      "DiscoBallSoundVariant": {
+        "title": "Disco Ball Track",
+        "description": "Track to play when mode is Specific Sound."
+      },
+      "DiscoBallSoundRandomPool": {
+        "title": "Disco Ball Track Pool",
+        "description": "Random Sound mode only — which tracks can be picked. Leave empty for all tracks. The pick is held for the whole dungeon."
+      },
+      "DiscoBallSoundVolume": {
+        "title": "Disco Ball Volume",
+        "description": "Playback volume for custom disco ball music (Random or Specific mode). Does not affect vanilla mode."
       },
       "CustomLoadingScreenMode": {
         "title": "Loading Screen Mode",

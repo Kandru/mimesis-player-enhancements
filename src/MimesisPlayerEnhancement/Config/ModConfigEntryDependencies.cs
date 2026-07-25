@@ -93,6 +93,18 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
+            if (string.Equals(key, "DiscoBallSoundVariant", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("DiscoBallSoundMode", "Specific");
+                return true;
+            }
+
+            if (string.Equals(key, "DiscoBallSoundRandomPool", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("DiscoBallSoundMode", "Random");
+                return true;
+            }
+
             if (string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
             {
                 dependency = new ModConfigEntryDependency("CustomLoadingScreenMode", "Specific");

@@ -257,6 +257,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> RoundStartSoundVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundRandomPool { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> RoundStartSoundVolume { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> DiscoBallSoundMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> DiscoBallSoundVariant { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> DiscoBallSoundRandomPool { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DiscoBallSoundVolume { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenRandomPool { get; internal set; } = null!;

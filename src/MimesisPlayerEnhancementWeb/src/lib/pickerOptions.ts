@@ -115,6 +115,7 @@ export function matchesPickerQuery(option: PickerOption, query: string): boolean
 /** Variant selects are always searchable; other selects only when they have many options. */
 const SEARCHABLE_VARIANT_KEYS = new Set([
   'RoundStartSoundVariant',
+  'DiscoBallSoundVariant',
   'CustomLoadingScreenVariant',
 ]);
 

@@ -11,7 +11,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private const float MaxFloatingDamageDurationSeconds = 3f;
         private const float MinRoundStartSoundVolume = 0f;
         private const float MaxRoundStartSoundVolume = 1f;
+        private const float MinDiscoBallSoundVolume = 0f;
+        private const float MaxDiscoBallSoundVolume = 1f;
         private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
+        private static readonly string[] ValidDiscoBallSoundModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidInventoryPickupSelectModes = ["Vanilla", "WeaponsOnly", "Always"];
 
@@ -92,6 +95,22 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "RoundStartSoundVolume",
                 RoundStartSoundResolver.DefaultVolume);
 
+            ModConfig.DiscoBallSoundMode = ModConfig.CreateTrackedEntry(_category,
+                "DiscoBallSoundMode",
+                "Vanilla");
+
+            ModConfig.DiscoBallSoundVariant = ModConfig.CreateTrackedEntry(_category,
+                "DiscoBallSoundVariant",
+                DiscoBallSoundResolver.GetDefaultVariantOptionValue());
+
+            ModConfig.DiscoBallSoundRandomPool = ModConfig.CreateTrackedEntry(_category,
+                "DiscoBallSoundRandomPool",
+                "");
+
+            ModConfig.DiscoBallSoundVolume = ModConfig.CreateTrackedEntry(_category,
+                "DiscoBallSoundVolume",
+                DiscoBallSoundResolver.DefaultVolume);
+
             ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenMode",
                 "Random");
@@ -159,6 +178,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                     RoundStartSoundResolver.NormalizeRandomPoolValue, value));
             ModConfig.RoundStartSoundVolume.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundVolumeChanged(logger, value));
+            ModConfig.DiscoBallSoundMode.OnEntryValueChanged.Subscribe((_, value) =>
+                OnDiscoBallSoundModeChanged(logger, value));
+            ModConfig.DiscoBallSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>
+                OnDiscoBallSoundVariantChanged(logger, value));
+            ModConfig.DiscoBallSoundRandomPool.OnEntryValueChanged.Subscribe((_, value) =>
+                OnRandomPoolChanged(ModConfig.DiscoBallSoundRandomPool,
+                    DiscoBallSoundResolver.NormalizeRandomPoolValue, value));
+            ModConfig.DiscoBallSoundVolume.OnEntryValueChanged.Subscribe((_, value) =>
+                OnDiscoBallSoundVolumeChanged(logger, value));
             ModConfig.CustomLoadingScreenMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCustomLoadingScreenModeChanged(logger, value));
             ModConfig.CustomLoadingScreenVariant.OnEntryValueChanged.Subscribe((_, value) =>
@@ -173,9 +201,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             });
 
             SanitizeRoundStartSoundVariant(logger);
+            SanitizeDiscoBallSoundVariant(logger);
             SanitizeCustomLoadingScreenVariant(logger);
             SanitizeRandomPool(ModConfig.RoundStartSoundRandomPool,
                 RoundStartSoundResolver.NormalizeRandomPoolValue);
+            SanitizeRandomPool(ModConfig.DiscoBallSoundRandomPool,
+                DiscoBallSoundResolver.NormalizeRandomPoolValue);
             SanitizeRandomPool(ModConfig.CustomLoadingScreenRandomPool,
                 CustomLoadingScreenResolver.NormalizeRandomPoolValue);
         }
@@ -185,6 +216,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.TrackFloatEntry(ModConfig.ModToastDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.FloatingDamageDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.RoundStartSoundVolume);
+            ModConfig.TrackFloatEntry(ModConfig.DiscoBallSoundVolume);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)
@@ -229,6 +261,27 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.NotifyChanged(ModConfig.RoundStartSoundVolume);
         }
 
+        private static void OnDiscoBallSoundVolumeChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MinDiscoBallSoundVolume)
+            {
+                logger.Warning(
+                    $"DiscoBallSoundVolume must be at least {MinDiscoBallSoundVolume}; resetting.");
+                ModConfig.DiscoBallSoundVolume.Value = MinDiscoBallSoundVolume;
+                return;
+            }
+
+            if (value > MaxDiscoBallSoundVolume)
+            {
+                logger.Warning(
+                    $"DiscoBallSoundVolume must be at most {MaxDiscoBallSoundVolume}; resetting.");
+                ModConfig.DiscoBallSoundVolume.Value = MaxDiscoBallSoundVolume;
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.DiscoBallSoundVolume);
+        }
+
         private static void OnInventoryPickupSelectModeChanged(MelonLogger.Instance logger, string value)
         {
             if (!ContainsIgnoreCase(ValidInventoryPickupSelectModes, value))
@@ -253,6 +306,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.NotifyChanged(ModConfig.RoundStartSoundMode);
         }
 
+        private static void OnDiscoBallSoundModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidDiscoBallSoundModes, value))
+            {
+                logger.Warning("DiscoBallSoundMode must be Vanilla, Random, or Specific; resetting to Vanilla.");
+                ModConfig.DiscoBallSoundMode.Value = "Vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.DiscoBallSoundMode);
+        }
+
         private static void OnRoundStartSoundVariantChanged(MelonLogger.Instance logger, string value)
         {
             string normalized = RoundStartSoundResolver.NormalizeVariantOptionValue(value);
@@ -272,6 +337,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.NotifyChanged(ModConfig.RoundStartSoundVariant);
         }
 
+        private static void OnDiscoBallSoundVariantChanged(MelonLogger.Instance logger, string value)
+        {
+            string normalized = DiscoBallSoundResolver.NormalizeVariantOptionValue(value);
+            string current = value?.Trim() ?? "";
+            if (!string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                if (!string.IsNullOrEmpty(current))
+                {
+                    logger.Warning(
+                        $"DiscoBallSoundVariant must match an embedded variant; resetting to {normalized}.");
+                }
+
+                ModConfig.DiscoBallSoundVariant.Value = normalized;
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.DiscoBallSoundVariant);
+        }
+
         private static void SanitizeRoundStartSoundVariant(MelonLogger.Instance logger)
         {
             string normalized = RoundStartSoundResolver.NormalizeVariantOptionValue(
@@ -289,6 +373,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.RoundStartSoundVariant.Value = normalized;
+        }
+
+        private static void SanitizeDiscoBallSoundVariant(MelonLogger.Instance logger)
+        {
+            string normalized = DiscoBallSoundResolver.NormalizeVariantOptionValue(
+                ModConfig.DiscoBallSoundVariant.Value);
+            string current = ModConfig.DiscoBallSoundVariant.Value?.Trim() ?? "";
+            if (string.Equals(current, normalized, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+            {
+                logger.Warning(
+                    $"DiscoBallSoundVariant '{current}' is not available; resetting to {normalized}.");
+            }
+
+            ModConfig.DiscoBallSoundVariant.Value = normalized;
         }
 
         private static void OnRandomPoolChanged(

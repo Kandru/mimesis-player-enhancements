@@ -29,6 +29,7 @@
         "fpsUi": "FPS-UI",
         "inventorySlotOptimization": "Inventar-Slot-Optimierung",
         "roundStartSound": "Dungeon-Landesound",
+        "discoBallSound": "Discokugel-Musik",
         "customLoadingScreen": "Benutzerdefinierte Ladebildschirme"
       },
       "ModToastDurationSeconds": {
@@ -108,6 +109,27 @@
       "RoundStartSoundVolume": {
         "title": "Landesound-Lautstärke",
         "description": "Wiedergabelautstärke für eigene Dungeon-Landesounds (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Tram-Stop-Sting oder Vanilla-Modus."
+      },
+      "DiscoBallSoundMode": {
+        "title": "Discokugel-Musik",
+        "description": "Ersetzt die Schleife, die abspielt, wenn die Tram-Discokugel eingeschaltet wird. Der Spiegelkugel-Knopf bleibt Vanilla.",
+        "options": {
+          "Vanilla": "Vanilla (Spielsound)",
+          "Random": "Zufälliger Sound",
+          "Specific": "Bestimmter Sound"
+        }
+      },
+      "DiscoBallSoundVariant": {
+        "title": "Discokugel-Track",
+        "description": "Track bei Modus Bestimmter Sound."
+      },
+      "DiscoBallSoundRandomPool": {
+        "title": "Discokugel-Track-Pool",
+        "description": "Nur Modus Zufälliger Sound — welche Tracks gewählt werden können. Leer lassen für alle Tracks. Die Auswahl gilt für den ganzen Dungeon."
+      },
+      "DiscoBallSoundVolume": {
+        "title": "Discokugel-Lautstärke",
+        "description": "Wiedergabelautstärke für eigene Discokugel-Musik (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Vanilla-Modus."
       },
       "CustomLoadingScreenMode": {
         "title": "Ladebildschirm-Modus",

@@ -168,6 +168,43 @@ This writes `src/MimesisPlayerEnhancement/Assets/RoundStartSound/vanilla.wav` wh
 
 Check `Assets/RoundStartSound/LICENSE.md` before redistributing third-party audio with your mod build.
 
+## Disco ball music
+
+Replace the loop that plays when the tram disco ball is turned on. The mirror-ball button click is unchanged.
+
+### Folder layout
+
+```
+src/MimesisPlayerEnhancement/Assets/DiscoBallSound/
+  vanilla.wav          # optional — export from game (see below)
+  my_track.ogg         # your custom loops
+  LICENSE.md           # attribution for third-party audio
+```
+
+Flat folder — no subfolders. Supported formats: `.wav`, `.ogg`. Tracks should be authored as seamless loops.
+
+### Export vanilla loop from game files
+
+```bash
+./scripts/export-disco-ball-sound.sh
+# or: MIMESIS_PATH=/path/to/MIMESIS ./scripts/export-disco-ball-sound.sh
+```
+
+This writes `src/MimesisPlayerEnhancement/Assets/DiscoBallSound/vanilla.wav` when UnityPy (or Docker) is available.
+
+### Build and configure
+
+1. Add audio files to `Assets/DiscoBallSound/`.
+2. Rebuild the mod.
+3. Set `DiscoBallSoundMode`:
+   - `Vanilla` — original game loop
+   - `Random` — pick one track per dungeon (same track if you toggle the ball off and on)
+   - `Specific` — play `DiscoBallSoundVariant`
+4. When no tracks are embedded, `Random` and `Specific` fall back to vanilla.
+5. Adjust `DiscoBallSoundVolume` (default `0.8`) if custom tracks feel too loud.
+
+Check `Assets/DiscoBallSound/LICENSE.md` before redistributing third-party audio with your mod build.
+
 ## Quick checklist
 
 **Loading screens**
@@ -180,5 +217,10 @@ Check `Assets/RoundStartSound/LICENSE.md` before redistributing third-party audi
 
 1. Add `.ogg`/`.wav` files to `Assets/RoundStartSound/`.
 2. Rebuild, set `RoundStartSoundMode` to `Random` or `Specific`.
+
+**Disco ball music**
+
+1. Add `.ogg`/`.wav` loop files to `Assets/DiscoBallSound/`.
+2. Rebuild, set `DiscoBallSoundMode` to `Random` or `Specific`.
 
 **Full config keys →** [User Interface](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)

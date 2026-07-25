@@ -1,27 +1,27 @@
-namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
+namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
 {
-    internal static class RoundStartSoundResolver
+    internal static class DiscoBallSoundResolver
     {
         internal const float DefaultVolume = 0.8f;
         internal const float MinVolume = 0f;
         internal const float MaxVolume = 1f;
 
         private static readonly EmbeddedAudioVariantCatalog Catalog = new(
-            RoundStartSoundConstants.AssetFolder,
-            RoundStartSoundConstants.Feature,
+            DiscoBallSoundConstants.AssetFolder,
+            DiscoBallSoundConstants.Feature,
             "sound variant");
 
-        internal static RoundStartSoundMode GetMode()
+        internal static DiscoBallSoundMode GetMode()
         {
             if (!ModConfig.IsInitialized)
             {
-                return RoundStartSoundMode.Vanilla;
+                return DiscoBallSoundMode.Vanilla;
             }
 
-            return ParseMode(ModConfig.RoundStartSoundMode.Value);
+            return ParseMode(ModConfig.DiscoBallSoundMode.Value);
         }
 
-        internal static bool ShouldApplyReplacement() => GetMode() != RoundStartSoundMode.Vanilla;
+        internal static bool ShouldApplyReplacement() => GetMode() != DiscoBallSoundMode.Vanilla;
 
         internal static float GetVolumeScale()
         {
@@ -31,26 +31,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             }
 
             return UnityEngine.Mathf.Clamp(
-                ModConfig.RoundStartSoundVolume.Value,
+                ModConfig.DiscoBallSoundVolume.Value,
                 MinVolume,
                 MaxVolume);
         }
 
-        internal static string? ResolveVariantFileName()
+        internal static string? ResolveSpecificVariantFileName()
         {
-            IReadOnlyList<string> variants = ListVariantFileNames();
-            if (variants.Count == 0)
+            if (ListVariantFileNames().Count == 0)
             {
                 return null;
             }
 
-            RoundStartSoundMode mode = GetMode();
-            return mode switch
+            return Catalog.ResolveSpecificVariant(ModConfig.DiscoBallSoundVariant.Value);
+        }
+
+        internal static string? ResolveRandomVariantFileName()
+        {
+            if (ListVariantFileNames().Count == 0)
             {
-                RoundStartSoundMode.Specific => ResolveSpecificVariant(),
-                RoundStartSoundMode.Random => ResolveRandomVariant(),
-                _ => null,
-            };
+                return null;
+            }
+
+            string picked = Catalog.ResolveRandomVariant(ModConfig.DiscoBallSoundRandomPool.Value);
+            return string.IsNullOrWhiteSpace(picked) ? null : picked;
         }
 
         internal static string NormalizeRandomPoolValue(string? value) => Catalog.NormalizeRandomPoolValue(value);
@@ -66,29 +70,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
         internal static string FormatVariantDisplayName(string optionValue) =>
             EmbeddedAudioVariantCatalog.FormatVariantDisplayName(optionValue);
 
-        private static string ResolveRandomVariant()
-        {
-            return Catalog.ResolveRandomVariant(ModConfig.RoundStartSoundRandomPool.Value);
-        }
-
-        private static string? ResolveSpecificVariant()
-        {
-            return Catalog.ResolveSpecificVariant(ModConfig.RoundStartSoundVariant.Value);
-        }
-
-        private static RoundStartSoundMode ParseMode(string? value)
+        private static DiscoBallSoundMode ParseMode(string? value)
         {
             if (string.Equals(value, "Random", StringComparison.OrdinalIgnoreCase))
             {
-                return RoundStartSoundMode.Random;
+                return DiscoBallSoundMode.Random;
             }
 
             if (string.Equals(value, "Specific", StringComparison.OrdinalIgnoreCase))
             {
-                return RoundStartSoundMode.Specific;
+                return DiscoBallSoundMode.Specific;
             }
 
-            return RoundStartSoundMode.Vanilla;
+            return DiscoBallSoundMode.Vanilla;
         }
     }
 }

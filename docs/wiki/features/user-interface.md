@@ -153,6 +153,45 @@ Playback volume for custom dungeon landing sounds when mode is `Random` or `Spec
 
 Default: `0.8`
 
+### `DiscoBallSoundMode`
+
+Replace the loop that plays when the tram disco ball is turned on (`Sound_LevelObject_Tram_Discoball_Partymusic_Loop`). The mirror-ball button click stays vanilla. Your game only — other players hear their own choice. See [Custom Assets](./custom-assets.md) for adding `.ogg`/`.wav` files. When no tracks are embedded, `Random` and `Specific` fall back to vanilla.
+
+| Value | Meaning |
+|-------|---------|
+| `Vanilla` | Original game loop |
+| `Random` | Pick one track per dungeon (optionally filtered by `DiscoBallSoundRandomPool`); same track if you toggle the ball off and on |
+| `Specific` | Always use `DiscoBallSoundVariant` |
+
+Default: `Vanilla`
+
+### `DiscoBallSoundVariant`
+
+Which embedded track plays when `DiscoBallSoundMode` is `Specific`. Must match a file in the mod DLL (filename without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant.
+
+Default: first embedded variant id (build-dependent)
+
+### `DiscoBallSoundRandomPool`
+
+Limits which tracks `Random` mode can pick. Comma-separated variant ids (no extensions). When empty, any embedded track may be chosen. The pick is held for the whole dungeon.
+
+| Value | Meaning |
+|-------|---------|
+| *(empty)* | All embedded tracks eligible |
+| `id1,id2,…` | Only listed ids eligible |
+
+Default: *(empty)*
+
+### `DiscoBallSoundVolume`
+
+Playback volume for custom disco ball music when mode is `Random` or `Specific`. Does not affect `Vanilla` mode.
+
+| Value | Meaning |
+|-------|---------|
+| `0`–`1` | Volume scale (`0` = silent, `1` = full) |
+
+Default: `0.8`
+
 ### `CustomLoadingScreenMode`
 
 Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). Your game only — other players see their own themes. See [Custom Assets](./custom-assets.md) for folder layout and image sizes.

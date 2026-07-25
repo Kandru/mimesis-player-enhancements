@@ -60,6 +60,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
+        public void ApplyToEntry_ui_disco_ball_sound_variant_dependency()
+        {
+            WebDashboardConfigSectionDto section = Section(UiConfig.SectionId);
+            WebDashboardConfigEntryDto entry = Entry("DiscoBallSoundVariant");
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Equal("DiscoBallSoundMode", entry.DependsOnKey);
+            Assert.Equal("Specific", entry.DependsOnValue);
+        }
+
+        [Fact]
         public void ApplyToEntry_spawn_scaling_trap_respawn_min_distance_dependency()
         {
             WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");
