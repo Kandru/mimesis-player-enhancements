@@ -1,5 +1,3 @@
-using MimesisPlayerEnhancement.Features.MoreVoices.Patches;
-
 namespace MimesisPlayerEnhancement.Features.MoreVoices
 {
     internal static class MoreVoicesPatches

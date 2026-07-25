@@ -20,28 +20,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 }
             }
 
-            players.Sort(static (left, right) =>
-            {
-                int loadedCompare = left.Loaded.CompareTo(right.Loaded);
-                if (loadedCompare != 0)
-                {
-                    // Loaded players first (false < true when comparing Loaded flag inverted:
-                    // we want Loaded=true first, so compare right to left on bool as int).
-                    return right.Loaded.CompareTo(left.Loaded);
-                }
-
-                int nameCompare = string.Compare(
-                    left.DisplayName,
-                    right.DisplayName,
-                    StringComparison.OrdinalIgnoreCase);
-                if (nameCompare != 0)
-                {
-                    return nameCompare;
-                }
-
-                return left.PlayerUid.CompareTo(right.PlayerUid);
-            });
-
             return players;
         }
 

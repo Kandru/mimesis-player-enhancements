@@ -97,5 +97,89 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.Equal(baseUvRect.width, panZoomRect.width, precision: 3);
             Assert.Equal(baseUvRect.height, panZoomRect.height, precision: 3);
         }
+
+        [Fact]
+        public void ResolveWaitPlayerBand_uses_full_bottom_fraction_when_uv_is_uncropped()
+        {
+            const float boundsHeight = 1080f;
+            Rect fullUv = new Rect(0f, 0f, 1f, 1f);
+
+            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
+                boundsHeight,
+                fullUv,
+                out float bandBottomY,
+                out float bandHeight);
+
+            Assert.Equal(0f, bandBottomY, precision: 3);
+            Assert.Equal(
+                boundsHeight * CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction,
+                bandHeight,
+                precision: 3);
+        }
+
+        [Fact]
+        public void ResolveWaitPlayerBand_keeps_full_band_on_cover_side_crop()
+        {
+            const float boundsHeight = 1080f;
+            Rect sideCropUv = CustomLoadingScreenImageLayout.ComputeCoverUvRect(
+                imageAspect: 2f,
+                screenAspect: 1f);
+
+            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
+                boundsHeight,
+                sideCropUv,
+                out float bandBottomY,
+                out float bandHeight);
+
+            Assert.Equal(0f, bandBottomY, precision: 3);
+            Assert.Equal(
+                boundsHeight * CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction,
+                bandHeight,
+                precision: 3);
+        }
+
+        [Fact]
+        public void ResolveWaitPlayerBand_intersects_visible_uv_on_cover_vertical_crop()
+        {
+            const float boundsHeight = 900f;
+            // Mild vertical crop so the bottom 20% design band still intersects the visible UV.
+            Rect verticalCropUv = CustomLoadingScreenImageLayout.ComputeCoverUvRect(
+                imageAspect: 0.9f,
+                screenAspect: 1f);
+
+            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
+                boundsHeight,
+                verticalCropUv,
+                out float bandBottomY,
+                out float bandHeight);
+
+            float bandUvMax = CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction;
+            float intersectMin = Mathf.Max(0f, verticalCropUv.y);
+            float intersectMax = Mathf.Min(bandUvMax, verticalCropUv.yMax);
+            Assert.True(intersectMax > intersectMin);
+
+            float expectedBottom = (intersectMin - verticalCropUv.y) / verticalCropUv.height * boundsHeight;
+            float expectedHeight = (intersectMax - intersectMin) / verticalCropUv.height * boundsHeight;
+
+            Assert.Equal(expectedBottom, bandBottomY, precision: 3);
+            Assert.Equal(expectedHeight, bandHeight, precision: 3);
+            Assert.True(bandHeight > 0f);
+        }
+
+        [Fact]
+        public void ResolveWaitPlayerBand_returns_zero_when_band_is_fully_cropped()
+        {
+            const float boundsHeight = 1080f;
+            Rect highCropUv = new Rect(0f, 0.5f, 1f, 0.4f);
+
+            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
+                boundsHeight,
+                highCropUv,
+                out float bandBottomY,
+                out float bandHeight);
+
+            Assert.Equal(0f, bandBottomY, precision: 3);
+            Assert.Equal(0f, bandHeight, precision: 3);
+        }
     }
 }

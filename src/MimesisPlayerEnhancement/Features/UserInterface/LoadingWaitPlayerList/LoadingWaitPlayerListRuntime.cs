@@ -1,4 +1,3 @@
-using System.Threading;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
@@ -7,9 +6,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     {
         private const string Feature = "Ui";
         private const float RefreshIntervalSeconds = 0.15f;
-
-        private static readonly CancellationTokenSource SpeakCancellation = new();
-        private static readonly System.Random DebugRandom = new();
 
         private static UIPrefab_Scene_Loading? _activeLoading;
         private static LoadingWaitPlayerListOverlay? _overlay;
@@ -171,15 +167,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             _debugActive = true;
             ApplyOverlayAlpha(1f);
 
-            List<LoadingWaitPlayerEntry> entries = BuildScrambledDebugEntries(fakeNames);
+            List<LoadingWaitPlayerEntry> entries = LoadingWaitPlayerListDebugEntries.BuildScrambled(fakeNames);
 
             try
             {
                 LoadingWaitPlayerListGrid.Update(
                     _overlay.GridState!,
                     loading.transform,
-                    entries,
-                    SpeakCancellation.Token);
+                    entries);
             }
             catch (Exception ex)
             {
@@ -242,64 +237,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             Refresh(force: false);
         }
 
-        private static List<LoadingWaitPlayerEntry> BuildScrambledDebugEntries(IReadOnlyList<string> fakeNames)
-        {
-            int count = fakeNames.Count;
-            bool[] loadedFlags = ScrambleTrueFlags(count, trueRatio: 0.5f);
-
-            List<LoadingWaitPlayerEntry> entries = new(count);
-            for (int index = 0; index < count; index++)
-            {
-                entries.Add(new LoadingWaitPlayerEntry
-                {
-                    PlayerUid = -(index + 1),
-                    DisplayName = fakeNames[index],
-                    Loaded = loadedFlags[index],
-                });
-            }
-
-            entries.Sort(static (left, right) =>
-            {
-                int loadedCompare = right.Loaded.CompareTo(left.Loaded);
-                if (loadedCompare != 0)
-                {
-                    return loadedCompare;
-                }
-
-                return string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);
-            });
-
-            return entries;
-        }
-
-        private static bool[] ScrambleTrueFlags(int count, float trueRatio, bool ensureMix = true)
-        {
-            bool[] flags = new bool[count];
-            if (count == 0)
-            {
-                return flags;
-            }
-
-            int trueCount = Mathf.Clamp(Mathf.RoundToInt(count * trueRatio), 0, count);
-            if (ensureMix && count >= 2)
-            {
-                trueCount = Mathf.Clamp(trueCount, 1, count - 1);
-            }
-
-            for (int index = 0; index < trueCount; index++)
-            {
-                flags[index] = true;
-            }
-
-            for (int index = count - 1; index > 0; index--)
-            {
-                int swapIndex = DebugRandom.Next(index + 1);
-                (flags[index], flags[swapIndex]) = (flags[swapIndex], flags[index]);
-            }
-
-            return flags;
-        }
-
         private static void Refresh(bool force)
         {
             if (_overlay?.GridState == null || !_waitTextActive)
@@ -324,8 +261,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 LoadingWaitPlayerListGrid.Update(
                     _overlay.GridState,
                     loadingRoot,
-                    players,
-                    SpeakCancellation.Token);
+                    players);
             }
             catch (Exception ex)
             {

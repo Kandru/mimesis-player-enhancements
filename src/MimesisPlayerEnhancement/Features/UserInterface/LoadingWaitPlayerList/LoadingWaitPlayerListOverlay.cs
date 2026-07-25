@@ -60,7 +60,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             GameObject flowObject = new(FlowObjectName);
             flowObject.transform.SetParent(BoundsRect, worldPositionStays: false);
             RectTransform flowRect = flowObject.AddComponent<RectTransform>();
-            AnchorBottomStretch(flowRect);
+            flowRect.anchorMin = Vector2.zero;
+            flowRect.anchorMax = Vector2.one;
+            flowRect.offsetMin = Vector2.zero;
+            flowRect.offsetMax = Vector2.zero;
+            flowRect.pivot = new Vector2(0f, 0f);
+            flowRect.anchoredPosition = Vector2.zero;
 
             if (!LoadingWaitPlayerListGrid.TryInitialize(
                     listView,
@@ -137,15 +142,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rect.pivot = new Vector2(0.5f, 0.5f);
-        }
-
-        private static void AnchorBottomStretch(RectTransform rect)
-        {
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = Vector2.zero;
         }
     }
 }

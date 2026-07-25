@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private const float AspectEpsilon = 0.001f;
 
         internal const float FallbackImageAspect = 16f / 9f;
+        internal const float WaitPlayerBandDesignFraction = 0.2f;
 
         internal static CustomLoadingScreenScaleMode ResolveMode(float screenAspect) =>
             screenAspect >= CustomLoadingScreenConstants.UltrawideAspectThreshold
@@ -36,6 +37,22 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal static bool TryResolveImageAspect(Transform loadingRoot, out float aspect)
         {
             aspect = FallbackImageAspect;
+            if (!TryGetOverlayImage(loadingRoot, out RawImage rawImage, out _))
+            {
+                return false;
+            }
+
+            aspect = GetImageAspect(rawImage.texture);
+            return true;
+        }
+
+        private static bool TryGetOverlayImage(
+            Transform loadingRoot,
+            out RawImage rawImage,
+            out RectTransform overlayRect)
+        {
+            rawImage = null!;
+            overlayRect = null!;
             if (loadingRoot == null)
             {
                 return false;
@@ -47,20 +64,93 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return false;
             }
 
+            overlayRect = overlay as RectTransform ?? overlay.GetComponent<RectTransform>();
+            if (overlayRect == null)
+            {
+                return false;
+            }
+
             Transform? imageTransform = overlay.Find(CustomLoadingScreenConstants.OverlayImageObjectName);
             if (imageTransform == null)
             {
                 return false;
             }
 
-            RawImage? rawImage = imageTransform.GetComponent<RawImage>();
-            if (rawImage?.texture == null)
+            rawImage = imageTransform.GetComponent<RawImage>();
+            return rawImage?.texture != null;
+        }
+
+        private static bool TryResolveVisibleUvRect(Transform loadingRoot, out Rect visibleUv)
+        {
+            visibleUv = new Rect(0f, 0f, 1f, 1f);
+            if (!TryGetOverlayImage(loadingRoot, out RawImage rawImage, out RectTransform overlayRect))
             {
                 return false;
             }
 
-            aspect = GetImageAspect(rawImage.texture);
+            float screenAspect = GetScreenAspect(overlayRect);
+            if (ResolveMode(screenAspect) == CustomLoadingScreenScaleMode.FitHeight)
+            {
+                return true;
+            }
+
+            visibleUv = rawImage.uvRect;
+            if (visibleUv.width <= AspectEpsilon || visibleUv.height <= AspectEpsilon)
+            {
+                visibleUv = ComputeCoverUvRect(GetImageAspect(rawImage.texture), screenAspect);
+            }
+
             return true;
+        }
+
+        internal static void ResolveWaitPlayerBand(
+            float boundsHeight,
+            Rect visibleUv,
+            out float bandBottomY,
+            out float bandHeight)
+        {
+            bandBottomY = 0f;
+            bandHeight = 0f;
+            if (boundsHeight <= AspectEpsilon || visibleUv.height <= AspectEpsilon)
+            {
+                return;
+            }
+
+            float visibleMin = visibleUv.y;
+            float visibleMax = visibleUv.y + visibleUv.height;
+            float intersectMin = Mathf.Max(0f, visibleMin);
+            float intersectMax = Mathf.Min(WaitPlayerBandDesignFraction, visibleMax);
+            if (intersectMax <= intersectMin + AspectEpsilon)
+            {
+                return;
+            }
+
+            bandBottomY = (intersectMin - visibleMin) / visibleUv.height * boundsHeight;
+            bandHeight = (intersectMax - intersectMin) / visibleUv.height * boundsHeight;
+        }
+
+        internal static void ResolveWaitPlayerBand(
+            RectTransform boundsRect,
+            Transform loadingRoot,
+            out float bandBottomY,
+            out float bandHeight)
+        {
+            float boundsHeight = boundsRect.rect.height > 1f ? boundsRect.rect.height : Screen.height;
+            if (TryResolveVisibleUvRect(loadingRoot, out Rect visibleUv))
+            {
+                ResolveWaitPlayerBand(boundsHeight, visibleUv, out bandBottomY, out bandHeight);
+                return;
+            }
+
+            float screenAspect = boundsRect.parent is RectTransform parentRect
+                ? GetScreenAspect(parentRect)
+                : Screen.width / (float)Mathf.Max(Screen.height, 1);
+            float imageAspect = FallbackImageAspect;
+            TryResolveImageAspect(loadingRoot, out imageAspect);
+            Rect fallbackUv = ResolveMode(screenAspect) == CustomLoadingScreenScaleMode.FitHeight
+                ? new Rect(0f, 0f, 1f, 1f)
+                : ComputeCoverUvRect(imageAspect, screenAspect);
+            ResolveWaitPlayerBand(boundsHeight, fallbackUv, out bandBottomY, out bandHeight);
         }
 
         internal static void ApplyContentBoundsInset(RectTransform target, RectTransform parent, float imageAspect)

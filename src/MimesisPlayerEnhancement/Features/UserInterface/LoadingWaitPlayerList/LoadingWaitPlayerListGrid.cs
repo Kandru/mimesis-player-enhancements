@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Threading;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
@@ -8,13 +7,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     {
         private const string Feature = "Ui";
         private const float HorizontalMargin = 16f;
-        private const float BottomMargin = 16f;
-        private const float RowGap = 4f;
-        private const float MicGap = 4f;
-        private const string CommaSpacing = ", ";
-        private const float FallbackFontSize = 18f;
-        private const float FallbackMicWidth = 18f;
-        private const float FallbackRowHeight = 24f;
+        private const float RowGap = 10f;
+        private const float FallbackFontSize = 20f;
+        private const float FallbackRowHeight = 26f;
+        private static readonly Color SpeakingColor = new(0.35f, 0.95f, 0.45f, 1f);
 
         internal static bool TryInitialize(
             UIPrefab_Spectator_PlayerListView listView,
@@ -35,27 +31,21 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             ModUiAssets assets = ModUiAssets.FromTextSource(templateRow.gameObject);
             float fontSize = ResolveFontSize(templateRow, FallbackFontSize);
-            float micWidth = ResolveMicWidth(templateRow, FallbackMicWidth);
-            Component? commaMeasureText = CreateMeasureText(flowRect, assets, fontSize);
+            ConfigureFlowRect(flowRect);
+            Component? measureText = CreateMeasureText(flowRect, assets, fontSize);
 
             state = new GridState
             {
-                TemplateRow = templateRow,
                 BoundsRect = boundsRect,
                 FlowRect = flowRect,
                 Assets = assets,
+                TemplateFontSize = fontSize,
                 FontSize = fontSize,
-                MicWidth = micWidth,
                 LiveColor = liveColor,
                 DeadColor = deadColor,
-                CommaMeasureText = commaMeasureText,
-                CommaWidth = LoadingWaitPlayerListTextMeasure.MeasurePreferredSize(
-                    commaMeasureText,
-                    CommaSpacing,
-                    fontSize).x,
+                MeasureText = measureText,
                 RowHeight = Mathf.Max(
-                    LoadingWaitPlayerListTextMeasure.MeasurePreferredSize(commaMeasureText, "Ag", fontSize).y,
-                    micWidth,
+                    LoadingWaitPlayerListTextMeasure.MeasurePreferredSize(measureText, "Ag", fontSize).y,
                     FallbackRowHeight),
             };
 
@@ -65,22 +55,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         internal static void Update(
             GridState state,
             Transform loadingRoot,
-            IReadOnlyList<LoadingWaitPlayerEntry> players,
-            CancellationToken cancellationToken)
+            IReadOnlyList<LoadingWaitPlayerEntry> players)
         {
-            if (state.TemplateRow == null || state.FlowRect == null || state.BoundsRect == null)
+            if (state.FlowRect == null || state.BoundsRect == null)
             {
                 return;
             }
 
             ApplyContentBounds(state, loadingRoot);
-            bool layoutChanged = RefreshLayoutIfNeeded(state, players);
+            RefreshLayoutMetrics(state, players);
             EnsureSlots(state, players.Count);
 
-            if (layoutChanged)
-            {
-                PackAndPositionSlots(state, players);
-            }
+            // Always re-pack: speaking/color bind is cheap; positions must stay correct
+            // after bounds/band settle across the first frames of the wait screen.
+            PackAndPositionSlots(state, loadingRoot, players);
 
             for (int slotIndex = 0; slotIndex < state.Slots.Count; slotIndex++)
             {
@@ -88,32 +76,35 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 if (slotIndex >= players.Count)
                 {
                     slot.Root.SetActive(false);
-                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(slot.MicProxy);
                     continue;
                 }
 
                 slot.Root.SetActive(true);
-                BindSlot(state, slot, players[slotIndex], cancellationToken);
+                BindSlot(state, slot, players[slotIndex]);
             }
         }
 
         internal static void Destroy(GridState state)
         {
-            foreach (PlayerSlot slot in state.Slots)
-            {
-                if (slot.MicProxy != null)
-                {
-                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(slot.MicProxy);
-                }
-            }
-
+            DestroyRowContainers(state);
             DestroySlots(state);
 
-            if (state.CommaMeasureText != null)
+            if (state.MeasureText != null)
             {
-                UnityEngine.Object.Destroy(state.CommaMeasureText.gameObject);
-                state.CommaMeasureText = null;
+                UnityEngine.Object.Destroy(state.MeasureText.gameObject);
+                state.MeasureText = null;
             }
+        }
+
+        private static void ConfigureFlowRect(RectTransform flowRect)
+        {
+            flowRect.anchorMin = Vector2.zero;
+            flowRect.anchorMax = Vector2.one;
+            flowRect.offsetMin = Vector2.zero;
+            flowRect.offsetMax = Vector2.zero;
+            flowRect.pivot = new Vector2(0f, 0f);
+            flowRect.anchoredPosition = Vector2.zero;
+            flowRect.localScale = Vector3.one;
         }
 
         private static void ApplyContentBounds(GridState state, Transform loadingRoot)
@@ -127,191 +118,177 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             float imageAspect = CustomLoadingScreenImageLayout.FallbackImageAspect;
             CustomLoadingScreenImageLayout.TryResolveImageAspect(loadingRoot, out imageAspect);
             CustomLoadingScreenImageLayout.ApplyContentBoundsInset(state.BoundsRect, parentRect, imageAspect);
+            ConfigureFlowRect(state.FlowRect);
         }
 
-        private static bool RefreshLayoutIfNeeded(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)
+        private static void RefreshLayoutMetrics(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)
         {
-            int screenWidth = Screen.width;
-            int screenHeight = Screen.height;
-            float availableWidth = ResolveAvailableWidth(state);
-
-            bool namesChanged = !NamesMatch(state, players);
-            bool screenChanged = state.LastScreenWidth != screenWidth || state.LastScreenHeight != screenHeight;
-            bool widthChanged = Mathf.Abs(state.LastAvailableWidth - availableWidth) > 0.5f;
-            bool countChanged = state.LastPlayerCount != players.Count;
-
-            if (!screenChanged && !widthChanged && !countChanged && !namesChanged)
-            {
-                return false;
-            }
-
-            state.LastScreenWidth = screenWidth;
-            state.LastScreenHeight = screenHeight;
+            float boundsWidth = ResolveBoundsWidth(state);
+            float availableWidth = ResolveAvailableWidth(boundsWidth);
+            state.LastBoundsWidth = boundsWidth;
             state.LastAvailableWidth = availableWidth;
             state.LastPlayerCount = players.Count;
-            state.LastNames = new string[players.Count];
-            for (int index = 0; index < players.Count; index++)
+        }
+
+        private static float ResolveBoundsWidth(GridState state)
+        {
+            Canvas.ForceUpdateCanvases();
+            RectTransform boundsRect = state.BoundsRect;
+            float width = boundsRect.rect.width;
+            if (width > 1f)
             {
-                state.LastNames[index] = players[index].DisplayName;
+                return width;
             }
 
+            if (boundsRect.parent is RectTransform parentRect)
+            {
+                width = parentRect.rect.width + boundsRect.offsetMin.x + boundsRect.offsetMax.x;
+                if (width > 1f)
+                {
+                    return width;
+                }
+            }
+
+            return Screen.width;
+        }
+
+        private static float ResolveAvailableWidth(float boundsWidth) =>
+            Mathf.Max(boundsWidth - (2f * HorizontalMargin), 32f);
+
+        private static void PackAndPositionSlots(
+            GridState state,
+            Transform loadingRoot,
+            IReadOnlyList<LoadingWaitPlayerEntry> players)
+        {
+            float boundsWidth = state.LastBoundsWidth;
+            float availableWidth = state.LastAvailableWidth;
+            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
+                state.BoundsRect,
+                loadingRoot,
+                out float bandBottomY,
+                out float bandHeight);
+
+            LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
+                state.MeasureText,
+                players,
+                availableWidth,
+                bandHeight,
+                state.TemplateFontSize,
+                RowGap);
+
+            state.FontSize = metrics.FontSize;
+            state.RowHeight = metrics.RowHeight;
+            ApplyMetricsToSlots(state, metrics);
+            EnsureRowContainers(state, metrics.Rows.Count);
+
+            int rowCount = metrics.Rows.Count;
             ModLog.Debug(
                 Feature,
-                $"Loading wait player list layout — players={players.Count}, availableWidth={availableWidth:F0}");
+                $"Loading wait player list rows — count={rowCount}, font={metrics.FontSize:F0}, rowHeight={metrics.RowHeight:F1}, bandY={bandBottomY:F1}, bandH={bandHeight:F1}");
 
-            return true;
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+            {
+                LoadingWaitLayoutRow row = metrics.Rows[rowIndex];
+                float rowY = LoadingWaitPlayerListLayout.ResolveRowY(
+                    rowIndex,
+                    rowCount,
+                    metrics.RowHeight,
+                    RowGap,
+                    bandBottomY,
+                    bandHeight);
+                float rowWidth = LoadingWaitPlayerListLayout.MeasureRowWidth(
+                    state.MeasureText,
+                    players,
+                    row.StartIndex,
+                    row.Count,
+                    metrics.FontSize);
+                float startX = Mathf.Max((boundsWidth - rowWidth) * 0.5f, HorizontalMargin);
+
+                RectTransform rowRect = state.RowRects[rowIndex];
+                rowRect.gameObject.SetActive(true);
+                rowRect.anchorMin = new Vector2(0f, 0f);
+                rowRect.anchorMax = new Vector2(0f, 0f);
+                rowRect.pivot = new Vector2(0f, 0f);
+                rowRect.anchoredPosition = new Vector2(0f, rowY);
+                rowRect.sizeDelta = new Vector2(boundsWidth, metrics.RowHeight);
+
+                float rowX = startX;
+                for (int offset = 0; offset < row.Count; offset++)
+                {
+                    int playerIndex = row.StartIndex + offset;
+                    PlayerSlot slot = state.Slots[playerIndex];
+                    float itemWidth = LoadingWaitPlayerListLayout.MeasureItemWidth(
+                        state.MeasureText,
+                        players[playerIndex].DisplayName,
+                        metrics.FontSize);
+
+                    slot.Root.transform.SetParent(rowRect, worldPositionStays: false);
+                    PositionSlot(slot, itemWidth, rowX, metrics.RowHeight);
+                    rowX += itemWidth + LoadingWaitPlayerListLayout.PlayerGap;
+                }
+            }
+
+            for (int rowIndex = rowCount; rowIndex < state.RowRects.Count; rowIndex++)
+            {
+                state.RowRects[rowIndex].gameObject.SetActive(false);
+            }
         }
 
-        private static bool NamesMatch(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)
+        private static void ApplyMetricsToSlots(GridState state, LoadingWaitLayoutMetrics metrics)
         {
-            if (state.LastNames.Length != players.Count)
+            SetTextFontSize(state.MeasureText, metrics.FontSize);
+            foreach (PlayerSlot slot in state.Slots)
             {
-                return false;
-            }
-
-            for (int index = 0; index < players.Count; index++)
-            {
-                if (!string.Equals(state.LastNames[index], players[index].DisplayName, StringComparison.Ordinal))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static float ResolveAvailableWidth(GridState state)
-        {
-            float boundsWidth = state.BoundsRect.rect.width;
-            if (boundsWidth <= 1f)
-            {
-                boundsWidth = Screen.width;
-            }
-
-            return Mathf.Max(boundsWidth - (2f * HorizontalMargin), 32f);
-        }
-
-        private static void PackAndPositionSlots(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)
-        {
-            float availableWidth = ResolveAvailableWidth(state);
-            List<FlowRow> rows = [];
-            FlowRow currentRow = new();
-            float currentX = 0f;
-
-            for (int playerIndex = 0; playerIndex < players.Count; playerIndex++)
-            {
-                LoadingWaitPlayerEntry entry = players[playerIndex];
-                float nameWidth = LoadingWaitPlayerListTextMeasure.MeasurePreferredSize(
-                    state.Slots[playerIndex].NameText,
-                    entry.DisplayName,
-                    state.FontSize).x;
-                float coreWidth = nameWidth + state.MicWidth + MicGap;
-                bool hasFollowingPlayer = playerIndex < players.Count - 1;
-                float itemWidth = coreWidth + (hasFollowingPlayer ? state.CommaWidth : 0f);
-
-                if (currentRow.Slots.Count > 0 && currentX + itemWidth > availableWidth)
-                {
-                    rows.Add(currentRow);
-                    currentRow = new FlowRow();
-                    currentX = 0f;
-                    hasFollowingPlayer = playerIndex < players.Count - 1;
-                    itemWidth = coreWidth + (hasFollowingPlayer ? state.CommaWidth : 0f);
-                }
-
-                currentRow.Slots.Add(new FlowSlot
-                {
-                    SlotIndex = playerIndex,
-                    NameWidth = nameWidth,
-                });
-                currentX += itemWidth;
-            }
-
-            if (currentRow.Slots.Count > 0)
-            {
-                rows.Add(currentRow);
-            }
-
-            float rowStep = state.RowHeight + RowGap;
-            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
-            {
-                FlowRow row = rows[rowIndex];
-                float rowY = BottomMargin + (rowIndex * rowStep);
-                float rowX = 0f;
-                float rowWidth = 0f;
-
-                for (int slotIndex = 0; slotIndex < row.Slots.Count; slotIndex++)
-                {
-                    FlowSlot flowSlot = row.Slots[slotIndex];
-                    bool showComma = slotIndex < row.Slots.Count - 1;
-                    float itemWidth = flowSlot.NameWidth + state.MicWidth + MicGap
-                        + (showComma ? state.CommaWidth : 0f);
-                    flowSlot.X = rowX;
-                    flowSlot.ShowComma = showComma;
-                    flowSlot.ItemWidth = itemWidth;
-                    rowX += itemWidth;
-                }
-
-                rowWidth = rowX;
-                float startX = HorizontalMargin + Mathf.Max((availableWidth - rowWidth) * 0.5f, 0f);
-
-                for (int slotIndex = 0; slotIndex < row.Slots.Count; slotIndex++)
-                {
-                    FlowSlot flowSlot = row.Slots[slotIndex];
-                    PositionSlot(state.Slots[flowSlot.SlotIndex], flowSlot, startX, rowY);
-                }
+                SetTextFontSize(slot.NameText, metrics.FontSize);
             }
         }
 
-        private static void PositionSlot(PlayerSlot slot, FlowSlot flowSlot, float rowStartX, float rowY)
+        private static void PositionSlot(PlayerSlot slot, float itemWidth, float x, float rowHeight)
         {
             RectTransform rootRect = slot.RootRect;
             rootRect.anchorMin = new Vector2(0f, 0f);
             rootRect.anchorMax = new Vector2(0f, 0f);
             rootRect.pivot = new Vector2(0f, 0f);
-            rootRect.anchoredPosition = new Vector2(rowStartX + flowSlot.X, rowY);
-            rootRect.sizeDelta = new Vector2(flowSlot.ItemWidth, slot.StateRowHeight);
+            rootRect.anchoredPosition = new Vector2(x, 0f);
+            rootRect.sizeDelta = new Vector2(itemWidth, rowHeight);
+            rootRect.localScale = Vector3.one;
 
             RectTransform nameRect = slot.NameRect;
-            nameRect.anchorMin = new Vector2(0f, 0f);
-            nameRect.anchorMax = new Vector2(0f, 0f);
-            nameRect.pivot = new Vector2(0f, 0f);
+            nameRect.anchorMin = Vector2.zero;
+            nameRect.anchorMax = Vector2.one;
+            nameRect.offsetMin = Vector2.zero;
+            nameRect.offsetMax = Vector2.zero;
             nameRect.anchoredPosition = Vector2.zero;
-            nameRect.sizeDelta = new Vector2(flowSlot.NameWidth, slot.StateRowHeight);
-
-            RectTransform micRect = slot.MicRect;
-            micRect.anchorMin = new Vector2(0f, 0.5f);
-            micRect.anchorMax = new Vector2(0f, 0.5f);
-            micRect.pivot = new Vector2(0f, 0.5f);
-            micRect.anchoredPosition = new Vector2(flowSlot.NameWidth + MicGap, 0f);
-
-            if (slot.CommaText != null && slot.CommaRect != null)
-            {
-                bool showComma = flowSlot.ShowComma;
-                slot.CommaText.gameObject.SetActive(showComma);
-                if (showComma)
-                {
-                    slot.CommaRect.anchorMin = new Vector2(0f, 0f);
-                    slot.CommaRect.anchorMax = new Vector2(0f, 0f);
-                    slot.CommaRect.pivot = new Vector2(0f, 0f);
-                    float commaX = flowSlot.NameWidth + MicGap + slot.StateMicWidth;
-                    slot.CommaRect.anchoredPosition = new Vector2(commaX, 0f);
-                    slot.CommaRect.sizeDelta = new Vector2(slot.StateCommaWidth, slot.StateRowHeight);
-                }
-            }
+            nameRect.sizeDelta = Vector2.zero;
+            nameRect.localScale = Vector3.one;
         }
 
-        private static void BindSlot(
-            GridState state,
-            PlayerSlot slot,
-            LoadingWaitPlayerEntry entry,
-            CancellationToken cancellationToken)
+        private static void BindSlot(GridState state, PlayerSlot slot, LoadingWaitPlayerEntry entry)
         {
-            Color color = entry.Loaded ? state.LiveColor : state.DeadColor;
             ModUiText.SetText(slot.NameText, entry.DisplayName);
-            ModUiText.SetColor(slot.NameText, color);
-            SpectatorPlayerRowBinder.TrySetRowColor(slot.MicProxy, color);
-            SpectatorPlayerRowBinder.BindSpeakState(slot.MicProxy, entry.Speaking, cancellationToken);
-            SpectatorPlayerRowBinder.SetPossessorActive(slot.MicProxy, false);
+            ModUiText.SetColor(slot.NameText, ResolveNameColor(state, entry));
+        }
+
+        private static Color ResolveNameColor(GridState state, LoadingWaitPlayerEntry entry)
+        {
+            if (entry.Speaking)
+            {
+                return SpeakingColor;
+            }
+
+            return entry.Loaded ? state.LiveColor : state.DeadColor;
+        }
+
+        private static void EnsureRowContainers(GridState state, int requiredCount)
+        {
+            while (state.RowRects.Count < requiredCount)
+            {
+                int index = state.RowRects.Count;
+                GameObject rowObject = new($"LoadingWaitPlayerRow_{index + 1}");
+                rowObject.transform.SetParent(state.FlowRect, worldPositionStays: false);
+                RectTransform rowRect = rowObject.AddComponent<RectTransform>();
+                state.RowRects.Add(rowRect);
+            }
         }
 
         private static void EnsureSlots(GridState state, int requiredCount)
@@ -321,11 +298,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 int lastIndex = state.Slots.Count - 1;
                 PlayerSlot slot = state.Slots[lastIndex];
                 state.Slots.RemoveAt(lastIndex);
-                if (slot.MicProxy != null)
-                {
-                    SpectatorPlayerRowBinder.TurnOffSpeakAnimation(slot.MicProxy);
-                }
-
                 if (slot.Root != null)
                 {
                     UnityEngine.Object.Destroy(slot.Root);
@@ -357,49 +329,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             ModUiText.ConfigureTightSingleLine(nameText);
             SetBottomLeftAlignment(nameText);
 
-            UIPrefab_Spectator_PlayerListViewItem micProxy =
-                UnityEngine.Object.Instantiate(state.TemplateRow, root.transform);
-            micProxy.gameObject.name = "MicProxy";
-            HideMicProxyName(micProxy);
-            HideMicProxyVisuals(micProxy);
-            SpectatorPlayerRowBinder.SetPossessorActive(micProxy, false);
-            SpectatorPlayerRowBinder.TurnOffSpeakAnimation(micProxy);
-
-            RectTransform micRect = micProxy.transform as RectTransform ?? micProxy.gameObject.AddComponent<RectTransform>();
-            Image? speakIcon = micProxy.SpeakIcon;
-            if (speakIcon != null)
-            {
-                speakIcon.gameObject.SetActive(true);
-                micRect = speakIcon.rectTransform;
-            }
-
-            GameObject commaObject = new("Comma");
-            commaObject.transform.SetParent(root.transform, worldPositionStays: false);
-            RectTransform commaRect = commaObject.AddComponent<RectTransform>();
-            Component commaText = ModUiFactory.AddText(
-                commaObject,
-                state.Assets,
-                CommaSpacing,
-                state.FontSize,
-                ModUiFontStyle.Normal);
-            ModUiText.SetColor(commaText, state.LiveColor);
-            ModUiText.ConfigureTextLayout(commaText, wordWrap: false, ModUiText.OverflowOverflow);
-            ModUiText.ConfigureTightSingleLine(commaText);
-            SetBottomLeftAlignment(commaText);
-
             return new PlayerSlot
             {
                 Root = root,
                 RootRect = rootRect,
                 NameText = nameText,
                 NameRect = nameRect,
-                MicProxy = micProxy,
-                MicRect = micRect,
-                CommaText = commaText,
-                CommaRect = commaRect,
-                StateRowHeight = state.RowHeight,
-                StateMicWidth = state.MicWidth,
-                StateCommaWidth = state.CommaWidth,
             };
         }
 
@@ -407,7 +342,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         {
             GameObject measureObject = new("MeasureText");
             measureObject.transform.SetParent(parent, worldPositionStays: false);
-            measureObject.SetActive(false);
+            RectTransform measureRect = measureObject.AddComponent<RectTransform>();
+            measureRect.anchorMin = new Vector2(0f, 0f);
+            measureRect.anchorMax = new Vector2(0f, 0f);
+            measureRect.pivot = new Vector2(0f, 0f);
+            measureRect.anchoredPosition = new Vector2(-10000f, -10000f);
+            measureRect.sizeDelta = new Vector2(2048f, 128f);
+
             Component measureText = ModUiFactory.AddText(
                 measureObject,
                 assets,
@@ -416,35 +357,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 ModUiFontStyle.Normal);
             ModUiText.ConfigureTextLayout(measureText, wordWrap: false, ModUiText.OverflowOverflow);
             ModUiText.ConfigureTightSingleLine(measureText);
+
+            // Keep active so TMP GetPreferredValues returns real widths; park off-screen.
+            CanvasGroup canvasGroup = measureObject.AddComponent<CanvasGroup>();
+            canvasGroup.alpha = 0f;
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
             return measureText;
         }
 
-        private static void HideMicProxyName(UIPrefab_Spectator_PlayerListViewItem micProxy)
-        {
-            PropertyInfo? nameTextProperty =
-                AccessTools.Property(typeof(UIPrefab_Spectator_PlayerListViewItem), "UE_Name_Text");
-            if (nameTextProperty?.GetValue(micProxy) is Component nameText)
-            {
-                nameText.gameObject.SetActive(false);
-            }
+        private static void SetTextFontSize(Component? textComponent, float fontSize) =>
+            LoadingWaitPlayerListTextMeasure.ApplyFontSize(textComponent, fontSize);
 
-            SpectatorPlayerRowBinder.SetRowName(micProxy, string.Empty);
-        }
-
-        private static void HideMicProxyVisuals(UIPrefab_Spectator_PlayerListViewItem micProxy)
+        private static void DestroyRowContainers(GridState state)
         {
-            Image? speakIcon = micProxy.SpeakIcon;
-            Transform? speakTransform = speakIcon != null ? speakIcon.transform : null;
-            foreach (Graphic graphic in micProxy.GetComponentsInChildren<Graphic>(includeInactive: true))
+            foreach (RectTransform rowRect in state.RowRects)
             {
-                if (speakTransform != null
-                    && (graphic.transform == speakTransform || graphic.transform.IsChildOf(speakTransform)))
+                if (rowRect != null)
                 {
-                    continue;
+                    UnityEngine.Object.Destroy(rowRect.gameObject);
                 }
-
-                graphic.gameObject.SetActive(false);
             }
+
+            state.RowRects.Clear();
         }
 
         private static void DestroySlots(GridState state)
@@ -471,24 +406,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                     BindingFlags.Instance | BindingFlags.Public);
                 if (sizeProperty?.GetValue(nameText) is float fontSize && fontSize > 0.5f)
                 {
-                    return fontSize;
+                    return fontSize + 2f;
                 }
             }
 
             return fallback;
-        }
-
-        private static float ResolveMicWidth(UIPrefab_Spectator_PlayerListViewItem templateRow, float fallback)
-        {
-            Image? speakIcon = templateRow.SpeakIcon;
-            if (speakIcon == null)
-            {
-                return fallback;
-            }
-
-            RectTransform micRect = speakIcon.rectTransform;
-            float width = micRect.rect.width;
-            return width > 1f ? width : fallback;
         }
 
         private static void SetBottomLeftAlignment(Component? textComponent)
@@ -517,54 +439,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
         }
 
-        private sealed class FlowRow
-        {
-            internal List<FlowSlot> Slots = [];
-        }
-
-        private sealed class FlowSlot
-        {
-            internal int SlotIndex;
-            internal float X;
-            internal float NameWidth;
-            internal bool ShowComma;
-            internal float ItemWidth;
-        }
-
         internal sealed class PlayerSlot
         {
             internal GameObject Root = null!;
             internal RectTransform RootRect = null!;
             internal Component NameText = null!;
             internal RectTransform NameRect = null!;
-            internal UIPrefab_Spectator_PlayerListViewItem MicProxy = null!;
-            internal RectTransform MicRect = null!;
-            internal Component? CommaText;
-            internal RectTransform? CommaRect;
-            internal float StateRowHeight;
-            internal float StateMicWidth;
-            internal float StateCommaWidth;
         }
 
         internal sealed class GridState
         {
-            internal UIPrefab_Spectator_PlayerListViewItem TemplateRow = null!;
             internal RectTransform BoundsRect = null!;
             internal RectTransform FlowRect = null!;
             internal ModUiAssets Assets = ModUiAssets.Fallback;
-            internal Component? CommaMeasureText;
+            internal Component? MeasureText;
             internal List<PlayerSlot> Slots = [];
+            internal List<RectTransform> RowRects = [];
             internal Color LiveColor = Color.white;
             internal Color DeadColor = Color.red;
+            internal float TemplateFontSize = FallbackFontSize;
             internal float FontSize = FallbackFontSize;
-            internal float MicWidth = FallbackMicWidth;
-            internal float CommaWidth;
             internal float RowHeight = FallbackRowHeight;
-            internal int LastScreenWidth;
-            internal int LastScreenHeight;
             internal float LastAvailableWidth;
+            internal float LastBoundsWidth;
             internal int LastPlayerCount = -1;
-            internal string[] LastNames = [];
         }
     }
 }

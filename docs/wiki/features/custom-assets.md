@@ -62,7 +62,7 @@ Only dungeon entry (`DungeonStart`) has two text phases on the same overlay. Shi
 
 When the game switches to `STRING_LOADING_WAIT` and the lobby has **more than one player**, the overlay crossfades from the current loading art (`loading.png`, or `background.png` if that was the fallback) into `wait.png` when that file exists. Solo lobbies keep the loading image — `wait.png` is skipped. If a theme has no dedicated wait art, the loading image stays up for everyone.
 
-With `EnableLoadingWaitPlayerList`, a comma-separated player list can appear along the bottom of the screen during this wait phase: white names for loaded players, red for those still loading, with microphone animation when voice chat is active. Names wrap into additional rows when needed and stay inside the visible loading image area (on 21:9 and wider displays, that matches the pillarboxed image rather than the full screen width). The list fades out with the custom loading overlay when the scene finishes loading.
+With `EnableLoadingWaitPlayerList`, a spaced player list appears in the **bottom 20%** of `wait.png` during this wait phase: white names for loaded players, red for those still loading, and green while a player is talking. Names wrap into additional rows above and below the band center when needed, centered horizontally inside that band (on 21:9 and wider displays, the band tracks the pillarboxed image rather than the full screen width). Paint the darker strip at the bottom of `wait.png` for this roster. Disable wait-phase pan/zoom (`phases.wait.motion.mode: "none"`) when that band is authored, or the image may drift under the list. The list fades out with the custom loading overlay when the scene finishes loading.
 
 Other contexts only need `background.png`.
 
@@ -110,7 +110,7 @@ Global `CustomLoadingScreenMotion` disables pan/zoom but frame sequences still p
 ### Image requirements
 
 - **Format:** `.png` only
-- **Recommended size:** 1920×1080 (16:9). The mod scales images to cover the full screen on standard displays (16:9, 16:10, 4:3, etc.); leave safe margins for vanilla loading text. On ultrawide monitors (21:9+), images fit to full height with `backgroundColor` filling the side bars.
+- **Recommended size:** 1920×1080 (16:9). The mod scales images to cover the full screen on standard displays (16:9, 16:10, 4:3, etc.); leave safe margins for vanilla loading text. On ultrawide monitors (21:9+), images fit to full height with `backgroundColor` filling the side bars. For `wait.png` with `EnableLoadingWaitPlayerList`, reserve the bottom **20%** (full width) as the player-roster safe zone.
 - **Naming:** Lowercase filenames exactly as above (`loading.png`, `wait.png`, `background.png`).
 
 Generate blank 1920×1080 templates locally with:

@@ -860,8 +860,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
         private static List<SpectatorDebugEntry> BuildScrambledDebugEntries(IReadOnlyList<string> fakeNames)
         {
             int count = fakeNames.Count;
-            bool[] deadFlags = ScrambleTrueFlags(count, trueRatio: 0.5f);
-            bool[] speakingFlags = ScrambleTrueFlags(count, trueRatio: 0.35f, ensureMix: false);
+            bool[] deadFlags = UiDebugScramble.ScrambleTrueFlags(count, trueRatio: 0.5f, ensureMix: true, DebugRandom);
+            bool[] speakingFlags = UiDebugScramble.ScrambleTrueFlags(
+                count,
+                trueRatio: 0.35f,
+                ensureMix: false,
+                DebugRandom);
 
             List<SpectatorDebugEntry> entries = new(count);
             for (int index = 0; index < count; index++)
@@ -886,34 +890,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             });
 
             return entries;
-        }
-
-        private static bool[] ScrambleTrueFlags(int count, float trueRatio, bool ensureMix = true)
-        {
-            bool[] flags = new bool[count];
-            if (count == 0)
-            {
-                return flags;
-            }
-
-            int trueCount = Mathf.Clamp(Mathf.RoundToInt(count * trueRatio), 0, count);
-            if (ensureMix && count >= 2)
-            {
-                trueCount = Mathf.Clamp(trueCount, 1, count - 1);
-            }
-
-            for (int index = 0; index < trueCount; index++)
-            {
-                flags[index] = true;
-            }
-
-            for (int index = count - 1; index > 0; index--)
-            {
-                int swapIndex = DebugRandom.Next(index + 1);
-                (flags[index], flags[swapIndex]) = (flags[swapIndex], flags[index]);
-            }
-
-            return flags;
         }
 
         private static void HideSpectatorChrome(UIPrefab_Spectator? spectator)
