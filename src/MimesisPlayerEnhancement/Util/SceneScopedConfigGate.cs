@@ -138,7 +138,12 @@ namespace MimesisPlayerEnhancement.Util
 
         internal static void TransitionToScene(SceneScopeKind kind)
         {
-            if (_activeKind != SceneScopeKind.None && _activeKind != kind)
+            if (_activeKind == kind)
+            {
+                return;
+            }
+
+            if (_activeKind != SceneScopeKind.None)
             {
                 EndScene();
             }

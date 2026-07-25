@@ -11,7 +11,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator.Patches
             try
             {
                 LootMultiplicatorApplier.EnsureApplied(__instance);
-                LootItemFilter.ApplyToRandomSpawnDatas(__instance);
+                LootItemFilter.ApplyToSpawnDatas(__instance);
             }
             catch (Exception ex)
             {

@@ -10,6 +10,9 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static readonly FieldInfo SpawnedActorDatasField =
             Field(typeof(DungeonRoom), "_spawnedActorDatas");
 
+        internal static readonly FieldInfo SpawnedActorMasterIdField =
+            Field(typeof(SpawnedActorData), "MasterID");
+
         internal static FieldInfo Field(Type type, string name)
         {
             FieldInfo? field = type.GetField(name, InstanceFlags) ?? AccessTools.Field(type, name);

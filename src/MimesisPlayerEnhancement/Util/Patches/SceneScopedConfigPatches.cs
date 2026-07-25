@@ -48,6 +48,24 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
+        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L167-189
+        [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.CreateGameRoom))]
+        internal static class VRoomManagerCreateGameRoomScenePatch
+        {
+            [HarmonyPrefix]
+            private static void Prefix()
+            {
+                try
+                {
+                    SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Dungeon);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(Feature, $"CreateGameRoom scene transition failed — {ex.Message}");
+                }
+            }
+        }
+
         // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L411-439
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterDungeon))]
         internal static class VRoomManagerEnterDungeonScenePatch

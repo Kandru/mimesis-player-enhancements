@@ -32,6 +32,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             Failed,
         }
 
+        private enum FixedSpawnFilterResult
+        {
+            Skipped,
+            Filtered,
+            Failed,
+        }
+
         internal static bool ShouldApply()
         {
             return LootScalingGate.ShouldScale() && IsFilterActive();
@@ -140,7 +147,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             return true;
         }
 
-        internal static void ApplyToRandomSpawnDatas(DungeonRoom room)
+        internal static void ApplyToSpawnDatas(DungeonRoom room)
         {
             if (!ShouldApply() || room == null)
             {
@@ -159,34 +166,48 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             int filtered = 0;
             int emptied = 0;
+            int fixedFiltered = 0;
             int failed = 0;
 
             foreach (DictionaryEntry entry in spawnDatas)
             {
-                if (entry.Value is not RandomSpawnedItemActorData randomSpawn)
+                switch (entry.Value)
                 {
-                    continue;
-                }
+                    case RandomSpawnedItemActorData randomSpawn:
+                        switch (TryFilterRandomSpawnCandidates(randomSpawn))
+                        {
+                            case RandomSpawnFilterResult.Filtered:
+                                filtered++;
+                                break;
+                            case RandomSpawnFilterResult.Emptied:
+                                emptied++;
+                                break;
+                            case RandomSpawnFilterResult.Failed:
+                                failed++;
+                                break;
+                        }
 
-                switch (TryFilterRandomSpawnCandidates(randomSpawn))
-                {
-                    case RandomSpawnFilterResult.Filtered:
-                        filtered++;
                         break;
-                    case RandomSpawnFilterResult.Emptied:
-                        emptied++;
-                        break;
-                    case RandomSpawnFilterResult.Failed:
-                        failed++;
+                    case FixedSpawnedActorData fixedSpawn when IsLootFixedSpawn(fixedSpawn):
+                        switch (TryFilterFixedSpawn(fixedSpawn))
+                        {
+                            case FixedSpawnFilterResult.Filtered:
+                                fixedFiltered++;
+                                break;
+                            case FixedSpawnFilterResult.Failed:
+                                failed++;
+                                break;
+                        }
+
                         break;
                 }
             }
 
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.LootSpawnFilter);
 
-            if (filtered > 0 || emptied > 0)
+            if (filtered > 0 || emptied > 0 || fixedFiltered > 0)
             {
-                LootMultiplicatorLog.DebugRandomSpawnPoolsFiltered(filtered, emptied, _cachedMode);
+                LootMultiplicatorLog.DebugRandomSpawnPoolsFiltered(filtered + fixedFiltered, emptied, _cachedMode);
             }
 
             if (failed > 0)
@@ -223,6 +244,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             if (entries.Count == 0)
             {
+                if (!SetRandomSpawnCandidates(spawnData, ImmutableDictionary<int, (int, int)>.Empty))
+                {
+                    return RandomSpawnFilterResult.Failed;
+                }
+
                 return RandomSpawnFilterResult.Emptied;
             }
 
@@ -233,6 +259,50 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
             }
 
             return RandomSpawnFilterResult.Filtered;
+        }
+
+        private static FixedSpawnFilterResult TryFilterFixedSpawn(FixedSpawnedActorData spawnData)
+        {
+            if (spawnData.MasterID <= 0 || IsSpawnAllowed(spawnData.MasterID))
+            {
+                return FixedSpawnFilterResult.Skipped;
+            }
+
+            if (_cachedMode == LootItemFilterMode.BlocklistOnly)
+            {
+                return TrySetFixedSpawnMasterId(spawnData, 0)
+                    ? FixedSpawnFilterResult.Filtered
+                    : FixedSpawnFilterResult.Failed;
+            }
+
+            int replacementId = PickReplacementMasterId();
+            if (replacementId <= 0)
+            {
+                return FixedSpawnFilterResult.Failed;
+            }
+
+            return TrySetFixedSpawnMasterId(spawnData, replacementId)
+                ? FixedSpawnFilterResult.Filtered
+                : FixedSpawnFilterResult.Failed;
+        }
+
+        private static bool IsLootFixedSpawn(FixedSpawnedActorData spawnData)
+        {
+            return spawnData.MarkerType.Equals(MapMarkerType.LootingObject);
+        }
+
+        private static bool TrySetFixedSpawnMasterId(FixedSpawnedActorData spawnData, int masterId)
+        {
+            try
+            {
+                LootMultiplicatorFields.SpawnedActorMasterIdField.SetValue(spawnData, masterId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Fixed spawn filter failed — master={masterId}, {ex.Message}");
+                return false;
+            }
         }
 
         private static List<(int masterId, int weight, int meanPrice)> ExtractIndividualRates(

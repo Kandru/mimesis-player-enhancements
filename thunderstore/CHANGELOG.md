@@ -38,6 +38,7 @@ Ooops.. quick bug fix relase for 26.7.15 (crashes sometimes when loading savegam
 - improvement: searchable settings picker (instead of a simple input field in settings)
 - improvement: the custom dungeon landing sound is at 80% volume per default now
 - fix: dungeon loot-multiplicator errored when allowlist/denylist was empty but selected
+- fix: dungeon loot filter/scaling timing (allowlist/denylist had no effect on spawned loot, only on mimics loot)
 - draft: first overhaul of all configuration titles, descriptions and translations (it's a start)
 - draft: show players & minimap when joining lobby as a client (not as an host)
 - draft: show notifications on the top right instead of bottom right (webinterface)

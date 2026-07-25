@@ -37,17 +37,21 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return;
             }
 
-            Apply(room);
+            if (!Apply(room))
+            {
+                return;
+            }
+
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.LootScaling);
             FixedLootSpawnCoordinator.ApplyAfterInit(room);
         }
 
-        internal static void Apply(DungeonRoom room)
+        internal static bool Apply(DungeonRoom room)
         {
             if (!LootScalingGate.ShouldScale(room))
             {
                 ModLog.Debug(Feature, "Loot scaling skipped — EnableLootMultiplicator is off");
-                return;
+                return false;
             }
 
             int playerCount = room.GetMemberCount();
@@ -56,6 +60,7 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
             int scaled = ScaleSpawnPointDatas(room, playerCount, config);
             ModLog.Info(Feature, $"Map loot spawn data updated — scaledSlots={scaled}, players={playerCount}");
+            return true;
         }
 
         private static int ScaleSpawnPointDatas(DungeonRoom room, int playerCount, LootMultiplicatorSceneConfig config)
