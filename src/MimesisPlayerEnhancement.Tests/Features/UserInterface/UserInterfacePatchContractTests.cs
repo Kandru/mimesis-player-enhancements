@@ -139,6 +139,30 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.NotNull(method);
         }
 
+        [Fact]
+        public void CameraManager_IsSpectatorMode_property_has_getter()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("CameraManager");
+
+            PropertyInfo? property = type.GetProperty("IsSpectatorMode", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.NotNull(property.GetGetMethod(nonPublic: true));
+        }
+
+        [Fact]
+        public void CameraManager_TryGetCurrentSpectatorTarget_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("CameraManager");
+
+            MethodInfo? method = type.GetMethod("TryGetCurrentSpectatorTarget", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Boolean", method.ReturnType.Name);
+        }
+
         [Theory]
         [InlineData("InitCommonUIValue")]
         [InlineData("OnPlayerSpawn")]

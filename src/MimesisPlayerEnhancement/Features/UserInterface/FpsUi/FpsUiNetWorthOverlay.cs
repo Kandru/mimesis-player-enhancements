@@ -5,6 +5,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {
     internal static class FpsUiNetWorthOverlay
     {
+        private static readonly FieldInfo? HubCameramanField =
+            typeof(Hub).GetField(
+                "cameraman",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        internal static bool IsSpectatorInventoryMode()
+        {
+            return TryGetCameraman(out CameraManager? cameraman) && cameraman.IsSpectatorMode;
+        }
+
         private const string LabelObjectName = "MPE_NetWorth";
         private const float TopEdgeNudgePixels = 0f;
         private const int UnsetTotal = -1;
@@ -118,16 +128,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
         private static void TryRefreshInventoryValue()
         {
-            ProtoActor? avatar = Hub.Main?.GetMyAvatar();
+            ProtoActor? actor = ResolveInventoryActor();
             UIPrefab_Inventory? inventoryUi = FpsUiInventoryLayoutHelper.TryGetInventoryUi();
-            if (avatar == null || inventoryUi == null)
+            if (actor == null || inventoryUi == null)
             {
                 return;
             }
 
             inventoryUi.UpdateSlot(
-                avatar.GetInventoryItems(),
-                avatar.GetSelectedInventorySlotIndex());
+                actor.GetInventoryItems(),
+                actor.GetSelectedInventorySlotIndex());
         }
 
         private static void Activate()
@@ -160,24 +170,43 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
         private static int ResolveTotal(IReadOnlyList<InventoryItem> inventoryItems)
         {
-            ProtoActor? avatar = Hub.Main?.GetMyAvatar();
-            if (avatar != null)
+            ProtoActor? actor = ResolveInventoryActor();
+            if (actor != null)
             {
-                return FpsUiInventoryNetWorthCalculator.ComputeTotal(avatar);
+                return FpsUiInventoryNetWorthCalculator.ComputeTotal(actor);
             }
 
-            int total = 0;
-            foreach (InventoryItem? item in inventoryItems)
-            {
-                if (item == null || item.IsFake)
-                {
-                    continue;
-                }
+            return FpsUiInventoryNetWorthCalculator.ComputeFromInventoryItems(inventoryItems);
+        }
 
-                total += FpsUiInventoryNetWorthCalculator.ComputeItemSellPrice(item);
+        // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1714-1731
+        private static ProtoActor? ResolveInventoryActor()
+        {
+            if (TryGetCameraman(out CameraManager? cameraman)
+                && cameraman.IsSpectatorMode
+                && cameraman.TryGetCurrentSpectatorTarget(out ProtoActor? target))
+            {
+                return target;
             }
 
-            return total;
+            return Hub.Main?.GetMyAvatar();
+        }
+
+        private static bool TryGetCameraman(out CameraManager? cameraman)
+        {
+            cameraman = null;
+            if (Hub.s == null || HubCameramanField == null)
+            {
+                return false;
+            }
+
+            if (HubCameramanField.GetValue(Hub.s) is not CameraManager manager)
+            {
+                return false;
+            }
+
+            cameraman = manager;
+            return true;
         }
 
         private static bool HasValidWidget()

@@ -28,12 +28,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 
                 if (FpsUiNetWorthOverlay.IsEnabled())
                 {
-                    ProtoActor? avatar = Hub.Main?.GetMyAvatar();
-                    if (avatar != null)
+                    if (!FpsUiNetWorthOverlay.IsSpectatorInventoryMode())
                     {
-                        inventoryUi.UpdateSlot(
-                            avatar.GetInventoryItems(),
-                            avatar.GetSelectedInventorySlotIndex());
+                        ProtoActor? actor = Hub.Main?.GetMyAvatar();
+                        if (actor != null)
+                        {
+                            inventoryUi.UpdateSlot(
+                                actor.GetInventoryItems(),
+                                actor.GetSelectedInventorySlotIndex());
+                        }
                     }
 
                     FpsUiNetWorthOverlay.NotifyInventoryShown();
