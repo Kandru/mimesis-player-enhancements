@@ -1,4 +1,5 @@
 using System.Linq;
+using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLock;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
@@ -16,6 +17,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             IEnumerable<Type> patchTypes = HarmonyPatchHelper.GetNamespacePatchTypes(typeof(UiPatches))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SpectatorPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(LoadingWaitPlayerListPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(LoadingWaitMovementLockPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InGameMenuPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(SurvivalResultPlayerListPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(ExtendedSaveSlotsPatches)))
@@ -54,6 +56,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
         internal static void OnUpdate()
         {
+            LoadingWaitMovementLockRuntime.OnUpdate();
             LoadingWaitPlayerListRuntime.OnUpdate();
             WorldOverlayRuntime.OnUpdate();
             FpsUiOverlay.OnUpdate();
@@ -66,6 +69,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             SpectatorPlayerGrid.OnSessionEnded();
             InGameMenuPlayerListOverlay.OnSessionEnded();
             SurvivalResultDebugPreview.OnSessionEnded();
+            LoadingWaitMovementLockRuntime.OnSessionEnded();
             LoadingWaitPlayerListRuntime.OnSessionEnded();
             CustomLoadingScreenRuntime.OnSessionEnded();
             ExtendedSaveSlotsRuntime.OnSessionEnded();
