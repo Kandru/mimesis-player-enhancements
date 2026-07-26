@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
         private static readonly EmbeddedAudioClipCache ClipCache = new(
             DiscoBallSoundConstants.AssetFolder,
             DiscoBallSoundConstants.Feature,
-            DiscoBallSoundConstants.TempSubfolder);
+            DiscoBallSoundConstants.AssetFolder);
 
         private static string? _preloadedFingerprint;
 
@@ -15,35 +15,31 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
 
         internal static void RefreshFromConfig()
         {
-            DiscoBallSoundPlayer.Prune();
+            List<PartyButtonLevelObject> toRearm = FindActivePartyButtons();
 
             if (!DiscoBallSoundResolver.ShouldApplyReplacement())
             {
+                // Stop sources before destroying clips — Destroy on a playing clip freezes Unity.
+                DiscoBallSoundPlayer.StopAll();
                 ClearPreload();
                 DiscoBallSoundSession.ClearStickyVariant();
-                DiscoBallSoundPlayer.StopAll();
+                RearmPartyButtons(toRearm);
                 return;
             }
 
             string fingerprint = BuildPreloadFingerprint();
-            bool fingerprintChanged = !string.Equals(fingerprint, _preloadedFingerprint, StringComparison.Ordinal);
-
-            if (fingerprintChanged)
+            if (!string.Equals(fingerprint, _preloadedFingerprint, StringComparison.Ordinal))
             {
                 DiscoBallSoundSession.ClearStickyVariant();
-                ClipCache.Clear();
+                DiscoBallSoundPlayer.StopAll();
+                // Keep already-decoded clips — clearing + re-decoding on the main thread freezes the game.
                 PreloadVariants();
                 _preloadedFingerprint = fingerprint;
-                RearmActiveLoops();
+                RearmPartyButtons(toRearm);
                 return;
             }
 
-            if (!ClipCache.HasCachedClips)
-            {
-                PreloadVariants();
-                _preloadedFingerprint = fingerprint;
-            }
-
+            EnsurePreloaded();
             DiscoBallSoundPlayer.ApplyVolumeToActiveLoops();
         }
 
@@ -56,16 +52,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
             }
         }
 
+        internal static void OnPlaySceneDestroyed()
+        {
+            DiscoBallSoundSession.ClearStickyVariant();
+            DiscoBallSoundPlayer.StopAll();
+        }
+
         internal static void OnSessionEnded()
         {
             DiscoBallSoundSession.ClearStickyVariant();
             DiscoBallSoundPlayer.StopAll();
             ClearPreload();
-        }
-
-        internal static void Shutdown()
-        {
-            OnSessionEnded();
         }
 
         private static void EnsurePreloaded()
@@ -77,7 +74,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
                 return;
             }
 
-            ClipCache.Clear();
             PreloadVariants();
             _preloadedFingerprint = fingerprint;
         }
@@ -96,15 +92,42 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
             }
         }
 
-        private static void RearmActiveLoops()
+        private static List<PartyButtonLevelObject> FindActivePartyButtons()
         {
-            IReadOnlyList<PartyButtonLevelObject> activeButtons = DiscoBallSoundPlayer.GetActiveButtons();
-            for (int i = 0; i < activeButtons.Count; i++)
+            List<PartyButtonLevelObject> buttons = [];
+            PartyButtonLevelObject[] sceneButtons =
+                UnityEngine.Object.FindObjectsByType<PartyButtonLevelObject>(FindObjectsSortMode.None);
+            for (int i = 0; i < sceneButtons.Length; i++)
             {
-                PartyButtonLevelObject button = activeButtons[i];
-                if (button != null)
+                PartyButtonLevelObject button = sceneButtons[i];
+                if (button != null && button.IsOn)
+                {
+                    buttons.Add(button);
+                }
+            }
+
+            return buttons;
+        }
+
+        private static void RearmPartyButtons(List<PartyButtonLevelObject> buttons)
+        {
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                PartyButtonLevelObject button = buttons[i];
+                if (button == null || !button.IsOn)
+                {
+                    continue;
+                }
+
+                try
                 {
                     button.SetPartyState(true);
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(
+                        DiscoBallSoundConstants.Feature,
+                        $"Disco ball sound re-arm failed — {ex.Message}");
                 }
             }
         }

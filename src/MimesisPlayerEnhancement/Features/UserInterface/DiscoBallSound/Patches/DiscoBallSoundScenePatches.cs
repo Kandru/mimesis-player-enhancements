@@ -32,8 +32,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound.Patches
 
             try
             {
-                DiscoBallSoundSession.ClearStickyVariant();
-                DiscoBallSoundPlayer.StopAll();
+                DiscoBallSoundRuntime.OnPlaySceneDestroyed();
             }
             catch (Exception ex)
             {

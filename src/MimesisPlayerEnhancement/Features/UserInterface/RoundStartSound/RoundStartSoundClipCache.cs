@@ -15,8 +15,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
 
         internal static bool TryPreloadClip(string fileName) => Cache.TryPreloadClip(fileName);
 
-        internal static AudioClip? TryGetClip(string fileName) => Cache.TryGetClip(fileName);
-
         internal static void Clear() => Cache.Clear();
     }
 }

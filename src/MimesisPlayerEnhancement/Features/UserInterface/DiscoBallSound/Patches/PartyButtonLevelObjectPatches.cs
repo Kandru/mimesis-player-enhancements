@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound.Patches
         {
             try
             {
-                if (!DiscoBallSoundGate.ShouldReplaceParty(__instance))
+                if (!DiscoBallSoundResolver.ShouldApplyReplacement())
                 {
                     return true;
                 }

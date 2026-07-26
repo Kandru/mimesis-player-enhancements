@@ -8,21 +8,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
         private static readonly FieldInfo? PartyAudioTransformField =
             AccessTools.Field(typeof(PartyButtonLevelObject), "partyAudioTransform");
 
-        private static readonly Dictionary<int, ActiveLoop> LoopsByInstanceId = new();
-
-        private sealed class ActiveLoop
-        {
-            internal ActiveLoop(PartyButtonLevelObject button, GameObject root, AudioSource audioSource)
-            {
-                Button = button;
-                Root = root;
-                AudioSource = audioSource;
-            }
-
-            internal PartyButtonLevelObject Button { get; }
-            internal GameObject Root { get; }
-            internal AudioSource AudioSource { get; }
-        }
+        private static readonly Dictionary<int, AudioSource> SourcesByInstanceId = new();
 
         internal static bool TryStartLoop(PartyButtonLevelObject button)
         {
@@ -49,10 +35,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
             root.transform.localPosition = Vector3.zero;
 
             AudioSource audioSource = root.AddComponent<AudioSource>();
-            ConfigureAudioSource(audioSource, clip);
+            audioSource.clip = clip;
+            audioSource.loop = true;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = DiscoBallSoundConstants.SpatialBlend;
+            audioSource.minDistance = DiscoBallSoundConstants.MinDistance;
+            audioSource.maxDistance = DiscoBallSoundConstants.MaxDistance;
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.volume = DiscoBallSoundResolver.GetVolumeScale();
 
             audioSource.Play();
-            LoopsByInstanceId[button.GetInstanceID()] = new ActiveLoop(button, root, audioSource);
+            SourcesByInstanceId[button.GetInstanceID()] = audioSource;
 
             ModLog.Info(
                 DiscoBallSoundConstants.Feature,
@@ -63,67 +56,35 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
         internal static void StopLoop(PartyButtonLevelObject button)
         {
             int instanceId = button.GetInstanceID();
-            if (!LoopsByInstanceId.TryGetValue(instanceId, out ActiveLoop? active))
+            if (!SourcesByInstanceId.TryGetValue(instanceId, out AudioSource? source))
             {
                 return;
             }
 
-            DestroyLoop(active);
-            LoopsByInstanceId.Remove(instanceId);
+            DestroySource(source);
+            SourcesByInstanceId.Remove(instanceId);
         }
 
         internal static void StopAll()
         {
-            List<ActiveLoop> activeLoops = [.. LoopsByInstanceId.Values];
-            for (int i = 0; i < activeLoops.Count; i++)
+            foreach (AudioSource source in SourcesByInstanceId.Values)
             {
-                DestroyLoop(activeLoops[i]);
+                DestroySource(source);
             }
 
-            LoopsByInstanceId.Clear();
-        }
-
-        internal static void Prune()
-        {
-            List<int> stale = [];
-            foreach (KeyValuePair<int, ActiveLoop> pair in LoopsByInstanceId)
-            {
-                if (pair.Value.Button == null || pair.Value.Root == null)
-                {
-                    stale.Add(pair.Key);
-                }
-            }
-
-            for (int i = 0; i < stale.Count; i++)
-            {
-                LoopsByInstanceId.Remove(stale[i]);
-            }
+            SourcesByInstanceId.Clear();
         }
 
         internal static void ApplyVolumeToActiveLoops()
         {
             float volume = DiscoBallSoundResolver.GetVolumeScale();
-            foreach (ActiveLoop active in LoopsByInstanceId.Values)
+            foreach (AudioSource source in SourcesByInstanceId.Values)
             {
-                if (active.AudioSource != null)
+                if (source != null)
                 {
-                    active.AudioSource.volume = volume;
+                    source.volume = volume;
                 }
             }
-        }
-
-        internal static IReadOnlyList<PartyButtonLevelObject> GetActiveButtons()
-        {
-            List<PartyButtonLevelObject> buttons = [];
-            foreach (ActiveLoop active in LoopsByInstanceId.Values)
-            {
-                if (active.Button != null)
-                {
-                    buttons.Add(active.Button);
-                }
-            }
-
-            return buttons;
         }
 
         private static Transform ResolveParentTransform(PartyButtonLevelObject button)
@@ -132,32 +93,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
             return partyTransform != null ? partyTransform : button.transform;
         }
 
-        private static void ConfigureAudioSource(AudioSource audioSource, AudioClip clip)
+        private static void DestroySource(AudioSource? source)
         {
-            audioSource.clip = clip;
-            audioSource.loop = true;
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = DiscoBallSoundConstants.SpatialBlend;
-            audioSource.minDistance = DiscoBallSoundConstants.MinDistance;
-            audioSource.maxDistance = DiscoBallSoundConstants.MaxDistance;
-            audioSource.rolloffMode = AudioRolloffMode.Linear;
-            audioSource.dopplerLevel = DiscoBallSoundConstants.DopplerLevel;
-            audioSource.spread = DiscoBallSoundConstants.Spread;
-            audioSource.volume = DiscoBallSoundResolver.GetVolumeScale();
-            audioSource.outputAudioMixerGroup = GameAudioMixerAccess.TryResolveSfxGroup();
-        }
-
-        private static void DestroyLoop(ActiveLoop active)
-        {
-            if (active.AudioSource != null)
+            if (source == null)
             {
-                active.AudioSource.Stop();
+                return;
             }
 
-            if (active.Root != null)
-            {
-                UnityEngine.Object.Destroy(active.Root);
-            }
+            source.Stop();
+            // Detach before clip cache Clear() — Destroy(GameObject) alone is end-of-frame deferred.
+            source.clip = null;
+            UnityEngine.Object.DestroyImmediate(source.gameObject);
         }
     }
 }

@@ -3,8 +3,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
     internal static class DiscoBallSoundResolver
     {
         internal const float DefaultVolume = 0.8f;
-        internal const float MinVolume = 0f;
-        internal const float MaxVolume = 1f;
 
         private static readonly EmbeddedAudioVariantCatalog Catalog = new(
             DiscoBallSoundConstants.AssetFolder,
@@ -25,34 +23,19 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
 
         internal static float GetVolumeScale()
         {
-            if (!ModConfig.IsInitialized)
-            {
-                return DefaultVolume;
-            }
-
-            return UnityEngine.Mathf.Clamp(
-                ModConfig.DiscoBallSoundVolume.Value,
-                MinVolume,
-                MaxVolume);
+            float configured = !ModConfig.IsInitialized
+                ? DefaultVolume
+                : UnityEngine.Mathf.Clamp01(ModConfig.DiscoBallSoundVolume.Value);
+            return configured * DiscoBallSoundConstants.PlaybackGain;
         }
 
         internal static string? ResolveSpecificVariantFileName()
         {
-            if (ListVariantFileNames().Count == 0)
-            {
-                return null;
-            }
-
             return Catalog.ResolveSpecificVariant(ModConfig.DiscoBallSoundVariant.Value);
         }
 
         internal static string? ResolveRandomVariantFileName()
         {
-            if (ListVariantFileNames().Count == 0)
-            {
-                return null;
-            }
-
             string picked = Catalog.ResolveRandomVariant(ModConfig.DiscoBallSoundRandomPool.Value);
             return string.IsNullOrWhiteSpace(picked) ? null : picked;
         }

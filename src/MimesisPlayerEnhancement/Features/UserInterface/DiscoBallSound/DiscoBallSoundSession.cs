@@ -14,20 +14,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
                 return null;
             }
 
-            if (DiscoBallSoundResolver.ListVariantFileNames().Count == 0)
-            {
-                if (!_warnedNoVariants)
-                {
-                    _warnedNoVariants = true;
-                    ModLog.Warn(DiscoBallSoundConstants.Feature, "Disco ball sound replacement skipped — no embedded variants");
-                }
-
-                return null;
-            }
-
             if (mode == DiscoBallSoundMode.Specific)
             {
-                return DiscoBallSoundResolver.ResolveSpecificVariantFileName();
+                return WarnIfMissing(DiscoBallSoundResolver.ResolveSpecificVariantFileName());
             }
 
             int scopeId = CurrentScopeId();
@@ -48,7 +37,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
                 }
             }
 
-            return _stickyVariant;
+            return WarnIfMissing(_stickyVariant);
         }
 
         internal static void ClearStickyVariant()
@@ -56,6 +45,24 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound
             _stickyVariant = null;
             _scopeId = 0;
             _warnedNoVariants = false;
+        }
+
+        private static string? WarnIfMissing(string? variant)
+        {
+            if (!string.IsNullOrWhiteSpace(variant))
+            {
+                return variant;
+            }
+
+            if (!_warnedNoVariants)
+            {
+                _warnedNoVariants = true;
+                ModLog.Warn(
+                    DiscoBallSoundConstants.Feature,
+                    "Disco ball sound replacement skipped — no embedded variants");
+            }
+
+            return null;
         }
 
         private static int CurrentScopeId()

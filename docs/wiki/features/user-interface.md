@@ -163,7 +163,7 @@ Replace the loop that plays when the tram disco ball is turned on (`Sound_LevelO
 | `Random` | Pick one track per dungeon (optionally filtered by `DiscoBallSoundRandomPool`); same track if you toggle the ball off and on |
 | `Specific` | Always use `DiscoBallSoundVariant` |
 
-Default: `Vanilla`
+Default: `Random`
 
 ### `DiscoBallSoundVariant`
 
@@ -184,11 +184,11 @@ Default: *(empty)*
 
 ### `DiscoBallSoundVolume`
 
-Playback volume for custom disco ball music when mode is `Random` or `Specific`. Does not affect `Vanilla` mode.
+Playback volume for custom disco ball music when mode is `Random` or `Specific`. Internally scaled to roughly match vanilla MasterAudio bus loudness (custom clips that look equally loud in an editor still sounded hotter through a raw `AudioSource`). Does not affect `Vanilla` mode.
 
 | Value | Meaning |
 |-------|---------|
-| `0`–`1` | Volume scale (`0` = silent, `1` = full) |
+| `0`–`1` | Volume scale (`0` = silent, `1` = loudest custom level) |
 
 Default: `0.8`
 

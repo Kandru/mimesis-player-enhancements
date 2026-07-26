@@ -101,7 +101,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             ModConfig.DiscoBallSoundMode = ModConfig.CreateTrackedEntry(_category,
                 "DiscoBallSoundMode",
-                "Vanilla");
+                "Random");
 
             ModConfig.DiscoBallSoundVariant = ModConfig.CreateTrackedEntry(_category,
                 "DiscoBallSoundVariant",
@@ -316,8 +316,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         {
             if (!ContainsIgnoreCase(ValidDiscoBallSoundModes, value))
             {
-                logger.Warning("DiscoBallSoundMode must be Vanilla, Random, or Specific; resetting to Vanilla.");
-                ModConfig.DiscoBallSoundMode.Value = "Vanilla";
+                logger.Warning("DiscoBallSoundMode must be Vanilla, Random, or Specific; resetting to Random.");
+                ModConfig.DiscoBallSoundMode.Value = "Random";
                 return;
             }
 
