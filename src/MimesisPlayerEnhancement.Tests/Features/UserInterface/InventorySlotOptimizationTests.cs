@@ -26,6 +26,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         [InlineData("OnUpdateInvenSig")]
         [InlineData("OnChangeItemLooksSig")]
         [InlineData("SendChangeActiveInvenSlot")]
+        [InlineData("SelectSlot")]
         public void Inventory_nested_type_methods_exist(string methodName)
         {
             using MimesisMetadataContext context = CreateContext();

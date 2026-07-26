@@ -31,6 +31,7 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "EnableInventorySlotOptimization"),
                 (UiConfig.SectionId, "InventoryPickupSelectMode"),
                 (UiConfig.SectionId, "EnableInventorySelectNextOnRemove"),
+                (UiConfig.SectionId, "EnableInventoryNumberKeySelection"),
                 (UiConfig.SectionId, "RoundStartSoundMode"),
                 (UiConfig.SectionId, "RoundStartSoundVariant"),
                 (UiConfig.SectionId, "RoundStartSoundRandomPool"),

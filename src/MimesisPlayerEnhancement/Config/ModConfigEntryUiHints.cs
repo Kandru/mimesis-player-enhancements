@@ -405,6 +405,7 @@ namespace MimesisPlayerEnhancement
                     ["EnableInventorySlotOptimization"] = "inventorySlotOptimization",
                     ["InventoryPickupSelectMode"] = "inventorySlotOptimization",
                     ["EnableInventorySelectNextOnRemove"] = "inventorySlotOptimization",
+                    ["EnableInventoryNumberKeySelection"] = "inventoryNumberKeys",
                     ["RoundStartSoundMode"] = "roundStartSound",
                     ["RoundStartSoundRandomPool"] = "roundStartSound",
                     ["RoundStartSoundVariant"] = "roundStartSound",

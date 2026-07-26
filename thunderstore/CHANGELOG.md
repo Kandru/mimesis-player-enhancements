@@ -4,6 +4,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: properly show net-worth of spectating player
 - draft: add monster spawner via the dashboard
 - draft: when waiting for all players to load into the dungeon everybody could already move. Now they're freezed properly.
+- draft: bind keys 1, 2, 3 and 4 to their corresponding inventory slot
 
 ## 26.7.21
 - fix: allow kick/ban yet again (v0.3.1 changed stuff so it did not work anymore)

@@ -28,6 +28,7 @@
         "floatingDamage": "Floating damage numbers",
         "fpsUi": "FPS UI",
         "inventorySlotOptimization": "Inventory slot optimization",
+        "inventoryNumberKeys": "Inventory number keys",
         "roundStartSound": "Dungeon landing sound",
         "discoBallSound": "Disco ball music",
         "customLoadingScreen": "Custom loading screens"
@@ -88,6 +89,10 @@
       "EnableInventorySelectNextOnRemove": {
         "title": "Select Next Slot on Remove",
         "description": "When the selected slot becomes empty (drop, toilet, vending insert), advance to the next occupied slot."
+      },
+      "EnableInventoryNumberKeySelection": {
+        "title": "Inventory Number Keys",
+        "description": "Use keys 1–4 to select inventory slots instead of quick emotes. Emotes stay on the Q wheel."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon Landing Sound",

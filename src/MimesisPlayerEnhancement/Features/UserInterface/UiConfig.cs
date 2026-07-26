@@ -79,6 +79,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "EnableInventorySelectNextOnRemove",
                 true);
 
+            ModConfig.EnableInventoryNumberKeySelection = ModConfig.CreateTrackedEntry(_category,
+                "EnableInventoryNumberKeySelection",
+                true);
+
             ModConfig.RoundStartSoundMode = ModConfig.CreateTrackedEntry(_category,
                 "RoundStartSoundMode",
                 "Random");
@@ -169,6 +173,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnInventoryPickupSelectModeChanged(logger, value));
             ModConfig.EnableInventorySelectNextOnRemove.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableInventorySelectNextOnRemove));
+            ModConfig.EnableInventoryNumberKeySelection.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableInventoryNumberKeySelection));
             ModConfig.RoundStartSoundMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnRoundStartSoundModeChanged(logger, value));
             ModConfig.RoundStartSoundVariant.OnEntryValueChanged.Subscribe((_, value) =>

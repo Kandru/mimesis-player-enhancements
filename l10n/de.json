@@ -28,6 +28,7 @@
         "floatingDamage": "Schwebende Schadenszahlen",
         "fpsUi": "FPS-UI",
         "inventorySlotOptimization": "Inventar-Slot-Optimierung",
+        "inventoryNumberKeys": "Inventar-Zahlentasten",
         "roundStartSound": "Dungeon-Landesound",
         "discoBallSound": "Discokugel-Musik",
         "customLoadingScreen": "Benutzerdefinierte Ladebildschirme"
@@ -88,6 +89,10 @@
       "EnableInventorySelectNextOnRemove": {
         "title": "Nächsten Slot bei Entfernen wählen",
         "description": "Wenn der gewählte Slot leer wird (ablegen, Toilette, Automat), zum nächsten belegten Slot wechseln."
+      },
+      "EnableInventoryNumberKeySelection": {
+        "title": "Inventar-Zahlentasten",
+        "description": "Tasten 1–4 wählen Inventar-Slots statt Schnell-Emotes. Emotes bleiben am Q-Rad."
       },
       "RoundStartSoundMode": {
         "title": "Dungeon-Landesound",

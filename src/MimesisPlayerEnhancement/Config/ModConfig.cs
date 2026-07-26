@@ -253,6 +253,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableInventorySlotOptimization { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> InventoryPickupSelectMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableInventorySelectNextOnRemove { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableInventoryNumberKeySelection { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> RoundStartSoundRandomPool { get; internal set; } = null!;

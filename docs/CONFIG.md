@@ -111,6 +111,7 @@ Mod-wide settings that are not owned by a single feature.
 | `EnableInventorySlotOptimization` | bool | `true` | — | Master toggle for client-only hotbar behavior: left-packed hotbar display, pickup slot selection, and select-next after drop/remove. Does not change server inventory or affect other players. |
 | `InventoryPickupSelectMode` | string | `Always` | `Vanilla`, `WeaponsOnly`, `Always` | After pickup, request the server active slot for the picked-up item (`Always`), only for weapons (`WeaponsOnly`), or vanilla (`Vanilla`). Your game only. |
 | `EnableInventorySelectNextOnRemove` | bool | `true` | — | After drop/toilet/vending remove, request the next occupied slot (right first, then left). Hotbar is shown left-packed locally. Your game only. |
+| `EnableInventoryNumberKeySelection` | bool | `true` | — | Use keys 1–4 to select inventory slots instead of quick emotes. Emotes remain available on the Q wheel. Your game only. |
 | `RoundStartSoundMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace the dungeon landing melody (`Sound_UI_TramStopBGM_01`) after the tram stop sting. The `tram_stop` horn and departure/end-of-run horns are unchanged. Your game only. |
 | `RoundStartSoundVariant` | string | first embedded variant | embedded variant id | Used when `RoundStartSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
 | `RoundStartSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded sound may be picked. When set, only listed variant ids are eligible. Your game only. |
@@ -582,6 +583,7 @@ EnableFpsUiInventoryNetWorth = true
 EnableInventorySlotOptimization = true
 InventoryPickupSelectMode = Always
 EnableInventorySelectNextOnRemove = true
+EnableInventoryNumberKeySelection = true
 
 [MimesisPlayerEnhancement_Privacy]
 EnablePrivacy = false

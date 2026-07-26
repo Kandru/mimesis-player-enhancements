@@ -493,6 +493,87 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.NotNull(property);
         }
 
+        [Theory]
+        [InlineData("ProcessEmoteKey")]
+        [InlineData("ProcessUISelectKey")]
+        public void ProtoActor_inventory_hotkey_methods_exist(string methodName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("ProtoActor");
+
+            MethodInfo? method = type.GetMethod(methodName, InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void ProtoActor_inventory_field_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("ProtoActor");
+
+            FieldInfo? field = type.GetField("inventory", InstanceMember);
+
+            Assert.NotNull(field);
+        }
+
+        [Fact]
+        public void ProtoActor_Inventory_SelectSlot_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type protoActor = context.RequireType("ProtoActor");
+            Type? inventoryType = protoActor.GetNestedType("Inventory", InstanceMember);
+
+            Assert.NotNull(inventoryType);
+
+            MethodInfo? method = inventoryType.GetMethod("SelectSlot", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void EmotePlayer_TryStartEmoteByInput_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type protoActor = context.RequireType("ProtoActor");
+            Type? emotePlayerType = protoActor.GetNestedType("EmotePlayer", InstanceMember);
+
+            Assert.NotNull(emotePlayerType);
+
+            MethodInfo? method = emotePlayerType.GetMethod("TryStartEmoteByInput", InstanceMember);
+
+            Assert.NotNull(method);
+        }
+
+        [Fact]
+        public void InputManager_PressKey_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type inputAction = context.RequireType("Mimic.InputSystem.InputAction");
+            Type inputManager = context.RequireType("Mimic.InputSystem.InputManager");
+
+            MethodInfo? method = inputManager.GetMethod("PressKey", InstanceMember, [inputAction]);
+
+            Assert.NotNull(method);
+        }
+
+        [Theory]
+        [InlineData("Emote01")]
+        [InlineData("Emote02")]
+        [InlineData("Emote03")]
+        [InlineData("Emote04")]
+        public void InputAction_inventory_hotkeys_exist(string actionName)
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type inputAction = context.RequireType("Mimic.InputSystem.InputAction");
+
+            FieldInfo? field = inputAction.GetField(actionName, StaticMember);
+
+            Assert.NotNull(field);
+        }
+
         private static Type RequireAudioManagerType(MimesisMetadataContext context)
         {
             return context.FindType("Mimic.Audio.AudioManager")

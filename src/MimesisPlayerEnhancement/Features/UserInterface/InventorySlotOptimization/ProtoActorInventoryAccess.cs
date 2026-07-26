@@ -32,6 +32,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
             AccessTools.Method(InventoryType, "SendChangeActiveInvenSlot", [typeof(int)])
             ?? throw new InvalidOperationException("Inventory.SendChangeActiveInvenSlot not found");
 
+        private static readonly MethodInfo SelectSlotMethod =
+            AccessTools.Method(InventoryType, "SelectSlot", [typeof(int)])
+            ?? throw new InvalidOperationException("Inventory.SelectSlot not found");
+
+        private static readonly FieldInfo ProtoActorInventoryField =
+            AccessTools.Field(typeof(ProtoActor), "inventory")
+            ?? throw new InvalidOperationException("ProtoActor.inventory field not found");
+
         internal static MethodBase OnUpdateInvenSigMethod { get; } =
             AccessTools.Method(InventoryType, "OnUpdateInvenSig")
             ?? throw new InvalidOperationException("Inventory.OnUpdateInvenSig not found");
@@ -59,5 +67,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
 
             SendChangeActiveInvenSlotMethod.Invoke(inventory, [targetSlotIndex]);
         }
+
+        internal static bool TryGetInventory(ProtoActor actor, out object? inventory)
+        {
+            inventory = ProtoActorInventoryField.GetValue(actor);
+            return inventory != null;
+        }
+
+        internal static void SelectSlot(object inventory, int slotIndex) =>
+            SelectSlotMethod.Invoke(inventory, [slotIndex]);
     }
 }

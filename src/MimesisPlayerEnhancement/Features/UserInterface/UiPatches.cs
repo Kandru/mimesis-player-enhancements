@@ -1,4 +1,5 @@
 using System.Linq;
+using MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLock;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 
@@ -25,7 +26,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(MenuMirrorPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(WorldOverlayPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsUiPatches)))
-                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventorySlotOptimizationPatches)));
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventorySlotOptimizationPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventoryNumberKeyPatches)));
 
             HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
