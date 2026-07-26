@@ -297,6 +297,13 @@ export interface ItemOptionDto {
   variants?: Array<{ percent: number; masterId: number }>;
 }
 
+export interface MonsterOptionDto {
+  id: string;
+  label: string;
+  type: string;
+  masterId?: number;
+}
+
 export interface PlayerStatsDto {
   steamId: string;
   displayName: string;

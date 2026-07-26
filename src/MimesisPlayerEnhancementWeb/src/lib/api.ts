@@ -158,6 +158,21 @@ const Api = {
     });
   },
 
+  getMonsters() {
+    return Api.fetchJson<{ monsters: import('./types').MonsterOptionDto[] }>('/api/monsters');
+  },
+
+  spawnMonster(steamId: string, monsterId: string) {
+    return Api.fetchJson<{ success: boolean; message: string }>(
+      `/api/players/${encodeURIComponent(steamId)}/spawn-monster`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ monsterId }),
+      },
+    );
+  },
+
   setBlindMode(enabled: boolean) {
     return Api.fetchJson('/api/minimap/blind', {
       method: 'POST',

@@ -1,4 +1,4 @@
-import type { ConfigEntryDto, ConfigSelectOption, ItemOptionDto } from './types';
+import type { ConfigEntryDto, ConfigSelectOption, ItemOptionDto, MonsterOptionDto } from './types';
 import { flattenItemCatalog } from './itemCatalogHelpers';
 
 export interface PickerOption {
@@ -16,6 +16,15 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   Developer: 'dashboard.spawn_item_category_developer',
 };
 
+const MONSTER_CATEGORY_ORDER = ['Mimic', 'Boss', 'Jako', 'Special'] as const;
+
+const MONSTER_CATEGORY_LABEL_KEYS: Record<string, string> = {
+  Mimic: 'dashboard.spawn_monster_category_mimic',
+  Boss: 'dashboard.spawn_monster_category_boss',
+  Jako: 'dashboard.spawn_monster_category_jako',
+  Special: 'dashboard.spawn_monster_category_special',
+};
+
 function categoryLabel(type: string | undefined, t: (key: string) => string): string {
   const key = type || 'Miscellany';
   return t(CATEGORY_LABEL_KEYS[key] || key);
@@ -25,6 +34,23 @@ function sortByCategoryThenLabel(options: PickerOption[]): PickerOption[] {
   const order = (group?: string) => {
     const index = CATEGORY_ORDER.indexOf(group as (typeof CATEGORY_ORDER)[number]);
     return index >= 0 ? index : CATEGORY_ORDER.length;
+  };
+  return options.sort((a, b) => {
+    const diff = order(a.group) - order(b.group);
+    if (diff !== 0) return diff;
+    return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' });
+  });
+}
+
+function monsterCategoryLabel(type: string | undefined, t: (key: string) => string): string {
+  const key = type || 'Special';
+  return t(MONSTER_CATEGORY_LABEL_KEYS[key] || key);
+}
+
+function sortByMonsterCategoryThenLabel(options: PickerOption[]): PickerOption[] {
+  const order = (group?: string) => {
+    const index = MONSTER_CATEGORY_ORDER.indexOf(group as (typeof MONSTER_CATEGORY_ORDER)[number]);
+    return index >= 0 ? index : MONSTER_CATEGORY_ORDER.length;
   };
   return options.sort((a, b) => {
     const diff = order(a.group) - order(b.group);
@@ -72,6 +98,20 @@ export function buildGiveItemPickerOptions(
       value: entry.key,
       label: entry.label,
       group: categoryLabel(entry.type, t),
+    })),
+  );
+}
+
+/** Options for the spawn-monster dialog — values are monster master IDs. */
+export function buildGiveMonsterPickerOptions(
+  monsters: MonsterOptionDto[],
+  t: (key: string) => string,
+): PickerOption[] {
+  return sortByMonsterCategoryThenLabel(
+    monsters.map((monster) => ({
+      value: monster.masterId != null ? String(monster.masterId) : monster.id,
+      label: monster.label,
+      group: monsterCategoryLabel(monster.type, t),
     })),
   );
 }

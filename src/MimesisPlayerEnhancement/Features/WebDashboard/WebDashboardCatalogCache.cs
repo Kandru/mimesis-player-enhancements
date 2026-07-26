@@ -8,6 +8,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal static class WebDashboardCatalogCache
     {
         private static string? _itemsJson;
+        private static string? _monstersJson;
         private static string? _dungeonsJson;
         private static WebDashboardHostCheatsDto _hostCheats = new();
         private static int _catalogSessionToken;
@@ -15,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static void Invalidate()
         {
             _itemsJson = null;
+            _monstersJson = null;
             _dungeonsJson = null;
             _catalogSessionToken++;
         }
@@ -34,6 +36,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static string GetDungeonsJson()
         {
             return _dungeonsJson ?? WebDashboardJson.SerializeDungeons(new List<WebDashboardDungeonOptionDto>());
+        }
+
+        internal static string GetMonstersJson()
+        {
+            return _monstersJson ?? WebDashboardJson.SerializeMonsters(new List<WebDashboardMonsterOptionDto>());
         }
 
         private static void EnsureItems()
@@ -56,6 +63,16 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _dungeonsJson = WebDashboardJson.SerializeDungeons(WebDashboardDungeonCatalogService.BuildCatalog());
         }
 
+        private static void EnsureMonsters()
+        {
+            if (_monstersJson != null || !GameLocaleAccess.IsMainThread)
+            {
+                return;
+            }
+
+            _monstersJson = WebDashboardJson.SerializeMonsters(WebDashboardMonsterCatalogService.BuildCatalog());
+        }
+
         internal static void RefreshCatalogsIfNeeded(bool connected)
         {
             if (!connected)
@@ -65,15 +82,17 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             int token = WebDashboardSnapshotCache.Version;
-            if (token == _catalogSessionToken && _itemsJson != null && _dungeonsJson != null)
+            if (token == _catalogSessionToken && _itemsJson != null && _monstersJson != null && _dungeonsJson != null)
             {
                 return;
             }
 
             _catalogSessionToken = token;
             _itemsJson = null;
+            _monstersJson = null;
             _dungeonsJson = null;
             EnsureItems();
+            EnsureMonsters();
             EnsureDungeons();
         }
     }

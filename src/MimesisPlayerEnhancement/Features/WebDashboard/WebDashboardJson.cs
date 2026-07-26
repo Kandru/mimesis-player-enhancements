@@ -89,6 +89,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return ModJson.Serialize(new WebDashboardDungeonsApiResponse { Dungeons = [.. dungeons] });
         }
 
+        public static string SerializeMonsters(IReadOnlyList<WebDashboardMonsterOptionDto> monsters)
+        {
+            return ModJson.Serialize(new WebDashboardMonstersApiResponse { Monsters = [.. monsters] });
+        }
+
         public static string SerializeSpawnItemResult(WebDashboardSpawnItemResult result)
         {
             return ModJson.Serialize(result);

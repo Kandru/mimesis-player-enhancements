@@ -2,6 +2,7 @@
   import Api from '$lib/api';
   import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
   import GiveItemDialog from '$lib/components/players/GiveItemDialog.svelte';
+  import GiveMonsterDialog from '$lib/components/players/GiveMonsterDialog.svelte';
   import PlayerIdentity from '$lib/components/players/PlayerIdentity.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import type { PlayerDto } from '$lib/types';
@@ -45,16 +46,23 @@
   let giveItemOpen = $state(false);
   let giveItemInitialRecipients = $state<string[]>([]);
   let giveItemDialogKey = $state(0);
+  let giveMonsterOpen = $state(false);
+  let giveMonsterInitialRecipients = $state<string[]>([]);
+  let giveMonsterDialogKey = $state(0);
 
   const isHost = $derived(dashboard.status.isHost);
   const blindMode = $derived(dashboard.playerBlindMode);
   const eligibleGiveItemPlayers = $derived(
     players.filter((player) => canGiveItem(player)),
   );
+  const eligibleSpawnMonsterPlayers = $derived(
+    players.filter((player) => canGiveItem(player)),
+  );
 
   $effect(() => {
     if (isHost && dashboard.status.isConnected && !stored) {
       void dashboard.loadItemCatalog();
+      void dashboard.loadMonsterCatalog();
     }
   });
 
@@ -190,6 +198,12 @@
     giveItemInitialRecipients = [String(player.steamId)];
     giveItemDialogKey += 1;
     giveItemOpen = true;
+  }
+
+  function openSpawnMonster(player: PlayerDto) {
+    giveMonsterInitialRecipients = [String(player.steamId)];
+    giveMonsterDialogKey += 1;
+    giveMonsterOpen = true;
   }
 
   function requestModeration(player: PlayerDto, action: string) {
@@ -449,6 +463,9 @@
                     <button type="button" class="btn btn-secondary btn-xs" onclick={() => openGiveItem(player)}>
                       {t('dashboard.give_items')}
                     </button>
+                    <button type="button" class="btn btn-secondary btn-xs" onclick={() => openSpawnMonster(player)}>
+                      {t('dashboard.spawn_monsters')}
+                    </button>
                   {/if}
                 </div>
               </td>
@@ -478,5 +495,13 @@
     bind:open={giveItemOpen}
     eligiblePlayers={eligibleGiveItemPlayers}
     initialRecipients={giveItemInitialRecipients}
+  />
+{/key}
+
+{#key giveMonsterDialogKey}
+  <GiveMonsterDialog
+    bind:open={giveMonsterOpen}
+    eligiblePlayers={eligibleSpawnMonsterPlayers}
+    initialRecipients={giveMonsterInitialRecipients}
   />
 {/key}

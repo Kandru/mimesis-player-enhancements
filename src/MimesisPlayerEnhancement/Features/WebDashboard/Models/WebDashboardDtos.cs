@@ -412,6 +412,24 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Location = "";
     }
 
+    internal sealed class WebDashboardMonsterOptionDto
+    {
+        public string Id = "";
+        public string Label = "";
+        public string Type = "";
+        public int? MasterId;
+    }
+
+    internal sealed class WebDashboardMonstersApiResponse
+    {
+        public List<WebDashboardMonsterOptionDto> Monsters = [];
+    }
+
+    internal sealed class WebDashboardSpawnMonsterRequest
+    {
+        public string MonsterId = "";
+    }
+
     internal sealed class WebDashboardHostCheatsDto
     {
         public bool Success = true;

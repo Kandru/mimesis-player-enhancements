@@ -11,6 +11,7 @@ import type {
   MinimapPoiDto,
   MinimapTileDto,
   MinimapTrainDto,
+  MonsterOptionDto,
   PlayerDto,
   PlayerStatsDto,
   QuickPresetDto,
@@ -138,6 +139,7 @@ class DashboardStore {
   selectedLoadPresetId = $state('');
 
   itemCatalog = $state<ItemOptionDto[]>([]);
+  monsterCatalog = $state<MonsterOptionDto[]>([]);
   dungeonCatalog = $state<Array<{ id: string; label: string }>>([]);
 
   minimapFocusSteamId = $state(localStorage.getItem('minimapFocusSteamId') || '');
@@ -721,6 +723,7 @@ class DashboardStore {
   prefetchDashboardData(force = false) {
     void this.loadGlobalSettings(true, force);
     void this.loadItemCatalog();
+    void this.loadMonsterCatalog();
     void this.loadDungeonCatalog();
     if (canViewSaveSettings(this.status)) {
       void this.loadSaveProfileData(force);
@@ -819,6 +822,7 @@ class DashboardStore {
       if (onGlobal) {
         await this.loadGlobalSettings(false, true);
         void this.loadItemCatalog();
+        void this.loadMonsterCatalog();
         void this.loadDungeonCatalog();
       }
       if (onSettings) {
@@ -834,7 +838,10 @@ class DashboardStore {
       if (this.route === 'minimap' && this.minimapRaw) {
         this.applyMinimapFilter(force);
       }
-      if (this.status.isHost && this.route === 'players') await this.loadItemCatalog();
+      if (this.status.isHost && this.route === 'players') {
+        await this.loadItemCatalog();
+        await this.loadMonsterCatalog();
+      }
     } catch (e) {
       this.pageError = e instanceof Error ? e.message : String(e);
     }
@@ -848,6 +855,15 @@ class DashboardStore {
     try {
       const res = await Api.getItems();
       this.itemCatalog = res.items || [];
+    } catch {
+      /* optional */
+    }
+  }
+
+  async loadMonsterCatalog() {
+    try {
+      const res = await Api.getMonsters();
+      this.monsterCatalog = res.monsters || [];
     } catch {
       /* optional */
     }

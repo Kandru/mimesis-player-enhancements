@@ -468,6 +468,28 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
             Assert.Equal("Int32", method.ReturnType.Name);
         }
 
+        [Fact]
+        public void IVroom_CreateMonster_exists_with_expected_signature()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type ivroom = context.RequireType("IVroom");
+            Type reasonOfSpawn = context.RequireType("ReasonOfSpawn");
+
+            MethodInfo? method = ivroom.GetMethods(InstanceMember)
+                .FirstOrDefault(candidate =>
+                    candidate.Name == "CreateMonster"
+                    && candidate.GetParameters().Length == 6
+                    && candidate.GetParameters()[0].ParameterType.Name == "Int32"
+                    && candidate.GetParameters()[1].ParameterType.Name == "PosWithRot"
+                    && candidate.GetParameters()[2].ParameterType.Name == "Boolean"
+                    && candidate.GetParameters()[3].ParameterType.Name == "String"
+                    && candidate.GetParameters()[4].ParameterType.Name == "String"
+                    && candidate.GetParameters()[5].ParameterType.Name == reasonOfSpawn.Name);
+
+            Assert.NotNull(method);
+            Assert.Equal("VMonster", method.ReturnType.Name);
+        }
+
         [Theory]
         [InlineData("camRoot")]
         [InlineData("_cc")]

@@ -557,6 +557,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/monsters" && method == "GET")
+            {
+                if (!WebDashboardGameState.CanViewCatalogs())
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WriteJson(context, 200, WebDashboardCatalogCache.GetMonstersJson());
+                return;
+            }
+
             if (path.StartsWith("/api/players/", StringComparison.Ordinal))
             {
                 HandlePlayerApi(context, method, path, snapshot);
@@ -723,6 +735,46 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     context,
                     spawnResult.Success ? 200 : 400,
                     WebDashboardJson.SerializeSpawnItemResult(spawnResult));
+                return;
+            }
+
+            if (action == "spawn-monster" && method == "POST")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                WebDashboardSpawnMonsterRequest? spawnRequest =
+                    ModJson.Deserialize<WebDashboardSpawnMonsterRequest>(ReadRequestBody(context.Request));
+                if (spawnRequest == null || string.IsNullOrWhiteSpace(spawnRequest.MonsterId))
+                {
+                    WriteJson(context, 400, WebDashboardJson.SerializeError(400, L("invalid_spawn_monster_request")));
+                    return;
+                }
+
+                long spawnPlayerUid = ResolvePlayerUid(snapshot, steamId);
+
+                WebDashboardActionResult spawnResult;
+                try
+                {
+                    spawnResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardMonsterSpawnService.Execute(
+                            steamId,
+                            spawnPlayerUid,
+                            spawnRequest.MonsterId));
+                }
+                catch (TimeoutException)
+                {
+                    WriteJson(context, 504, WebDashboardJson.SerializeError(504, L("timed_out")));
+                    return;
+                }
+
+                WriteJson(
+                    context,
+                    spawnResult.Success ? 200 : 400,
+                    WebDashboardJson.SerializeActionResult(spawnResult));
                 return;
             }
 
