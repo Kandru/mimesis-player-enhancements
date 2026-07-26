@@ -37,7 +37,7 @@ Most features only need to be installed on the **host** — friends can join wit
 | [Spawn Scaling](docs/wiki/features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host only |
 | [Loot Multiplicator](docs/wiki/features/loot-multiplicator.md) | Scale map loot and enemy drops; filter items; convert mimic decoys to real loot | Host only |
 | [Economy](docs/wiki/features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
-| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host enables |
+| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
 | [Mimic Tuning](docs/wiki/features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | [Player Tuning](docs/wiki/features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |
 | [Dungeon Randomizer](docs/wiki/features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (24 curated layout styles) | Host only |
