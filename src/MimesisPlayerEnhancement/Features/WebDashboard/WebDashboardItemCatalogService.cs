@@ -224,42 +224,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             string resolved = GameLocaleAccess.GetL10NText(info.Name);
-            if (IsBrokenGameLabel(resolved, info.Name, masterId))
+            if (WebDashboardCatalogLabels.IsBrokenGameLabel(resolved, info.Name, masterId, rejectItemNameTokens: true))
             {
                 return masterId.ToString();
             }
 
             return resolved;
-        }
-
-        private static bool IsBrokenGameLabel(string resolved, string nameKey, int masterId)
-        {
-            if (string.IsNullOrWhiteSpace(resolved))
-            {
-                return true;
-            }
-
-            if (resolved.Contains("L10N error", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (string.Equals(resolved, nameKey, StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (string.Equals(resolved, masterId.ToString(), StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (resolved.Contains("STRING_ITEM_NAME", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private static bool IsDeveloperItem(ItemMasterInfo info)
@@ -303,7 +273,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return true;
             }
 
-            if (IsBrokenGameLabel(resolved, nameKey, info.MasterID))
+            if (WebDashboardCatalogLabels.IsBrokenGameLabel(resolved, nameKey, info.MasterID, rejectItemNameTokens: true))
             {
                 return true;
             }

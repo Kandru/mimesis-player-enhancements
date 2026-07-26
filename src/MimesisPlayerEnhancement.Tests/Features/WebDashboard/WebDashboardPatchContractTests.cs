@@ -469,6 +469,69 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
         }
 
         [Fact]
+        public void IVroom_DamageAppliable_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("IVroom");
+
+            MethodInfo? method = type.GetMethod("DamageAppliable", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.False(method.IsStatic);
+            Assert.Equal("Boolean", method.ReturnType.Name);
+            Assert.Empty(method.GetParameters());
+        }
+
+        [Fact]
+        public void VWorldCombatUtil_CalculateDamage_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("VWorldCombatUtil");
+
+            MethodInfo? method = type.GetMethod(
+                "CalculateDamage",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+            Assert.NotNull(method);
+            Assert.True(method.IsStatic);
+            Assert.Equal("DamageAttribute", method.ReturnType.Name);
+
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Equal(3, parameters.Length);
+            Assert.Equal("VCreature", parameters[0].ParameterType.Name);
+        }
+
+        [Fact]
+        public void StatManager_OnChangeAbnormalStat_ApplyMutableStatsAbnormalArgs_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type statManager = context.RequireType("StatManager");
+            Type argsType = context.RequireType("ApplyMutableStatsAbnormalArgs");
+
+            MethodInfo? method = statManager.GetMethod(
+                "OnChangeAbnormalStat",
+                InstanceMember,
+                [argsType]);
+
+            Assert.NotNull(method);
+            Assert.False(method.IsStatic);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void VProjectileObject_OnDamageImpl_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("VProjectileObject");
+
+            MethodInfo? method = type.GetMethod("OnDamageImpl", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.False(method.IsStatic);
+            Assert.Equal("List`1", method.ReturnType.Name);
+        }
+
+        [Fact]
         public void IVroom_CreateMonster_exists_with_expected_signature()
         {
             using MimesisMetadataContext context = CreateContext();

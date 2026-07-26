@@ -63,12 +63,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 minDistanceMeters,
                 maxDistanceMeters);
 
+            float minDistanceSq = (minDistanceMeters - DistanceStepMeters) * (minDistanceMeters - DistanceStepMeters);
+
             for (float distance = startDistance;
                  distance >= minDistanceMeters - 0.001f;
                  distance -= DistanceStepMeters)
             {
                 Vector3 candidate = vworld.GetReachableDistancePos(playerPos, yaw, distance);
-                if (HorizontalDistance(candidate, playerPos) < distance - DistanceStepMeters)
+                if (HorizontalDistanceSq(candidate, playerPos) < minDistanceSq)
                 {
                     continue;
                 }
@@ -110,11 +112,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return false;
         }
 
-        private static float HorizontalDistance(Vector3 a, Vector3 b)
+        private static float HorizontalDistanceSq(Vector3 a, Vector3 b)
         {
             float dx = a.x - b.x;
             float dz = a.z - b.z;
-            return Mathf.Sqrt(dx * dx + dz * dz);
+            return dx * dx + dz * dz;
         }
     }
 }

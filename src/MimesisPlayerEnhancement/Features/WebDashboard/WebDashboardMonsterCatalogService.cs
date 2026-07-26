@@ -86,68 +86,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             string resolved = GameLocaleAccess.GetL10NText(nameKey);
-            if (!IsBrokenGameLabel(resolved, nameKey, masterId))
+            if (!WebDashboardCatalogLabels.IsBrokenGameLabel(resolved, nameKey, masterId))
             {
                 return resolved;
             }
 
-            string humanized = HumanizeNameKey(nameKey);
+            string humanized = WebDashboardCatalogLabels.HumanizeNameKey(nameKey);
             return string.IsNullOrWhiteSpace(humanized) ? masterId.ToString() : humanized;
-        }
-
-        private static string HumanizeNameKey(string nameKey)
-        {
-            string[] parts = nameKey.Split('_', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 0)
-            {
-                return nameKey;
-            }
-
-            string[] words = new string[parts.Length];
-            for (int i = 0; i < parts.Length; i++)
-            {
-                string part = parts[i];
-                if (part.Length == 0)
-                {
-                    words[i] = part;
-                    continue;
-                }
-
-                if (part.Length == 1)
-                {
-                    words[i] = part.ToUpperInvariant();
-                    continue;
-                }
-
-                words[i] = char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant();
-            }
-
-            return string.Join(" ", words);
-        }
-
-        private static bool IsBrokenGameLabel(string resolved, string nameKey, int masterId)
-        {
-            if (string.IsNullOrWhiteSpace(resolved))
-            {
-                return true;
-            }
-
-            if (resolved.Contains("L10N error", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (string.Equals(resolved, nameKey, StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            if (string.Equals(resolved, masterId.ToString(), StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private static string ResolveType(MonsterType monsterType)
