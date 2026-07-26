@@ -12,7 +12,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 
         internal static bool IsSpectatorInventoryMode()
         {
-            return TryGetCameraman(out CameraManager? cameraman) && cameraman.IsSpectatorMode;
+            return TryGetCameraman(out CameraManager? cameraman)
+                && cameraman != null
+                && cameraman.IsSpectatorMode;
         }
 
         private const string LabelObjectName = "MPE_NetWorth";
@@ -183,6 +185,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
         private static ProtoActor? ResolveInventoryActor()
         {
             if (TryGetCameraman(out CameraManager? cameraman)
+                && cameraman != null
                 && cameraman.IsSpectatorMode
                 && cameraman.TryGetCurrentSpectatorTarget(out ProtoActor? target))
             {
