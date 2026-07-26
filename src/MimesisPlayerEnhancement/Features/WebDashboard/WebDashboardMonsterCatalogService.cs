@@ -64,23 +64,75 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static string ResolveLabel(MonsterInfo info)
         {
             int masterId = info.MasterID;
+
+            string modKey = $"dashboard.monster_label_{masterId}";
+            string modLabel = WebDashboardL10n.Get(modKey);
+            if (!string.Equals(modLabel, modKey, StringComparison.Ordinal))
+            {
+                return modLabel;
+            }
+
             if (string.IsNullOrWhiteSpace(info.Name))
             {
                 return masterId.ToString();
             }
 
-            string resolved = GameLocaleAccess.GetL10NText(info.Name);
-            if (IsBrokenGameLabel(resolved, info.Name, masterId))
+            string nameKey = info.Name;
+            string nameModKey = $"dashboard.monster_name_{nameKey}";
+            string nameModLabel = WebDashboardL10n.Get(nameModKey);
+            if (!string.Equals(nameModLabel, nameModKey, StringComparison.Ordinal))
             {
-                return masterId.ToString();
+                return nameModLabel;
             }
 
-            return resolved;
+            string resolved = GameLocaleAccess.GetL10NText(nameKey);
+            if (!IsBrokenGameLabel(resolved, nameKey, masterId))
+            {
+                return resolved;
+            }
+
+            string humanized = HumanizeNameKey(nameKey);
+            return string.IsNullOrWhiteSpace(humanized) ? masterId.ToString() : humanized;
+        }
+
+        private static string HumanizeNameKey(string nameKey)
+        {
+            string[] parts = nameKey.Split('_', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+            {
+                return nameKey;
+            }
+
+            string[] words = new string[parts.Length];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string part = parts[i];
+                if (part.Length == 0)
+                {
+                    words[i] = part;
+                    continue;
+                }
+
+                if (part.Length == 1)
+                {
+                    words[i] = part.ToUpperInvariant();
+                    continue;
+                }
+
+                words[i] = char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant();
+            }
+
+            return string.Join(" ", words);
         }
 
         private static bool IsBrokenGameLabel(string resolved, string nameKey, int masterId)
         {
             if (string.IsNullOrWhiteSpace(resolved))
+            {
+                return true;
+            }
+
+            if (resolved.Contains("L10N error", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

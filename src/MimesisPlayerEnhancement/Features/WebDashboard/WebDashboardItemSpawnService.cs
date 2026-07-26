@@ -1,7 +1,6 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using ReluProtocol.Enum;
-using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -97,7 +96,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     return Fail(L("item_spawn_failed"));
                 }
 
-                PosWithRot spawnPos = CreateSpawnPos(vPlayer);
+                PosWithRot spawnPos;
+                if (!WebDashboardSpawnPlacement.TryResolveForwardSpawn(vPlayer, 1f, 1.5f, out spawnPos))
+                {
+                    spawnPos = vPlayer.PositionVector.toPosWithRot(0f);
+                    spawnPos.yaw = vPlayer.Position.yaw - 180f;
+                }
+
                 int actorId = (int)SpawnLootingObjectMethod.Invoke(
                     vroom,
                     [
@@ -126,28 +131,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ModLog.Warn(Feature, $"Item spawn failed — {ex.Message}");
                 return Fail(L("item_spawn_failed"));
             }
-        }
-
-        private static PosWithRot CreateSpawnPos(VPlayer player)
-        {
-            VWorld? vworld = GameSessionAccess.TryGetVWorld();
-            if (vworld != null)
-            {
-                Vector3 reachable = vworld.GetReachableDistancePos(
-                    player.PositionVector,
-                    player.Position.yaw,
-                    1f);
-                if (reachable != Vector3.zero)
-                {
-                    PosWithRot pos = reachable.toPosWithRot(0f);
-                    pos.yaw = player.Position.yaw - 180f;
-                    return pos;
-                }
-            }
-
-            PosWithRot forward = player.Position.CreateForwardPosWithRot(2f);
-            forward.yaw = player.Position.yaw - 180f;
-            return forward;
         }
 
         private static bool TryResolveTarget(

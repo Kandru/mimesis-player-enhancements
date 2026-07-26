@@ -239,6 +239,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return true;
             }
 
+            if (resolved.Contains("L10N error", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             if (string.Equals(resolved, nameKey, StringComparison.Ordinal))
             {
                 return true;

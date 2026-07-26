@@ -1,6 +1,5 @@
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using ReluProtocol.Enum;
-using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -55,7 +54,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             try
             {
-                PosWithRot spawnPos = CreateSpawnPos(vPlayer);
+                if (!WebDashboardSpawnPlacement.TryResolveForwardSpawn(vPlayer, 4f, 5f, out PosWithRot spawnPos))
+                {
+                    ModLog.Info(Feature, $"Monster spawn blocked — no clear space in front, uid={vPlayer.UID}.");
+                    return Fail(L("monster_spawn_blocked"));
+                }
+
                 VMonster? monster = vroom.CreateMonster(
                     masterId,
                     spawnPos,
@@ -78,28 +82,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 ModLog.Warn(Feature, $"Monster spawn failed — {ex.Message}");
                 return Fail(L("monster_spawn_failed"));
             }
-        }
-
-        private static PosWithRot CreateSpawnPos(VPlayer player)
-        {
-            VWorld? vworld = GameSessionAccess.TryGetVWorld();
-            if (vworld != null)
-            {
-                Vector3 reachable = vworld.GetReachableDistancePos(
-                    player.PositionVector,
-                    player.Position.yaw,
-                    1f);
-                if (reachable != Vector3.zero)
-                {
-                    PosWithRot pos = reachable.toPosWithRot(0f);
-                    pos.yaw = player.Position.yaw - 180f;
-                    return pos;
-                }
-            }
-
-            PosWithRot forward = player.Position.CreateForwardPosWithRot(2f);
-            forward.yaw = player.Position.yaw - 180f;
-            return forward;
         }
 
         private static bool TryResolveTarget(
