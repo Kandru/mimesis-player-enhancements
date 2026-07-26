@@ -4,7 +4,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
 {
     internal static class RoundStartSoundPlayer
     {
-        private static GameObject? _root;
         private static AudioSource? _audioSource;
 
         internal static bool TryPlayReplacement()
@@ -16,49 +15,42 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
                 return false;
             }
 
-            AudioClip? clip = RoundStartSoundClipCache.TryGetCachedClip(fileName);
+            AudioClip? clip = RoundStartSoundRuntime.TryGetCachedClip(fileName);
             if (clip == null)
             {
-                ModLog.Warn(RoundStartSoundConstants.Feature, $"Dungeon landing sound replacement skipped — clip not preloaded ({fileName})");
+                ModLog.Warn(
+                    RoundStartSoundConstants.Feature,
+                    $"Dungeon landing sound replacement skipped — clip not preloaded ({fileName})");
                 return false;
             }
 
-            EnsureAudioSource();
-            if (_audioSource == null)
+            AudioSource? source = EnsureAudioSource();
+            if (source == null)
             {
                 return false;
             }
 
-            _audioSource.PlayOneShot(clip, RoundStartSoundResolver.GetVolumeScale());
+            source.PlayOneShot(clip, RoundStartSoundResolver.GetVolumeScale());
             ModLog.Info(
                 RoundStartSoundConstants.Feature,
                 $"Dungeon landing sound replaced — mode={RoundStartSoundResolver.GetMode()}, variant={fileName}");
             return true;
         }
 
-        internal static void Shutdown()
-        {
-            if (_root != null)
-            {
-                UnityEngine.Object.Destroy(_root);
-                _root = null;
-                _audioSource = null;
-            }
-        }
-
-        private static void EnsureAudioSource()
+        private static AudioSource? EnsureAudioSource()
         {
             if (_audioSource != null)
             {
-                return;
+                return _audioSource;
             }
 
-            _root = new GameObject("MimesisPlayerEnhancement_RoundStartSound");
-            UnityEngine.Object.DontDestroyOnLoad(_root);
-            _audioSource = _root.AddComponent<AudioSource>();
+            GameObject root = new(RoundStartSoundConstants.SourceObjectName);
+            UnityEngine.Object.DontDestroyOnLoad(root);
+            _audioSource = root.AddComponent<AudioSource>();
             _audioSource.playOnAwake = false;
             _audioSource.loop = false;
             _audioSource.spatialBlend = 0f;
+            return _audioSource;
         }
     }
 }

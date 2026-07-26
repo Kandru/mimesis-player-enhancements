@@ -3,8 +3,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
     internal static class RoundStartSoundResolver
     {
         internal const float DefaultVolume = 0.8f;
-        internal const float MinVolume = 0f;
-        internal const float MaxVolume = 1f;
 
         private static readonly EmbeddedAudioVariantCatalog Catalog = new(
             RoundStartSoundConstants.AssetFolder,
@@ -30,24 +28,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
                 return DefaultVolume;
             }
 
-            return UnityEngine.Mathf.Clamp(
-                ModConfig.RoundStartSoundVolume.Value,
-                MinVolume,
-                MaxVolume);
+            return UnityEngine.Mathf.Clamp01(ModConfig.RoundStartSoundVolume.Value);
         }
 
         internal static string? ResolveVariantFileName()
         {
-            IReadOnlyList<string> variants = ListVariantFileNames();
-            if (variants.Count == 0)
-            {
-                return null;
-            }
-
             RoundStartSoundMode mode = GetMode();
             return mode switch
             {
-                RoundStartSoundMode.Specific => ResolveSpecificVariant(),
+                RoundStartSoundMode.Specific => Catalog.ResolveSpecificVariant(ModConfig.RoundStartSoundVariant.Value),
                 RoundStartSoundMode.Random => ResolveRandomVariant(),
                 _ => null,
             };
@@ -66,14 +55,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
         internal static string FormatVariantDisplayName(string optionValue) =>
             EmbeddedAudioVariantCatalog.FormatVariantDisplayName(optionValue);
 
-        private static string ResolveRandomVariant()
+        private static string? ResolveRandomVariant()
         {
-            return Catalog.ResolveRandomVariant(ModConfig.RoundStartSoundRandomPool.Value);
-        }
-
-        private static string? ResolveSpecificVariant()
-        {
-            return Catalog.ResolveSpecificVariant(ModConfig.RoundStartSoundVariant.Value);
+            string picked = Catalog.ResolveRandomVariant(ModConfig.RoundStartSoundRandomPool.Value);
+            return string.IsNullOrWhiteSpace(picked) ? null : picked;
         }
 
         private static RoundStartSoundMode ParseMode(string? value)

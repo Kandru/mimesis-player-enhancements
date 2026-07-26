@@ -13,12 +13,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
         private static bool Prefix(AudioPlayer __instance)
         {
             string? sfxId = SfxIdField?.GetValue(__instance) as string;
-            if (!RoundStartSoundGate.ShouldReplaceSfx(sfxId))
-            {
-                return true;
-            }
-
-            return !RoundStartSoundPlayer.TryPlayReplacement();
+            return RoundStartSoundGate.PrefixAllowVanilla(sfxId);
         }
     }
 }

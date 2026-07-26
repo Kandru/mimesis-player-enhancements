@@ -1,8 +1,17 @@
+using UnityEngine;
+
 namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
 {
     internal static class RoundStartSoundRuntime
     {
+        private static readonly EmbeddedAudioClipCache ClipCache = new(
+            RoundStartSoundConstants.AssetFolder,
+            RoundStartSoundConstants.Feature,
+            RoundStartSoundConstants.AssetFolder);
+
         private static string? _preloadedFingerprint;
+
+        internal static AudioClip? TryGetCachedClip(string fileName) => ClipCache.TryGetCachedClip(fileName);
 
         internal static void RefreshFromConfig()
         {
@@ -13,15 +22,15 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             }
 
             string fingerprint = BuildPreloadFingerprint();
-            if (string.Equals(fingerprint, _preloadedFingerprint, StringComparison.Ordinal)
-                && RoundStartSoundClipCache.HasCachedClips)
+            if (!string.Equals(fingerprint, _preloadedFingerprint, StringComparison.Ordinal))
             {
+                // Keep already-decoded clips — clearing + re-decoding on the main thread freezes the game.
+                PreloadVariants();
+                _preloadedFingerprint = fingerprint;
                 return;
             }
 
-            RoundStartSoundClipCache.Clear();
-            PreloadVariants();
-            _preloadedFingerprint = fingerprint;
+            EnsurePreloaded();
         }
 
         internal static void OnDungeonEntryBegin()
@@ -38,23 +47,22 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             DungeonLandingEntryTracker.ScheduleCloseAfterEnterGame();
         }
 
+        internal static void OnPlaySceneDestroyed()
+        {
+            DungeonLandingEntryTracker.End();
+        }
+
         internal static void OnSessionEnded()
         {
             DungeonLandingEntryTracker.End();
             ClearPreload();
         }
 
-        internal static void Shutdown()
-        {
-            OnSessionEnded();
-            RoundStartSoundPlayer.Shutdown();
-        }
-
         private static void EnsurePreloaded()
         {
             string fingerprint = BuildPreloadFingerprint();
             if (string.Equals(fingerprint, _preloadedFingerprint, StringComparison.Ordinal)
-                && RoundStartSoundClipCache.HasCachedClips)
+                && ClipCache.HasCachedClips)
             {
                 return;
             }
@@ -65,7 +73,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
 
         private static void ClearPreload()
         {
-            RoundStartSoundClipCache.Clear();
+            ClipCache.Clear();
             _preloadedFingerprint = null;
         }
 
@@ -73,7 +81,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
         {
             foreach (string fileName in RoundStartSoundResolver.ListVariantFileNames())
             {
-                _ = RoundStartSoundClipCache.TryPreloadClip(fileName);
+                _ = ClipCache.TryPreloadClip(fileName);
             }
         }
 

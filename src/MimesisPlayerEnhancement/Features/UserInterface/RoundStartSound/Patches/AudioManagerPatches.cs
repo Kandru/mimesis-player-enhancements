@@ -5,15 +5,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
     internal static class AudioManagerPlaySfxPatch
     {
         [HarmonyPrefix]
-        private static bool Prefix(string? sfxId)
-        {
-            if (!RoundStartSoundGate.ShouldReplaceSfx(sfxId))
-            {
-                return true;
-            }
-
-            return !RoundStartSoundPlayer.TryPlayReplacement();
-        }
+        private static bool Prefix(string? sfxId) => RoundStartSoundGate.PrefixAllowVanilla(sfxId);
     }
 
     // game@0.3.1 Assembly-CSharp/Mimic.Audio/AudioManager.cs:L209-218
@@ -21,14 +13,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
     internal static class AudioManagerPlaySfxTransformPatch
     {
         [HarmonyPrefix]
-        private static bool Prefix(string? sfxId)
-        {
-            if (!RoundStartSoundGate.ShouldReplaceSfx(sfxId))
-            {
-                return true;
-            }
-
-            return !RoundStartSoundPlayer.TryPlayReplacement();
-        }
+        private static bool Prefix(string? sfxId) => RoundStartSoundGate.PrefixAllowVanilla(sfxId);
     }
 }

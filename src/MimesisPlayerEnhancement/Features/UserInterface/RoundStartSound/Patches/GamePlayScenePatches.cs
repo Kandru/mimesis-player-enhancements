@@ -58,7 +58,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patche
 
             try
             {
-                DungeonLandingEntryTracker.End();
+                RoundStartSoundRuntime.OnPlaySceneDestroyed();
             }
             catch (Exception ex)
             {
