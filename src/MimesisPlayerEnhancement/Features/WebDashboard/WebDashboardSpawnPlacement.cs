@@ -12,12 +12,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private const float DistanceStepMeters = 0.25f;
         private const float BlockCheckRadiusMeters = 0.4f;
         private const float PlayerNavSnapRadiusMeters = 2f;
+        private const float HoverHeadroomMeters = 1.5f;
+        private const float FloorProbeEpsilonMeters = 0.05f;
 
         internal static bool TryResolveForwardSpawn(
             VPlayer player,
             float minDistanceMeters,
             float maxDistanceMeters,
-            out PosWithRot spawnPos)
+            out PosWithRot spawnPos,
+            float hoverHeightMeters = 0f)
         {
             spawnPos = new PosWithRot();
 
@@ -63,14 +66,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 minDistanceMeters,
                 maxDistanceMeters);
 
-            float minDistanceSq = (minDistanceMeters - DistanceStepMeters) * (minDistanceMeters - DistanceStepMeters);
-
             for (float distance = startDistance;
                  distance >= minDistanceMeters - 0.001f;
                  distance -= DistanceStepMeters)
             {
                 Vector3 candidate = vworld.GetReachableDistancePos(playerPos, yaw, distance);
-                if (HorizontalDistanceSq(candidate, playerPos) < minDistanceSq)
+                float requiredReach = distance - DistanceStepMeters;
+                if (requiredReach > 0f
+                    && HorizontalDistanceSq(candidate, playerPos) < requiredReach * requiredReach)
                 {
                     continue;
                 }
@@ -91,6 +94,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
 
                 Vector3 placed = new(candidate.x, floorHit.y, candidate.z);
+                float appliedHover = 0f;
+                if (hoverHeightMeters > 0f
+                    && TryResolveHoverSpawn(floorHit, hoverHeightMeters, out Vector3 hoverPos))
+                {
+                    placed = hoverPos;
+                    appliedHover = hoverHeightMeters;
+                }
+
                 if (vworld.IsFullyBlockedByWall(
                         playerPos,
                         placed,
@@ -104,12 +115,38 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 spawnPos.yaw = facingYaw;
                 ModLog.Debug(
                     Feature,
-                    $"Spawn placement resolved — distance={distance:0.00}m, drop={playerPos.y - floorHit.y:0.00}m.");
+                    $"Spawn placement resolved — distance={distance:0.00}m, drop={playerPos.y - floorHit.y:0.00}m, hover={appliedHover:0.00}m.");
                 return true;
             }
 
             ModLog.Debug(Feature, $"Spawn placement blocked — no valid point in {minDistanceMeters:0.00}-{maxDistanceMeters:0.00}m range.");
             return false;
+        }
+
+        private static bool TryResolveHoverSpawn(Vector3 floorHit, float hoverHeightMeters, out Vector3 hoverPos)
+        {
+            hoverPos = new Vector3(floorHit.x, floorHit.y + hoverHeightMeters, floorHit.z);
+
+            // Clear air from just above the floor through hover + monster headroom.
+            Vector3 upOrigin = floorHit + Vector3.up * FloorProbeEpsilonMeters;
+            Vector3 upTarget = floorHit + Vector3.up * (hoverHeightMeters + HoverHeadroomMeters);
+            if (!PhysicsUtility.CheckBlockByWall(upOrigin, upTarget))
+            {
+                return false;
+            }
+
+            // Confirm open space under the hover point so the actor is not embedded in the floor.
+            Vector3 floorBelow = PhysicsUtility.DropToFloor(
+                hoverPos,
+                margin: FloorProbeEpsilonMeters,
+                maxDistance: hoverHeightMeters + 0.2f);
+            if (floorBelow == hoverPos)
+            {
+                return false;
+            }
+
+            float gap = hoverPos.y - floorBelow.y;
+            return gap >= hoverHeightMeters - 0.1f && gap <= hoverHeightMeters + 0.15f;
         }
 
         private static float HorizontalDistanceSq(Vector3 a, Vector3 b)
