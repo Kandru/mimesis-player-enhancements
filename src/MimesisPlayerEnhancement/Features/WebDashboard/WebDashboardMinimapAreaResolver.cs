@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal const string IndoorAreaId = "indoor";
         internal const string HubAreaId = "hub";
 
-        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs — fields _dungeonSpaceGroup / _spaceGroup
+        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L79
         private static readonly FieldInfo? DungeonSpaceGroupField =
             AccessTools.Field(typeof(DungeonRoom), "_dungeonSpaceGroup");
 

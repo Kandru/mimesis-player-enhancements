@@ -12,6 +12,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private const string Feature = "WebDashboard";
         private const float EdgeTouchEpsilon = 0.002f;
 
+        private static string _cachedTeleporterRunKey = "";
+        private static TeleporterLevelObject[] _cachedTeleporters = [];
+
+        internal static void ClearTeleporterCache()
+        {
+            _cachedTeleporterRunKey = "";
+            _cachedTeleporters = [];
+        }
+
         internal static void AppendTeleporterConnectionPoints(
             WebDashboardMinimapLayoutDto layout,
             GamePlayScene gps)
@@ -19,8 +28,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             try
             {
                 DungeonRoom? room = JoinAnytimeRoomTools.GetActiveDungeonRoom() as DungeonRoom;
-                TeleporterLevelObject[] teleporters =
-                    UnityEngine.Object.FindObjectsByType<TeleporterLevelObject>(FindObjectsSortMode.None);
+                string runKey = WebDashboardMinimapLayoutBuilder.CurrentRunKey;
+                TeleporterLevelObject[] teleporters = ResolveTeleporters(runKey);
                 foreach (TeleporterLevelObject teleporter in teleporters)
                 {
                     if (teleporter == null)
@@ -340,6 +349,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             x = ((fromLeft + fromRight) * 0.5f + (toLeft + toRight) * 0.5f) * 0.5f;
             z = ((fromTop + fromBottom) * 0.5f + (toTop + toBottom) * 0.5f) * 0.5f;
             return true;
+        }
+
+        private static TeleporterLevelObject[] ResolveTeleporters(string runKey)
+        {
+            if (string.Equals(runKey, _cachedTeleporterRunKey, StringComparison.Ordinal))
+            {
+                return _cachedTeleporters;
+            }
+
+            _cachedTeleporterRunKey = runKey;
+            _cachedTeleporters =
+                UnityEngine.Object.FindObjectsByType<TeleporterLevelObject>(FindObjectsSortMode.None);
+            return _cachedTeleporters;
         }
     }
 }

@@ -6,6 +6,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardItemSpawnService
     {
+        // game@0.3.1 Assembly-CSharp/IVroom.cs:L944-954
         private const string Feature = "WebDashboard";
 
         private static string L(string key) => WebDashboardL10n.Get($"api.{key}");

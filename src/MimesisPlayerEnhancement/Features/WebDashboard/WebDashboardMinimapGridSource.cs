@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
     internal static class WebDashboardMinimapGridSource
     {
+        // game@0.3.1 Assembly-CSharp/VSpaceGridGroup.cs:L9
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 

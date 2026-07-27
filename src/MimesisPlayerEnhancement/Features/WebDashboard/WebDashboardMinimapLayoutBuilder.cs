@@ -15,12 +15,15 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static WebDashboardMinimapLayoutDto Current { get; private set; } = new();
 
+        internal static string CurrentRunKey => _cachedRunKey;
+
         internal static int LayoutVersion { get; private set; }
 
         internal static void RequestRebuild()
         {
             _rebuildRequested = true;
             _cachedRunKey = "";
+            WebDashboardMinimapConnectionBuilder.ClearTeleporterCache();
             WebDashboardSnapshotCache.MarkDirty();
         }
 
@@ -32,6 +35,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             LayoutVersion = 0;
             WebDashboardMinimapTileRegistry.Clear();
             WebDashboardMinimapFloorRegistry.Clear();
+            WebDashboardMinimapConnectionBuilder.ClearTeleporterCache();
         }
 
         internal static void EnsureLayout()

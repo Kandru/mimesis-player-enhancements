@@ -68,15 +68,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             Dictionary<ulong, string> displayNames = new(players.Count);
-            if (context.SaveSlotId >= 0)
+            foreach (PlayerStatisticsDocument player in players)
             {
-                foreach (PlayerStatisticsDocument player in players)
-                {
-                    displayNames[player.SteamId] = SaveSlotDocumentStore.ResolveDisplayName(
-                        context.SaveSlotId,
-                        player.SteamId,
-                        player.DisplayName);
-                }
+                displayNames[player.SteamId] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
+                    player.SteamId,
+                    context.SaveSlotId);
             }
 
             return new OfflinePlayerRebuildSnapshot(context, players, bannedSteamIds, displayNames);
@@ -89,10 +85,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             Dictionary<ulong, string> displayNames = new(players.Count);
             foreach (PlayerStatisticsDocument player in players)
             {
-                displayNames[player.SteamId] = SaveSlotDocumentStore.ResolveDisplayName(
-                    saveSlotId,
+                displayNames[player.SteamId] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
                     player.SteamId,
-                    player.DisplayName);
+                    saveSlotId);
             }
 
             return new LeaderboardRebuildSnapshot(

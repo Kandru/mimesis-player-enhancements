@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
+    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L3632,L3756-3758,L3786,L4026-4028,L5225,L5317,L5347,L5388,L5614
+    // game@0.3.1 Assembly-CSharp/Hub.cs:L498,L508
+    // game@0.3.1 Assembly-CSharp/DebugConsole.cs:L74-76
     internal static class WebDashboardHostCheatsNoClipMovement
     {
         private const BindingFlags InstanceFlags =

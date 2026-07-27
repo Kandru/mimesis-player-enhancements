@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static List<ulong> _cachedLeaderboardSteamIds = [];
         private static int _serializeInFlight;
         private static int _pendingRevision;
+        private static int _generation;
 
         internal static string? UpdateAndGetCached(
             int saveSlotId,
@@ -48,6 +49,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static void Clear()
         {
+            _generation++;
             lock (SerializeLock)
             {
                 _cachedJson = null;
@@ -77,14 +79,21 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             LeaderboardRebuildSnapshot snapshot = WebDashboardBackgroundSnapshots.CaptureLeaderboardRebuild(saveSlotId);
             List<ulong> connectedIds = [.. connectedSteamIds];
             int rebuildRevision = revision;
-            _ = Task.Run(() => BuildAndSerializeBackground(saveSlotId, connectedIds, rebuildRevision, snapshot));
+            int generationAtStart = Volatile.Read(ref _generation);
+            _ = Task.Run(() => BuildAndSerializeBackground(
+                saveSlotId,
+                connectedIds,
+                rebuildRevision,
+                snapshot,
+                generationAtStart));
         }
 
         private static void BuildAndSerializeBackground(
             int saveSlotId,
             List<ulong> connectedSteamIds,
             int revision,
-            LeaderboardRebuildSnapshot snapshot)
+            LeaderboardRebuildSnapshot snapshot,
+            int generationAtStart)
         {
             try
             {
@@ -104,6 +113,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     {
                         leaderboardSteamIds.Add(entry.SteamId);
                     }
+                }
+
+                if (generationAtStart != Volatile.Read(ref _generation))
+                {
+                    return;
                 }
 
                 lock (SerializeLock)

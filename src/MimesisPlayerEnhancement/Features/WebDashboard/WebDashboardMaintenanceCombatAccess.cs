@@ -5,6 +5,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     internal static class WebDashboardMaintenanceCombatAccess
     {
+        // game@0.3.1 Assembly-CSharp/StatManager.cs:L12
         private static readonly FieldInfo? StatManagerSelfField =
             AccessTools.Field(typeof(StatManager), "_self");
 

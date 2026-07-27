@@ -101,11 +101,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardMinimapLayoutDto layout = WebDashboardMinimapLayoutBuilder.Current;
             Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             WebDashboardMinimapTrainDto? rawTrain = TryCollectTrain(pdata?.main, layout);
+            Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = BuildPlayerLookup(players);
             List<WebDashboardMinimapMarkerDto> normalized = [];
 
             foreach (WebDashboardMinimapMarkerDto marker in raw)
             {
-                EnrichFromPlayers(marker, players);
+                EnrichFromPlayers(marker, playersBySteam);
                 WebDashboardMinimapBoundsDto bounds = ResolveMarkerBounds(layout, marker);
                 normalized.Add(NormalizeMarker(marker, bounds));
             }
@@ -429,24 +430,37 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 && bounds.MaxZ == 1f;
         }
 
-        private static void EnrichFromPlayers(WebDashboardMinimapMarkerDto marker, IReadOnlyList<WebDashboardPlayerDto> players)
+        private static Dictionary<ulong, WebDashboardPlayerDto> BuildPlayerLookup(
+            IReadOnlyList<WebDashboardPlayerDto> players)
         {
+            Dictionary<ulong, WebDashboardPlayerDto> lookup = new(players.Count);
             foreach (WebDashboardPlayerDto player in players)
             {
-                if (player.SteamId != marker.SteamId)
+                if (player.SteamId != 0)
                 {
-                    continue;
+                    lookup[player.SteamId] = player;
                 }
+            }
 
-                if (!string.IsNullOrWhiteSpace(player.DisplayName))
-                {
-                    marker.DisplayName = player.DisplayName;
-                }
+            return lookup;
+        }
 
-                marker.IsHost = player.IsHost;
-                marker.IsLocal = player.IsLocal;
+        private static void EnrichFromPlayers(
+            WebDashboardMinimapMarkerDto marker,
+            Dictionary<ulong, WebDashboardPlayerDto> playersBySteam)
+        {
+            if (!playersBySteam.TryGetValue(marker.SteamId, out WebDashboardPlayerDto? player))
+            {
                 return;
             }
+
+            if (!string.IsNullOrWhiteSpace(player.DisplayName))
+            {
+                marker.DisplayName = player.DisplayName;
+            }
+
+            marker.IsHost = player.IsHost;
+            marker.IsLocal = player.IsLocal;
         }
 
         private static WebDashboardMinimapMarkerDto NormalizeMarker(

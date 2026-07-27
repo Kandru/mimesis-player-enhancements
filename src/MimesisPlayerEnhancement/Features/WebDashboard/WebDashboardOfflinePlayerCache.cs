@@ -16,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static int _cachedRevision = -1;
         private static int _buildInFlight;
         private static int _pendingRevision;
+        private static int _generation;
 
         internal static int CachedRevision => Volatile.Read(ref _cachedRevision);
 
@@ -42,12 +43,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             int rebuildRevision = revision;
+            int generationAtStart = Volatile.Read(ref _generation);
             OfflinePlayerRebuildSnapshot snapshot = WebDashboardBackgroundSnapshots.CaptureOfflineRebuild();
-            _ = Task.Run(() => RebuildBackground(rebuildRevision, snapshot));
+            _ = Task.Run(() => RebuildBackground(rebuildRevision, snapshot, generationAtStart));
         }
 
         internal static void Clear()
         {
+            _generation++;
             _cached = [];
             _cachedRevision = -1;
             _pendingRevision = 0;
@@ -61,11 +64,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             _pendingRevision = 0;
         }
 
-        private static void RebuildBackground(int revision, OfflinePlayerRebuildSnapshot snapshot)
+        private static void RebuildBackground(
+            int revision,
+            OfflinePlayerRebuildSnapshot snapshot,
+            int generationAtStart)
         {
             try
             {
                 List<WebDashboardPlayerDto> built = WebDashboardPlayerService.BuildOfflineStatisticsPlayers(snapshot);
+                if (generationAtStart != Volatile.Read(ref _generation))
+                {
+                    return;
+                }
+
                 _cached = built;
                 _cachedRevision = revision;
                 WebDashboardSnapshotCache.MarkDirty();

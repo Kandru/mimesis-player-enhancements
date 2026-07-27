@@ -14,6 +14,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
     internal static class WebDashboardMinimapDungeonSource
     {
+        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L79
+        // game@0.3.1 Assembly-CSharp/VSpaceTileGroup.cs:L14-16
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 

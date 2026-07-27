@@ -665,11 +665,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 dto.PlayerUid = info.PlayerUid;
             }
 
-            if (!string.IsNullOrWhiteSpace(info.DisplayName) && info.DisplayName != "(pending)")
-            {
-                dto.DisplayName = info.DisplayName;
-            }
-
             dto.ConnectionRole = info.ConnectionRole;
             dto.ConnectionAddress = info.ConnectionAddress;
             dto.VoiceLineCount = info.VoiceLineCount;

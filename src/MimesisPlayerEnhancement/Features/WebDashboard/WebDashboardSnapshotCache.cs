@@ -108,6 +108,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     _dirty = true;
                     _requireFullPublish = true;
+                    WebDashboardPatchHelpers.ClearCachedGrades();
                 }
 
                 long nowMs = tickNowMs;
@@ -293,10 +294,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 if (livePlayers.Count > 0)
                 {
                     _lastLivePlayers = livePlayers;
-                }
-                else if (_lastLivePlayers.Count > 0)
-                {
-                    livePlayers = _lastLivePlayers;
                 }
 
                 IReadOnlyList<WebDashboardPlayerDto> offlinePlayers = WebDashboardOfflinePlayerCache.GetCached();
