@@ -22,6 +22,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         internal static void OnSessionEnded()
         {
             _lastApplyFingerprint = null;
+            CustomLoadingScreenTextureCache.Clear();
             CustomLoadingScreenApplier.ForceReset();
         }
 

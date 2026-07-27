@@ -27,13 +27,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             return true;
         }
 
-        private static bool IsDungeonLandingContext()
-        {
-            return GameSessionAccess.TryGetPdata()?.main is GamePlayScene
-                   && DungeonLandingEntryTracker.IsActive;
-        }
-
-        private static bool MatchesLandingMelodySfxId(string? sfxId)
+        internal static bool MatchesLandingMelodySfxId(string? sfxId)
         {
             if (string.IsNullOrWhiteSpace(sfxId))
             {
@@ -43,6 +37,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound
             string normalized = sfxId.Trim();
             return string.Equals(normalized, RoundStartSoundConstants.LandingMelodySfxId, StringComparison.OrdinalIgnoreCase)
                    || string.Equals(normalized, RoundStartSoundConstants.LandingMelodySfxIdAlt, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsDungeonLandingContext()
+        {
+            return GameSessionAccess.TryGetPdata()?.main is GamePlayScene
+                   && DungeonLandingEntryTracker.IsActive;
         }
     }
 }

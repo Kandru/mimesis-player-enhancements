@@ -81,10 +81,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
 
         internal static bool ShouldUseExtendedLayout(object[] parameters) =>
-            ModConfig.EnableMorePlayers.Value
-            && parameters.Length >= 3
-            && parameters[2] is int playerCount
-            && playerCount > 4;
+            SurvivalResultPlayerGridLayout.ShouldUseExtendedLayout(ModConfig.EnableMorePlayers.Value, parameters);
 
         private static readonly string[] VanillaDecorGraphicNames =
         [
@@ -270,39 +267,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
                 return false;
             }
 
-            int actualCount = ResolveActualPlayerCount(parameters, success, claimedCount);
+            int actualCount = SurvivalResultPlayerGridLayout.ResolveActualPlayerCount(parameters, success, claimedCount);
             int scrapBase = 3 + (actualCount * 3);
             parsed = new ParsedParameters(cycleCount, success, claimedCount, actualCount, scrapBase);
             return true;
         }
 
-        private static int ResolveActualPlayerCount(object[] parameters, bool success, int claimedCount)
-        {
-            int maxByLength = Math.Max(0, (parameters.Length - 3) / 3);
-            int upper = Math.Min(claimedCount, maxByLength);
-
-            if (!success)
-            {
-                return upper;
-            }
-
-            for (int actual = upper; actual >= 0; actual--)
-            {
-                int scrapBase = 3 + (actual * 3);
-                if (scrapBase >= parameters.Length || parameters[scrapBase] is not int scrapCount || scrapCount < 0)
-                {
-                    continue;
-                }
-
-                int needed = scrapBase + 1 + (scrapCount * 2);
-                if (needed <= parameters.Length)
-                {
-                    return actual;
-                }
-            }
-
-            return upper;
-        }
+        private static int ResolveActualPlayerCount(object[] parameters, bool success, int claimedCount) =>
+            SurvivalResultPlayerGridLayout.ResolveActualPlayerCount(parameters, success, claimedCount);
 
         private static SurvivalResultGridState GetOrCreateState(object ui) =>
             GridStates.GetValue(ui, _ => new SurvivalResultGridState());
@@ -463,21 +435,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         private static void UpdateGridColumnMetrics(SurvivalResultGridState state, RectTransform? anchor)
         {
             float gridWidth = ResolveGridWidthLocal(anchor);
-            state.CellWidth = Mathf.Max(
-                MinColumnWidth,
-                (gridWidth - ((ColumnsPerRow - 1) * ColumnGap)) / ColumnsPerRow);
+            state.CellWidth = SurvivalResultPlayerGridLayout.ComputeCellWidth(gridWidth);
             state.ColStep = state.CellWidth + ColumnGap;
         }
 
         private static float ResolveGridWidthLocal(RectTransform? anchor)
         {
             float screenPerLocalX = ResolveScreenPerLocalX(anchor);
-            if (screenPerLocalX <= 0.01f)
-            {
-                screenPerLocalX = 1f;
-            }
-
-            return (Screen.width * GridWidthFraction) / screenPerLocalX;
+            return SurvivalResultPlayerGridLayout.ResolveGridWidthLocal(Screen.width, screenPerLocalX);
         }
 
         private static float[] MeasureRowHeights(SurvivalResultGridState state, int displayCount)
@@ -542,7 +507,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
 
         private static string FormatDayResultsTitle(int cycleCount) =>
-            $"DAY {cycleCount} RESULTS";
+            SurvivalResultPlayerGridLayout.FormatDayResultsTitle(cycleCount);
 
         private static float ConfigureHeaderText(SurvivalResultGridState state, int cycleCount)
         {

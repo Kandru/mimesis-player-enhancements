@@ -1,5 +1,3 @@
-using ReluProtocol.Enum;
-
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     internal static class WorldOverlayGate
@@ -18,12 +16,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 
         internal static bool IsWorldDamageTarget(ProtoActor? actor)
         {
-            if (actor == null || actor.dead || actor.AmIAvatar())
+            if (actor == null)
             {
                 return false;
             }
 
-            return actor.IsPlayer() || actor.ActorType == ActorType.Monster;
+            return WorldOverlayTargetRules.IsEligibleWorldDamageTarget(
+                actor.dead,
+                actor.AmIAvatar(),
+                actor.IsPlayer(),
+                actor.ActorType);
         }
 
         internal static bool IsDamageOverlayTarget(ProtoActor? actor) => IsWorldDamageTarget(actor);

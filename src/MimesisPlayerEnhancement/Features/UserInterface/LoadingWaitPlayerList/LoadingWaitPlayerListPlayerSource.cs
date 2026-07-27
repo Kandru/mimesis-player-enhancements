@@ -52,7 +52,17 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             VPlayer? vPlayer = SessionContextAccess.GetVPlayer(context);
             bool loaded = vPlayer != null && vPlayer.LevelLoadCompleted;
-            string displayName = ResolveDisplayName(context, steamId);
+            string? nickName = null;
+            try
+            {
+                nickName = context.NickName;
+            }
+            catch
+            {
+                /* mid-setup */
+            }
+
+            string displayName = LoadingWaitPlayerListDisplayNames.Resolve(nickName, steamId);
             if (string.IsNullOrWhiteSpace(displayName))
             {
                 displayName = steamId.ToString();
@@ -69,27 +79,5 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             };
         }
 
-        private static string ResolveDisplayName(SessionContext context, ulong steamId)
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(context.NickName))
-                {
-                    return context.NickName;
-                }
-            }
-            catch
-            {
-                /* mid-setup */
-            }
-
-            if (PlayerRegistry.TryGetRecord(steamId, out PlayerRecord? record)
-                && !string.IsNullOrWhiteSpace(record.DisplayName))
-            {
-                return record.DisplayName;
-            }
-
-            return string.Empty;
-        }
     }
 }

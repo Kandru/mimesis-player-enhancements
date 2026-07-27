@@ -658,6 +658,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
 
             string actorName = actor.netSyncActorData.actorName;
+            ulong steamId = StatisticsTracker.TryResolveSteamId(actor);
+            if (steamId != 0)
+            {
+                name = PlayerRegistry.ApplyResolvedDisplayName(steamId, actorName);
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    return true;
+                }
+            }
+
             name = ResolveNickNameMethod.Invoke(main, [actor, actorName]) as string ?? actorName;
             return true;
         }
