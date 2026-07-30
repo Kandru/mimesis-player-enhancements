@@ -811,6 +811,29 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (action == "respawn" && method == "POST")
+            {
+                long respawnPlayerUid = ResolvePlayerUid(snapshot, steamId);
+
+                WebDashboardActionResult respawnResult;
+                try
+                {
+                    respawnResult = WebDashboardConfigUpdateQueue.EnqueueAndWait(
+                        () => WebDashboardModerationService.Respawn(steamId, respawnPlayerUid));
+                }
+                catch (TimeoutException)
+                {
+                    WriteJson(context, 504, WebDashboardJson.SerializeError(504, L("timed_out")));
+                    return;
+                }
+
+                WriteJson(
+                    context,
+                    respawnResult.Success ? 200 : 400,
+                    WebDashboardJson.SerializeActionResult(respawnResult));
+                return;
+            }
+
             if (action is "godmode" or "noclip")
             {
                 long cheatPlayerUid = ResolvePlayerUid(snapshot, steamId);
@@ -826,7 +849,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 "kick" => WebDashboardActionType.Kick,
                 "ban" => WebDashboardActionType.Ban,
                 "unban" => WebDashboardActionType.Unban,
-                "respawn" => WebDashboardActionType.Respawn,
                 "heal" => WebDashboardActionType.Heal,
                 _ => null,
             };

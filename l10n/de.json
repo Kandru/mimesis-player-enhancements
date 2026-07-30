@@ -1321,6 +1321,7 @@
     "revive_not_allowed": "Wiederbelebung im aktuellen Raumzustand nicht erlaubt.",
     "no_revive_point": "Kein Wiederbelebungs-Punkt verfügbar.",
     "player_not_dead": "Spieler ist nicht tot.",
+    "player_still_dying": "Spieler ist noch in der Todessequenz — Wiederbelebung in etwa {seconds}s möglich.",
     "player_dead_use_respawn": "Spieler ist tot. Verwende Neu spawnen.",
     "player_not_in_game": "Spieler nicht im Spiel.",
     "player_not_found": "Spieler nicht gefunden.",

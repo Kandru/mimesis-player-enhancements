@@ -195,10 +195,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         Kick,
         Ban,
         Unban,
-        Respawn,
         Heal,
-        ToggleGodMode,
-        ToggleNoClip,
     }
 
     internal sealed class WebDashboardPendingAction

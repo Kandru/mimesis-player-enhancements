@@ -1,6 +1,7 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using ReluProtocol.Enum;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
@@ -8,7 +9,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private static string L(string key) => WebDashboardL10n.Get($"api.{key}");
+        private static string L(string key, params object[] args) => WebDashboardL10n.Get($"api.{key}", args);
+
+        // game@0.3.1 GameMainBase.CorDying — deadCameraDuration, then +4s while any player is alive.
+        private const float DeathPresentationExtraWaitSeconds = 5f;
+        private const float FallbackDeadCameraDurationSeconds = 5f;
 
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -40,10 +45,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             if (action.SteamId != 0 && LocalPlayerHelper.IsLocalSteamId(action.SteamId)
-                && action.Type is not WebDashboardActionType.Respawn
-                    and not WebDashboardActionType.Heal
-                    and not WebDashboardActionType.ToggleGodMode
-                    and not WebDashboardActionType.ToggleNoClip)
+                && action.Type is not WebDashboardActionType.Heal)
             {
                 return Fail(L("cannot_moderate_host"));
             }
@@ -56,10 +58,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     WebDashboardActionType.Kick => Kick(sessionManager, action),
                     WebDashboardActionType.Ban => Ban(sessionManager, action),
                     WebDashboardActionType.Unban => Unban(sessionManager, action),
-                    WebDashboardActionType.Respawn => Respawn(action),
                     WebDashboardActionType.Heal => Heal(action),
-                    WebDashboardActionType.ToggleGodMode => ToggleGodMode(action),
-                    WebDashboardActionType.ToggleNoClip => ToggleNoClip(action),
                     _ => Fail(L("unknown_action")),
                 };
         }
@@ -146,8 +145,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             };
         }
 
-        private static WebDashboardActionResult Respawn(WebDashboardPendingAction action)
+        internal static WebDashboardActionResult Respawn(ulong steamId, long playerUid)
         {
+            if (!WebDashboardGameState.IsHost())
+            {
+                return Fail(L("host_only"));
+            }
+
+            WebDashboardPendingAction action = new()
+            {
+                SteamId = steamId,
+                PlayerUid = playerUid,
+            };
+
             if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
             {
                 return Fail(L("player_not_found"));
@@ -162,6 +172,14 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (vPlayer.LifeCycle != VCreatureLifeCycle.Dead)
             {
                 return Fail(L("player_not_dead"));
+            }
+
+            if (!IsDeathPresentationFinished(action, out int remainingSeconds))
+            {
+                return Fail(L("player_still_dying", new Dictionary<string, object>
+                {
+                    ["seconds"] = remainingSeconds,
+                }));
             }
 
             if (vPlayer.VRoom == null || !vPlayer.VRoom.CanReviveCheat())
@@ -245,46 +263,49 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
-        private static WebDashboardActionResult ToggleGodMode(WebDashboardPendingAction action)
+        private static bool IsDeathPresentationFinished(WebDashboardPendingAction action, out int remainingSeconds)
         {
-            if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
+            remainingSeconds = 0;
+            WebDashboardLiveRoster roster = WebDashboardLiveRoster.Capture();
+            ProtoActor? actor = null;
+
+            if (action.PlayerUid != 0 && roster.TryGetByUid(action.PlayerUid, out ProtoActor byUid))
             {
-                return Fail(L("player_not_found"));
+                actor = byUid;
+            }
+            else if (action.SteamId != 0 && roster.TryGetBySteamId(action.SteamId, out ProtoActor bySteam))
+            {
+                actor = bySteam;
             }
 
-            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
-            if (vPlayer == null)
+            if (actor == null || !actor.dead)
             {
-                return Fail(L("player_not_in_game"));
+                return true;
             }
 
-            if (!WebDashboardHostCheatsRuntime.TryToggleGodMode(vPlayer, out bool enabled, out string? errorMessage))
+            float deadCameraDuration = FallbackDeadCameraDurationSeconds;
+            try
             {
-                return Fail(errorMessage ?? L("failed_apply"));
+                GameConfig.PlayerActor? config = actor.paConfig;
+                if (config != null)
+                {
+                    deadCameraDuration = config.deadCameraDuration;
+                }
+            }
+            catch
+            {
+                /* scene may be transitioning */
             }
 
-            return Ok(enabled ? L("player_godmode_enabled") : L("player_godmode_disabled"));
-        }
-
-        private static WebDashboardActionResult ToggleNoClip(WebDashboardPendingAction action)
-        {
-            if (!TryResolveTarget(action, out SessionContext? targetContext, out _))
+            float requiredWait = deadCameraDuration + DeathPresentationExtraWaitSeconds;
+            float remaining = requiredWait - (Time.time - actor.deadTime);
+            if (remaining <= 0f)
             {
-                return Fail(L("player_not_found"));
+                return true;
             }
 
-            VPlayer? vPlayer = WebDashboardSessionAccess.GetVPlayer(targetContext!);
-            if (vPlayer == null)
-            {
-                return Fail(L("player_not_in_game"));
-            }
-
-            if (!WebDashboardHostCheatsRuntime.TryToggleNoClip(vPlayer, out bool enabled, out string? errorMessage))
-            {
-                return Fail(errorMessage ?? L("failed_apply"));
-            }
-
-            return Ok(enabled ? L("player_noclip_enabled") : L("player_noclip_disabled"));
+            remainingSeconds = (int)System.Math.Ceiling(remaining);
+            return false;
         }
 
         private static void ApplyFullHealthAndClearConta(VPlayer vPlayer)

@@ -1321,6 +1321,7 @@
     "revive_not_allowed": "Revive not allowed in the current room state.",
     "no_revive_point": "No revive point available.",
     "player_not_dead": "Player is not dead.",
+    "player_still_dying": "Player is still in the death sequence — respawn available in about {seconds}s.",
     "player_dead_use_respawn": "Player is dead. Use respawn instead.",
     "player_not_in_game": "Player not in game.",
     "player_not_found": "Player not found.",
