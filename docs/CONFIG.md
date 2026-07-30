@@ -311,7 +311,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 Does **not** change saved player balances or shop prices on save load. Shop price multipliers and discount rolls apply on fresh `InitShopItems` rounds (e.g. returning from a dungeon). Currency retention does **not** affect tram repair cost (`RepairTrain` still deducts `TargetCurrency`). Complements **Loot Multiplicator** (item quantity) — this feature scales currency amounts and prices, not how many items spawn.
 
-**Shop discounts:** When `ShopDiscountChancePercent` is above `0`, each shop item independently rolls for a discount. Successful rolls pick a random percentage between `ShopDiscountMinPercent` and `ShopDiscountMaxPercent`. At `0` chance, vanilla shop discount tables are used unchanged.
+**Shop discounts:** When `ShopDiscountChancePercent` is above `0`, each shop item independently rolls for a discount on shop init (or when discount settings change), not when players join. Successful rolls pick a random percentage between `ShopDiscountMinPercent` and `ShopDiscountMaxPercent`. At `0` chance, vanilla shop discount tables are used unchanged.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|

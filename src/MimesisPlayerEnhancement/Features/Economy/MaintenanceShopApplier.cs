@@ -41,7 +41,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                     continue;
                 }
 
-                MarkDirty(room);
                 EnsureApplied(room);
             }
         }
@@ -57,7 +56,9 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 }
 
                 GetState(room).LoadedFromSave = false;
-                EnsureApplied(room);
+                ApplyBuyPrices(room);
+                ApplyDiscounts(room);
+                MarkApplied(room);
             }
         }
 
@@ -191,7 +192,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             }
 
             ApplyBuyPrices(room);
-            ApplyDiscounts(room);
             MarkApplied(room, playerCount);
         }
 
@@ -242,8 +242,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
             int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
             float effective = EconomyResolver.GetEffectiveMultiplier(MoneyType.ShopBuyPrice, playerCount);
-            EconomySceneConfig economy = SceneScopedConfigGate.Economy;
-            bool modDiscountsEnabled = economy.ShopDiscountChancePercent > 0;
 
             Dictionary<int, int> basePrices = BasePricesByRoom.GetOrCreateValue(room);
             TrackRoom(room);
@@ -264,16 +262,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 }
 
                 int scaledBase = effective == 1f ? basePrice : EconomyResolver.ScaleAmount(basePrice, effective);
-                int newPrice;
-                if (modDiscountsEnabled)
-                {
-                    info.DiscountRate = 0f;
-                    newPrice = scaledBase;
-                }
-                else
-                {
-                    newPrice = MaintenanceShopPricing.ApplyDiscountRate(scaledBase, info.DiscountRate);
-                }
+                int newPrice = MaintenanceShopPricing.ApplyDiscountRate(scaledBase, info.DiscountRate);
 
                 if (info.Price == newPrice)
                 {

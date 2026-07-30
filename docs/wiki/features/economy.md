@@ -120,7 +120,7 @@ Default: `100`
 
 ### `ShopDiscountChancePercent`
 
-Chance per shop item to receive a discount in the min–max range. At `0`, vanilla shop discount tables are unchanged.
+Chance per shop item to receive a discount in the min–max range. At `0`, vanilla shop discount tables are unchanged. Rolls once when the maintenance shop is initialized (or when discount settings change), not when players join.
 
 | Value | Meaning |
 |---|---|
