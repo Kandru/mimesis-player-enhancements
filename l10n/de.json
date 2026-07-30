@@ -1215,6 +1215,9 @@
     "spawn_join_two": "{first} und {second}",
     "spawn_join_many": "{rest} und {last}"
   },
+  "economy": {
+    "tram_leave_cash_kept": "Ungenutztes Geld bleibt erhalten."
+  },
   "joinanytime": {
     "blocked_dungeon": "Abfahrt noch nicht möglich — andere Spieler sind noch im Dungeon.",
     "blocked_split": "Abfahrt noch nicht möglich — andere Spieler sind noch außerhalb der Tram.",
