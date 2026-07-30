@@ -1,5 +1,6 @@
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
+using MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -17,6 +18,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private static readonly string[] ValidDiscoBallSoundModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidInventoryPickupSelectModes = ["Vanilla", "WeaponsOnly", "Always"];
+        private static readonly string[] ValidSpectatorVoiceBalanceModes =
+        [
+            "Vanilla",
+            "SpeechDucking",
+            "StaticAttenuation",
+        ];
+        private const float MinSpectatorVoiceAttenuation = 0f;
+        private const float MaxSpectatorVoiceAttenuation = 1f;
+        private const float MinSpectatorVoiceDuckLevel = 0f;
+        private const float MaxSpectatorVoiceDuckLevel = 1f;
 
         private static MelonPreferences_Category _category = null!;
 
@@ -130,6 +141,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.CustomLoadingScreenMotion = ModConfig.CreateTrackedEntry(_category,
                 "CustomLoadingScreenMotion",
                 true);
+
+            ModConfig.SpectatorVoiceBalanceMode = ModConfig.CreateTrackedEntry(_category,
+                "SpectatorVoiceBalanceMode",
+                "Vanilla");
+
+            ModConfig.SpectatorVoiceAttenuation = ModConfig.CreateTrackedEntry(_category,
+                "SpectatorVoiceAttenuation",
+                0.8f);
+
+            ModConfig.SpectatorVoiceDuckLevel = ModConfig.CreateTrackedEntry(_category,
+                "SpectatorVoiceDuckLevel",
+                0.2f);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -205,6 +228,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 CustomLoadingScreenApplier.RefreshMotionFromConfig();
                 ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenMotion);
             });
+            ModConfig.SpectatorVoiceBalanceMode.OnEntryValueChanged.Subscribe((_, value) =>
+                OnSpectatorVoiceBalanceModeChanged(logger, value));
+            ModConfig.SpectatorVoiceAttenuation.OnEntryValueChanged.Subscribe((_, value) =>
+                OnSpectatorVoiceAttenuationChanged(logger, value));
+            ModConfig.SpectatorVoiceDuckLevel.OnEntryValueChanged.Subscribe((_, value) =>
+                OnSpectatorVoiceDuckLevelChanged(logger, value));
 
             SanitizeRoundStartSoundVariant(logger);
             SanitizeDiscoBallSoundVariant(logger);
@@ -223,6 +252,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.TrackFloatEntry(ModConfig.FloatingDamageDurationSeconds);
             ModConfig.TrackFloatEntry(ModConfig.RoundStartSoundVolume);
             ModConfig.TrackFloatEntry(ModConfig.DiscoBallSoundVolume);
+            ModConfig.TrackFloatEntry(ModConfig.SpectatorVoiceAttenuation);
+            ModConfig.TrackFloatEntry(ModConfig.SpectatorVoiceDuckLevel);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)
@@ -286,6 +317,64 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             }
 
             ModConfig.NotifyChanged(ModConfig.DiscoBallSoundVolume);
+        }
+
+        private static void OnSpectatorVoiceBalanceModeChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidSpectatorVoiceBalanceModes, value))
+            {
+                logger.Warning(
+                    "SpectatorVoiceBalanceMode must be Vanilla, SpeechDucking, or StaticAttenuation; resetting to Vanilla.");
+                ModConfig.SpectatorVoiceBalanceMode.Value = "Vanilla";
+                return;
+            }
+
+            SpectatorVoiceBalanceRuntime.RefreshFromConfig();
+            ModConfig.NotifyChanged(ModConfig.SpectatorVoiceBalanceMode);
+        }
+
+        private static void OnSpectatorVoiceAttenuationChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MinSpectatorVoiceAttenuation)
+            {
+                logger.Warning(
+                    $"SpectatorVoiceAttenuation must be at least {MinSpectatorVoiceAttenuation}; resetting.");
+                ModConfig.SpectatorVoiceAttenuation.Value = MinSpectatorVoiceAttenuation;
+                return;
+            }
+
+            if (value > MaxSpectatorVoiceAttenuation)
+            {
+                logger.Warning(
+                    $"SpectatorVoiceAttenuation must be at most {MaxSpectatorVoiceAttenuation}; resetting.");
+                ModConfig.SpectatorVoiceAttenuation.Value = MaxSpectatorVoiceAttenuation;
+                return;
+            }
+
+            SpectatorVoiceBalanceRuntime.RefreshFromConfig();
+            ModConfig.NotifyChanged(ModConfig.SpectatorVoiceAttenuation);
+        }
+
+        private static void OnSpectatorVoiceDuckLevelChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MinSpectatorVoiceDuckLevel)
+            {
+                logger.Warning(
+                    $"SpectatorVoiceDuckLevel must be at least {MinSpectatorVoiceDuckLevel}; resetting.");
+                ModConfig.SpectatorVoiceDuckLevel.Value = MinSpectatorVoiceDuckLevel;
+                return;
+            }
+
+            if (value > MaxSpectatorVoiceDuckLevel)
+            {
+                logger.Warning(
+                    $"SpectatorVoiceDuckLevel must be at most {MaxSpectatorVoiceDuckLevel}; resetting.");
+                ModConfig.SpectatorVoiceDuckLevel.Value = MaxSpectatorVoiceDuckLevel;
+                return;
+            }
+
+            SpectatorVoiceBalanceRuntime.RefreshFromConfig();
+            ModConfig.NotifyChanged(ModConfig.SpectatorVoiceDuckLevel);
         }
 
         private static void OnInventoryPickupSelectModeChanged(MelonLogger.Instance logger, string value)

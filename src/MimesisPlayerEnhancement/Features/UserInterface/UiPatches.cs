@@ -2,6 +2,7 @@ using System.Linq;
 using MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLock;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
+using MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -54,6 +55,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             RoundStartSoundRuntime.RefreshFromConfig();
             DiscoBallSoundRuntime.RefreshFromConfig();
             CustomLoadingScreenRuntime.RefreshFromConfig();
+            SpectatorVoiceBalanceRuntime.RefreshFromConfig();
         }
 
         internal static void OnUpdate()
@@ -63,6 +65,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             WorldOverlayRuntime.OnUpdate();
             FpsUiOverlay.OnUpdate();
             FpsUiNetWorthOverlay.OnUpdate();
+            SpectatorVoiceBalanceRuntime.OnUpdate();
         }
 
         internal static void OnSessionEnded()
@@ -80,6 +83,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             FpsUiNetWorthOverlay.OnSessionEnded();
             RoundStartSoundRuntime.OnSessionEnded();
             DiscoBallSoundRuntime.OnSessionEnded();
+            SpectatorVoiceBalanceRuntime.OnSessionEnded();
         }
     }
 }

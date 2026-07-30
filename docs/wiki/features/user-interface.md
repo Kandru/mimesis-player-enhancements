@@ -192,6 +192,40 @@ Playback volume for custom disco ball music when mode is `Random` or `Specific`.
 
 Default: `0.8`
 
+### `SpectatorVoiceBalanceMode`
+
+While you are dead and spectating (or possessing a mimic), rebalance remote player voice chat on your client only. Other players are unaffected.
+
+| Value | Meaning |
+|-------|---------|
+| `Vanilla` | No changes |
+| `SpeechDucking` | Duck the non-priority group to `SpectatorVoiceDuckLevel` after the priority group has spoken continuously for more than 0.2 s |
+| `StaticAttenuation` | Keep the non-priority group at `SpectatorVoiceAttenuation` of their preferred volume |
+
+While spectating dead, dead players are priority (living are attenuated/ducked). While possessing a mimic, living players are priority (dead are attenuated/ducked).
+
+Default: `Vanilla`
+
+### `SpectatorVoiceAttenuation`
+
+Volume fraction kept for the non-priority group in `StaticAttenuation` mode.
+
+| Value | Meaning |
+|-------|---------|
+| `0`–`1` | Fraction of each player's ESC-menu preferred volume |
+
+Default: `0.8`
+
+### `SpectatorVoiceDuckLevel`
+
+Volume fraction kept for the non-priority group in `SpeechDucking` mode while the priority group is talking.
+
+| Value | Meaning |
+|-------|---------|
+| `0`–`1` | Fraction of each player's ESC-menu preferred volume |
+
+Default: `0.2`
+
 ### `CustomLoadingScreenMode`
 
 Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). Your game only — other players see their own themes. See [Custom Assets](./custom-assets.md) for folder layout and image sizes.

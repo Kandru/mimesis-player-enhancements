@@ -136,6 +136,23 @@
         "title": "Disco Ball Volume",
         "description": "Playback volume for custom disco ball music (Random or Specific mode). Does not affect vanilla mode."
       },
+      "SpectatorVoiceBalanceMode": {
+        "title": "Spectator Voice Balance",
+        "description": "While dead/spectating or possessing a mimic, rebalance remote player voice volumes on your client.",
+        "options": {
+          "Vanilla": "Vanilla (no changes)",
+          "SpeechDucking": "Duck Others While Priority Talks",
+          "StaticAttenuation": "Always Attenuate Others"
+        }
+      },
+      "SpectatorVoiceAttenuation": {
+        "title": "Spectator Attenuation Level",
+        "description": "Volume kept for the non-priority group in Always Attenuate Others mode."
+      },
+      "SpectatorVoiceDuckLevel": {
+        "title": "Spectator Duck Level",
+        "description": "Volume kept for the non-priority group while the priority group is talking."
+      },
       "CustomLoadingScreenMode": {
         "title": "Loading Screen Mode",
         "description": "Replace loading screen art with custom themes.",

@@ -117,6 +117,18 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
+            if (string.Equals(key, "SpectatorVoiceAttenuation", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("SpectatorVoiceBalanceMode", "StaticAttenuation");
+                return true;
+            }
+
+            if (string.Equals(key, "SpectatorVoiceDuckLevel", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("SpectatorVoiceBalanceMode", "SpeechDucking");
+                return true;
+            }
+
             return false;
         }
 

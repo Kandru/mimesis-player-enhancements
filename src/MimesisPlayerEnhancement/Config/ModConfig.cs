@@ -266,6 +266,9 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> CustomLoadingScreenVariant { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> CustomLoadingScreenRandomPool { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> CustomLoadingScreenMotion { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> SpectatorVoiceBalanceMode { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> SpectatorVoiceAttenuation { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> SpectatorVoiceDuckLevel { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePrivacy { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> BlockReluTelemetry { get; internal set; } = null!;

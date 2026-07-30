@@ -42,6 +42,8 @@ namespace MimesisPlayerEnhancement
             FloatRange(Ui, "FloatingDamageDurationSeconds", 1f, 3f);
             FloatRange(Ui, "RoundStartSoundVolume", 0f, 1f);
             FloatRange(Ui, "DiscoBallSoundVolume", 0f, 1f);
+            FloatRange(Ui, "SpectatorVoiceAttenuation", 0f, 1f);
+            FloatRange(Ui, "SpectatorVoiceDuckLevel", 0f, 1f);
 
             Int(MorePlayers, "MaxPlayers", 1);
             MinZeroFloat(MorePlayers,

@@ -136,6 +136,23 @@
         "title": "Discokugel-Lautstärke",
         "description": "Wiedergabelautstärke für eigene Discokugel-Musik (Modus Zufällig oder Bestimmt). Beeinflusst nicht den Vanilla-Modus."
       },
+      "SpectatorVoiceBalanceMode": {
+        "title": "Zuschauer-Sprachbalance",
+        "description": "Während du tot zuschaust oder einen Mimic besitzt, werden entfernte Spielerstimmen auf deinem Client neu ausbalanciert.",
+        "options": {
+          "Vanilla": "Vanilla (keine Änderung)",
+          "SpeechDucking": "Andere ducken, wenn Priorität spricht",
+          "StaticAttenuation": "Andere dauerhaft absenken"
+        }
+      },
+      "SpectatorVoiceAttenuation": {
+        "title": "Zuschauer-Absenkungsstufe",
+        "description": "Lautstärke der Nicht-Prioritätsgruppe im Modus „Andere dauerhaft absenken“."
+      },
+      "SpectatorVoiceDuckLevel": {
+        "title": "Zuschauer-Duck-Stufe",
+        "description": "Lautstärke der Nicht-Prioritätsgruppe, während die Prioritätsgruppe spricht."
+      },
       "CustomLoadingScreenMode": {
         "title": "Ladebildschirm-Modus",
         "description": "Ersetzt Ladebildschirm-Grafiken durch eigene Themes.",
