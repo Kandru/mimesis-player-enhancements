@@ -67,18 +67,25 @@ If you do not trust a pre-built `.dll`, you can [build this mod yourself](docs/B
 
 ## Screenshot(s)
 
+### More Players
+
+![Feature: More Players](images/more_players.jpg)
+
 ### Intuitive savegame UI
 
 ![Feature: Savegame UI](images/savegames.jpg)
 
-### Webinterface
+### Player Management (Webinterface)
 
-#### Webinterface (Blind Mode on)
-![Feature: Savegame UI](images/webinterface_players_blind_mode_on.png)
+![Feature: Webinterface Player Management](images/webinterface_lobby_players.png)
 
-#### Webinterface (Blind Mode off)
-![Feature: Savegame UI](images/webinterface_players_blind_mode_off.png)
+### Escape Menu Player Management
 
+![Feature: Escape Menu Player Management](images/esc_menu.jpg)
+
+### Advanced Spectator Death View
+
+![Feature: Advanced Spectator Death View](images/spectator_death_view.jpg)
 
 ## Config
 

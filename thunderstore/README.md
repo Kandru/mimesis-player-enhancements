@@ -106,14 +106,22 @@ Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com
 
 ## Screenshot(s)
 
+### More Players
+
+![Feature: More Players](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/more_players.jpg?raw=true)
+
 ### Intuitive savegame UI
 
 ![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/savegames.jpg?raw=true)
 
-### Webinterface
+### Player Management (Webinterface)
 
-#### Webinterface (Blind Mode on)
-![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/webinterface_players_blind_mode_on.png?raw=true)
+![Feature: Webinterface Player Management](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/webinterface_lobby_players.png?raw=true)
 
-#### Webinterface (Blind Mode off)
-![Feature: Savegame UI](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/webinterface_players_blind_mode_off.png?raw=true)
+### Escape Menu Player Management
+
+![Feature: Escape Menu Player Management](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/esc_menu.jpg?raw=true)
+
+### Advanced Spectator Death View
+
+![Feature: Advanced Spectator Death View](https://github.com/Kandru/mimesis-player-enhancements/blob/main/images/spectator_death_view.jpg?raw=true)
