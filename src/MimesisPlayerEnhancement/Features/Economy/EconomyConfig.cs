@@ -93,7 +93,10 @@ namespace MimesisPlayerEnhancement.Features.Economy
             ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
             ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
             ModConfig.RetainUnspentCurrencyBetweenCycles.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.RetainUnspentCurrencyBetweenCycles));
+            {
+                ModConfig.NotifyChanged(ModConfig.RetainUnspentCurrencyBetweenCycles);
+                EconomyRetainCashUi.RefreshTramScreenIfVisible();
+            });
 
             ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
             ModConfig.ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValueMultiplier));

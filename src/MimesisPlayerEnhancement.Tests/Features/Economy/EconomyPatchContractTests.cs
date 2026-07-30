@@ -173,6 +173,32 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
             Assert.Equal("Int32", field.FieldType.Name);
         }
 
+        [Fact]
+        public void NewTramLeverLevelObject_GetAddtionalSimpleText_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("NewTramLeverLevelObject");
+
+            MethodInfo? method = type.GetMethod("GetAddtionalSimpleText", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("String", method.ReturnType.Name);
+            Assert.Single(method.GetParameters());
+            Assert.Equal("ProtoActor", method.GetParameters()[0].ParameterType.Name);
+        }
+
+        [Fact]
+        public void UIPrefab_TramScreen_RefreshRepairGuideText_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("UIPrefab_TramScreen");
+
+            MethodInfo? method = type.GetMethod("RefreshRepairGuideText", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
         private static MimesisMetadataContext CreateContext()
         {
             string managedPath = ManagedAssemblyPaths.Resolve();

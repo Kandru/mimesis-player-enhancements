@@ -1216,7 +1216,8 @@
     "spawn_join_many": "{rest}, and {last}"
   },
   "economy": {
-    "tram_leave_cash_kept": "Unspent cash will be kept."
+    "tram_leave_cash_kept": "Unspent cash will be kept.",
+    "tram_screen_cash_kept": "Unspent ${amount} will be kept."
   },
   "joinanytime": {
     "blocked_dungeon": "Can't depart yet — other players are still in the dungeon.",

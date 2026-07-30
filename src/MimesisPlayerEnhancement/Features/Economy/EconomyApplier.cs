@@ -28,8 +28,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
         internal static bool ShouldRetainUnspentCurrency()
         {
             EconomySceneConfig config = SceneScopedConfigGate.Economy;
-            return config.EnableEconomy
-                && config.RetainUnspentCurrencyBetweenCycles
+            return config.RetainUnspentCurrencyBetweenCycles
                 && HostApplyGate.ShouldApplyHostOnlyFeature();
         }
 
