@@ -37,6 +37,16 @@ namespace MimesisPlayerEnhancement.Util
             state.Flags |= kind;
         }
 
+        internal static void ClearApplied(DungeonRoom room, DungeonRoomApplyKind kinds)
+        {
+            if (!States.TryGetValue(room, out RoomApplyState? state))
+            {
+                return;
+            }
+
+            state.Flags &= ~kinds;
+        }
+
         internal static bool MarkSkippedOnce(DungeonRoom room, DungeonRoomApplyKind skipKind)
         {
             RoomApplyState state = GetOrCreateState(room);

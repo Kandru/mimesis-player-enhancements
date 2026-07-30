@@ -150,6 +150,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [InlineData("Info", "SpecialMonsterSpawnInfo")]
         [InlineData("SpawnCountMax", "Int32")]
         [InlineData("SpawnCountRemain", "Int32")]
+        [InlineData("DedicatedSpawnedActorDatas", "List`1")]
         public void DungeonRoom_SpecialMonsterSpawnGroup_fields_exist(string fieldName, string expectedTypeName)
         {
             using MimesisMetadataContext context = CreateContext();
@@ -241,6 +242,15 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         }
 
         [Fact]
+        public void RandomSpawnedMonsterActorData_type_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("RandomSpawnedMonsterActorData");
+
+            Assert.NotNull(type);
+        }
+
+        [Fact]
         public void Hub_dynamicDataMan_property_exists()
         {
             using MimesisMetadataContext context = CreateContext();
@@ -281,6 +291,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [Theory]
         [InlineData("PosVector", "Vector3")]
         [InlineData("Pos", "PosWithRot")]
+        [InlineData("Index", "Int32")]
+        [InlineData("<ActorID>k__BackingField", "Int32")]
+        [InlineData("<SpawnWaitStartTime>k__BackingField", "Int64")]
+        [InlineData("<LastSpawnTime>k__BackingField", "Int64")]
         public void SpawnedActorData_position_fields_exist(string fieldName, string expectedTypeName)
         {
             using MimesisMetadataContext context = CreateContext();

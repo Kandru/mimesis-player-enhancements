@@ -39,48 +39,33 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
                 bonusEncounterMinPlayerDistanceMeters: 10f);
 
         [Fact]
-        public void ShouldScheduleEncounter_returns_true_when_credit_consumed()
-        {
-            bool shouldSchedule = MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
-                Config(),
-                SpawnCategory.Boss,
-                creditConsumed: true,
-                hasRespawnBudget: false);
-
-            Assert.True(shouldSchedule);
-        }
-
-        [Fact]
         public void ShouldScheduleEncounter_returns_true_when_respawn_budget_available()
         {
             bool shouldSchedule = MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
                 Config(),
                 SpawnCategory.Boss,
-                creditConsumed: false,
                 hasRespawnBudget: true);
 
             Assert.True(shouldSchedule);
         }
 
         [Fact]
-        public void ShouldScheduleEncounter_returns_false_without_credit_budget_or_trap_mode()
+        public void ShouldScheduleEncounter_returns_false_without_budget_or_trap_mode()
         {
             bool shouldSchedule = MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
                 Config(),
                 SpawnCategory.Boss,
-                creditConsumed: false,
                 hasRespawnBudget: false);
 
             Assert.False(shouldSchedule);
         }
 
         [Fact]
-        public void ShouldScheduleEncounter_returns_false_for_vanilla_trap_without_credit_or_budget()
+        public void ShouldScheduleEncounter_returns_false_for_vanilla_trap_without_budget()
         {
             bool shouldSchedule = MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
                 Config("Vanilla"),
                 SpawnCategory.Trap,
-                creditConsumed: false,
                 hasRespawnBudget: false);
 
             Assert.False(shouldSchedule);
@@ -89,12 +74,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [Theory]
         [InlineData("Fixed")]
         [InlineData("Random")]
-        public void ShouldScheduleEncounter_returns_true_for_non_vanilla_trap_without_credit_or_budget(string trapRespawnMode)
+        public void ShouldScheduleEncounter_returns_true_for_non_vanilla_trap_without_budget(string trapRespawnMode)
         {
             bool shouldSchedule = MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
                 Config(trapRespawnMode),
                 SpawnCategory.Trap,
-                creditConsumed: false,
                 hasRespawnBudget: false);
 
             Assert.True(shouldSchedule);

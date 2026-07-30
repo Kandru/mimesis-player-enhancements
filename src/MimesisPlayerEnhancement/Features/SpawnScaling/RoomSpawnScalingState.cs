@@ -2,7 +2,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal sealed class RoomSpawnScalingState : ISpawnDataRoomIndex
     {
-        private readonly Dictionary<int, int> _remainingCreditsByMasterId = [];
         private readonly Dictionary<int, int> _bonusGroupWavesByGroupId = [];
         private readonly Dictionary<SpawnedActorData, DungeonRoom> _spawnDataToRoom = [];
         private readonly List<EncounterSlot> _slots = [];
@@ -30,10 +29,54 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal int NextMimicWavePeriodMs { get; set; }
 
+        internal int NextSyntheticIndex { get; set; } = SpawnSlotFactory.SyntheticIndexBase;
+
+        internal int SyntheticSlotCount { get; private set; }
+
+        internal void ClearForReinit()
+        {
+            _slots.Clear();
+            _spawnDataToRoom.Clear();
+            NextSyntheticIndex = SpawnSlotFactory.SyntheticIndexBase;
+            SyntheticSlotCount = 0;
+        }
+
+        internal void TrackSyntheticSlot()
+        {
+            SyntheticSlotCount++;
+        }
+
+        internal void TrackSyntheticSlotRollback()
+        {
+            if (SyntheticSlotCount > 0)
+            {
+                SyntheticSlotCount--;
+            }
+        }
+
+        internal bool CanAddSyntheticSlot()
+        {
+            return SyntheticSlotCount < SpawnSlotFactory.MaxSyntheticSlotsPerRoom;
+        }
+
         internal void RegisterSlot(int markerId, FixedSpawnedActorData data)
         {
             _slots.Add(new EncounterSlot(markerId, data));
             _spawnDataToRoom[data] = Room;
+        }
+
+        internal void UnregisterSlot(int markerId, FixedSpawnedActorData data)
+        {
+            for (int i = _slots.Count - 1; i >= 0; i--)
+            {
+                if (_slots[i].MarkerId == markerId && ReferenceEquals(_slots[i].Data, data))
+                {
+                    _slots.RemoveAt(i);
+                    break;
+                }
+            }
+
+            _ = _spawnDataToRoom.Remove(data);
         }
 
         public bool TryGetRoomForSpawnData(SpawnedActorData data, out DungeonRoom room)
@@ -59,39 +102,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return groups;
         }
 
-        internal void SetRemainingCredits(int masterId, int credits)
-        {
-            if (credits <= 0)
-            {
-                _ = _remainingCreditsByMasterId.Remove(masterId);
-            }
-            else
-            {
-                _remainingCreditsByMasterId[masterId] = credits;
-            }
-        }
-
-        internal bool TryConsumeCredit(int masterId)
-        {
-            if (!_remainingCreditsByMasterId.TryGetValue(masterId, out int credits) || credits <= 0)
-            {
-                return false;
-            }
-
-            _remainingCreditsByMasterId[masterId] = credits - 1;
-            return true;
-        }
-
-        internal void RestoreCredit(int masterId)
-        {
-            if (!_remainingCreditsByMasterId.TryGetValue(masterId, out int credits))
-            {
-                return;
-            }
-
-            _remainingCreditsByMasterId[masterId] = credits + 1;
-        }
-
         internal void SetBonusGroupWaves(int groupId, int waves)
         {
             if (waves <= 0)
@@ -115,7 +125,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return true;
         }
 
-        /// <summary>True when this room configured bonus waves for the group (including exhausted credits).</summary>
+        /// <summary>True when this room configured bonus waves for the group (including exhausted waves).</summary>
         internal bool TracksBonusGroup(int groupId)
         {
             return _bonusGroupWavesByGroupId.ContainsKey(groupId);

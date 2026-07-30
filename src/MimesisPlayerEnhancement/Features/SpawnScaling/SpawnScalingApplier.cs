@@ -75,9 +75,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnTimingOverrideApplier.ConfigureTimingOverrides(room, state, dungeonInfo, jakoMultiplier, mimicMultiplier);
             }
 
+            int ambientSlots = SpawnSlotFactory.ExpandAmbientPool(room, state, playerCount, config);
+
             ModLog.Info(Feature, $"Spawn budgets updated — mimic {mimicMultiplier:0.##}× (max={mimicMax}, remain={mimicRemain}), " +
                 $"jako {jakoMultiplier:0.##}× (limit={threatLimit}, remain={threatRemain}, min={threatMin}), " +
-                $"specialGroups={specialGroups}, spawnPoints={spawnPoints}, bonusGroupWaves={bonusGroupWaves}");
+                $"specialGroups={specialGroups}, spawnPoints={spawnPoints}, bonusGroupWaves={bonusGroupWaves}, ambientSlots+={ambientSlots}");
         }
 
         private static int ScaleSpecialGroups(DungeonRoom room, int playerCount, SpawnScalingSceneConfig config)

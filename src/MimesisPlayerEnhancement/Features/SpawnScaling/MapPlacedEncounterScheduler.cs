@@ -89,7 +89,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            Dictionary<int, List<MapMarker_CreatureSpawnPoint>>? markersByMasterId = null;
+            MapMarker_CreatureSpawnPoint[] allMarkers = CreatureSpawnMarkerAccess.CollectSceneMarkers();
 
             foreach (KeyValuePair<int, List<RoomSpawnScalingState.EncounterSlot>> group in state.GroupSlotsByMasterId())
             {
@@ -105,34 +105,19 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     continue;
                 }
 
-                markersByMasterId ??= CreatureSpawnMarkerAccess.CollectByMasterId();
-
                 string entityName = MonsterTypeLookup.GetDisplayName(masterId);
-                HashSet<int> usedMarkerIds = [];
-
-                foreach (RoomSpawnScalingState.EncounterSlot slot in group.Value)
-                {
-                    _ = usedMarkerIds.Add(slot.MarkerId);
-                }
-
-                List<MapMarker_CreatureSpawnPoint> unusedMarkers = [];
-                if (markersByMasterId.TryGetValue(masterId, out List<MapMarker_CreatureSpawnPoint>? markers))
-                {
-                    foreach (MapMarker_CreatureSpawnPoint marker in markers)
-                    {
-                        if (!usedMarkerIds.Contains(marker.ID))
-                        {
-                            unusedMarkers.Add(marker);
-                        }
-                    }
-                }
-
-                int registered = RegisterUnusedMarkers(room, state, spawnDatas, unusedMarkers, need);
-                int remainingCredits = need - registered;
-                state.SetRemainingCredits(masterId, remainingCredits);
+                SpawnSlotFactory.MapPlacedScaleResult result = SpawnSlotFactory.ScaleMapPlacedGroup(
+                    room,
+                    state,
+                    spawnDatas,
+                    masterId,
+                    category,
+                    group.Value,
+                    need,
+                    allMarkers);
 
                 ModLog.Info(Feature, $"Map-placed encounter scaling — category={SpawnCategoryLookup.Format(category)}, name={entityName}, master={masterId}, " +
-                    $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, markers+={registered}, credits={remainingCredits})");
+                    $"{multiplier:0.##}× (vanilla={vanillaCount}, target={targetTotal}, recovered={result.Recovered}, synthetic={result.Synthesized}, shortfall={result.Shortfall})");
             }
         }
 
@@ -184,12 +169,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return;
             }
 
-            if (!TryFindRoomState(spawnData, out RoomSpawnScalingState? state, out DungeonRoom? room))
+            if (!TryFindRoomState(spawnData, out _, out DungeonRoom? room))
             {
                 return;
             }
 
-            bool creditConsumed = state.TryConsumeCredit(spawnData.MasterID);
             SpawnCategory category = SpawnCategoryLookup.GetCategory(spawnData.MasterID);
             bool hasRespawnBudget = MapPlacedEncounterScheduleResolver.HasRespawnBudget(
                 spawnData.SpawnType,
@@ -200,14 +184,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             if (!MapPlacedEncounterScheduleResolver.ShouldScheduleEncounter(
                     ResolveRoomConfig(room),
                     category,
-                    creditConsumed,
                     hasRespawnBudget))
             {
-                if (creditConsumed)
-                {
-                    state.RestoreCredit(spawnData.MasterID);
-                }
-
                 return;
             }
 
@@ -216,8 +194,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 spawnData,
                 spawnData.MasterID,
                 useTrapRespawnRules: category == SpawnCategory.Trap
-                    && TrapRespawnDelayResolver.IsForceRespawnActive(ResolveRoomConfig(room))
-                    && !creditConsumed);
+                    && TrapRespawnDelayResolver.IsForceRespawnActive(ResolveRoomConfig(room)));
         }
 
         internal static void ProcessPendingEncounters()
@@ -304,38 +281,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                     DeferNextAttempt(i, pending, now);
                 }
             }
-        }
-
-        private static int RegisterUnusedMarkers(
-            DungeonRoom room,
-            RoomSpawnScalingState state,
-            IDictionary spawnDatas,
-            List<MapMarker_CreatureSpawnPoint> unusedMarkers,
-            int need)
-        {
-            int registered = 0;
-
-            for (int i = 0; i < unusedMarkers.Count && registered < need; i++)
-            {
-                MapMarker_CreatureSpawnPoint marker = unusedMarkers[i];
-                if (spawnDatas.Contains(marker.ID))
-                {
-                    continue;
-                }
-
-                FixedSpawnedActorData spawnData = new(marker);
-                spawnDatas.Add(marker.ID, spawnData);
-                state.RegisterSlot(marker.ID, spawnData);
-                registered++;
-
-                if (ModConfig.EnableDebugLogging.Value)
-                {
-                    ModLog.Debug(Feature, $"Registered unused map marker — master={marker.masterID}, marker={marker.ID}, " +
-                        $"pos={SpawnScalingLog.FormatLocation(room, marker.pos.pos)}");
-                }
-            }
-
-            return registered;
         }
 
         private static bool HasMapPlacedTrapMarkers(IDictionary spawnDatas)

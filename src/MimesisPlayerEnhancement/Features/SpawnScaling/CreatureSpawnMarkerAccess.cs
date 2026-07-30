@@ -1,81 +1,46 @@
-using System.Collections;
-using System.Reflection;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class CreatureSpawnMarkerAccess
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly PropertyInfo? HubDynamicDataManProperty =
-            typeof(Hub).GetProperty("dynamicDataMan", InstanceFlags);
-
-        // game@0.3.1 Assembly-CSharp/DynamicDataManager.cs:L485-488
-        private static readonly MethodInfo? GetAllMonsterSpawnPointsMethod =
-            AccessTools.Method(typeof(DynamicDataManager), "GetAllMonsterSpawnPoints");
-
-        // game@0.3.1 Assembly-CSharp/DynamicDataManager.cs:L490-493
-        private static readonly MethodInfo? GetAllSpecialMonsterSpawnPointsMethod =
-            AccessTools.Method(typeof(DynamicDataManager), "GetAllSpecialMonsterSpawnPoints");
-
-        internal static Dictionary<int, List<MapMarker_CreatureSpawnPoint>> CollectByMasterId()
+        internal static MapMarker_CreatureSpawnPoint[] CollectSceneMarkers()
         {
-            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> byMasterId = [];
-
-            if (Hub.s == null
-                || HubDynamicDataManProperty?.GetValue(Hub.s) is not DynamicDataManager dynamicDataMan)
-            {
-                return byMasterId;
-            }
-
-            foreach (MapMarker_CreatureSpawnPoint marker in EnumerateMarkers(dynamicDataMan, GetAllMonsterSpawnPointsMethod))
-            {
-                AddMarker(byMasterId, marker);
-            }
-
-            foreach (MapMarker_CreatureSpawnPoint marker in EnumerateMarkers(dynamicDataMan, GetAllSpecialMonsterSpawnPointsMethod))
-            {
-                AddMarker(byMasterId, marker);
-            }
-
-            return byMasterId;
+            return UnityEngine.Object.FindObjectsByType<MapMarker_CreatureSpawnPoint>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
         }
 
-        private static void AddMarker(
-            Dictionary<int, List<MapMarker_CreatureSpawnPoint>> byMasterId,
-            MapMarker_CreatureSpawnPoint marker)
+        internal static void ShuffleMarkers<T>(IList<T> list)
         {
-            if (!byMasterId.TryGetValue(marker.masterID, out List<MapMarker_CreatureSpawnPoint>? list))
+            for (int i = list.Count - 1; i > 0; i--)
             {
-                list = [];
-                byMasterId[marker.masterID] = list;
+                int j = UnityEngine.Random.Range(0, i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
             }
-
-            list.Add(marker);
         }
 
-        private static IEnumerable<MapMarker_CreatureSpawnPoint> EnumerateMarkers(
-            DynamicDataManager dynamicDataMan,
-            MethodInfo? method)
+        internal static List<MapMarker_CreatureSpawnPoint> CollectUnusedMarkers(
+            int masterId,
+            ICollection<int> usedMarkerIds,
+            IReadOnlyList<MapMarker_CreatureSpawnPoint>? allMarkers = null)
         {
-            if (method == null)
-            {
-                yield break;
-            }
+            List<MapMarker_CreatureSpawnPoint> unused = [];
+            MapMarker_CreatureSpawnPoint[] markers = allMarkers as MapMarker_CreatureSpawnPoint[]
+                ?? CollectSceneMarkers();
 
-            if (method.Invoke(dynamicDataMan, null) is not IDictionary dictionary)
+            foreach (MapMarker_CreatureSpawnPoint marker in markers)
             {
-                yield break;
-            }
-
-            foreach (DictionaryEntry entry in dictionary)
-            {
-                if (entry.Value is MapMarker_CreatureSpawnPoint marker)
+                if (marker.masterID != masterId || usedMarkerIds.Contains(marker.ID))
                 {
-                    yield return marker;
+                    continue;
                 }
+
+                unused.Add(marker);
             }
+
+            return unused;
         }
     }
 }

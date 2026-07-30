@@ -6,6 +6,20 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
     {
         private const string Feature = SpawnScalingPatchHelpers.Feature;
 
+        [HarmonyPrefix]
+        public static void Prefix(DungeonRoom __instance)
+        {
+            if (!SceneScopedConfigGate.Spawn.EnableSpawnScaling)
+            {
+                return;
+            }
+
+            DungeonRoomAppliedSet.ClearApplied(
+                __instance,
+                DungeonRoomApplyKind.SpawnScaling | DungeonRoomApplyKind.MapPlacedEncounters);
+            RoomSpawnScalingRegistry.GetOrCreate(__instance).ClearForReinit();
+        }
+
         [HarmonyPostfix]
         public static void Postfix(DungeonRoom __instance)
         {

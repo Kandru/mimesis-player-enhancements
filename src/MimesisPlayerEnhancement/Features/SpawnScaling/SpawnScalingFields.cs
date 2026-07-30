@@ -53,6 +53,31 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static readonly FieldInfo SpecialGroupSpawnCountRemainField =
             Field(SpecialMonsterSpawnGroupType, "SpawnCountRemain");
 
+        internal static readonly FieldInfo SpecialGroupDedicatedSpawnedActorDatasField =
+            Field(SpecialMonsterSpawnGroupType, "DedicatedSpawnedActorDatas");
+
+        internal static readonly FieldInfo SpawnDataIndexField =
+            Field(typeof(SpawnedActorData), "Index");
+
+        internal static readonly FieldInfo SpawnDataPosField =
+            Field(typeof(SpawnedActorData), "Pos");
+
+        internal static readonly FieldInfo SpawnDataPosVectorField =
+            Field(typeof(SpawnedActorData), "PosVector");
+
+        internal static readonly FieldInfo SpawnDataActorIdBackingField =
+            Field(typeof(SpawnedActorData), "<ActorID>k__BackingField");
+
+        internal static readonly FieldInfo SpawnDataSpawnWaitStartTimeBackingField =
+            Field(typeof(SpawnedActorData), "<SpawnWaitStartTime>k__BackingField");
+
+        internal static readonly FieldInfo SpawnDataLastSpawnTimeBackingField =
+            Field(typeof(SpawnedActorData), "<LastSpawnTime>k__BackingField");
+
+        internal static readonly MethodInfo MemberwiseCloneMethod =
+            AccessTools.Method(typeof(object), "MemberwiseClone")
+            ?? throw new InvalidOperationException("object.MemberwiseClone not found");
+
         internal static readonly FieldInfo SpecialSpawnInfoSpawnCountMinField =
             Field(typeof(SpecialMonsterSpawnInfo), "SpawnCountMin");
 

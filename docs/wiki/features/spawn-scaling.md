@@ -65,7 +65,7 @@ Default: `true`
 
 ### `BossSpawnMultiplier`
 
-Map-placed boss budget: unused alternate markers at load, plus bonus encounters after a kill. `1` = vanilla.
+Map-placed boss budget: recover inactive markers and add nav-jittered synthetic slots at load. `1` = vanilla.
 
 | Value | Meaning |
 |---|---|
@@ -134,7 +134,7 @@ Default: `true`
 
 ### `TrapSpawnMultiplier`
 
-Map-placed trap budget: unused alternate markers at load, plus bonus encounters after trigger or kill. `1` = vanilla.
+Map-placed trap budget: recover inactive markers at load. Traps are not given synthetic slots. `1` = vanilla.
 
 | Value | Meaning |
 |---|---|
@@ -230,7 +230,7 @@ Default: `45.0`
 
 ### `BonusEncounterDelayMinSeconds`
 
-Shortest wait (seconds) after a scaled map-placed **boss or special** is cleared before the next bonus encounter can spawn. Not used for traps — traps use `TrapRespawnMode` instead. Actual delay is picked randomly between min and max.
+Shortest wait (seconds) after a map-placed **boss or special with a respawn budget** is cleared before it can respawn. Not used for traps — traps use `TrapRespawnMode` instead. Actual delay is picked randomly between min and max.
 
 Default: `5.0`
 
@@ -242,7 +242,7 @@ Default: `30.0`
 
 ### `BonusEncounterMinPlayerDistanceMeters`
 
-After the delay, hold boss/special bonus spawns until no living players are within this radius (meters) of the marker. Set `0` to spawn as soon as the delay elapses.
+After the delay, hold boss/special respawns until no living players are within this radius (meters) of the marker. Set `0` to spawn as soon as the delay elapses.
 
 Default: `10.0`
 

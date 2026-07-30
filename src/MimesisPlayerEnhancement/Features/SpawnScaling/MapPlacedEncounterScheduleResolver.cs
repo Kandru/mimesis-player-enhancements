@@ -5,14 +5,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
         internal static bool ShouldScheduleEncounter(
             SpawnScalingSceneConfig config,
             SpawnCategory category,
-            bool creditConsumed,
             bool hasRespawnBudget)
         {
-            if (creditConsumed)
-            {
-                return true;
-            }
-
             if (category == SpawnCategory.Trap && TrapRespawnDelayResolver.IsForceRespawnActive(config))
             {
                 return true;
