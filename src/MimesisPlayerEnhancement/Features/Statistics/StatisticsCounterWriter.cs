@@ -11,15 +11,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            EnsureDocument(doc);
-            int zone = StatisticsRunTracker.GetCurrentZone();
-            StatCounters zoneCounters = GetOrCreateZoneCounters(doc.CurrentRun, zone);
-
-            apply(doc.CurrentSession!.Counters);
-            apply(doc.Global.Counters);
-            apply(doc.CurrentRun.Counters);
-            apply(zoneCounters);
+            StatisticsHistory.Apply(steamId, apply, CounterScope.All);
 
             if (notify)
             {
@@ -48,14 +40,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            EnsureDocument(doc);
-            int zone = StatisticsRunTracker.GetCurrentZone();
-
-            doc.CurrentSession!.Counters.Add(delta);
-            doc.Global.Counters.Add(delta);
-            doc.CurrentRun.Counters.Add(delta);
-            GetOrCreateZoneCounters(doc.CurrentRun, zone).Add(delta);
+            StatisticsHistory.Apply(steamId, counters => counters.Add(delta), CounterScope.All);
 
             if (notify)
             {
@@ -70,18 +55,27 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            EnsureDocument(doc);
-            int zone = StatisticsRunTracker.GetCurrentZone();
+            StatisticsHistory.Apply(
+                steamId,
+                counters => counters.ConnectedSeconds += seconds,
+                CounterScope.All);
+        }
 
-            doc.CurrentSession!.Counters.TotalConnectedSeconds += seconds;
-            doc.Global.Counters.TotalConnectedSeconds += seconds;
-            doc.CurrentRun.Counters.TotalConnectedSeconds += seconds;
-            GetOrCreateZoneCounters(doc.CurrentRun, zone).TotalConnectedSeconds += seconds;
+        internal static void AddVoiceEvents(ulong steamId, long delta)
+        {
+            if (steamId == 0 || delta == 0)
+            {
+                return;
+            }
+
+            PlayerGlobalStats global = StatisticsHistory.EnsureGlobal(steamId);
+            global.VoiceEvents += delta;
+            StatisticsHistory.BumpRevision();
         }
 
         internal static void NotifyChanged()
         {
+            StatisticsHistory.BumpRevision();
             PlayerRegistry.BumpRevision();
             WebDashboardSnapshotCache.MarkDirty();
         }
@@ -90,45 +84,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             _ = dictionary.TryGetValue(key, out long current);
             dictionary[key] = current + 1;
-        }
-
-        private static void EnsureDocument(PlayerStatisticsDocument doc)
-        {
-            doc.CurrentSession ??= StatisticsTracker.CreateSession(DateTime.UtcNow);
-            doc.CurrentSession.Counters ??= new StatCounters();
-            doc.Global ??= new GlobalStats();
-            doc.Global.Counters ??= new StatCounters();
-            doc.CurrentRun ??= new RunStats();
-            doc.CurrentRun.Counters ??= new StatCounters();
-            doc.CurrentRun.Zones ??= [];
-            EnsureCounterDictionaries(doc.CurrentSession.Counters);
-            EnsureCounterDictionaries(doc.Global.Counters);
-            EnsureCounterDictionaries(doc.CurrentRun.Counters);
-        }
-
-        private static StatCounters GetOrCreateZoneCounters(RunStats run, int zone)
-        {
-            if (zone <= 0)
-            {
-                zone = 1;
-            }
-
-            if (!run.Zones.TryGetValue(zone, out StatCounters? counters))
-            {
-                counters = new StatCounters();
-                run.Zones[zone] = counters;
-            }
-
-            EnsureCounterDictionaries(counters);
-            return counters;
-        }
-
-        private static void EnsureCounterDictionaries(StatCounters counters)
-        {
-            counters.MonsterKills ??= [];
-            counters.DeathsByMonster ??= [];
-            counters.DeathsByTrap ??= [];
-            counters.LifetimesOnDeathMs ??= [];
         }
     }
 }

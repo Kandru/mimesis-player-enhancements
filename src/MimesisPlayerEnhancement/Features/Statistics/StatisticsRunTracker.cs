@@ -1,15 +1,10 @@
-using MimesisPlayerEnhancement.Features.Statistics.Models;
-
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     internal static class StatisticsRunTracker
     {
-        private const string Feature = "Statistics";
-
-        private static int _currentZone = 1;
         private static long _lastRestartMs;
 
-        internal static int GetCurrentZone() => _currentZone > 0 ? _currentZone : 1;
+        internal static int GetCurrentZone() => StatisticsHistory.CurrentZone;
 
         internal static void OnStageChanged(int stageCount, bool reset)
         {
@@ -23,9 +18,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 OnRunRestart();
             }
 
-            if (stageCount > 0)
+            if (stageCount > 0 && stageCount != StatisticsHistory.CurrentZone)
             {
-                _currentZone = stageCount;
+                StatisticsHistory.OnZoneAdvanced(stageCount);
+                StatisticsCounterWriter.NotifyChanged();
             }
         }
 
@@ -43,37 +39,20 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             _lastRestartMs = now;
-            _currentZone = 1;
-            bool changed = false;
-
-            foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
-            {
-                if (doc.CurrentRun.Zones.Count > 0 || doc.CurrentRun.Counters.HasAnyRunData())
-                {
-                    doc.Global.RunRestarts++;
-                    changed = true;
-                }
-
-                doc.CurrentRun = new RunStats
-                {
-                    StartedAtUtc = DateTime.UtcNow,
-                };
-            }
-
+            bool hadData = StatisticsHistory.HasHistoryData();
+            StatisticsHistory.OnRunRestart();
             StatisticsDeathHandler.ClearDungeonState();
             TrainDepositTracker.ClearDungeonState();
 
-            if (changed)
+            if (hadData)
             {
                 StatisticsCounterWriter.NotifyChanged();
                 StatisticsTracker.PersistLoadedSlot();
-                ModLog.Info(Feature, "Run statistics reset — zone restart recorded.");
             }
         }
 
         internal static void ClearRuntimeState()
         {
-            _currentZone = 1;
             _lastRestartMs = 0;
         }
     }

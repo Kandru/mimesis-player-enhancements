@@ -1,26 +1,30 @@
 <script lang="ts">
-  import PlayerIdentity from '$lib/components/players/PlayerIdentity.svelte';
+  import PlayerStatsTable from '$lib/components/statistics/PlayerStatsTable.svelte';
+  import StatCardGrid from '$lib/components/statistics/StatCardGrid.svelte';
+  import ZoneSection from '$lib/components/statistics/ZoneSection.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
-  import { buildStatCards, leaderboardEntryCounters } from '$lib/statisticsHelpers';
-  import type { StatCountersDto } from '$lib/types';
+  import {
+    leaderboardEntrySortValue,
+    type LeaderboardSortKey,
+  } from '$lib/statisticsHelpers';
+  import type { LeaderboardEntryDto } from '$lib/types';
 
-  type SortKey = 'name' | 'score' | 'trainValue' | 'sessions';
-
-  let sortKey = $state<SortKey>('score');
+  let sortKey = $state<LeaderboardSortKey>('score');
   let sortDir = $state<'asc' | 'desc'>('desc');
 
-  const connectedSet = $derived(new Set(dashboard.leaderboard?.connectedSteamIds || []));
-  const currentZone = $derived(dashboard.leaderboard?.currentZone ?? 1);
+  const connectedSteamIds = $derived(dashboard.leaderboard?.connectedSteamIds ?? []);
+  const historyRevision = $derived(dashboard.leaderboard?.historyRevision ?? -1);
+  const cachedHistoryRevision = $derived(dashboard.statisticsHistory?.historyRevision ?? -1);
 
-  const serverCards = $derived(buildStatCards(dashboard.leaderboard?.serverTotals, {
-    [t('dashboard.stat_run_restarts')]: dashboard.leaderboard?.entries?.reduce((sum, entry) => sum + Number(entry.runRestarts ?? 0), 0) ?? 0,
-  }));
+  const runRestartsTotal = $derived(
+    dashboard.leaderboard?.entries?.reduce((sum, entry) => sum + Number(entry.runRestarts ?? 0), 0) ?? 0,
+  );
 
   const entries = $derived.by(() => {
-    const source = dashboard.leaderboard?.entries || [];
+    const source = dashboard.leaderboard?.entries ?? [];
     const q = dashboard.headerSearchQuery.trim().toLowerCase();
-    let list = [...source];
+    let list: LeaderboardEntryDto[] = [...source];
     if (q) {
       list = list.filter((entry) => {
         const hay = [entry.displayName, entry.steamId].map((v) => String(v ?? '').toLowerCase()).join(' ');
@@ -28,46 +32,41 @@
       });
     }
     list.sort((a, b) => {
-      const left = leaderboardEntryCounters(a);
-      const right = leaderboardEntryCounters(b);
+      const left = leaderboardEntrySortValue(a, sortKey);
+      const right = leaderboardEntrySortValue(b, sortKey);
       let cmp = 0;
-      if (sortKey === 'name') {
-        cmp = String(a.displayName).localeCompare(String(b.displayName), undefined, { sensitivity: 'base' });
-      } else if (sortKey === 'score') {
-        cmp = left.score - right.score;
-      } else if (sortKey === 'trainValue') {
-        cmp = left.trainValueDeposited - right.trainValueDeposited;
+      if (typeof left === 'string' && typeof right === 'string') {
+        cmp = left.localeCompare(right, undefined, { sensitivity: 'base' });
       } else {
-        cmp = left.sessionsCompleted - right.sessionsCompleted;
+        cmp = Number(left) - Number(right);
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
     return list;
   });
 
-  const zoneSummaries = $derived.by(() => {
-    const zones = new Map<string, StatCountersDto>();
-    for (const entry of dashboard.leaderboard?.entries || []) {
-      const parsed = leaderboardEntryCounters(entry);
-      for (const [zone, counters] of Object.entries(parsed.zones || {})) {
-        const existing = zones.get(zone);
-        if (!existing) {
-          zones.set(zone, { ...counters });
-          continue;
-        }
-        for (const [key, value] of Object.entries(counters)) {
-          if (typeof value !== 'number') continue;
-          const prev = (existing as Record<string, number | undefined>)[key];
-          (existing as Record<string, number | undefined>)[key] = Number(prev ?? 0) + value;
-        }
-      }
-    }
+  const globalRows = $derived(
+    entries.map((entry) => ({
+      steamId: entry.steamId,
+      displayName: entry.displayName,
+      counters: entry.global,
+      highestZoneReached: entry.highestZoneReached,
+      sessionsCompleted: entry.sessionsCompleted,
+      dungeonRunsPlayed: entry.dungeonRunsPlayed,
+    })),
+  );
 
-    const ordered = [...zones.entries()].sort((a, b) => Number(b[0]) - Number(a[0]));
-    return ordered;
+  const historyZones = $derived(dashboard.statisticsHistory?.zones ?? []);
+
+  $effect(() => {
+    if (dashboard.route !== 'leaderboard' || !dashboard.status.isConnected || !dashboard.status.isHost) {
+      return;
+    }
+    const needsRefresh = historyRevision < 0 || historyRevision !== cachedHistoryRevision;
+    void dashboard.loadStatisticsHistory(needsRefresh);
   });
 
-  function toggleSort(key: SortKey) {
+  function toggleSort(key: LeaderboardSortKey) {
     if (sortKey === key) {
       sortDir = sortDir === 'asc' ? 'desc' : 'asc';
       return;
@@ -76,147 +75,72 @@
     sortDir = key === 'name' ? 'asc' : 'desc';
   }
 
-  function sortIndicator(key: SortKey) {
+  function sortIndicator(key: LeaderboardSortKey) {
     if (sortKey !== key) return '';
     return sortDir === 'asc' ? ' ↑' : ' ↓';
-  }
-
-  function zonePlayerRows(zone: string) {
-    return entries
-      .map((entry) => {
-        const parsed = leaderboardEntryCounters(entry);
-        const counters = parsed.zones?.[zone];
-        if (!counters) return null;
-        return {
-          steamId: entry.steamId,
-          displayName: entry.displayName,
-          score: Math.round(counters.score ?? 0),
-          trainValueDeposited: counters.trainValueDeposited ?? 0,
-          survivalDeaths: counters.survivalDeaths ?? 0,
-          revives: counters.revives ?? 0,
-        };
-      })
-      .filter((row): row is NonNullable<typeof row> => row != null)
-      .sort((a, b) => b.score - a.score);
   }
 </script>
 
 <div class="space-y-4">
-  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-    {#each serverCards as [label, value]}
-      <div class="card p-4">
-        <div class="text-xs text-gray-500">{label}</div>
-        <div class="text-xl font-semibold">{value}</div>
-      </div>
-    {/each}
-  </div>
+  <section class="space-y-3">
+    <h2 class="text-lg font-semibold">{t('dashboard.statistics_global')}</h2>
+    <StatCardGrid
+      counters={dashboard.leaderboard?.serverGlobalTotals}
+      extras={runRestartsTotal > 0 ? { [t('dashboard.stat_run_restarts')]: runRestartsTotal } : undefined}
+    />
+  </section>
 
-  <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>
-              <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('name')}>
-                {t('dashboard.player')}{sortIndicator('name')}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('score')}>
-                {t('dashboard.stat_team_score')}{sortIndicator('score')}
-              </button>
-            </th>
-            <th>
-              <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('trainValue')}>
-                {t('dashboard.stat_train_value')}{sortIndicator('trainValue')}
-              </button>
-            </th>
-            <th>{t('dashboard.stat_survival_deaths')}</th>
-            <th>{t('dashboard.stat_revives')}</th>
-            <th>{t('dashboard.stat_friends_killed')}</th>
-            <th>
-              <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('sessions')}>
-                {t('dashboard.stat_sessions')}{sortIndicator('sessions')}
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each entries as entry (entry.steamId)}
-            {@const stats = leaderboardEntryCounters(entry)}
-            <tr class="data-table-row">
-              <td>
-                <PlayerIdentity steamId={entry.steamId} displayName={entry.displayName}>
-                  {#snippet badges()}
-                    {#if connectedSet.has(String(entry.steamId))}
-                      <span class="badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">{t('dashboard.badge_online')}</span>
-                    {/if}
-                  {/snippet}
-                </PlayerIdentity>
-              </td>
-              <td>{Math.round(stats.score)}</td>
-              <td>{stats.trainValueDeposited}</td>
-              <td>{stats.survivalDeaths}</td>
-              <td>{stats.revives}</td>
-              <td>{stats.friendsKilled}</td>
-              <td>{stats.sessionsCompleted}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-      {#if entries.length === 0}
-        <p class="data-table-empty">{t('dashboard.leaderboard_empty')}</p>
+  <section class="card overflow-hidden">
+    <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+      <div class="flex flex-wrap gap-2 text-xs">
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('name')}>
+          {t('dashboard.player')}{sortIndicator('name')}
+        </button>
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('score')}>
+          {t('dashboard.stat_team_score')}{sortIndicator('score')}
+        </button>
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('trainValue')}>
+          {t('dashboard.stat_value_saved')}{sortIndicator('trainValue')}
+        </button>
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('zone')}>
+          {t('dashboard.stat_highest_zone')}{sortIndicator('zone')}
+        </button>
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('sessions')}>
+          {t('dashboard.stat_sessions')}{sortIndicator('sessions')}
+        </button>
+        <button type="button" class="leaderboard-sort-btn" onclick={() => toggleSort('runs')}>
+          {t('dashboard.stat_runs_played')}{sortIndicator('runs')}
+        </button>
+      </div>
+    </div>
+    <PlayerStatsTable
+      rows={globalRows}
+      {connectedSteamIds}
+      showHighestZone
+      showSessions
+    />
+  </section>
+
+  <section class="space-y-3">
+    <div class="flex items-center gap-3">
+      <h2 class="text-lg font-semibold">{t('dashboard.statistics_by_zone')}</h2>
+      {#if dashboard.loadingStatisticsHistory}
+        <span class="text-sm text-gray-500">{t('dashboard.loading')}</span>
       {/if}
     </div>
-  </div>
 
-  <div class="space-y-3">
-    <h2 class="text-lg font-semibold">{t('dashboard.statistics_by_zone')}</h2>
-    {#each zoneSummaries as [zone, totals] (zone)}
-      <details class="card p-4" open={zone === String(currentZone)}>
-        <summary class="cursor-pointer font-medium">
-          {zone === String(currentZone)
-            ? t('dashboard.statistics_zone_current', { zone })
-            : t('dashboard.statistics_zone', { zone })}
-        </summary>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {#each buildStatCards(totals) as [label, value]}
-            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-              <div class="text-xs text-gray-500">{label}</div>
-              <div class="text-lg font-semibold">{value}</div>
-            </div>
-          {/each}
-        </div>
-        <div class="mt-4 overflow-x-auto">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>{t('dashboard.player')}</th>
-                <th>{t('dashboard.stat_team_score')}</th>
-                <th>{t('dashboard.stat_train_value')}</th>
-                <th>{t('dashboard.stat_survival_deaths')}</th>
-                <th>{t('dashboard.stat_revives')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each zonePlayerRows(zone) as row (row.steamId)}
-                <tr class="data-table-row">
-                  <td>
-                    <PlayerIdentity steamId={row.steamId} displayName={row.displayName} />
-                  </td>
-                  <td>{row.score}</td>
-                  <td>{row.trainValueDeposited}</td>
-                  <td>{row.survivalDeaths}</td>
-                  <td>{row.revives}</td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      </details>
+    {#if (dashboard.statisticsHistory?.trimmedZoneCount ?? 0) > 0}
+      <p class="text-sm text-gray-500">
+        {t('dashboard.statistics_trimmed_zones', { count: dashboard.statisticsHistory?.trimmedZoneCount ?? 0 })}
+      </p>
+    {/if}
+
+    {#each historyZones as zone (zone.zone)}
+      <ZoneSection {zone} {connectedSteamIds} />
     {/each}
-    {#if zoneSummaries.length === 0}
+
+    {#if !dashboard.loadingStatisticsHistory && historyZones.length === 0}
       <p class="text-sm text-gray-500">{t('dashboard.statistics_zone_empty')}</p>
     {/if}
-  </div>
+  </section>
 </div>

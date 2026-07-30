@@ -48,7 +48,8 @@ namespace MimesisPlayerEnhancement.Tests.Util.Players
             Assert.True(PlayerRegistry.Revision > before);
             Assert.True(PlayerRegistry.TryGetRecord(DisplayNameSteamId, out PlayerRecord record));
             Assert.Equal("Alice", record.DisplayName);
-            Assert.Equal("Alice", record.Statistics.DisplayName);
+            Assert.True(PlayerRegistry.TryGetGlobal(DisplayNameSteamId, out PlayerGlobalStats? global));
+            Assert.Equal("Alice", global!.DisplayName);
         }
 
         [Fact]
@@ -225,13 +226,12 @@ namespace MimesisPlayerEnhancement.Tests.Util.Players
         }
 
         [Fact]
-        public void GetOrCreate_initializes_statistics_document()
+        public void GetOrCreate_initializes_global_stats()
         {
-            PlayerStatisticsDocument document = PlayerRegistry.GetOrCreate(GetOrCreateSteamId).Statistics;
+            _ = PlayerRegistry.GetOrCreate(GetOrCreateSteamId);
 
-            Assert.Equal(GetOrCreateSteamId, document.SteamId);
-            Assert.True(PlayerRegistry.TryGetStatistics(GetOrCreateSteamId, out PlayerStatisticsDocument? stored));
-            Assert.Same(document, stored);
+            Assert.True(PlayerRegistry.TryGetGlobal(GetOrCreateSteamId, out PlayerGlobalStats? global));
+            Assert.Equal(GetOrCreateSteamId, global!.SteamId);
         }
 
         [Fact]
@@ -241,7 +241,9 @@ namespace MimesisPlayerEnhancement.Tests.Util.Players
 
             Assert.Equal("Fallback", result);
             Assert.True(PlayerRegistry.TryGetRecord(ResolvedNameSteamId, out PlayerRecord record));
-            Assert.Equal("Fallback", record.Statistics.DisplayName);
+            Assert.Equal("Fallback", record.DisplayName);
+            Assert.True(PlayerRegistry.TryGetGlobal(ResolvedNameSteamId, out PlayerGlobalStats? global));
+            Assert.Equal("Fallback", global!.DisplayName);
         }
     }
 }

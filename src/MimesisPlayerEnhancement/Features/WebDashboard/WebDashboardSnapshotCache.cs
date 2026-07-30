@@ -70,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             WebDashboardPatchHelpers.ClearCachedGrades();
             WebDashboardAvatarService.Clear();
             WebDashboardLeaderboardCache.Clear();
+            WebDashboardStatisticsHistoryCache.Clear();
             WebDashboardOfflinePlayerCache.Clear();
             WebDashboardSnapshotEventCache.Clear();
             WebDashboardHostCheatsRuntime.DisableAll("session ended");
@@ -273,6 +274,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 _requireFullPublish = false;
                 WebDashboardAvatarService.Clear();
                 WebDashboardLeaderboardCache.Clear();
+                WebDashboardStatisticsHistoryCache.Clear();
                 WebDashboardOfflinePlayerCache.Clear();
                 WebDashboardSnapshotEventCache.Clear();
                 WebDashboardHostCheatsRuntime.DisableAll("disconnected");
@@ -593,19 +595,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             if (session != null)
             {
                 _ = sb.Append(':')
-                    .Append(includePlaytimeBucket ? session.TotalConnectedSeconds / 10 : 0)
+                    .Append(includePlaytimeBucket ? session.ConnectedSeconds / 10 : 0)
                     .Append(':')
-                    .Append(session.CurrencyEarned)
+                    .Append(session.TrainValueDeposited)
                     .Append(':')
-                    .Append(session.SurvivalDeaths)
+                    .Append(session.Deaths)
                     .Append(':')
                     .Append(session.SurvivalWins)
                     .Append(':')
                     .Append(session.Revives)
                     .Append(':')
-                    .Append(session.MimicEncounterCount)
+                    .Append(session.MimicEncounters)
                     .Append(':')
-                    .Append(session.ItemCarryCount)
+                    .Append(session.ItemsCarried)
                     .Append(':')
                     .Append(session.DamageToFriend)
                     .Append(':')

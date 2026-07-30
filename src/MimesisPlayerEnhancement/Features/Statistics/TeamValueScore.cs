@@ -5,11 +5,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     internal static class TeamValueScore
     {
         private const double TrainValueWeight = 1.0;
+        private const double ItemsDepositedWeight = 10.0;
         private const double MonsterKillWeight = 25.0;
         private const double ReviveWeight = 100.0;
         private const double FriendKillPenalty = 200.0;
         private const double FriendDamagePenalty = 0.5;
-        private const double SurvivalDeathPenalty = 50.0;
+        private const double DeathPenalty = 50.0;
 
         internal static double Compute(StatCounters counters)
         {
@@ -18,13 +19,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return 0;
             }
 
-            long monsterKills = SumDictionary(counters.MonsterKills);
             return counters.TrainValueDeposited * TrainValueWeight
-                   + monsterKills * MonsterKillWeight
+                   + counters.ItemsDeposited * ItemsDepositedWeight
+                   + counters.MonsterKillTotal * MonsterKillWeight
                    + counters.Revives * ReviveWeight
                    - counters.FriendsKilled * FriendKillPenalty
                    - counters.DamageToFriend * FriendDamagePenalty
-                   - counters.SurvivalDeaths * SurvivalDeathPenalty;
+                   - counters.Deaths * DeathPenalty;
         }
 
         internal static long? ComputeMedianLifetimeMs(IReadOnlyList<long>? lifetimes)
@@ -45,22 +46,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return sorted.Length % 2 == 0
                 ? (sorted[mid - 1] + sorted[mid]) / 2
                 : sorted[mid];
-        }
-
-        private static long SumDictionary(Dictionary<string, long>? values)
-        {
-            if (values == null || values.Count == 0)
-            {
-                return 0;
-            }
-
-            long total = 0;
-            foreach (long value in values.Values)
-            {
-                total += value;
-            }
-
-            return total;
         }
     }
 }

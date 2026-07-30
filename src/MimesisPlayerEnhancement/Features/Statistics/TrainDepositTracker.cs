@@ -54,7 +54,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         internal static void CompleteDeposit()
         {
-            if (_pendingValue <= 0)
+            if (_pendingDepositor == 0)
             {
                 ClearPending();
                 return;
@@ -70,8 +70,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             StatisticsCounterWriter.Modify(creditTo, counters =>
             {
-                counters.TrainValueDeposited += _pendingValue;
-                counters.CurrencyEarned += _pendingValue;
+                counters.ItemsDeposited++;
+                if (_pendingValue > 0)
+                {
+                    counters.TrainValueDeposited += _pendingValue;
+                }
             });
             ClearPending();
         }

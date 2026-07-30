@@ -128,7 +128,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 return false;
             }
 
-            if (PlayerRegistry.TryGetStatistics(steamId, out _))
+            if (PlayerRegistry.TryGetGlobal(steamId, out _))
             {
                 return true;
             }

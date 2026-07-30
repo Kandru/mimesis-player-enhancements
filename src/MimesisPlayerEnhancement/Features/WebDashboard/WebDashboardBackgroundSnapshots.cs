@@ -5,18 +5,18 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal readonly struct OfflinePlayerRebuildSnapshot
     {
         internal WebDashboardPlayerService.OfflinePlayerBuildContext Context { get; }
-        internal List<PlayerStatisticsDocument> Players { get; }
+        internal SlotStatisticsDocument Document { get; }
         internal HashSet<ulong> BannedSteamIds { get; }
         internal Dictionary<ulong, string> DisplayNames { get; }
 
         internal OfflinePlayerRebuildSnapshot(
             WebDashboardPlayerService.OfflinePlayerBuildContext context,
-            List<PlayerStatisticsDocument> players,
+            SlotStatisticsDocument document,
             HashSet<ulong> bannedSteamIds,
             Dictionary<ulong, string> displayNames)
         {
             Context = context;
-            Players = players;
+            Document = document;
             BannedSteamIds = bannedSteamIds;
             DisplayNames = displayNames;
         }
@@ -25,34 +25,44 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     internal readonly struct LeaderboardRebuildSnapshot
     {
         internal int SaveSlotId { get; }
-        internal int CurrentZone { get; }
-        internal List<PlayerStatisticsDocument> Players { get; }
+        internal SlotStatisticsDocument Document { get; }
         internal Dictionary<ulong, string> DisplayNames { get; }
 
         internal LeaderboardRebuildSnapshot(
             int saveSlotId,
-            int currentZone,
-            List<PlayerStatisticsDocument> players,
+            SlotStatisticsDocument document,
             Dictionary<ulong, string> displayNames)
         {
             SaveSlotId = saveSlotId;
-            CurrentZone = currentZone;
-            Players = players;
+            Document = document;
             DisplayNames = displayNames;
         }
     }
 
-    /// <summary>
-    /// Captures immutable game-thread inputs for dashboard background rebuilds.
-    /// </summary>
+    internal readonly struct HistoryRebuildSnapshot
+    {
+        internal int SaveSlotId { get; }
+        internal SlotStatisticsDocument Document { get; }
+        internal Dictionary<ulong, string> DisplayNames { get; }
+
+        internal HistoryRebuildSnapshot(
+            int saveSlotId,
+            SlotStatisticsDocument document,
+            Dictionary<ulong, string> displayNames)
+        {
+            SaveSlotId = saveSlotId;
+            Document = document;
+            DisplayNames = displayNames;
+        }
+    }
+
     internal static class WebDashboardBackgroundSnapshots
     {
         internal static OfflinePlayerRebuildSnapshot CaptureOfflineRebuild()
         {
             WebDashboardPlayerService.OfflinePlayerBuildContext context =
                 WebDashboardPlayerService.OfflinePlayerBuildContext.Capture();
-            List<PlayerStatisticsDocument> players =
-                StatisticsStore.ClonePlayerDocuments(PlayerRegistry.GetAllStatistics());
+            SlotStatisticsDocument document = StatisticsHistory.CloneDocument();
 
             HashSet<ulong> bannedSteamIds = [];
             SessionManager? sessionManager = WebDashboardSessionAccess.GetSessionManager();
@@ -67,34 +77,43 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            Dictionary<ulong, string> displayNames = new(players.Count);
-            foreach (PlayerStatisticsDocument player in players)
+            Dictionary<ulong, string> displayNames = new(document.Globals.Count);
+            foreach (KeyValuePair<ulong, PlayerGlobalStats> player in document.Globals)
             {
-                displayNames[player.SteamId] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
-                    player.SteamId,
+                displayNames[player.Key] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
+                    player.Key,
                     context.SaveSlotId);
             }
 
-            return new OfflinePlayerRebuildSnapshot(context, players, bannedSteamIds, displayNames);
+            return new OfflinePlayerRebuildSnapshot(context, document, bannedSteamIds, displayNames);
         }
 
         internal static LeaderboardRebuildSnapshot CaptureLeaderboardRebuild(int saveSlotId)
         {
-            List<PlayerStatisticsDocument> players =
-                StatisticsStore.ClonePlayerDocuments(PlayerRegistry.GetAllStatistics());
-            Dictionary<ulong, string> displayNames = new(players.Count);
-            foreach (PlayerStatisticsDocument player in players)
+            SlotStatisticsDocument document = StatisticsHistory.CloneDocument();
+            Dictionary<ulong, string> displayNames = new(document.Globals.Count);
+            foreach (KeyValuePair<ulong, PlayerGlobalStats> player in document.Globals)
             {
-                displayNames[player.SteamId] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
-                    player.SteamId,
+                displayNames[player.Key] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
+                    player.Key,
                     saveSlotId);
             }
 
-            return new LeaderboardRebuildSnapshot(
-                saveSlotId,
-                StatisticsRunTracker.GetCurrentZone(),
-                players,
-                displayNames);
+            return new LeaderboardRebuildSnapshot(saveSlotId, document, displayNames);
+        }
+
+        internal static HistoryRebuildSnapshot CaptureHistoryRebuild(int saveSlotId)
+        {
+            SlotStatisticsDocument document = StatisticsHistory.CloneDocument();
+            Dictionary<ulong, string> displayNames = new(document.Globals.Count);
+            foreach (KeyValuePair<ulong, PlayerGlobalStats> player in document.Globals)
+            {
+                displayNames[player.Key] = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
+                    player.Key,
+                    saveSlotId);
+            }
+
+            return new HistoryRebuildSnapshot(saveSlotId, document, displayNames);
         }
     }
 }

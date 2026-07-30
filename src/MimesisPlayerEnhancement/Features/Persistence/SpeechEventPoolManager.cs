@@ -1328,7 +1328,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence
                 eventCounts[kvp.Key] = kvp.Value.Count;
             }
 
-            IReadOnlyList<PlayerStatisticsDocument> stats = PlayerRegistry.GetAllStatistics();
+            IReadOnlyList<PlayerGlobalStats> stats = PlayerRegistry.GetAllGlobals();
             bool isSoloSaveForSteam = stats.Count == 1 && stats[0].SteamId == steamId;
             int before = matchedPlayerNames.Count;
 

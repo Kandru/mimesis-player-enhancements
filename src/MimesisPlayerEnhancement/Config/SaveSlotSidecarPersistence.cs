@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement
 
                 Features.JoinAnytime.JoinAnytimeLobbyController.OnSaveSlotSidecarLoaded(slotId);
 
-                int statsPlayers = PlayerRegistry.GetAllStatistics().Count;
+                int statsPlayers = PlayerRegistry.GetAllGlobals().Count;
                 int rosterPlayers = SaveSlotDocumentStore.LoadedPlayerCount;
                 ModLog.Info(
                     Feature,

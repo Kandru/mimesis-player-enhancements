@@ -1,26 +1,18 @@
 <script lang="ts">
+  import DungeonRunCard from '$lib/components/statistics/DungeonRunCard.svelte';
+  import StatCardGrid from '$lib/components/statistics/StatCardGrid.svelte';
   import { dashboard } from '$lib/stores/dashboard.svelte';
   import { t } from '$lib/i18n';
   import {
-    buildStatCards,
     formatCountMapFromBreakdown,
     formatEntityBreakdown,
   } from '$lib/statisticsHelpers';
-  import type { StatCountersDto } from '$lib/types';
 
   const stats = $derived(dashboard.playerStats);
 
-  const runCards = $derived(buildStatCards(stats?.currentRun?.counters, {
-    [t('dashboard.stat_run_restarts')]: stats?.global?.runRestarts ?? 0,
-  }));
-
-  const allTimeCards = $derived(buildStatCards(stats?.global?.counters, {
-    [t('dashboard.stat_sessions')]: stats?.global?.sessionsCompleted ?? 0,
-  }));
-
   const killLines = $derived(
     formatEntityBreakdown(
-      stats?.currentRun?.counters?.monsterKillBreakdown,
+      stats?.currentZone?.counters?.monsterKillBreakdown,
       'dashboard.killed_entity',
       'dashboard.killed_entity_plural',
     ),
@@ -28,24 +20,16 @@
 
   const deathLines = $derived([
     ...formatEntityBreakdown(
-      stats?.currentRun?.counters?.deathsByMonsterBreakdown,
+      stats?.currentZone?.counters?.deathsByMonsterBreakdown,
       'dashboard.killed_by_entity',
       'dashboard.killed_by_entity_plural',
     ),
     ...formatEntityBreakdown(
-      stats?.currentRun?.counters?.deathsByTrapBreakdown,
+      stats?.currentZone?.counters?.deathsByTrapBreakdown,
       'dashboard.killed_by_entity',
       'dashboard.killed_by_entity_plural',
     ),
   ]);
-
-  const zoneSections = $derived.by(() => {
-    const zones = stats?.currentRun?.zones;
-    if (!zones) return [] as Array<{ zone: string; counters: StatCountersDto }>;
-    return Object.entries(zones)
-      .sort((a, b) => Number(b[0]) - Number(a[0]))
-      .map(([zone, counters]) => ({ zone, counters }));
-  });
 </script>
 
 {#if dashboard.loadingStats}
@@ -55,27 +39,19 @@
 {:else}
   <div class="space-y-4">
     <div class="card p-6">
-      <h2 class="mb-3 text-lg font-semibold">{t('dashboard.statistics_current_run')}</h2>
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {#each runCards as [label, value]}
-          <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="text-xs text-gray-500">{label}</div>
-            <div class="text-lg font-semibold">{value}</div>
-          </div>
-        {/each}
-      </div>
+      <h2 class="mb-3 text-lg font-semibold">{t('dashboard.global_stats')}</h2>
+      <StatCardGrid counters={stats.global.counters} extras={{
+        [t('dashboard.stat_sessions')]: stats.global.sessionsCompleted ?? 0,
+        [t('dashboard.stat_runs_played')]: stats.global.dungeonRunsPlayed ?? 0,
+        [t('dashboard.stat_highest_zone')]: stats.global.highestZoneReached ?? 0,
+      }} />
     </div>
 
     <div class="card p-6">
-      <h2 class="mb-3 text-lg font-semibold">{t('dashboard.global_stats')}</h2>
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {#each allTimeCards as [label, value]}
-          <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="text-xs text-gray-500">{label}</div>
-            <div class="text-lg font-semibold">{value}</div>
-          </div>
-        {/each}
-      </div>
+      <h2 class="mb-3 text-lg font-semibold">
+        {t('dashboard.statistics_zone_current', { zone: stats.currentZone?.zone ?? 1 })}
+      </h2>
+      <StatCardGrid counters={stats.currentZone?.counters} />
     </div>
 
     {#if killLines.length > 0 || deathLines.length > 0}
@@ -84,7 +60,7 @@
         {#if killLines.length > 0}
           <h3 class="mb-2 text-sm font-medium text-gray-500">{t('dashboard.statistics_kills')}</h3>
           <ul class="mb-4 space-y-1 text-sm">
-            {#each killLines as line}
+            {#each killLines as line, index (index)}
               <li>{line}</li>
             {/each}
           </ul>
@@ -92,7 +68,7 @@
         {#if deathLines.length > 0}
           <h3 class="mb-2 text-sm font-medium text-gray-500">{t('dashboard.statistics_deaths')}</h3>
           <ul class="space-y-1 text-sm">
-            {#each deathLines as line}
+            {#each deathLines as line, index (index)}
               <li>{line}</li>
             {/each}
           </ul>
@@ -100,27 +76,33 @@
       </div>
     {/if}
 
-    {#if zoneSections.length > 0}
+    {#if (stats.zones || []).length > 0}
       <div class="space-y-3">
         <h2 class="text-lg font-semibold">{t('dashboard.statistics_by_zone')}</h2>
-        {#each zoneSections as section (section.zone)}
-          <details class="card p-4" open={section.zone === zoneSections[0]?.zone}>
+        {#each stats.zones as section (section.zone)}
+          <details class="card p-4" open={section.zone === stats.currentZone?.zone}>
             <summary class="cursor-pointer font-medium">{t('dashboard.statistics_zone', { zone: section.zone })}</summary>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {#each buildStatCards(section.counters) as [label, value]}
-                <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                  <div class="text-xs text-gray-500">{label}</div>
-                  <div class="text-lg font-semibold">{value}</div>
-                </div>
-              {/each}
-              {#each formatCountMapFromBreakdown(section.counters.monsterKillBreakdown) as [label, value]}
-                <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-                  <div class="text-xs text-gray-500">{label}</div>
-                  <div class="text-lg font-semibold">{value}</div>
-                </div>
-              {/each}
+            <div class="mt-4">
+              <StatCardGrid counters={section.counters} />
+              <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {#each formatCountMapFromBreakdown(section.counters.monsterKillBreakdown) as [label, value] (label)}
+                  <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                    <div class="text-xs text-gray-500">{label}</div>
+                    <div class="text-lg font-semibold">{value}</div>
+                  </div>
+                {/each}
+              </div>
             </div>
           </details>
+        {/each}
+      </div>
+    {/if}
+
+    {#if (stats.recentRuns || []).length > 0}
+      <div class="space-y-3">
+        <h2 class="text-lg font-semibold">{t('dashboard.statistics_runs')}</h2>
+        {#each stats.recentRuns.slice(0, 12) as run (run.runId)}
+          <DungeonRunCard {run} />
         {/each}
       </div>
     {/if}

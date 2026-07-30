@@ -17,6 +17,7 @@ import type {
   QuickPresetDto,
   SettingsDto,
   SnapshotPayload,
+  StatisticsHistoryDto,
   StatusDto,
 } from '../types';
 import {
@@ -106,6 +107,8 @@ class DashboardStore {
   status = $state<StatusDto>(createInitialStatus());
   players = $state<PlayerDto[]>([]);
   leaderboard = $state<LeaderboardDto | null>(null);
+  statisticsHistory = $state<StatisticsHistoryDto | null>(null);
+  loadingStatisticsHistory = $state(false);
   minimapRaw = $state<MinimapPayload | null>(null);
   minimap = $state<MinimapPayload | null>(null);
   playerStats = $state<PlayerStatsDto | null>(null);
@@ -168,6 +171,8 @@ class DashboardStore {
   private globalSettingsPromise: Promise<void> | null = null;
   private saveSettingsPromise: Promise<void> | null = null;
   private saveProfilePromise: Promise<void> | null = null;
+  private statisticsHistoryPromise: Promise<void> | null = null;
+  private lastFetchedHistoryRevision = -1;
 
   get canFollowMinimapPlayers() {
     if (this.playerBlindMode) return false;
@@ -450,6 +455,8 @@ class DashboardStore {
     if (!this.status.isConnected && wasConnected && this.isGameRoute) {
       this.players = [];
       this.leaderboard = null;
+      this.statisticsHistory = null;
+      this.lastFetchedHistoryRevision = -1;
       this.playerStats = null;
       this.settingsSave = null;
       this.saveProfile = null;
@@ -901,6 +908,37 @@ class DashboardStore {
     })();
 
     return this.saveProfilePromise;
+  }
+
+  async loadStatisticsHistory(force = false) {
+    if (!this.status.isConnected || !this.status.isHost || this.route !== 'leaderboard') {
+      return;
+    }
+
+    const revision = this.leaderboard?.historyRevision ?? -1;
+    if (!force && revision >= 0 && revision === this.lastFetchedHistoryRevision && this.statisticsHistory) {
+      return;
+    }
+
+    if (this.statisticsHistoryPromise) {
+      return this.statisticsHistoryPromise;
+    }
+
+    this.loadingStatisticsHistory = true;
+    this.statisticsHistoryPromise = (async () => {
+      try {
+        const history = await Api.getStatisticsHistory();
+        this.statisticsHistory = history;
+        this.lastFetchedHistoryRevision = history.historyRevision;
+      } catch {
+        /* optional while cache warms */
+      } finally {
+        this.loadingStatisticsHistory = false;
+        this.statisticsHistoryPromise = null;
+      }
+    })();
+
+    return this.statisticsHistoryPromise;
   }
 }
 

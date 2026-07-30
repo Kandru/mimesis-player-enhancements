@@ -10,7 +10,6 @@ namespace MimesisPlayerEnhancement.Util.Players
         internal string VoiceId = "";
         internal bool IsOnline;
         internal DateTime? ConnectedSinceUtc;
-        internal PlayerStatisticsDocument Statistics = new();
     }
 
     internal static class PlayerRegistry
@@ -40,7 +39,7 @@ namespace MimesisPlayerEnhancement.Util.Players
 
             if (!forceReload && slotId == _loadedSlotId)
             {
-                StatisticsWriteQueue.Configure(slotId, GetStatisticsDictionary);
+                StatisticsWriteQueue.Configure(slotId);
                 return;
             }
 
@@ -48,24 +47,22 @@ namespace MimesisPlayerEnhancement.Util.Players
             {
                 _loadedSlotId = slotId;
                 Records.Clear();
+                StatisticsStore.LoadSlot(slotId);
 
-                Dictionary<ulong, PlayerStatisticsDocument> loadedStats = [];
-                StatisticsStore.LoadAllPlayersForSlot(slotId, loadedStats);
-                foreach (KeyValuePair<ulong, PlayerStatisticsDocument> kvp in loadedStats)
+                foreach (KeyValuePair<ulong, PlayerGlobalStats> kvp in StatisticsHistory.Document.Globals)
                 {
-                    if (kvp.Key == 0 || kvp.Value == null)
+                    if (kvp.Key == 0)
                     {
                         continue;
                     }
 
                     PlayerRecord record = CreateRecord(kvp.Key);
-                    record.Statistics = kvp.Value;
                     record.DisplayName = kvp.Value.DisplayName ?? "";
                     Records[kvp.Key] = record;
                 }
 
                 MergeRosterFromDocument();
-                StatisticsWriteQueue.Configure(slotId, GetStatisticsDictionary);
+                StatisticsWriteQueue.Configure(slotId);
                 BumpRevision();
                 ModLog.Info(Feature, $"Loaded player registry for save slot {slotId} ({Records.Count} players).");
             }
@@ -99,6 +96,7 @@ namespace MimesisPlayerEnhancement.Util.Players
 
             PlayerRecord record = CreateRecord(steamId);
             Records[steamId] = record;
+            StatisticsHistory.EnsureGlobal(steamId, record.DisplayName);
             return record;
         }
 
@@ -107,15 +105,14 @@ namespace MimesisPlayerEnhancement.Util.Players
             return Records.TryGetValue(steamId, out record!);
         }
 
-        internal static bool TryGetStatistics(ulong steamId, out PlayerStatisticsDocument document)
+        internal static bool TryGetGlobal(ulong steamId, out PlayerGlobalStats global)
         {
-            if (Records.TryGetValue(steamId, out PlayerRecord? record))
+            if (StatisticsHistory.Document.Globals.TryGetValue(steamId, out global!))
             {
-                document = record.Statistics;
                 return true;
             }
 
-            document = null!;
+            global = null!;
             return false;
         }
 
@@ -157,20 +154,9 @@ namespace MimesisPlayerEnhancement.Util.Players
             }
         }
 
-        internal static IReadOnlyDictionary<ulong, PlayerStatisticsDocument> GetStatisticsDictionary()
+        internal static IReadOnlyList<PlayerGlobalStats> GetAllGlobals()
         {
-            return SnapshotStatistics();
-        }
-
-        internal static IReadOnlyList<PlayerStatisticsDocument> GetAllStatistics()
-        {
-            List<PlayerStatisticsDocument> documents = [];
-            foreach (PlayerRecord record in Records.Values)
-            {
-                documents.Add(record.Statistics);
-            }
-
-            return documents;
+            return [.. StatisticsHistory.Document.Globals.Values];
         }
 
         internal static bool UpdateDisplayName(ulong steamId, string displayName)
@@ -183,8 +169,8 @@ namespace MimesisPlayerEnhancement.Util.Players
             PlayerRecord record = GetOrCreate(steamId);
             bool changed = record.DisplayName != displayName;
             record.DisplayName = displayName;
-            record.Statistics.DisplayName = displayName;
-            record.Statistics.SteamId = steamId;
+            PlayerGlobalStats global = StatisticsHistory.EnsureGlobal(steamId, displayName);
+            global.DisplayName = displayName;
             if (changed)
             {
                 BumpRevision();
@@ -387,8 +373,9 @@ namespace MimesisPlayerEnhancement.Util.Players
                 return false;
             }
 
+            _ = StatisticsHistory.Document.Globals.Remove(steamId);
             BumpRevision();
-            StatisticsStore.SaveSlot(_loadedSlotId, SnapshotStatistics(), waitForCompletion);
+            StatisticsStore.SaveSlot(_loadedSlotId, StatisticsHistory.Document, waitForCompletion);
             SaveSlotDocumentStore.RemovePlayer(steamId);
             SyncRosterToDocument();
             return true;
@@ -401,6 +388,7 @@ namespace MimesisPlayerEnhancement.Util.Players
                 return false;
             }
 
+            _ = StatisticsHistory.Document.Globals.Remove(steamId);
             BumpRevision();
             return true;
         }
@@ -413,22 +401,7 @@ namespace MimesisPlayerEnhancement.Util.Players
 
         private static PlayerRecord CreateRecord(ulong steamId)
         {
-            return new PlayerRecord
-            {
-                SteamId = steamId,
-                Statistics = new PlayerStatisticsDocument { SteamId = steamId },
-            };
-        }
-
-        private static Dictionary<ulong, PlayerStatisticsDocument> SnapshotStatistics()
-        {
-            Dictionary<ulong, PlayerStatisticsDocument> snapshot = [];
-            foreach (KeyValuePair<ulong, PlayerRecord> kvp in Records)
-            {
-                snapshot[kvp.Key] = kvp.Value.Statistics;
-            }
-
-            return snapshot;
+            return new PlayerRecord { SteamId = steamId };
         }
 
         private static void MergeRosterFromDocument()
@@ -450,9 +423,9 @@ namespace MimesisPlayerEnhancement.Util.Players
         private static void SyncDisplayNameFields(ulong steamId, string displayName)
         {
             PlayerRecord record = GetOrCreate(steamId);
-            bool changed = record.Statistics.DisplayName != displayName;
-            record.Statistics.DisplayName = displayName;
-            record.Statistics.SteamId = steamId;
+            PlayerGlobalStats global = StatisticsHistory.EnsureGlobal(steamId, displayName);
+            bool changed = global.DisplayName != displayName;
+            global.DisplayName = displayName;
 
             if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {

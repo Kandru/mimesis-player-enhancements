@@ -20,21 +20,20 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
 
     internal sealed class WebDashboardSessionStatsDto
     {
-        public long CurrencyEarned;
-        public long SurvivalDeaths;
+        public long TrainValueDeposited;
+        public long ItemsDeposited;
+        public long ItemsCarried;
+        public long Deaths;
         public long SurvivalWins;
         public long SurvivalLeftBehind;
         public long DeathmatchDeaths;
         public long DeathmatchWins;
         public long Revives;
-        public long MimicEncounterCount;
-        public long ItemCarryCount;
+        public long MimicEncounters;
         public long DamageToFriend;
         public long FriendsKilled;
-        public long TotalConnectedSeconds;
-        public long TrainValueDeposited;
-        public long TrapDeaths;
-        public long KilledByPlayers;
+        public long KilledByFriends;
+        public long ConnectedSeconds;
         public long DungeonExitsAlive;
         public long DungeonExitsDead;
         public long? MedianLifetimeMs;

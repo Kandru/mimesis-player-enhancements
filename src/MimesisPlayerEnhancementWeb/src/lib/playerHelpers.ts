@@ -83,11 +83,11 @@ export function sessionLine(
   const s = player.currentSession;
   if (!s) return '';
   const parts: string[] = [];
-  if (s.currencyEarned) parts.push(t('dashboard.session_line_currency', { count: s.currencyEarned }));
+  if (s.trainValueDeposited) parts.push(t('dashboard.session_line_currency', { count: s.trainValueDeposited }));
   parts.push(
     t('dashboard.session_line_survival', {
       wins: s.survivalWins ?? 0,
-      deaths: s.survivalDeaths ?? 0,
+      deaths: s.deaths ?? 0,
       left: s.survivalLeftBehind ?? 0,
     }),
   );
@@ -100,9 +100,9 @@ export function sessionLine(
     );
   }
   if (s.revives) parts.push(t('dashboard.session_line_revives', { count: s.revives }));
-  if (s.totalConnectedSeconds) parts.push(formatDuration(s.totalConnectedSeconds));
-  if (s.mimicEncounterCount) parts.push(t('dashboard.session_line_mimics', { count: s.mimicEncounterCount }));
-  if (s.itemCarryCount) parts.push(t('dashboard.session_line_items', { count: s.itemCarryCount }));
+  if (s.connectedSeconds) parts.push(formatDuration(s.connectedSeconds));
+  if (s.mimicEncounters) parts.push(t('dashboard.session_line_mimics', { count: s.mimicEncounters }));
+  if (s.itemsCarried) parts.push(t('dashboard.session_line_items', { count: s.itemsCarried }));
   if (s.damageToFriend) parts.push(t('dashboard.session_line_friend_damage', { count: s.damageToFriend }));
   if (s.friendsKilled) parts.push(t('dashboard.session_line_friends_killed', { count: s.friendsKilled }));
   return parts.join(' · ');
@@ -114,14 +114,14 @@ function compactStatsLine(
 ) {
   if (!session) return '';
   const parts: string[] = [];
-  if (session.currencyEarned) {
-    parts.push(t('dashboard.stat_short_currency', { count: session.currencyEarned }));
+  if (session.trainValueDeposited) {
+    parts.push(t('dashboard.stat_short_currency', { count: session.trainValueDeposited }));
   }
-  if (session.survivalWins || session.survivalDeaths || session.survivalLeftBehind) {
+  if (session.survivalWins || session.deaths || session.survivalLeftBehind) {
     parts.push(
       t('dashboard.stat_short_survival', {
         wins: session.survivalWins ?? 0,
-        deaths: session.survivalDeaths ?? 0,
+        deaths: session.deaths ?? 0,
         left: session.survivalLeftBehind ?? 0,
       }),
     );
@@ -135,7 +135,7 @@ function compactStatsLine(
     );
   }
   if (session.revives) parts.push(t('dashboard.stat_short_revives', { count: session.revives }));
-  if (session.totalConnectedSeconds) parts.push(formatDuration(session.totalConnectedSeconds));
+  if (session.connectedSeconds) parts.push(formatDuration(session.connectedSeconds));
   return parts.join(' · ');
 }
 

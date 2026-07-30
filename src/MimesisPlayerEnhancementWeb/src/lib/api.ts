@@ -120,6 +120,10 @@ const Api = {
     );
   },
 
+  getStatisticsHistory() {
+    return Api.fetchJson<import('./types').StatisticsHistoryDto>('/api/statistics/history');
+  },
+
   async postAction(steamId: string, action: string) {
     const res = await fetch(`/api/players/${encodeURIComponent(steamId)}/${action}`, {
       method: 'POST',

@@ -19,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
             {
                 if (state == DungeonState.OnPlaying)
                 {
-                    StatisticsTracker.OnDungeonStarted();
+                    StatisticsTracker.OnDungeonStarted(__instance.Property as DungeonProperty);
                     return;
                 }
 
@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
                     return;
                 }
 
-                StatisticsTracker.OnSurvivalDungeonEnded(players.Values);
+                StatisticsTracker.OnSurvivalDungeonEnded(players.Values, state);
             });
         }
     }

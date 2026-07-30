@@ -88,17 +88,17 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             long sessions = 0;
             long survivalWins = 0;
-            long survivalDeaths = 0;
+            long deaths = 0;
             long revives = 0;
             long playSeconds = 0;
 
             foreach (LeaderboardEntry entry in entries)
             {
                 sessions += entry.SessionsCompleted;
-                survivalWins += entry.SurvivalWins;
-                survivalDeaths += entry.SurvivalDeaths;
-                revives += entry.Revives;
-                playSeconds += entry.TotalConnectedSeconds;
+                survivalWins += entry.Global.SurvivalWins;
+                deaths += entry.Global.Deaths;
+                revives += entry.Global.Revives;
+                playSeconds += entry.Global.ConnectedSeconds;
             }
 
             if (sessions > 0)
@@ -113,9 +113,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
                 parts.Add(ModL10n.Get("saveslots.survival_wins", new Dictionary<string, object> { ["count"] = survivalWins }));
             }
 
-            if (survivalDeaths > 0)
+            if (deaths > 0)
             {
-                parts.Add(ModL10n.Get("saveslots.survival_deaths", new Dictionary<string, object> { ["count"] = survivalDeaths }));
+                parts.Add(ModL10n.Get("saveslots.survival_deaths", new Dictionary<string, object> { ["count"] = deaths }));
             }
 
             if (revives > 0)
@@ -131,15 +131,10 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static LeaderboardDocument? LoadLeaderboard(int slotId)
         {
-            string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
-            {
-                return null;
-            }
-
-            Dictionary<ulong, PlayerStatisticsDocument> players = [];
-            StatisticsStore.LoadAllPlayersForSlot(slotId, players);
-            return players.Count == 0 ? null : LeaderboardBuilder.Build(slotId, players.Values);
+            SlotStatisticsDocument? slot = StatisticsStore.TryLoadSlotDocument(slotId);
+            return slot == null || slot.Globals.Count == 0
+                ? null
+                : StatisticsSummaryBuilder.Build(slotId, slot);
         }
 
         private static string FormatPlaytime(long totalSeconds)

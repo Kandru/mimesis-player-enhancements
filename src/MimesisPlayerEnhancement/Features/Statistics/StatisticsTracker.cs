@@ -1,3 +1,4 @@
+using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using ReluProtocol.Enum;
 
@@ -17,9 +18,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static readonly Action<ulong> FlushConnectedTimeCallback = FlushConnectedTimeForConnectedPlayer;
 
-        /// <summary>
-        /// Config-sync hook — persists and clears runtime state when the feature is toggled off live.
-        /// </summary>
         internal static void RefreshFromConfig()
         {
             bool enabled = ModConfig.EnableStatistics.Value;
@@ -42,6 +40,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatisticsDeathHandler.ClearRuntimeState();
             TrainDepositTracker.ClearDungeonState();
             StatisticsDisplayNameResolver.ClearRuntimeState();
+            StatisticsRuntime.Clear();
             StatisticsWriteQueue.Clear();
         }
 
@@ -66,10 +65,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             PlayerPresenceEvents.OnPlayerRegistered(steamId, slotId);
         }
 
-        /// <summary>
-        /// Stats-only connect hook. Presence (<see cref="PlayerPresenceEvents"/>) owns
-        /// <see cref="PlayerRegistry"/> connected state and must run first.
-        /// </summary>
         public static void OnPlayerRegistered(ulong steamId, int slotId)
         {
             if (!ModConfig.EnableStatistics.Value)
@@ -89,8 +84,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             PlayerRegistry.LoadForSlot(slotId);
 
-            PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
+            PlayerGlobalStats global = StatisticsHistory.EnsureGlobal(steamId);
+            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, global.DisplayName);
             if (SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {
                 SaveSlotDocumentStore.UpsertPlayer(steamId, displayName);
@@ -98,40 +93,38 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             DateTime now = DateTime.UtcNow;
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
 
-            bool resumeSession = doc.CurrentSession != null
-                                 && doc.CurrentSession.IsOpen
-                                 && doc.CurrentSession.LastDisconnectedAtUtc.HasValue
-                                 && now - doc.CurrentSession.LastDisconnectedAtUtc.Value <= TimeSpan.FromMinutes(graceMinutes);
+            bool resumeSession = session != null
+                                 && session.IsOpen
+                                 && session.LastDisconnectedAtUtc.HasValue
+                                 && now - session.LastDisconnectedAtUtc.Value <= TimeSpan.FromMinutes(graceMinutes);
 
-            if (resumeSession && doc.CurrentSession != null)
+            if (resumeSession && session != null)
             {
-                doc.CurrentSession.ReconnectCount++;
-                doc.CurrentSession.LastConnectedAtUtc = now;
-                doc.CurrentSession.LastDisconnectedAtUtc = null;
+                session.ReconnectCount++;
+                session.LastConnectedAtUtc = now;
+                session.LastDisconnectedAtUtc = null;
+                StatisticsRuntime.SetCurrentSession(steamId, session);
                 _hasOpenGraceSessions = HasOpenDisconnectedSessions();
             }
             else
             {
-                FinalizeOpenSession(doc, countAsCompleted: true);
-                doc.CurrentSession = NewSession(now);
+                FinalizeOpenSession(steamId, countAsCompleted: true);
+                StatisticsRuntime.SetCurrentSession(steamId, StatisticsRuntime.CreateSession(now));
             }
 
             StatisticsVoiceCounter.EnsureBaseline(steamId);
             PlayerRegistry.BumpRevision();
 
             bool isNewSession = !resumeSession;
-            int reconnectCount = doc.CurrentSession?.ReconnectCount ?? 0;
-            StatisticsMessages.OnPlayerJoinedSession(steamId, doc.DisplayName, doc, isNewSession, reconnectCount);
+            int reconnectCount = StatisticsRuntime.GetCurrentSession(steamId)?.ReconnectCount ?? 0;
+            StatisticsMessages.OnPlayerJoinedSession(steamId, displayName, global, isNewSession, reconnectCount);
             WebDashboardSnapshotCache.MarkDirty();
 
-            PlayerLifecycleCoordinator.NotifyStatisticsConnect(steamId, BuildSessionConnectContribution(doc, isNewSession, reconnectCount));
+            PlayerLifecycleCoordinator.NotifyStatisticsConnect(steamId, BuildSessionConnectContribution(isNewSession, reconnectCount));
         }
 
-        /// <summary>
-        /// Stats-only disconnect hook. Flushes session counters while the player is still
-        /// marked connected; presence clears registry online state afterward if needed.
-        /// </summary>
         public static void OnPlayerUnregistered(ulong steamId)
         {
             if (!CanTrack())
@@ -149,31 +142,32 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (!PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc))
+            if (!PlayerRegistry.TryGetGlobal(steamId, out PlayerGlobalStats? global))
             {
                 return;
             }
 
-            PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId, doc);
+            PlayerLifecycleContribution? disconnectContribution = BuildSessionDisconnectContribution(steamId);
 
-            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
+            string displayName = PlayerRegistry.ApplyResolvedDisplayName(steamId, global.DisplayName);
             if (PlayerRegistry.TryGetLoadedSlotId(out int slotId) && SaveSlotDocumentStore.IsUsableName(displayName, steamId))
             {
                 SaveSlotDocumentStore.UpsertPlayer(steamId, displayName);
             }
 
-            FlushConnectedTime(steamId, doc);
+            FlushConnectedTime(steamId);
             PlayerRegistry.MarkDisconnected(steamId);
             StatisticsVoiceCounter.RemoveBaseline(steamId);
-            if (doc.CurrentSession != null)
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session != null)
             {
-                doc.CurrentSession.LastDisconnectedAtUtc = DateTime.UtcNow;
-                doc.CurrentSession.IsOpen = true;
+                session.LastDisconnectedAtUtc = DateTime.UtcNow;
+                session.IsOpen = true;
                 _hasOpenGraceSessions = true;
             }
 
             PlayerRegistry.BumpRevision();
-            StatisticsMessages.OnPlayerLeftSession(steamId, doc.DisplayName, doc);
+            StatisticsMessages.OnPlayerLeftSession(steamId, displayName, global);
             WebDashboardSnapshotCache.MarkDirty();
 
             PlayerLifecycleCoordinator.NotifyStatisticsDisconnect(steamId, disconnectContribution);
@@ -245,10 +239,10 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             foreach (ulong steamId in affected)
             {
-                PlayerStatisticsDocument doc = PlayerRegistry.GetOrCreate(steamId).Statistics;
-                PlayerRegistry.ApplyResolvedDisplayName(steamId, doc.DisplayName);
-                ApplyVoiceDelta(steamId, doc, voiceCounts);
-                FlushConnectedTime(steamId, doc);
+                PlayerGlobalStats global = StatisticsHistory.EnsureGlobal(steamId);
+                PlayerRegistry.ApplyResolvedDisplayName(steamId, global.DisplayName);
+                ApplyVoiceDelta(steamId, voiceCounts);
+                FlushConnectedTime(steamId);
             }
 
             StatisticsVoiceCounter.UpdateBaselines(affected, voiceCounts);
@@ -265,7 +259,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             WebDashboardSnapshotCache.MarkDirty();
         }
 
-        public static void OnSurvivalDungeonEnded(IEnumerable<VPlayer> players)
+        public static void OnSurvivalDungeonEnded(IEnumerable<VPlayer> players, DungeonState state)
         {
             if (!CanTrack())
             {
@@ -297,6 +291,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             StatisticsDeathHandler.OnDungeonEnded(players, notify: false);
+            StatisticsHistory.CloseRun(
+                state == DungeonState.Success ? DungeonRunOutcome.Success : DungeonRunOutcome.Failed,
+                notify: false);
             StatisticsCounterWriter.NotifyChanged();
         }
 
@@ -321,7 +318,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             StatisticsDeathHandler.OnPlayerRevived(steamId);
         }
 
-        public static void OnDungeonStarted()
+        public static void OnDungeonStarted(DungeonProperty? property)
         {
             if (!CanTrack())
             {
@@ -329,6 +326,19 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             StatisticsDeathHandler.OnDungeonStarted();
+
+            if (property == null)
+            {
+                return;
+            }
+
+            StatisticsHistory.OpenRun(new DungeonRunIdentity(
+                zone: StatisticsHistory.CurrentZone,
+                cycle: property.CycleCount,
+                seed: property.RandomDungeonSeed,
+                dungeonMasterId: property.DungeonMasterID,
+                mapId: property.PickedMapID));
+            StatisticsCounterWriter.NotifyChanged();
         }
 
         public static void OnGameSaved(int slotId, bool waitForCompletion = false)
@@ -355,18 +365,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 {
                     foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
                     {
-                        if (PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc))
-                        {
-                            FlushConnectedTime(steamId, doc);
-                        }
+                        FlushConnectedTime(steamId);
                     }
 
-                    foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
+                    foreach (ulong steamId in StatisticsHistory.Document.Globals.Keys.ToList())
                     {
-                        if (doc.CurrentSession?.IsOpen == true)
-                        {
-                            FinalizeOpenSession(doc, countAsCompleted: true);
-                        }
+                        FinalizeOpenSession(steamId, countAsCompleted: true);
                     }
 
                     PlayerRegistry.BumpRevision();
@@ -393,66 +397,30 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             ProcessDeferred();
         }
 
-        private static PlayerLifecycleContribution? BuildSessionConnectContribution(
-            PlayerStatisticsDocument doc,
-            bool isNewSession,
-            int reconnectCount)
-        {
-            if (doc.CurrentSession == null)
-            {
-                return null;
-            }
-
-            string detail = isNewSession
-                ? "session started"
-                : reconnectCount > 0
-                    ? $"session resumed (reconnects={reconnectCount})"
-                    : "session resumed";
-            return new PlayerLifecycleContribution("Statistics", detail);
-        }
-
-        private static PlayerLifecycleContribution? BuildSessionDisconnectContribution(
-            ulong steamId,
-            PlayerStatisticsDocument doc)
-        {
-            if (doc.CurrentSession == null)
-            {
-                return null;
-            }
-
-            string detail = $"session {doc.CurrentSession.SessionId} closed";
-            if (PlayerRegistry.TryGetConnectedSince(steamId, out DateTime since))
-            {
-                TimeSpan connected = DateTime.UtcNow - since;
-                if (connected.TotalMinutes >= 1)
-                {
-                    detail += $" (connected {connected.TotalMinutes:F0}m)";
-                }
-                else if (connected.TotalSeconds >= 1)
-                {
-                    detail += $" (connected {connected.TotalSeconds:F0}s)";
-                }
-            }
-
-            return new PlayerLifecycleContribution("Statistics", detail);
-        }
-
         internal static bool CanTrack() =>
             ModConfig.EnableStatistics.Value
             && PlayerRegistry.TryGetLoadedSlotId(out int slotId)
             && MimesisSaveManager.IsValidSaveSlotId(slotId)
             && HostApplyGate.ShouldApplyHostOnlyFeature();
 
-        internal static SessionStats CreateSession(DateTime now) => NewSession(now);
-
-        internal static PlayerStatisticsDocument? TryGetPlayerDocument(ulong steamId)
+        internal static bool TryGetSessionCounters(ulong steamId, out StatCounters counters)
         {
-            return PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc) ? doc : null;
+            counters = new StatCounters();
+            if (steamId == 0)
+            {
+                return false;
+            }
+
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session?.Counters != null)
+            {
+                counters = session.Counters.Clone();
+                return true;
+            }
+
+            return false;
         }
 
-        /// <summary>
-        /// Clears a prematurely registered connection that never reached fully-ready state.
-        /// </summary>
         internal static void AbandonIncompleteConnection(ulong steamId)
         {
             if (steamId == 0)
@@ -469,6 +437,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
             StatisticsVoiceCounter.RemoveBaseline(steamId);
             StatisticsMessages.ClearPlayerRuntimeState(steamId);
+            StatisticsRuntime.SetCurrentSession(steamId, null);
             PlayerRegistry.BumpRevision();
             WebDashboardSnapshotCache.MarkDirty();
             ModLog.Debug(Feature, $"Abandoned incomplete connection statistics — steamId={steamId}");
@@ -507,87 +476,88 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return false;
         }
 
-        internal static bool TryGetSessionCounters(ulong steamId, out StatCounters counters)
+        internal static void PersistSlot(int slotId, bool waitForCompletion = false)
         {
-            counters = new StatCounters();
-            if (steamId == 0)
-            {
-                return false;
-            }
-
-            if (PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc) && doc.CurrentSession?.Counters != null)
-            {
-                counters = doc.CurrentSession.Counters.Clone();
-                return true;
-            }
-
-            return false;
-        }
-
-        private static SessionStats NewSession(DateTime now)
-        {
-            return new()
-            {
-                SessionId = Guid.NewGuid().ToString("N"),
-                StartedAtUtc = now,
-                LastConnectedAtUtc = now,
-                IsOpen = true,
-                Counters = new StatCounters(),
-            };
-        }
-
-        private static void FinalizeOpenSession(PlayerStatisticsDocument doc, bool countAsCompleted)
-        {
-            if (doc.CurrentSession == null || !doc.CurrentSession.IsOpen)
+            if (!ModConfig.EnableStatistics.Value || !MimesisSaveManager.IsValidSaveSlotId(slotId))
             {
                 return;
             }
 
-            doc.CurrentSession.IsOpen = false;
-            doc.RecentSessions.Add(CloneSession(doc.CurrentSession));
-            while (doc.RecentSessions.Count > StatisticsStore.MaxRecentSessionsPerPlayer)
+            if (PlayerRegistry.LoadedSlotId != slotId)
             {
-                doc.RecentSessions.RemoveAt(0);
+                return;
             }
 
-            if (countAsCompleted)
-            {
-                doc.Global.SessionsCompleted++;
-            }
-
-            doc.CurrentSession = null;
+            StatisticsWriteQueue.Configure(slotId);
+            PlayerRegistry.PersistStatistics(waitForCompletion);
         }
 
-        private static SessionStats CloneSession(SessionStats session)
+        internal static void PersistLoadedSlot(bool waitForCompletion = false)
         {
-            return new()
+            if (PlayerRegistry.TryGetLoadedSlotId(out int slotId))
             {
-                SessionId = session.SessionId,
-                StartedAtUtc = session.StartedAtUtc,
-                LastConnectedAtUtc = session.LastConnectedAtUtc,
-                LastDisconnectedAtUtc = session.LastDisconnectedAtUtc,
-                ReconnectCount = session.ReconnectCount,
-                IsOpen = false,
-                Counters = session.Counters.Clone(),
-            };
+                PersistSlot(slotId, waitForCompletion);
+            }
+        }
+
+        private static PlayerLifecycleContribution? BuildSessionConnectContribution(bool isNewSession, int reconnectCount)
+        {
+            string detail = isNewSession
+                ? "session started"
+                : reconnectCount > 0
+                    ? $"session resumed (reconnects={reconnectCount})"
+                    : "session resumed";
+            return new PlayerLifecycleContribution("Statistics", detail);
+        }
+
+        private static PlayerLifecycleContribution? BuildSessionDisconnectContribution(ulong steamId)
+        {
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session == null)
+            {
+                return null;
+            }
+
+            string detail = $"session {session.SessionId} closed";
+            if (PlayerRegistry.TryGetConnectedSince(steamId, out DateTime since))
+            {
+                TimeSpan connected = DateTime.UtcNow - since;
+                if (connected.TotalMinutes >= 1)
+                {
+                    detail += $" (connected {connected.TotalMinutes:F0}m)";
+                }
+                else if (connected.TotalSeconds >= 1)
+                {
+                    detail += $" (connected {connected.TotalSeconds:F0}s)";
+                }
+            }
+
+            return new PlayerLifecycleContribution("Statistics", detail);
+        }
+
+        private static void FinalizeOpenSession(ulong steamId, bool countAsCompleted)
+        {
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session == null || !session.IsOpen)
+            {
+                return;
+            }
+
+            StatisticsRuntime.FinalizeSession(steamId, session, countAsCompleted);
         }
 
         private static void FlushConnectedTimeForConnectedPlayer(ulong steamId)
         {
-            if (!PlayerRegistry.TryGetStatistics(steamId, out PlayerStatisticsDocument? doc))
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session?.LastDisconnectedAtUtc.HasValue == true)
             {
                 return;
             }
 
-            if (doc.CurrentSession?.LastDisconnectedAtUtc.HasValue == true)
-            {
-                return;
-            }
-
-            FlushConnectedTime(steamId, doc);
+            FlushConnectedTime(steamId);
         }
 
-        private static void FlushConnectedTime(ulong steamId, PlayerStatisticsDocument doc)
+        private static void FlushConnectedTime(ulong steamId)
         {
             if (!PlayerRegistry.TryGetConnectedSince(steamId, out DateTime since))
             {
@@ -600,7 +570,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            doc.CurrentSession ??= NewSession(since);
+            SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
+            if (session == null)
+            {
+                session = StatisticsRuntime.CreateSession(since);
+                StatisticsRuntime.SetCurrentSession(steamId, session);
+            }
+
             StatisticsCounterWriter.AddConnectedSeconds(steamId, seconds);
             PlayerRegistry.SetConnectedSince(steamId, DateTime.UtcNow);
         }
@@ -609,17 +585,15 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             StatCounters totals = new()
             {
-                ItemCarryCount = report.TotalItemCarryCount,
+                ItemsCarried = report.TotalItemCarryCount,
                 DamageToFriend = report.TotalDamageToAlly,
-                MimicEncounterCount = report.TotalMimicEncounterCount,
-                TimeInStartingVolumeMs = report.TotalTimeInStartingVolume,
-                CyclesCompleted = 1,
+                MimicEncounters = report.TotalMimicEncounterCount,
             };
 
             StatisticsCounterWriter.MergeDelta(steamId, totals);
         }
 
-        private static void ApplyVoiceDelta(ulong steamId, PlayerStatisticsDocument doc, Dictionary<ulong, int> voiceCounts)
+        private static void ApplyVoiceDelta(ulong steamId, Dictionary<ulong, int> voiceCounts)
         {
             int delta = StatisticsVoiceCounter.GetDeltaSinceBaseline(steamId, voiceCounts);
             if (delta == 0)
@@ -627,7 +601,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            StatisticsCounterWriter.Modify(steamId, counters => counters.VoiceEvents += delta);
+            StatisticsCounterWriter.AddVoiceEvents(steamId, delta);
         }
 
         internal static void SyncVoiceBaseline(SpeechEventArchive archive)
@@ -672,39 +646,15 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return PlayerResultStatus.Alived;
         }
 
-        internal static void PersistSlot(int slotId, bool waitForCompletion = false)
-        {
-            if (!ModConfig.EnableStatistics.Value || !MimesisSaveManager.IsValidSaveSlotId(slotId))
-            {
-                return;
-            }
-
-            if (PlayerRegistry.LoadedSlotId != slotId)
-            {
-                return;
-            }
-
-            StatisticsWriteQueue.Configure(slotId, PlayerRegistry.GetStatisticsDictionary);
-            PlayerRegistry.PersistStatistics(waitForCompletion);
-        }
-
-        internal static void PersistLoadedSlot(bool waitForCompletion = false)
-        {
-            if (PlayerRegistry.TryGetLoadedSlotId(out int slotId))
-            {
-                PersistSlot(slotId, waitForCompletion);
-            }
-        }
-
         private static bool FinalizeExpiredGraceSessions()
         {
             int graceMinutes = ModConfig.SessionReconnectGraceMinutes.Value;
             DateTime now = DateTime.UtcNow;
             bool changed = false;
 
-            foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
+            foreach (ulong steamId in StatisticsHistory.Document.Globals.Keys.ToList())
             {
-                SessionStats? session = doc.CurrentSession;
+                SessionStats? session = StatisticsRuntime.GetCurrentSession(steamId);
                 if (session == null || !session.IsOpen || !session.LastDisconnectedAtUtc.HasValue)
                 {
                     continue;
@@ -715,8 +665,8 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     continue;
                 }
 
-                ModLog.Info(Feature, $"Session finalized — steamId={doc.SteamId} session={session.SessionId} after grace period");
-                FinalizeOpenSession(doc, countAsCompleted: true);
+                ModLog.Info(Feature, $"Session finalized — steamId={steamId} session={session.SessionId} after grace period");
+                FinalizeOpenSession(steamId, countAsCompleted: true);
                 changed = true;
             }
 
@@ -725,16 +675,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static bool HasOpenDisconnectedSessions()
         {
-            foreach (PlayerStatisticsDocument doc in PlayerRegistry.GetAllStatistics())
-            {
-                SessionStats? session = doc.CurrentSession;
-                if (session != null && session.IsOpen && session.LastDisconnectedAtUtc.HasValue)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return StatisticsRuntime.HasOpenDisconnectedSessions();
         }
     }
 }

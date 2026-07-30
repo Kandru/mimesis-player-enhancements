@@ -1,5 +1,12 @@
 import { t } from '$lib/i18n';
-import type { EntityCountEntryDto, StatCountersDto } from '$lib/types';
+import type {
+  DungeonRunOutcome,
+  EntityCountEntryDto,
+  LeaderboardEntryDto,
+  PlayerRunStatsDto,
+  StatCountersDto,
+  StatisticsHistoryRunDto,
+} from '$lib/types';
 import { formatDuration } from '$lib/utils';
 
 export function localizeEntity(entry: EntityCountEntryDto): string {
@@ -31,22 +38,31 @@ export function formatCountMapFromBreakdown(entries: EntityCountEntryDto[] | und
   return entries.map((entry) => [localizeEntity(entry), entry.count] as [string, number]);
 }
 
-export function sumMonsterKills(counters?: StatCountersDto): number {
-  if (!counters?.monsterKills) return 0;
-  return Object.values(counters.monsterKills).reduce((sum, value) => sum + (value ?? 0), 0);
+export function formatOutcome(outcome: DungeonRunOutcome): string {
+  const key = `dashboard.statistics_outcome_${outcome}`;
+  const label = t(key);
+  return label === key ? outcome : label;
+}
+
+export function formatRunLabel(run: StatisticsHistoryRunDto | PlayerRunStatsDto): string {
+  const name = run.mapName || run.mapKey || run.runId;
+  return t('dashboard.statistics_run_label', { map: name, seed: run.seed });
 }
 
 export function buildStatCards(counters: StatCountersDto | undefined, extras?: Record<string, string | number>) {
   if (!counters) return [] as Array<[string, string | number]>;
   const cards: Array<[string, string | number]> = [
     [t('dashboard.stat_team_score'), Math.round(counters.score ?? 0)],
-    [t('dashboard.stat_train_value'), counters.trainValueDeposited ?? 0],
-    [t('dashboard.stat_currency'), counters.currencyEarned ?? 0],
+    [t('dashboard.stat_value_saved'), counters.trainValueDeposited ?? 0],
+    [t('dashboard.stat_items_saved'), counters.itemsDeposited ?? 0],
+    [t('dashboard.stat_items_carried'), counters.itemsCarried ?? 0],
+    [t('dashboard.stat_monsters_killed'), counters.monsterKillsTotal ?? 0],
+    [t('dashboard.stat_deaths'), counters.deaths ?? 0],
+    [t('dashboard.stat_trap_deaths'), counters.trapDeathsTotal ?? 0],
     [t('dashboard.stat_survival_wins'), counters.survivalWins ?? 0],
-    [t('dashboard.stat_survival_deaths'), counters.survivalDeaths ?? 0],
     [t('dashboard.stat_revives'), counters.revives ?? 0],
     [t('dashboard.stat_friends_killed'), counters.friendsKilled ?? 0],
-    [t('dashboard.stat_trap_deaths'), counters.trapDeaths ?? 0],
+    [t('dashboard.stat_killed_by_friends'), counters.killedByFriends ?? 0],
     [t('dashboard.stat_dungeon_exits_alive'), counters.dungeonExitsAlive ?? 0],
     [t('dashboard.stat_dungeon_exits_dead'), counters.dungeonExitsDead ?? 0],
   ];
@@ -64,18 +80,29 @@ export function buildStatCards(counters: StatCountersDto | undefined, extras?: R
   return cards;
 }
 
-export function leaderboardEntryCounters(entry: Record<string, unknown>) {
-  return {
-    score: Number(entry.score ?? 0),
-    trainValueDeposited: Number(entry.trainValueDeposited ?? 0),
-    survivalDeaths: Number(entry.survivalDeaths ?? 0),
-    revives: Number(entry.revives ?? 0),
-    friendsKilled: Number(entry.friendsKilled ?? 0),
-    currencyEarned: Number(entry.currencyEarned ?? 0),
-    sessionsCompleted: Number(entry.sessionsCompleted ?? 0),
-    runRestarts: Number(entry.runRestarts ?? 0),
-    trapDeaths: Number(entry.trapDeaths ?? 0),
-    run: entry.run as StatCountersDto | undefined,
-    zones: entry.zones as Record<string, StatCountersDto> | undefined,
-  };
+export function buildGlobalSummaryCards(counters: StatCountersDto | undefined, runRestarts = 0) {
+  return buildStatCards(counters, runRestarts > 0
+    ? { [t('dashboard.stat_run_restarts')]: runRestarts }
+    : undefined);
 }
+
+export function leaderboardEntrySortValue(entry: LeaderboardEntryDto, key: LeaderboardSortKey) {
+  switch (key) {
+    case 'name':
+      return entry.displayName;
+    case 'score':
+      return entry.global.score ?? entry.score ?? 0;
+    case 'trainValue':
+      return entry.global.trainValueDeposited ?? 0;
+    case 'sessions':
+      return entry.sessionsCompleted ?? 0;
+    case 'runs':
+      return entry.dungeonRunsPlayed ?? 0;
+    case 'zone':
+      return entry.highestZoneReached ?? 0;
+    default:
+      return 0;
+  }
+}
+
+export type LeaderboardSortKey = 'name' | 'score' | 'trainValue' | 'sessions' | 'runs' | 'zone';

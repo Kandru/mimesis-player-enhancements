@@ -28,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             }
 
             HadStoredStatsBeforeConnect[playerUid] = steamId != 0
-                && PlayerRegistry.TryGetStatistics(steamId, out _);
+                && PlayerRegistry.TryGetGlobal(steamId, out _);
 
             if (steamId != 0)
             {

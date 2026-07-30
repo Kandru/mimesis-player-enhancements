@@ -38,7 +38,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 }
             }
 
-            bool hadPlayer = PlayerRegistry.TryGetStatistics(steamId, out _);
+            bool hadPlayer = PlayerRegistry.TryGetGlobal(steamId, out _);
             bool hadRosterEntry = !hadPlayer && SaveSlotDocumentStore.TryGetName(slotId, steamId, out _);
 
             int voiceRemoved = SpeechEventPoolManager.RemovePlayer(steamId);
@@ -70,6 +70,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             WebDashboardLeaderboardCache.Clear();
+            WebDashboardStatisticsHistoryCache.Clear();
             WebDashboardSnapshotCache.MarkDirty();
             WebDashboardSnapshotCache.RequestFullPublish();
 

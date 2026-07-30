@@ -112,7 +112,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             string trapKey = StatisticsEntityKeys.ForTrap(trapType);
             StatisticsCounterWriter.Modify(player.SteamID, counters =>
             {
-                counters.TrapDeaths++;
                 IncrementDictionaryValue(counters.DeathsByTrap, trapKey);
             });
         }
@@ -150,7 +149,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 }
                 else
                 {
-                    counters.SurvivalDeaths++;
+                    counters.Deaths++;
                 }
 
                 if (lifetimeMs > 0)
@@ -176,8 +175,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                     && friendKiller.SteamID != steamId)
                 {
                     friendKillerSteamId = friendKiller.SteamID;
-                    counters.KilledByPlayers++;
-                    IncrementDictionaryValue(counters.DeathsByMonster, StatisticsEntityKeys.PlayerKey);
+                    counters.KilledByFriends++;
                 }
             }, notify: false);
 

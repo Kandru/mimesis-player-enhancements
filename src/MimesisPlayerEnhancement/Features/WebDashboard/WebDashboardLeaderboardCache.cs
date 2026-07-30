@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return _cachedSlotId == saveSlotId ? _cachedJson : null;
             }
 
-            int revision = PlayerRegistry.Revision;
+            int revision = StatisticsHistory.Revision;
             if (_cachedSlotId == saveSlotId
                 && revision == _cachedRevision
                 && !string.IsNullOrEmpty(_cachedJson))
@@ -97,12 +97,11 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         {
             try
             {
-                LeaderboardDocument doc = snapshot.Players.Count == 0
+                LeaderboardDocument doc = snapshot.Document.Globals.Count == 0
                     ? new LeaderboardDocument { SaveSlotId = saveSlotId, UpdatedAtUtc = DateTime.UtcNow }
-                    : LeaderboardBuilder.BuildFromSnapshot(
+                    : StatisticsSummaryBuilder.BuildFromSnapshot(
                         snapshot.SaveSlotId,
-                        snapshot.CurrentZone,
-                        snapshot.Players,
+                        snapshot.Document,
                         snapshot.DisplayNames);
 
                 string json = WebDashboardJson.SerializeLeaderboardResponse(doc, connectedSteamIds);

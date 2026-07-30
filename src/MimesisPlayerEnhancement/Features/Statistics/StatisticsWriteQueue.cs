@@ -1,34 +1,27 @@
-using MimesisPlayerEnhancement.Features.Statistics.Models;
-
 namespace MimesisPlayerEnhancement.Features.Statistics
 {
     internal static class StatisticsWriteQueue
     {
         private static int _loadedSlotId = -999;
-        private static Func<IReadOnlyDictionary<ulong, PlayerStatisticsDocument>>? _allPlayersResolver;
 
-        internal static void Configure(
-            int slotId,
-            Func<IReadOnlyDictionary<ulong, PlayerStatisticsDocument>> allPlayersResolver)
+        internal static void Configure(int slotId)
         {
             _loadedSlotId = slotId;
-            _allPlayersResolver = allPlayersResolver;
         }
 
         internal static void Clear()
         {
             _loadedSlotId = -999;
-            _allPlayersResolver = null;
         }
 
         internal static void SaveLoadedSlot(bool waitForCompletion)
         {
-            if (_loadedSlotId < 0 || _allPlayersResolver == null)
+            if (_loadedSlotId < 0)
             {
                 return;
             }
 
-            StatisticsStore.SaveSlot(_loadedSlotId, _allPlayersResolver(), waitForCompletion);
+            StatisticsStore.SaveSlot(_loadedSlotId, StatisticsHistory.Document, waitForCompletion);
         }
 
         internal static void FlushAllSync()

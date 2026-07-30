@@ -69,7 +69,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         internal static void OnPlayerJoinedSession(
             ulong steamId,
             string displayName,
-            PlayerStatisticsDocument doc,
+            PlayerGlobalStats global,
             bool isNewSession,
             int reconnectCount)
         {
@@ -78,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            ScheduleGlobalStatsOnJoin(steamId, displayName, doc);
+            ScheduleGlobalStatsOnJoin(steamId, displayName, global);
 
             if (LocalPlayerHelper.IsLocalSteamId(steamId))
             {
@@ -86,14 +86,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
-        internal static void OnPlayerLeftSession(ulong steamId, string displayName, PlayerStatisticsDocument doc)
+        internal static void OnPlayerLeftSession(ulong steamId, string displayName, PlayerGlobalStats global)
         {
             if (!ShouldShow())
             {
                 return;
             }
 
-            TryShowGlobalStats(steamId, displayName, doc, isJoin: false);
+            TryShowGlobalStats(steamId, displayName, global, isJoin: false);
         }
 
         internal static void OnDungeonCompleted(int cycleNumber)
@@ -131,22 +131,23 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            if (!PlayerRegistry.TryGetGlobal(steamId, out PlayerGlobalStats? global))
             {
                 return;
             }
 
             if (!PlayerRegistry.UpdateDisplayName(steamId, userName))
             {
-                doc.DisplayName = userName;
+                global.DisplayName = userName;
             }
+
             if (isEntering)
             {
-                ScheduleGlobalStatsOnJoin(steamId, userName, doc);
+                ScheduleGlobalStatsOnJoin(steamId, userName, global);
             }
             else
             {
-                TryShowGlobalStats(steamId, userName, doc, isJoin: false);
+                TryShowGlobalStats(steamId, userName, global, isJoin: false);
             }
         }
 
@@ -181,14 +182,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private static void ScheduleGlobalStatsOnJoin(
             ulong steamId,
             string displayName,
-            PlayerStatisticsDocument doc)
+            PlayerGlobalStats global)
         {
-            if (steamId == 0 || doc.Global == null)
+            if (steamId == 0 || global == null)
             {
                 return;
             }
 
-            if (!HasAnyGlobalStats(doc.Global))
+            if (!HasAnyGlobalStats(global))
             {
                 return;
             }
@@ -198,18 +199,18 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            _ = MelonCoroutines.Start(ShowGlobalStatsOnJoinAfterDelay(steamId, displayName, doc));
+            _ = MelonCoroutines.Start(ShowGlobalStatsOnJoinAfterDelay(steamId, displayName, global));
         }
 
         private static IEnumerator ShowGlobalStatsOnJoinAfterDelay(
             ulong steamId,
             string displayName,
-            PlayerStatisticsDocument doc)
+            PlayerGlobalStats global)
         {
             yield return new WaitForSeconds(GlobalStatsJoinDelaySeconds);
 
             _ = PendingJoinStats.Remove(steamId);
-            TryShowGlobalStats(steamId, displayName, doc, isJoin: true);
+            TryShowGlobalStats(steamId, displayName, global, isJoin: true);
         }
 
         private static string FormatLocalSessionIntro(bool? isNewSession, int reconnectCount)
@@ -241,15 +242,15 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private static void TryShowGlobalStats(
             ulong steamId,
             string displayName,
-            PlayerStatisticsDocument doc,
+            PlayerGlobalStats global,
             bool isJoin)
         {
-            if (steamId == 0 || doc.Global == null)
+            if (steamId == 0 || global == null)
             {
                 return;
             }
 
-            if (!HasAnyGlobalStats(doc.Global))
+            if (!HasAnyGlobalStats(global))
             {
                 return;
             }
@@ -262,33 +263,31 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             GlobalStatsShownAt[key] = DateTime.UtcNow;
-            string name = string.IsNullOrWhiteSpace(displayName) ? doc.DisplayName : displayName;
-            InGameMessageHelper.ShowModMessage(FormatGlobalStats(name, doc.Global));
+            string name = string.IsNullOrWhiteSpace(displayName) ? global.DisplayName : displayName;
+            InGameMessageHelper.ShowModMessage(FormatGlobalStats(name, global));
         }
 
-        internal static bool HasAnyGlobalStats(GlobalStats global)
+        internal static bool HasAnyGlobalStats(PlayerGlobalStats global)
         {
-            if (global.SessionsCompleted > 0)
+            if (global.SessionsCompleted > 0 || global.DungeonRunsPlayed > 0 || global.VoiceEvents > 0)
             {
                 return true;
             }
 
             StatCounters c = global.Counters;
-            return c.CyclesCompleted > 0
-                   || c.SurvivalDeaths > 0
+            return c.Deaths > 0
                    || c.SurvivalWins > 0
                    || c.SurvivalLeftBehind > 0
                    || c.DeathmatchDeaths > 0
                    || c.DeathmatchWins > 0
                    || c.Revives > 0
-                   || c.VoiceEvents > 0
-                   || c.CurrencyEarned > 0
-                   || c.ItemCarryCount > 0
+                   || c.TrainValueDeposited > 0
+                   || c.ItemsDeposited > 0
+                   || c.ItemsCarried > 0
                    || c.DamageToFriend > 0
                    || c.FriendsKilled > 0
-                   || c.MimicEncounterCount > 0
-                   || c.TimeInStartingVolumeMs > 0
-                   || c.TotalConnectedSeconds > 0
+                   || c.MimicEncounters > 0
+                   || c.ConnectedSeconds > 0
                    || HasDictionaryCounts(c.MonsterKills)
                    || HasDictionaryCounts(c.DeathsByMonster)
                    || HasDictionaryCounts(c.DeathsByTrap);
@@ -312,7 +311,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return false;
         }
 
-        internal static string FormatGlobalStats(string displayName, GlobalStats global)
+        internal static string FormatGlobalStats(string displayName, PlayerGlobalStats global)
         {
             StatCounters c = global.Counters;
             List<string> parts = [];
@@ -323,9 +322,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 parts.Add(ModL10n.Get("stats.sessions", new Dictionary<string, object> { ["count"] = global.SessionsCompleted }));
             }
 
-            if (c.CyclesCompleted > 0)
+            if (global.DungeonRunsPlayed > 0)
             {
-                parts.Add(ModL10n.Get("stats.cycles", new Dictionary<string, object> { ["count"] = c.CyclesCompleted }));
+                parts.Add(ModL10n.Get("stats.cycles", new Dictionary<string, object> { ["count"] = global.DungeonRunsPlayed }));
             }
 
             if (c.SurvivalWins > 0)
@@ -338,9 +337,9 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 parts.Add(ModL10n.Get("stats.left_behind", new Dictionary<string, object> { ["count"] = c.SurvivalLeftBehind }));
             }
 
-            if (c.SurvivalDeaths > 0)
+            if (c.Deaths > 0)
             {
-                parts.Add(ModL10n.Get("stats.survival_deaths", new Dictionary<string, object> { ["count"] = c.SurvivalDeaths }));
+                parts.Add(ModL10n.Get("stats.survival_deaths", new Dictionary<string, object> { ["count"] = c.Deaths }));
             }
 
             if (c.DeathmatchWins > 0)
@@ -358,19 +357,19 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 parts.Add(ModL10n.Get("stats.revives", new Dictionary<string, object> { ["count"] = c.Revives }));
             }
 
-            if (c.VoiceEvents > 0)
+            if (global.VoiceEvents > 0)
             {
-                parts.Add(ModL10n.Get("stats.voices_recorded", new Dictionary<string, object> { ["count"] = c.VoiceEvents }));
+                parts.Add(ModL10n.Get("stats.voices_recorded", new Dictionary<string, object> { ["count"] = global.VoiceEvents }));
             }
 
-            if (c.CurrencyEarned > 0)
+            if (c.TrainValueDeposited > 0)
             {
-                parts.Add(ModL10n.Get("stats.currency", new Dictionary<string, object> { ["count"] = c.CurrencyEarned }));
+                parts.Add(ModL10n.Get("stats.currency", new Dictionary<string, object> { ["count"] = c.TrainValueDeposited }));
             }
 
-            if (c.TotalConnectedSeconds > 0)
+            if (c.ConnectedSeconds > 0)
             {
-                parts.Add(FormatPlaytime(c.TotalConnectedSeconds));
+                parts.Add(FormatPlaytime(c.ConnectedSeconds));
             }
 
             string summary = parts.Count > 0 ? string.Join(separator, parts) : ModL10n.Get("stats.no_stats");

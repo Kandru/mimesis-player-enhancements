@@ -68,16 +68,17 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 snapshot.ItemCarryCount = report.TotalItemCarryCount;
                 snapshot.DamageToFriend = report.TotalDamageToAlly;
                 snapshot.MimicEncounterCount = report.TotalMimicEncounterCount;
-                snapshot.TimeInStartingVolumeMs = report.TotalTimeInStartingVolume;
             }
 
             if (StatisticsTracker.TryGetSessionCounters(steamId, out StatCounters counters))
             {
-                snapshot.SurvivalDeaths = counters.SurvivalDeaths;
+                snapshot.Deaths = counters.Deaths;
                 snapshot.SurvivalWins = counters.SurvivalWins;
                 snapshot.SurvivalLeftBehind = counters.SurvivalLeftBehind;
                 snapshot.Revives = counters.Revives;
                 snapshot.FriendsKilled = counters.FriendsKilled;
+                snapshot.TrainValueDeposited = counters.TrainValueDeposited;
+                snapshot.ItemsDeposited = counters.ItemsDeposited;
                 snapshot.MonsterKills = new Dictionary<string, long>(counters.MonsterKills ?? []);
             }
 

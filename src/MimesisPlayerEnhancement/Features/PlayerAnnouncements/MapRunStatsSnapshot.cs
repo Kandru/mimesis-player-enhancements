@@ -7,10 +7,12 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
         public long FriendsKilled;
         public long MimicEncounterCount;
         public long TimeInStartingVolumeMs;
-        public long SurvivalDeaths;
+        public long Deaths;
         public long SurvivalWins;
         public long SurvivalLeftBehind;
         public long Revives;
+        public long TrainValueDeposited;
+        public long ItemsDeposited;
         public Dictionary<string, long> MonsterKills = [];
     }
 }

@@ -12,11 +12,12 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
                 DamageToFriend = current.DamageToFriend - baseline.DamageToFriend,
                 FriendsKilled = current.FriendsKilled - baseline.FriendsKilled,
                 MimicEncounterCount = current.MimicEncounterCount - baseline.MimicEncounterCount,
-                TimeInStartingVolumeMs = current.TimeInStartingVolumeMs - baseline.TimeInStartingVolumeMs,
-                SurvivalDeaths = current.SurvivalDeaths - baseline.SurvivalDeaths,
+                Deaths = current.Deaths - baseline.Deaths,
                 SurvivalWins = current.SurvivalWins - baseline.SurvivalWins,
                 SurvivalLeftBehind = current.SurvivalLeftBehind - baseline.SurvivalLeftBehind,
                 Revives = current.Revives - baseline.Revives,
+                TrainValueDeposited = current.TrainValueDeposited - baseline.TrainValueDeposited,
+                ItemsDeposited = current.ItemsDeposited - baseline.ItemsDeposited,
                 MonsterKills = SubtractDictionary(current.MonsterKills, baseline.MonsterKills),
             };
         }
@@ -44,9 +45,9 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             List<string> parts = [];
             string separator = ModL10n.Get("stats.list_separator");
 
-            if (stats.SurvivalDeaths > 0)
+            if (stats.Deaths > 0)
             {
-                parts.Add(Count("announce.deaths", "announce.deaths_plural", stats.SurvivalDeaths));
+                parts.Add(Count("announce.deaths", "announce.deaths_plural", stats.Deaths));
             }
 
             if (stats.SurvivalWins > 0)
@@ -79,6 +80,11 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             if (stats.FriendsKilled > 0)
             {
                 parts.Add(Count("announce.friends_killed", "announce.friends_killed_plural", stats.FriendsKilled));
+            }
+
+            if (stats.ItemsDeposited > 0)
+            {
+                parts.Add(Count("announce.items_saved", "announce.items_saved_plural", stats.ItemsDeposited));
             }
 
             if (stats.ItemCarryCount > 0)

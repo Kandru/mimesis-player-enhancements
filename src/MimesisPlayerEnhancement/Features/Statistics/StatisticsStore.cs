@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.IO;
 using System.Threading.Tasks;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
@@ -7,40 +8,33 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     public static class StatisticsStore
     {
         private const string Feature = "Statistics";
-        private const int MaxRecentSessions = 20;
 
         private static int _cachedLoadSlotId = -999;
         private static SlotStatisticsDocument? _cachedLoadSlot;
 
         private static readonly ConcurrentDictionary<int, PendingSlotSave> InFlightBySlot = new();
 
-        public static int MaxRecentSessionsPerPlayer => MaxRecentSessions;
-
         private sealed class PendingSlotSave
         {
-            internal Dictionary<ulong, PlayerStatisticsDocument>? LatestPlayers;
+            internal SlotStatisticsDocument? LatestDocument;
             internal bool WaitForCompletion;
             internal Task? PrepareTask;
         }
 
-        public static void LoadAllPlayersForSlot(int slotId, Dictionary<ulong, PlayerStatisticsDocument> cache)
+        public static SlotStatisticsDocument? TryLoadSlotDocument(int slotId)
         {
-            SlotStatisticsDocument? slot = TryLoadSlot(slotId);
-            if (slot?.Players == null)
-            {
-                return;
-            }
-
-            foreach (KeyValuePair<ulong, PlayerStatisticsDocument> pair in slot.Players)
-            {
-                cache[pair.Key] = NormalizePlayer(pair.Value, pair.Key);
-            }
+            return TryLoadSlot(slotId);
         }
 
-        internal static void SaveSlot(
-            int slotId,
-            IReadOnlyDictionary<ulong, PlayerStatisticsDocument> players,
-            bool waitForCompletion = false)
+        public static SlotStatisticsDocument LoadSlot(int slotId)
+        {
+            SlotStatisticsDocument? loaded = TryLoadSlot(slotId);
+            SlotStatisticsDocument document = loaded ?? new SlotStatisticsDocument();
+            StatisticsHistory.Load(document);
+            return document;
+        }
+
+        internal static void SaveSlot(int slotId, SlotStatisticsDocument document, bool waitForCompletion = false)
         {
             string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
             if (string.IsNullOrEmpty(path))
@@ -51,7 +45,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             PendingSlotSave pending = InFlightBySlot.GetOrAdd(slotId, static _ => new PendingSlotSave());
             lock (pending)
             {
-                pending.LatestPlayers = ClonePlayers(players);
+                pending.LatestDocument = StatisticsHistory.CloneDocument();
                 pending.WaitForCompletion = waitForCompletion;
 
                 if (pending.PrepareTask is { IsCompleted: false })
@@ -97,27 +91,29 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static void PrepareAndWrite(int slotId, string path, PendingSlotSave pending)
         {
-            Dictionary<ulong, PlayerStatisticsDocument>? players;
+            SlotStatisticsDocument? document;
             bool waitForCompletion;
             lock (pending)
             {
-                players = pending.LatestPlayers;
+                document = pending.LatestDocument;
                 waitForCompletion = pending.WaitForCompletion;
-                pending.LatestPlayers = null;
+                pending.LatestDocument = null;
                 pending.WaitForCompletion = false;
             }
 
             try
             {
-                if (players == null)
+                if (document == null)
                 {
                     return;
                 }
 
-                string json = SerializeSlot(players);
+                document.Version = SlotStatisticsDocument.CurrentVersion;
+                document.UpdatedAtUtc = DateTime.UtcNow;
+                string json = StatisticsJson.SerializeSlot(document);
                 BackgroundFileWriteQueue.EnqueueText(path, json, Feature, waitForCompletion);
                 InvalidateLoadCache(slotId);
-                ModLog.Debug(Feature, $"Saved slot {slotId} statistics ({players.Count} players) -> {path}");
+                ModLog.Debug(Feature, $"Saved slot {slotId} statistics ({document.Globals.Count} players) -> {path}");
             }
             catch (Exception ex)
             {
@@ -131,7 +127,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         {
             lock (pending)
             {
-                if (pending.LatestPlayers == null)
+                if (pending.LatestDocument == null)
                 {
                     pending.PrepareTask = null;
                     _ = InFlightBySlot.TryRemove(slotId, out _);
@@ -142,123 +138,11 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
-        private static string SerializeSlot(IReadOnlyDictionary<ulong, PlayerStatisticsDocument> players)
-        {
-            Dictionary<ulong, PlayerStatisticsDocument> prepared = new(players.Count);
-            foreach (KeyValuePair<ulong, PlayerStatisticsDocument> pair in players)
-            {
-                PlayerStatisticsDocument doc = pair.Value;
-                PreparePlayer(doc);
-                prepared[pair.Key] = doc;
-            }
-
-            return StatisticsJson.SerializeSlot(new SlotStatisticsDocument
-            {
-                Version = SlotStatisticsDocument.CurrentVersion,
-                Players = prepared,
-            });
-        }
-
-        private static Dictionary<ulong, PlayerStatisticsDocument> ClonePlayers(
-            IReadOnlyDictionary<ulong, PlayerStatisticsDocument> players)
-        {
-            Dictionary<ulong, PlayerStatisticsDocument> clone = new(players.Count);
-            foreach (KeyValuePair<ulong, PlayerStatisticsDocument> pair in players)
-            {
-                clone[pair.Key] = ClonePlayerDocument(pair.Value, pair.Key);
-            }
-
-            return clone;
-        }
-
-        internal static List<PlayerStatisticsDocument> ClonePlayerDocuments(
-            IEnumerable<PlayerStatisticsDocument> players)
-        {
-            List<PlayerStatisticsDocument> clones = [];
-            foreach (PlayerStatisticsDocument player in players)
-            {
-                if (player == null || player.SteamId == 0)
-                {
-                    continue;
-                }
-
-                clones.Add(ClonePlayerDocument(player, player.SteamId));
-            }
-
-            return clones;
-        }
-
-        private static PlayerStatisticsDocument ClonePlayerDocument(PlayerStatisticsDocument source, ulong steamId)
-        {
-            List<SessionStats> recentSessions = [];
-            foreach (SessionStats session in source.RecentSessions)
-            {
-                recentSessions.Add(CloneSession(session));
-            }
-
-            return new PlayerStatisticsDocument
-            {
-                Version = source.Version,
-                SteamId = steamId,
-                DisplayName = source.DisplayName,
-                Global = new GlobalStats
-                {
-                    SessionsCompleted = source.Global.SessionsCompleted,
-                    RunRestarts = source.Global.RunRestarts,
-                    Counters = source.Global.Counters.Clone(),
-                },
-                CurrentRun = CloneRun(source.CurrentRun),
-                CurrentSession = source.CurrentSession == null ? null : CloneSession(source.CurrentSession),
-                RecentSessions = recentSessions,
-            };
-        }
-
-        private static RunStats CloneRun(RunStats? run)
-        {
-            if (run == null)
-            {
-                return new RunStats();
-            }
-
-            Dictionary<int, StatCounters> zones = [];
-            foreach (KeyValuePair<int, StatCounters> pair in run.Zones)
-            {
-                zones[pair.Key] = pair.Value.Clone();
-            }
-
-            return new RunStats
-            {
-                StartedAtUtc = run.StartedAtUtc,
-                Counters = run.Counters.Clone(),
-                Zones = zones,
-            };
-        }
-
-        private static SessionStats CloneSession(SessionStats session)
-        {
-            return new SessionStats
-            {
-                SessionId = session.SessionId,
-                StartedAtUtc = session.StartedAtUtc,
-                LastConnectedAtUtc = session.LastConnectedAtUtc,
-                LastDisconnectedAtUtc = session.LastDisconnectedAtUtc,
-                ReconnectCount = session.ReconnectCount,
-                IsOpen = session.IsOpen,
-                Counters = session.Counters.Clone(),
-            };
-        }
-
-        private static void PreparePlayer(PlayerStatisticsDocument doc)
-        {
-            TrimRecentSessions(doc);
-            doc.Version = PlayerStatisticsDocument.CurrentVersion;
-        }
-
         private static SlotStatisticsDocument? TryLoadSlot(int slotId)
         {
             if (_cachedLoadSlotId == slotId && _cachedLoadSlot != null)
             {
-                return _cachedLoadSlot;
+                return StatisticsHistory.CloneSlot(_cachedLoadSlot);
             }
 
             string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
@@ -280,9 +164,32 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return null;
             }
 
+            if (slot.Version != SlotStatisticsDocument.CurrentVersion)
+            {
+                TryBackupLegacyFile(path, slot.Version);
+                ModLog.Info(Feature, $"Legacy statistics file discarded — schema v{slot.Version} → v{SlotStatisticsDocument.CurrentVersion}.");
+                return null;
+            }
+
             _cachedLoadSlotId = slotId;
-            _cachedLoadSlot = slot;
+            _cachedLoadSlot = StatisticsHistory.CloneSlot(slot);
             return slot;
+        }
+
+        private static void TryBackupLegacyFile(string path, int version)
+        {
+            try
+            {
+                string backup = $"{path}.legacy-v{version}.bak";
+                if (!File.Exists(backup) && File.Exists(path))
+                {
+                    File.Move(path, backup);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Failed to backup legacy statistics file — {ex.Message}");
+            }
         }
 
         private static void InvalidateLoadCache(int slotId)
@@ -291,67 +198,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             {
                 _cachedLoadSlotId = -999;
                 _cachedLoadSlot = null;
-            }
-        }
-
-        private static PlayerStatisticsDocument NormalizePlayer(PlayerStatisticsDocument doc, ulong steamId)
-        {
-            doc.SteamId = steamId;
-            doc.RecentSessions ??= [];
-            doc.Global ??= new GlobalStats();
-            doc.Global.Counters ??= new StatCounters();
-            doc.CurrentRun ??= new RunStats();
-            doc.CurrentRun.Counters ??= new StatCounters();
-            doc.CurrentRun.Zones ??= [];
-            EnsureCounterDictionaries(doc.Global.Counters);
-            EnsureCounterDictionaries(doc.CurrentRun.Counters);
-            if (doc.CurrentSession != null)
-            {
-                doc.CurrentSession.Counters ??= new StatCounters();
-                EnsureCounterDictionaries(doc.CurrentSession.Counters);
-            }
-
-            foreach (SessionStats session in doc.RecentSessions)
-            {
-                session.Counters ??= new StatCounters();
-                EnsureCounterDictionaries(session.Counters);
-            }
-
-            foreach (KeyValuePair<int, StatCounters> zone in doc.CurrentRun.Zones)
-            {
-                EnsureCounterDictionaries(zone.Value);
-            }
-
-            if (doc.Version < PlayerStatisticsDocument.CurrentVersion)
-            {
-                if (doc.CurrentRun.StartedAtUtc == default)
-                {
-                    doc.CurrentRun.StartedAtUtc = DateTime.UtcNow;
-                }
-
-                doc.Version = PlayerStatisticsDocument.CurrentVersion;
-            }
-
-            return doc;
-        }
-
-        private static void EnsureCounterDictionaries(StatCounters? counters)
-        {
-            if (counters == null)
-            {
-                return;
-            }
-
-            counters.MonsterKills ??= [];
-            counters.DeathsByMonster ??= [];
-            counters.DeathsByTrap ??= [];
-        }
-
-        private static void TrimRecentSessions(PlayerStatisticsDocument doc)
-        {
-            while (doc.RecentSessions.Count > MaxRecentSessions)
-            {
-                doc.RecentSessions.RemoveAt(0);
             }
         }
 

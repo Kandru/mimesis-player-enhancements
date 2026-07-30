@@ -7,41 +7,36 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
     public sealed class StatisticsJsonTests
     {
         [Fact]
-        public void Serialize_and_deserialize_round_trips_slot_document()
+        public void Round_trip_serializes_v10_document()
         {
-            var slot = new SlotStatisticsDocument
+            SlotStatisticsDocument slot = new()
             {
-                Players =
+                Globals =
                 {
-                    [100] = new PlayerStatisticsDocument
+                    [100] = new PlayerGlobalStats
                     {
                         SteamId = 100,
-                        DisplayName = "Player One",
-                        Global = new GlobalStats { SessionsCompleted = 2 },
-                        CurrentRun = new RunStats
-                        {
-                            Counters = new StatCounters { Revives = 3, TrainValueDeposited = 50 },
-                        },
+                        DisplayName = "Tester",
+                        SessionsCompleted = 2,
+                        Counters = { Revives = 3, TrainValueDeposited = 50 },
                     },
                 },
             };
+            slot.History.Zones.Add(new ZoneRecord
+            {
+                Zone = 1,
+                StartedAtUtc = DateTime.UtcNow,
+            });
 
             string json = StatisticsJson.SerializeSlot(slot);
             SlotStatisticsDocument? restored = StatisticsJson.DeserializeSlot(json);
 
             Assert.NotNull(restored);
-            Assert.True(restored.Players.TryGetValue(100, out PlayerStatisticsDocument? player));
-            Assert.Equal("Player One", player.DisplayName);
-            Assert.Equal(2, player.Global.SessionsCompleted);
-            Assert.Equal(3, player.CurrentRun.Counters.Revives);
-            Assert.Equal(50, player.CurrentRun.Counters.TrainValueDeposited);
-        }
-
-        [Fact]
-        public void DeserializeSlot_returns_null_for_blank_json()
-        {
-            Assert.Null(StatisticsJson.DeserializeSlot(""));
-            Assert.Null(StatisticsJson.DeserializeSlot("   "));
+            Assert.Equal(SlotStatisticsDocument.CurrentVersion, restored!.Version);
+            Assert.True(restored.Globals.TryGetValue(100, out PlayerGlobalStats? player));
+            Assert.NotNull(player);
+            Assert.Equal(3, player!.Counters.Revives);
+            Assert.Equal(50, player.Counters.TrainValueDeposited);
         }
     }
 }

@@ -134,26 +134,26 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             Dictionary<ulong, WebDashboardPlayerDto> playersBySteam = [];
-            foreach (PlayerStatisticsDocument player in snapshot.Players)
+            foreach (KeyValuePair<ulong, PlayerGlobalStats> player in snapshot.Document.Globals)
             {
-                if (player.SteamId == 0 || playersBySteam.ContainsKey(player.SteamId))
+                if (player.Key == 0 || playersBySteam.ContainsKey(player.Key))
                 {
                     continue;
                 }
 
-                bool isLocal = context.LocalSteamId != 0 && player.SteamId == context.LocalSteamId;
+                bool isLocal = context.LocalSteamId != 0 && player.Key == context.LocalSteamId;
                 WebDashboardPlayerDto dto = new()
                 {
-                    SteamId = player.SteamId,
-                    DisplayName = snapshot.DisplayNames.TryGetValue(player.SteamId, out string? name)
+                    SteamId = player.Key,
+                    DisplayName = snapshot.DisplayNames.TryGetValue(player.Key, out string? name)
                         ? name
-                        : player.DisplayName,
+                        : player.Value.DisplayName,
                     IsHost = context.IsHost && isLocal,
                     IsLocal = isLocal,
                 };
 
-                EnrichStoredPlayerDto(dto, player, snapshot.BannedSteamIds);
-                playersBySteam[player.SteamId] = dto;
+                EnrichStoredPlayerDto(dto, player.Value, snapshot.BannedSteamIds);
+                playersBySteam[player.Key] = dto;
             }
 
             List<WebDashboardPlayerDto> players = [.. playersBySteam.Values];
@@ -279,7 +279,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static void EnrichStoredPlayerDto(
             WebDashboardPlayerDto dto,
-            PlayerStatisticsDocument doc,
+            PlayerGlobalStats global,
             HashSet<ulong> bannedSteamIds)
         {
             if (dto.SteamId == 0 || !ModConfig.EnableStatistics.Value)
@@ -287,9 +287,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
-            dto.CurrentSession = BuildSessionStatsFromDocument(doc);
-            dto.TotalStats = BuildTotalStatsFromDocument(doc);
-            dto.RunStats = BuildRunStatsFromDocument(doc);
+            dto.CurrentSession = BuildSessionStats(dto.SteamId);
+            dto.TotalStats = BuildTotalStats(dto.SteamId, global);
+            dto.RunStats = BuildZoneStats(dto.SteamId);
             dto.ActivityState = "offline";
             dto.ActivityDetail = string.Empty;
             dto.IsBanned = bannedSteamIds.Contains(dto.SteamId);
@@ -477,7 +477,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return fromActor!;
             }
 
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is PlayerStatisticsDocument live
+            if (PlayerRegistry.TryGetGlobal(steamId, out PlayerGlobalStats? live)
                 && IsUsableName(live.DisplayName, steamId))
             {
                 return live.DisplayName;
@@ -535,7 +535,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 dto.CurrentSession = BuildSessionStats(dto.SteamId);
                 dto.TotalStats = BuildTotalStats(dto.SteamId);
-                dto.RunStats = BuildRunStats(dto.SteamId);
+                dto.RunStats = BuildZoneStats(dto.SteamId);
             }
 
             if (WebDashboardGameState.IsHost() && ModConfig.EnableJoinAnytime.Value)
@@ -711,99 +711,65 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static WebDashboardSessionStatsDto? BuildSessionStats(ulong steamId)
         {
-            if (steamId == 0)
+            if (steamId == 0 || !StatisticsTracker.TryGetSessionCounters(steamId, out StatCounters counters))
             {
                 return null;
             }
 
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc
-                || doc.CurrentSession?.Counters == null)
-            {
-                return null;
-            }
-
-            return BuildSessionStatsFromDocument(doc);
+            return MapCounters(counters);
         }
 
-        private static WebDashboardSessionStatsDto? BuildRunStats(ulong steamId)
+        private static WebDashboardSessionStatsDto? BuildZoneStats(ulong steamId)
         {
             if (steamId == 0)
             {
                 return null;
             }
 
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            int zone = StatisticsHistory.CurrentZone;
+            ZoneRecord? zoneRecord = StatisticsHistory.Document.History.Zones.Find(z => z.Zone == zone);
+            if (zoneRecord == null || !zoneRecord.Players.TryGetValue(steamId, out StatCounters? counters))
             {
                 return null;
             }
 
-            return BuildRunStatsFromDocument(doc);
+            return MapCounters(counters, includeScore: true);
         }
 
-        private static WebDashboardSessionStatsDto? BuildTotalStats(ulong steamId)
+        private static WebDashboardSessionStatsDto? BuildTotalStats(ulong steamId, PlayerGlobalStats? global = null)
         {
             if (steamId == 0)
             {
                 return null;
             }
 
-            if (StatisticsTracker.TryGetPlayerDocument(steamId) is not PlayerStatisticsDocument doc)
+            global ??= PlayerRegistry.TryGetGlobal(steamId, out PlayerGlobalStats? found) ? found : null;
+            if (global == null)
             {
                 return null;
             }
 
-            return BuildTotalStatsFromDocument(doc);
-        }
-
-        private static WebDashboardSessionStatsDto? BuildSessionStatsFromDocument(PlayerStatisticsDocument doc)
-        {
-            if (doc.CurrentSession?.Counters == null)
-            {
-                return null;
-            }
-
-            return MapCounters(doc.CurrentSession.Counters);
-        }
-
-        private static WebDashboardSessionStatsDto? BuildRunStatsFromDocument(PlayerStatisticsDocument doc)
-        {
-            if (doc.CurrentRun?.Counters == null)
-            {
-                return null;
-            }
-
-            return MapCounters(doc.CurrentRun.Counters, includeScore: true);
-        }
-
-        private static WebDashboardSessionStatsDto? BuildTotalStatsFromDocument(PlayerStatisticsDocument doc)
-        {
-            if (doc.Global?.Counters == null)
-            {
-                return null;
-            }
-
-            return MapCounters(doc.Global.Counters);
+            return MapCounters(global.Counters);
         }
 
         private static WebDashboardSessionStatsDto MapCounters(StatCounters c, bool includeScore = false)
         {
             return new WebDashboardSessionStatsDto
             {
-                CurrencyEarned = c.CurrencyEarned,
-                SurvivalDeaths = c.SurvivalDeaths,
+                TrainValueDeposited = c.TrainValueDeposited,
+                ItemsDeposited = c.ItemsDeposited,
+                ItemsCarried = c.ItemsCarried,
+                Deaths = c.Deaths,
                 SurvivalWins = c.SurvivalWins,
                 SurvivalLeftBehind = c.SurvivalLeftBehind,
                 DeathmatchDeaths = c.DeathmatchDeaths,
                 DeathmatchWins = c.DeathmatchWins,
                 Revives = c.Revives,
-                MimicEncounterCount = c.MimicEncounterCount,
-                ItemCarryCount = c.ItemCarryCount,
+                MimicEncounters = c.MimicEncounters,
                 DamageToFriend = c.DamageToFriend,
                 FriendsKilled = c.FriendsKilled,
-                TotalConnectedSeconds = c.TotalConnectedSeconds,
-                TrainValueDeposited = c.TrainValueDeposited,
-                TrapDeaths = c.TrapDeaths,
-                KilledByPlayers = c.KilledByPlayers,
+                KilledByFriends = c.KilledByFriends,
+                ConnectedSeconds = c.ConnectedSeconds,
                 DungeonExitsAlive = c.DungeonExitsAlive,
                 DungeonExitsDead = c.DungeonExitsDead,
                 MedianLifetimeMs = TeamValueScore.ComputeMedianLifetimeMs(c.LifetimesOnDeathMs),

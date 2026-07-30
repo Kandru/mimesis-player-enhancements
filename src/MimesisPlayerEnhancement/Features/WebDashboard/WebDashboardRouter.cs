@@ -209,6 +209,25 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return;
             }
 
+            if (path == "/api/statistics/history" && method == "GET")
+            {
+                if (!snapshot.Status.IsHost)
+                {
+                    WriteJson(context, 403, WebDashboardJson.SerializeError(403, L("host_only")));
+                    return;
+                }
+
+                string? historyJson = WebDashboardStatisticsHistoryCache.UpdateAndGetCached(snapshot.Status.SaveSlotId);
+                if (string.IsNullOrEmpty(historyJson))
+                {
+                    WriteJson(context, 200, /*lang=json,strict*/ "{\"saveSlotId\":-1,\"zones\":[]}");
+                    return;
+                }
+
+                WriteJson(context, 200, historyJson);
+                return;
+            }
+
             if (path == "/api/leaderboard" && method == "GET")
             {
                 if (!snapshot.Status.IsHost)
@@ -644,17 +663,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 {
                     json = WebDashboardConfigUpdateQueue.EnqueueAndWait(() =>
                     {
-                        PlayerStatisticsDocument? doc = StatisticsTracker.TryGetPlayerDocument(steamId);
-                        if (doc == null)
+                        if (!PlayerRegistry.TryGetGlobal(steamId, out PlayerGlobalStats? global))
                         {
                             return null;
                         }
 
                         int slotId = WebDashboardGameState.GetSaveSlotId();
                         string displayName = WebDashboardPlayerService.ResolveDisplayNameForSteamId(
-                            doc.SteamId,
+                            steamId,
                             slotId);
-                        return WebDashboardJson.SerializePlayerStats(doc, displayName);
+                        return WebDashboardJson.SerializePlayerStats(
+                            steamId,
+                            displayName,
+                            StatisticsHistory.CloneDocument());
                     });
                 }
                 catch (TimeoutException)
