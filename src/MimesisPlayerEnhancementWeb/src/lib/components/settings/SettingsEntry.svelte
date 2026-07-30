@@ -180,7 +180,7 @@
         onsave={onsave}
       />
     {:else if entry.inputKind === 'Select'}
-      <select id="{section.id}-{entry.key}" class="input max-w-md" value={selectValue} disabled={!editable} onchange={onChange}>
+      <select id="{section.id}-{entry.key}" class="input" value={selectValue} disabled={!editable} onchange={onChange}>
         {#each entry.selectOptions as opt (opt.value)}
           <option value={opt.value}>{opt.label}</option>
         {/each}
@@ -188,7 +188,7 @@
     {:else}
       <input
         id="{section.id}-{entry.key}"
-        class="input max-w-md"
+        class="input"
         type={entry.type === 'Int32' || entry.type === 'Single' || entry.type === 'Double' ? 'number' : 'text'}
         value={entry.value}
         min={entry.minValue}

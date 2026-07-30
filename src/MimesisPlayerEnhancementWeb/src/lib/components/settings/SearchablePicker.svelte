@@ -12,7 +12,6 @@
     reorderable = false,
     disabled = false,
     placeholder = '',
-    rootClass = 'max-w-md',
     onsave,
   }: {
     id: string;
@@ -23,7 +22,6 @@
     reorderable?: boolean;
     disabled?: boolean;
     placeholder?: string;
-    rootClass?: string;
     onsave: (csv: string) => void;
   } = $props();
 
@@ -244,7 +242,7 @@
   });
 </script>
 
-<div class="picker-root {rootClass}" bind:this={rootEl}>
+<div class="picker-root" bind:this={rootEl}>
   {#if multiple && values.length > 0}
     <div class="picker-badges" role="list" aria-label={t('dashboard.picker_selected_items')}>
       {#each values as idValue, index (idValue)}

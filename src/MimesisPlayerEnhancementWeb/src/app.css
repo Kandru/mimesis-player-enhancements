@@ -1473,7 +1473,9 @@ body.dev-verify-shake {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-width: 0;
+  width: 32rem;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .settings-entry-saving {
@@ -1669,9 +1671,9 @@ body.dev-verify-shake {
 
 .picker-option {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
   width: 100%;
   padding: 0.5rem 0.625rem;
   border: none;
@@ -1689,18 +1691,16 @@ body.dev-verify-shake {
 }
 
 .picker-option-label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 0.8125rem;
+  white-space: normal;
 }
 
 .picker-option-id {
-  flex-shrink: 0;
+  max-width: 100%;
   font-size: 0.6875rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+  word-break: break-word;
 }
 
 .picker-empty {

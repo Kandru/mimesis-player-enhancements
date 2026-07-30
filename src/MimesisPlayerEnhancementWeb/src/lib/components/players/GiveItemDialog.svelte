@@ -137,7 +137,6 @@
             options={giveItemOptions}
             value={selectionKey}
             disabled={submitting}
-            rootClass=""
             onsave={(value) => {
               selectionKey = value;
             }}
