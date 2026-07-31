@@ -6,154 +6,128 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        private const float MaxFloorDropMeters = 0.5f;
-        private const float FloorProbeMarginMeters = 1f;
-        private const float WallClearanceMeters = 0.5f;
-        private const float DistanceStepMeters = 0.25f;
-        private const float BlockCheckRadiusMeters = 0.4f;
-        private const float PlayerNavSnapRadiusMeters = 2f;
-        private const float HoverHeadroomMeters = 1.5f;
-        private const float FloorProbeEpsilonMeters = 0.05f;
+        private const float DistanceStepMeters = 0.5f;
+        private const float FloorProbeUpMeters = 1f;
+        private const float FloorProbeDownMeters = 4f;
+        private const float ObstacleHeightAboveFloorMeters = 0.1f;
 
         internal static bool TryResolveForwardSpawn(
             VPlayer player,
             float minDistanceMeters,
             float maxDistanceMeters,
-            out PosWithRot spawnPos,
-            float hoverHeightMeters = 0f)
+            out PosWithRot spawnPos)
         {
             spawnPos = new PosWithRot();
 
-            VWorld? vworld = GameSessionAccess.TryGetVWorld();
-            if (vworld == null)
-            {
-                return false;
-            }
-
             Vector3 playerPos = player.PositionVector;
-            float yaw = player.Position.yaw;
-            float facingYaw = yaw - 180f;
-
-            Vector3 nearestPlayer = vworld.FindNearestPoly(playerPos, PlayerNavSnapRadiusMeters);
-            if (!NavMeshConstants.IsValid(nearestPlayer))
-            {
-                ModLog.Debug(Feature, "Spawn placement blocked — player off navmesh.");
-                return false;
-            }
-
-            Vector3 forwardPoint = Misc.GetPosWithAngleDistance(playerPos, yaw, 1f);
-            Vector3 forward = forwardPoint - playerPos;
-            forward.y = 0f;
-            if (forward.sqrMagnitude < 0.0001f)
+            if (!TryResolveHorizontalLook(player, playerPos, out Vector3 forward, out float lookYaw))
             {
                 return false;
             }
 
-            forward.Normalize();
+            float facingYaw = lookYaw - 180f;
 
-            float wallDistance = vworld.DistanceToWall(
-                playerPos,
-                forward,
-                maxDistanceMeters + WallClearanceMeters);
-            if (wallDistance < minDistanceMeters + WallClearanceMeters)
-            {
-                ModLog.Debug(Feature, $"Spawn placement blocked — wallDistance={wallDistance:0.00}m.");
-                return false;
-            }
-
-            float startDistance = Mathf.Clamp(
-                wallDistance - WallClearanceMeters,
-                minDistanceMeters,
-                maxDistanceMeters);
-
-            for (float distance = startDistance;
+            for (float distance = maxDistanceMeters;
                  distance >= minDistanceMeters - 0.001f;
                  distance -= DistanceStepMeters)
             {
-                Vector3 candidate = vworld.GetReachableDistancePos(playerPos, yaw, distance);
-                float requiredReach = distance - DistanceStepMeters;
-                if (requiredReach > 0f
-                    && HorizontalDistanceSq(candidate, playerPos) < requiredReach * requiredReach)
-                {
-                    continue;
-                }
-
-                Vector3 probeOrigin = new(candidate.x, playerPos.y, candidate.z);
+                Vector3 horizontal = playerPos + forward * distance;
+                Vector3 probeOrigin = new(horizontal.x, playerPos.y, horizontal.z);
                 Vector3 floorHit = PhysicsUtility.DropToFloor(
                     probeOrigin,
-                    margin: FloorProbeMarginMeters,
-                    maxDistance: FloorProbeMarginMeters + MaxFloorDropMeters);
+                    margin: FloorProbeUpMeters,
+                    maxDistance: FloorProbeDownMeters);
                 if (floorHit == probeOrigin)
                 {
                     continue;
                 }
 
-                if (playerPos.y - floorHit.y > MaxFloorDropMeters)
+                Vector3 spawn = new(floorHit.x, floorHit.y, floorHit.z);
+                Vector3 spawnProbe = floorHit + Vector3.up * ObstacleHeightAboveFloorMeters;
+                Vector3 playerProbe = new(playerPos.x, spawnProbe.y, playerPos.z);
+
+                // CheckBlockByWall returns true when the path is clear (no hit).
+                if (!PhysicsUtility.CheckBlockByWall(playerProbe, spawnProbe))
                 {
                     continue;
                 }
 
-                Vector3 placed = new(candidate.x, floorHit.y, candidate.z);
-                float appliedHover = 0f;
-                if (hoverHeightMeters > 0f
-                    && TryResolveHoverSpawn(floorHit, hoverHeightMeters, out Vector3 hoverPos))
-                {
-                    placed = hoverPos;
-                    appliedHover = hoverHeightMeters;
-                }
-
-                if (vworld.IsFullyBlockedByWall(
-                        playerPos,
-                        placed,
-                        BlockCheckRadiusMeters,
-                        BlockCheckRadiusMeters))
-                {
-                    continue;
-                }
-
-                spawnPos = placed.toPosWithRot(0f);
+                spawnPos = spawn.toPosWithRot(0f);
                 spawnPos.yaw = facingYaw;
                 ModLog.Debug(
                     Feature,
-                    $"Spawn placement resolved — distance={distance:0.00}m, drop={playerPos.y - floorHit.y:0.00}m, hover={appliedHover:0.00}m.");
+                    $"Spawn placement resolved — distance={distance:0.00}m, drop={playerPos.y - floorHit.y:0.00}m, lookYaw={lookYaw:0.0}.");
                 return true;
             }
 
-            ModLog.Debug(Feature, $"Spawn placement blocked — no valid point in {minDistanceMeters:0.00}-{maxDistanceMeters:0.00}m range.");
+            ModLog.Debug(
+                Feature,
+                $"Spawn placement blocked — no valid point in {minDistanceMeters:0.00}-{maxDistanceMeters:0.00}m range.");
             return false;
         }
 
-        private static bool TryResolveHoverSpawn(Vector3 floorHit, float hoverHeightMeters, out Vector3 hoverPos)
+        private static bool TryResolveHorizontalLook(
+            VPlayer player,
+            Vector3 playerPos,
+            out Vector3 forward,
+            out float lookYaw)
         {
-            hoverPos = new Vector3(floorHit.x, floorHit.y + hoverHeightMeters, floorHit.z);
-
-            // Clear air from just above the floor through hover + monster headroom.
-            Vector3 upOrigin = floorHit + Vector3.up * FloorProbeEpsilonMeters;
-            Vector3 upTarget = floorHit + Vector3.up * (hoverHeightMeters + HoverHeadroomMeters);
-            if (!PhysicsUtility.CheckBlockByWall(upOrigin, upTarget))
+            if (TryGetFpvCameraRoot(player, out Transform camRoot))
             {
+                Vector3 flat = camRoot.forward;
+                flat.y = 0f;
+                if (flat.sqrMagnitude > 0.0001f)
+                {
+                    forward = flat.normalized;
+                    lookYaw = ResolveHorizontalYaw(camRoot);
+                    return true;
+                }
+            }
+
+            float bodyYaw = player.Position.yaw;
+            Vector3 bodyForward = Misc.GetPosWithAngleDistance(playerPos, bodyYaw, 1f) - playerPos;
+            bodyForward.y = 0f;
+            if (bodyForward.sqrMagnitude < 0.0001f)
+            {
+                forward = default;
+                lookYaw = 0f;
                 return false;
             }
 
-            // Confirm open space under the hover point so the actor is not embedded in the floor.
-            Vector3 floorBelow = PhysicsUtility.DropToFloor(
-                hoverPos,
-                margin: FloorProbeEpsilonMeters,
-                maxDistance: hoverHeightMeters + 0.2f);
-            if (floorBelow == hoverPos)
-            {
-                return false;
-            }
-
-            float gap = hoverPos.y - floorBelow.y;
-            return gap >= hoverHeightMeters - 0.1f && gap <= hoverHeightMeters + 0.15f;
+            forward = bodyForward.normalized;
+            lookYaw = bodyYaw;
+            return true;
         }
 
-        private static float HorizontalDistanceSq(Vector3 a, Vector3 b)
+        private static bool TryGetFpvCameraRoot(VPlayer player, out Transform camRoot)
         {
-            float dx = a.x - b.x;
-            float dz = a.z - b.z;
-            return dx * dx + dz * dz;
+            camRoot = null!;
+            GameMainBase? main = GameSessionAccess.TryGetPdata()?.main;
+            if (main?.GetActorByPlayerUID(player.UID) is not ProtoActor actor)
+            {
+                return false;
+            }
+
+            Transform? root = actor.FpvCameraRoot;
+            if (root == null)
+            {
+                return false;
+            }
+
+            camRoot = root;
+            return true;
+        }
+
+        private static float ResolveHorizontalYaw(Transform transform)
+        {
+            Vector3 flat = transform.forward;
+            flat.y = 0f;
+            if (flat.sqrMagnitude <= 0.0001f)
+            {
+                return transform.eulerAngles.y;
+            }
+
+            return Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
         }
     }
 }

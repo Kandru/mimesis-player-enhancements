@@ -553,6 +553,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
             Assert.Equal("VMonster", method.ReturnType.Name);
         }
 
+        [Fact]
+        public void ProtoActor_FpvCameraRoot_property_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("ProtoActor");
+
+            PropertyInfo? property = type.GetProperty("FpvCameraRoot", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.Equal("Transform", property.PropertyType.Name);
+        }
+
         [Theory]
         [InlineData("camRoot")]
         [InlineData("_cc")]

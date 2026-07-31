@@ -58,8 +58,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                         vPlayer,
                         4f,
                         5f,
-                        out PosWithRot spawnPos,
-                        hoverHeightMeters: 0.5f))
+                        out PosWithRot spawnPos))
                 {
                     ModLog.Info(Feature, $"Monster spawn blocked — no clear space in front, uid={vPlayer.UID}.");
                     return Fail(L("monster_spawn_blocked"));
