@@ -9,6 +9,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         private const float DebugDialogDurationSeconds = 3600f;
 
         private static UIPrefabScript? _lastInstance;
+        private static readonly System.Random DebugAwardRandom = new();
 
         internal static bool Show(IReadOnlyList<string> fakeNames)
         {
@@ -100,6 +101,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             }
 
             List<object> parameters = [1, true, playerCount];
+            List<AwardType> awards = [];
             for (int i = 0; i < playerCount; i++)
             {
                 string name = i < fakeNames.Count ? fakeNames[i] : $"Player {i + 1:00}";
@@ -108,9 +110,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
                     ? Enum.ToObject(stateEnumType, i % 3)
                     : i % 3;
                 parameters.Add(state);
-                parameters.Add(AwardType.None);
+                AwardType award = SurvivalResultDebugAwards.Resolve(
+                    DebugAwardRandom.Next(SurvivalResultDebugAwards.PoolSize));
+                awards.Add(award);
+                parameters.Add(award);
             }
 
+            ModLog.Debug(Feature, $"SurvivalResult debug preview awards — {string.Join(", ", awards)}");
             parameters.Add(0);
             return parameters.ToArray();
         }

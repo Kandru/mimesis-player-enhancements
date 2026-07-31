@@ -49,6 +49,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         private const float FallbackCellHeight = 28f;
         private const float MinColumnWidth = 72f;
         private const float AwardLineReserve = 18f;
+        private const string DimOverlayObjectName = "SurvivalResultDimOverlay";
 
         private static readonly ConditionalWeakTable<object, SurvivalResultGridState> GridStates = new();
 
@@ -63,6 +64,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             internal RectTransform? GridRoot;
             internal float CellWidth = FallbackCellWidth;
             internal float CellHeight = FallbackCellHeight;
+            internal float AwardLineHeight = AwardLineReserve;
             internal float ColStep = FallbackCellWidth + ColumnGap;
             internal float RowStep = FallbackCellHeight + RowGap;
             internal float YDirection = -1f;
@@ -72,6 +74,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             internal Component? TitleText;
             internal RectTransform? LostAllRect;
             internal RectTransform? LostScrabsRect;
+            internal RectTransform? DimOverlay;
             internal bool ExtendedActive;
             internal int LastCycleCount;
             internal int LastDisplayCount;
@@ -309,7 +312,45 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         private static void SuppressVanillaChrome(object ui, SurvivalResultGridState state)
         {
             HideVanillaBanner(ui);
+            ApplyDimOverlay(ui, state);
             state.TitleCenterX = ResolveGridCenterX(ui);
+        }
+
+        private static void ApplyDimOverlay(object ui, SurvivalResultGridState state)
+        {
+            try
+            {
+                if (GetDialogRoot(ui) is not RectTransform dialogRoot)
+                {
+                    return;
+                }
+
+                if (state.DimOverlay == null)
+                {
+                    GameObject overlayGo = ModUiLayout.CreateChild(DimOverlayObjectName, dialogRoot);
+                    overlayGo.layer = dialogRoot.gameObject.layer;
+
+                    Image tint = overlayGo.AddComponent<Image>();
+                    tint.sprite = null;
+                    tint.color = ModUiAssets.Fallback.DimOverlayColor;
+                    tint.raycastTarget = false;
+                    state.DimOverlay = overlayGo.GetComponent<RectTransform>();
+                }
+
+                RectTransform overlay = state.DimOverlay;
+                ModUiLayout.Stretch(overlay);
+
+                float padX = Screen.width / Mathf.Max(0.01f, Mathf.Abs(ResolveScreenPerLocalX(dialogRoot)));
+                float padY = Screen.height / Mathf.Max(0.01f, Mathf.Abs(ResolveScreenPerLocalY(dialogRoot)));
+                overlay.offsetMin = new Vector2(-padX, -padY);
+                overlay.offsetMax = new Vector2(padX, padY);
+                overlay.SetAsFirstSibling();
+                overlay.gameObject.SetActive(true);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"SurvivalResult dim overlay failed — {ex.Message}");
+            }
         }
 
         private static void HideVanillaBanner(object ui)
@@ -396,11 +437,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             UpdateGridColumnMetrics(state, anchor);
 
             SurvivalResultRowSlot template = state.NativeRows[0];
-            CompactRowLayout(template, state.CellWidth, out _, out float compactHeight);
+            state.AwardLineHeight = MeasureAwardLineHeight(template);
+            CompactRowLayout(template, state.CellWidth, state.AwardLineHeight, out _, out float compactHeight);
 
             state.CellWidth = Mathf.Max(MinColumnWidth, state.CellWidth);
             state.CellHeight = compactHeight > 1f ? compactHeight : FallbackCellHeight;
-            state.RowStep = state.CellHeight + RowGap + AwardLineReserve;
+            state.RowStep = state.CellHeight + RowGap;
 
             MeasureRowDirection(state);
 
@@ -426,7 +468,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
 
             for (int i = 0; i < displayCount && i < state.CloneRows.Count; i++)
             {
-                CompactRowLayout(state.CloneRows[i], state.CellWidth, out _, out _);
+                CompactRowLayout(state.CloneRows[i], state.CellWidth, state.AwardLineHeight, out _, out _);
             }
 
             return MeasureRowHeights(state, displayCount);
@@ -942,7 +984,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
                 : 0f;
         }
 
-        private static void CompactRowLayout(SurvivalResultRowSlot slot, float cellWidth, out float width, out float height)
+        private static void CompactRowLayout(
+            SurvivalResultRowSlot slot,
+            float cellWidth,
+            float awardLineHeight,
+            out float width,
+            out float height)
         {
             width = cellWidth;
             height = FallbackCellHeight;
@@ -969,17 +1016,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
                 y -= h + RowElementGap;
             }
 
-            if (slot.AwardText.gameObject.activeSelf
-                && slot.AwardText.transform is RectTransform awardRect
-                && !string.IsNullOrWhiteSpace(GetText(slot.AwardText)))
+            // Vanilla keeps the award text active even for AwardType.None — reserving the line for
+            // every cell keeps name and state rows aligned across the grid.
+            if (slot.AwardText.transform is RectTransform awardRect)
             {
+                slot.AwardText.gameObject.SetActive(true);
                 SetRectTopCenter(awardRect, y);
-                y -= GetRectHeight(awardRect);
+                y -= awardLineHeight;
             }
 
             height = Mathf.Max(FallbackCellHeight, Mathf.Abs(y) + RowElementGap);
             rowRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
             rowRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, cellWidth);
+        }
+
+        private static float MeasureAwardLineHeight(SurvivalResultRowSlot slot)
+        {
+            if (slot.AwardText.transform is not RectTransform awardRect)
+            {
+                return AwardLineReserve;
+            }
+
+            slot.AwardText.gameObject.SetActive(true);
+            return Mathf.Max(AwardLineReserve, GetRectHeight(awardRect));
         }
 
         private static RectTransform? GetActiveStateRect(SurvivalResultRowSlot slot)
@@ -1105,7 +1164,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             slot.KilledIcon.SetActive(false);
             slot.WastedIcon.SetActive(false);
             SetText(slot.AwardText, string.Empty);
-            slot.AwardText.gameObject.SetActive(false);
+            slot.AwardText.gameObject.SetActive(true);
         }
 
         private static void PopulateRow(SurvivalResultRowSlot slot, object[] parameters, int index)
@@ -1154,7 +1213,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
             {
                 case AwardType.None:
                     SetText(slot.AwardText, string.Empty);
-                    slot.AwardText.gameObject.SetActive(false);
+                    slot.AwardText.gameObject.SetActive(true);
                     break;
                 case AwardType.BestCarryItem:
                     slot.AwardText.gameObject.SetActive(true);
