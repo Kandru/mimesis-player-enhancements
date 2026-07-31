@@ -26,17 +26,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Theory]
-        [InlineData(false, false, true)]
-        [InlineData(true, false, false)]
-        [InlineData(false, true, false)]
-        [InlineData(true, true, true)]
-        public void ClassifyGroup_respects_invert(bool remoteIsDead, bool invert, bool expectedIsPriority)
+        [InlineData(false, SpectatorVoiceGroup.Other)]
+        [InlineData(true, SpectatorVoiceGroup.Priority)]
+        public void ClassifyGroup_dead_is_priority(bool remoteIsDead, SpectatorVoiceGroup expected)
         {
-            SpectatorVoiceGroup group = SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead, invert);
+            Assert.Equal(expected, SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead));
+        }
 
-            Assert.Equal(
-                expectedIsPriority ? SpectatorVoiceGroup.Priority : SpectatorVoiceGroup.Other,
-                group);
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        public void IsFeatureActive_only_when_spectating_dead(bool isSpectatingDead, bool expected)
+        {
+            Assert.Equal(expected, SpectatorVoiceBalanceResolver.IsFeatureActive(isSpectatingDead));
         }
 
         [Fact]

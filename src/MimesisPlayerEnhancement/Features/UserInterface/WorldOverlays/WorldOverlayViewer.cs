@@ -1,16 +1,9 @@
-using System.Reflection;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
 {
     internal static class WorldOverlayViewer
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-        private static readonly FieldInfo? HubCameramanField =
-            typeof(Hub).GetField("cameraman", InstanceFlags);
-
         internal static Vector3? TryGetWorldPosition()
         {
             if (TryGetSpectatorTargetPosition(out Vector3 spectatorPosition))
@@ -69,12 +62,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.WorldOverlays
         private static bool TryGetSpectatorTargetPosition(out Vector3 position)
         {
             position = default;
-            if (Hub.s == null || HubCameramanField == null)
-            {
-                return false;
-            }
-
-            if (HubCameramanField.GetValue(Hub.s) is not CameraManager cameraman)
+            if (MoreVoicesVoiceAccess.TryGetCameraman() is not CameraManager cameraman)
             {
                 return false;
             }

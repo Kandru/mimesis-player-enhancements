@@ -125,9 +125,9 @@ Mod-wide settings that are not owned by a single feature.
 | `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme folder that has assets under the current transition context (for example `GTA/Dungeon/background.png`). Empty or invalid values reset to the first discovered theme. |
 | `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). |
 | `CustomLoadingScreenMotion` | bool | `true` | — | Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. |
-| `SpectatorVoiceBalanceMode` | string | `Vanilla` | `Vanilla`, `SpeechDucking`, `StaticAttenuation` | While dead/spectating or possessing a mimic, rebalance remote VoIP volumes. `Vanilla` leaves volumes unchanged. |
-| `SpectatorVoiceAttenuation` | float | `0.8` | `0`–`1` | In `StaticAttenuation` mode, volume kept for the non-priority group (fraction of their ESC-menu preferred volume). |
-| `SpectatorVoiceDuckLevel` | float | `0.2` | `0`–`1` | In `SpeechDucking` mode, volume kept for the non-priority group while the priority group has been speaking continuously for more than 0.2 s. |
+| `SpectatorVoiceBalanceMode` | string | `Vanilla` | `Vanilla`, `SpeechDucking`, `StaticAttenuation` | While dead and spectating, rebalance remote VoIP volumes on your client. `Vanilla` leaves volumes unchanged. |
+| `SpectatorVoiceAttenuation` | float | `0.8` | `0`–`1` | In `StaticAttenuation` mode, volume kept for living players (fraction of their ESC-menu preferred volume). |
+| `SpectatorVoiceDuckLevel` | float | `0.2` | `0`–`1` | In `SpeechDucking` mode, volume kept for living players while a dead player has been speaking continuously for more than 0.2 s. |
 | `EnableVoiceNoiseGate` | bool | `false` | — | When using voice activation (or open mic), tighten Dissonance live-chat VAD and denoise to reduce background false-triggers. Client-only; opt-in. |
 | `VoiceNoiseGateStrength` | float | `0.5` | `0`–`1` | How aggressively to suppress background noise. Higher values use stricter VAD and stronger denoise. |
 

@@ -194,15 +194,15 @@ Default: `0.8`
 
 ### `SpectatorVoiceBalanceMode`
 
-While you are dead and spectating (or possessing a mimic), rebalance remote player voice chat on your client only. Other players are unaffected.
+While you are dead and spectating, rebalance remote player voice chat on your client only. Other players are unaffected. Mimic possession is not handled here — the game already mutes dead VoIP on that channel.
 
 | Value | Meaning |
 |-------|---------|
 | `Vanilla` | No changes |
-| `SpeechDucking` | Duck the non-priority group to `SpectatorVoiceDuckLevel` after the priority group has spoken continuously for more than 0.2 s |
-| `StaticAttenuation` | Keep the non-priority group at `SpectatorVoiceAttenuation` of their preferred volume |
+| `SpeechDucking` | Duck living players to `SpectatorVoiceDuckLevel` after a dead player has spoken continuously for more than 0.2 s |
+| `StaticAttenuation` | Keep living players at `SpectatorVoiceAttenuation` of their preferred volume |
 
-While spectating dead, dead players are priority (living are attenuated/ducked). While possessing a mimic, living players are priority (dead are attenuated/ducked).
+Dead players are priority; living players are attenuated or ducked so dead chat is easier to hear.
 
 Default: `Vanilla`
 

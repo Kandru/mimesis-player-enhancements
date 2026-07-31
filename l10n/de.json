@@ -140,20 +140,20 @@
       },
       "SpectatorVoiceBalanceMode": {
         "title": "Zuschauer-Sprachbalance",
-        "description": "Während du tot zuschaust oder einen Mimic besitzt, werden entfernte Spielerstimmen auf deinem Client neu ausbalanciert.",
+        "description": "Während du tot zuschaust, werden entfernte Spielerstimmen auf deinem Client neu ausbalanciert. Lebende werden leiser, damit Toten-Chat besser hörbar ist.",
         "options": {
           "Vanilla": "Vanilla (keine Änderung)",
-          "SpeechDucking": "Andere ducken, wenn Priorität spricht",
-          "StaticAttenuation": "Andere dauerhaft absenken"
+          "SpeechDucking": "Lebende ducken, wenn Tote sprechen",
+          "StaticAttenuation": "Lebende dauerhaft absenken"
         }
       },
       "SpectatorVoiceAttenuation": {
         "title": "Zuschauer-Absenkungsstufe",
-        "description": "Lautstärke der Nicht-Prioritätsgruppe im Modus „Andere dauerhaft absenken“."
+        "description": "Lautstärke lebender Spieler im Modus „Lebende dauerhaft absenken“."
       },
       "SpectatorVoiceDuckLevel": {
         "title": "Zuschauer-Duck-Stufe",
-        "description": "Lautstärke der Nicht-Prioritätsgruppe, während die Prioritätsgruppe spricht."
+        "description": "Lautstärke lebender Spieler, während ein toter Spieler spricht."
       },
       "EnableVoiceNoiseGate": {
         "title": "Sprachaktivierungs-Rauschsperre",

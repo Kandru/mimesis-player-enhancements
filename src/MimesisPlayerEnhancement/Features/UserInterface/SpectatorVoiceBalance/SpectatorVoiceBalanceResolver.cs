@@ -45,13 +45,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
             return false;
         }
 
-        internal static bool IsFeatureActive(bool isSpectatingDead, bool isPossessingMimic) =>
-            isSpectatingDead || isPossessingMimic;
+        internal static bool IsFeatureActive(bool isSpectatingDead) => isSpectatingDead;
 
-        internal static SpectatorVoiceGroup ClassifyGroup(bool remoteIsDead, bool invertPriority) =>
-            (invertPriority ? !remoteIsDead : remoteIsDead)
-                ? SpectatorVoiceGroup.Priority
-                : SpectatorVoiceGroup.Other;
+        internal static SpectatorVoiceGroup ClassifyGroup(bool remoteIsDead) =>
+            remoteIsDead ? SpectatorVoiceGroup.Priority : SpectatorVoiceGroup.Other;
 
         internal static float ResolveTargetMultiplier(
             SpectatorVoiceBalanceMode mode,

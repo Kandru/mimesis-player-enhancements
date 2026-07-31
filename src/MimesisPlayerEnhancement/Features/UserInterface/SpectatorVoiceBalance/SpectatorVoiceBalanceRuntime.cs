@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
@@ -8,11 +7,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
         private const string Feature = "Ui";
         private const float VolumeApplyEpsilon = 0.001f;
 
-        private static readonly FieldInfo? HubCameramanField =
-            typeof(Hub).GetField(
-                "cameraman",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
         private static readonly Dictionary<string, float> BaselineByPlayerId = new(StringComparer.Ordinal);
         private static readonly Dictionary<string, float> ContinuityByPlayerId = new(StringComparer.Ordinal);
         private static readonly Dictionary<string, float> LastAppliedByPlayerId = new(StringComparer.Ordinal);
@@ -21,6 +15,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
         private static float _attenuation = 0.8f;
         private static float _duckLevel = 0.2f;
         private static bool _wasActive;
+        private static bool _loggedNonPriorityApply;
 
         internal static void RefreshFromConfig()
         {
@@ -54,10 +49,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                 return;
             }
 
-            bool isPossessing = MoreVoicesVoiceAccess.IsLocalPlayerPossessingMimic();
-            bool isSpectatingDead = !isPossessing && IsLocalSpectatingDead();
-            bool active = SpectatorVoiceBalanceResolver.IsFeatureActive(isSpectatingDead, isPossessing);
-            if (!active)
+            bool isSpectatingDead = IsLocalSpectatingDead();
+            if (!SpectatorVoiceBalanceResolver.IsFeatureActive(isSpectatingDead))
             {
                 if (_wasActive)
                 {
@@ -67,8 +60,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                 return;
             }
 
+            if (!_wasActive)
+            {
+                ModLog.Info(Feature, $"Spectator voice balance active — mode={_mode}");
+            }
+
             _wasActive = true;
-            bool invertPriority = isPossessing;
             UIManager? uiManager = ModUiGameAccess.TryGetUiManager();
             float deltaTime = Time.deltaTime;
             bool prioritySpeakingContinuously = false;
@@ -81,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                     continue;
                 }
 
-                SpectatorVoiceGroup group = SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead, invertPriority);
+                SpectatorVoiceGroup group = SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead);
                 if (group == SpectatorVoiceGroup.Priority)
                 {
                     float continuity = UpdateContinuity(player.PlayerId, IsSpeaking(voiceman, player.PlayerId), deltaTime);
@@ -104,7 +101,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                     continue;
                 }
 
-                SpectatorVoiceGroup group = SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead, invertPriority);
+                SpectatorVoiceGroup group = SpectatorVoiceBalanceResolver.ClassifyGroup(remoteIsDead);
                 float baseline = ResolveBaseline(voiceman, uiManager, player);
                 float multiplier = SpectatorVoiceBalanceResolver.ResolveTargetMultiplier(
                     _mode,
@@ -112,6 +109,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                     prioritySpeakingContinuously,
                     _attenuation,
                     _duckLevel);
+                if (group == SpectatorVoiceGroup.Other && multiplier < 1f && !_loggedNonPriorityApply)
+                {
+                    ModLog.Debug(
+                        Feature,
+                        $"Spectator voice balance applying multiplier {multiplier:F2} to non-priority group");
+                    _loggedNonPriorityApply = true;
+                }
+
                 ApplyIfChanged(voiceman, player.PlayerId, baseline * multiplier);
                 seenPlayerIds.Add(player.PlayerId);
             }
@@ -157,7 +162,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
                 return false;
             }
 
-            if (!TryGetCameraman(out CameraManager? cameraman) || cameraman == null)
+            if (MoreVoicesVoiceAccess.TryGetCameraman() is not CameraManager cameraman)
             {
                 return false;
             }
@@ -227,8 +232,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
 
         private static void ApplyIfChanged(VoiceManager voiceman, string playerId, float targetVolume)
         {
+            float actualVolume = voiceman.GetPlayerVolume(playerId);
             if (LastAppliedByPlayerId.TryGetValue(playerId, out float lastApplied)
-                && Mathf.Abs(lastApplied - targetVolume) < VolumeApplyEpsilon)
+                && Mathf.Abs(lastApplied - targetVolume) < VolumeApplyEpsilon
+                && Mathf.Abs(actualVolume - targetVolume) < VolumeApplyEpsilon)
             {
                 return;
             }
@@ -288,18 +295,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
             ContinuityByPlayerId.Clear();
             LastAppliedByPlayerId.Clear();
             _wasActive = false;
-        }
-
-        private static bool TryGetCameraman(out CameraManager? cameraman)
-        {
-            cameraman = null;
-            if (Hub.s == null || HubCameramanField == null)
-            {
-                return false;
-            }
-
-            cameraman = HubCameramanField.GetValue(Hub.s) as CameraManager;
-            return cameraman != null;
+            _loggedNonPriorityApply = false;
         }
     }
 }

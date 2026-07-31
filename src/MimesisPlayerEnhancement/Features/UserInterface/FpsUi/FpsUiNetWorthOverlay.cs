@@ -1,19 +1,12 @@
-using System.Reflection;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
 {
     internal static class FpsUiNetWorthOverlay
     {
-        private static readonly FieldInfo? HubCameramanField =
-            typeof(Hub).GetField(
-                "cameraman",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
         internal static bool IsSpectatorInventoryMode()
         {
-            return TryGetCameraman(out CameraManager? cameraman)
-                && cameraman != null
+            return MoreVoicesVoiceAccess.TryGetCameraman() is CameraManager cameraman
                 && cameraman.IsSpectatorMode;
         }
 
@@ -181,11 +174,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             return FpsUiInventoryNetWorthCalculator.ComputeFromInventoryItems(inventoryItems);
         }
 
-        // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1714-1731
         private static ProtoActor? ResolveInventoryActor()
         {
-            if (TryGetCameraman(out CameraManager? cameraman)
-                && cameraman != null
+            if (MoreVoicesVoiceAccess.TryGetCameraman() is CameraManager cameraman
                 && cameraman.IsSpectatorMode
                 && cameraman.TryGetCurrentSpectatorTarget(out ProtoActor? target))
             {
@@ -193,23 +184,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi
             }
 
             return Hub.Main?.GetMyAvatar();
-        }
-
-        private static bool TryGetCameraman(out CameraManager? cameraman)
-        {
-            cameraman = null;
-            if (Hub.s == null || HubCameramanField == null)
-            {
-                return false;
-            }
-
-            if (HubCameramanField.GetValue(Hub.s) is not CameraManager manager)
-            {
-                return false;
-            }
-
-            cameraman = manager;
-            return true;
         }
 
         private static bool HasValidWidget()

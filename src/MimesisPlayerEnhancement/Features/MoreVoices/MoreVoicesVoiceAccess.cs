@@ -10,11 +10,10 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly FieldInfo? HubVoicemanField =
-            typeof(Hub).GetField("voiceman", InstanceFlags);
-
-        private static readonly FieldInfo? HubCameramanField =
-            typeof(Hub).GetField("cameraman", InstanceFlags);
+        private static PropertyInfo? _hubVoicemanProperty;
+        private static FieldInfo? _hubVoicemanField;
+        private static PropertyInfo? _hubCameramanProperty;
+        private static FieldInfo? _hubCameramanField;
 
         private static readonly PropertyInfo? SpeechEventRecorderProperty =
             AccessTools.Property(typeof(VoiceManager), "speechEventRecorder");
@@ -39,12 +38,38 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static VoiceManager? TryGetVoiceManager()
         {
-            if (Hub.s == null || HubVoicemanField == null)
+            if (Hub.s == null)
             {
                 return null;
             }
 
-            return HubVoicemanField.GetValue(Hub.s) as VoiceManager;
+            _hubVoicemanProperty ??= typeof(Hub).GetProperty("voiceman", InstanceFlags);
+            if (_hubVoicemanProperty?.GetValue(Hub.s) is VoiceManager propertyManager)
+            {
+                return propertyManager;
+            }
+
+            _hubVoicemanField ??= typeof(Hub).GetField("voiceman", InstanceFlags)
+                ?? typeof(Hub).GetField("<voiceman>k__BackingField", InstanceFlags);
+            return _hubVoicemanField?.GetValue(Hub.s) as VoiceManager;
+        }
+
+        internal static CameraManager? TryGetCameraman()
+        {
+            if (Hub.s == null)
+            {
+                return null;
+            }
+
+            _hubCameramanProperty ??= typeof(Hub).GetProperty("cameraman", InstanceFlags);
+            if (_hubCameramanProperty?.GetValue(Hub.s) is CameraManager propertyManager)
+            {
+                return propertyManager;
+            }
+
+            _hubCameramanField ??= typeof(Hub).GetField("cameraman", InstanceFlags)
+                ?? typeof(Hub).GetField("<cameraman>k__BackingField", InstanceFlags);
+            return _hubCameramanField?.GetValue(Hub.s) as CameraManager;
         }
 
         internal static VoiceMode? TryGetVoiceMode(VoiceManager voiceman)
@@ -98,12 +123,12 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
 
         internal static bool IsLocalPlayerPossessingMimic()
         {
-            if (Hub.s == null || HubCameramanField == null || CameraModeProperty == null)
+            if (CameraModeProperty == null)
             {
                 return false;
             }
 
-            if (HubCameramanField.GetValue(Hub.s) is not CameraManager cameraman)
+            if (TryGetCameraman() is not CameraManager cameraman)
             {
                 return false;
             }
