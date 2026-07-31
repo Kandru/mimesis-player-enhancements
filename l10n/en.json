@@ -32,7 +32,8 @@
         "roundStartSound": "Dungeon landing sound",
         "discoBallSound": "Disco ball music",
         "customLoadingScreen": "Custom loading screens",
-        "spectatorVoiceBalance": "Spectator voice balance"
+        "spectatorVoiceBalance": "Spectator voice balance",
+        "voiceNoiseGate": "Voice activation noise gate"
       },
       "ModToastDurationSeconds": {
         "title": "Message Duration (seconds)",
@@ -153,6 +154,14 @@
       "SpectatorVoiceDuckLevel": {
         "title": "Spectator Duck Level",
         "description": "Volume kept for the non-priority group while the priority group is talking."
+      },
+      "EnableVoiceNoiseGate": {
+        "title": "Voice Activation Noise Gate",
+        "description": "When using voice activation or open mic, tighten live-chat VAD and denoise to reduce background false-triggers."
+      },
+      "VoiceNoiseGateStrength": {
+        "title": "Noise Gate Strength",
+        "description": "How aggressively to suppress background noise. Higher values use stricter voice detection and stronger denoise."
       },
       "CustomLoadingScreenMode": {
         "title": "Loading Screen Mode",

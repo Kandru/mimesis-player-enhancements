@@ -574,6 +574,36 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.NotNull(field);
         }
 
+        [Fact]
+        public void VoiceManager_SetTalkMode_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type voiceManager = context.RequireType("VoiceManager");
+
+            MethodInfo? method = FindMethodWithSingleParameter(
+                voiceManager,
+                "SetTalkMode",
+                "CommActivationMode");
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void VoiceManager_SetDenoiseAmount_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type voiceManager = context.RequireType("VoiceManager");
+
+            MethodInfo? method = FindMethodWithSingleParameter(
+                voiceManager,
+                "SetDenoiseAmount",
+                "NoiseSuppressionLevels");
+
+            Assert.NotNull(method);
+            Assert.Equal("Void", method.ReturnType.Name);
+        }
+
         private static Type RequireAudioManagerType(MimesisMetadataContext context)
         {
             return context.FindType("Mimic.Audio.AudioManager")

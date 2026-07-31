@@ -32,7 +32,8 @@
         "roundStartSound": "Dungeon-Landesound",
         "discoBallSound": "Discokugel-Musik",
         "customLoadingScreen": "Benutzerdefinierte Ladebildschirme",
-        "spectatorVoiceBalance": "Zuschauer-Sprachbalance"
+        "spectatorVoiceBalance": "Zuschauer-Sprachbalance",
+        "voiceNoiseGate": "Sprachaktivierungs-Rauschsperre"
       },
       "ModToastDurationSeconds": {
         "title": "Nachrichtendauer (Sekunden)",
@@ -153,6 +154,14 @@
       "SpectatorVoiceDuckLevel": {
         "title": "Zuschauer-Duck-Stufe",
         "description": "Lautstärke der Nicht-Prioritätsgruppe, während die Prioritätsgruppe spricht."
+      },
+      "EnableVoiceNoiseGate": {
+        "title": "Sprachaktivierungs-Rauschsperre",
+        "description": "Bei Sprachaktivierung oder offenem Mikro Live-Chat-VAD und Rauschunterdrückung verschärfen, um Hintergrund-Fehlauslösungen zu reduzieren."
+      },
+      "VoiceNoiseGateStrength": {
+        "title": "Rauschsperren-Stärke",
+        "description": "Wie aggressiv Hintergrundgeräusche unterdrückt werden. Höhere Werte = strengere Spracherkennung und stärkere Rauschunterdrückung."
       },
       "CustomLoadingScreenMode": {
         "title": "Ladebildschirm-Modus",

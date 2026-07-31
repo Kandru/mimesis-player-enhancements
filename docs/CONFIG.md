@@ -127,6 +127,8 @@ Mod-wide settings that are not owned by a single feature.
 | `SpectatorVoiceBalanceMode` | string | `Vanilla` | `Vanilla`, `SpeechDucking`, `StaticAttenuation` | While dead/spectating or possessing a mimic, rebalance remote VoIP volumes. `Vanilla` leaves volumes unchanged. |
 | `SpectatorVoiceAttenuation` | float | `0.8` | `0`–`1` | In `StaticAttenuation` mode, volume kept for the non-priority group (fraction of their ESC-menu preferred volume). |
 | `SpectatorVoiceDuckLevel` | float | `0.2` | `0`–`1` | In `SpeechDucking` mode, volume kept for the non-priority group while the priority group has been speaking continuously for more than 0.2 s. |
+| `EnableVoiceNoiseGate` | bool | `false` | — | When using voice activation (or open mic), tighten Dissonance live-chat VAD and denoise to reduce background false-triggers. Client-only; opt-in. |
+| `VoiceNoiseGateStrength` | float | `0.5` | `0`–`1` | How aggressively to suppress background noise. Higher values use stricter VAD and stronger denoise. |
 
 List-style settings (`LootAllowlist`, `DungeonAllowlist`, `WeatherCyclePresets`, and the random pools above) use searchable multi-select pickers in the web dashboard. Values are stored as comma-separated ids, not localized labels.
 

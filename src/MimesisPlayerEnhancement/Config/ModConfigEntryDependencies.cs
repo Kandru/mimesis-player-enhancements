@@ -129,6 +129,12 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
+            if (string.Equals(key, "VoiceNoiseGateStrength", StringComparison.Ordinal))
+            {
+                dependency = new ModConfigEntryDependency("EnableVoiceNoiseGate");
+                return true;
+            }
+
             return false;
         }
 

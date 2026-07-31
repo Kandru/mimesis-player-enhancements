@@ -1,6 +1,7 @@
 using MelonLoader;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance;
+using MimesisPlayerEnhancement.Features.UserInterface.VoiceNoiseGate;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -28,6 +29,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private const float MaxSpectatorVoiceAttenuation = 1f;
         private const float MinSpectatorVoiceDuckLevel = 0f;
         private const float MaxSpectatorVoiceDuckLevel = 1f;
+        private const float MinVoiceNoiseGateStrength = 0f;
+        private const float MaxVoiceNoiseGateStrength = 1f;
 
         private static MelonPreferences_Category _category = null!;
 
@@ -153,6 +156,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.SpectatorVoiceDuckLevel = ModConfig.CreateTrackedEntry(_category,
                 "SpectatorVoiceDuckLevel",
                 0.2f);
+
+            ModConfig.EnableVoiceNoiseGate = ModConfig.CreateTrackedEntry(_category,
+                "EnableVoiceNoiseGate",
+                false);
+
+            ModConfig.VoiceNoiseGateStrength = ModConfig.CreateTrackedEntry(_category,
+                "VoiceNoiseGateStrength",
+                VoiceNoiseGateMapper.DefaultStrength);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -234,6 +245,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 OnSpectatorVoiceAttenuationChanged(logger, value));
             ModConfig.SpectatorVoiceDuckLevel.OnEntryValueChanged.Subscribe((_, value) =>
                 OnSpectatorVoiceDuckLevelChanged(logger, value));
+            ModConfig.EnableVoiceNoiseGate.OnEntryValueChanged.Subscribe((_, _) =>
+                OnEnableVoiceNoiseGateChanged());
+            ModConfig.VoiceNoiseGateStrength.OnEntryValueChanged.Subscribe((_, value) =>
+                OnVoiceNoiseGateStrengthChanged(logger, value));
 
             SanitizeRoundStartSoundVariant(logger);
             SanitizeDiscoBallSoundVariant(logger);
@@ -254,6 +269,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             ModConfig.TrackFloatEntry(ModConfig.DiscoBallSoundVolume);
             ModConfig.TrackFloatEntry(ModConfig.SpectatorVoiceAttenuation);
             ModConfig.TrackFloatEntry(ModConfig.SpectatorVoiceDuckLevel);
+            ModConfig.TrackFloatEntry(ModConfig.VoiceNoiseGateStrength);
         }
 
         private static void OnFloatingDamageDurationChanged(MelonLogger.Instance logger, float value)
@@ -375,6 +391,34 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             SpectatorVoiceBalanceRuntime.RefreshFromConfig();
             ModConfig.NotifyChanged(ModConfig.SpectatorVoiceDuckLevel);
+        }
+
+        private static void OnEnableVoiceNoiseGateChanged()
+        {
+            VoiceNoiseGateRuntime.RefreshFromConfig();
+            ModConfig.NotifyChanged(ModConfig.EnableVoiceNoiseGate);
+        }
+
+        private static void OnVoiceNoiseGateStrengthChanged(MelonLogger.Instance logger, float value)
+        {
+            if (value < MinVoiceNoiseGateStrength)
+            {
+                logger.Warning(
+                    $"VoiceNoiseGateStrength must be at least {MinVoiceNoiseGateStrength}; resetting.");
+                ModConfig.VoiceNoiseGateStrength.Value = MinVoiceNoiseGateStrength;
+                return;
+            }
+
+            if (value > MaxVoiceNoiseGateStrength)
+            {
+                logger.Warning(
+                    $"VoiceNoiseGateStrength must be at most {MaxVoiceNoiseGateStrength}; resetting.");
+                ModConfig.VoiceNoiseGateStrength.Value = MaxVoiceNoiseGateStrength;
+                return;
+            }
+
+            VoiceNoiseGateRuntime.RefreshFromConfig();
+            ModConfig.NotifyChanged(ModConfig.VoiceNoiseGateStrength);
         }
 
         private static void OnInventoryPickupSelectModeChanged(MelonLogger.Instance logger, string value)

@@ -69,5 +69,16 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
             Assert.Equal(1f, float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
         }
+
+        [Fact]
+        public void VoiceNoiseGateStrength_has_zero_to_one_range()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(
+                SectionId,
+                "VoiceNoiseGateStrength",
+                out ModConfigEntryBound bound));
+            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal(1f, float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
+        }
     }
 }

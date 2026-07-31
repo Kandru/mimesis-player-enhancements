@@ -47,6 +47,8 @@ namespace MimesisPlayerEnhancement
                 (UiConfig.SectionId, "SpectatorVoiceBalanceMode"),
                 (UiConfig.SectionId, "SpectatorVoiceAttenuation"),
                 (UiConfig.SectionId, "SpectatorVoiceDuckLevel"),
+                (UiConfig.SectionId, "EnableVoiceNoiseGate"),
+                (UiConfig.SectionId, "VoiceNoiseGateStrength"),
                 (PrivacyConfig.SectionId, "EnablePrivacy"),
                 (PrivacyConfig.SectionId, "BlockReluTelemetry"),
                 (PrivacyConfig.SectionId, "BlockReplayUpload"),

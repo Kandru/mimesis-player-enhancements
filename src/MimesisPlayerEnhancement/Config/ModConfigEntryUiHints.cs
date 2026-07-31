@@ -422,6 +422,8 @@ namespace MimesisPlayerEnhancement
                     ["SpectatorVoiceBalanceMode"] = "spectatorVoiceBalance",
                     ["SpectatorVoiceAttenuation"] = "spectatorVoiceBalance",
                     ["SpectatorVoiceDuckLevel"] = "spectatorVoiceBalance",
+                    ["EnableVoiceNoiseGate"] = "voiceNoiseGate",
+                    ["VoiceNoiseGateStrength"] = "voiceNoiseGate",
                 };
             }
 

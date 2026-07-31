@@ -269,6 +269,8 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> SpectatorVoiceBalanceMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> SpectatorVoiceAttenuation { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> SpectatorVoiceDuckLevel { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableVoiceNoiseGate { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> VoiceNoiseGateStrength { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnablePrivacy { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> BlockReluTelemetry { get; internal set; } = null!;

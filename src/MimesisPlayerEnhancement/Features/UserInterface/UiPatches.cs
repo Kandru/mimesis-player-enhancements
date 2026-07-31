@@ -3,6 +3,7 @@ using MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLock;
 using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance;
+using MimesisPlayerEnhancement.Features.UserInterface.VoiceNoiseGate;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface
 {
@@ -28,7 +29,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(WorldOverlayPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(FpsUiPatches)))
                 .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventorySlotOptimizationPatches)))
-                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventoryNumberKeyPatches)));
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(InventoryNumberKeyPatches)))
+                .Concat(HarmonyPatchHelper.GetNamespacePatchTypes(typeof(VoiceNoiseGatePatches)));
 
             HarmonyPatchHelper.ApplyPatchTypes(
                 harmony,
@@ -56,6 +58,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             DiscoBallSoundRuntime.RefreshFromConfig();
             CustomLoadingScreenRuntime.RefreshFromConfig();
             SpectatorVoiceBalanceRuntime.RefreshFromConfig();
+            VoiceNoiseGateRuntime.RefreshFromConfig();
         }
 
         internal static void OnUpdate()
@@ -85,6 +88,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             RoundStartSoundRuntime.OnSessionEnded();
             DiscoBallSoundRuntime.OnSessionEnded();
             SpectatorVoiceBalanceRuntime.OnSessionEnded();
+            VoiceNoiseGateRuntime.OnSessionEnded();
             ProtoActorInventoryAccess.ClearPendingSelect();
         }
     }
