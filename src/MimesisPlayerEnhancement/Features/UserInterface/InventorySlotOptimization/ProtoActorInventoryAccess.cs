@@ -53,6 +53,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
             AccessTools.Method(InventoryType, "OnChangeItemLooksSig")
             ?? throw new InvalidOperationException("Inventory.OnChangeItemLooksSig not found");
 
+        internal static MethodBase SelectNextSlotMethod { get; } =
+            AccessTools.Method(InventoryType, "SelectNextSlot")
+            ?? throw new InvalidOperationException("Inventory.SelectNextSlot not found");
+
+        internal static MethodBase SelectPreviousSlotMethod { get; } =
+            AccessTools.Method(InventoryType, "SelectPreviousSlot")
+            ?? throw new InvalidOperationException("Inventory.SelectPreviousSlot not found");
+
         internal static bool IsLocalAvatarInventory(object inventory) =>
             OwnerField.GetValue(inventory) is ProtoActor owner && owner.AmIAvatar();
 

@@ -27,6 +27,8 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         [InlineData("OnChangeItemLooksSig")]
         [InlineData("SendChangeActiveInvenSlot")]
         [InlineData("SelectSlot")]
+        [InlineData("SelectNextSlot")]
+        [InlineData("SelectPreviousSlot")]
         public void Inventory_nested_type_methods_exist(string methodName)
         {
             using MimesisMetadataContext context = CreateContext();
@@ -95,6 +97,56 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
             Assert.Equal(
                 InventorySlotLayout.NoSelectionDisplayIndex,
                 InventorySlotLayout.ResolveDisplaySelectedIndex(rawOccupied, selectedIndex: 4));
+        }
+
+        [Fact]
+        public void LayoutMaps_round_trip_raw_to_display_to_raw()
+        {
+            bool[] rawOccupied = [false, true, false, true];
+            InventorySlotLayout.LayoutMaps maps = InventorySlotLayout.BuildLayoutMaps(rawOccupied);
+
+            for (int rawIndex = 0; rawIndex < rawOccupied.Length; rawIndex++)
+            {
+                int displayIndex = InventorySlotLayout.ResolveDisplaySelectedIndex(maps, rawIndex);
+                int roundTripRaw = InventorySlotLayout.ResolveRawSelectedIndex(maps, displayIndex);
+                Assert.Equal(rawIndex, roundTripRaw);
+            }
+        }
+
+        [Fact]
+        public void StepRawSelection_advances_display_in_sequential_order()
+        {
+            // Raw [item, empty, item, empty] used to highlight as display 0,2,1,3 when scrolling raw ±1.
+            bool[] rawOccupied = [true, false, true, false];
+            InventorySlotLayout.LayoutMaps maps = InventorySlotLayout.BuildLayoutMaps(rawOccupied);
+
+            int rawIndex = 0;
+            int[] displaySequence = new int[rawOccupied.Length];
+            for (int step = 0; step < rawOccupied.Length; step++)
+            {
+                displaySequence[step] = InventorySlotLayout.ResolveDisplaySelectedIndex(maps, rawIndex);
+                rawIndex = InventorySlotLayout.StepRawSelection(rawOccupied, rawIndex, delta: 1);
+            }
+
+            Assert.Equal([0, 1, 2, 3], displaySequence);
+            Assert.NotEqual([0, 2, 1, 3], displaySequence);
+        }
+
+        [Fact]
+        public void StepRawSelection_wraps_backward_in_display_order()
+        {
+            bool[] rawOccupied = [true, false, true, false];
+            InventorySlotLayout.LayoutMaps maps = InventorySlotLayout.BuildLayoutMaps(rawOccupied);
+
+            int rawIndex = 0;
+            int[] displaySequence = new int[rawOccupied.Length];
+            for (int step = 0; step < rawOccupied.Length; step++)
+            {
+                displaySequence[step] = InventorySlotLayout.ResolveDisplaySelectedIndex(maps, rawIndex);
+                rawIndex = InventorySlotLayout.StepRawSelection(rawOccupied, rawIndex, delta: -1);
+            }
+
+            Assert.Equal([0, 3, 2, 1], displaySequence);
         }
 
         [Theory]

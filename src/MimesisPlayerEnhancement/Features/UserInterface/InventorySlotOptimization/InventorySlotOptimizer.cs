@@ -215,7 +215,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
             int mask = 0;
             for (int i = 0; i < slotCount; i++)
             {
-                if (IsEffectiveItem(slotItems[i]))
+                if (InventorySlotLayout.IsEffectiveItem(slotItems[i]))
                 {
                     mask |= 1 << i;
                 }
@@ -223,9 +223,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
 
             return mask;
         }
-
-        private static bool IsEffectiveItem(object? slotEntry) =>
-            slotEntry is InventoryItem item && item.ItemMasterID != 0;
 
         private static bool IsPickupModeVanilla(string? mode) =>
             string.IsNullOrWhiteSpace(mode)
