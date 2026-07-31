@@ -3,6 +3,9 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 ## 26.7.22
 - feature: added additional disco ball songs
 - fix: properly show net-worth of spectating player
+- fix: keep unspent cash message now shows whether or not cash will be saved or not (at least for the host for now)
+- fix: vending discounts varied by user and did reset on player join
+- fix: webinterface settings dropdown menus where too small to show all content
 - draft: add monster spawner via the dashboard
 - draft: when waiting for all players to load into the dungeon everybody could already move. Now they're freezed properly.
 - draft: bind keys 1, 2, 3 and 4 to their corresponding inventory slot
