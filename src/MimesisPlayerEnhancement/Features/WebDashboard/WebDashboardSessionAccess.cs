@@ -21,14 +21,6 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         private static readonly FieldInfo? SessionManagerCommandExecutorField =
             typeof(SessionManager).GetField("_commandExecutor", InstanceMemberFlags);
 
-        private static readonly MethodInfo? RemoveInternalMethod =
-            typeof(SessionManager).GetMethod(
-                "RemoveInternal",
-                InstanceMemberFlags,
-                binder: null,
-                types: [typeof(long), typeof(DisconnectReason)],
-                modifiers: null);
-
         private static readonly FieldInfo? EnterPktHashCodeField =
             typeof(SessionContext).GetField("_enterPktHashCode", InstanceMemberFlags);
 
@@ -180,11 +172,10 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal static bool TryForceDisconnect(
             SessionManager sessionManager,
             long playerUid,
-            DisconnectReason reason)
+            DisconnectReason _)
         {
             if (playerUid == 0
                 || SessionManagerCommandExecutorField?.GetValue(sessionManager) is not CommandExecutor executor
-                || RemoveInternalMethod == null
                 || !TryGetSessionContextByUid(playerUid, out SessionContext? targetContext)
                 || targetContext == null
                 || !TryGetSessionId(targetContext, out long sessionId))
@@ -192,10 +183,13 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 return false;
             }
 
+            if (WebDashboardPendingKickScheduler.IsScheduled(sessionId))
+            {
+                return true;
+            }
+
             ulong steamId = targetContext.SteamID;
-            long capturedSessionId = sessionId;
             long capturedPlayerUid = playerUid;
-            DisconnectReason capturedReason = reason;
 
             if (!executor.Invoke(() =>
                 {
@@ -209,14 +203,22 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     {
                         context.Send(sig);
                     }
-
-                    RemoveInternalMethod.Invoke(sessionManager, [capturedSessionId, capturedReason]);
                 }))
             {
                 return false;
             }
 
             executor.Execute();
+
+            long now = GameSessionAccess.TryGetTimeUtil()?.GetCurrentTickMilliSec() ?? 0L;
+            if (now == 0)
+            {
+                return false;
+            }
+
+            WebDashboardPendingKickScheduler.Schedule(
+                sessionId,
+                now + WebDashboardPendingKickScheduler.ForceRemoveDelayMs);
             return true;
         }
 

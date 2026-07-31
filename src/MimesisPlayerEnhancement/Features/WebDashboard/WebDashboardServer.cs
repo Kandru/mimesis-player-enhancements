@@ -88,6 +88,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
 
             WebDashboardActionQueue.Process();
+            WebDashboardPendingKickScheduler.ProcessDue();
             WebDashboardSnapshotCache.Tick(_listenUrl);
             WebDashboardUiDebugController.SyncFromAvailability();
         }

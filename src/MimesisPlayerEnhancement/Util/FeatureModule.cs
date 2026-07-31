@@ -171,6 +171,7 @@ namespace MimesisPlayerEnhancement.Util
                 {
                     WebDashboardSnapshotCache.OnSessionEnded();
                     WebDashboardUiDebugController.OnSessionEnded();
+                    WebDashboardPendingKickScheduler.ClearOnSessionEnded();
                 }),
         ];
     }
