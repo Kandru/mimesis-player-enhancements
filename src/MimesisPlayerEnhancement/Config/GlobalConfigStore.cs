@@ -1,5 +1,6 @@
 using System.IO;
 using MelonLoader;
+using MimesisPlayerEnhancement.Config.HostConfigSync;
 
 namespace MimesisPlayerEnhancement
 {
@@ -83,7 +84,9 @@ namespace MimesisPlayerEnhancement
         /// </summary>
         internal static void RebuildPendingFromMemory()
         {
-            if (!ModConfig.IsInitialized || SaveSlotConfigStore.IsApplyingOverrides)
+            if (!ModConfig.IsInitialized
+                || SaveSlotConfigStore.IsApplyingOverrides
+                || HostConfigMirror.BlocksGlobalConfigPersistence)
             {
                 return;
             }

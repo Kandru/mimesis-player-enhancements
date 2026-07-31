@@ -61,18 +61,18 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
             return false;
         }
 
-        internal static void SendHello(int attempt = 1)
+        internal static bool TrySendHello()
         {
-            if (HostApplyGate.IsParticipantClient())
+            if (!HostApplyGate.IsParticipantClient())
             {
-                return;
+                return false;
             }
 
             NetworkManagerV2? netman = TryGetNetworkManager();
             if (netman == null)
             {
-                ModLog.Debug(Feature, $"Hello send skipped — network manager unavailable (attempt {attempt}).");
-                return;
+                ModLog.Debug(Feature, "Hello send skipped — network manager unavailable.");
+                return false;
             }
 
             try
@@ -85,16 +85,17 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 };
                 if (!netman.SendNoCallback(request))
                 {
-                    ModLog.Debug(Feature, $"Hello send failed — network unavailable (attempt {attempt}).");
+                    ModLog.Debug(Feature, "Hello send failed — network unavailable.");
+                    return false;
                 }
-                else
-                {
-                    ModLog.Debug(Feature, $"Sent mod hello — attempt {attempt}.");
-                }
+
+                ModLog.Debug(Feature, "Sent mod hello.");
+                return true;
             }
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"Hello send failed — {ex.Message}");
+                return false;
             }
         }
 

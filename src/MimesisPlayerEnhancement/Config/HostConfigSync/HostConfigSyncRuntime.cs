@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
         private const string Feature = "HostConfigSync";
         private const float BroadcastDebounceSeconds = 0.15f;
         private const float HelloRetrySeconds = 2f;
-        private const int MaxHelloAttempts = 8;
+        private const int HelloStatusLogInterval = 8;
 
         private static readonly HashSet<ulong> ModPeers = [];
 
@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
         private static float _broadcastAfterTime;
         private static bool _clientHelloPending;
         private static float _nextHelloTime;
-        private static int _helloAttempts;
+        private static int _helloSendCount;
         private static bool _subscribedToConfigChanges;
 
         internal static void OnSessionStarted(SessionRole role, int slotId)
@@ -29,7 +29,6 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 _clientHelloPending = true;
                 _nextHelloTime = UnityEngine.Time.unscaledTime;
                 ModLog.Info(Feature, "Client config mirror — requesting host save settings.");
-                HostConfigSyncTransport.SendHello(attempt: 1);
                 return;
             }
 
@@ -55,20 +54,7 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
 
         internal static void OnUpdate()
         {
-            if (_clientHelloPending && UnityEngine.Time.unscaledTime >= _nextHelloTime)
-            {
-                if (_helloAttempts >= MaxHelloAttempts)
-                {
-                    _clientHelloPending = false;
-                    ModLog.Debug(Feature, "Stopped hello retries — mirror may be unavailable.");
-                }
-                else
-                {
-                    _helloAttempts++;
-                    _nextHelloTime = UnityEngine.Time.unscaledTime + HelloRetrySeconds;
-                    HostConfigSyncTransport.SendHello(_helloAttempts);
-                }
-            }
+            TickClientHello();
 
             if (_broadcastPending && UnityEngine.Time.unscaledTime >= _broadcastAfterTime)
             {
@@ -106,6 +92,11 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 ModLog.Debug(Feature, $"Mod peer re-hello — steamId={steamId}, resending snapshot.");
             }
 
+            if (player.IsHost)
+            {
+                return;
+            }
+
             SendSnapshotToPlayer(player);
         }
 
@@ -124,36 +115,46 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
 
         internal static void OnPlayerRegistered(ulong steamId)
         {
-            if (!HostApplyGate.ShouldApplyHostOnlyFeature() || steamId == 0)
+            if (!HostApplyGate.ShouldApplyHostOnlyFeature() || steamId == 0 || !ModPeers.Contains(steamId))
             {
                 return;
             }
 
-            if (!ModPeers.Contains(steamId))
+            VPlayer? player = TryResolveModPeer(steamId);
+            if (player != null)
+            {
+                SendSnapshotToPlayer(player);
+            }
+        }
+
+        internal static void OnMirrorApplied()
+        {
+            _clientHelloPending = false;
+            _helloSendCount = 0;
+        }
+
+        private static void TickClientHello()
+        {
+            if (!_clientHelloPending || HostConfigMirror.IsActive)
             {
                 return;
             }
 
-            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
-            if (sessionManager == null)
+            if (UnityEngine.Time.unscaledTime < _nextHelloTime)
             {
                 return;
             }
 
-            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
+            _nextHelloTime = UnityEngine.Time.unscaledTime + HelloRetrySeconds;
+            if (!HostConfigSyncTransport.TrySendHello())
             {
-                if (context.SteamID != steamId)
-                {
-                    continue;
-                }
-
-                VPlayer? player = SessionContextAccess.GetVPlayer(context);
-                if (player != null)
-                {
-                    SendSnapshotToPlayer(player);
-                }
-
                 return;
+            }
+
+            _helloSendCount++;
+            if (_helloSendCount % HelloStatusLogInterval == 0)
+            {
+                ModLog.Debug(Feature, "Still waiting for host config mirror.");
             }
         }
 
@@ -209,28 +210,35 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
                 return;
             }
 
-            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
-            if (sessionManager == null)
+            if (!IsSnapshotReady())
             {
+                ScheduleDeferredBroadcast();
                 return;
             }
 
+            EnsureRevision();
+            List<ulong> stalePeers = [];
             int sent = 0;
-            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
-            {
-                if (!ModPeers.Contains(context.SteamID))
-                {
-                    continue;
-                }
 
-                VPlayer? player = SessionContextAccess.GetVPlayer(context);
-                if (player == null || player.IsHost)
+            foreach (ulong steamId in ModPeers)
+            {
+                VPlayer? player = TryResolveModPeer(steamId);
+                if (player == null)
                 {
+                    stalePeers.Add(steamId);
                     continue;
                 }
 
                 HostConfigSyncTransport.SendSnapshot(player, _revision);
                 sent++;
+            }
+
+            foreach (ulong steamId in stalePeers)
+            {
+                if (ModPeers.Remove(steamId))
+                {
+                    ModLog.Debug(Feature, $"Pruned disconnected mod peer — steamId={steamId}.");
+                }
             }
 
             if (sent > 0)
@@ -241,18 +249,76 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
 
         private static void SendSnapshotToPlayer(VPlayer player)
         {
+            if (player == null || player.IsHost)
+            {
+                return;
+            }
+
+            if (!IsSnapshotReady())
+            {
+                ScheduleDeferredBroadcast();
+                ModLog.Debug(Feature, "Deferred config snapshot — save slot not loaded yet.");
+                return;
+            }
+
+            EnsureRevision();
+            HostConfigSyncTransport.SendSnapshot(player, _revision);
+        }
+
+        private static void ScheduleDeferredBroadcast()
+        {
+            if (_broadcastPending)
+            {
+                return;
+            }
+
+            _broadcastPending = true;
+            _broadcastAfterTime = UnityEngine.Time.unscaledTime + BroadcastDebounceSeconds;
+        }
+
+        private static bool IsSnapshotReady()
+        {
+            return SaveSlotConfigStore.ActiveSlotId >= 0;
+        }
+
+        private static void EnsureRevision()
+        {
             if (_revision == 0)
             {
                 _revision = 1;
             }
-
-            HostConfigSyncTransport.SendSnapshot(player, _revision);
         }
 
-        internal static void OnMirrorApplied()
+        private static VPlayer? TryResolveModPeer(ulong steamId)
         {
-            _clientHelloPending = false;
-            _helloAttempts = 0;
+            if (steamId == 0)
+            {
+                return null;
+            }
+
+            SessionManager? sessionManager = SessionContextAccess.GetSessionManager();
+            if (sessionManager == null)
+            {
+                return null;
+            }
+
+            foreach (SessionContext context in SessionContextAccess.EnumerateSessionContexts(sessionManager))
+            {
+                if (context.SteamID != steamId)
+                {
+                    continue;
+                }
+
+                VPlayer? player = SessionContextAccess.GetVPlayer(context);
+                if (player != null && !player.IsHost)
+                {
+                    return player;
+                }
+
+                return null;
+            }
+
+            return null;
         }
 
         private static bool AffectsSyncedConfig(ModConfigChangeInfo change)
@@ -276,7 +342,7 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
         private static void ResetClientHelloState()
         {
             _clientHelloPending = false;
-            _helloAttempts = 0;
+            _helloSendCount = 0;
             _nextHelloTime = 0f;
         }
     }

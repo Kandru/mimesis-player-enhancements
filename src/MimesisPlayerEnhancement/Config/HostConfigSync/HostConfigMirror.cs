@@ -15,6 +15,8 @@ namespace MimesisPlayerEnhancement.Config.HostConfigSync
 
         internal static bool IsApplyingRemoteMirror => _isApplyingRemoteMirror;
 
+        internal static bool BlocksGlobalConfigPersistence => IsActive || _isApplyingRemoteMirror;
+
         internal static int MirroredSlotId { get; private set; } = -1;
 
         internal static SaveConfigProfileState MirroredProfile { get; private set; } = new();

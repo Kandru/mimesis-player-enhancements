@@ -251,7 +251,7 @@ namespace MimesisPlayerEnhancement
         {
             if (!ModConfig.IsInitialized
                 || SaveSlotConfigStore.IsApplyingOverrides
-                || HostConfigMirror.IsApplyingRemoteMirror)
+                || HostConfigMirror.BlocksGlobalConfigPersistence)
             {
                 return;
             }
