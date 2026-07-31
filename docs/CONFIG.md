@@ -335,7 +335,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 
-**Host enables.** Only the host must turn this on; once enabled, everyone in the run gets the longer shift. When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
+**Host only.** Only the host must turn this on; once enabled, everyone in the run gets the longer shift. When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
 
 The in-game day clock (tram/alarm, ~start→24:00) is slowed on the host so that span still fills the longer real shift instead of running past noon/midnight. Clients do not need the mod — they follow the host’s normal hourly time sync (extra sub-hour syncs are avoided because clients snap outdoor `worldTime` to the hour and keep advancing at vanilla speed between packets).
 
