@@ -17,6 +17,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         private static float _vanillaFadeElapsed;
         private static float _vanillaFadeDuration;
         private static bool _vanillaFadingOut;
+        private static bool _fadingIn;
+        private static float _fadeInElapsed;
+        private static float _fadeInDuration;
         private static bool _debugActive;
 
         internal static bool IsVisible =>
@@ -75,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             _waitTextActive = true;
             _dismissing = false;
             _vanillaFadingOut = false;
-            ApplyOverlayAlpha(1f);
+            BeginFadeIn();
             Refresh(force: true);
 
             if (!_loggedShow)
@@ -94,6 +97,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             _waitTextActive = false;
             _dismissing = true;
+            _fadingIn = false;
 
             if (!CustomLoadingScreenSession.IsActive)
             {
@@ -124,6 +128,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             _dismissing = false;
             _loggedShow = false;
             _vanillaFadingOut = false;
+            _fadingIn = false;
             _activeLoading = null;
             _overlay?.Destroy();
             _overlay = null;
@@ -164,6 +169,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             _waitTextActive = true;
             _dismissing = false;
             _vanillaFadingOut = false;
+            _fadingIn = false;
             _debugActive = true;
             ApplyOverlayAlpha(1f);
 
@@ -204,6 +210,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
         internal static void ApplyOverlayAlpha(float alpha)
         {
+            // External alpha (custom overlay fades) owns the list — stop fighting it.
+            _fadingIn = false;
             _overlay?.ApplyAlpha(alpha);
             if (_dismissing && alpha <= 0.001f)
             {
@@ -213,6 +221,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
         internal static void OnUpdate()
         {
+            if (_fadingIn)
+            {
+                TickFadeIn();
+            }
+
             if (_vanillaFadingOut)
             {
                 TickVanillaFade();
@@ -280,8 +293,29 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             return loading.transform;
         }
 
+        private static void BeginFadeIn()
+        {
+            _fadingIn = true;
+            _fadeInElapsed = 0f;
+            _fadeInDuration = CustomLoadingScreenConstants.DefaultPhaseCrossfadeSeconds;
+            _overlay?.ApplyAlpha(0f);
+        }
+
+        private static void TickFadeIn()
+        {
+            _fadeInElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(_fadeInElapsed / _fadeInDuration);
+            // Write alpha directly so ApplyOverlayAlpha does not clear fade-in mid-tick.
+            _overlay?.ApplyAlpha(Mathf.Lerp(0f, 1f, t));
+            if (t >= 1f)
+            {
+                _fadingIn = false;
+            }
+        }
+
         private static void BeginVanillaFadeOut()
         {
+            _fadingIn = false;
             _vanillaFadingOut = true;
             _vanillaFadeElapsed = 0f;
             _vanillaFadeStartAlpha = _overlay?.CanvasGroup != null ? _overlay.CanvasGroup.alpha : 1f;
