@@ -31,7 +31,8 @@
         "inventoryNumberKeys": "Inventar-Zahlentasten",
         "roundStartSound": "Dungeon-Landesound",
         "discoBallSound": "Discokugel-Musik",
-        "customLoadingScreen": "Benutzerdefinierte Ladebildschirme"
+        "customLoadingScreen": "Benutzerdefinierte Ladebildschirme",
+        "spectatorVoiceBalance": "Zuschauer-Sprachbalance"
       },
       "ModToastDurationSeconds": {
         "title": "Nachrichtendauer (Sekunden)",

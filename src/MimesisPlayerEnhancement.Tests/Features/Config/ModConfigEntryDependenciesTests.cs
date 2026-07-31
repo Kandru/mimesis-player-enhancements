@@ -72,6 +72,30 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
+        public void ApplyToEntry_ui_spectator_voice_duck_level_dependency()
+        {
+            WebDashboardConfigSectionDto section = Section(UiConfig.SectionId);
+            WebDashboardConfigEntryDto entry = Entry("SpectatorVoiceDuckLevel");
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Equal("SpectatorVoiceBalanceMode", entry.DependsOnKey);
+            Assert.Equal("SpeechDucking", entry.DependsOnValue);
+        }
+
+        [Fact]
+        public void ApplyToEntry_ui_spectator_voice_attenuation_dependency()
+        {
+            WebDashboardConfigSectionDto section = Section(UiConfig.SectionId);
+            WebDashboardConfigEntryDto entry = Entry("SpectatorVoiceAttenuation");
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Equal("SpectatorVoiceBalanceMode", entry.DependsOnKey);
+            Assert.Equal("StaticAttenuation", entry.DependsOnValue);
+        }
+
+        [Fact]
         public void ApplyToEntry_spawn_scaling_trap_respawn_min_distance_dependency()
         {
             WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");

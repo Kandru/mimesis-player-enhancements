@@ -31,7 +31,8 @@
         "inventoryNumberKeys": "Inventory number keys",
         "roundStartSound": "Dungeon landing sound",
         "discoBallSound": "Disco ball music",
-        "customLoadingScreen": "Custom loading screens"
+        "customLoadingScreen": "Custom loading screens",
+        "spectatorVoiceBalance": "Spectator voice balance"
       },
       "ModToastDurationSeconds": {
         "title": "Message Duration (seconds)",

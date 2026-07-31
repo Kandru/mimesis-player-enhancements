@@ -44,6 +44,7 @@ namespace MimesisPlayerEnhancement
                 [(UiSectionId, "DiscoBallSoundMode")] = ["Vanilla", "Random", "Specific"],
                 [(UiSectionId, "CustomLoadingScreenMode")] = ["Vanilla", "Random", "Specific"],
                 [(UiSectionId, "InventoryPickupSelectMode")] = ["Vanilla", "WeaponsOnly", "Always"],
+                [(UiSectionId, "SpectatorVoiceBalanceMode")] = ["Vanilla", "SpeechDucking", "StaticAttenuation"],
             };
 
         internal static string ResolveInputKind(string sectionId, string key)
@@ -418,6 +419,9 @@ namespace MimesisPlayerEnhancement
                     ["CustomLoadingScreenRandomPool"] = "customLoadingScreen",
                     ["CustomLoadingScreenVariant"] = "customLoadingScreen",
                     ["CustomLoadingScreenMotion"] = "customLoadingScreen",
+                    ["SpectatorVoiceBalanceMode"] = "spectatorVoiceBalance",
+                    ["SpectatorVoiceAttenuation"] = "spectatorVoiceBalance",
+                    ["SpectatorVoiceDuckLevel"] = "spectatorVoiceBalance",
                 };
             }
 
