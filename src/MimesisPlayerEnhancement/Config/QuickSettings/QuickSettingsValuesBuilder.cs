@@ -142,7 +142,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             float shop,
             float reinforce)
         {
-            Set(map, "MimesisPlayerEnhancement_Economy", "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
+            Set(map, SavegamePreparationConfig.SectionId, "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
             Set(map, "MimesisPlayerEnhancement_Economy", "ScrapSellValueMultiplier", ModConfigFloatHelper.Format(scrap));
             Set(map, "MimesisPlayerEnhancement_Economy", "ShopBuyPriceMultiplier", ModConfigFloatHelper.Format(shop));
             Set(map, "MimesisPlayerEnhancement_Economy", "ReinforcePriceMultiplier", ModConfigFloatHelper.Format(reinforce));

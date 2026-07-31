@@ -26,14 +26,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 "EconomyPlayerCountScaleRate",
                 ScalingMath.DefaultPlayerCountScaleRate);
 
-            ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleStartupMoneyByPlayerCount",
-                true);
-
-            ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "StartupMoneyMultiplier",
-                1f);
-
             ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
                 "AutoScaleScrapSellValueByPlayerCount",
                 true);
@@ -88,7 +80,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
             ModConfig.EnableEconomy.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableEconomy));
             ModConfig.EconomyPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
                 ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.EconomyPlayerCountScaleRate));
-            ModConfig.AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleStartupMoneyByPlayerCount));
             ModConfig.AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleScrapSellValueByPlayerCount));
             ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
             ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
@@ -98,7 +89,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 EconomyRetainCashUi.RefreshTramScreenIfVisible();
             });
 
-            ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
             ModConfig.ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValueMultiplier));
             ModConfig.ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ShopBuyPriceMultiplier));
             ModConfig.ShopDiscountMinPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMinPercent));
@@ -110,7 +100,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.EconomyPlayerCountScaleRate);
-            ModConfig.TrackFloatEntry(ModConfig.StartupMoneyMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ScrapSellValueMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ShopBuyPriceMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ReinforcePriceMultiplier);

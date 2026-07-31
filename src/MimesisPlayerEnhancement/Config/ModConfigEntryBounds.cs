@@ -30,6 +30,7 @@ namespace MimesisPlayerEnhancement
             const string Statistics = "MimesisPlayerEnhancement_Statistics";
             const string PlayerTuning = "MimesisPlayerEnhancement_PlayerTuning";
             const string Economy = "MimesisPlayerEnhancement_Economy";
+            const string SavegamePreparation = "MimesisPlayerEnhancement_SavegamePreparation";
             const string LootMultiplicator = "MimesisPlayerEnhancement_LootMultiplicator";
             const string SpawnScaling = "MimesisPlayerEnhancement_SpawnScaling";
             const string DungeonTime = "MimesisPlayerEnhancement_DungeonTime";
@@ -70,10 +71,11 @@ namespace MimesisPlayerEnhancement
 
             MinZeroFloat(Economy,
                 "EconomyPlayerCountScaleRate",
-                "StartupMoneyMultiplier",
                 "ScrapSellValueMultiplier",
                 "ShopBuyPriceMultiplier",
                 "ReinforcePriceMultiplier");
+            MinZeroFloat(SavegamePreparation, "StartupMoneyMultiplier");
+            IntRange(SavegamePreparation, "StartingZone", 1, 99);
             IntRange(Economy, "ShopDiscountMinPercent", 0, 100);
             IntRange(Economy, "ShopDiscountMaxPercent", 0, 100);
             IntRange(Economy, "ShopDiscountChancePercent", 0, 100);

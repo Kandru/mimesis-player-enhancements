@@ -9,8 +9,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         private static EconomySceneConfig Config(
             bool enabled = true,
             float scaleRate = ScalingMath.DefaultPlayerCountScaleRate,
-            bool autoScaleStartup = true,
-            float startupMultiplier = 1f,
             bool autoScaleScrap = true,
             float scrapMultiplier = 1f,
             bool autoScaleShop = true,
@@ -24,8 +22,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
             new(
                 enabled,
                 scaleRate,
-                autoScaleStartup,
-                startupMultiplier,
                 autoScaleScrap,
                 scrapMultiplier,
                 autoScaleShop,
@@ -41,11 +37,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(2)]
-        [InlineData(3)]
         public void GetEffectiveMultiplier_returns_neutral_when_feature_disabled(int moneyTypeValue)
         {
             var type = (MoneyType)moneyTypeValue;
-            EconomySceneConfig config = Config(enabled: false, startupMultiplier: 2f, scrapMultiplier: 2f);
+            EconomySceneConfig config = Config(enabled: false, scrapMultiplier: 2f);
 
             float multiplier = EconomyResolver.GetEffectiveMultiplier(type, playerCount: 8, config);
 
@@ -56,12 +51,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         [InlineData(0, true)]
         [InlineData(1, true)]
         [InlineData(2, true)]
-        [InlineData(3, true)]
         public void IsAutoScaleEnabled_reflects_config_flags(int moneyTypeValue, bool expected)
         {
             var type = (MoneyType)moneyTypeValue;
             EconomySceneConfig config = Config(
-                autoScaleStartup: true,
                 autoScaleScrap: true,
                 autoScaleShop: true,
                 autoScaleReinforce: true);
@@ -70,15 +63,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         }
 
         [Theory]
-        [InlineData(0, 1.5f)]
-        [InlineData(1, 2f)]
-        [InlineData(2, 0.5f)]
-        [InlineData(3, 3f)]
+        [InlineData(0, 2f)]
+        [InlineData(1, 0.5f)]
+        [InlineData(2, 3f)]
         public void GetPerTypeMultiplier_returns_configured_value(int moneyTypeValue, float configured)
         {
             var type = (MoneyType)moneyTypeValue;
             EconomySceneConfig config = Config(
-                startupMultiplier: 1.5f,
                 scrapMultiplier: 2f,
                 shopMultiplier: 0.5f,
                 reinforceMultiplier: 3f);
@@ -94,9 +85,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         [InlineData(8, 1.4f)]
         public void GetPlayerScale_uses_vanilla_baseline_and_scale_rate(int playerCount, float expectedScale)
         {
-            EconomySceneConfig config = Config(scaleRate: 0.10f, autoScaleStartup: true);
+            EconomySceneConfig config = Config(scaleRate: 0.10f, autoScaleScrap: true);
 
-            float scale = EconomyResolver.GetPlayerScale(MoneyType.Startup, playerCount, config);
+            float scale = EconomyResolver.GetPlayerScale(MoneyType.ScrapSellValue, playerCount, config);
 
             Assert.Equal(expectedScale, scale);
         }
@@ -104,9 +95,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         [Fact]
         public void GetPlayerScale_returns_one_when_auto_scale_disabled()
         {
-            EconomySceneConfig config = Config(autoScaleStartup: false, scaleRate: 0.50f);
+            EconomySceneConfig config = Config(autoScaleScrap: false, scaleRate: 0.50f);
 
-            float scale = EconomyResolver.GetPlayerScale(MoneyType.Startup, playerCount: 8, config);
+            float scale = EconomyResolver.GetPlayerScale(MoneyType.ScrapSellValue, playerCount: 8, config);
 
             Assert.Equal(1f, scale);
         }
@@ -116,15 +107,15 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
         [InlineData(4, 1.5f, 1.5f)]
         public void GetEffectiveMultiplier_combines_per_type_and_player_scale(
             int playerCount,
-            float startupMultiplier,
+            float scrapMultiplier,
             float expected)
         {
             EconomySceneConfig config = Config(
-                startupMultiplier: startupMultiplier,
-                autoScaleStartup: true,
+                scrapMultiplier: scrapMultiplier,
+                autoScaleScrap: true,
                 scaleRate: 0.10f);
 
-            float multiplier = EconomyResolver.GetEffectiveMultiplier(MoneyType.Startup, playerCount, config);
+            float multiplier = EconomyResolver.GetEffectiveMultiplier(MoneyType.ScrapSellValue, playerCount, config);
 
             Assert.Equal(expected, multiplier);
         }

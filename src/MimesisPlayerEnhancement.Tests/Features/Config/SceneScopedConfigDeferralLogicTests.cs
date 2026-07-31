@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
                 moduleName,
-                SectionChange(EconomySection, "StartupMoneyMultiplier"),
+                SectionChange(EconomySection, "ScrapSellValueMultiplier"),
                 isGameplaySceneActive: true,
                 isMasterEnabled: true,
                 masterToggleKey: EconomyToggleKey);
@@ -58,7 +58,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
                 "Economy",
-                SectionChange(EconomySection, "StartupMoneyMultiplier"),
+                SectionChange(EconomySection, "ScrapSellValueMultiplier"),
                 isGameplaySceneActive: true,
                 isMasterEnabled: true,
                 masterToggleKey: EconomyToggleKey);
@@ -102,7 +102,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
                 "Economy",
-                SectionChange(EconomySection, "StartupMoneyMultiplier"),
+                SectionChange(EconomySection, "ScrapSellValueMultiplier"),
                 isGameplaySceneActive: true,
                 isMasterEnabled: false,
                 masterToggleKey: EconomyToggleKey);
@@ -139,7 +139,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                     new ModConfigKeyChange
                     {
                         SectionId = "mimesisplayerenhancement_economy",
-                        Key = "StartupMoneyMultiplier",
+                        Key = "ScrapSellValueMultiplier",
                     },
                 ],
             };

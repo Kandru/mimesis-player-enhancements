@@ -229,8 +229,6 @@ namespace MimesisPlayerEnhancement.Util
         internal EconomySceneConfig(
             bool enableEconomy,
             float economyPlayerCountScaleRate,
-            bool autoScaleStartupMoneyByPlayerCount,
-            float startupMoneyMultiplier,
             bool autoScaleScrapSellValueByPlayerCount,
             float scrapSellValueMultiplier,
             bool autoScaleShopBuyPriceByPlayerCount,
@@ -244,8 +242,6 @@ namespace MimesisPlayerEnhancement.Util
         {
             EnableEconomy = enableEconomy;
             EconomyPlayerCountScaleRate = economyPlayerCountScaleRate;
-            AutoScaleStartupMoneyByPlayerCount = autoScaleStartupMoneyByPlayerCount;
-            StartupMoneyMultiplier = startupMoneyMultiplier;
             AutoScaleScrapSellValueByPlayerCount = autoScaleScrapSellValueByPlayerCount;
             ScrapSellValueMultiplier = scrapSellValueMultiplier;
             AutoScaleShopBuyPriceByPlayerCount = autoScaleShopBuyPriceByPlayerCount;
@@ -261,10 +257,6 @@ namespace MimesisPlayerEnhancement.Util
         internal bool EnableEconomy { get; }
 
         internal float EconomyPlayerCountScaleRate { get; }
-
-        internal bool AutoScaleStartupMoneyByPlayerCount { get; }
-
-        internal float StartupMoneyMultiplier { get; }
 
         internal bool AutoScaleScrapSellValueByPlayerCount { get; }
 
@@ -291,8 +283,6 @@ namespace MimesisPlayerEnhancement.Util
             return new EconomySceneConfig(
                 ModConfig.EnableEconomy.Value,
                 ModConfig.EconomyPlayerCountScaleRate.Value,
-                ModConfig.AutoScaleStartupMoneyByPlayerCount.Value,
-                ModConfig.StartupMoneyMultiplier.Value,
                 ModConfig.AutoScaleScrapSellValueByPlayerCount.Value,
                 ModConfig.ScrapSellValueMultiplier.Value,
                 ModConfig.AutoScaleShopBuyPriceByPlayerCount.Value,

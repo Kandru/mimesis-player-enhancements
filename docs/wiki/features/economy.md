@@ -2,7 +2,7 @@
 
 **Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
 
-Scales startup cash, scrap/sell value, shop and reinforce prices, and optional unspent currency between maintenance cycles. Complements [Loot Multiplicator](./loot-multiplicator.md) (spawn counts, not prices); tram repair quotas stay under [More Players](./more-players.md).
+Scales scrap/sell value, shop and reinforce prices, and optional unspent currency between maintenance cycles during a run. Complements [Loot Multiplicator](./loot-multiplicator.md) (spawn counts, not prices); tram repair quotas stay under [More Players](./more-players.md).
 
 ## Configuration
 
@@ -21,7 +21,7 @@ Default: `false`
 
 ### `EconomyPlayerCountScaleRate`
 
-Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each money multiplier: `multiplier × (1 + (players − 4) × rate)`. At 4 or fewer players, player-count scaling is `1` (no change).
+Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each money multiplier: `multiplier × (1 + (players − 4) × rate)`. At 4 or fewer players, player-count scaling is `1` (no change). Also used by **Savegame Preparation** startup-money scaling.
 
 | Value | Meaning |
 |---|---|
@@ -30,26 +30,14 @@ Extra multiplier per player above 4 when an **Auto Scale … By Player Count** t
 
 Default: `0.10`
 
-### `AutoScaleStartupMoneyByPlayerCount`
+### `ScrapSellValueMultiplier`
 
-When on, startup money also uses `EconomyPlayerCountScaleRate` for players above 4.
-
-| Value | Meaning |
-|---|---|
-| `false` | Startup money uses only `StartupMoneyMultiplier` |
-| `true` | Stack player-count scaling on startup money |
-
-Default: `true`
-
-### `StartupMoneyMultiplier`
-
-Scales starting maintenance-room currency on a new save or session reset. Does not apply when loading an existing save.
+Scales currency from scrapping items and item value counted toward the tram quota.
 
 | Value | Meaning |
 |---|---|
-| `1` | Vanilla starting cash |
-| `2` | Double starting cash |
-| `0` | No starting cash |
+| `1` | Vanilla scrap/sell value |
+| `2` | Double scrap/sell value |
 
 Default: `1`
 
@@ -64,14 +52,15 @@ When on, scrap/sell values also use `EconomyPlayerCountScaleRate` for players ab
 
 Default: `true`
 
-### `ScrapSellValueMultiplier`
+### `ShopBuyPriceMultiplier`
 
-Scales currency from scrapping items and item value counted toward the tram quota.
+Scales maintenance shop and vending-machine purchase costs. Applied when shop items initialize each maintenance round (not when loading a save).
 
 | Value | Meaning |
 |---|---|
-| `1` | Vanilla scrap/sell value |
-| `2` | Double scrap/sell value |
+| `1` | Vanilla shop prices |
+| `0.1` | 10% of vanilla |
+| `2` | Double shop prices |
 
 Default: `1`
 
@@ -85,18 +74,6 @@ When on, shop buy prices also use `EconomyPlayerCountScaleRate` for players abov
 | `true` | Stack player-count scaling on shop buy prices |
 
 Default: `true`
-
-### `ShopBuyPriceMultiplier`
-
-Scales maintenance shop and vending-machine purchase costs. Applied when shop items initialize each maintenance round (not when loading a save).
-
-| Value | Meaning |
-|---|---|
-| `1` | Vanilla shop prices |
-| `0.1` | 10% of vanilla |
-| `2` | Double shop prices |
-
-Default: `1`
 
 ### `ShopDiscountMinPercent`
 

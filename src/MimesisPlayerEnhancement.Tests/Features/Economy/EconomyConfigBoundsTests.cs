@@ -9,7 +9,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
 
         [Theory]
         [InlineData("EconomyPlayerCountScaleRate")]
-        [InlineData("StartupMoneyMultiplier")]
         [InlineData("ScrapSellValueMultiplier")]
         [InlineData("ShopBuyPriceMultiplier")]
         [InlineData("ReinforcePriceMultiplier")]

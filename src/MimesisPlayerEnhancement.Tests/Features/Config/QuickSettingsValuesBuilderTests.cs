@@ -35,8 +35,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 
             QuickSettingsValuesBuilder.SetEconomyMultipliers(map, 1.5f, 2f, 0.8f, 1.25f);
 
+            Dictionary<string, string> savePrep = map["MimesisPlayerEnhancement_SavegamePreparation"];
             Dictionary<string, string> economy = map["MimesisPlayerEnhancement_Economy"];
-            Assert.Equal("1.5", economy["StartupMoneyMultiplier"]);
+            Assert.Equal("1.5", savePrep["StartupMoneyMultiplier"]);
             Assert.Equal("2.0", economy["ScrapSellValueMultiplier"]);
             Assert.Equal("0.8", economy["ShopBuyPriceMultiplier"]);
             Assert.Equal("1.25", economy["ReinforcePriceMultiplier"]);

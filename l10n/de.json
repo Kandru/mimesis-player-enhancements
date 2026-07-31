@@ -804,30 +804,40 @@
         "description": "Custom only: how many horn patterns are kept."
       }
     },
+    "MimesisPlayerEnhancement_SavegamePreparation": {
+      "_section": "Savegame-Vorbereitung",
+      "_description": "Einstellungen, die nur beim Erstellen eines neuen Savegames gelten. In den globalen Einstellungen vor einem neuen Run festlegen.",
+      "_groups": {
+        "AutoScaleStartupMoneyByPlayerCount": "Startgeld-Skalierung"
+      },
+      "AutoScaleStartupMoneyByPlayerCount": {
+        "title": "Startgeld nach Spielern skalieren",
+        "description": "Erhöht Startgeld pro Spieler über 4. Nutzt Wirtschafts-Skalierungsrate. Stapelt sich mit Startgeld-Multiplikator."
+      },
+      "StartupMoneyMultiplier": {
+        "title": "Startgeld-Multiplikator",
+        "description": "Startgeld im Maintenance-Raum beim Erstellen eines neuen Saves (1 = Vanilla, 2 = doppelt). Gilt nicht beim Laden oder nach Wipeout."
+      },
+      "StartingZone": {
+        "title": "Startzone",
+        "description": "Zone (Stage), mit der ein neuer Save beginnt (1 = Vanilla). Gilt nicht beim Laden oder nach Wipeout."
+      }
+    },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Wirtschaft",
-      "_description": "Stelle Startgeld, Schrottwert, Shop-Preise und optionalen Währungserhalt ein.",
+      "_description": "Skaliert Schrottwert, Shop-Preise und optionalen Währungserhalt während eines Runs.",
       "_groups": {
-        "AutoScaleStartupMoneyByPlayerCount": "Startgeld-Skalierung",
         "AutoScaleScrapSellValueByPlayerCount": "Schrottwert-Skalierung",
         "AutoScaleShopBuyPriceByPlayerCount": "Shop-Preis-Skalierung",
         "AutoScaleReinforcePriceByPlayerCount": "Verstärkungspreis-Skalierung"
       },
       "EnableEconomy": {
         "title": "Wirtschaft aktivieren",
-        "description": "Skaliert Geld, Schrottwert, Shop-Preise und Verstärkungskosten. Optional Geld zwischen Zyklen behalten."
+        "description": "Skaliert Schrottwert, Shop-Preise und Verstärkungskosten. Optional Geld zwischen Zyklen behalten."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Wirtschafts-Skalierungsrate",
-        "description": "Extra-Bonus pro Spieler über 4, genutzt von den Auto-Scale-Schaltern unten (0,10 = +10 % pro Extra-Spieler). Minimum ist 0."
-      },
-      "AutoScaleStartupMoneyByPlayerCount": {
-        "title": "Startgeld nach Spielern skalieren",
-        "description": "Erhöht Startgeld pro Spieler über 4. Stapelt sich mit Startgeld-Multiplikator."
-      },
-      "StartupMoneyMultiplier": {
-        "title": "Startgeld-Multiplikator",
-        "description": "Startgeld im Maintenance-Raum bei neuem Save (1 = Vanilla, 2 = doppelt). Nicht beim Laden."
+        "description": "Extra-Bonus pro Spieler über 4, genutzt von den Auto-Scale-Schaltern unten (0,10 = +10 % pro Extra-Spieler). Auch für Startgeld in Savegame-Vorbereitung. Minimum ist 0."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Schrottwert nach Spielern skalieren",

@@ -804,30 +804,40 @@
         "description": "Custom only: how many horn patterns are kept."
       }
     },
+    "MimesisPlayerEnhancement_SavegamePreparation": {
+      "_section": "Savegame Preparation",
+      "_description": "Settings that apply only when creating a new savegame. Configure these in Global Settings before starting a new run.",
+      "_groups": {
+        "AutoScaleStartupMoneyByPlayerCount": "Startup money scaling"
+      },
+      "AutoScaleStartupMoneyByPlayerCount": {
+        "title": "Scale Startup Money by Players",
+        "description": "Increase starting money for each player above 4. Uses Economy Scale Rate. Stacks with Startup Money Multiplier."
+      },
+      "StartupMoneyMultiplier": {
+        "title": "Startup Money Multiplier",
+        "description": "Starting maintenance-room cash when a new save is created (1 = vanilla, 2 = double). Does not apply when loading a save or after a wipeout."
+      },
+      "StartingZone": {
+        "title": "Starting Zone",
+        "description": "Zone (stage) to begin on when a new save is created (1 = vanilla). Does not apply when loading a save or after a wipeout."
+      }
+    },
     "MimesisPlayerEnhancement_Economy": {
       "_section": "Economy",
-      "_description": "Tune starting cash, scrap value, shop prices, and optional currency retention.",
+      "_description": "Scale scrap value, shop prices, and optional currency retention during a run.",
       "_groups": {
-        "AutoScaleStartupMoneyByPlayerCount": "Startup money scaling",
         "AutoScaleScrapSellValueByPlayerCount": "Scrap value scaling",
         "AutoScaleShopBuyPriceByPlayerCount": "Shop price scaling",
         "AutoScaleReinforcePriceByPlayerCount": "Reinforce price scaling"
       },
       "EnableEconomy": {
         "title": "Enable Economy",
-        "description": "Scale money, scrap value, shop prices, and reinforce costs. Optionally keep unspent cash between cycles."
+        "description": "Scale scrap value, shop prices, and reinforce costs. Optionally keep unspent cash between cycles."
       },
       "EconomyPlayerCountScaleRate": {
         "title": "Economy Scale Rate",
-        "description": "Extra bonus per player above 4, used by the Auto Scale toggles below (0.10 = +10% per extra player). Minimum is 0."
-      },
-      "AutoScaleStartupMoneyByPlayerCount": {
-        "title": "Scale Startup Money by Players",
-        "description": "Increase starting money for each player above 4. Stacks with Startup Money Multiplier."
-      },
-      "StartupMoneyMultiplier": {
-        "title": "Startup Money Multiplier",
-        "description": "Starting maintenance-room cash on a new save (1 = vanilla, 2 = double). Not when loading a save."
+        "description": "Extra bonus per player above 4, used by the Auto Scale toggles below (0.10 = +10% per extra player). Also used for startup money scaling in Savegame Preparation. Minimum is 0."
       },
       "AutoScaleScrapSellValueByPlayerCount": {
         "title": "Scale Scrap Value by Players",

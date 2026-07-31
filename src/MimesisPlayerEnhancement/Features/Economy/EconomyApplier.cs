@@ -71,20 +71,7 @@ namespace MimesisPlayerEnhancement.Features.Economy
 
         internal static void ApplyStartupMoney(MaintenanceRoom room, ref int currency)
         {
-            if (!IsEnabled()
-                || StartupMoneyLoadGuard.IsActive
-                || StartupMoneyLoadGuard.SuppressStartupScale)
-            {
-                return;
-            }
-
-            if (!TryGetVanillaInitialMoney(out int vanillaInitial) || currency != vanillaInitial)
-            {
-                return;
-            }
-
-            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            currency = ScaleForType(MoneyType.Startup, currency, playerCount, logAsInfo: true);
+            SavegamePreparationApplier.TryApplyStartupMoney(room, ref currency);
         }
 
         internal static void InvalidateScrapScaling()

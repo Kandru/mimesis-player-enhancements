@@ -18,7 +18,8 @@ This is the all-in-one Tutorial / Explanation for my Mimesis Modification. Read 
 | [Player Announcements](./features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |
 | [Spawn Scaling](./features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host only |
 | [Loot Multiplicator](./features/loot-multiplicator.md) | Scale map loot and enemy drops; filter items; convert mimic decoys to real loot | Host only |
-| [Economy](./features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
+| [Savegame Preparation](./features/savegame-preparation.md) | Starting cash and zone when creating a new save | Host only (global settings) |
+| [Economy](./features/economy.md) | Adjust scrap value, shop prices, and currency retention | Host only |
 | [Dungeon Time](./features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
 | [Mimic Tuning](./features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
 | [Player Tuning](./features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |

@@ -136,6 +136,8 @@ namespace MimesisPlayerEnhancement.Util
                 },
                 onSessionEnded: FixedLootSpawnCoordinator.ClearPendingRespawns,
                 throttledUpdate: true),
+            new FeatureModule("SavegamePreparation", SavegamePreparationPatches.Apply,
+                onSessionEnded: SavegamePreparationPatches.OnSessionEnded),
             new FeatureModule("Economy", EconomyPatches.Apply,
                 syncFromConfig: EconomyPatches.RefreshFromConfig,
                 onSessionEnded: EconomyPatches.OnSessionEnded),

@@ -361,7 +361,8 @@ namespace MimesisPlayerEnhancement
             }
 
             return string.Equals(sectionId, UiConfig.SectionId, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(sectionId, PrivacyConfig.SectionId, StringComparison.OrdinalIgnoreCase);
+                || string.Equals(sectionId, PrivacyConfig.SectionId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(sectionId, SavegamePreparationConfig.SectionId, StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsSaveOverrideAllowed(string sectionId, string key)

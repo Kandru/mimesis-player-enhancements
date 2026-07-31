@@ -109,6 +109,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> StartingZone { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; internal set; } = null!;
@@ -306,6 +307,7 @@ namespace MimesisPlayerEnhancement
             SpawnScalingConfig.CreateCategory();
             LootMultiplicatorConfig.CreateCategory();
             EconomyConfig.CreateCategory();
+            SavegamePreparationConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
             MimicTuningConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
@@ -330,6 +332,7 @@ namespace MimesisPlayerEnhancement
             SpawnScalingConfig.CreateEntries();
             LootMultiplicatorConfig.CreateEntries();
             EconomyConfig.CreateEntries();
+            SavegamePreparationConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
             MimicTuningConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
@@ -354,6 +357,7 @@ namespace MimesisPlayerEnhancement
             SpawnScalingConfig.WireValidation(logger);
             LootMultiplicatorConfig.WireValidation(logger);
             EconomyConfig.WireValidation(logger);
+            SavegamePreparationConfig.WireValidation(logger);
             DungeonTimeConfig.WireValidation(logger);
             MimicTuningConfig.WireValidation();
             PlayerTuningConfig.WireValidation(logger);
@@ -429,6 +433,7 @@ namespace MimesisPlayerEnhancement
             SpawnScalingConfig.RegisterFloatEntries();
             LootMultiplicatorConfig.RegisterFloatEntries();
             EconomyConfig.RegisterFloatEntries();
+            SavegamePreparationConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
             MimicTuningConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();

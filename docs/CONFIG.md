@@ -58,7 +58,8 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host only |
 | [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host only |
 | [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host only |
-| [Economy](#economy--mimesisplayerenhancement_economy) | Scale currency, shop prices, and cycle retention | Host only |
+| [Savegame Preparation](#savegame-preparation--mimesisplayerenhancement_savegamepreparation) | Starting cash and zone when creating a new save | Host only (global settings) |
+| [Economy](#economy--mimesisplayerenhancement_economy) | Scale scrap value, shop prices, and cycle retention | Host only |
 | [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host only |
 | [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host only |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host only |
@@ -74,7 +75,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time, Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
 | **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
-| **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, custom loading screens and landing sounds |
+| **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, custom loading screens and landing sounds, **Savegame Preparation** (startup money and starting zone) |
 
 ---
 
@@ -302,13 +303,22 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | `AutoScaleMapLootBudgetForFilter` | bool | `true` | — | When filter mode is not `All`, multiply the random-pool scrap budget by the filtered/vanilla weighted mean item sell value (on top of `MapLootMultiplier`) so expensive allowlists still get proportionally more spawns. |
 | `ConvertFakeActorDyingDropChancePercent` | int | `30` | `0`–`100` | Chance that fake items dropped on enemy death (e.g. mimic inventory decoys) become real pickup loot. `0` = vanilla (vanish on grab), `100` = always real. Monster drop-table loot is already real. |
 
+## Savegame Preparation — `[MimesisPlayerEnhancement_SavegamePreparation]`
+
+**Host only. Global settings only** — this section appears in **Global Settings**, not per save-slot overrides. Configure these **before** creating a new savegame; both settings apply only when a new save is created (not when loading an existing save or after a wipeout).
+
+| Key | Type | Default | Range | Description |
+|-----|------|---------|-------|-------------|
+| `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Starting maintenance-room cash when a new save is created (`1` = vanilla, `2` = double). Uses `EconomyPlayerCountScaleRate` when Auto Scale is on. |
+| `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money (stacks with `StartupMoneyMultiplier`). |
+| `StartingZone` | int | `1` | `1`–`99` | Zone (stage) to begin on when a new save is created (`1` = vanilla). Clamped to the game's max stage at apply time. |
+
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-**Host only.** Scales four separate money values and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
+**Host only.** Scales three separate money values during a run and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
 
 | Setting | What it affects |
 |---------|-----------------|
-| **Startup** | Starting currency on a new save game or session reset (not when loading a save) |
 | **Scrap / sell value** | Currency from scrapping items and item value counted in the tram toward the quota |
 | **Shop buy price** | Maintenance shop and vending-machine kiosk purchase cost |
 | **Reinforce price** | Maintenance item reinforcement cost |
@@ -320,10 +330,8 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableEconomy` | bool | `false` | — | Scale startup money, scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. |
-| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
-| `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money. |
-| `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Startup money multiplier on new save or session reset. Does not apply when loading a save. |
+| `EnableEconomy` | bool | `false` | — | Scale scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. |
+| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Also used by Savegame Preparation startup-money scaling. Minimum is 0. |
 | `AutoScaleScrapSellValueByPlayerCount` | bool | `true` | — | Player-count scaling for scrap/sell values. |
 | `ScrapSellValueMultiplier` | float | `1.0` | ≥ `0` | Scrap/sell value multiplier. |
 | `AutoScaleShopBuyPriceByPlayerCount` | bool | `true` | — | Player-count scaling for shop buy prices. |
@@ -642,10 +650,13 @@ MapLootMultiplier = 1.0
 DropLootMultiplier = 1.0
 ConvertFakeActorDyingDropChancePercent = 30
 
+[MimesisPlayerEnhancement_SavegamePreparation]
+StartupMoneyMultiplier = 1.0
+StartingZone = 1
+
 [MimesisPlayerEnhancement_Economy]
 EnableEconomy = false
 EconomyPlayerCountScaleRate = 0.10
-StartupMoneyMultiplier = 1.0
 RetainUnspentCurrencyBetweenCycles = false
 
 [MimesisPlayerEnhancement_DungeonTime]

@@ -11,7 +11,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
         {
             return type switch
             {
-                MoneyType.Startup => config.AutoScaleStartupMoneyByPlayerCount,
                 MoneyType.ScrapSellValue => config.AutoScaleScrapSellValueByPlayerCount,
                 MoneyType.ShopBuyPrice => config.AutoScaleShopBuyPriceByPlayerCount,
                 MoneyType.ReinforcePrice => config.AutoScaleReinforcePriceByPlayerCount,
@@ -28,7 +27,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
         {
             return type switch
             {
-                MoneyType.Startup => config.StartupMoneyMultiplier,
                 MoneyType.ScrapSellValue => config.ScrapSellValueMultiplier,
                 MoneyType.ShopBuyPrice => config.ShopBuyPriceMultiplier,
                 MoneyType.ReinforcePrice => config.ReinforcePriceMultiplier,

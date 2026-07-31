@@ -9,18 +9,16 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             const string text = """
                 # comment
-                [MimesisPlayerEnhancement_Economy]
-                EnableEconomy = true
+                [MimesisPlayerEnhancement_SavegamePreparation]
                 StartupMoneyMultiplier = "2.5"
                 """;
 
             SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
 
             Assert.Single(doc.SectionOrder);
-            Assert.Equal("MimesisPlayerEnhancement_Economy", doc.SectionOrder[0]);
-            Assert.True(doc.Sections.TryGetValue("MimesisPlayerEnhancement_Economy", out Dictionary<string, string>? keys));
+            Assert.Equal("MimesisPlayerEnhancement_SavegamePreparation", doc.SectionOrder[0]);
+            Assert.True(doc.Sections.TryGetValue("MimesisPlayerEnhancement_SavegamePreparation", out Dictionary<string, string>? keys));
             Assert.NotNull(keys);
-            Assert.Equal("true", keys["EnableEconomy"]);
             Assert.Equal("2.5", keys["StartupMoneyMultiplier"]);
         }
 

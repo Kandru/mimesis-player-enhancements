@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
     public sealed class ConfigConfigBoundsTests
     {
         [Theory]
-        [InlineData("MimesisPlayerEnhancement_Economy", "StartupMoneyMultiplier", "0.0", null)]
+        [InlineData("MimesisPlayerEnhancement_SavegamePreparation", "StartupMoneyMultiplier", "0.0", null)]
         [InlineData("MimesisPlayerEnhancement_Economy", "ShopDiscountChancePercent", "0", "100")]
         [InlineData("MimesisPlayerEnhancement_LootMultiplicator", "ConvertFakeActorDyingDropChancePercent", "0", "100")]
         [InlineData("MimesisPlayerEnhancement_MorePlayers", "MaxPlayers", "1", null)]
