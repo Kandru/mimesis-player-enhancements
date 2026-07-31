@@ -161,6 +161,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
         internal static bool IsSlotOccupied(int occupancyMask, int index) =>
             (occupancyMask & (1 << index)) != 0;
 
+        internal static bool DidSlotChangeSend(float beforeTimestamp, float afterTimestamp) =>
+            !beforeTimestamp.Equals(afterTimestamp);
+
         private static bool TrySelectNextAfterRemove(
             object inventory,
             int slotCount,

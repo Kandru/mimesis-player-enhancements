@@ -5,6 +5,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
 {
     internal static class ProtoActorInventoryAccess
     {
+        private const string Feature = "Ui";
+
         private static readonly BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -24,13 +26,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
             AccessTools.Field(InventoryType, "slotItems")
             ?? throw new InvalidOperationException("Inventory.slotItems field not found");
 
+        private static readonly FieldInfo LastChangeActiveSlotTimeField =
+            AccessTools.Field(InventoryType, "lastChangeActiveSlotTime")
+            ?? throw new InvalidOperationException("Inventory.lastChangeActiveSlotTime field not found");
+
         private static readonly PropertyInfo SelectedItemProperty =
             AccessTools.Property(InventoryType, "SelectedItem")
             ?? throw new InvalidOperationException("Inventory.SelectedItem property not found");
-
-        private static readonly MethodInfo SendChangeActiveInvenSlotMethod =
-            AccessTools.Method(InventoryType, "SendChangeActiveInvenSlot", [typeof(int)])
-            ?? throw new InvalidOperationException("Inventory.SendChangeActiveInvenSlot not found");
 
         private static readonly MethodInfo SelectSlotMethod =
             AccessTools.Method(InventoryType, "SelectSlot", [typeof(int)])
@@ -39,6 +41,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
         private static readonly FieldInfo ProtoActorInventoryField =
             AccessTools.Field(typeof(ProtoActor), "inventory")
             ?? throw new InvalidOperationException("ProtoActor.inventory field not found");
+
+        private static object? _pendingInventory;
+        private static int _pendingSlotIndex = -1;
 
         internal static MethodBase OnUpdateInvenSigMethod { get; } =
             AccessTools.Method(InventoryType, "OnUpdateInvenSig")
@@ -59,13 +64,53 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
 
         internal static void RequestSelectSlot(object inventory, int targetSlotIndex)
         {
-            if (SelectedItemProperty.GetValue(inventory) is InventoryItem selectedItem
-                && selectedItem.MasterInfo.ForbidChange)
+            if (IsForbidChange(inventory))
+            {
+                ClearPendingSelect();
+                return;
+            }
+
+            if (TrySendSelectSlot(inventory, targetSlotIndex))
+            {
+                ClearPendingSelect();
+                return;
+            }
+
+            QueuePendingSelect(inventory, targetSlotIndex);
+        }
+
+        internal static void ProcessPendingSelect()
+        {
+            if (_pendingInventory == null || _pendingSlotIndex < 0)
             {
                 return;
             }
 
-            SendChangeActiveInvenSlotMethod.Invoke(inventory, [targetSlotIndex]);
+            if (!InventorySlotOptimizer.SelectionEnabled)
+            {
+                ClearPendingSelect();
+                return;
+            }
+
+            if (IsForbidChange(_pendingInventory))
+            {
+                ClearPendingSelect();
+                return;
+            }
+
+            if (!TrySendSelectSlot(_pendingInventory, _pendingSlotIndex))
+            {
+                return;
+            }
+
+            ModLog.Debug(Feature, $"Deferred inventory slot select sent — slot {_pendingSlotIndex}");
+            ClearPendingSelect();
+        }
+
+        internal static void ClearPendingSelect()
+        {
+            _pendingInventory = null;
+            _pendingSlotIndex = -1;
         }
 
         internal static bool TryGetInventory(ProtoActor actor, out object? inventory)
@@ -76,5 +121,33 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
 
         internal static void SelectSlot(object inventory, int slotIndex) =>
             SelectSlotMethod.Invoke(inventory, [slotIndex]);
+
+        private static bool TrySendSelectSlot(object inventory, int targetSlotIndex)
+        {
+            float before = GetLastChangeActiveSlotTime(inventory);
+            SelectSlotMethod.Invoke(inventory, [targetSlotIndex]);
+            float after = GetLastChangeActiveSlotTime(inventory);
+            return InventorySlotOptimizer.DidSlotChangeSend(before, after);
+        }
+
+        private static void QueuePendingSelect(object inventory, int targetSlotIndex)
+        {
+            bool isNew =
+                !ReferenceEquals(_pendingInventory, inventory)
+                || _pendingSlotIndex != targetSlotIndex;
+            _pendingInventory = inventory;
+            _pendingSlotIndex = targetSlotIndex;
+            if (isNew)
+            {
+                ModLog.Debug(Feature, $"Deferred inventory slot select — slot {targetSlotIndex}");
+            }
+        }
+
+        private static bool IsForbidChange(object inventory) =>
+            SelectedItemProperty.GetValue(inventory) is InventoryItem selectedItem
+            && selectedItem.MasterInfo.ForbidChange;
+
+        private static float GetLastChangeActiveSlotTime(object inventory) =>
+            (float)LastChangeActiveSlotTimeField.GetValue(inventory)!;
     }
 }

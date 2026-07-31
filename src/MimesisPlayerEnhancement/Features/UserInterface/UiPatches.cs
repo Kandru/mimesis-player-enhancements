@@ -66,6 +66,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             FpsUiOverlay.OnUpdate();
             FpsUiNetWorthOverlay.OnUpdate();
             SpectatorVoiceBalanceRuntime.OnUpdate();
+            ProtoActorInventoryAccess.ProcessPendingSelect();
         }
 
         internal static void OnSessionEnded()
@@ -84,6 +85,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             RoundStartSoundRuntime.OnSessionEnded();
             DiscoBallSoundRuntime.OnSessionEnded();
             SpectatorVoiceBalanceRuntime.OnSessionEnded();
+            ProtoActorInventoryAccess.ClearPendingSelect();
         }
     }
 }
