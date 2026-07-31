@@ -72,11 +72,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         [HarmonyPrefix]
         private static bool Prefix(object __instance, object[] parameters)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return true;
-            }
-
             if (parameters == null
                 || parameters.Length < 3
                 || parameters[2] is not int playerCount

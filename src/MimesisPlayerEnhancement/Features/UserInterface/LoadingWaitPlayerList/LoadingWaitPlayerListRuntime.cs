@@ -37,7 +37,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             if (string.Equals(textKey, CustomLoadingScreenConstants.WaitTextKey, StringComparison.Ordinal))
             {
-                if (!SessionPlayerCountHelper.TryResolveExactFromSession(out int playerCount) || playerCount <= 1)
+                if (!SessionPlayerCountHelper.IsMultiplayerLobby())
                 {
                     ModLog.Debug(Feature, "Skipping loading wait player list — solo lobby");
                     return;

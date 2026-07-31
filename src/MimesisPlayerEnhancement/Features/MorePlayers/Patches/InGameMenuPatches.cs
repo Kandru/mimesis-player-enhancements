@@ -9,11 +9,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPrefix]
         private static void Prefix(UIPrefab_InGameMenu __instance)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
-
             try
             {
                 InGameMenuExtendedSlots.EnsureExtendedSlots(__instance);
@@ -57,11 +52,6 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         [HarmonyPostfix]
         private static void Postfix(UIPrefab_InGameMenu __instance)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
-
             try
             {
                 InGameMenuExtendedSlots.RewireExtendedPlayerButtons(__instance);

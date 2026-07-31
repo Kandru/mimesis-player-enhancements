@@ -84,7 +84,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         }
 
         internal static bool ShouldUseExtendedLayout(object[] parameters) =>
-            SurvivalResultPlayerGridLayout.ShouldUseExtendedLayout(ModConfig.EnableMorePlayers.Value, parameters);
+            SurvivalResultPlayerGridLayout.ShouldUseExtendedLayout(parameters);
 
         private static readonly string[] VanillaDecorGraphicNames =
         [

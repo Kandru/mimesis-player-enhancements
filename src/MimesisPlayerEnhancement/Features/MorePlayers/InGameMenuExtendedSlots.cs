@@ -28,22 +28,14 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
         internal static void ApplyCapToMenu(UIPrefab_InGameMenu menu)
         {
-            int targetSlots = ModConfig.EnableMorePlayers.Value
-                ? MorePlayersPatchHelpers.GetMaxPlayers()
-                : VanillaPlayerRows;
-
+            int targetSlots = ResolveTargetSlots();
             TrimExtendedSlots(menu, targetSlots);
             ResizeTempVolumeList(menu, targetSlots);
         }
 
         internal static void EnsureExtendedSlots(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableMorePlayers.Value)
-            {
-                return;
-            }
-
-            int targetSlots = MorePlayersPatchHelpers.GetMaxPlayers();
+            int targetSlots = ResolveTargetSlots();
             if (targetSlots <= VanillaPlayerRows
                 || menu.playerUIElements == null
                 || menu.playerUIElements.Count < VanillaPlayerRows)
@@ -206,6 +198,27 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
             if (tempVolumeList.Count > cap)
             {
                 tempVolumeList.RemoveRange(cap, tempVolumeList.Count - cap);
+            }
+        }
+
+        private static int ResolveTargetSlots()
+        {
+            int voiceCount = ResolveVoicePlayerCount();
+            int morePlayersCap = ModConfig.EnableMorePlayers.Value
+                ? MorePlayersPatchHelpers.GetMaxPlayers()
+                : VanillaPlayerRows;
+            return Math.Max(VanillaPlayerRows, Math.Max(voiceCount, morePlayersCap));
+        }
+
+        private static int ResolveVoicePlayerCount()
+        {
+            try
+            {
+                return Hub.s?.voiceman?.Players?.Count ?? 0;
+            }
+            catch
+            {
+                return 0;
             }
         }
 

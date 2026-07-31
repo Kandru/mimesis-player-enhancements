@@ -76,7 +76,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLoc
         private static bool ShouldDefer(GameMainBase main)
         {
             bool loadingVisible = IsLoadingScreenVisible();
-            int playerCount = SessionPlayerCountHelper.TryResolveExactFromSession(out int count)
+            int playerCount = SessionPlayerCountHelper.TryResolveLobbyPlayerCount(out int count)
                 ? count
                 : 0;
 

@@ -660,12 +660,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 $"Custom loading screen phase applied — phase={CustomLoadingScreenSession.Phase}, crossfade={crossfade}, images={string.Join(", ", presentation.ImagePaths)}");
         }
 
-        private static bool HasMultipleLobbyPlayers()
-        {
-            // Prefer exact roster size — VanillaPlayerBaseline must not force wait art on solo.
-            return SessionPlayerCountHelper.TryResolveExactFromSession(out int playerCount)
-                   && playerCount > 1;
-        }
+        private static bool HasMultipleLobbyPlayers() =>
+            SessionPlayerCountHelper.IsMultiplayerLobby();
 
         /// <summary>Decodes dedicated wait-phase textures up front so the loading→wait crossfade
         /// does not stall while the dungeon is generating.</summary>

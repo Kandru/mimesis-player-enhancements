@@ -10,9 +10,8 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SurvivalResultPlayerLi
         internal const float MinColumnWidth = 72f;
         internal const float GridWidthFraction = 0.9f;
 
-        internal static bool ShouldUseExtendedLayout(bool enableMorePlayers, object[] parameters) =>
-            enableMorePlayers
-            && parameters.Length >= 3
+        internal static bool ShouldUseExtendedLayout(object[] parameters) =>
+            parameters.Length >= 3
             && parameters[2] is int playerCount
             && playerCount > VanillaPlayerRows;
 

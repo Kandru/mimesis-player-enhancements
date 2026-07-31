@@ -6,11 +6,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
     public sealed class SurvivalResultPlayerGridLayoutTests
     {
         [Theory]
-        [InlineData(true, 5, true)]
-        [InlineData(true, 4, false)]
-        [InlineData(false, 8, false)]
-        public void ShouldUseExtendedLayout_requires_more_players_and_count_above_vanilla(
-            bool enableMorePlayers,
+        [InlineData(5, true)]
+        [InlineData(4, false)]
+        [InlineData(8, true)]
+        public void ShouldUseExtendedLayout_requires_count_above_vanilla(
             int playerCount,
             bool expected)
         {
@@ -18,7 +17,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
 
             Assert.Equal(
                 expected,
-                SurvivalResultPlayerGridLayout.ShouldUseExtendedLayout(enableMorePlayers, parameters));
+                SurvivalResultPlayerGridLayout.ShouldUseExtendedLayout(parameters));
         }
 
         [Fact]
