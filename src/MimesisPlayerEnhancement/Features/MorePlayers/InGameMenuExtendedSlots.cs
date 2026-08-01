@@ -1,4 +1,5 @@
 using System.Reflection;
+using MimesisPlayerEnhancement.Features.MoreVoices;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers
@@ -214,7 +215,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
         {
             try
             {
-                return Hub.s?.voiceman?.Players?.Count ?? 0;
+                return MoreVoicesVoiceAccess.TryGetVoiceManager()?.Players?.Count ?? 0;
             }
             catch
             {

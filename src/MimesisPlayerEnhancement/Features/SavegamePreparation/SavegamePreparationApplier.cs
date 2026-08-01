@@ -26,12 +26,13 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             SavegamePreparationNewGameGate.Arm();
 
             int zone = SavegamePreparationResolver.ResolveStartingZone();
-            if (zone <= 1 || Hub.s?.pdata == null)
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            if (zone <= 1 || pdata == null)
             {
                 return;
             }
 
-            Hub.s.pdata.StageCount = zone;
+            pdata.StageCount = zone;
         }
 
         internal static void TryApplyStartingZoneToGameSession(GameSessionInfo session)

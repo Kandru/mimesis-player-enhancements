@@ -1,4 +1,6 @@
 using System.Reflection;
+using ReluNetwork.ConstEnum;
+using MimesisPlayerEnhancement.Features.MoreVoices;
 
 namespace MimesisPlayerEnhancement.Util
 {
@@ -102,7 +104,7 @@ namespace MimesisPlayerEnhancement.Util
         {
             try
             {
-                return Hub.s?.voiceman?.Players?.Count ?? 0;
+                return MoreVoicesVoiceAccess.TryGetVoiceManager()?.Players?.Count ?? 0;
             }
             catch
             {

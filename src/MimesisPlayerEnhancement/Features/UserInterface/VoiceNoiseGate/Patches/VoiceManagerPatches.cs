@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.VoiceNoiseGate.Patches
         private const string Feature = "Ui";
 
         [HarmonyPostfix]
-        public static void Postfix(CommActivationMode mode)
+        public static void Postfix(object mode)
         {
             try
             {

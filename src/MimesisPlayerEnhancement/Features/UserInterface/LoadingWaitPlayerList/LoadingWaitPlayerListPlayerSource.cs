@@ -1,3 +1,5 @@
+using MimesisPlayerEnhancement.Features.MoreVoices;
+
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 {
     internal static class LoadingWaitPlayerListPlayerSource
@@ -28,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
         private static List<LoadingWaitPlayerEntry> CollectFromVoicePlayers()
         {
-            List<FishNetDissonancePlayer>? voicePlayers = Hub.s?.voiceman?.Players;
+            List<FishNetDissonancePlayer>? voicePlayers = MoreVoicesVoiceAccess.TryGetVoiceManager()?.Players;
             if (voicePlayers == null || voicePlayers.Count == 0)
             {
                 return [];
