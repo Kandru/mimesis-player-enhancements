@@ -4,11 +4,11 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal LootMultiplicatorSceneConfig(
             bool enableLootMultiplicator,
-            float lootMultiplicatorPlayerCountScaleRate,
-            bool autoScaleMapLootByPlayerCount,
+            int lootMultiplicatorBaselinePlayerCount,
             float mapLootMultiplier,
-            bool autoScaleDropLootByPlayerCount,
+            float mapLootPerPlayerMultiplier,
             float dropLootMultiplier,
+            float dropLootPerPlayerMultiplier,
             string lootItemFilterMode,
             string lootAllowlist,
             string lootBlocklist,
@@ -16,11 +16,11 @@ namespace MimesisPlayerEnhancement.Util
             int convertFakeActorDyingDropChancePercent)
         {
             EnableLootMultiplicator = enableLootMultiplicator;
-            LootMultiplicatorPlayerCountScaleRate = lootMultiplicatorPlayerCountScaleRate;
-            AutoScaleMapLootByPlayerCount = autoScaleMapLootByPlayerCount;
+            LootMultiplicatorBaselinePlayerCount = lootMultiplicatorBaselinePlayerCount;
             MapLootMultiplier = mapLootMultiplier;
-            AutoScaleDropLootByPlayerCount = autoScaleDropLootByPlayerCount;
+            MapLootPerPlayerMultiplier = mapLootPerPlayerMultiplier;
             DropLootMultiplier = dropLootMultiplier;
+            DropLootPerPlayerMultiplier = dropLootPerPlayerMultiplier;
             LootItemFilterMode = lootItemFilterMode;
             LootAllowlist = lootAllowlist;
             LootBlocklist = lootBlocklist;
@@ -30,15 +30,15 @@ namespace MimesisPlayerEnhancement.Util
 
         internal bool EnableLootMultiplicator { get; }
 
-        internal float LootMultiplicatorPlayerCountScaleRate { get; }
-
-        internal bool AutoScaleMapLootByPlayerCount { get; }
+        internal int LootMultiplicatorBaselinePlayerCount { get; }
 
         internal float MapLootMultiplier { get; }
 
-        internal bool AutoScaleDropLootByPlayerCount { get; }
+        internal float MapLootPerPlayerMultiplier { get; }
 
         internal float DropLootMultiplier { get; }
+
+        internal float DropLootPerPlayerMultiplier { get; }
 
         internal string LootItemFilterMode { get; }
 
@@ -54,11 +54,11 @@ namespace MimesisPlayerEnhancement.Util
         {
             return new LootMultiplicatorSceneConfig(
                 ModConfig.EnableLootMultiplicator.Value,
-                ModConfig.LootMultiplicatorPlayerCountScaleRate.Value,
-                ModConfig.AutoScaleMapLootByPlayerCount.Value,
+                ModConfig.LootMultiplicatorBaselinePlayerCount.Value,
                 ModConfig.MapLootMultiplier.Value,
-                ModConfig.AutoScaleDropLootByPlayerCount.Value,
+                ModConfig.MapLootPerPlayerMultiplier.Value,
                 ModConfig.DropLootMultiplier.Value,
+                ModConfig.DropLootPerPlayerMultiplier.Value,
                 ModConfig.LootItemFilterMode.Value ?? "",
                 ModConfig.LootAllowlist.Value ?? "",
                 ModConfig.LootBlocklist.Value ?? "",
@@ -71,24 +71,24 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal SpawnScalingSceneConfig(
             bool enableSpawnScaling,
-            float spawnScalingPlayerCountScaleRate,
-            bool autoScaleMimicSpawnsByPlayerCount,
+            int spawnScalingBaselinePlayerCount,
             float mimicSpawnMultiplier,
-            bool autoScaleBossSpawnsByPlayerCount,
+            float mimicSpawnPerPlayerMultiplier,
             float bossSpawnMultiplier,
-            bool autoScaleJakoSpawnsByPlayerCount,
+            float bossSpawnPerPlayerMultiplier,
             float jakoSpawnMultiplier,
-            bool autoScaleSpecialSpawnsByPlayerCount,
+            float jakoSpawnPerPlayerMultiplier,
             float specialSpawnMultiplier,
-            bool autoScaleTrapSpawnsByPlayerCount,
+            float specialSpawnPerPlayerMultiplier,
             float trapSpawnMultiplier,
+            float trapSpawnPerPlayerMultiplier,
             string trapRespawnMode,
             float trapRespawnDelaySeconds,
             float trapRespawnDelayMinSeconds,
             float trapRespawnDelayMaxSeconds,
             float trapRespawnMinPlayerDistanceMeters,
-            bool autoScaleOtherSpawnsByPlayerCount,
             float otherSpawnMultiplier,
+            float otherSpawnPerPlayerMultiplier,
             string ambientMonsterWaveMode,
             float ambientMonsterWaveInitialDelaySeconds,
             float ambientMonsterWaveInitialDelayMinSeconds,
@@ -101,24 +101,24 @@ namespace MimesisPlayerEnhancement.Util
             float bonusEncounterMinPlayerDistanceMeters)
         {
             EnableSpawnScaling = enableSpawnScaling;
-            SpawnScalingPlayerCountScaleRate = spawnScalingPlayerCountScaleRate;
-            AutoScaleMimicSpawnsByPlayerCount = autoScaleMimicSpawnsByPlayerCount;
+            SpawnScalingBaselinePlayerCount = spawnScalingBaselinePlayerCount;
             MimicSpawnMultiplier = mimicSpawnMultiplier;
-            AutoScaleBossSpawnsByPlayerCount = autoScaleBossSpawnsByPlayerCount;
+            MimicSpawnPerPlayerMultiplier = mimicSpawnPerPlayerMultiplier;
             BossSpawnMultiplier = bossSpawnMultiplier;
-            AutoScaleJakoSpawnsByPlayerCount = autoScaleJakoSpawnsByPlayerCount;
+            BossSpawnPerPlayerMultiplier = bossSpawnPerPlayerMultiplier;
             JakoSpawnMultiplier = jakoSpawnMultiplier;
-            AutoScaleSpecialSpawnsByPlayerCount = autoScaleSpecialSpawnsByPlayerCount;
+            JakoSpawnPerPlayerMultiplier = jakoSpawnPerPlayerMultiplier;
             SpecialSpawnMultiplier = specialSpawnMultiplier;
-            AutoScaleTrapSpawnsByPlayerCount = autoScaleTrapSpawnsByPlayerCount;
+            SpecialSpawnPerPlayerMultiplier = specialSpawnPerPlayerMultiplier;
             TrapSpawnMultiplier = trapSpawnMultiplier;
+            TrapSpawnPerPlayerMultiplier = trapSpawnPerPlayerMultiplier;
             TrapRespawnMode = trapRespawnMode;
             TrapRespawnDelaySeconds = trapRespawnDelaySeconds;
             TrapRespawnDelayMinSeconds = trapRespawnDelayMinSeconds;
             TrapRespawnDelayMaxSeconds = trapRespawnDelayMaxSeconds;
             TrapRespawnMinPlayerDistanceMeters = trapRespawnMinPlayerDistanceMeters;
-            AutoScaleOtherSpawnsByPlayerCount = autoScaleOtherSpawnsByPlayerCount;
             OtherSpawnMultiplier = otherSpawnMultiplier;
+            OtherSpawnPerPlayerMultiplier = otherSpawnPerPlayerMultiplier;
             AmbientMonsterWaveMode = ambientMonsterWaveMode;
             AmbientMonsterWaveInitialDelaySeconds = ambientMonsterWaveInitialDelaySeconds;
             AmbientMonsterWaveInitialDelayMinSeconds = ambientMonsterWaveInitialDelayMinSeconds;
@@ -133,27 +133,27 @@ namespace MimesisPlayerEnhancement.Util
 
         internal bool EnableSpawnScaling { get; }
 
-        internal float SpawnScalingPlayerCountScaleRate { get; }
-
-        internal bool AutoScaleMimicSpawnsByPlayerCount { get; }
+        internal int SpawnScalingBaselinePlayerCount { get; }
 
         internal float MimicSpawnMultiplier { get; }
 
-        internal bool AutoScaleBossSpawnsByPlayerCount { get; }
+        internal float MimicSpawnPerPlayerMultiplier { get; }
 
         internal float BossSpawnMultiplier { get; }
 
-        internal bool AutoScaleJakoSpawnsByPlayerCount { get; }
+        internal float BossSpawnPerPlayerMultiplier { get; }
 
         internal float JakoSpawnMultiplier { get; }
 
-        internal bool AutoScaleSpecialSpawnsByPlayerCount { get; }
+        internal float JakoSpawnPerPlayerMultiplier { get; }
 
         internal float SpecialSpawnMultiplier { get; }
 
-        internal bool AutoScaleTrapSpawnsByPlayerCount { get; }
+        internal float SpecialSpawnPerPlayerMultiplier { get; }
 
         internal float TrapSpawnMultiplier { get; }
+
+        internal float TrapSpawnPerPlayerMultiplier { get; }
 
         internal string TrapRespawnMode { get; }
 
@@ -165,9 +165,9 @@ namespace MimesisPlayerEnhancement.Util
 
         internal float TrapRespawnMinPlayerDistanceMeters { get; }
 
-        internal bool AutoScaleOtherSpawnsByPlayerCount { get; }
-
         internal float OtherSpawnMultiplier { get; }
+
+        internal float OtherSpawnPerPlayerMultiplier { get; }
 
         internal string AmbientMonsterWaveMode { get; }
 
@@ -193,24 +193,24 @@ namespace MimesisPlayerEnhancement.Util
         {
             return new SpawnScalingSceneConfig(
                 ModConfig.EnableSpawnScaling.Value,
-                ModConfig.SpawnScalingPlayerCountScaleRate.Value,
-                ModConfig.AutoScaleMimicSpawnsByPlayerCount.Value,
+                ModConfig.SpawnScalingBaselinePlayerCount.Value,
                 ModConfig.MimicSpawnMultiplier.Value,
-                ModConfig.AutoScaleBossSpawnsByPlayerCount.Value,
+                ModConfig.MimicSpawnPerPlayerMultiplier.Value,
                 ModConfig.BossSpawnMultiplier.Value,
-                ModConfig.AutoScaleJakoSpawnsByPlayerCount.Value,
+                ModConfig.BossSpawnPerPlayerMultiplier.Value,
                 ModConfig.JakoSpawnMultiplier.Value,
-                ModConfig.AutoScaleSpecialSpawnsByPlayerCount.Value,
+                ModConfig.JakoSpawnPerPlayerMultiplier.Value,
                 ModConfig.SpecialSpawnMultiplier.Value,
-                ModConfig.AutoScaleTrapSpawnsByPlayerCount.Value,
+                ModConfig.SpecialSpawnPerPlayerMultiplier.Value,
                 ModConfig.TrapSpawnMultiplier.Value,
+                ModConfig.TrapSpawnPerPlayerMultiplier.Value,
                 ModConfig.TrapRespawnMode.Value ?? "",
                 ModConfig.TrapRespawnDelaySeconds.Value,
                 ModConfig.TrapRespawnDelayMinSeconds.Value,
                 ModConfig.TrapRespawnDelayMaxSeconds.Value,
                 ModConfig.TrapRespawnMinPlayerDistanceMeters.Value,
-                ModConfig.AutoScaleOtherSpawnsByPlayerCount.Value,
                 ModConfig.OtherSpawnMultiplier.Value,
+                ModConfig.OtherSpawnPerPlayerMultiplier.Value,
                 ModConfig.AmbientMonsterWaveMode.Value ?? "",
                 ModConfig.AmbientMonsterWaveInitialDelaySeconds.Value,
                 ModConfig.AmbientMonsterWaveInitialDelayMinSeconds.Value,
@@ -228,43 +228,43 @@ namespace MimesisPlayerEnhancement.Util
     {
         internal EconomySceneConfig(
             bool enableEconomy,
-            float economyPlayerCountScaleRate,
-            bool autoScaleScrapSellValueByPlayerCount,
+            int economyBaselinePlayerCount,
             float scrapSellValueMultiplier,
-            bool autoScaleShopBuyPriceByPlayerCount,
+            float scrapSellValuePerPlayerMultiplier,
             float shopBuyPriceMultiplier,
+            float shopBuyPricePerPlayerMultiplier,
             int shopDiscountMinPercent,
             int shopDiscountMaxPercent,
             int shopDiscountChancePercent,
-            bool autoScaleReinforcePriceByPlayerCount,
             float reinforcePriceMultiplier,
+            float reinforcePricePerPlayerMultiplier,
             bool retainUnspentCurrencyBetweenCycles)
         {
             EnableEconomy = enableEconomy;
-            EconomyPlayerCountScaleRate = economyPlayerCountScaleRate;
-            AutoScaleScrapSellValueByPlayerCount = autoScaleScrapSellValueByPlayerCount;
+            EconomyBaselinePlayerCount = economyBaselinePlayerCount;
             ScrapSellValueMultiplier = scrapSellValueMultiplier;
-            AutoScaleShopBuyPriceByPlayerCount = autoScaleShopBuyPriceByPlayerCount;
+            ScrapSellValuePerPlayerMultiplier = scrapSellValuePerPlayerMultiplier;
             ShopBuyPriceMultiplier = shopBuyPriceMultiplier;
+            ShopBuyPricePerPlayerMultiplier = shopBuyPricePerPlayerMultiplier;
             ShopDiscountMinPercent = shopDiscountMinPercent;
             ShopDiscountMaxPercent = shopDiscountMaxPercent;
             ShopDiscountChancePercent = shopDiscountChancePercent;
-            AutoScaleReinforcePriceByPlayerCount = autoScaleReinforcePriceByPlayerCount;
             ReinforcePriceMultiplier = reinforcePriceMultiplier;
+            ReinforcePricePerPlayerMultiplier = reinforcePricePerPlayerMultiplier;
             RetainUnspentCurrencyBetweenCycles = retainUnspentCurrencyBetweenCycles;
         }
 
         internal bool EnableEconomy { get; }
 
-        internal float EconomyPlayerCountScaleRate { get; }
-
-        internal bool AutoScaleScrapSellValueByPlayerCount { get; }
+        internal int EconomyBaselinePlayerCount { get; }
 
         internal float ScrapSellValueMultiplier { get; }
 
-        internal bool AutoScaleShopBuyPriceByPlayerCount { get; }
+        internal float ScrapSellValuePerPlayerMultiplier { get; }
 
         internal float ShopBuyPriceMultiplier { get; }
+
+        internal float ShopBuyPricePerPlayerMultiplier { get; }
 
         internal int ShopDiscountMinPercent { get; }
 
@@ -272,9 +272,9 @@ namespace MimesisPlayerEnhancement.Util
 
         internal int ShopDiscountChancePercent { get; }
 
-        internal bool AutoScaleReinforcePriceByPlayerCount { get; }
-
         internal float ReinforcePriceMultiplier { get; }
+
+        internal float ReinforcePricePerPlayerMultiplier { get; }
 
         internal bool RetainUnspentCurrencyBetweenCycles { get; }
 
@@ -282,16 +282,16 @@ namespace MimesisPlayerEnhancement.Util
         {
             return new EconomySceneConfig(
                 ModConfig.EnableEconomy.Value,
-                ModConfig.EconomyPlayerCountScaleRate.Value,
-                ModConfig.AutoScaleScrapSellValueByPlayerCount.Value,
+                ModConfig.EconomyBaselinePlayerCount.Value,
                 ModConfig.ScrapSellValueMultiplier.Value,
-                ModConfig.AutoScaleShopBuyPriceByPlayerCount.Value,
+                ModConfig.ScrapSellValuePerPlayerMultiplier.Value,
                 ModConfig.ShopBuyPriceMultiplier.Value,
+                ModConfig.ShopBuyPricePerPlayerMultiplier.Value,
                 ModConfig.ShopDiscountMinPercent.Value,
                 ModConfig.ShopDiscountMaxPercent.Value,
                 ModConfig.ShopDiscountChancePercent.Value,
-                ModConfig.AutoScaleReinforcePriceByPlayerCount.Value,
                 ModConfig.ReinforcePriceMultiplier.Value,
+                ModConfig.ReinforcePricePerPlayerMultiplier.Value,
                 ModConfig.RetainUnspentCurrencyBetweenCycles.Value);
         }
     }

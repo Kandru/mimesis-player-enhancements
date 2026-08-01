@@ -2,47 +2,6 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 {
     internal static class LootMultiplierResolver
     {
-        internal static bool IsAutoScaleEnabled(LootSource source, ItemType itemType)
-        {
-            return IsAutoScaleEnabled(source, itemType, SceneScopedConfigGate.Loot);
-        }
-
-        internal static bool IsAutoScaleEnabled(
-            LootSource source,
-            ItemType itemType,
-            LootMultiplicatorSceneConfig config)
-        {
-            _ = itemType;
-            return source switch
-            {
-                LootSource.Map => config.AutoScaleMapLootByPlayerCount,
-                LootSource.Drop => config.AutoScaleDropLootByPlayerCount,
-                _ => false,
-            };
-        }
-
-        internal static float GetPlayerScale(LootSource source, ItemType itemType, int playerCount)
-        {
-            return GetPlayerScale(source, itemType, playerCount, SceneScopedConfigGate.Loot);
-        }
-
-        internal static float GetPlayerScale(
-            LootSource source,
-            ItemType itemType,
-            int playerCount,
-            LootMultiplicatorSceneConfig config)
-        {
-            return ScalingMath.GetPlayerScale(
-                playerCount,
-                IsAutoScaleEnabled(source, itemType, config),
-                config.LootMultiplicatorPlayerCountScaleRate);
-        }
-
-        internal static float GetBaseMultiplier(LootSource source, ItemType itemType)
-        {
-            return GetBaseMultiplier(source, itemType, SceneScopedConfigGate.Loot);
-        }
-
         internal static float GetBaseMultiplier(LootSource source, ItemType itemType, LootMultiplicatorSceneConfig config)
         {
             _ = itemType;
@@ -51,6 +10,17 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 LootSource.Map => config.MapLootMultiplier,
                 LootSource.Drop => config.DropLootMultiplier,
                 _ => FeatureToggleGate.NeutralMultiplier,
+            };
+        }
+
+        internal static float GetPerPlayerMultiplier(LootSource source, ItemType itemType, LootMultiplicatorSceneConfig config)
+        {
+            _ = itemType;
+            return source switch
+            {
+                LootSource.Map => config.MapLootPerPlayerMultiplier,
+                LootSource.Drop => config.DropLootPerPlayerMultiplier,
+                _ => 0f,
             };
         }
 
@@ -86,7 +56,11 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 return FeatureToggleGate.NeutralMultiplier;
             }
 
-            return GetBaseMultiplier(source, itemType, config) * GetPlayerScale(source, itemType, playerCount, config);
+            return ScalingMath.GetAdditiveMultiplier(
+                GetBaseMultiplier(source, itemType, config),
+                GetPerPlayerMultiplier(source, itemType, config),
+                playerCount,
+                config.LootMultiplicatorBaselinePlayerCount);
         }
 
         internal static float GetEffectiveMultiplier(LootSource source, int masterId, int playerCount)

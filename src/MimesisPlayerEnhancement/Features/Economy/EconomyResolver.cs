@@ -2,27 +2,6 @@ namespace MimesisPlayerEnhancement.Features.Economy
 {
     internal static class EconomyResolver
     {
-        internal static bool IsAutoScaleEnabled(MoneyType type)
-        {
-            return IsAutoScaleEnabled(type, SceneScopedConfigGate.Economy);
-        }
-
-        internal static bool IsAutoScaleEnabled(MoneyType type, EconomySceneConfig config)
-        {
-            return type switch
-            {
-                MoneyType.ScrapSellValue => config.AutoScaleScrapSellValueByPlayerCount,
-                MoneyType.ShopBuyPrice => config.AutoScaleShopBuyPriceByPlayerCount,
-                MoneyType.ReinforcePrice => config.AutoScaleReinforcePriceByPlayerCount,
-                _ => false,
-            };
-        }
-
-        internal static float GetPerTypeMultiplier(MoneyType type)
-        {
-            return GetPerTypeMultiplier(type, SceneScopedConfigGate.Economy);
-        }
-
         internal static float GetPerTypeMultiplier(MoneyType type, EconomySceneConfig config)
         {
             return type switch
@@ -34,17 +13,15 @@ namespace MimesisPlayerEnhancement.Features.Economy
             };
         }
 
-        internal static float GetPlayerScale(MoneyType type, int playerCount)
+        internal static float GetPerPlayerMultiplier(MoneyType type, EconomySceneConfig config)
         {
-            return GetPlayerScale(type, playerCount, SceneScopedConfigGate.Economy);
-        }
-
-        internal static float GetPlayerScale(MoneyType type, int playerCount, EconomySceneConfig config)
-        {
-            return ScalingMath.GetPlayerScale(
-                playerCount,
-                IsAutoScaleEnabled(type, config),
-                config.EconomyPlayerCountScaleRate);
+            return type switch
+            {
+                MoneyType.ScrapSellValue => config.ScrapSellValuePerPlayerMultiplier,
+                MoneyType.ShopBuyPrice => config.ShopBuyPricePerPlayerMultiplier,
+                MoneyType.ReinforcePrice => config.ReinforcePricePerPlayerMultiplier,
+                _ => 0f,
+            };
         }
 
         internal static float GetEffectiveMultiplier(MoneyType type, int playerCount)
@@ -59,7 +36,11 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 return FeatureToggleGate.NeutralMultiplier;
             }
 
-            return GetPerTypeMultiplier(type, config) * GetPlayerScale(type, playerCount, config);
+            return ScalingMath.GetAdditiveMultiplier(
+                GetPerTypeMultiplier(type, config),
+                GetPerPlayerMultiplier(type, config),
+                playerCount,
+                config.EconomyBaselinePlayerCount);
         }
 
         internal static int ScaleAmount(int vanilla, float multiplier)

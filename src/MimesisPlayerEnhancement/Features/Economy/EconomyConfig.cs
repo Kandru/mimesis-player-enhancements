@@ -22,25 +22,25 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 "EnableEconomy",
                 false);
 
-            ModConfig.EconomyPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
-                "EconomyPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate);
-
-            ModConfig.AutoScaleScrapSellValueByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleScrapSellValueByPlayerCount",
-                true);
+            ModConfig.EconomyBaselinePlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "EconomyBaselinePlayerCount",
+                ScalingMath.VanillaPlayerBaseline);
 
             ModConfig.ScrapSellValueMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ScrapSellValueMultiplier",
                 1f);
 
-            ModConfig.AutoScaleShopBuyPriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleShopBuyPriceByPlayerCount",
-                true);
+            ModConfig.ScrapSellValuePerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ScrapSellValuePerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.ShopBuyPriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ShopBuyPriceMultiplier",
                 1f);
+
+            ModConfig.ShopBuyPricePerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ShopBuyPricePerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.ShopDiscountMinPercent = ModConfig.CreateTrackedEntry(_category,
                 "ShopDiscountMinPercent",
@@ -54,13 +54,13 @@ namespace MimesisPlayerEnhancement.Features.Economy
                 "ShopDiscountChancePercent",
                 0);
 
-            ModConfig.AutoScaleReinforcePriceByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleReinforcePriceByPlayerCount",
-                true);
-
             ModConfig.ReinforcePriceMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "ReinforcePriceMultiplier",
                 1f);
+
+            ModConfig.ReinforcePricePerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "ReinforcePricePerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.RetainUnspentCurrencyBetweenCycles = ModConfig.CreateTrackedEntry(_category,
                 "RetainUnspentCurrencyBetweenCycles",
@@ -78,11 +78,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableEconomy.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableEconomy));
-            ModConfig.EconomyPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
-                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.EconomyPlayerCountScaleRate));
-            ModConfig.AutoScaleScrapSellValueByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleScrapSellValueByPlayerCount));
-            ModConfig.AutoScaleShopBuyPriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleShopBuyPriceByPlayerCount));
-            ModConfig.AutoScaleReinforcePriceByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleReinforcePriceByPlayerCount));
+            ModConfig.EconomyBaselinePlayerCount.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnBaselinePlayerCountChanged(logger, value, ModConfig.EconomyBaselinePlayerCount));
             ModConfig.RetainUnspentCurrencyBetweenCycles.OnEntryValueChanged.Subscribe((_, _) =>
             {
                 ModConfig.NotifyChanged(ModConfig.RetainUnspentCurrencyBetweenCycles);
@@ -90,19 +87,24 @@ namespace MimesisPlayerEnhancement.Features.Economy
             });
 
             ModConfig.ScrapSellValueMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValueMultiplier));
+            ModConfig.ScrapSellValuePerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ScrapSellValuePerPlayerMultiplier));
             ModConfig.ShopBuyPriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ShopBuyPriceMultiplier));
+            ModConfig.ShopBuyPricePerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ShopBuyPricePerPlayerMultiplier));
             ModConfig.ShopDiscountMinPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMinPercent));
             ModConfig.ShopDiscountMaxPercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountMaxPercent));
             ModConfig.ShopDiscountChancePercent.OnEntryValueChanged.Subscribe((_, value) => OnShopDiscountPercentChanged(logger, value, ModConfig.ShopDiscountChancePercent));
             ModConfig.ReinforcePriceMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ReinforcePriceMultiplier));
+            ModConfig.ReinforcePricePerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.ReinforcePricePerPlayerMultiplier));
         }
 
         internal static void RegisterFloatEntries()
         {
-            ModConfig.TrackFloatEntry(ModConfig.EconomyPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.ScrapSellValueMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ScrapSellValuePerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ShopBuyPriceMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ShopBuyPricePerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.ReinforcePriceMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.ReinforcePricePerPlayerMultiplier);
         }
 
         private static void OnShopDiscountPercentChanged(MelonLogger.Instance logger, int value, MelonPreferences_Entry<int> entry)

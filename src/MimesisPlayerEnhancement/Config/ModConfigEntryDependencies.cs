@@ -246,12 +246,6 @@ namespace MimesisPlayerEnhancement
         private static bool TryGetSpawnScalingDependency(string key, out ModConfigEntryDependency dependency)
         {
             dependency = default;
-            if (IsAutoScaleMultiplier(key))
-            {
-                dependency = new ModConfigEntryDependency(GetAutoScaleToggleKey(key));
-                return true;
-            }
-
             switch (key)
             {
                 case "AmbientMonsterWaveInitialDelaySeconds":
@@ -291,12 +285,6 @@ namespace MimesisPlayerEnhancement
                     dependency = new ModConfigEntryDependency("LootItemFilterMode", "BlocklistOnly");
                     return true;
                 default:
-                    if (IsAutoScaleMultiplier(key))
-                    {
-                        dependency = new ModConfigEntryDependency(GetAutoScaleToggleKey(key));
-                        return true;
-                    }
-
                     return false;
             }
         }
@@ -311,12 +299,6 @@ namespace MimesisPlayerEnhancement
                     dependency = new ModConfigEntryDependency("ShopDiscountChancePercent", ">0");
                     return true;
                 default:
-                    if (IsAutoScaleMultiplier(key))
-                    {
-                        dependency = new ModConfigEntryDependency(GetAutoScaleToggleKey(key));
-                        return true;
-                    }
-
                     return false;
             }
         }
@@ -363,27 +345,5 @@ namespace MimesisPlayerEnhancement
                     return false;
             }
         }
-
-        private static bool IsAutoScaleMultiplier(string key) =>
-            MultiplierToAutoScaleToggle.ContainsKey(key);
-
-        private static string GetAutoScaleToggleKey(string multiplierKey) =>
-            MultiplierToAutoScaleToggle[multiplierKey];
-
-        private static readonly Dictionary<string, string> MultiplierToAutoScaleToggle =
-            new(StringComparer.Ordinal)
-            {
-                ["MimicSpawnMultiplier"] = "AutoScaleMimicSpawnsByPlayerCount",
-                ["BossSpawnMultiplier"] = "AutoScaleBossSpawnsByPlayerCount",
-                ["JakoSpawnMultiplier"] = "AutoScaleJakoSpawnsByPlayerCount",
-                ["SpecialSpawnMultiplier"] = "AutoScaleSpecialSpawnsByPlayerCount",
-                ["TrapSpawnMultiplier"] = "AutoScaleTrapSpawnsByPlayerCount",
-                ["OtherSpawnMultiplier"] = "AutoScaleOtherSpawnsByPlayerCount",
-                ["MapLootMultiplier"] = "AutoScaleMapLootByPlayerCount",
-                ["DropLootMultiplier"] = "AutoScaleDropLootByPlayerCount",
-                ["ScrapSellValueMultiplier"] = "AutoScaleScrapSellValueByPlayerCount",
-                ["ShopBuyPriceMultiplier"] = "AutoScaleShopBuyPriceByPlayerCount",
-                ["ReinforcePriceMultiplier"] = "AutoScaleReinforcePriceByPlayerCount",
-            };
     }
 }

@@ -70,10 +70,13 @@ namespace MimesisPlayerEnhancement
             FloatRange(PlayerTuning, "MaxCarryWeightMultiplier");
 
             MinZeroFloat(Economy,
-                "EconomyPlayerCountScaleRate",
                 "ScrapSellValueMultiplier",
+                "ScrapSellValuePerPlayerMultiplier",
                 "ShopBuyPriceMultiplier",
-                "ReinforcePriceMultiplier");
+                "ShopBuyPricePerPlayerMultiplier",
+                "ReinforcePriceMultiplier",
+                "ReinforcePricePerPlayerMultiplier");
+            Int(Economy, "EconomyBaselinePlayerCount", 1);
             Int(SavegamePreparation, "StartupMoney", 0);
             IntRange(SavegamePreparation, "StartingZone", 1, 99);
             IntRange(Economy, "ShopDiscountMinPercent", 0, 100);
@@ -81,23 +84,30 @@ namespace MimesisPlayerEnhancement
             IntRange(Economy, "ShopDiscountChancePercent", 0, 100);
 
             MinZeroFloat(LootMultiplicator,
-                "LootMultiplicatorPlayerCountScaleRate",
                 "MapLootMultiplier",
-                "DropLootMultiplier");
+                "MapLootPerPlayerMultiplier",
+                "DropLootMultiplier",
+                "DropLootPerPlayerMultiplier");
+            Int(LootMultiplicator, "LootMultiplicatorBaselinePlayerCount", 1);
             IntRange(LootMultiplicator, "ConvertFakeActorDyingDropChancePercent", 0, 100);
 
             MinZeroFloat(SpawnScaling,
-                "SpawnScalingPlayerCountScaleRate",
                 "MimicSpawnMultiplier",
+                "MimicSpawnPerPlayerMultiplier",
                 "BossSpawnMultiplier",
+                "BossSpawnPerPlayerMultiplier",
                 "JakoSpawnMultiplier",
+                "JakoSpawnPerPlayerMultiplier",
                 "SpecialSpawnMultiplier",
+                "SpecialSpawnPerPlayerMultiplier",
                 "TrapSpawnMultiplier",
+                "TrapSpawnPerPlayerMultiplier",
                 "TrapRespawnDelaySeconds",
                 "TrapRespawnDelayMinSeconds",
                 "TrapRespawnDelayMaxSeconds",
                 "TrapRespawnMinPlayerDistanceMeters",
                 "OtherSpawnMultiplier",
+                "OtherSpawnPerPlayerMultiplier",
                 "AmbientMonsterWaveInitialDelaySeconds",
                 "AmbientMonsterWaveInitialDelayMinSeconds",
                 "AmbientMonsterWaveInitialDelayMaxSeconds",
@@ -107,6 +117,7 @@ namespace MimesisPlayerEnhancement
                 "BonusEncounterDelayMinSeconds",
                 "BonusEncounterDelayMaxSeconds",
                 "BonusEncounterMinPlayerDistanceMeters");
+            Int(SpawnScaling, "SpawnScalingBaselinePlayerCount", 1);
 
             Int(JoinAnytime, "JoinConnectionGraceSeconds", 1);
 

@@ -55,38 +55,16 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             }
         }
 
-        internal static void SetAllAutoScaleByPlayerCount(
+        internal static void SetAllPerPlayerMultipliers(
             Dictionary<string, Dictionary<string, string>> map,
-            bool enabled)
+            float value)
         {
+            string formatted = ModConfigFloatHelper.Format(value);
             foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
             {
                 foreach (string key in ModConfigRegistry.GetEntryOrder(sectionId))
                 {
-                    if (!key.StartsWith("AutoScale", StringComparison.Ordinal)
-                        || !key.EndsWith("ByPlayerCount", StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (ModConfigRegistry.IsSaveOverrideAllowed(sectionId, key))
-                    {
-                        SetBool(map, sectionId, key, enabled);
-                    }
-                }
-            }
-        }
-
-        internal static void SetAllPlayerCountScaleRates(
-            Dictionary<string, Dictionary<string, string>> map,
-            float rate)
-        {
-            string formatted = ModConfigFloatHelper.Format(rate);
-            foreach (string sectionId in ModConfigRegistry.GetSectionOrder())
-            {
-                foreach (string key in ModConfigRegistry.GetEntryOrder(sectionId))
-                {
-                    if (!key.EndsWith("PlayerCountScaleRate", StringComparison.Ordinal))
+                    if (!key.EndsWith("PerPlayerMultiplier", StringComparison.Ordinal))
                     {
                         continue;
                     }

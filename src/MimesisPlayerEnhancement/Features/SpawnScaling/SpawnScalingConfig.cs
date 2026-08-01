@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     /// <summary>
     /// Registers the [MimesisPlayerEnhancement_SpawnScaling] section. Entries are still
     /// exposed via <see cref="ModConfig"/> properties; only registration lives here.
-    /// Call order (category → entries → validation → floats → migration) is driven by
+    /// Call order (category → entries → validation → floats) is driven by
     /// <see cref="ModConfig.Initialize"/> to keep TOML section/entry order unchanged.
     /// </summary>
     internal static class SpawnScalingConfig
@@ -23,49 +23,49 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "EnableSpawnScaling",
                 false);
 
-            ModConfig.SpawnScalingPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
-                "SpawnScalingPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate);
-
-            ModConfig.AutoScaleMimicSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleMimicSpawnsByPlayerCount",
-                true);
+            ModConfig.SpawnScalingBaselinePlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "SpawnScalingBaselinePlayerCount",
+                ScalingMath.VanillaPlayerBaseline);
 
             ModConfig.MimicSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MimicSpawnMultiplier",
                 1f);
 
-            ModConfig.AutoScaleBossSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleBossSpawnsByPlayerCount",
-                true);
+            ModConfig.MimicSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "MimicSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.BossSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "BossSpawnMultiplier",
                 1f);
 
-            ModConfig.AutoScaleJakoSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleJakoSpawnsByPlayerCount",
-                true);
+            ModConfig.BossSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "BossSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.JakoSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "JakoSpawnMultiplier",
                 1f);
 
-            ModConfig.AutoScaleSpecialSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleSpecialSpawnsByPlayerCount",
-                true);
+            ModConfig.JakoSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "JakoSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.SpecialSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "SpecialSpawnMultiplier",
                 1f);
 
-            ModConfig.AutoScaleTrapSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleTrapSpawnsByPlayerCount",
-                true);
+            ModConfig.SpecialSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "SpecialSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.TrapSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "TrapSpawnMultiplier",
                 1f);
+
+            ModConfig.TrapSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "TrapSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.TrapRespawnMode = ModConfig.CreateTrackedEntry(_category,
                 "TrapRespawnMode",
@@ -127,35 +127,37 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "BonusEncounterMinPlayerDistanceMeters",
                 10f);
 
-            ModConfig.AutoScaleOtherSpawnsByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleOtherSpawnsByPlayerCount",
-                true);
-
             ModConfig.OtherSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "OtherSpawnMultiplier",
                 1f);
+
+            ModConfig.OtherSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "OtherSpawnPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableSpawnScaling.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableSpawnScaling));
-            ModConfig.SpawnScalingPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
-                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpawnScalingPlayerCountScaleRate));
-            ModConfig.AutoScaleMimicSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleMimicSpawnsByPlayerCount));
-            ModConfig.AutoScaleBossSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleBossSpawnsByPlayerCount));
-            ModConfig.AutoScaleJakoSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleJakoSpawnsByPlayerCount));
-            ModConfig.AutoScaleSpecialSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleSpecialSpawnsByPlayerCount));
-            ModConfig.AutoScaleTrapSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleTrapSpawnsByPlayerCount));
+            ModConfig.SpawnScalingBaselinePlayerCount.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnBaselinePlayerCountChanged(logger, value, ModConfig.SpawnScalingBaselinePlayerCount));
+
+            ModConfig.MimicSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnMultiplier));
+            ModConfig.MimicSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnPerPlayerMultiplier));
+            ModConfig.BossSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.BossSpawnMultiplier));
+            ModConfig.BossSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.BossSpawnPerPlayerMultiplier));
+            ModConfig.JakoSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnMultiplier));
+            ModConfig.JakoSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnPerPlayerMultiplier));
+            ModConfig.SpecialSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnMultiplier));
+            ModConfig.SpecialSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnPerPlayerMultiplier));
+            ModConfig.TrapSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnMultiplier));
+            ModConfig.TrapSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnPerPlayerMultiplier));
+            ModConfig.OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnMultiplier));
+            ModConfig.OtherSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnPerPlayerMultiplier));
+
             ModConfig.BonusEncounterDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMinSeconds));
             ModConfig.BonusEncounterDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMaxSeconds));
             ModConfig.BonusEncounterMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterMinPlayerDistanceChanged(logger, value));
-            ModConfig.AutoScaleOtherSpawnsByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleOtherSpawnsByPlayerCount));
-
-            ModConfig.MimicSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnMultiplier));
-            ModConfig.BossSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.BossSpawnMultiplier));
-            ModConfig.JakoSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnMultiplier));
-            ModConfig.SpecialSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnMultiplier));
-            ModConfig.TrapSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnMultiplier));
             ModConfig.TrapRespawnMode.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnModeChanged(logger, value));
             ModConfig.TrapRespawnDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayChanged(logger, value, ModConfig.TrapRespawnDelaySeconds));
             ModConfig.TrapRespawnDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayRangeChanged(logger, value, ModConfig.TrapRespawnDelayMinSeconds, ModConfig.TrapRespawnDelayMaxSeconds));
@@ -168,17 +170,20 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.AmbientMonsterWaveIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveSecondsChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalSeconds));
             ModConfig.AmbientMonsterWaveIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
             ModConfig.AmbientMonsterWaveIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
-            ModConfig.OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnMultiplier));
         }
 
         internal static void RegisterFloatEntries()
         {
-            ModConfig.TrackFloatEntry(ModConfig.SpawnScalingPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.MimicSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.MimicSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.BossSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.BossSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.JakoSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.JakoSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.SpecialSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.SpecialSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.TrapSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.TrapSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelaySeconds);
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMinSeconds);
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMaxSeconds);
@@ -193,6 +198,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.TrackFloatEntry(ModConfig.BonusEncounterDelayMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.BonusEncounterMinPlayerDistanceMeters);
             ModConfig.TrackFloatEntry(ModConfig.OtherSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.OtherSpawnPerPlayerMultiplier);
         }
 
         private static void OnBonusEncounterDelayChanged(MelonLogger.Instance logger, float value, MelonPreferences_Entry<float> entry)

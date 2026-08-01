@@ -28,19 +28,21 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal static void InfoScalingApplied(int playerCount, SpawnScalingSceneConfig config)
         {
-            float sharedPlayerScale = ScalingMath.GetPlayerScale(
-                playerCount,
-                autoScaleEnabled: true,
-                config.SpawnScalingPlayerCountScaleRate);
             ModLog.Info(
                 Feature,
-                $"Spawn scaling applied — players={playerCount} (shared playerScale={sharedPlayerScale:0.##}× at rate={config.SpawnScalingPlayerCountScaleRate:0.##} when auto enabled), " +
-                $"mimic={config.MimicSpawnMultiplier:0.##}× auto={config.AutoScaleMimicSpawnsByPlayerCount}, " +
-                $"boss={config.BossSpawnMultiplier:0.##}× auto={config.AutoScaleBossSpawnsByPlayerCount}, " +
-                $"jako={config.JakoSpawnMultiplier:0.##}× auto={config.AutoScaleJakoSpawnsByPlayerCount}, " +
-                $"special={config.SpecialSpawnMultiplier:0.##}× auto={config.AutoScaleSpecialSpawnsByPlayerCount}, " +
-                $"trap={config.TrapSpawnMultiplier:0.##}× auto={config.AutoScaleTrapSpawnsByPlayerCount}, " +
-                $"other={config.OtherSpawnMultiplier:0.##}× auto={config.AutoScaleOtherSpawnsByPlayerCount}");
+                $"Spawn scaling applied — players={playerCount}, baseline={config.SpawnScalingBaselinePlayerCount}, " +
+                $"mimic={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount, config):0.##}× " +
+                $"(base={config.MimicSpawnMultiplier:0.##}×, perPlayer={config.MimicSpawnPerPlayerMultiplier:0.##}), " +
+                $"boss={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Boss, playerCount, config):0.##}× " +
+                $"(base={config.BossSpawnMultiplier:0.##}×, perPlayer={config.BossSpawnPerPlayerMultiplier:0.##}), " +
+                $"jako={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config):0.##}× " +
+                $"(base={config.JakoSpawnMultiplier:0.##}×, perPlayer={config.JakoSpawnPerPlayerMultiplier:0.##}), " +
+                $"special={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Special, playerCount, config):0.##}× " +
+                $"(base={config.SpecialSpawnMultiplier:0.##}×, perPlayer={config.SpecialSpawnPerPlayerMultiplier:0.##}), " +
+                $"trap={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Trap, playerCount, config):0.##}× " +
+                $"(base={config.TrapSpawnMultiplier:0.##}×, perPlayer={config.TrapSpawnPerPlayerMultiplier:0.##}), " +
+                $"other={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Other, playerCount, config):0.##}× " +
+                $"(base={config.OtherSpawnMultiplier:0.##}×, perPlayer={config.OtherSpawnPerPlayerMultiplier:0.##})");
         }
 
         internal static void DebugFieldScaled(string label, int before, int after, float multiplier)

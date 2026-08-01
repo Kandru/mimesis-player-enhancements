@@ -391,32 +391,21 @@
       "_description": "Adjust map loot and enemy drops; scale with player count or filter item types.",
       "_groups": {
         "lootFilter": "Item filter",
-        "AutoScaleMapLootByPlayerCount": "Map loot scaling",
-        "AutoScaleDropLootByPlayerCount": "Drop loot scaling"
+        "playerScaling": "Player scaling",
+        "mapLoot": "Map loot scaling",
+        "dropLoot": "Drop loot scaling"
       },
       "EnableLootMultiplicator": {
         "title": "Enable Loot Multiplier",
         "description": "Scale map loot and enemy drops, and optionally turn mimic fake drops into real loot."
       },
-      "LootMultiplicatorPlayerCountScaleRate": {
-        "title": "Loot Scale Rate",
-        "description": "Extra bonus per player above 4, used by the Auto Scale toggles below (0.10 = +10% per extra player). Minimum is 0."
-      },
-      "AutoScaleMapLootByPlayerCount": {
-        "title": "Scale Map Loot by Players",
-        "description": "Increase map loot for each player above 4. Stacks with Map Loot Multiplier."
-      },
       "MapLootMultiplier": {
         "title": "Map Loot Multiplier",
-        "description": "How much loot appears on the dungeon map — more fixed items and more random spawns (1 = vanilla, 2 = double). Not for triggered-event loot. With a filter active, Map Loot Filter Scaling keeps this about spawn count."
-      },
-      "AutoScaleDropLootByPlayerCount": {
-        "title": "Scale Drop Loot by Players",
-        "description": "Increase enemy death drops for each player above 4. Stacks with Drop Loot Multiplier."
+        "description": "Map-placed loot budget multiplier (1 = vanilla, 2 = double)."
       },
       "DropLootMultiplier": {
         "title": "Drop Loot Multiplier",
-        "description": "How much loot enemies drop when killed (1 = vanilla, 2 = double)."
+        "description": "Enemy/drop loot multiplier (1 = vanilla, 2 = double)."
       },
       "LootItemFilterMode": {
         "title": "Item Filter Mode",
@@ -442,6 +431,18 @@
       "ConvertFakeActorDyingDropChancePercent": {
         "title": "Fake Drop Chance (percent)",
         "description": "Chance (0–100) that a mimic's fake inventory items become real loot when it dies. 0 = vanilla, 100 = always real."
+      },
+      "LootMultiplicatorBaselinePlayerCount": {
+        "title": "Baseline player count",
+        "description": "No per-player loot bonus at or below this count (vanilla is 4). Per-player multipliers apply starting with the next player. Minimum is 1."
+      },
+      "MapLootPerPlayerMultiplier": {
+        "title": "Map loot per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "DropLootPerPlayerMultiplier": {
+        "title": "Drop loot per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
       }
     },
     "MimesisPlayerEnhancement_MimicTuning": {
@@ -841,33 +842,22 @@
       "_section": "Economy",
       "_description": "Scale scrap value, shop prices, and optional currency retention during a run.",
       "_groups": {
-        "AutoScaleScrapSellValueByPlayerCount": "Scrap value scaling",
-        "AutoScaleShopBuyPriceByPlayerCount": "Shop price scaling",
-        "AutoScaleReinforcePriceByPlayerCount": "Reinforce price scaling"
+        "playerScaling": "Player scaling",
+        "scrapSellValue": "Scrap value scaling",
+        "shopBuyPrice": "Shop price scaling",
+        "reinforcePrice": "Reinforce price scaling"
       },
       "EnableEconomy": {
         "title": "Enable Economy",
         "description": "Scale scrap value, shop prices, and reinforce costs. Optionally keep unspent cash between cycles."
       },
-      "EconomyPlayerCountScaleRate": {
-        "title": "Economy Scale Rate",
-        "description": "Extra bonus per player above 4, used by the Auto Scale toggles below (0.10 = +10% per extra player). Minimum is 0."
-      },
-      "AutoScaleScrapSellValueByPlayerCount": {
-        "title": "Scale Scrap Value by Players",
-        "description": "Increase scrap sell value for each player above 4. Stacks with Scrap Sell Value Multiplier."
-      },
       "ScrapSellValueMultiplier": {
         "title": "Scrap Sell Value Multiplier",
-        "description": "Currency from scrapping items and tram quota value (1 = vanilla, 2 = double)."
-      },
-      "AutoScaleShopBuyPriceByPlayerCount": {
-        "title": "Scale Shop Prices by Players",
-        "description": "Increase shop prices for each player above 4. Stacks with Shop Buy Price Multiplier."
+        "description": "Scrap sell value multiplier (1 = vanilla, 2 = double)."
       },
       "ShopBuyPriceMultiplier": {
         "title": "Shop Buy Price Multiplier",
-        "description": "Shop and vending machine prices (1 = vanilla, 2 = double)."
+        "description": "Shop buy price multiplier (1 = vanilla, 2 = double)."
       },
       "ShopDiscountMinPercent": {
         "title": "Shop Discount Min (percent)",
@@ -881,17 +871,29 @@
         "title": "Shop Discount Chance (percent)",
         "description": "Chance per shop item to get a discount between min and max (0 = vanilla, 100 = every item)."
       },
-      "AutoScaleReinforcePriceByPlayerCount": {
-        "title": "Scale Reinforce Prices by Players",
-        "description": "Increase reinforce costs for each player above 4. Stacks with Reinforce Price Multiplier."
-      },
       "ReinforcePriceMultiplier": {
         "title": "Reinforce Price Multiplier",
-        "description": "Item reinforcement cost in maintenance (1 = vanilla, 2 = double)."
+        "description": "Reinforce price multiplier (1 = vanilla, 2 = double)."
       },
       "RetainUnspentCurrencyBetweenCycles": {
         "title": "Keep Unspent Cash",
         "description": "Keep leftover maintenance cash when leaving for the next dungeon. Does not affect tram repair cost."
+      },
+      "EconomyBaselinePlayerCount": {
+        "title": "Baseline player count",
+        "description": "No per-player economy bonus at or below this count (vanilla is 4). Per-player multipliers apply starting with the next player. Minimum is 1."
+      },
+      "ScrapSellValuePerPlayerMultiplier": {
+        "title": "Scrap Sell Value per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "ShopBuyPricePerPlayerMultiplier": {
+        "title": "Shop Buy Price per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "ReinforcePricePerPlayerMultiplier": {
+        "title": "Reinforce Price per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {
@@ -1045,56 +1047,33 @@
         "ambientMonsterWaveTiming": "Ambient jako & mimic waves",
         "trapRespawn": "Trap respawn",
         "bonusEncounterTiming": "Boss & special bonus spawns",
-        "AutoScaleMimicSpawnsByPlayerCount": "Mimic spawn scaling",
-        "AutoScaleBossSpawnsByPlayerCount": "Boss spawn scaling",
-        "AutoScaleJakoSpawnsByPlayerCount": "Jako spawn scaling",
-        "AutoScaleSpecialSpawnsByPlayerCount": "Special spawn scaling",
-        "AutoScaleTrapSpawnsByPlayerCount": "Trap spawn scaling",
-        "AutoScaleOtherSpawnsByPlayerCount": "Other spawn scaling"
+        "playerScaling": "Player scaling",
+        "mimicSpawn": "Mimic spawn scaling",
+        "bossSpawn": "Boss spawn scaling",
+        "jakoSpawn": "Jako spawn scaling",
+        "specialSpawn": "Special spawn scaling",
+        "trapSpawn": "Trap spawn scaling",
+        "otherSpawn": "Other spawn scaling"
       },
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
         "description": "Scale monster and trap spawns by type or player count."
       },
-      "SpawnScalingPlayerCountScaleRate": {
-        "title": "Spawn Scale Rate",
-        "description": "Extra bonus per player above 4, used by the Auto Scale toggles below (0.10 = +10% per extra player). Minimum is 0."
-      },
-      "AutoScaleMimicSpawnsByPlayerCount": {
-        "title": "Scale Mimic Spawns by Players",
-        "description": "Increase mimic spawns for each player above 4. Stacks with Mimic Spawn Multiplier."
-      },
       "MimicSpawnMultiplier": {
         "title": "Mimic Spawn Multiplier",
         "description": "Total mimic spawns per run, including periodic waves (1 = vanilla, 2 = double)."
-      },
-      "AutoScaleBossSpawnsByPlayerCount": {
-        "title": "Scale Boss Spawns by Players",
-        "description": "Increase boss spawns for each player above 4. Stacks with Boss Spawn Multiplier."
       },
       "BossSpawnMultiplier": {
         "title": "Boss Spawn Multiplier",
         "description": "Map-placed bosses and bonus encounters after a kill (1 = vanilla, 2 = double)."
       },
-      "AutoScaleJakoSpawnsByPlayerCount": {
-        "title": "Scale Jako Spawns by Players",
-        "description": "Increase jako spawns for each player above 4. Stacks with Jako Spawn Multiplier."
-      },
       "JakoSpawnMultiplier": {
         "title": "Jako Spawn Multiplier",
         "description": "Ambient dungeon monster spawns (1 = vanilla, 2 = double)."
       },
-      "AutoScaleSpecialSpawnsByPlayerCount": {
-        "title": "Scale Special Spawns by Players",
-        "description": "Increase special spawns for each player above 4. Stacks with Special Spawn Multiplier."
-      },
       "SpecialSpawnMultiplier": {
         "title": "Special Spawn Multiplier",
         "description": "Periodic and map-placed special monsters (1 = vanilla, 2 = double)."
-      },
-      "AutoScaleTrapSpawnsByPlayerCount": {
-        "title": "Scale Trap Spawns by Players",
-        "description": "Increase trap spawns for each player above 4. Stacks with Trap Spawn Multiplier."
       },
       "TrapSpawnMultiplier": {
         "title": "Trap Spawn Multiplier",
@@ -1170,13 +1149,37 @@
         "title": "Bonus Encounter Min Distance (m)",
         "description": "Hold boss/special bonus spawns until no players are within this radius. 0 = spawn as soon as the delay ends. Not used for traps."
       },
-      "AutoScaleOtherSpawnsByPlayerCount": {
-        "title": "Scale Other Spawns by Players",
-        "description": "Increase other spawns for each player above 4. Stacks with Other Spawn Multiplier."
-      },
       "OtherSpawnMultiplier": {
         "title": "Other Spawn Multiplier",
-        "description": "Spawns that aren't mimics, bosses, jakos, specials, or traps (1 = vanilla, 2 = double)."
+        "description": "Other spawn budgets not covered by the categories above (1 = vanilla, 2 = double)."
+      },
+      "SpawnScalingBaselinePlayerCount": {
+        "title": "Baseline player count",
+        "description": "No per-player spawn bonus at or below this count (vanilla is 4). Per-player multipliers apply starting with the next player. Minimum is 1."
+      },
+      "MimicSpawnPerPlayerMultiplier": {
+        "title": "Mimic per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "BossSpawnPerPlayerMultiplier": {
+        "title": "Boss per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "JakoSpawnPerPlayerMultiplier": {
+        "title": "Jako per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "SpecialSpawnPerPlayerMultiplier": {
+        "title": "Special per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "TrapSpawnPerPlayerMultiplier": {
+        "title": "Trap per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "OtherSpawnPerPlayerMultiplier": {
+        "title": "Other per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
       }
     },
     "MimesisPlayerEnhancement_Statistics": {

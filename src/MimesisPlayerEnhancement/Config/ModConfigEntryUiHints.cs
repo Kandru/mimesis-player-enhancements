@@ -12,6 +12,7 @@ namespace MimesisPlayerEnhancement
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
         private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
+        private const string EconomySectionId = "MimesisPlayerEnhancement_Economy";
         private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
         private const string SavegamePreparationSectionId = SavegamePreparationConfig.SectionId;
         private const string MoreVoicesSectionId = "MimesisPlayerEnhancement_MoreVoices";
@@ -192,26 +193,6 @@ namespace MimesisPlayerEnhancement
                 }
             }
 
-            for (int i = 0; i < entries.Count - 1; i++)
-            {
-                WebDashboardConfigEntryDto current = entries[i];
-                WebDashboardConfigEntryDto next = entries[i + 1];
-                if (!string.IsNullOrEmpty(current.EntryGroup) || !string.IsNullOrEmpty(next.EntryGroup))
-                {
-                    continue;
-                }
-
-                if (current.Key.StartsWith("AutoScale", StringComparison.Ordinal)
-                    && current.Key.EndsWith("ByPlayerCount", StringComparison.Ordinal)
-                    && next.Key.EndsWith("Multiplier", StringComparison.Ordinal))
-                {
-                    string groupId = $"{sectionId}::{current.Key}";
-                    current.EntryGroup = groupId;
-                    next.EntryGroup = groupId;
-                    i++;
-                }
-            }
-
             for (int i = 0; i < entries.Count; i++)
             {
                 WebDashboardConfigEntryDto current = entries[i];
@@ -235,8 +216,7 @@ namespace MimesisPlayerEnhancement
                 for (int j = i + 1; j < entries.Count; j++)
                 {
                     WebDashboardConfigEntryDto next = entries[j];
-                    if (next.Key.StartsWith("Enable", StringComparison.Ordinal)
-                        || next.Key.StartsWith("AutoScale", StringComparison.Ordinal))
+                    if (next.Key.StartsWith("Enable", StringComparison.Ordinal))
                     {
                         break;
                     }
@@ -258,10 +238,29 @@ namespace MimesisPlayerEnhancement
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)
                 {
+                    ["LootMultiplicatorBaselinePlayerCount"] = "playerScaling",
+                    ["MapLootMultiplier"] = "mapLoot",
+                    ["MapLootPerPlayerMultiplier"] = "mapLoot",
+                    ["DropLootMultiplier"] = "dropLoot",
+                    ["DropLootPerPlayerMultiplier"] = "dropLoot",
                     ["LootItemFilterMode"] = "lootFilter",
                     ["LootAllowlist"] = "lootFilter",
                     ["LootBlocklist"] = "lootFilter",
                     ["AutoScaleMapLootBudgetForFilter"] = "lootFilter",
+                };
+            }
+
+            if (sectionId == EconomySectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["EconomyBaselinePlayerCount"] = "playerScaling",
+                    ["ScrapSellValueMultiplier"] = "scrapSellValue",
+                    ["ScrapSellValuePerPlayerMultiplier"] = "scrapSellValue",
+                    ["ShopBuyPriceMultiplier"] = "shopBuyPrice",
+                    ["ShopBuyPricePerPlayerMultiplier"] = "shopBuyPrice",
+                    ["ReinforcePriceMultiplier"] = "reinforcePrice",
+                    ["ReinforcePricePerPlayerMultiplier"] = "reinforcePrice",
                 };
             }
 
@@ -282,6 +281,19 @@ namespace MimesisPlayerEnhancement
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)
                 {
+                    ["SpawnScalingBaselinePlayerCount"] = "playerScaling",
+                    ["MimicSpawnMultiplier"] = "mimicSpawn",
+                    ["MimicSpawnPerPlayerMultiplier"] = "mimicSpawn",
+                    ["BossSpawnMultiplier"] = "bossSpawn",
+                    ["BossSpawnPerPlayerMultiplier"] = "bossSpawn",
+                    ["JakoSpawnMultiplier"] = "jakoSpawn",
+                    ["JakoSpawnPerPlayerMultiplier"] = "jakoSpawn",
+                    ["SpecialSpawnMultiplier"] = "specialSpawn",
+                    ["SpecialSpawnPerPlayerMultiplier"] = "specialSpawn",
+                    ["TrapSpawnMultiplier"] = "trapSpawn",
+                    ["TrapSpawnPerPlayerMultiplier"] = "trapSpawn",
+                    ["OtherSpawnMultiplier"] = "otherSpawn",
+                    ["OtherSpawnPerPlayerMultiplier"] = "otherSpawn",
                     ["AmbientMonsterWaveMode"] = "ambientMonsterWaveTiming",
                     ["AmbientMonsterWaveInitialDelaySeconds"] = "ambientMonsterWaveTiming",
                     ["AmbientMonsterWaveInitialDelayMinSeconds"] = "ambientMonsterWaveTiming",

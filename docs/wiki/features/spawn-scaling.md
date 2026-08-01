@@ -2,7 +2,9 @@
 
 **Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
 
-cales dungeon monster and trap spawn budgets by type, optionally with party size. Changes inside the dungeon wait until the dungeon ends; turning the feature off applies immediately.
+Scales dungeon monster and trap spawn budgets by type, optionally with party size. Changes inside the dungeon wait until the dungeon ends; turning the feature off applies immediately.
+
+Each spawn type uses a general multiplier plus a per-player bonus above a shared baseline. Effective multiplier: `general + max(0, players − baseline) × perPlayer`.
 
 ## Configuration
 
@@ -17,32 +19,21 @@ Master toggle for spawn scaling. When off, spawn budgets stay vanilla.
 
 Default: `false`
 
-### `SpawnScalingPlayerCountScaleRate`
+### `SpawnScalingBaselinePlayerCount`
 
-Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each type's multiplier. Formula: `1 + (players − 4) × rate` (no bonus at 4 or fewer players). Set `0.25` to approximate the old `players / 4` curve.
-
-| Value | Meaning |
-|---|---|
-| `0` | No player-count bonus |
-| `0.10` | +10% per extra player (default) |
-| `≥ 0` | Allowed; higher = steeper scaling |
-
-Default: `0.10`
-
-### `AutoScaleMimicSpawnsByPlayerCount`
-
-Whether mimic spawns get the player-count bonus from `SpawnScalingPlayerCountScaleRate`. Stacks with `MimicSpawnMultiplier`.
+Player count where per-player scaling starts. At or below this count, only each type's general multiplier applies.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale mimics with party size |
-| `false` | Mimics ignore player count |
+| `1` | Minimum allowed |
+| `4` | Vanilla four-player baseline (default) |
+| Higher | Per-player bonus only applies above this count |
 
-Default: `true`
+Default: `4`
 
 ### `MimicSpawnMultiplier`
 
-Total mimic spawn budget across the run, including periodic spawns. `1` = vanilla, `2` = double.
+Total mimic spawn budget across the run, including periodic spawns. `1` = vanilla, `2` = double. Stacks additively with `MimicSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -52,20 +43,21 @@ Total mimic spawn budget across the run, including periodic spawns. `1` = vanill
 
 Default: `1.0`
 
-### `AutoScaleBossSpawnsByPlayerCount`
+### `MimicSpawnPerPlayerMultiplier`
 
-Whether boss spawns get the player-count bonus. Stacks with `BossSpawnMultiplier`.
+Added to `MimicSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale bosses with party size |
-| `false` | Bosses ignore player count |
+| `0` | No player-count scaling for mimics |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
 
-Default: `true`
+Default: `0.10`
 
 ### `BossSpawnMultiplier`
 
-Map-placed boss budget: recover inactive markers and add nav-jittered synthetic slots at load. `1` = vanilla.
+Map-placed boss budget: recover inactive markers and add nav-jittered synthetic slots at load. `1` = vanilla. Stacks additively with `BossSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -75,20 +67,21 @@ Map-placed boss budget: recover inactive markers and add nav-jittered synthetic 
 
 Default: `1.0`
 
-### `AutoScaleJakoSpawnsByPlayerCount`
+### `BossSpawnPerPlayerMultiplier`
 
-Whether ambient jako spawns get the player-count bonus. Stacks with `JakoSpawnMultiplier`.
+Added to `BossSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale jakos with party size |
-| `false` | Jakos ignore player count |
+| `0` | No player-count scaling for bosses |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
 
-Default: `true`
+Default: `0.10`
 
 ### `JakoSpawnMultiplier`
 
-Normal-monster threat budget for ambient dungeon spawns (periodic waves). `1` = vanilla.
+Normal-monster threat budget for ambient dungeon spawns (periodic waves). `1` = vanilla. Stacks additively with `JakoSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -98,20 +91,21 @@ Normal-monster threat budget for ambient dungeon spawns (periodic waves). `1` = 
 
 Default: `1.0`
 
-### `AutoScaleSpecialSpawnsByPlayerCount`
+### `JakoSpawnPerPlayerMultiplier`
 
-Whether special spawns get the player-count bonus. Stacks with `SpecialSpawnMultiplier`.
+Added to `JakoSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale specials with party size |
-| `false` | Specials ignore player count |
+| `0` | No player-count scaling for jakos |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
 
-Default: `true`
+Default: `0.10`
 
 ### `SpecialSpawnMultiplier`
 
-Special monster budget for periodic spawns and map-placed specials. `1` = vanilla.
+Special monster budget for periodic spawns and map-placed specials. `1` = vanilla. Stacks additively with `SpecialSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -121,20 +115,21 @@ Special monster budget for periodic spawns and map-placed specials. `1` = vanill
 
 Default: `1.0`
 
-### `AutoScaleTrapSpawnsByPlayerCount`
+### `SpecialSpawnPerPlayerMultiplier`
 
-Whether trap spawns get the player-count bonus. Stacks with `TrapSpawnMultiplier`.
+Added to `SpecialSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale traps with party size |
-| `false` | Traps ignore player count |
+| `0` | No player-count scaling for specials |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
 
-Default: `true`
+Default: `0.10`
 
 ### `TrapSpawnMultiplier`
 
-Map-placed trap budget: recover inactive markers at load. Traps are not given synthetic slots. `1` = vanilla.
+Map-placed trap budget: recover inactive markers at load. Traps are not given synthetic slots. `1` = vanilla. Stacks additively with `TrapSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -143,6 +138,18 @@ Map-placed trap budget: recover inactive markers at load. Traps are not given sy
 | `≥ 0` | Allowed; higher = more traps |
 
 Default: `1.0`
+
+### `TrapSpawnPerPlayerMultiplier`
+
+Added to `TrapSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
+
+| Value | Meaning |
+|---|---|
+| `0` | No player-count scaling for traps |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
+
+Default: `0.10`
 
 ### `TrapRespawnMode`
 
@@ -246,20 +253,9 @@ After the delay, hold boss/special respawns until no living players are within t
 
 Default: `10.0`
 
-### `AutoScaleOtherSpawnsByPlayerCount`
-
-Whether spawns outside mimic, boss, jako, special, and trap categories get the player-count bonus. Stacks with `OtherSpawnMultiplier`.
-
-| Value | Meaning |
-|---|---|
-| `true` | Scale other spawns with party size |
-| `false` | Other spawns ignore player count |
-
-Default: `true`
-
 ### `OtherSpawnMultiplier`
 
-Spawn multiplier for entities not in the mimic, boss, jako, special, or trap categories. `1` = vanilla.
+Spawn multiplier for entities not in the mimic, boss, jako, special, or trap categories. `1` = vanilla. Stacks additively with `OtherSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -268,3 +264,15 @@ Spawn multiplier for entities not in the mimic, boss, jako, special, or trap cat
 | `≥ 0` | Allowed; higher = more spawns |
 
 Default: `1.0`
+
+### `OtherSpawnPerPlayerMultiplier`
+
+Added to `OtherSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
+
+| Value | Meaning |
+|---|---|
+| `0` | No player-count scaling for other spawns |
+| `0.10` | +0.10 per extra player (default) |
+| `≥ 0` | Allowed; higher = steeper scaling |
+
+Default: `0.10`

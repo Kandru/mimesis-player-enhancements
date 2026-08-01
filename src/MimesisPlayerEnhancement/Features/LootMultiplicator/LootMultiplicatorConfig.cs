@@ -22,25 +22,25 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
                 "EnableLootMultiplicator",
                 false);
 
-            ModConfig.LootMultiplicatorPlayerCountScaleRate = ModConfig.CreateTrackedEntry(_category,
-                "LootMultiplicatorPlayerCountScaleRate",
-                ScalingMath.DefaultPlayerCountScaleRate);
-
-            ModConfig.AutoScaleMapLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleMapLootByPlayerCount",
-                true);
+            ModConfig.LootMultiplicatorBaselinePlayerCount = ModConfig.CreateTrackedEntry(_category,
+                "LootMultiplicatorBaselinePlayerCount",
+                ScalingMath.VanillaPlayerBaseline);
 
             ModConfig.MapLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "MapLootMultiplier",
                 1f);
 
-            ModConfig.AutoScaleDropLootByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleDropLootByPlayerCount",
-                true);
+            ModConfig.MapLootPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "MapLootPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.DropLootMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "DropLootMultiplier",
                 1f);
+
+            ModConfig.DropLootPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "DropLootPerPlayerMultiplier",
+                ScalingMath.DefaultPerPlayerMultiplier);
 
             ModConfig.LootItemFilterMode = ModConfig.CreateTrackedEntry(_category,
                 "LootItemFilterMode",
@@ -66,13 +66,13 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
         internal static void WireValidation(MelonLogger.Instance logger)
         {
             ModConfig.EnableLootMultiplicator.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableLootMultiplicator));
-            ModConfig.LootMultiplicatorPlayerCountScaleRate.OnEntryValueChanged.Subscribe((_, value) =>
-                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.LootMultiplicatorPlayerCountScaleRate));
-            ModConfig.AutoScaleMapLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleMapLootByPlayerCount));
-            ModConfig.AutoScaleDropLootByPlayerCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.AutoScaleDropLootByPlayerCount));
+            ModConfig.LootMultiplicatorBaselinePlayerCount.OnEntryValueChanged.Subscribe((_, value) =>
+                ModConfig.OnBaselinePlayerCountChanged(logger, value, ModConfig.LootMultiplicatorBaselinePlayerCount));
 
             ModConfig.MapLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MapLootMultiplier));
+            ModConfig.MapLootPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MapLootPerPlayerMultiplier));
             ModConfig.DropLootMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.DropLootMultiplier));
+            ModConfig.DropLootPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.DropLootPerPlayerMultiplier));
             ModConfig.LootItemFilterMode.OnEntryValueChanged.Subscribe((_, value) => OnLootItemFilterModeChanged(logger, value));
             ModConfig.LootAllowlist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.LootAllowlist));
             ModConfig.LootBlocklist.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.LootBlocklist));
@@ -84,9 +84,10 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void RegisterFloatEntries()
         {
-            ModConfig.TrackFloatEntry(ModConfig.LootMultiplicatorPlayerCountScaleRate);
             ModConfig.TrackFloatEntry(ModConfig.MapLootMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.MapLootPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.DropLootMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.DropLootPerPlayerMultiplier);
         }
 
         private static void OnLootItemFilterModeChanged(MelonLogger.Instance logger, string value)

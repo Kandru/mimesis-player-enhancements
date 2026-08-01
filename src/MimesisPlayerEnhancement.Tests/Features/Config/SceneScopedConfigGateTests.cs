@@ -10,11 +10,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             var sentinel = new LootMultiplicatorSceneConfig(
                 enableLootMultiplicator: false,
-                lootMultiplicatorPlayerCountScaleRate: 0.10f,
-                autoScaleMapLootByPlayerCount: true,
+                lootMultiplicatorBaselinePlayerCount: ScalingMath.VanillaPlayerBaseline,
                 mapLootMultiplier: 9.5f,
-                autoScaleDropLootByPlayerCount: true,
+                mapLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 dropLootMultiplier: 1f,
+                dropLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 lootItemFilterMode: "All",
                 lootAllowlist: "",
                 lootBlocklist: "",
@@ -33,11 +33,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             var tramLoot = new LootMultiplicatorSceneConfig(
                 enableLootMultiplicator: true,
-                lootMultiplicatorPlayerCountScaleRate: 0.10f,
-                autoScaleMapLootByPlayerCount: true,
+                lootMultiplicatorBaselinePlayerCount: ScalingMath.VanillaPlayerBaseline,
                 mapLootMultiplier: 4f,
-                autoScaleDropLootByPlayerCount: true,
+                mapLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 dropLootMultiplier: 1f,
+                dropLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 lootItemFilterMode: "All",
                 lootAllowlist: "",
                 lootBlocklist: "",
@@ -45,11 +45,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                 convertFakeActorDyingDropChancePercent: 30);
             var dungeonLoot = new LootMultiplicatorSceneConfig(
                 enableLootMultiplicator: true,
-                lootMultiplicatorPlayerCountScaleRate: 0.10f,
-                autoScaleMapLootByPlayerCount: true,
+                lootMultiplicatorBaselinePlayerCount: ScalingMath.VanillaPlayerBaseline,
                 mapLootMultiplier: 1f,
-                autoScaleDropLootByPlayerCount: true,
+                mapLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 dropLootMultiplier: 1f,
+                dropLootPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 lootItemFilterMode: "All",
                 lootAllowlist: "",
                 lootBlocklist: "",

@@ -3,16 +3,26 @@ namespace MimesisPlayerEnhancement.Util
     internal static class ScalingMath
     {
         internal const int VanillaPlayerBaseline = 4;
-        internal const float DefaultPlayerCountScaleRate = 0.10f;
+        internal const float DefaultPerPlayerMultiplier = 0.10f;
 
-        internal static float GetPlayerScale(int playerCount, bool autoScaleEnabled, float scaleRatePerExtraPlayer)
+        /// <summary>
+        /// Additive player-count scaling:
+        /// <c>general + max(0, players − baseline) × perPlayer</c>.
+        /// </summary>
+        internal static float GetAdditiveMultiplier(
+            float generalMultiplier,
+            float perPlayerMultiplier,
+            int playerCount,
+            int baselinePlayerCount)
         {
-            if (!autoScaleEnabled || playerCount <= VanillaPlayerBaseline)
+            int baseline = System.Math.Max(1, baselinePlayerCount);
+            int extraPlayers = playerCount - baseline;
+            if (extraPlayers <= 0 || perPlayerMultiplier <= 0f)
             {
-                return 1f;
+                return System.Math.Max(0f, generalMultiplier);
             }
 
-            return 1f + (playerCount - VanillaPlayerBaseline) * scaleRatePerExtraPlayer;
+            return System.Math.Max(0f, generalMultiplier + extraPlayers * perPlayerMultiplier);
         }
 
         internal static int ScaleCount(int vanilla, float multiplier)

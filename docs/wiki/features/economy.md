@@ -4,6 +4,8 @@
 
 Scales scrap/sell value, shop and reinforce prices, and optional unspent currency between maintenance cycles during a run. Complements [Loot Multiplicator](./loot-multiplicator.md) (spawn counts, not prices); tram repair quotas stay under [More Players](./more-players.md).
 
+Each money type uses a general multiplier plus a per-player bonus above a shared baseline. Effective multiplier: `general + max(0, players − baseline) × perPlayer`.
+
 ## Configuration
 
 Changes apply without a game restart. Value changes during maintenance, tram, dungeon, or deathmatch scenes are held until that scene ends; turning `EnableEconomy` off applies immediately. Unset keys use the defaults below.
@@ -19,20 +21,21 @@ Master toggle for all Economy scaling and optional currency retention. Turning i
 
 Default: `false`
 
-### `EconomyPlayerCountScaleRate`
+### `EconomyBaselinePlayerCount`
 
-Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each money multiplier: `multiplier × (1 + (players − 4) × rate)`. At 4 or fewer players, player-count scaling is `1` (no change).
+Player count where per-player scaling starts. At or below this count, only each type's general multiplier applies.
 
 | Value | Meaning |
 |---|---|
-| `0` | No player-count bonus |
-| `0.10` | +10% per extra player (5 players → ×1.10 on top of the type multiplier) |
+| `1` | Minimum allowed |
+| `4` | Vanilla four-player baseline (default) |
+| Higher | Per-player bonus only applies above this count |
 
-Default: `0.10`
+Default: `4`
 
 ### `ScrapSellValueMultiplier`
 
-Scales currency from scrapping items and item value counted toward the tram quota.
+Scales currency from scrapping items and item value counted toward the tram quota. Stacks additively with `ScrapSellValuePerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -41,20 +44,21 @@ Scales currency from scrapping items and item value counted toward the tram quot
 
 Default: `1`
 
-### `AutoScaleScrapSellValueByPlayerCount`
+### `ScrapSellValuePerPlayerMultiplier`
 
-When on, scrap/sell values also use `EconomyPlayerCountScaleRate` for players above 4.
+Added to `ScrapSellValueMultiplier` for each player above `EconomyBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `false` | Scrap values use only `ScrapSellValueMultiplier` |
-| `true` | Stack player-count scaling on scrap/sell values |
+| `0` | No player-count scaling for scrap/sell values |
+| `0.10` | +0.10 per extra player (default) |
+| Higher | Stronger scaling for large lobbies |
 
-Default: `true`
+Default: `0.10`
 
 ### `ShopBuyPriceMultiplier`
 
-Scales maintenance shop and vending-machine purchase costs. Applied when shop items initialize each maintenance round (not when loading a save).
+Scales maintenance shop and vending-machine purchase costs. Applied when shop items initialize each maintenance round (not when loading a save). Stacks additively with `ShopBuyPricePerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -64,16 +68,17 @@ Scales maintenance shop and vending-machine purchase costs. Applied when shop it
 
 Default: `1`
 
-### `AutoScaleShopBuyPriceByPlayerCount`
+### `ShopBuyPricePerPlayerMultiplier`
 
-When on, shop buy prices also use `EconomyPlayerCountScaleRate` for players above 4.
+Added to `ShopBuyPriceMultiplier` for each player above `EconomyBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `false` | Shop prices use only `ShopBuyPriceMultiplier` |
-| `true` | Stack player-count scaling on shop buy prices |
+| `0` | No player-count scaling for shop buy prices |
+| `0.10` | +0.10 per extra player (default) |
+| Higher | Stronger scaling for large lobbies |
 
-Default: `true`
+Default: `0.10`
 
 ### `ShopDiscountMinPercent`
 
@@ -107,20 +112,9 @@ Chance per shop item to receive a discount in the min–max range. At `0`, vanil
 
 Default: `0`
 
-### `AutoScaleReinforcePriceByPlayerCount`
-
-When on, reinforce costs also use `EconomyPlayerCountScaleRate` for players above 4.
-
-| Value | Meaning |
-|---|---|
-| `false` | Reinforce costs use only `ReinforcePriceMultiplier` |
-| `true` | Stack player-count scaling on reinforce costs |
-
-Default: `true`
-
 ### `ReinforcePriceMultiplier`
 
-Scales maintenance item reinforcement cost.
+Scales maintenance item reinforcement cost. Stacks additively with `ReinforcePricePerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
@@ -128,6 +122,18 @@ Scales maintenance item reinforcement cost.
 | `2` | Double reinforce cost |
 
 Default: `1`
+
+### `ReinforcePricePerPlayerMultiplier`
+
+Added to `ReinforcePriceMultiplier` for each player above `EconomyBaselinePlayerCount`.
+
+| Value | Meaning |
+|---|---|
+| `0` | No player-count scaling for reinforce costs |
+| `0.10` | +0.10 per extra player (default) |
+| Higher | Stronger scaling for large lobbies |
+
+Default: `0.10`
 
 ### `RetainUnspentCurrencyBetweenCycles`
 

@@ -229,22 +229,22 @@ When the lobby is public, the browse list shows join status in the lobby name �
 
 Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scale dungeon monster and trap spawn budgets by type. **Three separate timing systems:** (1) `AmbientMonsterWaveMode` — ambient jako and mimic wave intervals only; (2) `TrapRespawnMode` — whether cleared map traps respawn at their marker; (3) `BonusEncounterDelay*` — respawn delay for map-placed bosses/specials with vanilla respawn budgets. Map-placed bosses, specials, and traps also recover inactive markers and add nav-jittered synthetic slots for extra concurrent spawns at load.
 
-Each **Auto Scale … By Player Count** toggle stacks with its per-type multiplier using `SpawnScalingPlayerCountScaleRate` per player above 4 (`0.10` = +10% per extra player). Set `0.25` to approximate the old `players / 4` curve.
+Each type has a **general multiplier** (always applied) and a **per-player bonus** added for each player above `SpawnScalingBaselinePlayerCount`: `effective = general + max(0, players − baseline) × perPlayer` (default baseline `4`, per-player `0.10`). Set a type's per-player multiplier to `0` to disable player-count scaling for that type.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableSpawnScaling` | bool | `false` | — | Scale dungeon monster and trap spawn budgets by type. |
-| `SpawnScalingPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with per-type multipliers). Minimum is 0. |
-| `AutoScaleMimicSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for mimic spawns (stacks with `MimicSpawnMultiplier`). |
-| `MimicSpawnMultiplier` | float | `1.0` | ≥ `0` | Total mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). |
-| `AutoScaleBossSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for boss spawns (stacks with `BossSpawnMultiplier`). |
-| `BossSpawnMultiplier` | float | `1.0` | ≥ `0` | Map-placed bosses: recover inactive markers plus synthetic jittered slots at load. |
-| `AutoScaleJakoSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for jako spawns (stacks with `JakoSpawnMultiplier`). |
-| `JakoSpawnMultiplier` | float | `1.0` | ≥ `0` | Total normal-monster threat budget for ambient dungeon spawns. |
-| `AutoScaleSpecialSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for special spawns (stacks with `SpecialSpawnMultiplier`). |
-| `SpecialSpawnMultiplier` | float | `1.0` | ≥ `0` | Special monster budget for periodic spawns and map-placed specials. |
-| `AutoScaleTrapSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for trap spawns (stacks with `TrapSpawnMultiplier`). |
-| `TrapSpawnMultiplier` | float | `1.0` | ≥ `0` | Map-placed traps: recover inactive markers at load (no synthetic trap slots). |
+| `SpawnScalingBaselinePlayerCount` | int | `4` | ≥ `1` | No per-player spawn bonus at or below this count (vanilla is 4). Minimum is 1. |
+| `MimicSpawnMultiplier` | float | `1.0` | ≥ `0` | General mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `MimicSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general mimic multiplier for each player above the baseline (`0` = no player scaling). |
+| `BossSpawnMultiplier` | float | `1.0` | ≥ `0` | General map-placed boss budget: recover inactive markers plus synthetic jittered slots at load. |
+| `BossSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general boss multiplier for each player above the baseline. |
+| `JakoSpawnMultiplier` | float | `1.0` | ≥ `0` | General normal-monster threat budget for ambient dungeon spawns. |
+| `JakoSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general jako multiplier for each player above the baseline. |
+| `SpecialSpawnMultiplier` | float | `1.0` | ≥ `0` | General special monster budget for periodic spawns and map-placed specials. |
+| `SpecialSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general special multiplier for each player above the baseline. |
+| `TrapSpawnMultiplier` | float | `1.0` | ≥ `0` | General map-placed trap budget: recover inactive markers at load (no synthetic trap slots). |
+| `TrapSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general trap multiplier for each player above the baseline. |
 | `TrapRespawnMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | Whether cleared **map traps** respawn at their marker. Separate from ambient monster waves (`AmbientMonsterWaveMode`) and boss/special bonus spawns (`BonusEncounterDelay*`). |
 | `TrapRespawnDelaySeconds` | float | `5.0` | ≥ `0` | Trap respawn, fixed mode: seconds after a trap is cleared before it can respawn at the marker. |
 | `TrapRespawnDelayMinSeconds` | float | `5.0` | ≥ `0` | Trap respawn, random mode: shortest delay. |
@@ -260,12 +260,12 @@ Each **Auto Scale … By Player Count** toggle stacks with its per-type multipli
 | `BonusEncounterDelayMinSeconds` | float | `5.0` | ≥ `0` | **Boss/special respawn only** — shortest wait after a map-placed boss or special with a respawn budget is cleared. Not used for traps. |
 | `BonusEncounterDelayMaxSeconds` | float | `30.0` | ≥ `0` | Longest wait for that bonus spawn delay. Not used for traps. Must be ≥ `BonusEncounterDelayMinSeconds`. |
 | `BonusEncounterMinPlayerDistanceMeters` | float | `10.0` | ≥ `0` | After the delay, hold boss/special respawns until no living players are within this radius (meters) of the marker. Set to `0` to spawn as soon as the delay elapses. |
-| `AutoScaleOtherSpawnsByPlayerCount` | bool | `true` | — | Player-count scaling for other spawns (stacks with `OtherSpawnMultiplier`). |
-| `OtherSpawnMultiplier` | float | `1.0` | ≥ `0` | Spawn multiplier for other entities (not mimic/boss/jako/special/trap). |
+| `OtherSpawnMultiplier` | float | `1.0` | ≥ `0` | General spawn multiplier for other entities (not mimic/boss/jako/special/trap). |
+| `OtherSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general other multiplier for each player above the baseline. |
 
 ## Loot Multiplicator — `[MimesisPlayerEnhancement_LootMultiplicator]`
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod. Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each multiplier (`1` = vanilla, `2` = double) stacks with its **Auto Scale … By Player Count** toggle using `LootMultiplicatorPlayerCountScaleRate` per player above 4. Values below `1` do not reduce loot quantity today.
+**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod. Scale how much loot appears on the map and from enemy deaths, and optionally convert mimic fake drops to real pickup loot. Each source has a general multiplier and a per-player bonus: `effective = general + max(0, players − baseline) × perPlayer` using `LootMultiplicatorBaselinePlayerCount` (default `4`). Values below `1` do not reduce loot quantity today.
 
 ### Map loot types
 
@@ -293,11 +293,11 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableLootMultiplicator` | bool | `false` | — | Scale map loot and enemy death drops, and optionally convert mimic fake drops to real loot. Host only — only the host must enable this for the whole lobby; joining clients do not need the mod. |
-| `LootMultiplicatorPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with loot multipliers). Minimum is 0. |
-| `AutoScaleMapLootByPlayerCount` | bool | `true` | — | Player-count scaling for map loot. |
-| `MapLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for map-placed pickup loot: fixed-marker copies/respawns/stacks, random-pool spawn count (via scrap budget), and consumable stacks. With allowlist/blocklist, pair with `AutoScaleMapLootBudgetForFilter` (default on) so this still targets spawn count. |
-| `AutoScaleDropLootByPlayerCount` | bool | `true` | — | Player-count scaling for enemy death drops. |
-| `DropLootMultiplier` | float | `1.0` | ≥ `0` | Multiplier for enemy death drops. |
+| `LootMultiplicatorBaselinePlayerCount` | int | `4` | ≥ `1` | No per-player loot bonus at or below this count (vanilla is 4). Minimum is 1. |
+| `MapLootMultiplier` | float | `1.0` | ≥ `0` | General map-placed loot budget multiplier (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `MapLootPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general map loot multiplier for each player above the baseline (`0` = no player scaling). |
+| `DropLootMultiplier` | float | `1.0` | ≥ `0` | General enemy/drop loot multiplier (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `DropLootPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general drop loot multiplier for each player above the baseline. |
 | `LootItemFilterMode` | string | `All` | `All`, `AllowlistOnly`, `BlocklistOnly` | Restrict which item master IDs can spawn (map loot and enemy drops). Changes random-pool item prices; use `AutoScaleMapLootBudgetForFilter` so `MapLootMultiplier` still scales spawn count. |
 | `LootAllowlist` | string | `""` | — | Comma-separated item master IDs (e.g. `12345,67890`). Used when `LootItemFilterMode` is `AllowlistOnly`. Off-rotation IDs are injected into random pool markers. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
 | `LootBlocklist` | string | `""` | — | Comma-separated item master IDs to exclude from spawning. Used when `LootItemFilterMode` is `BlocklistOnly`. See [LOOT_ITEM_IDS.md](LOOT_ITEM_IDS.md). |
@@ -321,7 +321,7 @@ Disabled masterdata upgrades (Scrap Hanger `4`, Close Door Button `6`) are not e
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
-**Host only.** Scales three separate money values during a run and optionally retains unspent currency between maintenance cycles. Each multiplier has an **Auto Scale … By Player Count** toggle and a multiplier (`1` = vanilla, `2` = double). Player-count scaling uses `EconomyPlayerCountScaleRate` per player above 4. Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
+**Host only.** Scales three separate money values during a run and optionally retains unspent currency between maintenance cycles. Each money type has a general multiplier and a per-player bonus: `effective = general + max(0, players − baseline) × perPlayer` using `EconomyBaselinePlayerCount` (default `4`). Tram repair quotas are handled by **More Players** → `EnableScalingRoundGoals`.
 
 | Setting | What it affects |
 |---------|-----------------|
@@ -337,16 +337,16 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableEconomy` | bool | `false` | — | Scale scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. |
-| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
-| `AutoScaleScrapSellValueByPlayerCount` | bool | `true` | — | Player-count scaling for scrap/sell values. |
-| `ScrapSellValueMultiplier` | float | `1.0` | ≥ `0` | Scrap/sell value multiplier. |
-| `AutoScaleShopBuyPriceByPlayerCount` | bool | `true` | — | Player-count scaling for shop buy prices. |
-| `ShopBuyPriceMultiplier` | float | `1.0` | ≥ `0` | Maintenance shop and vending-machine kiosk buy price multiplier (`1` = vanilla, `0.1` = 10% of vanilla). Applied when shop items are initialized each maintenance round. |
+| `EconomyBaselinePlayerCount` | int | `4` | ≥ `1` | No per-player economy bonus at or below this count (vanilla is 4). Minimum is 1. |
+| `ScrapSellValueMultiplier` | float | `1.0` | ≥ `0` | General scrap/sell value multiplier (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `ScrapSellValuePerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general scrap multiplier for each player above the baseline. |
+| `ShopBuyPriceMultiplier` | float | `1.0` | ≥ `0` | General shop buy price multiplier (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `ShopBuyPricePerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general shop multiplier for each player above the baseline. |
 | `ShopDiscountMinPercent` | int | `0` | `0`–`100` | Minimum discount percentage when a shop discount is rolled. Only used when `ShopDiscountChancePercent` is above `0`. |
 | `ShopDiscountMaxPercent` | int | `100` | `0`–`100` | Maximum discount percentage when a shop discount is rolled. Must be ≥ `ShopDiscountMinPercent`. |
 | `ShopDiscountChancePercent` | int | `0` | `0`–`100` | Chance per shop item to receive a discount in the min–max range (`0` = vanilla shop discounts, `100` = every item discounted). |
-| `AutoScaleReinforcePriceByPlayerCount` | bool | `true` | — | Player-count scaling for reinforce costs. |
-| `ReinforcePriceMultiplier` | float | `1.0` | ≥ `0` | Reinforce price multiplier. |
+| `ReinforcePriceMultiplier` | float | `1.0` | ≥ `0` | General reinforce price multiplier (`1` = vanilla, `2` = double). Always applies when enabled. |
+| `ReinforcePricePerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general reinforce multiplier for each player above the baseline. |
 | `RetainUnspentCurrencyBetweenCycles` | bool | `false` | — | Keep unspent maintenance-room currency when departing for the next dungeon instead of zeroing it. Does not affect tram repair cost. |
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
@@ -652,12 +652,12 @@ JoinConnectionGraceSeconds = 30
 
 [MimesisPlayerEnhancement_SpawnScaling]
 EnableSpawnScaling = false
-SpawnScalingPlayerCountScaleRate = 0.10
+SpawnScalingBaselinePlayerCount = 4
 MimicSpawnMultiplier = 1.0
 
 [MimesisPlayerEnhancement_LootMultiplicator]
 EnableLootMultiplicator = false
-LootMultiplicatorPlayerCountScaleRate = 0.10
+LootMultiplicatorBaselinePlayerCount = 4
 MapLootMultiplier = 1.0
 DropLootMultiplier = 1.0
 ConvertFakeActorDyingDropChancePercent = 30
@@ -672,7 +672,7 @@ EnableUpgradeTramLight = false
 
 [MimesisPlayerEnhancement_Economy]
 EnableEconomy = false
-EconomyPlayerCountScaleRate = 0.10
+EconomyBaselinePlayerCount = 4
 RetainUnspentCurrencyBetweenCycles = false
 
 [MimesisPlayerEnhancement_DungeonTime]

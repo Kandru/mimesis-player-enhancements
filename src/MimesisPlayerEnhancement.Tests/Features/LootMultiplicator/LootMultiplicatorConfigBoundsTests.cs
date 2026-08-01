@@ -7,10 +7,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.LootMultiplicator
     {
         private const string SectionId = "MimesisPlayerEnhancement_LootMultiplicator";
 
+        [Fact]
+        public void LootMultiplicatorBaselinePlayerCount_has_minimum_one()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "LootMultiplicatorBaselinePlayerCount", out ModConfigEntryBound bound));
+            Assert.Equal("1", bound.MinValue);
+            Assert.Null(bound.MaxValue);
+        }
+
         [Theory]
-        [InlineData("LootMultiplicatorPlayerCountScaleRate")]
         [InlineData("MapLootMultiplier")]
+        [InlineData("MapLootPerPlayerMultiplier")]
         [InlineData("DropLootMultiplier")]
+        [InlineData("DropLootPerPlayerMultiplier")]
         public void Float_multipliers_have_minimum_zero(string key)
         {
             Assert.True(ModConfigEntryBounds.TryGet(SectionId, key, out ModConfigEntryBound bound));

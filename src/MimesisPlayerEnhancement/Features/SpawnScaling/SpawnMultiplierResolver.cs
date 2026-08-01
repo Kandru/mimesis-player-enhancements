@@ -2,27 +2,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
     internal static class SpawnMultiplierResolver
     {
-        internal static bool IsAutoScaleEnabled(SpawnCategory category, SpawnScalingSceneConfig config)
-        {
-            return category switch
-            {
-                SpawnCategory.Mimic => config.AutoScaleMimicSpawnsByPlayerCount,
-                SpawnCategory.Boss => config.AutoScaleBossSpawnsByPlayerCount,
-                SpawnCategory.Jako => config.AutoScaleJakoSpawnsByPlayerCount,
-                SpawnCategory.Special => config.AutoScaleSpecialSpawnsByPlayerCount,
-                SpawnCategory.Trap => config.AutoScaleTrapSpawnsByPlayerCount,
-                _ => config.AutoScaleOtherSpawnsByPlayerCount,
-            };
-        }
-
-        internal static float GetPlayerScale(SpawnCategory category, int playerCount, SpawnScalingSceneConfig config)
-        {
-            return ScalingMath.GetPlayerScale(
-                playerCount,
-                IsAutoScaleEnabled(category, config),
-                config.SpawnScalingPlayerCountScaleRate);
-        }
-
         internal static float GetPerCategoryMultiplier(SpawnCategory category, SpawnScalingSceneConfig config)
         {
             return category switch
@@ -33,6 +12,19 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 SpawnCategory.Special => config.SpecialSpawnMultiplier,
                 SpawnCategory.Trap => config.TrapSpawnMultiplier,
                 _ => config.OtherSpawnMultiplier,
+            };
+        }
+
+        internal static float GetPerPlayerMultiplier(SpawnCategory category, SpawnScalingSceneConfig config)
+        {
+            return category switch
+            {
+                SpawnCategory.Mimic => config.MimicSpawnPerPlayerMultiplier,
+                SpawnCategory.Boss => config.BossSpawnPerPlayerMultiplier,
+                SpawnCategory.Jako => config.JakoSpawnPerPlayerMultiplier,
+                SpawnCategory.Special => config.SpecialSpawnPerPlayerMultiplier,
+                SpawnCategory.Trap => config.TrapSpawnPerPlayerMultiplier,
+                _ => config.OtherSpawnPerPlayerMultiplier,
             };
         }
 
@@ -48,7 +40,11 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return FeatureToggleGate.NeutralMultiplier;
             }
 
-            return GetPerCategoryMultiplier(category, config) * GetPlayerScale(category, playerCount, config);
+            return ScalingMath.GetAdditiveMultiplier(
+                GetPerCategoryMultiplier(category, config),
+                GetPerPlayerMultiplier(category, config),
+                playerCount,
+                config.SpawnScalingBaselinePlayerCount);
         }
 
         internal static float GetEffectiveMultiplier(int masterId, int playerCount, SpawnScalingSceneConfig config)

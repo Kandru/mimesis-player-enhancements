@@ -8,9 +8,17 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         private const string SectionId = "MimesisPlayerEnhancement_SpawnScaling";
 
         [Fact]
-        public void SpawnScalingPlayerCountScaleRate_has_minimum_zero()
+        public void SpawnScalingBaselinePlayerCount_has_minimum_one()
         {
-            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "SpawnScalingPlayerCountScaleRate", out ModConfigEntryBound bound));
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "SpawnScalingBaselinePlayerCount", out ModConfigEntryBound bound));
+            Assert.Equal("1", bound.MinValue);
+            Assert.Null(bound.MaxValue);
+        }
+
+        [Fact]
+        public void MimicSpawnPerPlayerMultiplier_has_minimum_zero()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "MimicSpawnPerPlayerMultiplier", out ModConfigEntryBound bound));
             Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
             Assert.Null(bound.MaxValue);
         }

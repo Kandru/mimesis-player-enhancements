@@ -391,32 +391,21 @@
       "_description": "Passe Karten-Loot und Gegner-Drops an; skaliere mit Spieleranzahl oder filtere Item-Typen.",
       "_groups": {
         "lootFilter": "Item-Filter",
-        "AutoScaleMapLootByPlayerCount": "Kartenbeute-Skalierung",
-        "AutoScaleDropLootByPlayerCount": "Drop-Beute-Skalierung"
+        "playerScaling": "Spieler-Skalierung",
+        "mapLoot": "Karten-Loot-Skalierung",
+        "dropLoot": "Drop-Loot-Skalierung"
       },
       "EnableLootMultiplicator": {
         "title": "Loot-Multiplikator aktivieren",
         "description": "Skaliert Karten-Loot und Gegner-Drops und kann Mimic-Fake-Drops in echten Loot umwandeln."
       },
-      "LootMultiplicatorPlayerCountScaleRate": {
-        "title": "Loot-Skalierungsrate",
-        "description": "Extra-Bonus pro Spieler über 4, genutzt von den Auto-Scale-Schaltern unten (0,10 = +10 % pro Extra-Spieler). Minimum ist 0."
-      },
-      "AutoScaleMapLootByPlayerCount": {
-        "title": "Karten-Loot nach Spielern skalieren",
-        "description": "Erhöht Karten-Loot pro Spieler über 4. Stapelt sich mit Karten-Loot-Multiplikator."
-      },
       "MapLootMultiplier": {
         "title": "Karten-Loot-Multiplikator",
-        "description": "Wie viel Loot auf der Dungeon-Karte erscheint — mehr feste Items und mehr Zufalls-Spawns (1 = Vanilla, 2 = doppelt). Nicht für Event-Loot. Mit aktivem Filter hält Karten-Loot-Filter-Skalierung den Fokus auf Spawn-Anzahl."
-      },
-      "AutoScaleDropLootByPlayerCount": {
-        "title": "Drop-Loot nach Spielern skalieren",
-        "description": "Erhöht Gegner-Drops pro Spieler über 4. Stapelt sich mit Drop-Loot-Multiplikator."
+        "description": "Multiplikator für kartenplatziertes Loot-Budget (1 = Vanilla, 2 = doppelt)."
       },
       "DropLootMultiplier": {
         "title": "Drop-Loot-Multiplikator",
-        "description": "Wie viel Loot Gegner beim Tod droppen (1 = Vanilla, 2 = doppelt)."
+        "description": "Gegner-/Drop-Loot-Multiplikator (1 = Vanilla, 2 = doppelt)."
       },
       "LootItemFilterMode": {
         "title": "Item-Filter-Modus",
@@ -442,6 +431,18 @@
       "ConvertFakeActorDyingDropChancePercent": {
         "title": "Fake-Drop-Chance (Prozent)",
         "description": "Chance (0–100), dass Mimic-Fake-Items beim Tod zu echtem Loot werden. 0 = Vanilla, 100 = immer echt."
+      },
+      "LootMultiplicatorBaselinePlayerCount": {
+        "title": "Basis-Spieleranzahl",
+        "description": "Kein Pro-Spieler-Loot-Bonus bei oder unter dieser Anzahl (Vanilla ist 4). Pro-Spieler-Multiplikatoren gelten ab dem nächsten Spieler. Minimum ist 1."
+      },
+      "MapLootPerPlayerMultiplier": {
+        "title": "Karten-Loot Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "DropLootPerPlayerMultiplier": {
+        "title": "Drop-Loot Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
       }
     },
     "MimesisPlayerEnhancement_MimicTuning": {
@@ -841,33 +842,22 @@
       "_section": "Wirtschaft",
       "_description": "Skaliert Schrottwert, Shop-Preise und optionalen Währungserhalt während eines Runs.",
       "_groups": {
-        "AutoScaleScrapSellValueByPlayerCount": "Schrottwert-Skalierung",
-        "AutoScaleShopBuyPriceByPlayerCount": "Shop-Preis-Skalierung",
-        "AutoScaleReinforcePriceByPlayerCount": "Verstärkungspreis-Skalierung"
+        "playerScaling": "Spieler-Skalierung",
+        "scrapSellValue": "Schrottwert-Skalierung",
+        "shopBuyPrice": "Shop-Preis-Skalierung",
+        "reinforcePrice": "Verstärkungspreis-Skalierung"
       },
       "EnableEconomy": {
         "title": "Wirtschaft aktivieren",
         "description": "Skaliert Schrottwert, Shop-Preise und Verstärkungskosten. Optional Geld zwischen Zyklen behalten."
       },
-      "EconomyPlayerCountScaleRate": {
-        "title": "Wirtschafts-Skalierungsrate",
-        "description": "Extra-Bonus pro Spieler über 4, genutzt von den Auto-Scale-Schaltern unten (0,10 = +10 % pro Extra-Spieler). Minimum ist 0."
-      },
-      "AutoScaleScrapSellValueByPlayerCount": {
-        "title": "Schrottwert nach Spielern skalieren",
-        "description": "Erhöht Schrott-Verkaufswert pro Spieler über 4. Stapelt sich mit Schrottwert-Multiplikator."
-      },
       "ScrapSellValueMultiplier": {
-        "title": "Schrottwert-Multiplikator",
-        "description": "Geld beim Verschrotten und Wert für die Tram-Quote (1 = Vanilla, 2 = doppelt)."
-      },
-      "AutoScaleShopBuyPriceByPlayerCount": {
-        "title": "Shop-Preise nach Spielern skalieren",
-        "description": "Erhöht Shop-Preise pro Spieler über 4. Stapelt sich mit Shop-Preis-Multiplikator."
+        "title": "Schrottverkaufswert-Multiplikator",
+        "description": "Schrottverkaufswert-Multiplikator (1 = Vanilla, 2 = doppelt)."
       },
       "ShopBuyPriceMultiplier": {
-        "title": "Shop-Preis-Multiplikator",
-        "description": "Shop- und Automaten-Preise (1 = Vanilla, 2 = doppelt)."
+        "title": "Shop-Kaufpreis-Multiplikator",
+        "description": "Shop-Kaufpreis-Multiplikator (1 = Vanilla, 2 = doppelt)."
       },
       "ShopDiscountMinPercent": {
         "title": "Shop-Rabatt Min (Prozent)",
@@ -881,17 +871,29 @@
         "title": "Shop-Rabatt-Chance (Prozent)",
         "description": "Chance pro Shop-Item auf einen Rabatt zwischen Min und Max (0 = Vanilla, 100 = jedes Item)."
       },
-      "AutoScaleReinforcePriceByPlayerCount": {
-        "title": "Verstärkungspreis nach Spielern skalieren",
-        "description": "Erhöht Verstärkungskosten pro Spieler über 4. Stapelt sich mit Verstärkungspreis-Multiplikator."
-      },
       "ReinforcePriceMultiplier": {
         "title": "Verstärkungspreis-Multiplikator",
-        "description": "Item-Verstärkungskosten in Maintenance (1 = Vanilla, 2 = doppelt)."
+        "description": "Verstärkungspreis-Multiplikator (1 = Vanilla, 2 = doppelt)."
       },
       "RetainUnspentCurrencyBetweenCycles": {
         "title": "Ungenutztes Geld behalten",
         "description": "Behält übriges Maintenance-Geld beim Abfahren zur nächsten Dungeon-Runde. Beeinflusst nicht Tram-Reparatur."
+      },
+      "EconomyBaselinePlayerCount": {
+        "title": "Basis-Spieleranzahl",
+        "description": "Kein Pro-Spieler-Economy-Bonus bei oder unter dieser Anzahl (Vanilla ist 4). Pro-Spieler-Multiplikatoren gelten ab dem nächsten Spieler. Minimum ist 1."
+      },
+      "ScrapSellValuePerPlayerMultiplier": {
+        "title": "Schrottverkaufswert Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "ShopBuyPricePerPlayerMultiplier": {
+        "title": "Shop-Kaufpreis Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "ReinforcePricePerPlayerMultiplier": {
+        "title": "Verstärkungspreis Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
       }
     },
     "MimesisPlayerEnhancement_MorePlayers": {
@@ -1045,60 +1047,37 @@
         "ambientMonsterWaveTiming": "Ambient-Jako- & Mimic-Wellen",
         "trapRespawn": "Fallen-Respawn",
         "bonusEncounterTiming": "Boss- & Spezial-Bonus-Spawns",
-        "AutoScaleMimicSpawnsByPlayerCount": "Mimic-Spawn-Skalierung",
-        "AutoScaleBossSpawnsByPlayerCount": "Boss-Spawn-Skalierung",
-        "AutoScaleJakoSpawnsByPlayerCount": "Jako-Spawn-Skalierung",
-        "AutoScaleSpecialSpawnsByPlayerCount": "Spezial-Spawn-Skalierung",
-        "AutoScaleTrapSpawnsByPlayerCount": "Fallen-Spawn-Skalierung",
-        "AutoScaleOtherSpawnsByPlayerCount": "Sonstige-Spawn-Skalierung"
+        "playerScaling": "Spieler-Skalierung",
+        "mimicSpawn": "Mimic-Spawn-Skalierung",
+        "bossSpawn": "Boss-Spawn-Skalierung",
+        "jakoSpawn": "Jako-Spawn-Skalierung",
+        "specialSpawn": "Special-Spawn-Skalierung",
+        "trapSpawn": "Fallen-Spawn-Skalierung",
+        "otherSpawn": "Sonstige Spawn-Skalierung"
       },
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
         "description": "Skaliert Monster- und Fallen-Spawns nach Typ oder Spieleranzahl."
       },
-      "SpawnScalingPlayerCountScaleRate": {
-        "title": "Spawn-Skalierungsrate",
-        "description": "Extra-Bonus pro Spieler über 4, genutzt von den Auto-Scale-Schaltern unten (0,10 = +10 % pro Extra-Spieler). Minimum ist 0."
-      },
-      "AutoScaleMimicSpawnsByPlayerCount": {
-        "title": "Mimic-Spawns nach Spielern skalieren",
-        "description": "Erhöht Mimic-Spawns pro Spieler über 4. Stapelt sich mit Mimic-Spawn-Multiplikator."
-      },
       "MimicSpawnMultiplier": {
         "title": "Mimic-Spawn-Multiplikator",
-        "description": "Gesamte Mimic-Spawns pro Lauf, inklusive Wellen (1 = Vanilla, 2 = doppelt)."
-      },
-      "AutoScaleBossSpawnsByPlayerCount": {
-        "title": "Boss-Spawns nach Spielern skalieren",
-        "description": "Erhöht Boss-Spawns pro Spieler über 4. Stapelt sich mit Boss-Spawn-Multiplikator."
+        "description": "Gesamte Mimic-Spawns pro Lauf, inklusive periodischer Wellen (1 = Vanilla, 2 = doppelt)."
       },
       "BossSpawnMultiplier": {
         "title": "Boss-Spawn-Multiplikator",
-        "description": "Karten-Bosse und Bonus-Begegnungen nach Kill (1 = Vanilla, 2 = doppelt)."
-      },
-      "AutoScaleJakoSpawnsByPlayerCount": {
-        "title": "Jako-Spawns nach Spielern skalieren",
-        "description": "Erhöht Jako-Spawns pro Spieler über 4. Stapelt sich mit Jako-Spawn-Multiplikator."
+        "description": "Kartenplatzierte Bosse und Bonus-Begegnungen nach einem Kill (1 = Vanilla, 2 = doppelt)."
       },
       "JakoSpawnMultiplier": {
         "title": "Jako-Spawn-Multiplikator",
-        "description": "Ambient Dungeon-Monster-Spawns (1 = Vanilla, 2 = doppelt)."
-      },
-      "AutoScaleSpecialSpawnsByPlayerCount": {
-        "title": "Spezial-Spawns nach Spielern skalieren",
-        "description": "Erhöht Spezial-Spawns pro Spieler über 4. Stapelt sich mit Spezial-Spawn-Multiplikator."
+        "description": "Umgebungs-Dungeon-Monster-Spawns (1 = Vanilla, 2 = doppelt)."
       },
       "SpecialSpawnMultiplier": {
-        "title": "Spezial-Spawn-Multiplikator",
-        "description": "Periodische und kartenplatzierte Spezial-Monster (1 = Vanilla, 2 = doppelt)."
-      },
-      "AutoScaleTrapSpawnsByPlayerCount": {
-        "title": "Fallen-Spawns nach Spielern skalieren",
-        "description": "Erhöht Fallen-Spawns pro Spieler über 4. Stapelt sich mit Fallen-Spawn-Multiplikator."
+        "title": "Special-Spawn-Multiplikator",
+        "description": "Periodische und kartenplatzierte Special-Monster (1 = Vanilla, 2 = doppelt)."
       },
       "TrapSpawnMultiplier": {
         "title": "Fallen-Spawn-Multiplikator",
-        "description": "Karten-Fallen: ungenutzte Marker beim Laden und Bonus-Begegnungen nach Auslösung/Kill (1 = Vanilla, 2 = doppelt)."
+        "description": "Kartenplatzierte Fallen: ungenutzte Alternativmarker beim Laden und Bonus-Begegnungen nach Auslösen/Kill (1 = Vanilla, 2 = doppelt)."
       },
       "TrapRespawnMode": {
         "title": "Fallen-Respawn-Modus",
@@ -1170,13 +1149,37 @@
         "title": "Bonus-Begegnung Mindestabstand (m)",
         "description": "Bonus-Spawns für Bosse/Specials erst, wenn keine Spieler in diesem Radius sind. 0 = sofort nach Verzögerung. Nicht für Fallen."
       },
-      "AutoScaleOtherSpawnsByPlayerCount": {
-        "title": "Sonstige Spawns nach Spielern skalieren",
-        "description": "Erhöht sonstige Spawns pro Spieler über 4. Stapelt sich mit Sonstige-Spawn-Multiplikator."
-      },
       "OtherSpawnMultiplier": {
         "title": "Sonstige-Spawn-Multiplikator",
-        "description": "Spawns außer Mimics, Bosse, Jakos, Spezial-Gegner und Fallen (1 = Vanilla, 2 = doppelt)."
+        "description": "Sonstige Spawn-Budgets, die nicht von den Kategorien oben abgedeckt sind (1 = Vanilla, 2 = doppelt)."
+      },
+      "SpawnScalingBaselinePlayerCount": {
+        "title": "Basis-Spieleranzahl",
+        "description": "Kein Pro-Spieler-Spawn-Bonus bei oder unter dieser Anzahl (Vanilla ist 4). Pro-Spieler-Multiplikatoren gelten ab dem nächsten Spieler. Minimum ist 1."
+      },
+      "MimicSpawnPerPlayerMultiplier": {
+        "title": "Mimic Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "BossSpawnPerPlayerMultiplier": {
+        "title": "Boss Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "JakoSpawnPerPlayerMultiplier": {
+        "title": "Jako Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "SpecialSpawnPerPlayerMultiplier": {
+        "title": "Special Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "TrapSpawnPerPlayerMultiplier": {
+        "title": "Fallen Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "OtherSpawnPerPlayerMultiplier": {
+        "title": "Sonstige Pro-Spieler-Bonus",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
       }
     },
     "MimesisPlayerEnhancement_Statistics": {

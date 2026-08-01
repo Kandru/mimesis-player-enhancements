@@ -65,17 +65,17 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> JoinConnectionGraceSeconds { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableSpawnScaling { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> SpawnScalingPlayerCountScaleRate { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleMimicSpawnsByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> SpawnScalingBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MimicSpawnMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleBossSpawnsByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> MimicSpawnPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> BossSpawnMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleJakoSpawnsByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> BossSpawnPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> JakoSpawnMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleSpecialSpawnsByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> JakoSpawnPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> SpecialSpawnMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleTrapSpawnsByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> SpecialSpawnPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> TrapSpawnMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TrapSpawnPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> TrapRespawnMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> TrapRespawnDelaySeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> TrapRespawnDelayMinSeconds { get; internal set; } = null!;
@@ -91,15 +91,15 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> BonusEncounterDelayMinSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> BonusEncounterDelayMaxSeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> BonusEncounterMinPlayerDistanceMeters { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleOtherSpawnsByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> OtherSpawnMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> OtherSpawnPerPlayerMultiplier { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableLootMultiplicator { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> LootMultiplicatorPlayerCountScaleRate { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleMapLootByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> LootMultiplicatorBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> MapLootMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleDropLootByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> MapLootPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> DropLootMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> DropLootPerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> LootItemFilterMode { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> LootAllowlist { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> LootBlocklist { get; internal set; } = null!;
@@ -107,22 +107,22 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> ConvertFakeActorDyingDropChancePercent { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableEconomy { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> EconomyBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> StartupMoney { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> StartingZone { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableUpgradeTramHorn { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableUpgradeScrapScanner { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableUpgradeTramBooster { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableUpgradeTramLight { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> ScrapSellValuePerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ShopBuyPriceMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> ShopBuyPricePerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountMinPercent { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountMaxPercent { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> ShopDiscountChancePercent { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleReinforcePriceByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ReinforcePriceMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> ReinforcePricePerPlayerMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RetainUnspentCurrencyBetweenCycles { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableDungeonTime { get; internal set; } = null!;
@@ -454,6 +454,18 @@ namespace MimesisPlayerEnhancement
             }
 
             ModConfigFloatHelper.SanitizeEntry(entry);
+            NotifyChanged(entry);
+        }
+
+        internal static void OnBaselinePlayerCountChanged(MelonLogger.Instance logger, int value, MelonPreferences_Entry<int> entry)
+        {
+            if (value < 1)
+            {
+                logger.Warning($"{entry.Identifier} must be at least 1; resetting to 1.");
+                entry.Value = 1;
+                return;
+            }
+
             NotifyChanged(entry);
         }
 

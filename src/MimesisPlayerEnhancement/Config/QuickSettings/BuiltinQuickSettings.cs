@@ -114,8 +114,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             }
 
             QuickSettingsValuesBuilder.Set(values, "MimesisPlayerEnhancement_MorePlayers", "MaxPlayers", "16");
-            QuickSettingsValuesBuilder.SetAllAutoScaleByPlayerCount(values, true);
-            QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
+            QuickSettingsValuesBuilder.SetAllPerPlayerMultipliers(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.25f);
             QuickSettingsValuesBuilder.SetLootMultipliers(values, mapLoot: 1.25f, dropLoot: 1.25f);
             QuickSettingsValuesBuilder.SetEconomyMultipliers(values, startupMoney: 150, scrap: 1.25f, shop: 1.25f, reinforce: 1.25f);
@@ -124,7 +123,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             return new QuickSettingPreset
             {
                 Id = FullHouseId,
-                Revision = 1,
+                Revision = 2,
                 IsBuiltin = true,
                 Values = values,
             };
@@ -158,8 +157,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             }
 
             QuickSettingsValuesBuilder.Set(values, "MimesisPlayerEnhancement_MorePlayers", "MaxPlayers", "16");
-            QuickSettingsValuesBuilder.SetAllAutoScaleByPlayerCount(values, true);
-            QuickSettingsValuesBuilder.SetAllPlayerCountScaleRates(values, 0.10f);
+            QuickSettingsValuesBuilder.SetAllPerPlayerMultipliers(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.9f);
             QuickSettingsValuesBuilder.SetAmbientMonsterWaveRandom(
                 values,
@@ -175,7 +173,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             return new QuickSettingPreset
             {
                 Id = AbandonHopeId,
-                Revision = 4,
+                Revision = 5,
                 IsBuiltin = true,
                 Values = values,
             };

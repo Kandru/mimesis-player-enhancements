@@ -4,6 +4,8 @@
 
 Scales map loot and enemy death drops, optionally filters which items can spawn, and can turn mimic inventory decoys into real pickup loot. Use it when you want more loot in larger groups or tighter control over what appears. Most settings apply at the start of the next dungeon scene; turning the feature off applies immediately.
 
+Each loot type uses a general multiplier plus a per-player bonus above a shared baseline. Effective multiplier: `general + max(0, players − baseline) × perPlayer`.
+
 ## Configuration
 
 ### `EnableLootMultiplicator`
@@ -17,32 +19,21 @@ Master switch for map loot scaling, enemy death-drop scaling, item filters, and 
 
 Default: `false`
 
-### `LootMultiplicatorPlayerCountScaleRate`
+### `LootMultiplicatorBaselinePlayerCount`
 
-Extra multiplier per player above four when an **Auto Scale … By Player Count** toggle is on. Stacks with `MapLootMultiplier` and `DropLootMultiplier`. Example: `0.10` with six players → ×1.2 on top of the base multiplier.
-
-| Value | Meaning |
-|---|---|
-| `0` | No player-count bonus |
-| `0.10` | +10% per extra player (default) |
-| Higher | Stronger scaling for large lobbies |
-
-Default: `0.10`
-
-### `AutoScaleMapLootByPlayerCount`
-
-Adds player-count scaling to map-placed loot (fixed markers and random pool markers). Does not affect trigger/event spawns.
+Player count where per-player scaling starts. At or below this count, only each type's general multiplier applies.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale map loot with lobby size (default) |
-| `false` | Use only `MapLootMultiplier` |
+| `1` | Minimum allowed |
+| `4` | Vanilla four-player baseline (default) |
+| Higher | Per-player bonus only applies above this count |
 
-Default: `true`
+Default: `4`
 
 ### `MapLootMultiplier`
 
-Multiplier for map-placed pickup loot. `1` = vanilla; values above `1` increase quantity. Values below `1` do not reduce loot today.
+Multiplier for map-placed pickup loot. `1` = vanilla; values above `1` increase quantity. Values below `1` do not reduce loot today. Stacks additively with `MapLootPerPlayerMultiplier` for players above the baseline.
 
 Affects fixed markers (consumable stack size, respawn count, bonus copies on unused slots) and random pool markers (dungeon scrap-value budget — more budget fills more empty markers). Trigger/event loot is not scaled.
 
@@ -54,20 +45,21 @@ Affects fixed markers (consumable stack size, respawn count, bonus copies on unu
 
 Default: `1`
 
-### `AutoScaleDropLootByPlayerCount`
+### `MapLootPerPlayerMultiplier`
 
-Adds player-count scaling to enemy death drops.
+Added to `MapLootMultiplier` for each player above `LootMultiplicatorBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `true` | Scale death drops with lobby size (default) |
-| `false` | Use only `DropLootMultiplier` |
+| `0` | No player-count scaling for map loot |
+| `0.10` | +0.10 per extra player (default) |
+| Higher | Stronger scaling for large lobbies |
 
-Default: `true`
+Default: `0.10`
 
 ### `DropLootMultiplier`
 
-Multiplier for items from enemy death tables and inventory dropped on death. `1` = vanilla; values above `1` add extra weighted rolls from the same table and scale consumable stack counts when items spawn. Values below `1` do not reduce drops today.
+Multiplier for items from enemy death tables and inventory dropped on death. `1` = vanilla; values above `1` add extra weighted rolls from the same table and scale consumable stack counts when items spawn. Values below `1` do not reduce drops today. Stacks additively with `DropLootPerPlayerMultiplier` for players above the baseline.
 
 Does **not** affect shop purchases, Crow Shop exchange, deathmatch MVP rewards, admin/cheat spawns, or other non-combat spawn reasons.
 
@@ -78,6 +70,18 @@ Does **not** affect shop purchases, Crow Shop exchange, deathmatch MVP rewards, 
 | `> 1` | Extra drop-table rolls and larger consumable stacks |
 
 Default: `1`
+
+### `DropLootPerPlayerMultiplier`
+
+Added to `DropLootMultiplier` for each player above `LootMultiplicatorBaselinePlayerCount`.
+
+| Value | Meaning |
+|---|---|
+| `0` | No player-count scaling for death drops |
+| `0.10` | +0.10 per extra player (default) |
+| Higher | Stronger scaling for large lobbies |
+
+Default: `0.10`
 
 ### `LootItemFilterMode`
 

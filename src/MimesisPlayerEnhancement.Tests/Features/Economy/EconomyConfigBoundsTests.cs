@@ -7,11 +7,21 @@ namespace MimesisPlayerEnhancement.Tests.Features.Economy
     {
         private const string SectionId = "MimesisPlayerEnhancement_Economy";
 
+        [Fact]
+        public void EconomyBaselinePlayerCount_has_minimum_one()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "EconomyBaselinePlayerCount", out ModConfigEntryBound bound));
+            Assert.Equal("1", bound.MinValue);
+            Assert.Null(bound.MaxValue);
+        }
+
         [Theory]
-        [InlineData("EconomyPlayerCountScaleRate")]
         [InlineData("ScrapSellValueMultiplier")]
+        [InlineData("ScrapSellValuePerPlayerMultiplier")]
         [InlineData("ShopBuyPriceMultiplier")]
+        [InlineData("ShopBuyPricePerPlayerMultiplier")]
         [InlineData("ReinforcePriceMultiplier")]
+        [InlineData("ReinforcePricePerPlayerMultiplier")]
         public void Float_multipliers_have_minimum_zero(string key)
         {
             Assert.True(ModConfigEntryBounds.TryGet(SectionId, key, out ModConfigEntryBound bound));
