@@ -920,6 +920,8 @@
       "_section": "Mehr Stimmen",
       "_description": "Speichere deutlich mehr aufgezeichnete Spielerstimmen für Mimics pro Run.",
       "_groups": {
+        "voiceLimits": "Stimmenlimits",
+        "voiceRecording": "Aufnahme",
         "EnableVoicePerformanceCache": "Performance-Cache"
       },
       "EnableMoreVoices": {

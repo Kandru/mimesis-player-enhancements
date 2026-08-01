@@ -920,6 +920,8 @@
       "_section": "More Voices",
       "_description": "Store many more recorded player voice lines for mimics per run.",
       "_groups": {
+        "voiceLimits": "Voice limits",
+        "voiceRecording": "Recording",
         "EnableVoicePerformanceCache": "Performance cache"
       },
       "EnableMoreVoices": {

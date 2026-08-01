@@ -14,6 +14,7 @@ namespace MimesisPlayerEnhancement
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
         private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
         private const string SavegamePreparationSectionId = SavegamePreparationConfig.SectionId;
+        private const string MoreVoicesSectionId = "MimesisPlayerEnhancement_MoreVoices";
         private const string UiSectionId = UiConfig.SectionId;
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
@@ -447,6 +448,20 @@ namespace MimesisPlayerEnhancement
                 {
                     ["StartupMoney"] = "startupMoney",
                     ["StartingZone"] = "startingZone",
+                };
+            }
+
+            if (sectionId == MoreVoicesSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["UnifyIndoorOutdoorVoices"] = "voiceLimits",
+                    ["MaxIndoorVoiceEvents"] = "voiceLimits",
+                    ["MaxDeathMatchVoiceEvents"] = "voiceLimits",
+                    ["MaxOutdoorVoiceEvents"] = "voiceLimits",
+                    ["RecordVoiceInMaintenance"] = "voiceRecording",
+                    ["RecordVoiceInTram"] = "voiceRecording",
+                    ["RecordVoiceDuringMimicPossession"] = "voiceRecording",
                 };
             }
 

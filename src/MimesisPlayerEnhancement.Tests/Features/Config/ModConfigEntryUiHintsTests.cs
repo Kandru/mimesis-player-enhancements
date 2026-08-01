@@ -70,5 +70,37 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                 $"{SavegamePreparationConfig.SectionId}::startingZone",
                 section.Entries[1].EntryGroup);
         }
+
+        [Fact]
+        public void AssignEntryGroups_more_voices_keys_share_voice_limits_and_recording_groups()
+        {
+            const string moreVoicesSectionId = "MimesisPlayerEnhancement_MoreVoices";
+            WebDashboardConfigSectionDto section = new()
+            {
+                Id = moreVoicesSectionId,
+                Entries =
+                [
+                    new WebDashboardConfigEntryDto { Key = "UnifyIndoorOutdoorVoices" },
+                    new WebDashboardConfigEntryDto { Key = "MaxIndoorVoiceEvents" },
+                    new WebDashboardConfigEntryDto { Key = "MaxDeathMatchVoiceEvents" },
+                    new WebDashboardConfigEntryDto { Key = "MaxOutdoorVoiceEvents" },
+                    new WebDashboardConfigEntryDto { Key = "RecordVoiceInMaintenance" },
+                    new WebDashboardConfigEntryDto { Key = "RecordVoiceInTram" },
+                    new WebDashboardConfigEntryDto { Key = "RecordVoiceDuringMimicPossession" },
+                ],
+            };
+
+            ModConfigEntryUiHints.AssignEntryGroups(section);
+
+            string voiceLimitsGroup = $"{moreVoicesSectionId}::voiceLimits";
+            string voiceRecordingGroup = $"{moreVoicesSectionId}::voiceRecording";
+            Assert.Equal(voiceLimitsGroup, section.Entries[0].EntryGroup);
+            Assert.Equal(voiceLimitsGroup, section.Entries[1].EntryGroup);
+            Assert.Equal(voiceLimitsGroup, section.Entries[2].EntryGroup);
+            Assert.Equal(voiceLimitsGroup, section.Entries[3].EntryGroup);
+            Assert.Equal(voiceRecordingGroup, section.Entries[4].EntryGroup);
+            Assert.Equal(voiceRecordingGroup, section.Entries[5].EntryGroup);
+            Assert.Equal(voiceRecordingGroup, section.Entries[6].EntryGroup);
+        }
     }
 }
