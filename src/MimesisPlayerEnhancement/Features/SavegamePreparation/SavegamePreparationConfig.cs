@@ -29,6 +29,22 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             ModConfig.StartingZone = ModConfig.CreateTrackedEntry(_category,
                 "StartingZone",
                 1);
+
+            ModConfig.EnableUpgradeTramHorn = ModConfig.CreateTrackedEntry(_category,
+                "EnableUpgradeTramHorn",
+                false);
+
+            ModConfig.EnableUpgradeScrapScanner = ModConfig.CreateTrackedEntry(_category,
+                "EnableUpgradeScrapScanner",
+                false);
+
+            ModConfig.EnableUpgradeTramBooster = ModConfig.CreateTrackedEntry(_category,
+                "EnableUpgradeTramBooster",
+                false);
+
+            ModConfig.EnableUpgradeTramLight = ModConfig.CreateTrackedEntry(_category,
+                "EnableUpgradeTramLight",
+                false);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -37,6 +53,14 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
                 OnStartupMoneyChanged(logger, value));
             ModConfig.StartingZone.OnEntryValueChanged.Subscribe((_, value) =>
                 OnStartingZoneChanged(logger, value));
+            ModConfig.EnableUpgradeTramHorn.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableUpgradeTramHorn));
+            ModConfig.EnableUpgradeScrapScanner.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableUpgradeScrapScanner));
+            ModConfig.EnableUpgradeTramBooster.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableUpgradeTramBooster));
+            ModConfig.EnableUpgradeTramLight.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableUpgradeTramLight));
         }
 
         private static void OnStartupMoneyChanged(MelonLogger.Instance logger, int value)

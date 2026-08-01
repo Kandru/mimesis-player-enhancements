@@ -809,15 +809,32 @@
       "_description": "Settings that apply only when creating a new savegame. Configure these in Global Settings before starting a new run.",
       "_groups": {
         "startupMoney": "Startup money",
-        "startingZone": "Starting zone"
+        "startingZone": "Starting zone",
+        "upgrades": "Upgrades"
       },
       "StartupMoney": {
         "title": "Startup Money",
-        "description": "Starting maintenance-room cash when a new save is created (120 = vanilla). Does not apply when loading a save or after a wipeout."
+        "description": "Starting maintenance-room cash (120 = vanilla)."
       },
       "StartingZone": {
         "title": "Starting Zone",
-        "description": "Zone (stage) to begin on when a new save is created (1 = vanilla, up to 99). Without More Players Override Max Stage Count, clamped to the game's max stage. Does not apply when loading a save or after a wipeout."
+        "description": "Zone (stage) to begin on (1 = vanilla, up to 99). Without More Players Override Max Stage Count, clamped to Zone 7."
+      },
+      "EnableUpgradeTramHorn": {
+        "title": "Tram Horn",
+        "description": "Unlock the tram horn upgrade."
+      },
+      "EnableUpgradeScrapScanner": {
+        "title": "Scrap Scanner",
+        "description": "Unlock the scrap scanner upgrade."
+      },
+      "EnableUpgradeTramBooster": {
+        "title": "Booster",
+        "description": "Unlock the tram booster upgrade."
+      },
+      "EnableUpgradeTramLight": {
+        "title": "Tram Light",
+        "description": "Unlock the tram light (disco ball)"
       }
     },
     "MimesisPlayerEnhancement_Economy": {

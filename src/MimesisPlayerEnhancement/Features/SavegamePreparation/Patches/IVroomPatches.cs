@@ -8,6 +8,7 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation.Patches
         public static void Prefix(GameSessionInfo gameSessionInfo)
         {
             SavegamePreparationApplier.TryApplyStartingZoneToGameSession(gameSessionInfo);
+            SavegamePreparationApplier.TryApplyStartupTramUpgrades(gameSessionInfo);
         }
     }
 }

@@ -306,12 +306,18 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 ## Savegame Preparation — `[MimesisPlayerEnhancement_SavegamePreparation]`
 
-**Host only. Global settings only** — this section appears in **Global Settings**, not per save-slot overrides. Configure these **before** creating a new savegame; both settings apply only when a new save is created (not when loading an existing save or after a wipeout).
+**Host only. Global settings only** — this section appears in **Global Settings**, not per save-slot overrides. Configure these **before** creating a new savegame; settings apply only when a new save is created (not when loading an existing save or after a wipeout).
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `StartupMoney` | int | `120` | ≥ `0` | Starting maintenance-room cash when a new save is created (`120` = vanilla). Absolute dollars, not a multiplier. |
 | `StartingZone` | int | `1` | `1`–`99` | Zone (stage) to begin on when a new save is created (`1` = vanilla). Clamped to the game's max stage at apply time unless **More Players** → `OverrideMaxStageCount` is on (then up to 99). Pair with `EnableScalingRoundGoals` for scaled quotas past the vanilla stage table. |
+| `EnableUpgradeTramHorn` | bool | `false` | — | Unlock tram upgrade master ID `1` (`TramHorn`) on new save. |
+| `EnableUpgradeScrapScanner` | bool | `false` | — | Unlock tram upgrade master ID `2` (`ScrapScanner`) on new save. |
+| `EnableUpgradeTramBooster` | bool | `false` | — | Unlock tram upgrade master ID `3` (`TramBooster`) on new save. |
+| `EnableUpgradeTramLight` | bool | `false` | — | Unlock tram upgrade master ID `5` (`DiscoBall` / Tram light) on new save. |
+
+Disabled masterdata upgrades (Scrap Hanger `4`, Close Door Button `6`) are not exposed — the game drops them on load.
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
@@ -659,6 +665,10 @@ ConvertFakeActorDyingDropChancePercent = 30
 [MimesisPlayerEnhancement_SavegamePreparation]
 StartupMoney = 120
 StartingZone = 1
+EnableUpgradeTramHorn = false
+EnableUpgradeScrapScanner = false
+EnableUpgradeTramBooster = false
+EnableUpgradeTramLight = false
 
 [MimesisPlayerEnhancement_Economy]
 EnableEconomy = false

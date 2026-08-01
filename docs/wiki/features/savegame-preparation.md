@@ -32,3 +32,18 @@ Zone (stage) to begin on when a new save is created. Affects the maintenance hub
 | `5` | Begin at zone 5 (higher quotas, later hub) |
 
 Default: `1`. Clamped to the game's maximum stage at apply time unless **More Players** is on and `OverrideMaxStageCount` is enabled (default), in which case the cap is 99. For scaled tram quotas past the vanilla stage table, also enable **More Players** → `EnableScalingRoundGoals`.
+
+### Tram upgrades
+
+Unlock selected tram upgrades on the new save so they are already installed (no repair pick required for those IDs). Defaults are all off.
+
+| Key | Master ID | In-game name |
+|---|---|---|
+| `EnableUpgradeTramHorn` | `1` | Tram horn |
+| `EnableUpgradeScrapScanner` | `2` | Scrap Scanner |
+| `EnableUpgradeTramBooster` | `3` | Booster |
+| `EnableUpgradeTramLight` | `5` | Tram light |
+
+Scrap Hanger (`4`) and Close Door Button (`6`) are disabled in masterdata (`use_tram_upgrade = false`) and are not offered here. Only the host needs the mod; clients receive the unlocked list from the room.
+
+On a zone-1 save, the upgrade selection panels still look inert (vanilla stage-1 UI); the unlocked upgrades themselves remain active.

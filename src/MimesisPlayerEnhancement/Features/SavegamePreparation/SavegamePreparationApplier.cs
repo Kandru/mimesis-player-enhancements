@@ -16,6 +16,8 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
                 "AccumulatedStageCount",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
+        private static bool _tramUpgradesLogged;
+
         internal static void OnCreateNewGameInSlot()
         {
             if (!HostApplyGate.ShouldApplyHostOnlyFeature())
@@ -24,9 +26,12 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             }
 
             SavegamePreparationNewGameGate.Arm();
+            _tramUpgradesLogged = false;
+
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            TrySeedPdataTramUpgradeIds(pdata);
 
             int zone = SavegamePreparationResolver.ResolveStartingZone();
-            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
             if (zone <= 1 || pdata == null)
             {
                 return;
@@ -66,6 +71,46 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             }
         }
 
+        internal static void TryApplyStartupTramUpgrades(GameSessionInfo session)
+        {
+            if (!SavegamePreparationNewGameGate.IsArmed
+                || !HostApplyGate.ShouldApplyHostOnlyFeature())
+            {
+                return;
+            }
+
+            try
+            {
+                List<int> configured = SavegamePreparationResolver.ResolveStartupTramUpgradeIds();
+                if (configured.Count == 0 || session.TramUpgradeList is not List<int> list)
+                {
+                    return;
+                }
+
+                List<int> added = [];
+                foreach (int id in configured)
+                {
+                    if (list.Contains(id))
+                    {
+                        continue;
+                    }
+
+                    list.Add(id);
+                    added.Add(id);
+                }
+
+                if (added.Count > 0 && !_tramUpgradesLogged)
+                {
+                    _tramUpgradesLogged = true;
+                    SavegamePreparationLog.InfoStartupTramUpgradesApplied(list);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Startup tram upgrades apply failed — {ex.Message}");
+            }
+        }
+
         internal static void TryApplyStartupMoney(ref int currency)
         {
             if (!SavegamePreparationNewGameGate.IsArmed
@@ -101,6 +146,26 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
         internal static void OnSessionEnded()
         {
             SavegamePreparationNewGameGate.Reset();
+            _tramUpgradesLogged = false;
+        }
+
+        private static void TrySeedPdataTramUpgradeIds(Hub.PersistentData? pdata)
+        {
+            try
+            {
+                List<int> seed = SavegamePreparationResolver.ResolveStartupTramUpgradeIds();
+                if (seed.Count == 0 || pdata?.TramUpgradeIDs is not List<int> ids)
+                {
+                    return;
+                }
+
+                ids.Clear();
+                ids.AddRange(seed);
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn(Feature, $"Startup tram upgrade pdata seed failed — {ex.Message}");
+            }
         }
 
         private static void TrySetPlayReportAccumulatedStageCount(PlayReportManager playReport, int zone)

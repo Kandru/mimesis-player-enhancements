@@ -448,6 +448,10 @@ namespace MimesisPlayerEnhancement
                 {
                     ["StartupMoney"] = "startupMoney",
                     ["StartingZone"] = "startingZone",
+                    ["EnableUpgradeTramHorn"] = "upgrades",
+                    ["EnableUpgradeScrapScanner"] = "upgrades",
+                    ["EnableUpgradeTramBooster"] = "upgrades",
+                    ["EnableUpgradeTramLight"] = "upgrades",
                 };
             }
 

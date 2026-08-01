@@ -809,15 +809,32 @@
       "_description": "Einstellungen, die nur beim Erstellen eines neuen Savegames gelten. In den globalen Einstellungen vor einem neuen Run festlegen.",
       "_groups": {
         "startupMoney": "Startgeld",
-        "startingZone": "Startzone"
+        "startingZone": "Startzone",
+        "upgrades": "Upgrades"
       },
       "StartupMoney": {
         "title": "Startgeld",
-        "description": "Startgeld im Maintenance-Raum beim Erstellen eines neuen Saves (120 = Vanilla). Gilt nicht beim Laden oder nach Wipeout."
+        "description": "Startgeld im Maintenance-Raum (120 = Vanilla)."
       },
       "StartingZone": {
         "title": "Startzone",
-        "description": "Zone (Stage), mit der ein neuer Save beginnt (1 = Vanilla, bis 99). Ohne Mehr Spieler Max-Stage-Override auf die Spiel-Max-Stage begrenzt. Gilt nicht beim Laden oder nach Wipeout."
+        "description": "Zone (Stage), mit der ein neuer Save beginnt (1 = Vanilla, bis 99). Ohne Mehr Spieler Max-Stage-Override auf Zone 7 begrenzt."
+      },
+      "EnableUpgradeTramHorn": {
+        "title": "Straßenbahn-Hupe",
+        "description": "Schaltet das Hupe-Upgrade frei."
+      },
+      "EnableUpgradeScrapScanner": {
+        "title": "Schrott-Scanner",
+        "description": "Schaltet das Schrott-Scanner-Upgrade frei."
+      },
+      "EnableUpgradeTramBooster": {
+        "title": "Booster",
+        "description": "Schaltet das Booster-Upgrade frei."
+      },
+      "EnableUpgradeTramLight": {
+        "title": "Straßenbahnbeleuchtung",
+        "description": "Schaltet das Straßenbahnbeleuchtungs-Upgrade (Discokugel) frei."
       }
     },
     "MimesisPlayerEnhancement_Economy": {

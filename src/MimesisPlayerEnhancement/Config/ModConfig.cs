@@ -110,6 +110,10 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> StartupMoney { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> StartingZone { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableUpgradeTramHorn { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableUpgradeScrapScanner { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableUpgradeTramBooster { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableUpgradeTramLight { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleShopBuyPriceByPlayerCount { get; internal set; } = null!;

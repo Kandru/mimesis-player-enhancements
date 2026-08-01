@@ -58,6 +58,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                 [
                     new WebDashboardConfigEntryDto { Key = "StartupMoney" },
                     new WebDashboardConfigEntryDto { Key = "StartingZone" },
+                    new WebDashboardConfigEntryDto { Key = "EnableUpgradeTramHorn" },
+                    new WebDashboardConfigEntryDto { Key = "EnableUpgradeScrapScanner" },
+                    new WebDashboardConfigEntryDto { Key = "EnableUpgradeTramBooster" },
+                    new WebDashboardConfigEntryDto { Key = "EnableUpgradeTramLight" },
                 ],
             };
 
@@ -69,6 +73,22 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
             Assert.Equal(
                 $"{SavegamePreparationConfig.SectionId}::startingZone",
                 section.Entries[1].EntryGroup);
+
+            string upgradesGroup = $"{SavegamePreparationConfig.SectionId}::upgrades";
+            Assert.Equal(upgradesGroup, section.Entries[2].EntryGroup);
+            Assert.Equal(upgradesGroup, section.Entries[3].EntryGroup);
+            Assert.Equal(upgradesGroup, section.Entries[4].EntryGroup);
+            Assert.Equal(upgradesGroup, section.Entries[5].EntryGroup);
+        }
+
+        [Fact]
+        public void ResolveInputKind_savegame_preparation_upgrade_bool_is_default()
+        {
+            Assert.Equal(
+                "Default",
+                ModConfigEntryUiHints.ResolveInputKind(
+                    SavegamePreparationConfig.SectionId,
+                    "EnableUpgradeTramHorn"));
         }
 
         [Fact]

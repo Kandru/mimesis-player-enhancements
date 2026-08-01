@@ -315,6 +315,12 @@ namespace MimesisPlayerEnhancement
                 return false;
             }
 
+            // No section master toggle — EnableUpgrade* keys must not be promoted.
+            if (string.Equals(sectionId, SavegamePreparationConfig.SectionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             foreach (string entryKey in GetEntryOrder(sectionId))
             {
                 if (!TryGetEntry(sectionId, entryKey, out MelonPreferences_Entry? entry) || entry == null)

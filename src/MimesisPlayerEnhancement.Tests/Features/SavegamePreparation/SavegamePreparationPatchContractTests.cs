@@ -61,6 +61,91 @@ namespace MimesisPlayerEnhancement.Tests.Features.SavegamePreparation
             Assert.NotNull(method);
         }
 
+        [Fact]
+        public void GameSessionInfo_TramUpgradeList_is_readable_List_int()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("GameSessionInfo");
+
+            PropertyInfo? property = type.GetProperty("TramUpgradeList", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.True(property.CanRead);
+            Assert.Equal("List`1", property.PropertyType.Name);
+            Assert.Equal("Int32", property.PropertyType.GetGenericArguments()[0].Name);
+        }
+
+        [Fact]
+        public void IVroom_TramUpgradeList_is_readable_List_int()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("IVroom");
+
+            PropertyInfo? property = type.GetProperty("TramUpgradeList", InstanceMember);
+
+            Assert.NotNull(property);
+            Assert.True(property.CanRead);
+            Assert.Equal("List`1", property.PropertyType.Name);
+            Assert.Equal("Int32", property.PropertyType.GetGenericArguments()[0].Name);
+        }
+
+        [Fact]
+        public void ExcelDataManager_IsTramUpgradeUsable_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("ExcelDataManager");
+
+            MethodInfo? method = type.GetMethods(InstanceMember)
+                .FirstOrDefault(candidate =>
+                    candidate.Name == "IsTramUpgradeUsable"
+                    && candidate.GetParameters().Length == 1
+                    && candidate.GetParameters()[0].ParameterType.Name == "Int32");
+
+            Assert.NotNull(method);
+            Assert.Equal("Boolean", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void ExcelDataManager_GetUsableTramUpgradeMasterIDs_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("ExcelDataManager");
+
+            MethodInfo? method = type.GetMethod("GetUsableTramUpgradeMasterIDs", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("List`1", method.ReturnType.Name);
+        }
+
+        [Fact]
+        public void TramupgradeData_MasterData_has_id_and_use_tram_upgrade()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("TramupgradeData_MasterData");
+
+            FieldInfo? idField = type.GetField("id", InstanceMember);
+            FieldInfo? useField = type.GetField("use_tram_upgrade", InstanceMember);
+
+            Assert.NotNull(idField);
+            Assert.Equal("Int32", idField.FieldType.Name);
+            Assert.NotNull(useField);
+            Assert.Equal("Boolean", useField.FieldType.Name);
+        }
+
+        [Fact]
+        public void Hub_PersistentData_TramUpgradeIDs_is_List_int()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type hubType = context.RequireType("Hub");
+            Type? pdataType = hubType.GetNestedType("PersistentData", BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.NotNull(pdataType);
+
+            FieldInfo? field = pdataType.GetField("TramUpgradeIDs", InstanceMember);
+            Assert.NotNull(field);
+            Assert.Equal("List`1", field.FieldType.Name);
+            Assert.Equal("Int32", field.FieldType.GetGenericArguments()[0].Name);
+        }
+
         private static MimesisMetadataContext CreateContext()
         {
             string managedPath = ManagedAssemblyPaths.Resolve();
