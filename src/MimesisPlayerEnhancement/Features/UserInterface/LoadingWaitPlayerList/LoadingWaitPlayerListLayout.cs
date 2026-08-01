@@ -18,6 +18,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     {
         private const float FallbackRowHeight = 26f;
         internal const float PlayerGap = 12f;
+        internal const int MaxRows = 2;
 
         internal static LoadingWaitLayoutMetrics Resolve(
             Component? measureText,
@@ -38,11 +39,11 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
 
             float safeWidth = Mathf.Max(availableWidth, 32f);
-            int minRows = Mathf.Max(
-                BuildGreedyRows(measureText, players, safeWidth, fontSize).Count,
-                1);
             int maxRows = ResolveMaxRowCount(bandHeight, rowHeight, rowGap);
-            int upperBound = Mathf.Min(players.Count, Mathf.Max(maxRows, minRows));
+            int minRows = Mathf.Min(
+                Mathf.Max(BuildGreedyRows(measureText, players, safeWidth, fontSize).Count, 1),
+                maxRows);
+            int upperBound = Mathf.Min(players.Count, maxRows);
 
             for (int rowCount = minRows; rowCount <= upperBound; rowCount++)
             {
@@ -68,12 +69,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         {
             if (bandHeight <= 0.5f)
             {
-                return int.MaxValue;
+                return MaxRows;
             }
 
             float safeRowHeight = Mathf.Max(rowHeight, FallbackRowHeight);
             float rowStep = safeRowHeight + Mathf.Max(rowGap, 1f);
-            return Mathf.Max(Mathf.FloorToInt((bandHeight + rowGap) / rowStep), 1);
+            int heightDerived = Mathf.Max(Mathf.FloorToInt((bandHeight + rowGap) / rowStep), 1);
+            return Mathf.Min(MaxRows, heightDerived);
         }
 
         private static bool RowsFitWidth(

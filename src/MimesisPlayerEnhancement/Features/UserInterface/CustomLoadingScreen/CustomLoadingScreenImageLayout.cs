@@ -13,7 +13,13 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
         private const float AspectEpsilon = 0.001f;
 
         internal const float FallbackImageAspect = 16f / 9f;
-        internal const float WaitPlayerBandDesignFraction = 0.15f;
+
+        /// <summary>Reference resolution for wait.png roster strip design pixels.</summary>
+        internal const float WaitPlayerBandDesignWidth = 1920f;
+        internal const float WaitPlayerBandDesignHeight = 1080f;
+        internal const float WaitPlayerBandBottomInsetPx = 10f;
+        internal const float WaitPlayerBandHeightPx = 70f;
+        internal const float WaitPlayerBandHorizontalInsetPx = 10f;
 
         internal static CustomLoadingScreenScaleMode ResolveMode(float screenAspect) =>
             screenAspect >= CustomLoadingScreenConstants.UltrawideAspectThreshold
@@ -103,6 +109,25 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
             return true;
         }
 
+        /// <summary>
+        /// Design strip in normalized image Y: [bottomInset, bottomInset + height] / 1080.
+        /// </summary>
+        internal static float WaitPlayerBandDesignUvMin =>
+            WaitPlayerBandBottomInsetPx / WaitPlayerBandDesignHeight;
+
+        internal static float WaitPlayerBandDesignUvMax =>
+            (WaitPlayerBandBottomInsetPx + WaitPlayerBandHeightPx) / WaitPlayerBandDesignHeight;
+
+        internal static float ResolveWaitPlayerBandHorizontalInset(float boundsWidth) =>
+            boundsWidth > AspectEpsilon
+                ? WaitPlayerBandHorizontalInsetPx * (boundsWidth / WaitPlayerBandDesignWidth)
+                : 0f;
+
+        internal static float ResolveWaitPlayerBandFallbackHeight(float boundsHeight) =>
+            boundsHeight > AspectEpsilon
+                ? WaitPlayerBandHeightPx * (boundsHeight / WaitPlayerBandDesignHeight)
+                : 0f;
+
         internal static void ResolveWaitPlayerBand(
             float boundsHeight,
             Rect visibleUv,
@@ -116,10 +141,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.CustomLoadingScreen
                 return;
             }
 
+            float designMin = WaitPlayerBandDesignUvMin;
+            float designMax = WaitPlayerBandDesignUvMax;
             float visibleMin = visibleUv.y;
             float visibleMax = visibleUv.y + visibleUv.height;
-            float intersectMin = Mathf.Max(0f, visibleMin);
-            float intersectMax = Mathf.Min(WaitPlayerBandDesignFraction, visibleMax);
+            float intersectMin = Mathf.Max(designMin, visibleMin);
+            float intersectMax = Mathf.Min(designMax, visibleMax);
             if (intersectMax <= intersectMin + AspectEpsilon)
             {
                 return;

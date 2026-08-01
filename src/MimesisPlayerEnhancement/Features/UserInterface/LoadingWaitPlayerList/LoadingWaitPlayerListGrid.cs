@@ -136,8 +136,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         private static void RefreshLayoutMetrics(GridState state, Transform loadingRoot)
         {
             float boundsWidth = ResolveBoundsWidth(state, loadingRoot);
+            float horizontalInset = CustomLoadingScreenImageLayout.ResolveWaitPlayerBandHorizontalInset(boundsWidth);
             state.LastBoundsWidth = boundsWidth;
-            state.LastAvailableWidth = Mathf.Max(boundsWidth, 32f);
+            state.LastAvailableWidth = Mathf.Max(boundsWidth - (2f * horizontalInset), 32f);
         }
 
         private static float ResolveBoundsWidth(GridState state, Transform loadingRoot)
@@ -265,9 +266,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 boundsHeight = Screen.height;
             }
 
-            return boundsHeight > 0.5f
-                ? boundsHeight * CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction
-                : 0f;
+            return CustomLoadingScreenImageLayout.ResolveWaitPlayerBandFallbackHeight(boundsHeight);
         }
 
         private static void PositionSlot(PlayerSlot slot, float itemWidth, float x, float rowHeight)

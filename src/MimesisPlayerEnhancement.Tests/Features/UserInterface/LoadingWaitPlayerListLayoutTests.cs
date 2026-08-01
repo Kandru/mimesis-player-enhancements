@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         private const float FontSize = 20f;
         private const float RowHeight = 26f;
         private const float RowGap = 10f;
-        private const float BandHeight = 162f;
+        private const float BandHeight = 70f;
         private const float WideWidth = 1600f;
         private const float NarrowWidth = 320f;
 
@@ -170,14 +170,26 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         public void ResolveMaxRowCount_fits_rows_within_band_height()
         {
             int maxRows = LoadingWaitPlayerListLayout.ResolveMaxRowCount(
-                bandHeight: 162f,
+                bandHeight: BandHeight,
                 rowHeight: RowHeight,
                 rowGap: RowGap);
 
-            Assert.Equal(4, maxRows);
+            Assert.Equal(2, maxRows);
+            Assert.Equal(LoadingWaitPlayerListLayout.MaxRows, maxRows);
 
             float contentHeight = (maxRows * RowHeight) + ((maxRows - 1) * RowGap);
-            Assert.True(contentHeight <= 162f + 0.01f);
+            Assert.True(contentHeight <= BandHeight + 0.01f);
+        }
+
+        [Fact]
+        public void ResolveMaxRowCount_hard_caps_at_MaxRows_even_on_tall_band()
+        {
+            int maxRows = LoadingWaitPlayerListLayout.ResolveMaxRowCount(
+                bandHeight: 216f,
+                rowHeight: RowHeight,
+                rowGap: RowGap);
+
+            Assert.Equal(LoadingWaitPlayerListLayout.MaxRows, maxRows);
         }
 
         [Fact]

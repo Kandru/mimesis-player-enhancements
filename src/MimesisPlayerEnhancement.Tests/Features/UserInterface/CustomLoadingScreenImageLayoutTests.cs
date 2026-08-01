@@ -121,7 +121,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Fact]
-        public void ResolveWaitPlayerBand_uses_full_bottom_fraction_when_uv_is_uncropped()
+        public void ResolveWaitPlayerBand_uses_design_inset_strip_when_uv_is_uncropped()
         {
             const float boundsHeight = 1080f;
             Rect fullUv = new Rect(0f, 0f, 1f, 1f);
@@ -132,9 +132,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 out float bandBottomY,
                 out float bandHeight);
 
-            Assert.Equal(0f, bandBottomY, precision: 3);
             Assert.Equal(
-                boundsHeight * CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction,
+                CustomLoadingScreenImageLayout.WaitPlayerBandBottomInsetPx,
+                bandBottomY,
+                precision: 3);
+            Assert.Equal(
+                CustomLoadingScreenImageLayout.WaitPlayerBandHeightPx,
                 bandHeight,
                 precision: 3);
         }
@@ -153,9 +156,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 out float bandBottomY,
                 out float bandHeight);
 
-            Assert.Equal(0f, bandBottomY, precision: 3);
             Assert.Equal(
-                boundsHeight * CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction,
+                CustomLoadingScreenImageLayout.WaitPlayerBandBottomInsetPx,
+                bandBottomY,
+                precision: 3);
+            Assert.Equal(
+                CustomLoadingScreenImageLayout.WaitPlayerBandHeightPx,
                 bandHeight,
                 precision: 3);
         }
@@ -164,7 +170,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         public void ResolveWaitPlayerBand_intersects_visible_uv_on_cover_vertical_crop()
         {
             const float boundsHeight = 900f;
-            // Mild vertical crop so the bottom 15% design band still intersects the visible UV.
+            // Mild vertical crop so the design strip (y ≈ 10–80 / 1080) still intersects.
             Rect verticalCropUv = CustomLoadingScreenImageLayout.ComputeCoverUvRect(
                 imageAspect: 0.9f,
                 screenAspect: 1f);
@@ -175,9 +181,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
                 out float bandBottomY,
                 out float bandHeight);
 
-            float bandUvMax = CustomLoadingScreenImageLayout.WaitPlayerBandDesignFraction;
-            float intersectMin = Mathf.Max(0f, verticalCropUv.y);
-            float intersectMax = Mathf.Min(bandUvMax, verticalCropUv.yMax);
+            float designMin = CustomLoadingScreenImageLayout.WaitPlayerBandDesignUvMin;
+            float designMax = CustomLoadingScreenImageLayout.WaitPlayerBandDesignUvMax;
+            float intersectMin = Mathf.Max(designMin, verticalCropUv.y);
+            float intersectMax = Mathf.Min(designMax, verticalCropUv.yMax);
             Assert.True(intersectMax > intersectMin);
 
             float expectedBottom = (intersectMin - verticalCropUv.y) / verticalCropUv.height * boundsHeight;
@@ -202,6 +209,32 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
 
             Assert.Equal(0f, bandBottomY, precision: 3);
             Assert.Equal(0f, bandHeight, precision: 3);
+        }
+
+        [Fact]
+        public void ResolveWaitPlayerBandHorizontalInset_scales_from_1920_design_width()
+        {
+            Assert.Equal(
+                10f,
+                CustomLoadingScreenImageLayout.ResolveWaitPlayerBandHorizontalInset(1920f),
+                precision: 3);
+            Assert.Equal(
+                5f,
+                CustomLoadingScreenImageLayout.ResolveWaitPlayerBandHorizontalInset(960f),
+                precision: 3);
+        }
+
+        [Fact]
+        public void ResolveWaitPlayerBandFallbackHeight_scales_from_1080_design_height()
+        {
+            Assert.Equal(
+                70f,
+                CustomLoadingScreenImageLayout.ResolveWaitPlayerBandFallbackHeight(1080f),
+                precision: 3);
+            Assert.Equal(
+                35f,
+                CustomLoadingScreenImageLayout.ResolveWaitPlayerBandFallbackHeight(540f),
+                precision: 3);
         }
     }
 }

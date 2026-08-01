@@ -40,7 +40,7 @@ Default: `true`
 
 ### `EnableLoadingWaitPlayerList`
 
-During multiplayer dungeon loading, show a spaced player list centered in the bottom **20%** of `wait.png` while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; players still loading are red; names turn green while that player is talking. Names wrap into extra rows above and below the band center when needed. The list fades in with the wait-image crossfade and fades out with the custom loading screen overlay. Works best with custom loading screen themes; see [Custom Assets](./custom-assets.md).
+During multiplayer dungeon loading, show a spaced player list centered in a bottom roster strip on `wait.png` (~**70px** tall at 1080p, **10px** from bottom/left/right) while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; players still loading are red; names turn green while that player is talking. Names wrap into at most **2** rows centered in that strip. The list fades in with the wait-image crossfade and fades out with the custom loading screen overlay. Works best with custom loading screen themes; see [Custom Assets](./custom-assets.md).
 
 | Value | Meaning |
 |-------|---------|
