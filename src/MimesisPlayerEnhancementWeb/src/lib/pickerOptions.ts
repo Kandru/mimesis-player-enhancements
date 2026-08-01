@@ -16,12 +16,12 @@ const CATEGORY_LABEL_KEYS: Record<string, string> = {
   Developer: 'dashboard.spawn_item_category_developer',
 };
 
-const MONSTER_CATEGORY_ORDER = ['Mimic', 'Boss', 'Jako', 'Special'] as const;
+const MONSTER_CATEGORY_ORDER = ['Mimic', 'Boss', 'Grunt', 'Special'] as const;
 
 const MONSTER_CATEGORY_LABEL_KEYS: Record<string, string> = {
   Mimic: 'dashboard.spawn_monster_category_mimic',
   Boss: 'dashboard.spawn_monster_category_boss',
-  Jako: 'dashboard.spawn_monster_category_jako',
+  Grunt: 'dashboard.spawn_monster_category_grunt',
   Special: 'dashboard.spawn_monster_category_special',
 };
 

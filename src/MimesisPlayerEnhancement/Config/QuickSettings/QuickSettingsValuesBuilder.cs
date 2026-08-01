@@ -84,25 +84,37 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             string formatted = ModConfigFloatHelper.Format(multiplier);
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "MimicSpawnMultiplier", formatted);
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "BossSpawnMultiplier", formatted);
-            Set(map, "MimesisPlayerEnhancement_SpawnScaling", "JakoSpawnMultiplier", formatted);
+            Set(map, "MimesisPlayerEnhancement_SpawnScaling", "GruntSpawnMultiplier", formatted);
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "SpecialSpawnMultiplier", formatted);
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "TrapSpawnMultiplier", formatted);
             Set(map, "MimesisPlayerEnhancement_SpawnScaling", "OtherSpawnMultiplier", formatted);
         }
 
-        internal static void SetAmbientMonsterWaveRandom(
+        internal static void SetAmbientWaveRandom(
             Dictionary<string, Dictionary<string, string>> map,
             float initialMinSeconds,
             float initialMaxSeconds,
             float intervalMinSeconds,
             float intervalMaxSeconds)
         {
+            SetWaveRandom(map, "MimicWave", initialMinSeconds, initialMaxSeconds, intervalMinSeconds, intervalMaxSeconds);
+            SetWaveRandom(map, "GruntWave", initialMinSeconds, initialMaxSeconds, intervalMinSeconds, intervalMaxSeconds);
+        }
+
+        private static void SetWaveRandom(
+            Dictionary<string, Dictionary<string, string>> map,
+            string prefix,
+            float initialMinSeconds,
+            float initialMaxSeconds,
+            float intervalMinSeconds,
+            float intervalMaxSeconds)
+        {
             const string sectionId = "MimesisPlayerEnhancement_SpawnScaling";
-            Set(map, sectionId, "AmbientMonsterWaveMode", "Random");
-            Set(map, sectionId, "AmbientMonsterWaveInitialDelayMinSeconds", ModConfigFloatHelper.Format(initialMinSeconds));
-            Set(map, sectionId, "AmbientMonsterWaveInitialDelayMaxSeconds", ModConfigFloatHelper.Format(initialMaxSeconds));
-            Set(map, sectionId, "AmbientMonsterWaveIntervalMinSeconds", ModConfigFloatHelper.Format(intervalMinSeconds));
-            Set(map, sectionId, "AmbientMonsterWaveIntervalMaxSeconds", ModConfigFloatHelper.Format(intervalMaxSeconds));
+            Set(map, sectionId, $"{prefix}Mode", "Random");
+            Set(map, sectionId, $"{prefix}InitialDelayMinSeconds", ModConfigFloatHelper.Format(initialMinSeconds));
+            Set(map, sectionId, $"{prefix}InitialDelayMaxSeconds", ModConfigFloatHelper.Format(initialMaxSeconds));
+            Set(map, sectionId, $"{prefix}IntervalMinSeconds", ModConfigFloatHelper.Format(intervalMinSeconds));
+            Set(map, sectionId, $"{prefix}IntervalMaxSeconds", ModConfigFloatHelper.Format(intervalMaxSeconds));
         }
 
         internal static void SetLootMultipliers(

@@ -227,7 +227,7 @@ When the lobby is public, the browse list shows join status in the lobby name �
 
 ## Spawn Scaling — `[MimesisPlayerEnhancement_SpawnScaling]`
 
-Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scale dungeon monster and trap spawn budgets by type. **Three separate timing systems:** (1) `AmbientMonsterWaveMode` — ambient jako and mimic wave intervals only; (2) `TrapRespawnMode` — whether cleared map traps respawn at their marker; (3) `BonusEncounterDelay*` — respawn delay for map-placed bosses/specials with vanilla respawn budgets. Map-placed bosses, specials, and traps also recover inactive markers and add nav-jittered synthetic slots for extra concurrent spawns at load.
+Only the host must enable this for the whole lobby to get the effect; clients do not need the mod. Scale dungeon monster and trap spawn budgets by type. **Four separate timing systems:** (1) `MimicWaveMode` — periodic ambient mimic wave intervals; (2) `GruntWaveMode` — periodic ambient grunt (fodder) wave intervals; (3) `TrapRespawnMode` — whether cleared map traps respawn at their marker; (4) `BonusEncounterDelay*` — respawn delay for map-placed bosses/specials with vanilla respawn budgets. Map-placed bosses, specials, and traps also recover inactive markers and add nav-jittered synthetic slots for extra concurrent spawns at load.
 
 Each type has a **general multiplier** (always applied) and a **per-player bonus** added for each player above `SpawnScalingBaselinePlayerCount`: `effective = general + max(0, players − baseline) × perPlayer` (default baseline `4`, per-player `0.10`). Set a type's per-player multiplier to `0` to disable player-count scaling for that type.
 
@@ -237,30 +237,37 @@ Each type has a **general multiplier** (always applied) and a **per-player bonus
 | `SpawnScalingBaselinePlayerCount` | int | `4` | ≥ `1` | No per-player spawn bonus at or below this count (vanilla is 4). Minimum is 1. |
 | `MimicSpawnMultiplier` | float | `1.0` | ≥ `0` | General mimic spawn budget across the run, including periodic spawns (`1` = vanilla, `2` = double). Always applies when enabled. |
 | `MimicSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general mimic multiplier for each player above the baseline (`0` = no player scaling). |
+| `MimicWaveMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | **Ambient mimic waves only** — initial delay and interval. Independent of grunt waves. Does not affect traps, bosses, or specials. |
+| `MimicWaveInitialDelaySeconds` | float | `60.0` | ≥ `0` | Mimic waves, fixed mode: seconds after dungeon start before the first mimic wave. |
+| `MimicWaveInitialDelayMinSeconds` | float | `30.0` | ≥ `0` | Mimic waves, random mode: shortest initial wait. |
+| `MimicWaveInitialDelayMaxSeconds` | float | `90.0` | ≥ `0` | Mimic waves, random mode: longest initial wait. Must be ≥ min. |
+| `MimicWaveIntervalSeconds` | float | `30.0` | ≥ `0` | Mimic waves, fixed mode: seconds between subsequent mimic waves. |
+| `MimicWaveIntervalMinSeconds` | float | `20.0` | ≥ `0` | Mimic waves, random mode: shortest interval. |
+| `MimicWaveIntervalMaxSeconds` | float | `45.0` | ≥ `0` | Mimic waves, random mode: longest interval. Must be ≥ min. |
 | `BossSpawnMultiplier` | float | `1.0` | ≥ `0` | General map-placed boss budget: recover inactive markers plus synthetic jittered slots at load. |
 | `BossSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general boss multiplier for each player above the baseline. |
-| `JakoSpawnMultiplier` | float | `1.0` | ≥ `0` | General normal-monster threat budget for ambient dungeon spawns. |
-| `JakoSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general jako multiplier for each player above the baseline. |
+| `GruntSpawnMultiplier` | float | `1.0` | ≥ `0` | General ambient fodder (grunt) threat budget for dungeon spawns. |
+| `GruntSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general grunt multiplier for each player above the baseline. |
+| `GruntWaveMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | **Ambient grunt waves only** — initial delay and interval. Independent of mimic waves. Does not affect traps, bosses, or specials. |
+| `GruntWaveInitialDelaySeconds` | float | `60.0` | ≥ `0` | Grunt waves, fixed mode: seconds after dungeon start before the first grunt wave. |
+| `GruntWaveInitialDelayMinSeconds` | float | `30.0` | ≥ `0` | Grunt waves, random mode: shortest initial wait. |
+| `GruntWaveInitialDelayMaxSeconds` | float | `90.0` | ≥ `0` | Grunt waves, random mode: longest initial wait. Must be ≥ min. |
+| `GruntWaveIntervalSeconds` | float | `30.0` | ≥ `0` | Grunt waves, fixed mode: seconds between subsequent grunt waves. |
+| `GruntWaveIntervalMinSeconds` | float | `20.0` | ≥ `0` | Grunt waves, random mode: shortest interval. |
+| `GruntWaveIntervalMaxSeconds` | float | `45.0` | ≥ `0` | Grunt waves, random mode: longest interval. Must be ≥ min. |
 | `SpecialSpawnMultiplier` | float | `1.0` | ≥ `0` | General special monster budget for periodic spawns and map-placed specials. |
 | `SpecialSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general special multiplier for each player above the baseline. |
 | `TrapSpawnMultiplier` | float | `1.0` | ≥ `0` | General map-placed trap budget: recover inactive markers at load (no synthetic trap slots). |
 | `TrapSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general trap multiplier for each player above the baseline. |
-| `TrapRespawnMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | Whether cleared **map traps** respawn at their marker. Separate from ambient monster waves (`AmbientMonsterWaveMode`) and boss/special bonus spawns (`BonusEncounterDelay*`). |
+| `TrapRespawnMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | Whether cleared **map traps** respawn at their marker. Separate from mimic/grunt waves and boss/special bonus spawns (`BonusEncounterDelay*`). |
 | `TrapRespawnDelaySeconds` | float | `5.0` | ≥ `0` | Trap respawn, fixed mode: seconds after a trap is cleared before it can respawn at the marker. |
 | `TrapRespawnDelayMinSeconds` | float | `5.0` | ≥ `0` | Trap respawn, random mode: shortest delay. |
 | `TrapRespawnDelayMaxSeconds` | float | `30.0` | ≥ `0` | Trap respawn, random mode: longest delay. Must be ≥ `TrapRespawnDelayMinSeconds`. |
 | `TrapRespawnMinPlayerDistanceMeters` | float | `10.0` | ≥ `0` | Trap respawn, fixed/random modes: hold spawn until no players are within this radius (checked ~once per second). `0` = spawn as soon as the delay ends. |
-| `AmbientMonsterWaveMode` | string | `Vanilla` | `Vanilla`, `Fixed`, `Random` | **Ambient jako and mimic waves only** — initial delay before the first wave and interval between waves. Does not affect traps, bosses, or specials. `Vanilla` uses dungeon data; `Fixed`/`Random` use the ambient wave keys below. |
-| `AmbientMonsterWaveInitialDelaySeconds` | float | `60.0` | ≥ `0` | Ambient waves, fixed mode: seconds after dungeon start before the first jako/mimic wave. |
-| `AmbientMonsterWaveInitialDelayMinSeconds` | float | `30.0` | ≥ `0` | Ambient waves, random mode: shortest initial wait before the first jako/mimic wave. |
-| `AmbientMonsterWaveInitialDelayMaxSeconds` | float | `90.0` | ≥ `0` | Ambient waves, random mode: longest initial wait. Must be ≥ min. |
-| `AmbientMonsterWaveIntervalSeconds` | float | `30.0` | ≥ `0` | Ambient waves, fixed mode: seconds between subsequent jako/mimic waves. |
-| `AmbientMonsterWaveIntervalMinSeconds` | float | `20.0` | ≥ `0` | Ambient waves, random mode: shortest interval between jako/mimic waves. |
-| `AmbientMonsterWaveIntervalMaxSeconds` | float | `45.0` | ≥ `0` | Ambient waves, random mode: longest interval between waves. Must be ≥ min. |
 | `BonusEncounterDelayMinSeconds` | float | `5.0` | ≥ `0` | **Boss/special respawn only** — shortest wait after a map-placed boss or special with a respawn budget is cleared. Not used for traps. |
 | `BonusEncounterDelayMaxSeconds` | float | `30.0` | ≥ `0` | Longest wait for that bonus spawn delay. Not used for traps. Must be ≥ `BonusEncounterDelayMinSeconds`. |
 | `BonusEncounterMinPlayerDistanceMeters` | float | `10.0` | ≥ `0` | After the delay, hold boss/special respawns until no living players are within this radius (meters) of the marker. Set to `0` to spawn as soon as the delay elapses. |
-| `OtherSpawnMultiplier` | float | `1.0` | ≥ `0` | General spawn multiplier for other entities (not mimic/boss/jako/special/trap). |
+| `OtherSpawnMultiplier` | float | `1.0` | ≥ `0` | General spawn multiplier for other entities (not mimic/boss/grunt/special/trap). |
 | `OtherSpawnPerPlayerMultiplier` | float | `0.10` | ≥ `0` | Added to the general other multiplier for each player above the baseline. |
 
 ## Loot Multiplicator — `[MimesisPlayerEnhancement_LootMultiplicator]`

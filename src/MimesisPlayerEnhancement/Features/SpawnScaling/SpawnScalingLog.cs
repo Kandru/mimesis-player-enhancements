@@ -35,8 +35,8 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 $"(base={config.MimicSpawnMultiplier:0.##}×, perPlayer={config.MimicSpawnPerPlayerMultiplier:0.##}), " +
                 $"boss={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Boss, playerCount, config):0.##}× " +
                 $"(base={config.BossSpawnMultiplier:0.##}×, perPlayer={config.BossSpawnPerPlayerMultiplier:0.##}), " +
-                $"jako={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config):0.##}× " +
-                $"(base={config.JakoSpawnMultiplier:0.##}×, perPlayer={config.JakoSpawnPerPlayerMultiplier:0.##}), " +
+                $"grunt={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Grunt, playerCount, config):0.##}× " +
+                $"(base={config.GruntSpawnMultiplier:0.##}×, perPlayer={config.GruntSpawnPerPlayerMultiplier:0.##}), " +
                 $"special={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Special, playerCount, config):0.##}× " +
                 $"(base={config.SpecialSpawnMultiplier:0.##}×, perPlayer={config.SpecialSpawnPerPlayerMultiplier:0.##}), " +
                 $"trap={SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Trap, playerCount, config):0.##}× " +
@@ -94,19 +94,20 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 $"master={masterId}, budgetsScaled={scalingApplied}, source={spawnSource}");
         }
 
-        internal static void InfoAmbientMonsterWaveApplied(
-            AmbientMonsterWaveMode mode,
+        internal static void InfoAmbientWaveApplied(
+            string waveKind,
+            AmbientWaveMode mode,
             float initialSeconds,
             float intervalSeconds)
         {
             ModLog.Info(
                 Feature,
-                $"Ambient monster wave timing applied — mode={mode}, initial={initialSeconds:0.#}s, interval={intervalSeconds:0.#}s");
+                $"Ambient {waveKind} wave timing applied — mode={mode}, initial={initialSeconds:0.#}s, interval={intervalSeconds:0.#}s");
         }
 
-        internal static void DebugAmbientMonsterWaveIntervalRerolled(string waveKind, float intervalSeconds)
+        internal static void DebugAmbientWaveIntervalRerolled(string waveKind, float intervalSeconds)
         {
-            ModLog.Debug(Feature, $"Ambient monster wave interval re-rolled — wave={waveKind}, interval={intervalSeconds:0.#}s");
+            ModLog.Debug(Feature, $"Ambient {waveKind} wave interval re-rolled — interval={intervalSeconds:0.#}s");
         }
     }
 }

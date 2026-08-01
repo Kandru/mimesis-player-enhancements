@@ -57,34 +57,35 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             DungeonRoom room,
             RoomSpawnScalingState state,
             DungeonMasterInfo info,
-            float jakoMultiplier,
+            float gruntMultiplier,
             float mimicMultiplier)
         {
-            bool needsTryRateOverride = jakoMultiplier > 1f || mimicMultiplier > 1f;
-            bool needsPeriodOverride = AmbientMonsterWaveResolver.IsWaitModeActive(state.Snapshot);
+            bool needsTryRateOverride = gruntMultiplier > 1f || mimicMultiplier > 1f;
+            bool gruntPeriodActive = AmbientWaveTiming.IsGruntWaitActive(state.Snapshot);
+            bool mimicPeriodActive = AmbientWaveTiming.IsMimicWaitActive(state.Snapshot);
 
-            if (!needsTryRateOverride && !needsPeriodOverride)
+            if (!needsTryRateOverride && !gruntPeriodActive && !mimicPeriodActive)
             {
                 state.TimingOverrides = null;
                 return;
             }
 
-            int jakoPeriod = needsPeriodOverride
-                ? state.NextJakoWavePeriodMs
+            int gruntPeriod = gruntPeriodActive
+                ? state.NextGruntWavePeriodMs
                 : info.NormalMonsterSpawnPeriod;
-            int mimicPeriod = needsPeriodOverride
+            int mimicPeriod = mimicPeriodActive
                 ? state.NextMimicWavePeriodMs
                 : info.MimicSpawnPeriod;
 
             SpawnTimingOverrides overrides = new()
             {
-                NormalMonsterSpawnTryCount = needsTryRateOverride && jakoMultiplier > 1f
-                    ? SpawnTimingScaleResolver.ScaleTryCount(info.NormalMonsterSpawnTryCount, jakoMultiplier)
+                NormalMonsterSpawnTryCount = needsTryRateOverride && gruntMultiplier > 1f
+                    ? SpawnTimingScaleResolver.ScaleTryCount(info.NormalMonsterSpawnTryCount, gruntMultiplier)
                     : info.NormalMonsterSpawnTryCount,
-                NormalMonsterSpawnRate = needsTryRateOverride && jakoMultiplier > 1f
-                    ? SpawnTimingScaleResolver.ScaleRate(info.NormalMonsterSpawnRate, jakoMultiplier)
+                NormalMonsterSpawnRate = needsTryRateOverride && gruntMultiplier > 1f
+                    ? SpawnTimingScaleResolver.ScaleRate(info.NormalMonsterSpawnRate, gruntMultiplier)
                     : info.NormalMonsterSpawnRate,
-                NormalMonsterSpawnPeriod = jakoPeriod,
+                NormalMonsterSpawnPeriod = gruntPeriod,
                 MimicSpawnTryCount = needsTryRateOverride && mimicMultiplier > 1f
                     ? SpawnTimingScaleResolver.ScaleTryCount(info.MimicSpawnTryCount, mimicMultiplier)
                     : info.MimicSpawnTryCount,

@@ -35,6 +35,34 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "MimicSpawnPerPlayerMultiplier",
                 ScalingMath.DefaultPerPlayerMultiplier);
 
+            ModConfig.MimicWaveMode = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveMode",
+                "Vanilla");
+
+            ModConfig.MimicWaveInitialDelaySeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveInitialDelaySeconds",
+                60f);
+
+            ModConfig.MimicWaveInitialDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveInitialDelayMinSeconds",
+                30f);
+
+            ModConfig.MimicWaveInitialDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveInitialDelayMaxSeconds",
+                90f);
+
+            ModConfig.MimicWaveIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveIntervalSeconds",
+                30f);
+
+            ModConfig.MimicWaveIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveIntervalMinSeconds",
+                20f);
+
+            ModConfig.MimicWaveIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "MimicWaveIntervalMaxSeconds",
+                45f);
+
             ModConfig.BossSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "BossSpawnMultiplier",
                 1f);
@@ -43,13 +71,41 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "BossSpawnPerPlayerMultiplier",
                 ScalingMath.DefaultPerPlayerMultiplier);
 
-            ModConfig.JakoSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "JakoSpawnMultiplier",
+            ModConfig.GruntSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "GruntSpawnMultiplier",
                 1f);
 
-            ModConfig.JakoSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "JakoSpawnPerPlayerMultiplier",
+            ModConfig.GruntSpawnPerPlayerMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "GruntSpawnPerPlayerMultiplier",
                 ScalingMath.DefaultPerPlayerMultiplier);
+
+            ModConfig.GruntWaveMode = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveMode",
+                "Vanilla");
+
+            ModConfig.GruntWaveInitialDelaySeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveInitialDelaySeconds",
+                60f);
+
+            ModConfig.GruntWaveInitialDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveInitialDelayMinSeconds",
+                30f);
+
+            ModConfig.GruntWaveInitialDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveInitialDelayMaxSeconds",
+                90f);
+
+            ModConfig.GruntWaveIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveIntervalSeconds",
+                30f);
+
+            ModConfig.GruntWaveIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveIntervalMinSeconds",
+                20f);
+
+            ModConfig.GruntWaveIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
+                "GruntWaveIntervalMaxSeconds",
+                45f);
 
             ModConfig.SpecialSpawnMultiplier = ModConfig.CreateTrackedEntry(_category,
                 "SpecialSpawnMultiplier",
@@ -87,34 +143,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 "TrapRespawnMinPlayerDistanceMeters",
                 10f);
 
-            ModConfig.AmbientMonsterWaveMode = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveMode",
-                "Vanilla");
-
-            ModConfig.AmbientMonsterWaveInitialDelaySeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveInitialDelaySeconds",
-                60f);
-
-            ModConfig.AmbientMonsterWaveInitialDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveInitialDelayMinSeconds",
-                30f);
-
-            ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveInitialDelayMaxSeconds",
-                90f);
-
-            ModConfig.AmbientMonsterWaveIntervalSeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveIntervalSeconds",
-                30f);
-
-            ModConfig.AmbientMonsterWaveIntervalMinSeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveIntervalMinSeconds",
-                20f);
-
-            ModConfig.AmbientMonsterWaveIntervalMaxSeconds = ModConfig.CreateTrackedEntry(_category,
-                "AmbientMonsterWaveIntervalMaxSeconds",
-                45f);
-
             ModConfig.BonusEncounterDelayMinSeconds = ModConfig.CreateTrackedEntry(_category,
                 "BonusEncounterDelayMinSeconds",
                 5f);
@@ -144,42 +172,63 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             ModConfig.MimicSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnMultiplier));
             ModConfig.MimicSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.MimicSpawnPerPlayerMultiplier));
+            ModConfig.MimicWaveMode.OnEntryValueChanged.Subscribe((_, value) => OnWaveModeChanged(logger, value, ModConfig.MimicWaveMode));
+            ModConfig.MimicWaveInitialDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveSecondsChanged(logger, value, ModConfig.MimicWaveInitialDelaySeconds));
+            ModConfig.MimicWaveInitialDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.MimicWaveInitialDelayMinSeconds, ModConfig.MimicWaveInitialDelayMaxSeconds));
+            ModConfig.MimicWaveInitialDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.MimicWaveInitialDelayMinSeconds, ModConfig.MimicWaveInitialDelayMaxSeconds));
+            ModConfig.MimicWaveIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveSecondsChanged(logger, value, ModConfig.MimicWaveIntervalSeconds));
+            ModConfig.MimicWaveIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.MimicWaveIntervalMinSeconds, ModConfig.MimicWaveIntervalMaxSeconds));
+            ModConfig.MimicWaveIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.MimicWaveIntervalMinSeconds, ModConfig.MimicWaveIntervalMaxSeconds));
+
             ModConfig.BossSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.BossSpawnMultiplier));
             ModConfig.BossSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.BossSpawnPerPlayerMultiplier));
-            ModConfig.JakoSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnMultiplier));
-            ModConfig.JakoSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.JakoSpawnPerPlayerMultiplier));
+
+            ModConfig.GruntSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.GruntSpawnMultiplier));
+            ModConfig.GruntSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.GruntSpawnPerPlayerMultiplier));
+            ModConfig.GruntWaveMode.OnEntryValueChanged.Subscribe((_, value) => OnWaveModeChanged(logger, value, ModConfig.GruntWaveMode));
+            ModConfig.GruntWaveInitialDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveSecondsChanged(logger, value, ModConfig.GruntWaveInitialDelaySeconds));
+            ModConfig.GruntWaveInitialDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.GruntWaveInitialDelayMinSeconds, ModConfig.GruntWaveInitialDelayMaxSeconds));
+            ModConfig.GruntWaveInitialDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.GruntWaveInitialDelayMinSeconds, ModConfig.GruntWaveInitialDelayMaxSeconds));
+            ModConfig.GruntWaveIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveSecondsChanged(logger, value, ModConfig.GruntWaveIntervalSeconds));
+            ModConfig.GruntWaveIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.GruntWaveIntervalMinSeconds, ModConfig.GruntWaveIntervalMaxSeconds));
+            ModConfig.GruntWaveIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnWaveRangeChanged(logger, value, ModConfig.GruntWaveIntervalMinSeconds, ModConfig.GruntWaveIntervalMaxSeconds));
+
             ModConfig.SpecialSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnMultiplier));
             ModConfig.SpecialSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.SpecialSpawnPerPlayerMultiplier));
             ModConfig.TrapSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnMultiplier));
             ModConfig.TrapSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.TrapSpawnPerPlayerMultiplier));
-            ModConfig.OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnMultiplier));
-            ModConfig.OtherSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnPerPlayerMultiplier));
-
-            ModConfig.BonusEncounterDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMinSeconds));
-            ModConfig.BonusEncounterDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMaxSeconds));
-            ModConfig.BonusEncounterMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterMinPlayerDistanceChanged(logger, value));
             ModConfig.TrapRespawnMode.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnModeChanged(logger, value));
             ModConfig.TrapRespawnDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayChanged(logger, value, ModConfig.TrapRespawnDelaySeconds));
             ModConfig.TrapRespawnDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayRangeChanged(logger, value, ModConfig.TrapRespawnDelayMinSeconds, ModConfig.TrapRespawnDelayMaxSeconds));
             ModConfig.TrapRespawnDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnDelayRangeChanged(logger, value, ModConfig.TrapRespawnDelayMinSeconds, ModConfig.TrapRespawnDelayMaxSeconds));
             ModConfig.TrapRespawnMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnTrapRespawnMinPlayerDistanceChanged(logger, value));
-            ModConfig.AmbientMonsterWaveMode.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveModeChanged(logger, value));
-            ModConfig.AmbientMonsterWaveInitialDelaySeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveSecondsChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelaySeconds));
-            ModConfig.AmbientMonsterWaveInitialDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelayMinSeconds, ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds));
-            ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveInitialDelayMinSeconds, ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds));
-            ModConfig.AmbientMonsterWaveIntervalSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveSecondsChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalSeconds));
-            ModConfig.AmbientMonsterWaveIntervalMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
-            ModConfig.AmbientMonsterWaveIntervalMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnAmbientMonsterWaveRangeChanged(logger, value, ModConfig.AmbientMonsterWaveIntervalMinSeconds, ModConfig.AmbientMonsterWaveIntervalMaxSeconds));
+            ModConfig.BonusEncounterDelayMinSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMinSeconds));
+            ModConfig.BonusEncounterDelayMaxSeconds.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterDelayChanged(logger, value, ModConfig.BonusEncounterDelayMaxSeconds));
+            ModConfig.BonusEncounterMinPlayerDistanceMeters.OnEntryValueChanged.Subscribe((_, value) => OnBonusEncounterMinPlayerDistanceChanged(logger, value));
+            ModConfig.OtherSpawnMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnMultiplier));
+            ModConfig.OtherSpawnPerPlayerMultiplier.OnEntryValueChanged.Subscribe((_, value) => ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.OtherSpawnPerPlayerMultiplier));
         }
 
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.MimicSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.MimicSpawnPerPlayerMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveInitialDelaySeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveInitialDelayMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveInitialDelayMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveIntervalSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveIntervalMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.MimicWaveIntervalMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.BossSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.BossSpawnPerPlayerMultiplier);
-            ModConfig.TrackFloatEntry(ModConfig.JakoSpawnMultiplier);
-            ModConfig.TrackFloatEntry(ModConfig.JakoSpawnPerPlayerMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.GruntSpawnMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.GruntSpawnPerPlayerMultiplier);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveInitialDelaySeconds);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveInitialDelayMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveInitialDelayMaxSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveIntervalSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveIntervalMinSeconds);
+            ModConfig.TrackFloatEntry(ModConfig.GruntWaveIntervalMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.SpecialSpawnMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.SpecialSpawnPerPlayerMultiplier);
             ModConfig.TrackFloatEntry(ModConfig.TrapSpawnMultiplier);
@@ -188,12 +237,6 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMinSeconds);
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnDelayMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.TrapRespawnMinPlayerDistanceMeters);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelaySeconds);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelayMinSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalMinSeconds);
-            ModConfig.TrackFloatEntry(ModConfig.AmbientMonsterWaveIntervalMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.BonusEncounterDelayMinSeconds);
             ModConfig.TrackFloatEntry(ModConfig.BonusEncounterDelayMaxSeconds);
             ModConfig.TrackFloatEntry(ModConfig.BonusEncounterMinPlayerDistanceMeters);
@@ -296,21 +339,24 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.NotifyChanged(maxEntry);
         }
 
-        private static void OnAmbientMonsterWaveModeChanged(MelonLogger.Instance logger, string value)
+        private static void OnWaveModeChanged(
+            MelonLogger.Instance logger,
+            string value,
+            MelonPreferences_Entry<string> entry)
         {
             if (!string.Equals(value, "Vanilla", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(value, "Fixed", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(value, "Random", StringComparison.OrdinalIgnoreCase))
             {
-                logger.Warning("AmbientMonsterWaveMode must be Vanilla, Fixed, or Random; resetting to Vanilla.");
-                ModConfig.AmbientMonsterWaveMode.Value = "Vanilla";
+                logger.Warning($"{entry.Identifier} must be Vanilla, Fixed, or Random; resetting to Vanilla.");
+                entry.Value = "Vanilla";
                 return;
             }
 
-            ModConfig.NotifyChanged(ModConfig.AmbientMonsterWaveMode);
+            ModConfig.NotifyChanged(entry);
         }
 
-        private static void OnAmbientMonsterWaveSecondsChanged(
+        private static void OnWaveSecondsChanged(
             MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> entry)
@@ -326,14 +372,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             ModConfig.NotifyChanged(entry);
         }
 
-        private static void OnAmbientMonsterWaveRangeChanged(
+        private static void OnWaveRangeChanged(
             MelonLogger.Instance logger,
             float value,
             MelonPreferences_Entry<float> minEntry,
             MelonPreferences_Entry<float> maxEntry)
         {
-            OnAmbientMonsterWaveSecondsChanged(logger, value, minEntry);
-            OnAmbientMonsterWaveSecondsChanged(logger, maxEntry.Value, maxEntry);
+            OnWaveSecondsChanged(logger, value, minEntry);
+            OnWaveSecondsChanged(logger, maxEntry.Value, maxEntry);
 
             float min = minEntry.Value;
             float max = maxEntry.Value;

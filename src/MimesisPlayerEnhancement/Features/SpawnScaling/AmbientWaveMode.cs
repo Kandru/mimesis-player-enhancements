@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling
 {
-    internal enum AmbientMonsterWaveMode
+    internal enum AmbientWaveMode
     {
         Vanilla,
         Fixed,

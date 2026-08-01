@@ -13,36 +13,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
             float trapRespawnDelayMinSeconds = 5f,
             float trapRespawnDelayMaxSeconds = 30f,
             float trapRespawnMinPlayerDistanceMeters = 10f) =>
-            new(
+            SpawnScalingSceneConfigTestFactory.Create(
                 enableSpawnScaling: enabled,
-                spawnScalingBaselinePlayerCount: ScalingMath.VanillaPlayerBaseline,
-                mimicSpawnMultiplier: 1f,
-                mimicSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                bossSpawnMultiplier: 1f,
-                bossSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                jakoSpawnMultiplier: 1f,
-                jakoSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                specialSpawnMultiplier: 1f,
-                specialSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                trapSpawnMultiplier: 1f,
-                trapSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
                 trapRespawnMode: trapRespawnMode,
                 trapRespawnDelaySeconds: trapRespawnDelaySeconds,
                 trapRespawnDelayMinSeconds: trapRespawnDelayMinSeconds,
                 trapRespawnDelayMaxSeconds: trapRespawnDelayMaxSeconds,
-                trapRespawnMinPlayerDistanceMeters: trapRespawnMinPlayerDistanceMeters,
-                otherSpawnMultiplier: 1f,
-                otherSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                ambientMonsterWaveMode: "Vanilla",
-                ambientMonsterWaveInitialDelaySeconds: 60f,
-                ambientMonsterWaveInitialDelayMinSeconds: 30f,
-                ambientMonsterWaveInitialDelayMaxSeconds: 90f,
-                ambientMonsterWaveIntervalSeconds: 30f,
-                ambientMonsterWaveIntervalMinSeconds: 20f,
-                ambientMonsterWaveIntervalMaxSeconds: 45f,
-                bonusEncounterDelayMinSeconds: 5f,
-                bonusEncounterDelayMaxSeconds: 30f,
-                bonusEncounterMinPlayerDistanceMeters: 10f);
+                trapRespawnMinPlayerDistanceMeters: trapRespawnMinPlayerDistanceMeters);
 
         [Theory]
         [InlineData("Vanilla", 0)]

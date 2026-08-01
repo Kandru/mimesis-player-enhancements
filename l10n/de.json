@@ -1044,16 +1044,17 @@
       "_section": "Spawn-Skalierung",
       "_description": "Skaliere Monster- und Fallen-Spawns nach Typ oder Spieleranzahl.",
       "_groups": {
-        "ambientMonsterWaveTiming": "Ambient-Jako- & Mimic-Wellen",
         "trapRespawn": "Fallen-Respawn",
         "bonusEncounterTiming": "Boss- & Spezial-Bonus-Spawns",
         "playerScaling": "Spieler-Skalierung",
         "mimicSpawn": "Mimic-Spawn-Skalierung",
         "bossSpawn": "Boss-Spawn-Skalierung",
-        "jakoSpawn": "Jako-Spawn-Skalierung",
         "specialSpawn": "Special-Spawn-Skalierung",
         "trapSpawn": "Fallen-Spawn-Skalierung",
-        "otherSpawn": "Sonstige Spawn-Skalierung"
+        "otherSpawn": "Sonstige Spawn-Skalierung",
+        "mimicWaveTiming": "Mimic-Wellen",
+        "gruntWaveTiming": "Grunt-Wellen",
+        "gruntSpawn": "Grunt-Spawn-Skalierung"
       },
       "EnableSpawnScaling": {
         "title": "Spawn-Skalierung aktivieren",
@@ -1067,10 +1068,6 @@
         "title": "Boss-Spawn-Multiplikator",
         "description": "Kartenplatzierte Bosse und Bonus-Begegnungen nach einem Kill (1 = Vanilla, 2 = doppelt)."
       },
-      "JakoSpawnMultiplier": {
-        "title": "Jako-Spawn-Multiplikator",
-        "description": "Umgebungs-Dungeon-Monster-Spawns (1 = Vanilla, 2 = doppelt)."
-      },
       "SpecialSpawnMultiplier": {
         "title": "Special-Spawn-Multiplikator",
         "description": "Periodische und kartenplatzierte Special-Monster (1 = Vanilla, 2 = doppelt)."
@@ -1081,7 +1078,7 @@
       },
       "TrapRespawnMode": {
         "title": "Fallen-Respawn-Modus",
-        "description": "Ob geleerte Kartenfallen an ihrem Marker respawnen. Getrennt von Ambient-Monster-Wellen und Boss-/Spezial-Bonus-Spawns. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Fallen-Verzögerungen unten.",
+        "description": "Ob geleerte Kartenfallen an ihrem Marker respawnen. Getrennt von Mimic-/Grunt-Wellen und Boss-/Spezial-Bonus-Spawns. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Fallen-Verzögerungen unten.",
         "options": {
           "Vanilla": "Vanilla",
           "Fixed": "Feste Sekunden",
@@ -1103,39 +1100,6 @@
       "TrapRespawnMinPlayerDistanceMeters": {
         "title": "Fallen-Respawn Mindestabstand (m)",
         "description": "Fixed- und Random-Modus: Trap-Respawn erst, wenn keine Spieler in diesem Radius sind. Prüfung ca. einmal pro Sekunde. 0 = sofort nach Verzögerung."
-      },
-      "AmbientMonsterWaveMode": {
-        "title": "Ambient-Wellen-Timing-Modus",
-        "description": "Timing für periodische Ambient-Jako- (Normalmonster-) und Mimic-Spawn-Wellen. Betrifft keine Fallen, Bosse, Spezial-Gegner oder andere Karten-Begegnungen. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Ambient-Wellen-Einstellungen unten.",
-        "options": {
-          "Vanilla": "Vanilla",
-          "Fixed": "Feste Sekunden",
-          "Random": "Zufällige Sekunden"
-        }
-      },
-      "AmbientMonsterWaveInitialDelaySeconds": {
-        "title": "Erste Ambient-Welle Verzögerung (Sekunden)",
-        "description": "Fixed-Modus: Sekunden nach Dungeon-Start bis zur ersten Ambient-Jako-/Mimic-Welle."
-      },
-      "AmbientMonsterWaveInitialDelayMinSeconds": {
-        "title": "Erste Ambient-Welle Min (Sekunden)",
-        "description": "Random-Modus: kürzeste Wartezeit vor der ersten Ambient-Jako-/Mimic-Welle."
-      },
-      "AmbientMonsterWaveInitialDelayMaxSeconds": {
-        "title": "Erste Ambient-Welle Max (Sekunden)",
-        "description": "Random-Modus: längste Wartezeit vor der ersten Ambient-Jako-/Mimic-Welle."
-      },
-      "AmbientMonsterWaveIntervalSeconds": {
-        "title": "Ambient-Wellen-Intervall (Sekunden)",
-        "description": "Fixed-Modus: Sekunden zwischen Ambient-Jako-/Mimic-Spawn-Wellen."
-      },
-      "AmbientMonsterWaveIntervalMinSeconds": {
-        "title": "Ambient-Wellen-Intervall Min (Sekunden)",
-        "description": "Random-Modus: kürzestes Intervall zwischen Ambient-Jako-/Mimic-Wellen."
-      },
-      "AmbientMonsterWaveIntervalMaxSeconds": {
-        "title": "Ambient-Wellen-Intervall Max (Sekunden)",
-        "description": "Random-Modus: längstes Intervall zwischen Ambient-Jako-/Mimic-Wellen."
       },
       "BonusEncounterDelayMinSeconds": {
         "title": "Bonus-Begegnung Verzögerung Min (Sekunden)",
@@ -1165,10 +1129,6 @@
         "title": "Boss Pro-Spieler-Bonus",
         "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
       },
-      "JakoSpawnPerPlayerMultiplier": {
-        "title": "Jako Pro-Spieler-Bonus",
-        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
-      },
       "SpecialSpawnPerPlayerMultiplier": {
         "title": "Special Pro-Spieler-Bonus",
         "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
@@ -1180,6 +1140,80 @@
       "OtherSpawnPerPlayerMultiplier": {
         "title": "Sonstige Pro-Spieler-Bonus",
         "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "GruntSpawnMultiplier": {
+        "title": "Grunt-Spawn-Multiplikator",
+        "description": "Ambient-Dungeon-Futtermonster (Grunts) (1 = Vanilla, 2 = doppelt)."
+      },
+      "GruntSpawnPerPlayerMultiplier": {
+        "title": "Grunt-Bonus pro Spieler",
+        "description": "Wird für jeden Spieler über der Basis zum allgemeinen Multiplikator addiert (0,10 = +0,10 pro Extra-Spieler, 0 = keine Spieler-Skalierung). Minimum ist 0."
+      },
+      "MimicWaveMode": {
+        "title": "Mimic-Wellen-Timing-Modus",
+        "description": "Timing für periodische Ambient-Mimic-Spawn-Wellen. Betrifft keine Fallen, Bosse, Spezial-Gegner oder andere Karten-Begegnungen. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Wellen-Einstellungen unten.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Feste Sekunden",
+          "Random": "Zufällige Sekunden"
+        }
+      },
+      "MimicWaveInitialDelaySeconds": {
+        "title": "Erste Mimic-Welle Verzögerung (Sekunden)",
+        "description": "Fixed-Modus: Sekunden nach Dungeon-Start bis zur ersten Ambient-Mimic-Welle."
+      },
+      "MimicWaveInitialDelayMinSeconds": {
+        "title": "Erste Mimic-Welle Verzögerung Min (Sekunden)",
+        "description": "Random-Modus: kürzeste Wartezeit vor der ersten Ambient-Mimic-Welle."
+      },
+      "MimicWaveInitialDelayMaxSeconds": {
+        "title": "Erste Mimic-Welle Verzögerung Max (Sekunden)",
+        "description": "Random-Modus: längste Wartezeit vor der ersten Ambient-Mimic-Welle."
+      },
+      "MimicWaveIntervalSeconds": {
+        "title": "Mimic-Wellen-Intervall (Sekunden)",
+        "description": "Fixed-Modus: Sekunden zwischen Ambient-Mimic-Spawn-Wellen."
+      },
+      "MimicWaveIntervalMinSeconds": {
+        "title": "Mimic-Wellen-Intervall Min (Sekunden)",
+        "description": "Random-Modus: kürzestes Intervall zwischen Ambient-Mimic-Wellen."
+      },
+      "MimicWaveIntervalMaxSeconds": {
+        "title": "Mimic-Wellen-Intervall Max (Sekunden)",
+        "description": "Random-Modus: längstes Intervall zwischen Ambient-Mimic-Wellen."
+      },
+      "GruntWaveMode": {
+        "title": "Grunt-Wellen-Timing-Modus",
+        "description": "Timing für periodische Ambient-Grunt-Spawn-Wellen. Betrifft keine Fallen, Bosse, Spezial-Gegner oder andere Karten-Begegnungen. Vanilla nutzt Dungeon-Daten; Fixed und Random verwenden die Wellen-Einstellungen unten.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Feste Sekunden",
+          "Random": "Zufällige Sekunden"
+        }
+      },
+      "GruntWaveInitialDelaySeconds": {
+        "title": "Erste Grunt-Welle Verzögerung (Sekunden)",
+        "description": "Fixed-Modus: Sekunden nach Dungeon-Start bis zur ersten Ambient-Grunt-Welle."
+      },
+      "GruntWaveInitialDelayMinSeconds": {
+        "title": "Erste Grunt-Welle Verzögerung Min (Sekunden)",
+        "description": "Random-Modus: kürzeste Wartezeit vor der ersten Ambient-Grunt-Welle."
+      },
+      "GruntWaveInitialDelayMaxSeconds": {
+        "title": "Erste Grunt-Welle Verzögerung Max (Sekunden)",
+        "description": "Random-Modus: längste Wartezeit vor der ersten Ambient-Grunt-Welle."
+      },
+      "GruntWaveIntervalSeconds": {
+        "title": "Grunt-Wellen-Intervall (Sekunden)",
+        "description": "Fixed-Modus: Sekunden zwischen Ambient-Grunt-Spawn-Wellen."
+      },
+      "GruntWaveIntervalMinSeconds": {
+        "title": "Grunt-Wellen-Intervall Min (Sekunden)",
+        "description": "Random-Modus: kürzestes Intervall zwischen Ambient-Grunt-Wellen."
+      },
+      "GruntWaveIntervalMaxSeconds": {
+        "title": "Grunt-Wellen-Intervall Max (Sekunden)",
+        "description": "Random-Modus: längstes Intervall zwischen Ambient-Grunt-Wellen."
       }
     },
     "MimesisPlayerEnhancement_Statistics": {
@@ -1628,7 +1662,6 @@
     "spawn_item_category_developer": "Entwickler / Testgegenstände",
     "spawn_monster_category_mimic": "Mimics",
     "spawn_monster_category_boss": "Bosse",
-    "spawn_monster_category_jako": "Jako",
     "spawn_monster_category_special": "Spezial",
     "monster_name_mimic_alpha_base": "Alpha-Mimic",
     "item_label_2531": "Farbsprüher (Test)",
@@ -1972,6 +2005,7 @@
     "quick_import_help": "Füge einen Freigabe-String aus einem anderen Save-Slot oder von einem anderen Host ein. Das Preset wird in deiner Benutzer-Preset-Liste gespeichert und kann über die Karten oben angewendet werden.",
     "quick_active_profile": "Aktives Profil: {label}",
     "quick_preset_user": "Benutzer-Preset",
-    "waiting_for_session": "Warte auf Spielsitzung…"
+    "waiting_for_session": "Warte auf Spielsitzung…",
+    "spawn_monster_category_grunt": "Grunt"
   }
 }

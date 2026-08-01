@@ -14,14 +14,14 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [InlineData(0, 3f, 3f, 0, 0)]
         public void ComputeAmbientExpandCount_respects_pool_multiplier_and_cap(
             int poolSize,
-            float jakoMultiplier,
+            float gruntMultiplier,
             float mimicMultiplier,
             int alreadySynthetic,
             int expected)
         {
             int actual = SpawnSlotFactory.ComputeAmbientExpandCount(
                 poolSize,
-                jakoMultiplier,
+                gruntMultiplier,
                 mimicMultiplier,
                 alreadySynthetic);
 

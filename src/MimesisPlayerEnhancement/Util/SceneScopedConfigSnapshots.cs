@@ -74,10 +74,24 @@ namespace MimesisPlayerEnhancement.Util
             int spawnScalingBaselinePlayerCount,
             float mimicSpawnMultiplier,
             float mimicSpawnPerPlayerMultiplier,
+            string mimicWaveMode,
+            float mimicWaveInitialDelaySeconds,
+            float mimicWaveInitialDelayMinSeconds,
+            float mimicWaveInitialDelayMaxSeconds,
+            float mimicWaveIntervalSeconds,
+            float mimicWaveIntervalMinSeconds,
+            float mimicWaveIntervalMaxSeconds,
             float bossSpawnMultiplier,
             float bossSpawnPerPlayerMultiplier,
-            float jakoSpawnMultiplier,
-            float jakoSpawnPerPlayerMultiplier,
+            float gruntSpawnMultiplier,
+            float gruntSpawnPerPlayerMultiplier,
+            string gruntWaveMode,
+            float gruntWaveInitialDelaySeconds,
+            float gruntWaveInitialDelayMinSeconds,
+            float gruntWaveInitialDelayMaxSeconds,
+            float gruntWaveIntervalSeconds,
+            float gruntWaveIntervalMinSeconds,
+            float gruntWaveIntervalMaxSeconds,
             float specialSpawnMultiplier,
             float specialSpawnPerPlayerMultiplier,
             float trapSpawnMultiplier,
@@ -89,13 +103,6 @@ namespace MimesisPlayerEnhancement.Util
             float trapRespawnMinPlayerDistanceMeters,
             float otherSpawnMultiplier,
             float otherSpawnPerPlayerMultiplier,
-            string ambientMonsterWaveMode,
-            float ambientMonsterWaveInitialDelaySeconds,
-            float ambientMonsterWaveInitialDelayMinSeconds,
-            float ambientMonsterWaveInitialDelayMaxSeconds,
-            float ambientMonsterWaveIntervalSeconds,
-            float ambientMonsterWaveIntervalMinSeconds,
-            float ambientMonsterWaveIntervalMaxSeconds,
             float bonusEncounterDelayMinSeconds,
             float bonusEncounterDelayMaxSeconds,
             float bonusEncounterMinPlayerDistanceMeters)
@@ -104,10 +111,24 @@ namespace MimesisPlayerEnhancement.Util
             SpawnScalingBaselinePlayerCount = spawnScalingBaselinePlayerCount;
             MimicSpawnMultiplier = mimicSpawnMultiplier;
             MimicSpawnPerPlayerMultiplier = mimicSpawnPerPlayerMultiplier;
+            MimicWaveMode = mimicWaveMode;
+            MimicWaveInitialDelaySeconds = mimicWaveInitialDelaySeconds;
+            MimicWaveInitialDelayMinSeconds = mimicWaveInitialDelayMinSeconds;
+            MimicWaveInitialDelayMaxSeconds = mimicWaveInitialDelayMaxSeconds;
+            MimicWaveIntervalSeconds = mimicWaveIntervalSeconds;
+            MimicWaveIntervalMinSeconds = mimicWaveIntervalMinSeconds;
+            MimicWaveIntervalMaxSeconds = mimicWaveIntervalMaxSeconds;
             BossSpawnMultiplier = bossSpawnMultiplier;
             BossSpawnPerPlayerMultiplier = bossSpawnPerPlayerMultiplier;
-            JakoSpawnMultiplier = jakoSpawnMultiplier;
-            JakoSpawnPerPlayerMultiplier = jakoSpawnPerPlayerMultiplier;
+            GruntSpawnMultiplier = gruntSpawnMultiplier;
+            GruntSpawnPerPlayerMultiplier = gruntSpawnPerPlayerMultiplier;
+            GruntWaveMode = gruntWaveMode;
+            GruntWaveInitialDelaySeconds = gruntWaveInitialDelaySeconds;
+            GruntWaveInitialDelayMinSeconds = gruntWaveInitialDelayMinSeconds;
+            GruntWaveInitialDelayMaxSeconds = gruntWaveInitialDelayMaxSeconds;
+            GruntWaveIntervalSeconds = gruntWaveIntervalSeconds;
+            GruntWaveIntervalMinSeconds = gruntWaveIntervalMinSeconds;
+            GruntWaveIntervalMaxSeconds = gruntWaveIntervalMaxSeconds;
             SpecialSpawnMultiplier = specialSpawnMultiplier;
             SpecialSpawnPerPlayerMultiplier = specialSpawnPerPlayerMultiplier;
             TrapSpawnMultiplier = trapSpawnMultiplier;
@@ -119,13 +140,6 @@ namespace MimesisPlayerEnhancement.Util
             TrapRespawnMinPlayerDistanceMeters = trapRespawnMinPlayerDistanceMeters;
             OtherSpawnMultiplier = otherSpawnMultiplier;
             OtherSpawnPerPlayerMultiplier = otherSpawnPerPlayerMultiplier;
-            AmbientMonsterWaveMode = ambientMonsterWaveMode;
-            AmbientMonsterWaveInitialDelaySeconds = ambientMonsterWaveInitialDelaySeconds;
-            AmbientMonsterWaveInitialDelayMinSeconds = ambientMonsterWaveInitialDelayMinSeconds;
-            AmbientMonsterWaveInitialDelayMaxSeconds = ambientMonsterWaveInitialDelayMaxSeconds;
-            AmbientMonsterWaveIntervalSeconds = ambientMonsterWaveIntervalSeconds;
-            AmbientMonsterWaveIntervalMinSeconds = ambientMonsterWaveIntervalMinSeconds;
-            AmbientMonsterWaveIntervalMaxSeconds = ambientMonsterWaveIntervalMaxSeconds;
             BonusEncounterDelayMinSeconds = bonusEncounterDelayMinSeconds;
             BonusEncounterDelayMaxSeconds = bonusEncounterDelayMaxSeconds;
             BonusEncounterMinPlayerDistanceMeters = bonusEncounterMinPlayerDistanceMeters;
@@ -139,13 +153,41 @@ namespace MimesisPlayerEnhancement.Util
 
         internal float MimicSpawnPerPlayerMultiplier { get; }
 
+        internal string MimicWaveMode { get; }
+
+        internal float MimicWaveInitialDelaySeconds { get; }
+
+        internal float MimicWaveInitialDelayMinSeconds { get; }
+
+        internal float MimicWaveInitialDelayMaxSeconds { get; }
+
+        internal float MimicWaveIntervalSeconds { get; }
+
+        internal float MimicWaveIntervalMinSeconds { get; }
+
+        internal float MimicWaveIntervalMaxSeconds { get; }
+
         internal float BossSpawnMultiplier { get; }
 
         internal float BossSpawnPerPlayerMultiplier { get; }
 
-        internal float JakoSpawnMultiplier { get; }
+        internal float GruntSpawnMultiplier { get; }
 
-        internal float JakoSpawnPerPlayerMultiplier { get; }
+        internal float GruntSpawnPerPlayerMultiplier { get; }
+
+        internal string GruntWaveMode { get; }
+
+        internal float GruntWaveInitialDelaySeconds { get; }
+
+        internal float GruntWaveInitialDelayMinSeconds { get; }
+
+        internal float GruntWaveInitialDelayMaxSeconds { get; }
+
+        internal float GruntWaveIntervalSeconds { get; }
+
+        internal float GruntWaveIntervalMinSeconds { get; }
+
+        internal float GruntWaveIntervalMaxSeconds { get; }
 
         internal float SpecialSpawnMultiplier { get; }
 
@@ -169,20 +211,6 @@ namespace MimesisPlayerEnhancement.Util
 
         internal float OtherSpawnPerPlayerMultiplier { get; }
 
-        internal string AmbientMonsterWaveMode { get; }
-
-        internal float AmbientMonsterWaveInitialDelaySeconds { get; }
-
-        internal float AmbientMonsterWaveInitialDelayMinSeconds { get; }
-
-        internal float AmbientMonsterWaveInitialDelayMaxSeconds { get; }
-
-        internal float AmbientMonsterWaveIntervalSeconds { get; }
-
-        internal float AmbientMonsterWaveIntervalMinSeconds { get; }
-
-        internal float AmbientMonsterWaveIntervalMaxSeconds { get; }
-
         internal float BonusEncounterDelayMinSeconds { get; }
 
         internal float BonusEncounterDelayMaxSeconds { get; }
@@ -196,10 +224,24 @@ namespace MimesisPlayerEnhancement.Util
                 ModConfig.SpawnScalingBaselinePlayerCount.Value,
                 ModConfig.MimicSpawnMultiplier.Value,
                 ModConfig.MimicSpawnPerPlayerMultiplier.Value,
+                ModConfig.MimicWaveMode.Value ?? "",
+                ModConfig.MimicWaveInitialDelaySeconds.Value,
+                ModConfig.MimicWaveInitialDelayMinSeconds.Value,
+                ModConfig.MimicWaveInitialDelayMaxSeconds.Value,
+                ModConfig.MimicWaveIntervalSeconds.Value,
+                ModConfig.MimicWaveIntervalMinSeconds.Value,
+                ModConfig.MimicWaveIntervalMaxSeconds.Value,
                 ModConfig.BossSpawnMultiplier.Value,
                 ModConfig.BossSpawnPerPlayerMultiplier.Value,
-                ModConfig.JakoSpawnMultiplier.Value,
-                ModConfig.JakoSpawnPerPlayerMultiplier.Value,
+                ModConfig.GruntSpawnMultiplier.Value,
+                ModConfig.GruntSpawnPerPlayerMultiplier.Value,
+                ModConfig.GruntWaveMode.Value ?? "",
+                ModConfig.GruntWaveInitialDelaySeconds.Value,
+                ModConfig.GruntWaveInitialDelayMinSeconds.Value,
+                ModConfig.GruntWaveInitialDelayMaxSeconds.Value,
+                ModConfig.GruntWaveIntervalSeconds.Value,
+                ModConfig.GruntWaveIntervalMinSeconds.Value,
+                ModConfig.GruntWaveIntervalMaxSeconds.Value,
                 ModConfig.SpecialSpawnMultiplier.Value,
                 ModConfig.SpecialSpawnPerPlayerMultiplier.Value,
                 ModConfig.TrapSpawnMultiplier.Value,
@@ -211,13 +253,6 @@ namespace MimesisPlayerEnhancement.Util
                 ModConfig.TrapRespawnMinPlayerDistanceMeters.Value,
                 ModConfig.OtherSpawnMultiplier.Value,
                 ModConfig.OtherSpawnPerPlayerMultiplier.Value,
-                ModConfig.AmbientMonsterWaveMode.Value ?? "",
-                ModConfig.AmbientMonsterWaveInitialDelaySeconds.Value,
-                ModConfig.AmbientMonsterWaveInitialDelayMinSeconds.Value,
-                ModConfig.AmbientMonsterWaveInitialDelayMaxSeconds.Value,
-                ModConfig.AmbientMonsterWaveIntervalSeconds.Value,
-                ModConfig.AmbientMonsterWaveIntervalMinSeconds.Value,
-                ModConfig.AmbientMonsterWaveIntervalMaxSeconds.Value,
                 ModConfig.BonusEncounterDelayMinSeconds.Value,
                 ModConfig.BonusEncounterDelayMaxSeconds.Value,
                 ModConfig.BonusEncounterMinPlayerDistanceMeters.Value);

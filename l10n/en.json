@@ -1044,16 +1044,17 @@
       "_section": "Spawn Scaling",
       "_description": "Scale monster and trap spawn budgets by type or player count.",
       "_groups": {
-        "ambientMonsterWaveTiming": "Ambient jako & mimic waves",
         "trapRespawn": "Trap respawn",
         "bonusEncounterTiming": "Boss & special bonus spawns",
         "playerScaling": "Player scaling",
         "mimicSpawn": "Mimic spawn scaling",
         "bossSpawn": "Boss spawn scaling",
-        "jakoSpawn": "Jako spawn scaling",
         "specialSpawn": "Special spawn scaling",
         "trapSpawn": "Trap spawn scaling",
-        "otherSpawn": "Other spawn scaling"
+        "otherSpawn": "Other spawn scaling",
+        "mimicWaveTiming": "Mimic waves",
+        "gruntWaveTiming": "Grunt waves",
+        "gruntSpawn": "Grunt spawn scaling"
       },
       "EnableSpawnScaling": {
         "title": "Enable Spawn Scaling",
@@ -1067,10 +1068,6 @@
         "title": "Boss Spawn Multiplier",
         "description": "Map-placed bosses and bonus encounters after a kill (1 = vanilla, 2 = double)."
       },
-      "JakoSpawnMultiplier": {
-        "title": "Jako Spawn Multiplier",
-        "description": "Ambient dungeon monster spawns (1 = vanilla, 2 = double)."
-      },
       "SpecialSpawnMultiplier": {
         "title": "Special Spawn Multiplier",
         "description": "Periodic and map-placed special monsters (1 = vanilla, 2 = double)."
@@ -1081,7 +1078,7 @@
       },
       "TrapRespawnMode": {
         "title": "Trap Respawn Mode",
-        "description": "Whether cleared map traps respawn at their marker. Separate from ambient monster waves and boss/special bonus spawns. Vanilla uses dungeon data; Fixed and Random use the trap delay settings below.",
+        "description": "Whether cleared map traps respawn at their marker. Separate from mimic/grunt waves and boss/special bonus spawns. Vanilla uses dungeon data; Fixed and Random use the trap delay settings below.",
         "options": {
           "Vanilla": "Vanilla",
           "Fixed": "Fixed seconds",
@@ -1103,39 +1100,6 @@
       "TrapRespawnMinPlayerDistanceMeters": {
         "title": "Trap Respawn Min Distance (m)",
         "description": "Fixed and Random modes: hold the trap respawn until no players are within this radius. Checked about once per second. 0 = spawn as soon as the delay ends."
-      },
-      "AmbientMonsterWaveMode": {
-        "title": "Ambient Wave Timing Mode",
-        "description": "Timing for periodic ambient jako (normal monster) and mimic spawn waves only. Does not affect traps, bosses, specials, or other map-placed encounters. Vanilla uses dungeon data; Fixed and Random use the ambient wave settings below.",
-        "options": {
-          "Vanilla": "Vanilla",
-          "Fixed": "Fixed seconds",
-          "Random": "Random seconds"
-        }
-      },
-      "AmbientMonsterWaveInitialDelaySeconds": {
-        "title": "First Ambient Wave Delay (seconds)",
-        "description": "Fixed mode: seconds after dungeon start before the first ambient jako/mimic spawn wave."
-      },
-      "AmbientMonsterWaveInitialDelayMinSeconds": {
-        "title": "First Ambient Wave Delay Min (seconds)",
-        "description": "Random mode: shortest wait before the first ambient jako/mimic spawn wave."
-      },
-      "AmbientMonsterWaveInitialDelayMaxSeconds": {
-        "title": "First Ambient Wave Delay Max (seconds)",
-        "description": "Random mode: longest wait before the first ambient jako/mimic spawn wave."
-      },
-      "AmbientMonsterWaveIntervalSeconds": {
-        "title": "Ambient Wave Interval (seconds)",
-        "description": "Fixed mode: seconds between subsequent ambient jako/mimic spawn waves."
-      },
-      "AmbientMonsterWaveIntervalMinSeconds": {
-        "title": "Ambient Wave Interval Min (seconds)",
-        "description": "Random mode: shortest time between ambient jako/mimic spawn waves."
-      },
-      "AmbientMonsterWaveIntervalMaxSeconds": {
-        "title": "Ambient Wave Interval Max (seconds)",
-        "description": "Random mode: longest time between ambient jako/mimic spawn waves."
       },
       "BonusEncounterDelayMinSeconds": {
         "title": "Bonus Encounter Delay Min (seconds)",
@@ -1165,10 +1129,6 @@
         "title": "Boss per-player bonus",
         "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
       },
-      "JakoSpawnPerPlayerMultiplier": {
-        "title": "Jako per-player bonus",
-        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
-      },
       "SpecialSpawnPerPlayerMultiplier": {
         "title": "Special per-player bonus",
         "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
@@ -1180,6 +1140,80 @@
       "OtherSpawnPerPlayerMultiplier": {
         "title": "Other per-player bonus",
         "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "GruntSpawnMultiplier": {
+        "title": "Grunt Spawn Multiplier",
+        "description": "Ambient dungeon fodder monster (grunt) spawns (1 = vanilla, 2 = double)."
+      },
+      "GruntSpawnPerPlayerMultiplier": {
+        "title": "Grunt per-player bonus",
+        "description": "Added to the general multiplier for each player above the baseline (0.10 = +0.10 per extra player, 0 = no player scaling). Minimum is 0."
+      },
+      "MimicWaveMode": {
+        "title": "Mimic Wave Timing Mode",
+        "description": "Timing for periodic ambient mimic spawn waves only. Does not affect traps, bosses, specials, or other map-placed encounters. Vanilla uses dungeon data; Fixed and Random use the wave settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed seconds",
+          "Random": "Random seconds"
+        }
+      },
+      "MimicWaveInitialDelaySeconds": {
+        "title": "First Mimic Wave Delay (seconds)",
+        "description": "Fixed mode: seconds after dungeon start before the first ambient mimic spawn wave."
+      },
+      "MimicWaveInitialDelayMinSeconds": {
+        "title": "First Mimic Wave Delay Min (seconds)",
+        "description": "Random mode: shortest wait before the first ambient mimic spawn wave."
+      },
+      "MimicWaveInitialDelayMaxSeconds": {
+        "title": "First Mimic Wave Delay Max (seconds)",
+        "description": "Random mode: longest wait before the first ambient mimic spawn wave."
+      },
+      "MimicWaveIntervalSeconds": {
+        "title": "Mimic Wave Interval (seconds)",
+        "description": "Fixed mode: seconds between subsequent ambient mimic spawn waves."
+      },
+      "MimicWaveIntervalMinSeconds": {
+        "title": "Mimic Wave Interval Min (seconds)",
+        "description": "Random mode: shortest time between ambient mimic spawn waves."
+      },
+      "MimicWaveIntervalMaxSeconds": {
+        "title": "Mimic Wave Interval Max (seconds)",
+        "description": "Random mode: longest time between ambient mimic spawn waves."
+      },
+      "GruntWaveMode": {
+        "title": "Grunt Wave Timing Mode",
+        "description": "Timing for periodic ambient grunt spawn waves only. Does not affect traps, bosses, specials, or other map-placed encounters. Vanilla uses dungeon data; Fixed and Random use the wave settings below.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fixed seconds",
+          "Random": "Random seconds"
+        }
+      },
+      "GruntWaveInitialDelaySeconds": {
+        "title": "First Grunt Wave Delay (seconds)",
+        "description": "Fixed mode: seconds after dungeon start before the first ambient grunt spawn wave."
+      },
+      "GruntWaveInitialDelayMinSeconds": {
+        "title": "First Grunt Wave Delay Min (seconds)",
+        "description": "Random mode: shortest wait before the first ambient grunt spawn wave."
+      },
+      "GruntWaveInitialDelayMaxSeconds": {
+        "title": "First Grunt Wave Delay Max (seconds)",
+        "description": "Random mode: longest wait before the first ambient grunt spawn wave."
+      },
+      "GruntWaveIntervalSeconds": {
+        "title": "Grunt Wave Interval (seconds)",
+        "description": "Fixed mode: seconds between subsequent ambient grunt spawn waves."
+      },
+      "GruntWaveIntervalMinSeconds": {
+        "title": "Grunt Wave Interval Min (seconds)",
+        "description": "Random mode: shortest time between ambient grunt spawn waves."
+      },
+      "GruntWaveIntervalMaxSeconds": {
+        "title": "Grunt Wave Interval Max (seconds)",
+        "description": "Random mode: longest time between ambient grunt spawn waves."
       }
     },
     "MimesisPlayerEnhancement_Statistics": {
@@ -1628,7 +1662,6 @@
     "spawn_item_category_developer": "Developer / test items",
     "spawn_monster_category_mimic": "Mimics",
     "spawn_monster_category_boss": "Bosses",
-    "spawn_monster_category_jako": "Jako",
     "spawn_monster_category_special": "Special",
     "monster_name_mimic_alpha_base": "Alpha Mimic",
     "item_label_2531": "Paint Gun (test)",
@@ -1972,6 +2005,7 @@
     "quick_import_help": "Paste a share string from another save slot or host. The preset is saved to your user preset list and can be applied from the cards above.",
     "quick_active_profile": "Active profile: {label}",
     "quick_preset_user": "User preset",
-    "waiting_for_session": "Waiting for game session…"
+    "waiting_for_session": "Waiting for game session…",
+    "spawn_monster_category_grunt": "Grunt"
   }
 }

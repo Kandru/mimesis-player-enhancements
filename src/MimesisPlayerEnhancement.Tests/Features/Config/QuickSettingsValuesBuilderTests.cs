@@ -71,18 +71,23 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
-        public void SetAmbientMonsterWaveRandom_sets_mode_and_bounds()
+        public void SetAmbientWaveRandom_sets_mode_and_bounds_for_mimic_and_grunt()
         {
             Dictionary<string, Dictionary<string, string>> map = QuickSettingsValuesBuilder.CreateMap();
 
-            QuickSettingsValuesBuilder.SetAmbientMonsterWaveRandom(map, 1f, 2f, 3f, 4f);
+            QuickSettingsValuesBuilder.SetAmbientWaveRandom(map, 1f, 2f, 3f, 4f);
 
             Dictionary<string, string> spawn = map["MimesisPlayerEnhancement_SpawnScaling"];
-            Assert.Equal("Random", spawn["AmbientMonsterWaveMode"]);
-            Assert.Equal("1.0", spawn["AmbientMonsterWaveInitialDelayMinSeconds"]);
-            Assert.Equal("2.0", spawn["AmbientMonsterWaveInitialDelayMaxSeconds"]);
-            Assert.Equal("3.0", spawn["AmbientMonsterWaveIntervalMinSeconds"]);
-            Assert.Equal("4.0", spawn["AmbientMonsterWaveIntervalMaxSeconds"]);
+            Assert.Equal("Random", spawn["MimicWaveMode"]);
+            Assert.Equal("1.0", spawn["MimicWaveInitialDelayMinSeconds"]);
+            Assert.Equal("2.0", spawn["MimicWaveInitialDelayMaxSeconds"]);
+            Assert.Equal("3.0", spawn["MimicWaveIntervalMinSeconds"]);
+            Assert.Equal("4.0", spawn["MimicWaveIntervalMaxSeconds"]);
+            Assert.Equal("Random", spawn["GruntWaveMode"]);
+            Assert.Equal("1.0", spawn["GruntWaveInitialDelayMinSeconds"]);
+            Assert.Equal("2.0", spawn["GruntWaveInitialDelayMaxSeconds"]);
+            Assert.Equal("3.0", spawn["GruntWaveIntervalMinSeconds"]);
+            Assert.Equal("4.0", spawn["GruntWaveIntervalMaxSeconds"]);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 SpawnCategory.Mimic => config.MimicSpawnMultiplier,
                 SpawnCategory.Boss => config.BossSpawnMultiplier,
-                SpawnCategory.Jako => config.JakoSpawnMultiplier,
+                SpawnCategory.Grunt => config.GruntSpawnMultiplier,
                 SpawnCategory.Special => config.SpecialSpawnMultiplier,
                 SpawnCategory.Trap => config.TrapSpawnMultiplier,
                 _ => config.OtherSpawnMultiplier,
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             {
                 SpawnCategory.Mimic => config.MimicSpawnPerPlayerMultiplier,
                 SpawnCategory.Boss => config.BossSpawnPerPlayerMultiplier,
-                SpawnCategory.Jako => config.JakoSpawnPerPlayerMultiplier,
+                SpawnCategory.Grunt => config.GruntSpawnPerPlayerMultiplier,
                 SpawnCategory.Special => config.SpecialSpawnPerPlayerMultiplier,
                 SpawnCategory.Trap => config.TrapSpawnPerPlayerMultiplier,
                 _ => config.OtherSpawnPerPlayerMultiplier,

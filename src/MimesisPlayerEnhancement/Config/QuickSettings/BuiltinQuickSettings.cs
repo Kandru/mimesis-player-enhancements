@@ -159,7 +159,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             QuickSettingsValuesBuilder.Set(values, "MimesisPlayerEnhancement_MorePlayers", "MaxPlayers", "16");
             QuickSettingsValuesBuilder.SetAllPerPlayerMultipliers(values, 0.10f);
             QuickSettingsValuesBuilder.SetSpawnMultipliers(values, 1.9f);
-            QuickSettingsValuesBuilder.SetAmbientMonsterWaveRandom(
+            QuickSettingsValuesBuilder.SetAmbientWaveRandom(
                 values,
                 initialMinSeconds: 10f,
                 initialMaxSeconds: 30f,
@@ -173,7 +173,7 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
             return new QuickSettingPreset
             {
                 Id = AbandonHopeId,
-                Revision = 5,
+                Revision = 6,
                 IsBuiltin = true,
                 Values = values,
             };

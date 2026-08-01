@@ -51,16 +51,16 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             SpawnScalingLog.InfoScalingApplied(playerCount, config);
 
             float mimicMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount, config);
-            float jakoMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config);
+            float gruntMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Grunt, playerCount, config);
 
             int mimicMax = ScaleField(room, SpawnScalingFields.MimicSpawnCountMaxField, mimicMultiplier, "mimicSpawnCountMax");
             int mimicRemain = ScaleField(room, SpawnScalingFields.MimicSpawnCountRemainField, mimicMultiplier, "mimicSpawnCountRemain");
-            int threatLimit = ScaleField(room, SpawnScalingFields.NormalMonsterThreatLimitField, jakoMultiplier, "normalMonsterThreatLimit");
-            int threatRemain = ScaleField(room, SpawnScalingFields.NormalMonsterThreatRemainField, jakoMultiplier, "normalMonsterThreatRemain");
+            int threatLimit = ScaleField(room, SpawnScalingFields.NormalMonsterThreatLimitField, gruntMultiplier, "normalMonsterThreatLimit");
+            int threatRemain = ScaleField(room, SpawnScalingFields.NormalMonsterThreatRemainField, gruntMultiplier, "normalMonsterThreatRemain");
             int threatMin = ScaleField(
                 room,
                 SpawnScalingFields.NormalMonsterSpawnThreatMinThresholdField,
-                jakoMultiplier,
+                gruntMultiplier,
                 "normalMonsterSpawnThreatMinThreshold");
 
             int specialGroups = ScaleSpecialGroups(room, playerCount, config);
@@ -71,14 +71,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             state.SetSnapshot(config);
             if (SpawnScalingFields.DungeonMasterInfoField.GetValue(room) is DungeonMasterInfo dungeonInfo)
             {
-                AmbientMonsterWaveApplier.ApplyInitialWait(room, state);
-                SpawnTimingOverrideApplier.ConfigureTimingOverrides(room, state, dungeonInfo, jakoMultiplier, mimicMultiplier);
+                AmbientWaveApplier.ApplyInitialWait(room, state);
+                SpawnTimingOverrideApplier.ConfigureTimingOverrides(room, state, dungeonInfo, gruntMultiplier, mimicMultiplier);
             }
 
             int ambientSlots = SpawnSlotFactory.ExpandAmbientPool(room, state, playerCount, config);
 
             ModLog.Info(Feature, $"Spawn budgets updated — mimic {mimicMultiplier:0.##}× (max={mimicMax}, remain={mimicRemain}), " +
-                $"jako {jakoMultiplier:0.##}× (limit={threatLimit}, remain={threatRemain}, min={threatMin}), " +
+                $"grunt {gruntMultiplier:0.##}× (limit={threatLimit}, remain={threatRemain}, min={threatMin}), " +
                 $"specialGroups={specialGroups}, spawnPoints={spawnPoints}, bonusGroupWaves={bonusGroupWaves}, ambientSlots+={ambientSlots}");
         }
 

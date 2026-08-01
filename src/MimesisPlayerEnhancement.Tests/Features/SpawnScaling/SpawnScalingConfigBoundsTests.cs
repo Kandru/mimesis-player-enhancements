@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [Theory]
         [InlineData("MimicSpawnMultiplier")]
         [InlineData("BossSpawnMultiplier")]
-        [InlineData("JakoSpawnMultiplier")]
+        [InlineData("GruntSpawnMultiplier")]
         [InlineData("SpecialSpawnMultiplier")]
         [InlineData("TrapSpawnMultiplier")]
         [InlineData("OtherSpawnMultiplier")]
@@ -53,13 +53,19 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         }
 
         [Theory]
-        [InlineData("AmbientMonsterWaveInitialDelaySeconds")]
-        [InlineData("AmbientMonsterWaveInitialDelayMinSeconds")]
-        [InlineData("AmbientMonsterWaveInitialDelayMaxSeconds")]
-        [InlineData("AmbientMonsterWaveIntervalSeconds")]
-        [InlineData("AmbientMonsterWaveIntervalMinSeconds")]
-        [InlineData("AmbientMonsterWaveIntervalMaxSeconds")]
-        public void Periodic_spawn_wait_entries_have_minimum_zero(string entryId)
+        [InlineData("MimicWaveInitialDelaySeconds")]
+        [InlineData("MimicWaveInitialDelayMinSeconds")]
+        [InlineData("MimicWaveInitialDelayMaxSeconds")]
+        [InlineData("MimicWaveIntervalSeconds")]
+        [InlineData("MimicWaveIntervalMinSeconds")]
+        [InlineData("MimicWaveIntervalMaxSeconds")]
+        [InlineData("GruntWaveInitialDelaySeconds")]
+        [InlineData("GruntWaveInitialDelayMinSeconds")]
+        [InlineData("GruntWaveInitialDelayMaxSeconds")]
+        [InlineData("GruntWaveIntervalSeconds")]
+        [InlineData("GruntWaveIntervalMinSeconds")]
+        [InlineData("GruntWaveIntervalMaxSeconds")]
+        public void Ambient_wave_entries_have_minimum_zero(string entryId)
         {
             Assert.True(ModConfigEntryBounds.TryGet(SectionId, entryId, out ModConfigEntryBound bound));
             Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));

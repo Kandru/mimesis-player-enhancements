@@ -4,7 +4,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     {
         Mimic,
         Boss,
-        Jako,
+        Grunt,
         Special,
         Trap,
         Other,
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Boss)
                 ? SpawnCategory.Boss
                 : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Jako)
-                ? SpawnCategory.Jako
+                ? SpawnCategory.Grunt
                 : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Special)
                 ? SpawnCategory.Special
                 : info.MonsterType.Equals(Bifrost.ConstEnum.MonsterType.Mimic) ? SpawnCategory.Mimic : SpawnCategory.Other;

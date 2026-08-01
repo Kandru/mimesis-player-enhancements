@@ -37,7 +37,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
 
             AppendMultiplier(parts, ModL10n.Get("announce.boss_spawns"), SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Boss, playerCount));
             AppendMultiplier(parts, ModL10n.Get("announce.special_spawns"), SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Special, playerCount));
-            AppendMultiplier(parts, ModL10n.Get("announce.monster_spawns"), SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount));
+            AppendMultiplier(parts, ModL10n.Get("announce.monster_spawns"), SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Grunt, playerCount));
         }
 
         private static void AppendLootSummary(List<string> parts, int playerCount)

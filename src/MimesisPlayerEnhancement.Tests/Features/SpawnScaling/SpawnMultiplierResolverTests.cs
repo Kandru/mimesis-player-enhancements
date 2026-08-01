@@ -6,67 +6,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
 {
     public sealed class SpawnMultiplierResolverTests
     {
-        private static SpawnScalingSceneConfig Config(
-            bool enabled = true,
-            int baseline = ScalingMath.VanillaPlayerBaseline,
-            float mimicMultiplier = 1f,
-            float mimicPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            float bossMultiplier = 1f,
-            float bossPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            float jakoMultiplier = 1f,
-            float jakoPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            float specialMultiplier = 1f,
-            float specialPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            float trapMultiplier = 1f,
-            float trapPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            string trapRespawnMode = "Vanilla",
-            float trapRespawnDelaySeconds = 5f,
-            float trapRespawnDelayMinSeconds = 5f,
-            float trapRespawnDelayMaxSeconds = 30f,
-            float trapRespawnMinPlayerDistanceMeters = 10f,
-            float otherMultiplier = 1f,
-            float otherPerPlayer = ScalingMath.DefaultPerPlayerMultiplier,
-            string ambientMonsterWaveMode = "Vanilla",
-            float ambientMonsterWaveInitialDelaySeconds = 60f,
-            float ambientMonsterWaveInitialDelayMinSeconds = 30f,
-            float ambientMonsterWaveInitialDelayMaxSeconds = 90f,
-            float ambientMonsterWaveIntervalSeconds = 30f,
-            float ambientMonsterWaveIntervalMinSeconds = 20f,
-            float ambientMonsterWaveIntervalMaxSeconds = 45f,
-            float bonusEncounterDelayMinSeconds = 5f,
-            float bonusEncounterDelayMaxSeconds = 30f,
-            float bonusEncounterMinPlayerDistanceMeters = 10f) =>
-            new(
-                enabled,
-                baseline,
-                mimicMultiplier,
-                mimicPerPlayer,
-                bossMultiplier,
-                bossPerPlayer,
-                jakoMultiplier,
-                jakoPerPlayer,
-                specialMultiplier,
-                specialPerPlayer,
-                trapMultiplier,
-                trapPerPlayer,
-                trapRespawnMode,
-                trapRespawnDelaySeconds,
-                trapRespawnDelayMinSeconds,
-                trapRespawnDelayMaxSeconds,
-                trapRespawnMinPlayerDistanceMeters,
-                otherMultiplier,
-                otherPerPlayer,
-                ambientMonsterWaveMode,
-                ambientMonsterWaveInitialDelaySeconds,
-                ambientMonsterWaveInitialDelayMinSeconds,
-                ambientMonsterWaveInitialDelayMaxSeconds,
-                ambientMonsterWaveIntervalSeconds,
-                ambientMonsterWaveIntervalMinSeconds,
-                ambientMonsterWaveIntervalMaxSeconds,
-                bonusEncounterDelayMinSeconds,
-                bonusEncounterDelayMaxSeconds,
-                bonusEncounterMinPlayerDistanceMeters);
-
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -77,7 +16,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         public void GetEffectiveMultiplier_returns_neutral_when_feature_disabled(int categoryValue)
         {
             var category = (SpawnCategory)categoryValue;
-            SpawnScalingSceneConfig config = Config(enabled: false, mimicMultiplier: 2f, bossMultiplier: 2f);
+            SpawnScalingSceneConfig config = SpawnScalingSceneConfigTestFactory.Create(
+                enableSpawnScaling: false,
+                mimicSpawnMultiplier: 2f,
+                bossSpawnMultiplier: 2f);
 
             float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount: 8, config);
 
@@ -94,13 +36,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         public void GetPerCategoryMultiplier_returns_configured_value(int categoryValue, float configured)
         {
             var category = (SpawnCategory)categoryValue;
-            SpawnScalingSceneConfig config = Config(
-                mimicMultiplier: 1.5f,
-                bossMultiplier: 2f,
-                jakoMultiplier: 0.5f,
-                specialMultiplier: 1.25f,
-                trapMultiplier: 3f,
-                otherMultiplier: 1.75f);
+            SpawnScalingSceneConfig config = SpawnScalingSceneConfigTestFactory.Create(
+                mimicSpawnMultiplier: 1.5f,
+                bossSpawnMultiplier: 2f,
+                gruntSpawnMultiplier: 0.5f,
+                specialSpawnMultiplier: 1.25f,
+                trapSpawnMultiplier: 3f,
+                otherSpawnMultiplier: 1.75f);
 
             float multiplier = SpawnMultiplierResolver.GetPerCategoryMultiplier(category, config);
 
@@ -117,13 +59,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         public void GetPerPlayerMultiplier_returns_configured_value(int categoryValue, float configured)
         {
             var category = (SpawnCategory)categoryValue;
-            SpawnScalingSceneConfig config = Config(
-                mimicPerPlayer: 0.15f,
-                bossPerPlayer: 0.20f,
-                jakoPerPlayer: 0.05f,
-                specialPerPlayer: 0.12f,
-                trapPerPlayer: 0.25f,
-                otherPerPlayer: 0.08f);
+            SpawnScalingSceneConfig config = SpawnScalingSceneConfigTestFactory.Create(
+                mimicSpawnPerPlayerMultiplier: 0.15f,
+                bossSpawnPerPlayerMultiplier: 0.20f,
+                gruntSpawnPerPlayerMultiplier: 0.05f,
+                specialSpawnPerPlayerMultiplier: 0.12f,
+                trapSpawnPerPlayerMultiplier: 0.25f,
+                otherSpawnPerPlayerMultiplier: 0.08f);
 
             float multiplier = SpawnMultiplierResolver.GetPerPlayerMultiplier(category, config);
 
@@ -138,9 +80,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
             int playerCount,
             float expected)
         {
-            SpawnScalingSceneConfig config = Config(
-                mimicMultiplier: 1f,
-                mimicPerPlayer: 0.10f);
+            SpawnScalingSceneConfig config = SpawnScalingSceneConfigTestFactory.Create(
+                mimicSpawnMultiplier: 1f,
+                mimicSpawnPerPlayerMultiplier: 0.10f);
 
             float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(
                 SpawnCategory.Mimic,
@@ -153,7 +95,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
         [Fact]
         public void GetEffectiveMultiplier_returns_general_when_per_player_is_zero()
         {
-            SpawnScalingSceneConfig config = Config(mimicMultiplier: 1.5f, mimicPerPlayer: 0f);
+            SpawnScalingSceneConfig config = SpawnScalingSceneConfigTestFactory.Create(
+                mimicSpawnMultiplier: 1.5f,
+                mimicSpawnPerPlayerMultiplier: 0f);
 
             float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(
                 SpawnCategory.Mimic,
@@ -175,9 +119,15 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
             var category = (SpawnCategory)categoryValue;
             SpawnScalingSceneConfig config = category switch
             {
-                SpawnCategory.Mimic => Config(mimicMultiplier: categoryMultiplier, mimicPerPlayer: 0.10f),
-                SpawnCategory.Boss => Config(bossMultiplier: categoryMultiplier, bossPerPlayer: 0.10f),
-                _ => Config(otherMultiplier: categoryMultiplier, otherPerPlayer: 0.10f),
+                SpawnCategory.Mimic => SpawnScalingSceneConfigTestFactory.Create(
+                    mimicSpawnMultiplier: categoryMultiplier,
+                    mimicSpawnPerPlayerMultiplier: 0.10f),
+                SpawnCategory.Boss => SpawnScalingSceneConfigTestFactory.Create(
+                    bossSpawnMultiplier: categoryMultiplier,
+                    bossSpawnPerPlayerMultiplier: 0.10f),
+                _ => SpawnScalingSceneConfigTestFactory.Create(
+                    otherSpawnMultiplier: categoryMultiplier,
+                    otherSpawnPerPlayerMultiplier: 0.10f),
             };
 
             float multiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(category, playerCount, config);

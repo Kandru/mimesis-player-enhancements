@@ -102,6 +102,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
 
         [Theory]
         [InlineData(0, "Mimic")]
+        [InlineData(2, "Grunt")]
         [InlineData(4, "Trap")]
         [InlineData(5, "Other")]
         public void Format_returns_category_name(int categoryValue, string expected)

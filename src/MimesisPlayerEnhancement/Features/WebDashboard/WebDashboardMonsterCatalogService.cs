@@ -109,7 +109,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
             if (monsterType.Equals(MonsterType.Jako))
             {
-                return "Jako";
+                return "Grunt";
             }
 
             if (monsterType.Equals(MonsterType.Special))
@@ -126,7 +126,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             {
                 "Mimic" => 0,
                 "Boss" => 1,
-                "Jako" => 2,
+                "Grunt" => 2,
                 "Special" => 3,
                 _ => 4,
             };

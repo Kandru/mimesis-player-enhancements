@@ -15,12 +15,24 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         public void ApplyToEntry_spawn_scaling_periodic_wait_fixed_mode_dependency()
         {
             WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");
-            WebDashboardConfigEntryDto entry = Entry("AmbientMonsterWaveInitialDelaySeconds");
+            WebDashboardConfigEntryDto entry = Entry("GruntWaveInitialDelaySeconds");
 
             ModConfigEntryDependencies.ApplyToEntry(section, entry);
 
-            Assert.Equal("AmbientMonsterWaveMode", entry.DependsOnKey);
+            Assert.Equal("GruntWaveMode", entry.DependsOnKey);
             Assert.Equal("Fixed", entry.DependsOnValue);
+        }
+
+        [Fact]
+        public void ApplyToEntry_spawn_scaling_mimic_wave_random_mode_dependency()
+        {
+            WebDashboardConfigSectionDto section = Section("MimesisPlayerEnhancement_SpawnScaling");
+            WebDashboardConfigEntryDto entry = Entry("MimicWaveIntervalMinSeconds");
+
+            ModConfigEntryDependencies.ApplyToEntry(section, entry);
+
+            Assert.Equal("MimicWaveMode", entry.DependsOnKey);
+            Assert.Equal("Random", entry.DependsOnValue);
         }
 
         [Fact]

@@ -54,14 +54,14 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
             return category != SpawnCategory.Trap;
         }
 
-        internal static int ComputeAmbientExpandCount(int poolSize, float jakoMultiplier, float mimicMultiplier, int alreadySynthetic)
+        internal static int ComputeAmbientExpandCount(int poolSize, float gruntMultiplier, float mimicMultiplier, int alreadySynthetic)
         {
             if (poolSize <= 0)
             {
                 return 0;
             }
 
-            float multiplier = Math.Max(jakoMultiplier, mimicMultiplier);
+            float multiplier = Math.Max(gruntMultiplier, mimicMultiplier);
             if (multiplier <= FeatureToggleGate.NeutralMultiplier)
             {
                 return 0;
@@ -147,7 +147,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 return 0;
             }
 
-            float jakoMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Jako, playerCount, config);
+            float gruntMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Grunt, playerCount, config);
             float mimicMultiplier = SpawnMultiplierResolver.GetEffectiveMultiplier(SpawnCategory.Mimic, playerCount, config);
             List<RandomSpawnedMonsterActorData> pool = [];
 
@@ -168,7 +168,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
                 pool.Add(ambient);
             }
 
-            int need = ComputeAmbientExpandCount(pool.Count, jakoMultiplier, mimicMultiplier, state.SyntheticSlotCount);
+            int need = ComputeAmbientExpandCount(pool.Count, gruntMultiplier, mimicMultiplier, state.SyntheticSlotCount);
             if (need <= 0)
             {
                 return 0;
@@ -200,7 +200,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
             if (added > 0)
             {
-                float multiplier = Math.Max(jakoMultiplier, mimicMultiplier);
+                float multiplier = Math.Max(gruntMultiplier, mimicMultiplier);
                 ModLog.Info(Feature, $"Ambient spawn pool expanded — vanilla={pool.Count}, target={pool.Count + need}, " +
                     $"synthetic={added}, multiplier={multiplier:0.##}×");
             }

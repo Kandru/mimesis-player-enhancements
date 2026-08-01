@@ -79,25 +79,25 @@ Added to `BossSpawnMultiplier` for each player above `SpawnScalingBaselinePlayer
 
 Default: `0.10`
 
-### `JakoSpawnMultiplier`
+### `GruntSpawnMultiplier`
 
-Normal-monster threat budget for ambient dungeon spawns (periodic waves). `1` = vanilla. Stacks additively with `JakoSpawnPerPlayerMultiplier` for players above the baseline.
+Ambient fodder (grunt) threat budget for dungeon spawns (periodic waves). `1` = vanilla. Stacks additively with `GruntSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|
-| `0` | No jako scaling |
+| `0` | No grunt scaling |
 | `1` | Vanilla |
-| `≥ 0` | Allowed; higher = more jakos |
+| `≥ 0` | Allowed; higher = more grunts |
 
 Default: `1.0`
 
-### `JakoSpawnPerPlayerMultiplier`
+### `GruntSpawnPerPlayerMultiplier`
 
-Added to `JakoSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
+Added to `GruntSpawnMultiplier` for each player above `SpawnScalingBaselinePlayerCount`.
 
 | Value | Meaning |
 |---|---|
-| `0` | No player-count scaling for jakos |
+| `0` | No player-count scaling for grunts |
 | `0.10` | +0.10 per extra player (default) |
 | `≥ 0` | Allowed; higher = steeper scaling |
 
@@ -153,7 +153,7 @@ Default: `0.10`
 
 ### `TrapRespawnMode`
 
-Whether cleared **map traps** respawn at their marker. This is separate from ambient monster wave timing (`AmbientMonsterWaveMode`) and boss/special bonus spawns (`BonusEncounterDelay*`).
+Whether cleared **map traps** respawn at their marker. This is separate from mimic/grunt wave timing (`MimicWaveMode` / `GruntWaveMode`) and boss/special bonus spawns (`BonusEncounterDelay*`).
 
 | Value | Meaning |
 |---|---|
@@ -187,51 +187,99 @@ Fixed and Random modes: hold the trap respawn until no living players are within
 
 Default: `10.0`
 
-### `AmbientMonsterWaveMode`
+### `MimicWaveMode`
 
-Controls timing for **periodic ambient jako (normal monster) and mimic spawn waves only**. Does not affect traps, bosses, specials, or other map-placed encounters. Spawn multipliers do not shorten wave intervals — timing is independent.
+Controls timing for **periodic ambient mimic spawn waves only**. Independent of `GruntWaveMode`. Does not affect traps, bosses, specials, or other map-placed encounters. Spawn multipliers do not shorten wave intervals — timing is independent.
 
 | Value | Meaning |
 |---|---|
 | `Vanilla` | Use dungeon data defaults |
-| `Fixed` | Use the fixed ambient wave seconds keys below |
+| `Fixed` | Use the fixed mimic wave seconds keys below |
 | `Random` | Pick between min/max pairs for initial wait and interval |
 
 Default: `Vanilla`
 
-### `AmbientMonsterWaveInitialDelaySeconds`
+### `MimicWaveInitialDelaySeconds`
 
-Seconds after dungeon start before the first ambient jako/mimic spawn wave. Used only when `AmbientMonsterWaveMode` is `Fixed`.
+Seconds after dungeon start before the first ambient mimic spawn wave. Used only when `MimicWaveMode` is `Fixed`.
 
 Default: `60.0`
 
-### `AmbientMonsterWaveInitialDelayMinSeconds`
+### `MimicWaveInitialDelayMinSeconds`
 
-Shortest initial wait before the first ambient jako/mimic wave. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≤ max.
+Shortest initial wait before the first ambient mimic wave. Used only when `MimicWaveMode` is `Random`. Must be ≤ max.
 
 Default: `30.0`
 
-### `AmbientMonsterWaveInitialDelayMaxSeconds`
+### `MimicWaveInitialDelayMaxSeconds`
 
-Longest initial wait before the first ambient jako/mimic wave. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≥ min.
+Longest initial wait before the first ambient mimic wave. Used only when `MimicWaveMode` is `Random`. Must be ≥ min.
 
 Default: `90.0`
 
-### `AmbientMonsterWaveIntervalSeconds`
+### `MimicWaveIntervalSeconds`
 
-Seconds between subsequent ambient jako/mimic spawn waves. Used only when `AmbientMonsterWaveMode` is `Fixed`.
+Seconds between subsequent ambient mimic spawn waves. Used only when `MimicWaveMode` is `Fixed`.
 
 Default: `30.0`
 
-### `AmbientMonsterWaveIntervalMinSeconds`
+### `MimicWaveIntervalMinSeconds`
 
-Shortest interval between ambient jako/mimic waves. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≤ max.
+Shortest interval between ambient mimic waves. Used only when `MimicWaveMode` is `Random`. Must be ≤ max.
 
 Default: `20.0`
 
-### `AmbientMonsterWaveIntervalMaxSeconds`
+### `MimicWaveIntervalMaxSeconds`
 
-Longest interval between ambient jako/mimic waves. Used only when `AmbientMonsterWaveMode` is `Random`. Must be ≥ min.
+Longest interval between ambient mimic waves. Used only when `MimicWaveMode` is `Random`. Must be ≥ min.
+
+Default: `45.0`
+
+### `GruntWaveMode`
+
+Controls timing for **periodic ambient grunt (fodder) spawn waves only**. Independent of `MimicWaveMode`. Does not affect traps, bosses, specials, or other map-placed encounters. Spawn multipliers do not shorten wave intervals — timing is independent.
+
+| Value | Meaning |
+|---|---|
+| `Vanilla` | Use dungeon data defaults |
+| `Fixed` | Use the fixed grunt wave seconds keys below |
+| `Random` | Pick between min/max pairs for initial wait and interval |
+
+Default: `Vanilla`
+
+### `GruntWaveInitialDelaySeconds`
+
+Seconds after dungeon start before the first ambient grunt spawn wave. Used only when `GruntWaveMode` is `Fixed`.
+
+Default: `60.0`
+
+### `GruntWaveInitialDelayMinSeconds`
+
+Shortest initial wait before the first ambient grunt wave. Used only when `GruntWaveMode` is `Random`. Must be ≤ max.
+
+Default: `30.0`
+
+### `GruntWaveInitialDelayMaxSeconds`
+
+Longest initial wait before the first ambient grunt wave. Used only when `GruntWaveMode` is `Random`. Must be ≥ min.
+
+Default: `90.0`
+
+### `GruntWaveIntervalSeconds`
+
+Seconds between subsequent ambient grunt spawn waves. Used only when `GruntWaveMode` is `Fixed`.
+
+Default: `30.0`
+
+### `GruntWaveIntervalMinSeconds`
+
+Shortest interval between ambient grunt waves. Used only when `GruntWaveMode` is `Random`. Must be ≤ max.
+
+Default: `20.0`
+
+### `GruntWaveIntervalMaxSeconds`
+
+Longest interval between ambient grunt waves. Used only when `GruntWaveMode` is `Random`. Must be ≥ min.
 
 Default: `45.0`
 
@@ -255,7 +303,7 @@ Default: `10.0`
 
 ### `OtherSpawnMultiplier`
 
-Spawn multiplier for entities not in the mimic, boss, jako, special, or trap categories. `1` = vanilla. Stacks additively with `OtherSpawnPerPlayerMultiplier` for players above the baseline.
+Spawn multiplier for entities not in the mimic, boss, grunt, special, or trap categories. `1` = vanilla. Stacks additively with `OtherSpawnPerPlayerMultiplier` for players above the baseline.
 
 | Value | Meaning |
 |---|---|

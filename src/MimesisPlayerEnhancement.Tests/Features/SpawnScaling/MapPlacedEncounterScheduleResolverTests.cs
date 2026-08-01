@@ -7,36 +7,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.SpawnScaling
     public sealed class MapPlacedEncounterScheduleResolverTests
     {
         private static SpawnScalingSceneConfig Config(string trapRespawnMode = "Vanilla") =>
-            new(
-                enableSpawnScaling: true,
-                spawnScalingBaselinePlayerCount: ScalingMath.VanillaPlayerBaseline,
-                mimicSpawnMultiplier: 1f,
-                mimicSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                bossSpawnMultiplier: 1f,
-                bossSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                jakoSpawnMultiplier: 1f,
-                jakoSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                specialSpawnMultiplier: 1f,
-                specialSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                trapSpawnMultiplier: 1f,
-                trapSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                trapRespawnMode: trapRespawnMode,
-                trapRespawnDelaySeconds: 5f,
-                trapRespawnDelayMinSeconds: 5f,
-                trapRespawnDelayMaxSeconds: 30f,
-                trapRespawnMinPlayerDistanceMeters: 10f,
-                otherSpawnMultiplier: 1f,
-                otherSpawnPerPlayerMultiplier: ScalingMath.DefaultPerPlayerMultiplier,
-                ambientMonsterWaveMode: "Vanilla",
-                ambientMonsterWaveInitialDelaySeconds: 60f,
-                ambientMonsterWaveInitialDelayMinSeconds: 30f,
-                ambientMonsterWaveInitialDelayMaxSeconds: 90f,
-                ambientMonsterWaveIntervalSeconds: 30f,
-                ambientMonsterWaveIntervalMinSeconds: 20f,
-                ambientMonsterWaveIntervalMaxSeconds: 45f,
-                bonusEncounterDelayMinSeconds: 5f,
-                bonusEncounterDelayMaxSeconds: 30f,
-                bonusEncounterMinPlayerDistanceMeters: 10f);
+            SpawnScalingSceneConfigTestFactory.Create(trapRespawnMode: trapRespawnMode);
 
         [Fact]
         public void ShouldScheduleEncounter_returns_true_when_respawn_budget_available()

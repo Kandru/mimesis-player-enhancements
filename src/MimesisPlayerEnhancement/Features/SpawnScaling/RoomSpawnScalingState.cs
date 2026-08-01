@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
 
         internal SpawnTimingOverrides? TimingOverrides { get; set; }
 
-        internal int NextJakoWavePeriodMs { get; set; }
+        internal int NextGruntWavePeriodMs { get; set; }
 
         internal int NextMimicWavePeriodMs { get; set; }
 

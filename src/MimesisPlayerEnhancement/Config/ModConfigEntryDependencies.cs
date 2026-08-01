@@ -248,15 +248,25 @@ namespace MimesisPlayerEnhancement
             dependency = default;
             switch (key)
             {
-                case "AmbientMonsterWaveInitialDelaySeconds":
-                case "AmbientMonsterWaveIntervalSeconds":
-                    dependency = new ModConfigEntryDependency("AmbientMonsterWaveMode", "Fixed");
+                case "MimicWaveInitialDelaySeconds":
+                case "MimicWaveIntervalSeconds":
+                    dependency = new ModConfigEntryDependency("MimicWaveMode", "Fixed");
                     return true;
-                case "AmbientMonsterWaveInitialDelayMinSeconds":
-                case "AmbientMonsterWaveInitialDelayMaxSeconds":
-                case "AmbientMonsterWaveIntervalMinSeconds":
-                case "AmbientMonsterWaveIntervalMaxSeconds":
-                    dependency = new ModConfigEntryDependency("AmbientMonsterWaveMode", "Random");
+                case "MimicWaveInitialDelayMinSeconds":
+                case "MimicWaveInitialDelayMaxSeconds":
+                case "MimicWaveIntervalMinSeconds":
+                case "MimicWaveIntervalMaxSeconds":
+                    dependency = new ModConfigEntryDependency("MimicWaveMode", "Random");
+                    return true;
+                case "GruntWaveInitialDelaySeconds":
+                case "GruntWaveIntervalSeconds":
+                    dependency = new ModConfigEntryDependency("GruntWaveMode", "Fixed");
+                    return true;
+                case "GruntWaveInitialDelayMinSeconds":
+                case "GruntWaveInitialDelayMaxSeconds":
+                case "GruntWaveIntervalMinSeconds":
+                case "GruntWaveIntervalMaxSeconds":
+                    dependency = new ModConfigEntryDependency("GruntWaveMode", "Random");
                     return true;
                 case "TrapRespawnDelaySeconds":
                     dependency = new ModConfigEntryDependency("TrapRespawnMode", "Fixed");
