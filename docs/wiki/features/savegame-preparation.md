@@ -31,4 +31,4 @@ Zone (stage) to begin on when a new save is created. Affects the maintenance hub
 | `1` | Vanilla — start at zone 1 |
 | `5` | Begin at zone 5 (higher quotas, later hub) |
 
-Default: `1`. Clamped to the game's maximum stage at apply time.
+Default: `1`. Clamped to the game's maximum stage at apply time unless **More Players** is on and `OverrideMaxStageCount` is enabled (default), in which case the cap is 99. For scaled tram quotas past the vanilla stage table, also enable **More Players** → `EnableScalingRoundGoals`.

@@ -158,6 +158,7 @@ The mod version is always prepended to the version text on the main menu and in-
 | `EnableMorePlayers` | bool | `false` | — | Turn the higher player cap on or off. When off, the game stays at 4 players. |
 | `MaxPlayers` | int | `16` | ≥ `1` | Max players in a session, host included (`1` = solo, `2` = host + one friend, and so on). |
 | `EnableScalingRoundGoals` | bool | `true` | — | Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players. |
+| `OverrideMaxStageCount` | bool | `true` | — | Allow `StartingZone` (Savegame Preparation) past the game's stage-table max. Requires More Players. When off, StartingZone is clamped to that max. |
 | `RoundGoalBasePerZone` | float | `200` | ≥ `0` | Base dollars multiplied by the zone curve (zone 1 at defaults ≈ $200 before spread and multiplier). |
 | `RoundGoalMoneyMultiplier` | float | `1.0` | ≥ `0` | Global multiplier on the computed tram repair quota. |
 | `RoundGoalRandomSpreadPercent` | int | `10` | `0`–`100` | Random ±% band around the computed center quota when departing maintenance (save load uses the low bound). |
@@ -310,7 +311,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `StartupMoney` | int | `120` | ≥ `0` | Starting maintenance-room cash when a new save is created (`120` = vanilla). Absolute dollars, not a multiplier. |
-| `StartingZone` | int | `1` | `1`–`99` | Zone (stage) to begin on when a new save is created (`1` = vanilla). Clamped to the game's max stage at apply time. |
+| `StartingZone` | int | `1` | `1`–`99` | Zone (stage) to begin on when a new save is created (`1` = vanilla). Clamped to the game's max stage at apply time unless **More Players** → `OverrideMaxStageCount` is on (then up to 99). Pair with `EnableScalingRoundGoals` for scaled quotas past the vanilla stage table. |
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
 
@@ -609,6 +610,12 @@ BlockKraftonGppSdk = true
 [MimesisPlayerEnhancement_MorePlayers]
 EnableMorePlayers = false
 MaxPlayers = 16
+EnableScalingRoundGoals = true
+OverrideMaxStageCount = true
+RoundGoalBasePerZone = 200
+RoundGoalMoneyMultiplier = 1.0
+RoundGoalRandomSpreadPercent = 10
+RoundGoalCurveExponent = 0.9
 
 [MimesisPlayerEnhancement_MoreVoices]
 EnableMoreVoices = true

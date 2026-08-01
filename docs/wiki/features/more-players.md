@@ -46,6 +46,19 @@ Default: `true`
 
 Takes effect on the next round-goal hook (departing maintenance or loading a save). Unset key uses the default.
 
+### `OverrideMaxStageCount`
+
+Allow Savegame Preparation `StartingZone` past the game's stage-table maximum (currently the last defined stage in `Stage.json`). Requires `EnableMorePlayers`.
+
+| Value | Meaning |
+|---|---|
+| `false` | StartingZone is clamped to the game's max stage |
+| `true` | StartingZone may use the full config range (`1`–`99`) |
+
+Default: `true`
+
+Only affects new-save StartingZone apply. Unset key uses the default.
+
 ### `RoundGoalBasePerZone`
 
 Base dollar amount multiplied by the zone curve before spread and global multiplier. At defaults, zone 1 is about $200 before those adjustments.

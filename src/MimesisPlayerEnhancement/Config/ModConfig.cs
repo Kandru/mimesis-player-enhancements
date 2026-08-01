@@ -37,6 +37,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableMorePlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> MaxPlayers { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableScalingRoundGoals { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> OverrideMaxStageCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> RoundGoalBasePerZone { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> RoundGoalMoneyMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> RoundGoalRandomSpreadPercent { get; internal set; } = null!;

@@ -8,6 +8,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: kicking did not properly disconnect a player
 - fix: host should sync configuration now
 - fix: inventory scroll sometimes was in the wrong order
+- fix: allow the maximum zone to be overriden to 99
 - draft: noise gate feature for microphone
 - draft: audio ducking when dead and talking with other dead players
 

@@ -817,7 +817,7 @@
       },
       "StartingZone": {
         "title": "Starting Zone",
-        "description": "Zone (stage) to begin on when a new save is created (1 = vanilla). Does not apply when loading a save or after a wipeout."
+        "description": "Zone (stage) to begin on when a new save is created (1 = vanilla, up to 99). Without More Players Override Max Stage Count, clamped to the game's max stage. Does not apply when loading a save or after a wipeout."
       }
     },
     "MimesisPlayerEnhancement_Economy": {
@@ -894,6 +894,10 @@
       "EnableScalingRoundGoals": {
         "title": "Enable Scaling Round Goals",
         "description": "Scale tram repair quota by zone instead of capping at vanilla stage 5. Requires More Players."
+      },
+      "OverrideMaxStageCount": {
+        "title": "Override Max Stage Count",
+        "description": "Allow Starting Zone past Zone 7. Requires More Players."
       },
       "RoundGoalBasePerZone": {
         "title": "Round Goal Base",

@@ -817,7 +817,7 @@
       },
       "StartingZone": {
         "title": "Startzone",
-        "description": "Zone (Stage), mit der ein neuer Save beginnt (1 = Vanilla). Gilt nicht beim Laden oder nach Wipeout."
+        "description": "Zone (Stage), mit der ein neuer Save beginnt (1 = Vanilla, bis 99). Ohne Mehr Spieler Max-Stage-Override auf die Spiel-Max-Stage begrenzt. Gilt nicht beim Laden oder nach Wipeout."
       }
     },
     "MimesisPlayerEnhancement_Economy": {
@@ -894,6 +894,10 @@
       "EnableScalingRoundGoals": {
         "title": "Skalierende Runden-Ziele aktivieren",
         "description": "Skaliert die Tram-Reparatur-Quote nach Zone statt bei Stage 5 zu deckeln. Erfordert Mehr Spieler."
+      },
+      "OverrideMaxStageCount": {
+        "title": "Max-Stage-Anzahl überschreiben",
+        "description": "Erlaubt Startzone über Zone 7 hinaus. Erfordert Mehr Spieler."
       },
       "RoundGoalBasePerZone": {
         "title": "Runden-Ziel-Basis",

@@ -30,6 +30,10 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
                 "EnableScalingRoundGoals",
                 true);
 
+            ModConfig.OverrideMaxStageCount = ModConfig.CreateTrackedEntry(_category,
+                "OverrideMaxStageCount",
+                true);
+
             ModConfig.RoundGoalBasePerZone = ModConfig.CreateTrackedEntry(_category,
                 "RoundGoalBasePerZone",
                 RoundGoalScalingResolver.DefaultBasePerZone);
@@ -76,6 +80,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers
 
             ModConfig.EnableMorePlayers.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableMorePlayers));
             ModConfig.EnableScalingRoundGoals.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.EnableScalingRoundGoals));
+            ModConfig.OverrideMaxStageCount.OnEntryValueChanged.Subscribe((_, _) => ModConfig.NotifyChanged(ModConfig.OverrideMaxStageCount));
             ModConfig.RoundGoalBasePerZone.OnEntryValueChanged.Subscribe((_, value) =>
                 ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.RoundGoalBasePerZone));
             ModConfig.RoundGoalMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) =>

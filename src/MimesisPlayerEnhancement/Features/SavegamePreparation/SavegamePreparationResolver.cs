@@ -6,7 +6,10 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
 
         internal static int ResolveStartingZone()
         {
-            return ClampStartingZone(ModConfig.StartingZone.Value, GetMaxStageCount());
+            int cap = ShouldOverrideMaxStageCount()
+                ? ConfigStartingZoneMax
+                : GetMaxStageCount();
+            return ClampStartingZone(ModConfig.StartingZone.Value, cap);
         }
 
         internal static bool ShouldApplyStartingZone()
@@ -19,6 +22,12 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
         {
             int configured = ModConfig.StartupMoney.Value;
             return configured < 0 ? 0 : configured;
+        }
+
+        internal static bool ShouldOverrideMaxStageCount()
+        {
+            return ModConfig.EnableMorePlayers.Value
+                && ModConfig.OverrideMaxStageCount.Value;
         }
 
         internal static int ClampStartingZone(int requested, int maxStageCount)
