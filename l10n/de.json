@@ -326,7 +326,7 @@
       },
       "EnableRealtimeTramClock": {
         "title": "Tram-Uhr in Echtzeit",
-        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Erfordert Dungeon-Zeit aktivieren."
+        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Wirkt sofort. Erfordert Dungeon-Zeit aktivieren."
       }
     },
     "MimesisPlayerEnhancement_Weather": {

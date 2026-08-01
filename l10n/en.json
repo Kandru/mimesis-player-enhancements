@@ -326,7 +326,7 @@
       },
       "EnableRealtimeTramClock": {
         "title": "Realtime Tram Clock",
-        "description": "Update the tram console clock every in-game minute during a run. Requires Enable Dungeon Time."
+        "description": "Update the tram console clock every in-game minute during a run. Applies immediately. Requires Enable Dungeon Time."
       }
     },
     "MimesisPlayerEnhancement_Weather": {

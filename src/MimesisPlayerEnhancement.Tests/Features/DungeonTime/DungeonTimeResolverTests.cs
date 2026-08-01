@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
     public sealed class DungeonTimeResolverTests
     {
         private static DungeonTimeSceneConfig Config(bool enabled, int baseline, float extraPerPlayer) =>
-            new(enabled, baseline, extraPerPlayer, StartTimePreset.Vanilla, enableRealtimeTramClock: false);
+            new(enabled, baseline, extraPerPlayer, StartTimePreset.Vanilla);
 
         [Theory]
         [InlineData(1)]

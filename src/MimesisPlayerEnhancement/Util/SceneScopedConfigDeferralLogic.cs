@@ -13,6 +13,16 @@ namespace MimesisPlayerEnhancement.Util
             "DungeonRandomizer",
         ];
 
+        /// <summary>
+        /// Keys that apply immediately even while a gameplay scene is active.
+        /// They do not defer the module snapshot, and SyncFromConfig still runs when they change.
+        /// </summary>
+        private static readonly HashSet<(string Module, string Key)> LiveApplyKeys =
+            new(LiveApplyKeyComparer.Instance)
+            {
+                ("DungeonTime", "EnableRealtimeTramClock"),
+            };
+
         internal static bool ShouldDefer(
             string moduleName,
             ModConfigChangeInfo change,
@@ -26,6 +36,12 @@ namespace MimesisPlayerEnhancement.Util
             }
 
             if (IsMasterToggleDisabledChange(moduleName, change, isMasterEnabled, masterToggleKey))
+            {
+                return false;
+            }
+
+            // Live-apply keys must still SyncFromConfig mid-scene (e.g. tram clock invalidate).
+            if (HasLiveApplyKeyChange(moduleName, change))
             {
                 return false;
             }
@@ -46,8 +62,26 @@ namespace MimesisPlayerEnhancement.Util
             }
 
             string sectionId = $"MimesisPlayerEnhancement_{moduleName}";
-            return change.AffectsSection(sectionId);
+            return change.ChangedKeys.Any(keyChange =>
+                string.Equals(keyChange.SectionId, sectionId, StringComparison.OrdinalIgnoreCase)
+                && !IsLiveApplyKey(moduleName, keyChange.Key));
         }
+
+        internal static bool HasLiveApplyKeyChange(string moduleName, ModConfigChangeInfo change)
+        {
+            if (change.IsFullReload || !GatedModules.Contains(moduleName))
+            {
+                return false;
+            }
+
+            string sectionId = $"MimesisPlayerEnhancement_{moduleName}";
+            return change.ChangedKeys.Any(keyChange =>
+                string.Equals(keyChange.SectionId, sectionId, StringComparison.OrdinalIgnoreCase)
+                && IsLiveApplyKey(moduleName, keyChange.Key));
+        }
+
+        internal static bool IsLiveApplyKey(string moduleName, string key) =>
+            LiveApplyKeys.Contains((moduleName, key));
 
         internal static bool IsMasterToggleDisabledChange(
             string moduleName,
@@ -90,6 +124,20 @@ namespace MimesisPlayerEnhancement.Util
             string[] modules = [.. deferredModules];
             deferredModules.Clear();
             return modules;
+        }
+
+        private sealed class LiveApplyKeyComparer : IEqualityComparer<(string Module, string Key)>
+        {
+            internal static readonly LiveApplyKeyComparer Instance = new();
+
+            public bool Equals((string Module, string Key) x, (string Module, string Key) y) =>
+                string.Equals(x.Module, y.Module, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(x.Key, y.Key, StringComparison.OrdinalIgnoreCase);
+
+            public int GetHashCode((string Module, string Key) obj) =>
+                HashCode.Combine(
+                    StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Module),
+                    StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Key));
         }
     }
 }

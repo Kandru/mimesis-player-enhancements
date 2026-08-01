@@ -8,14 +8,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
     {
         private static DungeonTimeSceneConfig Config(
             bool enabled = true,
-            StartTimePreset startTimePreset = StartTimePreset.Vanilla,
-            bool enableRealtimeTramClock = false) =>
+            StartTimePreset startTimePreset = StartTimePreset.Vanilla) =>
             new(
                 enabled,
                 dungeonTimeBaselinePlayerCount: 4,
                 extraShiftSecondsPerPlayerAboveBaseline: 10f,
-                startTimePreset,
-                enableRealtimeTramClock);
+                startTimePreset);
 
         [Theory]
         [InlineData("Vanilla", 0)]

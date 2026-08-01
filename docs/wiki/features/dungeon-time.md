@@ -10,7 +10,7 @@ When time is extended, the host also slows the in-game day clock (tram/alarm, st
 
 ## Configuration
 
-Section: `[MimesisPlayerEnhancement_DungeonTime]`. Changes during an active gameplay scene are held until that scene ends (turning the feature **off** still applies immediately). Missing keys use the defaults below.
+Section: `[MimesisPlayerEnhancement_DungeonTime]`. Most changes during an active gameplay scene are held until that scene ends (turning the feature **off** still applies immediately). `EnableRealtimeTramClock` applies immediately. Missing keys use the defaults below.
 
 > **Moved from Weather (breaking):** `StartTimePreset` and `EnableRealtimeTramClock` used to live under `[MimesisPlayerEnhancement_Weather]`. Re-set them here — old Weather keys are not migrated.
 
@@ -73,6 +73,6 @@ Vanilla only updates the tram console clock when the in-game **hour** changes (~
 | `false` | Hourly tram clock updates (default) |
 | `true` | Minute-level tram clock updates during dungeon runs |
 
-Requires `EnableDungeonTime`.
+Requires `EnableDungeonTime`. Applies **immediately** when toggled (not held until scene end).
 
 Default: `false`

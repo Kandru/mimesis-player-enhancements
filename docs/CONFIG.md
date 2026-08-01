@@ -8,7 +8,7 @@ Mimesis Player Enhancement stores settings in a TOML file separate from MelonLoa
 
 The game reloads this file while running. Most settings apply immediately or on the next relevant game event; see **Apply timing** below.
 
-**Scene-boundary deferral:** For DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling, value changes made during an active gameplay scene (maintenance, tram, dungeon, deathmatch) are held until that scene ends — preventing mid-run spawn/loot spikes. Master `Enable*` toggles turned **off** still apply immediately.
+**Scene-boundary deferral:** For DungeonRandomizer, DungeonTime, Economy, LootMultiplicator, and SpawnScaling, value changes made during an active gameplay scene (maintenance, tram, dungeon, deathmatch) are held until that scene ends — preventing mid-run spawn/loot spikes. Master `Enable*` toggles turned **off** still apply immediately. Exception: Dungeon Time `EnableRealtimeTramClock` applies immediately.
 
 ## Section layout
 
@@ -72,7 +72,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | Timing | Features |
 |--------|----------|
 | **Immediate** | Weather, Player Tuning, Join Anytime grace and lobby state, More Players socket cap and round-goal scaling on next hook, Mimic tuning on next voice/possession/inventory event, Statistics tracking |
-| **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time, Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
+| **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time (except `EnableRealtimeTramClock`), Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
 | **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
 | **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, custom loading screens and landing sounds, **Savegame Preparation** (startup money and starting zone) |
@@ -381,7 +381,7 @@ Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
 
 A continuous brightness slider is not available; pick a preset above for darker or brighter runs.
 
-Changes to `StartTimePreset` / `EnableRealtimeTramClock` during an active gameplay scene are held until that scene ends, like the other Dungeon Time keys (turning the feature **off** still applies immediately).
+Changes to `StartTimePreset` and shift-extension keys during an active gameplay scene are held until that scene ends, like the other Dungeon Time keys (turning the feature **off** still applies immediately). `EnableRealtimeTramClock` applies **immediately**.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -389,7 +389,7 @@ Changes to `StartTimePreset` / `EnableRealtimeTramClock` during an active gamepl
 | `DungeonTimeBaselinePlayerCount` | int | `4` | ≥ `1` | No extra shift time at or below this player count (vanilla is 4). Minimum is 1. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | ≥ `0` | Real seconds added to the shift deadline for each player above the baseline. Minimum is 0. |
 | `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). Requires `EnableDungeonTime`. |
-| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableDungeonTime`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Only the host needs to enable this. |
+| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableDungeonTime`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Applies immediately (not scene-deferred). Only the host needs to enable this. |
 
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 

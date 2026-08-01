@@ -104,7 +104,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
                 DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
                 return HostApplyGate.ShouldApplyHostOnlyFeature(() =>
                     DungeonTimeClockResolver.UsesOverrideStartTime(config)
-                    || (config.EnableDungeonTime && config.EnableRealtimeTramClock));
+                    || (config.EnableDungeonTime && ModConfig.EnableRealtimeTramClock.Value));
             }
         }
 

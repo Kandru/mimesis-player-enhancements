@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         {
             DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
             if (!HostApplyGate.ShouldApplyHostOnlyFeature(() =>
-                    config.EnableDungeonTime && config.EnableRealtimeTramClock)
+                    config.EnableDungeonTime && ModConfig.EnableRealtimeTramClock.Value)
                 || !DungeonTimeRoomAccess.IsPlaying(room))
             {
                 return;

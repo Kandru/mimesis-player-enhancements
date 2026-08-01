@@ -148,6 +148,93 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
+        public void IsModuleAffected_ignores_live_apply_keys()
+        {
+            ModConfigChangeInfo change = SectionChange(
+                "MimesisPlayerEnhancement_DungeonTime",
+                "EnableRealtimeTramClock");
+
+            Assert.False(SceneScopedConfigDeferralLogic.IsModuleAffected("DungeonTime", change));
+        }
+
+        [Fact]
+        public void IsModuleAffected_returns_true_when_deferred_key_changed_alongside_live_apply_key()
+        {
+            ModConfigChangeInfo change = new()
+            {
+                ChangedKeys =
+                [
+                    new ModConfigKeyChange
+                    {
+                        SectionId = "MimesisPlayerEnhancement_DungeonTime",
+                        Key = "EnableRealtimeTramClock",
+                    },
+                    new ModConfigKeyChange
+                    {
+                        SectionId = "MimesisPlayerEnhancement_DungeonTime",
+                        Key = "StartTimePreset",
+                    },
+                ],
+            };
+
+            Assert.True(SceneScopedConfigDeferralLogic.IsModuleAffected("DungeonTime", change));
+        }
+
+        [Fact]
+        public void ShouldDefer_returns_false_for_live_apply_key_during_gameplay()
+        {
+            bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
+                "DungeonTime",
+                SectionChange("MimesisPlayerEnhancement_DungeonTime", "EnableRealtimeTramClock"),
+                isGameplaySceneActive: true,
+                isMasterEnabled: true,
+                masterToggleKey: "EnableDungeonTime");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ShouldDefer_returns_false_when_live_apply_key_changed_with_deferred_key()
+        {
+            ModConfigChangeInfo change = new()
+            {
+                ChangedKeys =
+                [
+                    new ModConfigKeyChange
+                    {
+                        SectionId = "MimesisPlayerEnhancement_DungeonTime",
+                        Key = "EnableRealtimeTramClock",
+                    },
+                    new ModConfigKeyChange
+                    {
+                        SectionId = "MimesisPlayerEnhancement_DungeonTime",
+                        Key = "StartTimePreset",
+                    },
+                ],
+            };
+
+            bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
+                "DungeonTime",
+                change,
+                isGameplaySceneActive: true,
+                isMasterEnabled: true,
+                masterToggleKey: "EnableDungeonTime");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void HasLiveApplyKeyChange_detects_tram_clock_toggle()
+        {
+            ModConfigChangeInfo change = SectionChange(
+                "MimesisPlayerEnhancement_DungeonTime",
+                "EnableRealtimeTramClock");
+
+            Assert.True(SceneScopedConfigDeferralLogic.HasLiveApplyKeyChange("DungeonTime", change));
+            Assert.False(SceneScopedConfigDeferralLogic.HasLiveApplyKeyChange("Economy", change));
+        }
+
+        [Fact]
         public void IsMasterToggleDisabledChange_returns_true_on_full_reload_when_master_disabled()
         {
             bool result = SceneScopedConfigDeferralLogic.IsMasterToggleDisabledChange(
