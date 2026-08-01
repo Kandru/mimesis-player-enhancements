@@ -6,8 +6,16 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
 {
     public sealed class DungeonTimeResolverTests
     {
-        private static DungeonTimeSceneConfig Config(bool enabled, int baseline, float extraPerPlayer) =>
-            new(enabled, baseline, extraPerPlayer, StartTimePreset.Vanilla);
+        private const long VanillaStartSeconds = 10 * 3600L;
+        private const long EndSeconds = 24 * 3600L;
+        private const long VanillaRemainingMs = 600_000L;
+
+        private static DungeonTimeSceneConfig Config(
+            bool enabled,
+            int baseline,
+            float extraPerPlayer,
+            StartTimePreset startTimePreset = StartTimePreset.Vanilla) =>
+            new(enabled, baseline, extraPerPlayer, startTimePreset);
 
         [Theory]
         [InlineData(1)]
@@ -117,16 +125,114 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         }
 
         [Theory]
+        [InlineData(10 * 3600L, 24 * 3600L, 14 * 3600L)]
+        [InlineData(8 * 3600L, 24 * 3600L, 16 * 3600L)]
+        [InlineData(12 * 3600L, 24 * 3600L, 12 * 3600L)]
+        [InlineData(21 * 3600L, 24 * 3600L, 3 * 3600L)]
+        [InlineData(0L, 0L, 86400L)]
+        [InlineData(0L, 24 * 3600L, 24 * 3600L)]
+        public void GetDisplaySpanSeconds_matches_vanilla_wrap(
+            long startSeconds,
+            long endSeconds,
+            long expectedSpan)
+        {
+            long span = DungeonTimeResolver.GetDisplaySpanSeconds(startSeconds, endSeconds);
+
+            Assert.Equal(expectedSpan, span);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_unchanged_when_start_matches_vanilla()
+        {
+            long adjusted = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                VanillaStartSeconds,
+                EndSeconds);
+
+            Assert.Equal(VanillaRemainingMs, adjusted);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_lengthens_for_morning_start()
+        {
+            // 08:00→24:00 is 16h vs vanilla 10:00→24:00 (14h) → 16/14
+            long adjusted = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                effectiveStartSeconds: 8 * 3600L,
+                EndSeconds);
+
+            Assert.Equal((long)(VanillaRemainingMs * 16d / 14d), adjusted);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_shortens_for_noon_start()
+        {
+            // 12:00→24:00 is 12h vs 14h → 12/14
+            long adjusted = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                effectiveStartSeconds: 12 * 3600L,
+                EndSeconds);
+
+            Assert.Equal((long)(VanillaRemainingMs * 12d / 14d), adjusted);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_shortens_for_night_start()
+        {
+            // 21:00→24:00 is 3h vs 14h → 3/14
+            long adjusted = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                effectiveStartSeconds: 21 * 3600L,
+                EndSeconds);
+
+            Assert.Equal((long)(VanillaRemainingMs * 3d / 14d), adjusted);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_lengthens_for_midnight_with_end_wrap()
+        {
+            // 00:00→00:00 wraps to 24h vs 14h → 24/14
+            long adjusted = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                effectiveStartSeconds: 0L,
+                endSeconds: 0L);
+
+            Assert.Equal((long)(VanillaRemainingMs * 24d / 14d), adjusted);
+        }
+
+        [Fact]
+        public void GetPresetAdjustedRemainingMs_stacks_with_player_bonus_as_base_plus_bonus()
+        {
+            long baseRemaining = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                VanillaRemainingMs,
+                VanillaStartSeconds,
+                effectiveStartSeconds: 8 * 3600L,
+                EndSeconds);
+            DungeonTimeSceneConfig config = Config(true, baseline: 4, extraPerPlayer: 10f);
+            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount: 6, config);
+
+            long targetRemaining = baseRemaining + bonusMs;
+
+            Assert.Equal(baseRemaining + 20_000L, targetRemaining);
+            Assert.True(targetRemaining > VanillaRemainingMs);
+        }
+
+        [Theory]
         [InlineData(0, 10_000, 1d)]
         [InlineData(600_000, 0, 1d)]
         [InlineData(600_000, 20_000, 600_000d / 620_000d)]
         [InlineData(100_000, 100_000, 0.5d)]
-        public void GetDisplayScale_maps_vanilla_remaining_over_extended(
-            long vanillaRemainingMs,
+        public void GetDisplayScale_maps_base_remaining_over_extended(
+            long baseRemainingMs,
             long bonusMs,
             double expectedScale)
         {
-            double scale = DungeonTimeResolver.GetDisplayScale(vanillaRemainingMs, bonusMs);
+            double scale = DungeonTimeResolver.GetDisplayScale(baseRemainingMs, bonusMs);
 
             Assert.Equal(expectedScale, scale, 10);
         }
@@ -139,11 +245,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         [InlineData(1000, 0, 620_000, 1000)]
         public void ScaleElapsedDelta_scales_or_passes_through(
             long deltaMs,
-            long vanillaRemainingMs,
+            long baseRemainingMs,
             long extendedRemainingMs,
             long expectedScaledDelta)
         {
-            long scaled = DungeonTimeResolver.ScaleElapsedDelta(deltaMs, vanillaRemainingMs, extendedRemainingMs);
+            long scaled = DungeonTimeResolver.ScaleElapsedDelta(deltaMs, baseRemainingMs, extendedRemainingMs);
 
             Assert.Equal(expectedScaledDelta, scaled);
         }

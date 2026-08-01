@@ -314,7 +314,7 @@
       },
       "StartTimePreset": {
         "title": "Startzeit",
-        "description": "Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; Schichtfrist unverändert).",
+        "description": "Ingame-Uhr beim Dungeon-Start; echte Schichtlänge skaliert, damit der Lauf nahe 24:00 endet.",
         "options": {
           "Vanilla": "Vanilla (~10:00 → 24:00, Standard)",
           "Morning": "Morgen (08:00 → 24:00, hell)",

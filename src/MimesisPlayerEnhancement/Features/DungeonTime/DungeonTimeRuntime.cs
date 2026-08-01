@@ -2,7 +2,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal sealed class DungeonTimeRoomState
     {
-        internal long VanillaRemainingMs;
+        internal long BaseRemainingMs;
         internal long ExtendedRemainingMs;
         internal long? VanillaStartSeconds;
         internal int LastTramClockSyncHour = -1;
@@ -16,16 +16,16 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         internal static bool TryGetState(DungeonRoom room, out DungeonTimeRoomState state) =>
             RoomStates.TryGet(room, out state);
 
-        internal static void ArmDisplayScale(DungeonRoom room, long vanillaRemainingMs, long bonusMs)
+        internal static void ArmDisplayScale(DungeonRoom room, long baseRemainingMs, long bonusMs)
         {
-            if (room == null || vanillaRemainingMs <= 0 || bonusMs <= 0)
+            if (room == null || baseRemainingMs <= 0 || bonusMs <= 0)
             {
                 return;
             }
 
             DungeonTimeRoomState state = RoomStates.GetOrCreate(room, () => new DungeonTimeRoomState());
-            state.VanillaRemainingMs = vanillaRemainingMs;
-            state.ExtendedRemainingMs = vanillaRemainingMs + bonusMs;
+            state.BaseRemainingMs = baseRemainingMs;
+            state.ExtendedRemainingMs = baseRemainingMs + bonusMs;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
             long scaledDelta = DungeonTimeResolver.ScaleElapsedDelta(
                 deltaMs,
-                state.VanillaRemainingMs,
+                state.BaseRemainingMs,
                 state.ExtendedRemainingMs);
             if (scaledDelta >= deltaMs)
             {

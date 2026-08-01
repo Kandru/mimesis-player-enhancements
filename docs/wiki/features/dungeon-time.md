@@ -6,7 +6,7 @@
 
 Extends the real dungeon shift clock when more players are present than a baseline, and optionally overrides the synced in-game start hour / tram console clock. Once enabled, everyone in the run gets the longer shift and any clock overrides. Shift extension is applied once when all members have entered the dungeon room. Useful so larger groups get a fairer time window to finish a run.
 
-When time is extended, the host also slows the in-game day clock (tram/alarm, start→24:00) so that display day still fills the longer real shift instead of running past the usual end and counting up.
+When a start-time preset is set, real shift length is rescaled so the in-game day still runs from that start until ~24:00 (earlier starts get more real time; later starts get less). Player-count bonus seconds then stack on top of that adjusted duration. When time is extended by the player bonus, the host also slows the in-game day clock (tram/alarm) so start→24:00 still fills the longer real shift instead of running past the usual end and counting up.
 
 ## Configuration
 
@@ -49,7 +49,7 @@ Default: `10.0`
 
 ### `StartTimePreset`
 
-Sets the **synced in-game clock** when a dungeon starts (tram alarm and outdoor lighting). The clock still advances during the shift until ~24:00 at time-over. **Real shift deadline is unchanged** by the preset alone — still based on dungeon duration in real time (plus any shift-extension bonus above). Sunrise ~06:00, sunset ~18:00.
+Sets the **synced in-game clock** when a dungeon starts (tram alarm and outdoor lighting) and **rescales real shift length** so the run still ends near ~24:00. Earlier starts (e.g. Morning) add real time; later starts (e.g. Night) shorten it. Player-count bonus seconds (above) still stack on top. Sunrise ~06:00, sunset ~18:00.
 
 | Value | Clock at start | Lighting |
 |---|---|---|

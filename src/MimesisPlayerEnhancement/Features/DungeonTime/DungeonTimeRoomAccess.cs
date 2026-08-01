@@ -65,5 +65,16 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
             return CaptureVanillaStartSeconds(room);
         }
+
+        internal static long GetEndSeconds(DungeonRoom room)
+        {
+            DungeonMasterInfo? info = GetDungeonMasterInfo(room);
+            if (info == null || string.IsNullOrEmpty(info.EndTime))
+            {
+                return 0;
+            }
+
+            return ParseDisplayTimeToSeconds(info.EndTime);
+        }
     }
 }

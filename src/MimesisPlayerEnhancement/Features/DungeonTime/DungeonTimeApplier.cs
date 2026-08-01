@@ -25,15 +25,6 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            int playerCount = room.GetMemberCount();
-            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
-            if (bonusMs <= 0)
-            {
-                DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-                DungeonTimeLog.DebugSkipped($"no bonus for players={playerCount}");
-                return;
-            }
-
             if (!DungeonRoomSessionTime.TryGetRemainingMilliseconds(room, out long vanillaRemainingMs)
                 || vanillaRemainingMs <= 0)
             {
@@ -42,16 +33,47 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return;
             }
 
-            if (!DungeonRoomSessionTime.TryExtendEndTime(room, bonusMs, out long newEndTime))
+            long vanillaStartSeconds = DungeonTimeRoomAccess.GetVanillaStartSeconds(room);
+            long effectiveStartSeconds = DungeonTimeClockResolver.GetEffectiveStartSeconds(room, config);
+            long endSeconds = DungeonTimeRoomAccess.GetEndSeconds(room);
+            long baseRemainingMs = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                vanillaRemainingMs,
+                vanillaStartSeconds,
+                effectiveStartSeconds,
+                endSeconds);
+
+            int playerCount = room.GetMemberCount();
+            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(playerCount, config);
+            long targetRemainingMs = baseRemainingMs + bonusMs;
+            long deltaMs = targetRemainingMs - vanillaRemainingMs;
+            if (deltaMs == 0)
             {
                 DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-                DungeonTimeLog.DebugSkipped("failed to extend session end time");
+                DungeonTimeLog.DebugSkipped($"no adjustment for players={playerCount}, preset={config.StartTimePreset}");
                 return;
             }
 
-            DungeonTimeRuntime.ArmDisplayScale(room, vanillaRemainingMs, bonusMs);
+            if (!DungeonRoomSessionTime.TryAdjustEndTime(room, deltaMs, out long newEndTime))
+            {
+                DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
+                DungeonTimeLog.DebugSkipped("failed to adjust session end time");
+                return;
+            }
+
+            if (bonusMs > 0)
+            {
+                DungeonTimeRuntime.ArmDisplayScale(room, baseRemainingMs, bonusMs);
+            }
+
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
-            DungeonTimeLog.InfoApplied(playerCount, bonusMs, newEndTime, vanillaRemainingMs, config);
+            DungeonTimeLog.InfoApplied(
+                playerCount,
+                config.StartTimePreset,
+                baseRemainingMs,
+                bonusMs,
+                newEndTime,
+                vanillaRemainingMs,
+                config);
         }
     }
 }

@@ -34,16 +34,22 @@ namespace MimesisPlayerEnhancement.Util
             return remainingMs > 0;
         }
 
-        internal static bool TryExtendEndTime(DungeonRoom room, long bonusMs, out long newEndTime)
+        internal static bool TryAdjustEndTime(DungeonRoom room, long deltaMs, out long newEndTime)
         {
             newEndTime = 0;
-            if (room == null || bonusMs <= 0)
+            if (room == null || deltaMs == 0)
             {
                 return false;
             }
 
             long endTime = (long)SessionEndTimeField.GetValue(room);
-            newEndTime = endTime + bonusMs;
+            long currentTime = (long)CurrentTimeField.GetValue(room);
+            newEndTime = endTime + deltaMs;
+            if (newEndTime <= currentTime)
+            {
+                return false;
+            }
+
             SessionEndTimeField.SetValue(room, newEndTime);
             return true;
         }

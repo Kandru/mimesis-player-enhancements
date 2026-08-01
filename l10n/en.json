@@ -314,7 +314,7 @@
       },
       "StartTimePreset": {
         "title": "Start Time",
-        "description": "In-game clock at dungeon start (lighting only; shift deadline unchanged).",
+        "description": "In-game clock at dungeon start; real shift length scales so the run still ends near 24:00.",
         "options": {
           "Vanilla": "Vanilla (~10:00 → 24:00, default)",
           "Morning": "Morning (08:00 → 24:00, bright)",
