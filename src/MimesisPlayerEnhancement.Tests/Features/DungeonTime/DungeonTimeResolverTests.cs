@@ -227,31 +227,145 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         [InlineData(600_000, 0, 1d)]
         [InlineData(600_000, 20_000, 600_000d / 620_000d)]
         [InlineData(100_000, 100_000, 0.5d)]
-        public void GetDisplayScale_maps_base_remaining_over_extended(
+        public void GetStretchScaleFromBonus_maps_base_remaining_over_extended(
             long baseRemainingMs,
             long bonusMs,
             double expectedScale)
         {
-            double scale = DungeonTimeResolver.GetDisplayScale(baseRemainingMs, bonusMs);
+            double scale = DungeonTimeResolver.GetStretchScaleFromBonus(baseRemainingMs, bonusMs);
 
             Assert.Equal(expectedScale, scale, 10);
         }
 
         [Theory]
-        [InlineData(1000, 600_000, 620_000, 967)]
-        [InlineData(1000, 100_000, 200_000, 500)]
-        [InlineData(1000, 600_000, 600_000, 1000)]
-        [InlineData(0, 600_000, 620_000, 0)]
-        [InlineData(1000, 0, 620_000, 1000)]
-        public void ScaleElapsedDelta_scales_or_passes_through(
-            long deltaMs,
-            long baseRemainingMs,
-            long extendedRemainingMs,
-            long expectedScaledDelta)
+        [InlineData(1d, 1f, 1d)]
+        [InlineData(0.5d, 2f, 1d)]
+        [InlineData(1d, -1f, -1d)]
+        [InlineData(0.5d, -2f, -1d)]
+        [InlineData(1d, 0f, 0d)]
+        public void GetEffectiveDisplayRate_multiplies_stretch_and_multiplier(
+            double stretch,
+            float multiplier,
+            double expected)
         {
-            long scaled = DungeonTimeResolver.ScaleElapsedDelta(deltaMs, baseRemainingMs, extendedRemainingMs);
+            double rate = DungeonTimeResolver.GetEffectiveDisplayRate(stretch, multiplier);
 
-            Assert.Equal(expectedScaledDelta, scaled);
+            Assert.Equal(expected, rate, 10);
+        }
+
+        [Theory]
+        [InlineData(1000, 1000, 1d, 1000)]
+        [InlineData(1000, 1000, 0.5d, 500)]
+        [InlineData(1000, 1000, 2d, 2000)]
+        [InlineData(1000, 1000, 0d, 0)]
+        [InlineData(1000, 1000, -1d, -1000)]
+        [InlineData(500, 1000, -1d, -1000)]
+        [InlineData(100, 1000, -1d, -1000)]
+        public void GetClockBeforeAdd_applies_rate_and_floors_at_min(
+            long valueMs,
+            long deltaMs,
+            double rate,
+            long expectedBeforeAdd)
+        {
+            long before = DungeonTimeResolver.GetClockBeforeAdd(valueMs, deltaMs, rate);
+
+            Assert.Equal(expectedBeforeAdd, before);
+            Assert.True(before + deltaMs >= 0);
+        }
+
+        [Fact]
+        public void GetClockBeforeAdd_respects_custom_floor()
+        {
+            long before = DungeonTimeResolver.GetClockBeforeAdd(
+                valueMs: 5_000,
+                deltaMs: 1_000,
+                rate: -1d,
+                minValueMs: 4_000);
+
+            Assert.Equal(3_000, before);
+            Assert.Equal(4_000, before + 1_000);
+        }
+
+        [Theory]
+        [InlineData(5.5f, 5f)]
+        [InlineData(-5.5f, -5f)]
+        [InlineData(0f, 0f)]
+        [InlineData(1f, 1f)]
+        public void ClampTimeMultiplier_clamps_to_range(float value, float expected)
+        {
+            Assert.Equal(expected, DungeonTimeResolver.ClampTimeMultiplier(value));
+        }
+
+        [Theory]
+        [InlineData(9.5d, 10 * 3600, 24 * 3600, 10d)]
+        [InlineData(10d, 10 * 3600, 24 * 3600, 10d)]
+        [InlineData(24d, 10 * 3600, 24 * 3600, 24d)]
+        [InlineData(25d, 10 * 3600, 24 * 3600, 24d)]
+        [InlineData(-1d, 0, 0, 0d)]
+        [InlineData(0d, 0, 0, 0d)]
+        [InlineData(24d, 0, 0, 24d)]
+        [InlineData(25d, 0, 0, 24d)]
+        public void ClampDisplayHours_stops_reverse_at_start_and_forward_at_end(
+            double hours,
+            long startSeconds,
+            long endSeconds,
+            double expected)
+        {
+            double clamped = DungeonTimeResolver.ClampDisplayHours(hours, startSeconds, endSeconds);
+
+            Assert.Equal(expected, clamped, 5);
+        }
+
+        [Theory]
+        [InlineData(0d, 0f)]
+        [InlineData(10.5d, 10.5f)]
+        [InlineData(24d, 0f)]
+        [InlineData(25d, 1f)]
+        public void ToClockFaceHours_maps_end_twenty_four_to_zero(double hours, float expectedFace)
+        {
+            Assert.Equal(expectedFace, DungeonTimeResolver.ToClockFaceHours(hours), 3);
+        }
+
+        [Theory]
+        [InlineData(0d, 0, 0, 0, 0)]
+        [InlineData(0d, 10 * 3600, 10, 0, 0)]
+        [InlineData(3600d, 10 * 3600, 11, 0, 0)]
+        public void ToDisplayTimeSpan_uses_zero_for_midnight_start(
+            double elapsedGameSeconds,
+            long startSeconds,
+            int expectedHours,
+            int expectedMinutes,
+            int expectedDays)
+        {
+            TimeSpan time = DungeonTimeResolver.ToDisplayTimeSpan(elapsedGameSeconds, startSeconds);
+
+            Assert.Equal(expectedDays, time.Days);
+            Assert.Equal(expectedHours, time.Hours);
+            Assert.Equal(expectedMinutes, time.Minutes);
+        }
+
+        [Theory]
+        [InlineData(0d, 10 * 3600, 24 * 3600, false)]
+        [InlineData(14 * 3600 - 1, 10 * 3600, 24 * 3600, false)]
+        [InlineData(14 * 3600, 10 * 3600, 24 * 3600, true)]
+        [InlineData(15 * 3600, 10 * 3600, 24 * 3600, true)]
+        [InlineData(0d, 0, 0, false)]
+        [InlineData(86400 - 1, 0, 0, false)]
+        [InlineData(86400, 0, 0, true)]
+        [InlineData(0d, 21 * 3600, 0, false)]
+        [InlineData(3 * 3600, 21 * 3600, 0, true)]
+        public void HasReachedOrPassedDisplayEnd_uses_elapsed_vs_span(
+            double elapsedGameSeconds,
+            long startSeconds,
+            long endSeconds,
+            bool expectedPastEnd)
+        {
+            bool past = DungeonTimeResolver.HasReachedOrPassedDisplayEnd(
+                elapsedGameSeconds,
+                startSeconds,
+                endSeconds);
+
+            Assert.Equal(expectedPastEnd, past);
         }
     }
 }

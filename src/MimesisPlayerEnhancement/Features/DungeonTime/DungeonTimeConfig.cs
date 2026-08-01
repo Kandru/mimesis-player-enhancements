@@ -37,6 +37,10 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 "StartTimePreset",
                 "Vanilla");
 
+            ModConfig.TimeMultiplier = ModConfig.CreateTrackedEntry(_category,
+                "TimeMultiplier",
+                1f);
+
             ModConfig.EnableRealtimeTramClock = ModConfig.CreateTrackedEntry(_category,
                 "EnableRealtimeTramClock",
                 false);
@@ -59,6 +63,8 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline.OnEntryValueChanged.Subscribe((_, value) =>
                 OnExtraShiftSecondsPerPlayerChanged(logger, value));
             ModConfig.StartTimePreset.OnEntryValueChanged.Subscribe((_, value) => OnStartTimePresetChanged(logger, value));
+            ModConfig.TimeMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
+                OnTimeMultiplierChanged(logger, value));
             ModConfig.EnableRealtimeTramClock.OnEntryValueChanged.Subscribe((_, _) =>
                 ModConfig.NotifyChanged(ModConfig.EnableRealtimeTramClock));
         }
@@ -66,11 +72,13 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
+            ModConfig.TrackFloatEntry(ModConfig.TimeMultiplier);
         }
 
         internal static void SanitizeInitialValues(MelonLogger.Instance logger)
         {
             OnStartTimePresetChanged(logger, ModConfig.StartTimePreset.Value);
+            OnTimeMultiplierChanged(logger, ModConfig.TimeMultiplier.Value);
         }
 
         private static void OnExtraShiftSecondsPerPlayerChanged(MelonLogger.Instance logger, float value)
@@ -84,6 +92,21 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
             ModConfigFloatHelper.SanitizeEntry(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
             ModConfig.NotifyChanged(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
+        }
+
+        private static void OnTimeMultiplierChanged(MelonLogger.Instance logger, float value)
+        {
+            float clamped = DungeonTimeResolver.ClampTimeMultiplier(value);
+            if (!clamped.Equals(value))
+            {
+                logger.Warning(
+                    $"TimeMultiplier must be between {DungeonTimeResolver.MinTimeMultiplier} and {DungeonTimeResolver.MaxTimeMultiplier}; clamping.");
+                ModConfig.TimeMultiplier.Value = clamped;
+                return;
+            }
+
+            ModConfigFloatHelper.SanitizeEntry(ModConfig.TimeMultiplier);
+            ModConfig.NotifyChanged(ModConfig.TimeMultiplier);
         }
 
         private static void OnStartTimePresetChanged(MelonLogger.Instance logger, string value)

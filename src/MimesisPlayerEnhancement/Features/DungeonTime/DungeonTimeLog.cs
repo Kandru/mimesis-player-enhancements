@@ -15,13 +15,17 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         {
             double bonusSeconds = bonusMs / 1000d;
             double presetDeltaSeconds = (baseRemainingMs - vanillaRemainingMs) / 1000d;
-            double displayScale = DungeonTimeResolver.GetDisplayScale(baseRemainingMs, bonusMs);
+            double stretchScale = DungeonTimeResolver.GetStretchScaleFromBonus(baseRemainingMs, bonusMs);
+            double effectiveRate = DungeonTimeResolver.GetEffectiveDisplayRate(
+                stretchScale,
+                ModConfig.TimeMultiplier.Value);
             ModLog.Info(
                 Feature,
                 $"Shift adjusted — players={playerCount}, baseline={config.DungeonTimeBaselinePlayerCount}, " +
                 $"preset={preset} ({presetDeltaSeconds:+0.##;-0.##;0}s), " +
                 $"+{bonusSeconds:0.##}s ({config.ExtraShiftSecondsPerPlayerAboveBaseline:0.##}s/player above baseline), " +
-                $"displayScale={displayScale:0.####}, newSessionEndTime={newSessionEndTime}");
+                $"stretchScale={stretchScale:0.####}, timeMultiplier={ModConfig.TimeMultiplier.Value:0.##}, " +
+                $"displayRate={effectiveRate:0.####}, newSessionEndTime={newSessionEndTime}");
         }
 
         internal static void DebugSkipped(string reason)

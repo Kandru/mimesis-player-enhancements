@@ -1,4 +1,3 @@
-using System.IO;
 using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Util;
 using Xunit;

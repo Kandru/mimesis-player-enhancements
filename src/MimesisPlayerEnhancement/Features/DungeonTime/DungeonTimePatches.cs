@@ -15,5 +15,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         }
 
         public static void RefreshFromConfig() => DungeonTimeTramClockSync.RefreshFromConfig();
+
+        public static void OnSessionEnded() => DungeonTimeClientWorldClock.Clear();
     }
 }

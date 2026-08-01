@@ -21,6 +21,7 @@ namespace MimesisPlayerEnhancement.Util
             new(LiveApplyKeyComparer.Instance)
             {
                 ("DungeonTime", "EnableRealtimeTramClock"),
+                ("DungeonTime", "TimeMultiplier"),
             };
 
         internal static bool ShouldDefer(

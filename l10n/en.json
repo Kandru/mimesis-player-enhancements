@@ -302,7 +302,7 @@
       },
       "EnableDungeonTime": {
         "title": "Enable Dungeon Time",
-        "description": "Add extra shift time when more players are in the session, and unlock start-time / tram-clock options."
+        "description": "Add extra shift time when more players are in the session."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline Player Count",
@@ -324,9 +324,13 @@
           "Midnight": "Midnight (00:00 → 24:00, darkest)"
         }
       },
+      "TimeMultiplier": {
+        "title": "Time Multiplier",
+        "description": "Live rate for the real shift clock and display (−5…5). 1 = normal, 0 = freeze, negative = reverse (can end early or restore time). Applies immediately."
+      },
       "EnableRealtimeTramClock": {
         "title": "Realtime Tram Clock",
-        "description": "Update the tram console clock every in-game minute during a run. Applies immediately. Requires Enable Dungeon Time."
+        "description": "Show a realtime tram clock."
       }
     },
     "MimesisPlayerEnhancement_Weather": {

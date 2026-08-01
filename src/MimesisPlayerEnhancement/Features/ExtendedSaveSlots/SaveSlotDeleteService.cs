@@ -1,7 +1,5 @@
 using System.Reflection;
 
-using MimesisPlayerEnhancement.Features.Statistics;
-
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotDeleteService

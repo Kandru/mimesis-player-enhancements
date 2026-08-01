@@ -364,6 +364,7 @@ namespace MimesisPlayerEnhancement
             switch (key)
             {
                 case "EnableRealtimeTramClock":
+                case "TimeMultiplier":
                     dependency = new ModConfigEntryDependency("EnableDungeonTime");
                     return true;
                 default:

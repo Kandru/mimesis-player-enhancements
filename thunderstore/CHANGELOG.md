@@ -1,12 +1,12 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.8.1
-- breaking: Spawn Scaling, Loot Multiplicator, and Economy player-count scaling now use a per-feature baseline player count plus per-type general and per-player multipliers (`effective = general + max(0, players − baseline) × perPlayer`). Removed `*PlayerCountScaleRate` and `AutoScale*ByPlayerCount` keys (no migration; obsolete keys are dropped). Set a type's per-player multiplier to `0` to disable player scaling for that type
 - feature: Added "Savegame Preparation" to allow easy changes of the startup money, starting zone and what upgrades should already be enabled when creating a new savegame
 - improvement: better loading screens
 - improvement: proper Savegame Preparation setting which allows to modify the behavior for a new savegame
 - improvement: settings sidebar groups (Client, Session, Balance, World); rename core section to General
 - improvement: rename Jako → Grunt and split ambient waves inside "Spawn Scaling"
+- improvement: Dungeon Time stretch + multiplier, and modded-client sync for time
 - fix: custom screens should now also show for clients, not only the host
 - fix: kicking did not properly disconnect a player
 - fix: host should sync configuration now
@@ -14,7 +14,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: allow the maximum zone to be overriden to 99
 - fix: re-arrange settings for "More Voices"
 - fix: player-count scaling redesign (additive instead of multiplicative)
-- breaking: moved `StartTimePreset` and `EnableRealtimeTramClock` from Weather into Dungeon Time (`[MimesisPlayerEnhancement_DungeonTime]`); re-set them there, old Weather keys are not migrated
+- fix: move start time + realtime clock to Dungeon Time
 - fix: Snap tram clock to :00 on realtime disable
 - draft: noise gate feature for microphone
 - draft: audio ducking when dead and talking with other dead players

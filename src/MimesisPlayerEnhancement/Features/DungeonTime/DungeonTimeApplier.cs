@@ -4,6 +4,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
     {
         internal static void EnsureApplied(DungeonRoom room)
         {
+            DungeonTimeRuntime.CaptureSessionStartCurrent(room);
+            EnsureClientStretchArmed(room);
+
             if (DungeonRoomAppliedSet.IsApplied(room, DungeonRoomApplyKind.DungeonTime))
             {
                 return;
@@ -62,7 +65,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
             if (bonusMs > 0)
             {
-                DungeonTimeRuntime.ArmDisplayScale(room, baseRemainingMs, bonusMs);
+                DungeonTimeRuntime.ArmStretchScale(room, baseRemainingMs, bonusMs);
             }
 
             DungeonRoomAppliedSet.MarkApplied(room, DungeonRoomApplyKind.DungeonTime);
@@ -74,6 +77,52 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 newEndTime,
                 vanillaRemainingMs,
                 config);
+        }
+
+        /// <summary>
+        /// Modded clients arm stretch state from mirrored config without touching the host deadline.
+        /// </summary>
+        internal static void EnsureClientStretchArmed(DungeonRoom room)
+        {
+            if (!HostApplyGate.IsParticipantClient())
+            {
+                return;
+            }
+
+            DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
+            if (!config.EnableDungeonTime || room == null)
+            {
+                return;
+            }
+
+            if (DungeonTimeRuntime.TryGetState(room, out DungeonTimeRoomState existing)
+                && existing.ExtendedRemainingMs > existing.BaseRemainingMs
+                && existing.BaseRemainingMs > 0)
+            {
+                return;
+            }
+
+            if (!DungeonRoomSessionTime.TryGetRemainingMilliseconds(room, out long remainingMs)
+                || remainingMs <= 0)
+            {
+                return;
+            }
+
+            long vanillaStartSeconds = DungeonTimeRoomAccess.GetVanillaStartSeconds(room);
+            long effectiveStartSeconds = DungeonTimeClockResolver.GetEffectiveStartSeconds(room, config);
+            long endSeconds = DungeonTimeRoomAccess.GetEndSeconds(room);
+            long baseRemainingMs = DungeonTimeResolver.GetPresetAdjustedRemainingMs(
+                remainingMs,
+                vanillaStartSeconds,
+                effectiveStartSeconds,
+                endSeconds);
+            long bonusMs = DungeonTimeResolver.GetBonusMilliseconds(room.GetMemberCount(), config);
+            if (bonusMs > 0)
+            {
+                DungeonTimeRuntime.ArmStretchScale(room, baseRemainingMs, bonusMs);
+            }
+
+            DungeonTimeClientWorldClock.RefreshFromConfig();
         }
     }
 }

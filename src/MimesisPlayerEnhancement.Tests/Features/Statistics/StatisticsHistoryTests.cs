@@ -1,4 +1,3 @@
-using System.Linq;
 using MimesisPlayerEnhancement.Features.Statistics;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 using Xunit;

@@ -60,7 +60,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
         {
             double elapsed = DungeonTimeRoomAccess.GetElapsedGameSeconds(room);
             long startSeconds = GetEffectiveStartSeconds(room, config);
-            return TimeSpan.FromSeconds(elapsed + startSeconds);
+            return DungeonTimeResolver.ToDisplayTimeSpan(elapsed, startSeconds);
         }
     }
 }

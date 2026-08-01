@@ -63,5 +63,15 @@ namespace MimesisPlayerEnhancement.Util
         {
             ElapsedTimeField.SetValue(room, elapsedMs);
         }
+
+        internal static long GetCurrentMilliseconds(DungeonRoom room)
+        {
+            return (long)CurrentTimeField.GetValue(room);
+        }
+
+        internal static void SetCurrentMilliseconds(DungeonRoom room, long currentMs)
+        {
+            CurrentTimeField.SetValue(room, currentMs);
+        }
     }
 }

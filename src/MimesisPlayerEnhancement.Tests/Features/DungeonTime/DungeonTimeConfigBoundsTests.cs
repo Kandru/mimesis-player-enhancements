@@ -25,5 +25,16 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
             Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
             Assert.Null(bound.MaxValue);
         }
+
+        [Fact]
+        public void TimeMultiplier_has_minus_five_to_five_bounds()
+        {
+            Assert.True(ModConfigEntryBounds.TryGet(
+                SectionId,
+                "TimeMultiplier",
+                out ModConfigEntryBound bound));
+            Assert.Equal(-5f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal(5f, float.Parse(bound.MaxValue!, CultureInfo.InvariantCulture));
+        }
     }
 }

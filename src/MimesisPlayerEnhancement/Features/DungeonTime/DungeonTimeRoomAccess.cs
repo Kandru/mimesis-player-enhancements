@@ -39,9 +39,60 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 return 0;
             }
 
-            return TimeSpan.TryParse(displayTime, out TimeSpan parsed)
+            string trimmed = displayTime.Trim();
+
+            // TimeSpan.TryParse("24:00:00") yields 24 days — treat explicit 24:00 as end-of-day.
+            if (TryParseClockComponents(trimmed, out int hours, out int minutes, out int seconds))
+            {
+                if (hours == 24 && minutes == 0 && seconds == 0)
+                {
+                    return DaySeconds;
+                }
+
+                if (hours is >= 0 and < 24 && minutes is >= 0 and < 60 && seconds is >= 0 and < 60)
+                {
+                    return (hours * 3600L) + (minutes * 60L) + seconds;
+                }
+
+                return 0;
+            }
+
+            return TimeSpan.TryParse(trimmed, out TimeSpan parsed)
                 ? (long)parsed.TotalSeconds
                 : 0;
+        }
+
+        private const long DaySeconds = 86400L;
+
+        private static bool TryParseClockComponents(
+            string displayTime,
+            out int hours,
+            out int minutes,
+            out int seconds)
+        {
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            string[] parts = displayTime.Split(':');
+            if (parts.Length is < 2 or > 3)
+            {
+                return false;
+            }
+
+            if (!int.TryParse(parts[0], out hours) || !int.TryParse(parts[1], out minutes))
+            {
+                return false;
+            }
+
+            if (parts.Length == 3)
+            {
+                if (!int.TryParse(parts[2], out seconds))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal static long CaptureVanillaStartSeconds(DungeonRoom room)

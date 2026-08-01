@@ -302,7 +302,7 @@
       },
       "EnableDungeonTime": {
         "title": "Dungeon-Zeit aktivieren",
-        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind, und schaltet Startzeit-/Tram-Uhr-Optionen frei."
+        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline-Spieleranzahl",
@@ -324,9 +324,13 @@
           "Midnight": "Mitternacht (00:00 → 24:00, am dunkelsten)"
         }
       },
+      "TimeMultiplier": {
+        "title": "Zeit-Multiplikator",
+        "description": "Live-Rate für echte Schichtuhr und Anzeige (−5…5). 1 = normal, 0 = Pause, negativ = rückwärts (früher beenden oder Zeit zurückgeben). Wirkt sofort."
+      },
       "EnableRealtimeTramClock": {
         "title": "Tram-Uhr in Echtzeit",
-        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Wirkt sofort. Erfordert Dungeon-Zeit aktivieren."
+        "description": "Zeigt die echte Zeit an."
       }
     },
     "MimesisPlayerEnhancement_Weather": {

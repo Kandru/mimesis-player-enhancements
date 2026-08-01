@@ -402,6 +402,7 @@ namespace MimesisPlayerEnhancement
                 return new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     ["StartTimePreset"] = "startTime",
+                    ["TimeMultiplier"] = "startTime",
                     ["EnableRealtimeTramClock"] = "startTime",
                 };
             }

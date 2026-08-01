@@ -67,12 +67,10 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
     }
 
     // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L707-766
-    // Shrink the pending _elapsedTime add so display/hourly TimeSyncSig span the extended real shift.
-    // Do not send extra TimeSyncSig — clients set worldTime = Hours and locally advance at vanilla
-    // scale between packets, so sub-hour syncs snap the sky backward.
+    // Adjust pending _currentTime / _elapsedTime by TimeMultiplier (and stretch on display).
     [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
     [HarmonyPriority(HarmonyLib.Priority.First)]
-    internal static class DungeonRoomOnUpdateDisplayScalePatch
+    internal static class DungeonRoomOnUpdateTimeRatePatch
     {
         private const string Feature = "DungeonTime";
 
@@ -81,11 +79,11 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         {
             try
             {
-                _ = DungeonTimeRuntime.TryPrepareElapsedForScaledDelta(__instance, delta);
+                _ = DungeonTimeRuntime.TryPrepareClocksForRates(__instance, delta);
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"OnUpdate display-scale prefix failed — {ex.Message}");
+                ModLog.Warn(Feature, $"OnUpdate time-rate prefix failed — {ex.Message}");
             }
         }
     }
@@ -96,7 +94,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
     {
         private const string Feature = "DungeonTime";
 
-        // Runs every dungeon frame — only when start-time override or realtime tram clock can run.
+        // Runs every dungeon frame when start override or Dungeon Time sync/rate paths can run.
         private static bool IsContextNeeded
         {
             get
@@ -104,7 +102,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
                 DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
                 return HostApplyGate.ShouldApplyHostOnlyFeature(() =>
                     DungeonTimeClockResolver.UsesOverrideStartTime(config)
-                    || (config.EnableDungeonTime && ModConfig.EnableRealtimeTramClock.Value));
+                    || config.EnableDungeonTime);
             }
         }
 

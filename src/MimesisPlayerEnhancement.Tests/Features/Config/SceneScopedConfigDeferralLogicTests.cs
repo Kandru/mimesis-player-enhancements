@@ -235,6 +235,29 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
+        public void HasLiveApplyKeyChange_detects_display_time_multiplier()
+        {
+            ModConfigChangeInfo change = SectionChange(
+                "MimesisPlayerEnhancement_DungeonTime",
+                "TimeMultiplier");
+
+            Assert.True(SceneScopedConfigDeferralLogic.HasLiveApplyKeyChange("DungeonTime", change));
+        }
+
+        [Fact]
+        public void ShouldDefer_returns_false_for_display_time_multiplier_during_gameplay()
+        {
+            bool result = SceneScopedConfigDeferralLogic.ShouldDefer(
+                "DungeonTime",
+                SectionChange("MimesisPlayerEnhancement_DungeonTime", "TimeMultiplier"),
+                isGameplaySceneActive: true,
+                isMasterEnabled: true,
+                masterToggleKey: "EnableDungeonTime");
+
+            Assert.False(result);
+        }
+
+        [Fact]
         public void IsMasterToggleDisabledChange_returns_true_on_full_reload_when_master_disabled()
         {
             bool result = SceneScopedConfigDeferralLogic.IsMasterToggleDisabledChange(

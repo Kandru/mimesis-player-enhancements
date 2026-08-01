@@ -129,6 +129,11 @@ namespace MimesisPlayerEnhancement
 
             Int(DungeonTime, "DungeonTimeBaselinePlayerCount", 1);
             Float(DungeonTime, "ExtraShiftSecondsPerPlayerAboveBaseline", 0f);
+            FloatRange(
+                DungeonTime,
+                "TimeMultiplier",
+                DungeonTimeResolver.MinTimeMultiplier,
+                DungeonTimeResolver.MaxTimeMultiplier);
 
             Float(Weather, "WeatherCycleMinDelaySeconds", 0f);
             Float(Weather, "WeatherCycleMaxDelaySeconds", 0f);

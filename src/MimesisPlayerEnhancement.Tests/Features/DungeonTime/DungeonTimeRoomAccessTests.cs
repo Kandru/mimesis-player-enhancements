@@ -14,6 +14,18 @@ namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
         }
 
         [Theory]
+        [InlineData("24:00:00", 86400L)]
+        [InlineData("24:00", 86400L)]
+        [InlineData("00:00:00", 0L)]
+        [InlineData("23:59:59", 86399L)]
+        public void ParseDisplayTimeToSeconds_maps_twenty_four_to_end_of_day(string displayTime, long expected)
+        {
+            long seconds = DungeonTimeRoomAccess.ParseDisplayTimeToSeconds(displayTime);
+
+            Assert.Equal(expected, seconds);
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]

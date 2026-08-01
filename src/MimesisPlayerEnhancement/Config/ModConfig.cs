@@ -136,6 +136,7 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; internal set; } = null!;
         public static MelonPreferences_Entry<string> StartTimePreset { get; internal set; } = null!;
+        public static MelonPreferences_Entry<float> TimeMultiplier { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> EnableRealtimeTramClock { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMimicPossessionTuning { get; internal set; } = null!;
