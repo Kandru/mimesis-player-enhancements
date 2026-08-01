@@ -327,8 +327,15 @@ export interface ConfigSectionDto {
   id: string;
   title: string;
   description?: string;
+  /** Nested settings-nav group (client / session / balance / world). */
+  groupId?: string;
   featureToggle?: ConfigEntryDto;
   entries: ConfigEntryDto[];
+}
+
+export interface SettingsNavGroup {
+  id: string;
+  sections: ConfigSectionDto[];
 }
 
 export interface SettingsDto {

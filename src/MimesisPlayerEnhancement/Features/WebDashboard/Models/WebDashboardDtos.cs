@@ -303,6 +303,8 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Models
         public string Id = "";
         public string Title = "";
         public string Description = "";
+        /// <summary>Settings-nav group id (client / session / balance / world).</summary>
+        public string GroupId = "";
         public WebDashboardConfigEntryDto? FeatureToggle;
         public List<WebDashboardConfigEntryDto> Entries = [];
     }

@@ -442,6 +442,9 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                     Id = sectionId,
                     Title = title,
                     Description = WebDashboardL10n.GetConfigSectionDescription(sectionId) ?? "",
+                    GroupId = ModConfigSectionGroups.TryGetGroupId(sectionId, out string groupId)
+                        ? groupId
+                        : "",
                 };
 
                 ModConfigRegistry.TryGetFeatureToggleKey(sectionId, out string featureToggleKey);

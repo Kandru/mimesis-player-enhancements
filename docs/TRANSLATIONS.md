@@ -60,6 +60,8 @@ Config titles and descriptions are user-facing. Keep them short and plain:
 
 When adding a new entry group in `ModConfigEntryUiHints.cs`, add matching `config.{section}._groups.{groupId}` strings in every locale file.
 
+Settings sidebar section groups (Client / Session / Balance / World) use `dashboard.settings_group_{id}` and membership in `ModConfigSectionGroups`.
+
 ## Build pipeline
 
 1. Edit files under `l10n/` only.

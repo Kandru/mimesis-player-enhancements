@@ -1,4 +1,4 @@
-import type { ConfigEntryDto, ConfigSectionDto, ItemOptionDto, SettingsDto } from './types';
+import type { ConfigEntryDto, ConfigSectionDto, ItemOptionDto, SettingsDto, SettingsNavGroup } from './types';
 import { t } from './i18n';
 import { parseCsv } from './listValue';
 import {
@@ -360,6 +360,23 @@ export function groupConfigEntries(
       label: '',
       entries: ungrouped,
     });
+  }
+
+  return groups;
+}
+
+/** Collapse consecutive settings sections that share a groupId into nav groups. */
+export function groupSettingsNavSections(sections: ConfigSectionDto[]): SettingsNavGroup[] {
+  const groups: SettingsNavGroup[] = [];
+  for (const section of sections) {
+    const id = section.groupId ?? '';
+    const last = groups[groups.length - 1];
+    if (last && last.id === id) {
+      last.sections.push(section);
+      continue;
+    }
+
+    groups.push({ id, sections: [section] });
   }
 
   return groups;

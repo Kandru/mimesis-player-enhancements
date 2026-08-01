@@ -1,8 +1,8 @@
 {
   "config": {
     "MimesisPlayerEnhancement": {
-      "_section": "Mimesis Player Enhancement",
-      "_description": "Global mod options, including verbose debug logging.",
+      "_section": "General",
+      "_description": "Mod-wide options, including verbose debug logging.",
       "_groups": {
         "EnableDebugLogging": "Debug logging",
         "UiOverlayDebug": "UI overlay preview"
@@ -1487,6 +1487,10 @@
     "nav_global_settings": "Global Settings",
     "nav_section_lobby": "Lobby",
     "nav_section_global": "Global",
+    "settings_group_client": "Client",
+    "settings_group_session": "Session",
+    "settings_group_balance": "Balance",
+    "settings_group_world": "World",
     "nav_settings_global": "Settings",
     "nav_statistics": "Statistics",
     "nav_lobby": "Lobby",

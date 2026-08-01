@@ -13,6 +13,7 @@
     entryEditable,
     featureEnabled,
     groupConfigEntries,
+    groupSettingsNavSections,
     sectionHasModifiedEntries,
     sectionHasVisibleEntries,
     sectionResettableEntries,
@@ -43,6 +44,8 @@
       sectionHasVisibleEntries(section, settings, query, searchContext),
     );
   });
+
+  const navGroups = $derived(groupSettingsNavSections(sections));
 
   const activeSection = $derived.by(() => {
     if (sections.length === 0) return null;
@@ -176,32 +179,37 @@
   {:else}
     <div class="settings-layout">
       <nav class="settings-nav" aria-label={t('dashboard.settings_sections_nav')}>
-        {#each sections as section (section.id)}
-          <div
-            class="settings-nav-item {activeSection?.id === section.id ? 'settings-nav-item-active' : ''} {sectionHasModifiedEntries(section, settings, scope) ? 'settings-nav-item-modified' : ''}"
-            role="presentation"
-          >
-            <button
-              type="button"
-              class="settings-nav-title"
-              onclick={() => selectSection(section)}
+        {#each navGroups as group (group.id + ':' + group.sections[0].id)}
+          {#if group.id}
+            <p class="settings-nav-group-label">{t(`dashboard.settings_group_${group.id}`)}</p>
+          {/if}
+          {#each group.sections as section (section.id)}
+            <div
+              class="settings-nav-item {activeSection?.id === section.id ? 'settings-nav-item-active' : ''} {sectionHasModifiedEntries(section, settings, scope) ? 'settings-nav-item-modified' : ''}"
+              role="presentation"
             >
-              {section.title}
-            </button>
-            <div class="settings-nav-badges">
-              <ScopeBadges scopes={sectionScopes(section, settings)} size="sm" />
+              <button
+                type="button"
+                class="settings-nav-title"
+                onclick={() => selectSection(section)}
+              >
+                {section.title}
+              </button>
+              <div class="settings-nav-badges">
+                <ScopeBadges scopes={sectionScopes(section, settings)} size="sm" />
+              </div>
+              <div class="settings-nav-toggle">
+                {#if section.featureToggle}
+                  <Toggle
+                    checked={sectionToggleChecked(section)}
+                    disabled={!sectionToggleEditable(section)}
+                    label={section.title}
+                    onchange={(enabled) => toggleFeature(section, enabled)}
+                  />
+                {/if}
+              </div>
             </div>
-            <div class="settings-nav-toggle">
-              {#if section.featureToggle}
-                <Toggle
-                  checked={sectionToggleChecked(section)}
-                  disabled={!sectionToggleEditable(section)}
-                  label={section.title}
-                  onchange={(enabled) => toggleFeature(section, enabled)}
-                />
-              {/if}
-            </div>
-          </div>
+          {/each}
         {/each}
       </nav>
 

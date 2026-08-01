@@ -299,23 +299,24 @@ namespace MimesisPlayerEnhancement
             FilePath = Path.Combine(MelonEnvironment.UserDataDirectory, "MimesisPlayerEnhancement.cfg");
             SparseTomlConfig.RepairTomletCompatibility(FilePath);
 
+            // Category registration order drives settings-nav order (see ModConfigSectionGroups).
             MainCategory = CreateCategory(MainCategoryId);
-            UiConfig.CreateCategory();
             PrivacyConfig.CreateCategory();
+            UiConfig.CreateCategory();
+            SavegamePreparationConfig.CreateCategory();
+            JoinAnytimeConfig.CreateCategory();
             MorePlayersConfig.CreateCategory();
             MoreVoicesConfig.CreateCategory();
             PersistenceConfig.CreateCategory();
-            StatisticsConfig.CreateCategory();
             PlayerAnnouncementsConfig.CreateCategory();
-            JoinAnytimeConfig.CreateCategory();
-            SpawnScalingConfig.CreateCategory();
-            LootMultiplicatorConfig.CreateCategory();
-            EconomyConfig.CreateCategory();
-            SavegamePreparationConfig.CreateCategory();
+            StatisticsConfig.CreateCategory();
             DungeonTimeConfig.CreateCategory();
+            EconomyConfig.CreateCategory();
+            LootMultiplicatorConfig.CreateCategory();
+            SpawnScalingConfig.CreateCategory();
+            DungeonRandomizerConfig.CreateCategory();
             MimicTuningConfig.CreateCategory();
             PlayerTuningConfig.CreateCategory();
-            DungeonRandomizerConfig.CreateCategory();
             WeatherConfig.CreateCategory();
             WebDashboardConfig.CreateCategory();
 
@@ -327,24 +328,24 @@ namespace MimesisPlayerEnhancement
                 "LastSeenModVersion",
                 string.Empty);
 
+            PrivacyConfig.CreateEntries();
+            UiConfig.CreateEntries();
+            SavegamePreparationConfig.CreateEntries();
+            JoinAnytimeConfig.CreateEntries();
             MorePlayersConfig.CreateEntries();
             MoreVoicesConfig.CreateEntries();
             PersistenceConfig.CreateEntries();
-            StatisticsConfig.CreateEntries();
             PlayerAnnouncementsConfig.CreateEntries();
-            JoinAnytimeConfig.CreateEntries();
-            SpawnScalingConfig.CreateEntries();
-            LootMultiplicatorConfig.CreateEntries();
-            EconomyConfig.CreateEntries();
-            SavegamePreparationConfig.CreateEntries();
+            StatisticsConfig.CreateEntries();
             DungeonTimeConfig.CreateEntries();
+            EconomyConfig.CreateEntries();
+            LootMultiplicatorConfig.CreateEntries();
+            SpawnScalingConfig.CreateEntries();
+            DungeonRandomizerConfig.CreateEntries();
             MimicTuningConfig.CreateEntries();
             PlayerTuningConfig.CreateEntries();
-            DungeonRandomizerConfig.CreateEntries();
             WeatherConfig.CreateEntries();
             WebDashboardConfig.CreateEntries();
-            UiConfig.CreateEntries();
-            PrivacyConfig.CreateEntries();
 
             MorePlayersConfig.SanitizeInitialValues(logger);
             JoinAnytimeConfig.SanitizeInitialValues(logger);

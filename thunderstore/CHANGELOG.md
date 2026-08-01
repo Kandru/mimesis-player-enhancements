@@ -5,6 +5,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - feature: Added "Savegame Preparation" to allow easy changes of the startup money, starting zone and what upgrades should already be enabled when creating a new savegame
 - improvement: better loading screens
 - improvement: proper Savegame Preparation setting which allows to modify the behavior for a new savegame
+- improvement: settings sidebar groups (Client, Session, Balance, World); rename core section to General
 - fix: custom screens should now also show for clients, not only the host
 - fix: kicking did not properly disconnect a player
 - fix: host should sync configuration now
