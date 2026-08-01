@@ -9,14 +9,12 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
             bool enabled = true,
             WeatherMode mode = WeatherMode.Vanilla,
             bool disableRandomWeather = false,
-            StartTimePreset startTimePreset = StartTimePreset.Vanilla,
             float cycleMinDelaySeconds = 300f,
             float cycleMaxDelaySeconds = 600f) =>
             new(
                 enabled,
                 mode,
                 disableRandomWeather,
-                startTimePreset,
                 cycleMinDelaySeconds,
                 cycleMaxDelaySeconds);
 

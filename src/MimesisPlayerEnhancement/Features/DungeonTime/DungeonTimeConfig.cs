@@ -11,6 +11,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
     {
         private static MelonPreferences_Category _category = null!;
 
+        private static readonly string[] ValidStartTimePresets =
+            ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"];
+
         internal static void CreateCategory()
         {
             _category = ModConfig.CreateCategory("MimesisPlayerEnhancement_DungeonTime");
@@ -29,6 +32,14 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline = ModConfig.CreateTrackedEntry(_category,
                 "ExtraShiftSecondsPerPlayerAboveBaseline",
                 10f);
+
+            ModConfig.StartTimePreset = ModConfig.CreateTrackedEntry(_category,
+                "StartTimePreset",
+                "Vanilla");
+
+            ModConfig.EnableRealtimeTramClock = ModConfig.CreateTrackedEntry(_category,
+                "EnableRealtimeTramClock",
+                false);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -47,11 +58,19 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
             });
             ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline.OnEntryValueChanged.Subscribe((_, value) =>
                 OnExtraShiftSecondsPerPlayerChanged(logger, value));
+            ModConfig.StartTimePreset.OnEntryValueChanged.Subscribe((_, value) => OnStartTimePresetChanged(logger, value));
+            ModConfig.EnableRealtimeTramClock.OnEntryValueChanged.Subscribe((_, _) =>
+                ModConfig.NotifyChanged(ModConfig.EnableRealtimeTramClock));
         }
 
         internal static void RegisterFloatEntries()
         {
             ModConfig.TrackFloatEntry(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
+        }
+
+        internal static void SanitizeInitialValues(MelonLogger.Instance logger)
+        {
+            OnStartTimePresetChanged(logger, ModConfig.StartTimePreset.Value);
         }
 
         private static void OnExtraShiftSecondsPerPlayerChanged(MelonLogger.Instance logger, float value)
@@ -65,6 +84,31 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
 
             ModConfigFloatHelper.SanitizeEntry(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
             ModConfig.NotifyChanged(ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline);
+        }
+
+        private static void OnStartTimePresetChanged(MelonLogger.Instance logger, string value)
+        {
+            if (!ContainsIgnoreCase(ValidStartTimePresets, value))
+            {
+                logger.Warning("StartTimePreset must be Vanilla, Morning, Noon, Dusk, Night, or Midnight; resetting to Vanilla.");
+                ModConfig.StartTimePreset.Value = "Vanilla";
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.StartTimePreset);
+        }
+
+        private static bool ContainsIgnoreCase(string[] values, string? candidate)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (string.Equals(values[i], candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

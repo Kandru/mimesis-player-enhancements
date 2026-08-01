@@ -1,12 +1,12 @@
-namespace MimesisPlayerEnhancement.Features.Weather
+namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
-    internal static class WeatherTimeResolver
+    internal static class DungeonTimeClockResolver
     {
         internal static bool UsesOverrideStartTime() =>
-            UsesOverrideStartTime(WeatherSceneConfig.CaptureFromModConfig());
+            UsesOverrideStartTime(SceneScopedConfigGate.DungeonTime);
 
-        internal static bool UsesOverrideStartTime(WeatherSceneConfig config) =>
-            config.EnableWeather
+        internal static bool UsesOverrideStartTime(DungeonTimeSceneConfig config) =>
+            config.EnableDungeonTime
             && config.StartTimePreset != StartTimePreset.Vanilla;
 
         internal static StartTimePreset ParseStartTimePreset(string? value)
@@ -39,17 +39,13 @@ namespace MimesisPlayerEnhancement.Features.Weather
             return hour >= 0;
         }
 
-        internal static long GetEffectiveStartSeconds(DungeonRoom room)
-        {
-            long vanilla = WeatherRoomAccess.GetVanillaStartSeconds(room);
-            if (!UsesOverrideStartTime())
-            {
-                return vanilla;
-            }
+        internal static long GetEffectiveStartSeconds(DungeonRoom room) =>
+            GetEffectiveStartSeconds(room, SceneScopedConfigGate.DungeonTime);
 
-            WeatherSceneConfig config = WeatherSceneConfig.CaptureFromModConfig();
-            StartTimePreset preset = config.StartTimePreset;
-            if (!TryGetPresetHour(preset, out int hour))
+        internal static long GetEffectiveStartSeconds(DungeonRoom room, DungeonTimeSceneConfig config)
+        {
+            long vanilla = DungeonTimeRoomAccess.GetVanillaStartSeconds(room);
+            if (!UsesOverrideStartTime(config) || !TryGetPresetHour(config.StartTimePreset, out int hour))
             {
                 return vanilla;
             }
@@ -57,10 +53,13 @@ namespace MimesisPlayerEnhancement.Features.Weather
             return hour * 3600L;
         }
 
-        internal static TimeSpan ComputeDisplayTime(DungeonRoom room)
+        internal static TimeSpan ComputeDisplayTime(DungeonRoom room) =>
+            ComputeDisplayTime(room, SceneScopedConfigGate.DungeonTime);
+
+        internal static TimeSpan ComputeDisplayTime(DungeonRoom room, DungeonTimeSceneConfig config)
         {
-            double elapsed = WeatherRoomAccess.GetElapsedGameSeconds(room);
-            long startSeconds = GetEffectiveStartSeconds(room);
+            double elapsed = DungeonTimeRoomAccess.GetElapsedGameSeconds(room);
+            long startSeconds = GetEffectiveStartSeconds(room, config);
             return TimeSpan.FromSeconds(elapsed + startSeconds);
         }
     }

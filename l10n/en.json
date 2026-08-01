@@ -296,10 +296,13 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon Time",
-      "_description": "Extend shift deadlines when more players are in the session.",
+      "_description": "Extend shift deadlines and control the in-game start time / tram clock.",
+      "_groups": {
+        "startTime": "Start time"
+      },
       "EnableDungeonTime": {
         "title": "Enable Dungeon Time",
-        "description": "Add extra shift time when more players are in the session."
+        "description": "Add extra shift time when more players are in the session, and unlock start-time / tram-clock options."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline Player Count",
@@ -308,19 +311,34 @@
       "ExtraShiftSecondsPerPlayerAboveBaseline": {
         "title": "Extra Shift Time (seconds)",
         "description": "Real seconds added per player above the baseline. Minimum is 0."
+      },
+      "StartTimePreset": {
+        "title": "Start Time",
+        "description": "In-game clock at dungeon start (lighting only; shift deadline unchanged).",
+        "options": {
+          "Vanilla": "Vanilla (~10:00 → 24:00, default)",
+          "Morning": "Morning (08:00 → 24:00, bright)",
+          "Noon": "Noon (12:00 → 24:00, bright midday)",
+          "Dusk": "Dusk (18:00 → 24:00, sunset)",
+          "Night": "Night (21:00 → 24:00, dark)",
+          "Midnight": "Midnight (00:00 → 24:00, darkest)"
+        }
+      },
+      "EnableRealtimeTramClock": {
+        "title": "Realtime Tram Clock",
+        "description": "Update the tram console clock every in-game minute during a run. Requires Enable Dungeon Time."
       }
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Weather",
-      "_description": "Fixed, cycling, or vanilla weather plus synced start time for lighting.",
+      "_description": "Fixed, cycling, or vanilla weather during a run.",
       "_groups": {
         "weatherMode": "Weather mode",
-        "weatherCycle": "Weather cycle",
-        "startTime": "Start time"
+        "weatherCycle": "Weather cycle"
       },
       "EnableWeather": {
         "title": "Enable Weather",
-        "description": "Control dungeon weather, cycling presets, and start time."
+        "description": "Control dungeon weather and cycling presets."
       },
       "WeatherMode": {
         "title": "Weather Mode",
@@ -356,22 +374,6 @@
       "WeatherCycleMaxDelaySeconds": {
         "title": "Cycle Max Delay (seconds)",
         "description": "Longest wait before the next weather change."
-      },
-      "StartTimePreset": {
-        "title": "Start Time",
-        "description": "In-game clock at dungeon start (lighting only; shift deadline unchanged).",
-        "options": {
-          "Vanilla": "Vanilla (~10:00 → 24:00, default)",
-          "Morning": "Morning (08:00 → 24:00, bright)",
-          "Noon": "Noon (12:00 → 24:00, bright midday)",
-          "Dusk": "Dusk (18:00 → 24:00, sunset)",
-          "Night": "Night (21:00 → 24:00, dark)",
-          "Midnight": "Midnight (00:00 → 24:00, darkest)"
-        }
-      },
-      "EnableRealtimeTramClock": {
-        "title": "Realtime Tram Clock",
-        "description": "Update the tram console clock every in-game minute during a run. Requires Enable Weather."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
@@ -1583,7 +1585,7 @@
     "home_mod_economy_title": "Economy",
     "home_mod_economy_desc": "Tune starting cash, quotas, scrap value, shop prices, and optional currency retention.",
     "home_mod_dungeon_time_title": "Dungeon Time",
-    "home_mod_dungeon_time_desc": "Extend shift deadlines when more players are in the session.",
+    "home_mod_dungeon_time_desc": "Extend shift deadlines and control the in-game start time / tram clock.",
     "home_mod_mimic_tuning_title": "Mimic Tuning",
     "home_mod_mimic_tuning_desc": "Adjust mimic voice frequency, inventory-copy bias, and possession timing.",
     "home_mod_player_tuning_title": "Player Tuning",
@@ -1591,7 +1593,7 @@
     "home_mod_dungeon_randomizer_title": "Dungeon Randomizer",
     "home_mod_dungeon_randomizer_desc": "Randomize which dungeons appear and how they are laid out.",
     "home_mod_weather_title": "Weather",
-    "home_mod_weather_desc": "Fixed, cycling, or vanilla weather plus synced start time for lighting.",
+    "home_mod_weather_desc": "Fixed, cycling, or vanilla weather during a run.",
     "page_desc_home": "Mod help and feature guides",
     "page_desc_donation": "Support ongoing development",
     "page_desc_global_settings": "Across all save games",

@@ -6,14 +6,12 @@ namespace MimesisPlayerEnhancement.Features.Weather
             bool enableWeather,
             WeatherMode mode,
             bool disableRandomWeather,
-            StartTimePreset startTimePreset,
             float cycleMinDelaySeconds,
             float cycleMaxDelaySeconds)
         {
             EnableWeather = enableWeather;
             Mode = mode;
             DisableRandomWeather = disableRandomWeather;
-            StartTimePreset = startTimePreset;
             CycleMinDelaySeconds = cycleMinDelaySeconds;
             CycleMaxDelaySeconds = cycleMaxDelaySeconds;
         }
@@ -23,8 +21,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal WeatherMode Mode { get; }
 
         internal bool DisableRandomWeather { get; }
-
-        internal StartTimePreset StartTimePreset { get; }
 
         internal float CycleMinDelaySeconds { get; }
 
@@ -36,7 +32,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 ModConfig.EnableWeather.Value,
                 WeatherResolver.ParseMode(ModConfig.WeatherMode.Value),
                 ModConfig.DisableRandomWeather.Value,
-                WeatherTimeResolver.ParseStartTimePreset(ModConfig.StartTimePreset.Value),
                 ModConfig.WeatherCycleMinDelaySeconds.Value,
                 ModConfig.WeatherCycleMaxDelaySeconds.Value);
         }

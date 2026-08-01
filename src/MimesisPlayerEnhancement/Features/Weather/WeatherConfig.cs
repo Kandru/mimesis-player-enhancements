@@ -8,8 +8,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
 
         private static readonly string[] ValidWeatherModes = ["Vanilla", "Fixed", "Cycle"];
         private static readonly string[] ValidWeatherPresets = ["Sunny", "Rain", "HeavyRain", "Squall"];
-        private static readonly string[] ValidStartTimePresets =
-            ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"];
 
         internal static void CreateCategory()
         {
@@ -45,14 +43,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
             ModConfig.WeatherCycleMaxDelaySeconds = ModConfig.CreateTrackedEntry(_category,
                 "WeatherCycleMaxDelaySeconds",
                 600f);
-
-            ModConfig.StartTimePreset = ModConfig.CreateTrackedEntry(_category,
-                "StartTimePreset",
-                "Vanilla");
-
-            ModConfig.EnableRealtimeTramClock = ModConfig.CreateTrackedEntry(_category,
-                "EnableRealtimeTramClock",
-                false);
         }
 
         internal static void WireValidation(MelonLogger.Instance logger)
@@ -66,9 +56,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 OnCycleMinDelayChanged(logger, value));
             ModConfig.WeatherCycleMaxDelaySeconds.OnEntryValueChanged.Subscribe((_, value) =>
                 OnCycleMaxDelayChanged(logger, value));
-            ModConfig.StartTimePreset.OnEntryValueChanged.Subscribe((_, value) => OnStartTimePresetChanged(logger, value));
-            ModConfig.EnableRealtimeTramClock.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.EnableRealtimeTramClock));
         }
 
         internal static void RegisterFloatEntries()
@@ -81,7 +68,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         {
             OnWeatherModeChanged(logger, ModConfig.WeatherMode.Value);
             OnFixedWeatherPresetChanged(logger, ModConfig.FixedWeatherPreset.Value);
-            OnStartTimePresetChanged(logger, ModConfig.StartTimePreset.Value);
             OnCycleMinDelayChanged(logger, ModConfig.WeatherCycleMinDelaySeconds.Value);
             OnCycleMaxDelayChanged(logger, ModConfig.WeatherCycleMaxDelaySeconds.Value);
         }
@@ -108,18 +94,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
             }
 
             ModConfig.NotifyChanged(ModConfig.FixedWeatherPreset);
-        }
-
-        private static void OnStartTimePresetChanged(MelonLogger.Instance logger, string value)
-        {
-            if (!ContainsIgnoreCase(ValidStartTimePresets, value))
-            {
-                logger.Warning("StartTimePreset must be Vanilla, Morning, Noon, Dusk, Night, or Midnight; resetting to Vanilla.");
-                ModConfig.StartTimePreset.Value = "Vanilla";
-                return;
-            }
-
-            ModConfig.NotifyChanged(ModConfig.StartTimePreset);
         }
 
         private static void OnCycleMinDelayChanged(MelonLogger.Instance logger, float value)

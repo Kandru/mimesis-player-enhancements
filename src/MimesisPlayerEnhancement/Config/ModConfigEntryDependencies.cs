@@ -70,6 +70,11 @@ namespace MimesisPlayerEnhancement
                 return TryGetWeatherDependency(key, out dependency);
             }
 
+            if (sectionId == "MimesisPlayerEnhancement_DungeonTime")
+            {
+                return TryGetDungeonTimeDependency(key, out dependency);
+            }
+
             if (sectionId == UiConfig.SectionId)
             {
                 return TryGetUiDependency(key, out dependency);
@@ -348,8 +353,18 @@ namespace MimesisPlayerEnhancement
                 case "WeatherCycleMaxDelaySeconds":
                     dependency = new ModConfigEntryDependency("WeatherMode", "Cycle");
                     return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool TryGetDungeonTimeDependency(string key, out ModConfigEntryDependency dependency)
+        {
+            dependency = default;
+            switch (key)
+            {
                 case "EnableRealtimeTramClock":
-                    dependency = new ModConfigEntryDependency("EnableWeather");
+                    dependency = new ModConfigEntryDependency("EnableDungeonTime");
                     return true;
                 default:
                     return false;

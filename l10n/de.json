@@ -296,10 +296,13 @@
     },
     "MimesisPlayerEnhancement_DungeonTime": {
       "_section": "Dungeon-Zeit",
-      "_description": "Verlängere Schichtfristen bei mehr Spielern in der Sitzung.",
+      "_description": "Verlängere Schichtfristen und steuere Ingame-Startzeit / Tram-Uhr.",
+      "_groups": {
+        "startTime": "Startzeit"
+      },
       "EnableDungeonTime": {
         "title": "Dungeon-Zeit aktivieren",
-        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind."
+        "description": "Fügt extra Schichtzeit hinzu, wenn mehr Spieler in der Sitzung sind, und schaltet Startzeit-/Tram-Uhr-Optionen frei."
       },
       "DungeonTimeBaselinePlayerCount": {
         "title": "Baseline-Spieleranzahl",
@@ -308,19 +311,34 @@
       "ExtraShiftSecondsPerPlayerAboveBaseline": {
         "title": "Extra-Schichtzeit pro Spieler (Sekunden)",
         "description": "Echte Sekunden, die zur Schichtfrist pro Spieler über der Baseline addiert werden. Minimum ist 0."
+      },
+      "StartTimePreset": {
+        "title": "Startzeit",
+        "description": "Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; Schichtfrist unverändert).",
+        "options": {
+          "Vanilla": "Vanilla (~10:00 → 24:00, Standard)",
+          "Morning": "Morgen (08:00 → 24:00, hell)",
+          "Noon": "Mittag (12:00 → 24:00, hell)",
+          "Dusk": "Dämmerung (18:00 → 24:00, Sonnenuntergang)",
+          "Night": "Nacht (21:00 → 24:00, dunkel)",
+          "Midnight": "Mitternacht (00:00 → 24:00, am dunkelsten)"
+        }
+      },
+      "EnableRealtimeTramClock": {
+        "title": "Tram-Uhr in Echtzeit",
+        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Erfordert Dungeon-Zeit aktivieren."
       }
     },
     "MimesisPlayerEnhancement_Weather": {
       "_section": "Wetter",
-      "_description": "Festes, zyklisches oder Vanilla-Wetter plus Startzeit für Beleuchtung.",
+      "_description": "Festes, zyklisches oder Vanilla-Wetter während eines Laufs.",
       "_groups": {
         "weatherMode": "Wetter-Modus",
-        "weatherCycle": "Wetterzyklus",
-        "startTime": "Startzeit"
+        "weatherCycle": "Wetterzyklus"
       },
       "EnableWeather": {
         "title": "Wetter aktivieren",
-        "description": "Steuert Dungeon-Wetter, Zyklus-Presets und Startzeit."
+        "description": "Steuert Dungeon-Wetter und Zyklus-Presets."
       },
       "WeatherMode": {
         "title": "Wetter-Modus",
@@ -356,22 +374,6 @@
       "WeatherCycleMaxDelaySeconds": {
         "title": "Zyklus Höchstverzögerung (Sekunden)",
         "description": "Längste Wartezeit bis zum nächsten Wetterwechsel."
-      },
-      "StartTimePreset": {
-        "title": "Startzeit",
-        "description": "Ingame-Uhr beim Dungeon-Start (nur Beleuchtung; Schichtfrist unverändert).",
-        "options": {
-          "Vanilla": "Vanilla (~10:00 → 24:00, Standard)",
-          "Morning": "Morgen (08:00 → 24:00, hell)",
-          "Noon": "Mittag (12:00 → 24:00, hell)",
-          "Dusk": "Dämmerung (18:00 → 24:00, Sonnenuntergang)",
-          "Night": "Nacht (21:00 → 24:00, dunkel)",
-          "Midnight": "Mitternacht (00:00 → 24:00, am dunkelsten)"
-        }
-      },
-      "EnableRealtimeTramClock": {
-        "title": "Tram-Uhr in Echtzeit",
-        "description": "Aktualisiert die Tram-Konsolen-Uhr jede Ingame-Minute während eines Laufs. Erfordert Wetter aktivieren."
       }
     },
     "MimesisPlayerEnhancement_JoinAnytime": {
@@ -1583,7 +1585,7 @@
     "home_mod_economy_title": "Wirtschaft",
     "home_mod_economy_desc": "Stelle Startgeld, Quoten, Schrottwert, Shop-Preise und optionalen Währungserhalt ein.",
     "home_mod_dungeon_time_title": "Dungeon-Zeit",
-    "home_mod_dungeon_time_desc": "Verlängere Schichtfristen bei mehr Spielern in der Sitzung.",
+    "home_mod_dungeon_time_desc": "Verlängere Schichtfristen und steuere Ingame-Startzeit / Tram-Uhr.",
     "home_mod_mimic_tuning_title": "Mimik-Tuning",
     "home_mod_mimic_tuning_desc": "Passe Mimik-Stimmhäufigkeit, Inventar-Kopier-Bias und Besitz-Timing an.",
     "home_mod_player_tuning_title": "Spieler-Tuning",
@@ -1591,7 +1593,7 @@
     "home_mod_dungeon_randomizer_title": "Dungeon-Randomizer",
     "home_mod_dungeon_randomizer_desc": "Randomisiere, welche Dungeons erscheinen und wie sie angeordnet sind.",
     "home_mod_weather_title": "Wetter",
-    "home_mod_weather_desc": "Festes, zyklisches oder vanilla Wetter plus synchronisierte Startzeit für Beleuchtung.",
+    "home_mod_weather_desc": "Festes, zyklisches oder vanilla Wetter während eines Laufs.",
     "page_desc_home": "Mod-Hilfe und Feature-Anleitungen",
     "page_desc_donation": "Unterstütze die laufende Entwicklung",
     "page_desc_global_settings": "Bearbeite Mod-Standardwerte",

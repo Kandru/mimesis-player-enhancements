@@ -9,9 +9,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
         private const BindingFlags InstanceMember =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private const BindingFlags StaticMember =
-            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
-
         [Fact]
         public void DungeonRoom_constructor_exists()
         {
@@ -56,36 +53,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
             Assert.False(method.IsStatic);
             Assert.Equal("Void", method.ReturnType.Name);
             Assert.Empty(method.GetParameters());
-        }
-
-        [Fact]
-        public void DungeonRoom_GetCurrentTime_exists()
-        {
-            using MimesisMetadataContext context = CreateContext();
-            Type type = context.RequireType("DungeonRoom");
-
-            MethodInfo? method = type.GetMethod("GetCurrentTime", InstanceMember);
-
-            Assert.NotNull(method);
-            Assert.False(method.IsStatic);
-            Assert.Equal("TimeSpan", method.ReturnType.Name);
-            Assert.Empty(method.GetParameters());
-        }
-
-        [Fact]
-        public void DungeonRoom_OnUpdate_exists()
-        {
-            using MimesisMetadataContext context = CreateContext();
-            Type type = context.RequireType("DungeonRoom");
-
-            MethodInfo? method = type.GetMethod("OnUpdate", InstanceMember);
-
-            Assert.NotNull(method);
-            Assert.False(method.IsStatic);
-            Assert.Equal("Void", method.ReturnType.Name);
-            ParameterInfo[] parameters = method.GetParameters();
-            Assert.Single(parameters);
-            Assert.Equal("Int64", parameters[0].ParameterType.Name);
         }
 
         [Fact]
@@ -137,31 +104,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
             Assert.NotNull(ctor);
         }
 
-        [Fact]
-        public void VWorldUtil_ConvertTimeToSeconds_exists()
-        {
-            using MimesisMetadataContext context = CreateContext();
-            Type type = context.RequireType("VWorldUtil");
-
-            MethodInfo? method = type.GetMethods(StaticMember)
-                .FirstOrDefault(candidate =>
-                    candidate.Name == "ConvertTimeToSeconds"
-                    && candidate.GetParameters().Length == 1
-                    && candidate.GetParameters()[0].ParameterType.Name == "String");
-
-            Assert.NotNull(method);
-            Assert.True(method.IsStatic);
-            Assert.Equal("Int64", method.ReturnType.Name);
-            ParameterInfo[] parameters = method.GetParameters();
-            Assert.Single(parameters);
-            Assert.Equal("String", parameters[0].ParameterType.Name);
-        }
-
         [Theory]
         [InlineData("_weather")]
         [InlineData("_prevSyncTime")]
-        [InlineData("_elapsedTime")]
-        [InlineData("_dungeonMasterInfo")]
         [InlineData("_state")]
         public void DungeonRoom_weather_access_fields_exist(string fieldName)
         {

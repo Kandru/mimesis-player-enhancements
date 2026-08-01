@@ -17,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
                 }
 
                 WeatherRoomState state = WeatherRoomAccess.GetOrCreateState(__instance);
-                state.VanillaSnapshot = WeatherRoomAccess.CaptureWeatherSnapshot(__instance, weather);
+                state.VanillaSnapshot = WeatherRoomAccess.CaptureWeatherSnapshot(weather);
                 if (property is DungeonProperty dungeonProperty)
                 {
                     state.VanillaSnapshot.DayCount = dungeonProperty.CycleCount;
@@ -51,73 +51,6 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
             {
                 ModLog.Warn(Feature, $"OnAllMemberEntered postfix failed — {ex.Message}");
             }
-        }
-    }
-
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L871-876
-    [HarmonyPatch(typeof(DungeonRoom), "GetCurrentTime")]
-    internal static class DungeonRoomGetCurrentTimePatch
-    {
-        private const string Feature = "Weather";
-
-        [HarmonyPostfix]
-        public static void Postfix(DungeonRoom __instance, ref TimeSpan __result)
-        {
-            try
-            {
-                if (!HostApplyGate.ShouldApplyHostOnlyFeature(() => WeatherTimeResolver.UsesOverrideStartTime()))
-                {
-                    return;
-                }
-
-                __result = WeatherTimeResolver.ComputeDisplayTime(__instance);
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"GetCurrentTime postfix failed — {ex.Message}");
-            }
-        }
-    }
-
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L705-748
-    [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
-    internal static class DungeonRoomOnUpdatePatch
-    {
-        private const string Feature = "Weather";
-
-        // Runs every dungeon frame — only when start-time override or realtime tram clock can run.
-        private static bool IsContextNeeded =>
-            HostApplyGate.ShouldApplyHostOnlyFeature(() =>
-                WeatherTimeResolver.UsesOverrideStartTime()
-                || (WeatherResolver.IsFeatureEnabled && ModConfig.EnableRealtimeTramClock.Value));
-
-        [HarmonyPrefix]
-        public static void Prefix(DungeonRoom __instance)
-        {
-            if (!IsContextNeeded)
-            {
-                return;
-            }
-
-            WeatherTimeContext.Enter(__instance);
-        }
-
-        [HarmonyFinalizer]
-        public static Exception? Finalizer(Exception? __exception)
-        {
-            WeatherTimeContext.Exit();
-            return __exception;
-        }
-
-        [HarmonyPostfix]
-        public static void Postfix(DungeonRoom __instance)
-        {
-            if (!IsContextNeeded)
-            {
-                return;
-            }
-
-            WeatherTramClockSync.TrySyncFromUpdate(__instance);
         }
     }
 

@@ -11,6 +11,7 @@ namespace MimesisPlayerEnhancement
         private const string LootSectionId = "MimesisPlayerEnhancement_LootMultiplicator";
         private const string DungeonSectionId = "MimesisPlayerEnhancement_DungeonRandomizer";
         private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
+        private const string DungeonTimeSectionId = "MimesisPlayerEnhancement_DungeonTime";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
         private const string EconomySectionId = "MimesisPlayerEnhancement_Economy";
         private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
@@ -26,7 +27,7 @@ namespace MimesisPlayerEnhancement
                 [(DungeonSectionId, "DungeonSeedFlavor")] = DungeonSeedFlavorUtil.AllNames,
                 [(WeatherSectionId, "WeatherMode")] = ["Vanilla", "Fixed", "Cycle"],
                 [(WeatherSectionId, "FixedWeatherPreset")] = ["Sunny", "Rain", "HeavyRain", "Squall"],
-                [(WeatherSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
+                [(DungeonTimeSectionId, "StartTimePreset")] = ["Vanilla", "Morning", "Noon", "Dusk", "Night", "Midnight"],
                 [(SpawnScalingSectionId, "MimicWaveMode")] = ["Vanilla", "Fixed", "Random"],
                 [(SpawnScalingSectionId, "GruntWaveMode")] = ["Vanilla", "Fixed", "Random"],
                 [(SpawnScalingSectionId, "TrapRespawnMode")] = ["Vanilla", "Fixed", "Random"],
@@ -396,6 +397,15 @@ namespace MimesisPlayerEnhancement
                 };
             }
 
+            if (sectionId == DungeonTimeSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["StartTimePreset"] = "startTime",
+                    ["EnableRealtimeTramClock"] = "startTime",
+                };
+            }
+
             if (sectionId == WeatherSectionId)
             {
                 return new Dictionary<string, string>(StringComparer.Ordinal)
@@ -406,8 +416,6 @@ namespace MimesisPlayerEnhancement
                     ["WeatherCyclePresets"] = "weatherCycle",
                     ["WeatherCycleMinDelaySeconds"] = "weatherCycle",
                     ["WeatherCycleMaxDelaySeconds"] = "weatherCycle",
-                    ["StartTimePreset"] = "startTime",
-                    ["EnableRealtimeTramClock"] = "startTime",
                 };
             }
 

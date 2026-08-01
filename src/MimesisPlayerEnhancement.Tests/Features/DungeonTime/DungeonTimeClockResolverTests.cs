@@ -1,24 +1,21 @@
-using MimesisPlayerEnhancement.Features.Weather;
+using MimesisPlayerEnhancement.Features.DungeonTime;
+using MimesisPlayerEnhancement.Util;
 using Xunit;
 
-namespace MimesisPlayerEnhancement.Tests.Features.Weather
+namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
 {
-    public sealed class WeatherTimeResolverTests
+    public sealed class DungeonTimeClockResolverTests
     {
-        private static WeatherSceneConfig Config(
+        private static DungeonTimeSceneConfig Config(
             bool enabled = true,
-            WeatherMode mode = WeatherMode.Vanilla,
-            bool disableRandomWeather = false,
             StartTimePreset startTimePreset = StartTimePreset.Vanilla,
-            float cycleMinDelaySeconds = 300f,
-            float cycleMaxDelaySeconds = 600f) =>
+            bool enableRealtimeTramClock = false) =>
             new(
                 enabled,
-                mode,
-                disableRandomWeather,
+                dungeonTimeBaselinePlayerCount: 4,
+                extraShiftSecondsPerPlayerAboveBaseline: 10f,
                 startTimePreset,
-                cycleMinDelaySeconds,
-                cycleMaxDelaySeconds);
+                enableRealtimeTramClock);
 
         [Theory]
         [InlineData("Vanilla", 0)]
@@ -32,7 +29,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
         [InlineData("bogus", 0)]
         public void ParseStartTimePreset_maps_known_values(string? value, int expectedPresetValue)
         {
-            StartTimePreset preset = WeatherTimeResolver.ParseStartTimePreset(value);
+            StartTimePreset preset = DungeonTimeClockResolver.ParseStartTimePreset(value);
 
             Assert.Equal((StartTimePreset)expectedPresetValue, preset);
         }
@@ -47,7 +44,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
         public void TryGetPresetHour_maps_presets_to_hours(int presetValue, int expectedHour, bool expectedSuccess)
         {
             var preset = (StartTimePreset)presetValue;
-            bool success = WeatherTimeResolver.TryGetPresetHour(preset, out int hour);
+            bool success = DungeonTimeClockResolver.TryGetPresetHour(preset, out int hour);
 
             Assert.Equal(expectedSuccess, success);
             Assert.Equal(expectedHour, hour);
@@ -63,9 +60,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
             int startTimePresetValue,
             bool expected)
         {
-            WeatherSceneConfig config = Config(enabled: enabled, startTimePreset: (StartTimePreset)startTimePresetValue);
+            DungeonTimeSceneConfig config = Config(
+                enabled: enabled,
+                startTimePreset: (StartTimePreset)startTimePresetValue);
 
-            bool result = WeatherTimeResolver.UsesOverrideStartTime(config);
+            bool result = DungeonTimeClockResolver.UsesOverrideStartTime(config);
 
             Assert.Equal(expected, result);
         }

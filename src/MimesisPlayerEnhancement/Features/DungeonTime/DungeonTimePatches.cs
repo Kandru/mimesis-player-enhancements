@@ -13,5 +13,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
                 Feature,
                 HarmonyPatchHelper.GetNamespacePatchTypes(typeof(DungeonTimePatches)));
         }
+
+        public static void RefreshFromConfig() => DungeonTimeTramClockSync.InvalidateAll();
     }
 }

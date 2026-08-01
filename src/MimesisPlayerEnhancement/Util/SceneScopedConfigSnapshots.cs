@@ -336,11 +336,15 @@ namespace MimesisPlayerEnhancement.Util
         internal DungeonTimeSceneConfig(
             bool enableDungeonTime,
             int dungeonTimeBaselinePlayerCount,
-            float extraShiftSecondsPerPlayerAboveBaseline)
+            float extraShiftSecondsPerPlayerAboveBaseline,
+            StartTimePreset startTimePreset,
+            bool enableRealtimeTramClock)
         {
             EnableDungeonTime = enableDungeonTime;
             DungeonTimeBaselinePlayerCount = dungeonTimeBaselinePlayerCount;
             ExtraShiftSecondsPerPlayerAboveBaseline = extraShiftSecondsPerPlayerAboveBaseline;
+            StartTimePreset = startTimePreset;
+            EnableRealtimeTramClock = enableRealtimeTramClock;
         }
 
         internal bool EnableDungeonTime { get; }
@@ -349,12 +353,18 @@ namespace MimesisPlayerEnhancement.Util
 
         internal float ExtraShiftSecondsPerPlayerAboveBaseline { get; }
 
+        internal StartTimePreset StartTimePreset { get; }
+
+        internal bool EnableRealtimeTramClock { get; }
+
         internal static DungeonTimeSceneConfig CaptureFromModConfig()
         {
             return new DungeonTimeSceneConfig(
                 ModConfig.EnableDungeonTime.Value,
                 ModConfig.DungeonTimeBaselinePlayerCount.Value,
-                ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline.Value);
+                ModConfig.ExtraShiftSecondsPerPlayerAboveBaseline.Value,
+                DungeonTimeClockResolver.ParseStartTimePreset(ModConfig.StartTimePreset.Value),
+                ModConfig.EnableRealtimeTramClock.Value);
         }
     }
 

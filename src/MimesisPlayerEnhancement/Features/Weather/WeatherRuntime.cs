@@ -5,7 +5,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal static void RefreshFromConfig()
         {
             WeatherPresetListParser.InvalidateCache();
-            WeatherTramClockSync.InvalidateAll();
 
             if (!HostApplyGate.ShouldApplyHostOnlyFeature())
             {

@@ -1,4 +1,4 @@
-namespace MimesisPlayerEnhancement.Features.Weather
+namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     internal enum StartTimePreset
     {

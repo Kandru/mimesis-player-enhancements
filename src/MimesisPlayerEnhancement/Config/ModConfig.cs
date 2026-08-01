@@ -135,6 +135,8 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<bool> EnableDungeonTime { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> DungeonTimeBaselinePlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ExtraShiftSecondsPerPlayerAboveBaseline { get; internal set; } = null!;
+        public static MelonPreferences_Entry<string> StartTimePreset { get; internal set; } = null!;
+        public static MelonPreferences_Entry<bool> EnableRealtimeTramClock { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<bool> EnableMimicPossessionTuning { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> RandomizeMimicPossessionDuration { get; internal set; } = null!;
@@ -242,8 +244,6 @@ namespace MimesisPlayerEnhancement
         public static MelonPreferences_Entry<string> WeatherCyclePresets { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> WeatherCycleMinDelaySeconds { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> WeatherCycleMaxDelaySeconds { get; internal set; } = null!;
-        public static MelonPreferences_Entry<string> StartTimePreset { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> EnableRealtimeTramClock { get; internal set; } = null!;
 
         public static MelonPreferences_Entry<string> WebDashboardListenAddress { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> WebDashboardListenPort { get; internal set; } = null!;
@@ -358,6 +358,7 @@ namespace MimesisPlayerEnhancement
             JoinAnytimeConfig.SanitizeInitialValues(logger);
             EconomyConfig.SanitizeInitialValues(logger);
             DungeonRandomizerConfig.SanitizeInitialValues(logger);
+            DungeonTimeConfig.SanitizeInitialValues(logger);
             WeatherConfig.SanitizeInitialValues(logger);
 
             MorePlayersConfig.WireValidation(logger);

@@ -1,9 +1,9 @@
-namespace MimesisPlayerEnhancement.Features.Weather
+namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     /// <summary>
     /// Thread-local marker while <see cref="DungeonRoom.OnUpdate"/> computes display time.
     /// </summary>
-    internal static class WeatherTimeContext
+    internal static class DungeonTimeClockContext
     {
         [System.ThreadStatic]
         private static DungeonRoom? _activeRoom;
@@ -31,7 +31,7 @@ namespace MimesisPlayerEnhancement.Features.Weather
                 return false;
             }
 
-            long roomVanillaStart = WeatherRoomAccess.GetVanillaStartSeconds(room);
+            long roomVanillaStart = DungeonTimeRoomAccess.GetVanillaStartSeconds(room);
             return ShouldOverrideConvertResult(vanillaSeconds, roomVanillaStart);
         }
 

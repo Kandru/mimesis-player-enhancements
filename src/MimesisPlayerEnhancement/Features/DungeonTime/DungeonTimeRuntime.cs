@@ -4,6 +4,9 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime
     {
         internal long VanillaRemainingMs;
         internal long ExtendedRemainingMs;
+        internal long? VanillaStartSeconds;
+        internal int LastTramClockSyncHour = -1;
+        internal int LastTramClockSyncMinute = -1;
     }
 
     internal static class DungeonTimeRuntime

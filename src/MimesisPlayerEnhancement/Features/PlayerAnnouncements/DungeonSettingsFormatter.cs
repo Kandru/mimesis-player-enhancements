@@ -99,15 +99,21 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             }
 
             double bonusSeconds = DungeonTimeResolver.GetBonusSeconds(playerCount, config);
-            if (bonusSeconds <= 0d)
+            if (bonusSeconds > 0d)
             {
-                return;
+                parts.Add(ModL10n.Get("announce.shift_time_bonus", new Dictionary<string, object>
+                {
+                    ["seconds"] = AnnouncementMultiplierFormat.FormatBonusSeconds(bonusSeconds),
+                }));
             }
 
-            parts.Add(ModL10n.Get("announce.shift_time_bonus", new Dictionary<string, object>
+            if (config.StartTimePreset != StartTimePreset.Vanilla)
             {
-                ["seconds"] = AnnouncementMultiplierFormat.FormatBonusSeconds(bonusSeconds),
-            }));
+                parts.Add(ModL10n.Get("announce.start_time_preset", new Dictionary<string, object>
+                {
+                    ["preset"] = config.StartTimePreset.ToString(),
+                }));
+            }
         }
 
         private static void AppendDungeonRandomizer(List<string> parts)
@@ -138,15 +144,6 @@ namespace MimesisPlayerEnhancement.Features.PlayerAnnouncements
             else if (mode == WeatherMode.Cycle)
             {
                 parts.Add(ModL10n.Get("announce.weather_cycle"));
-            }
-
-            StartTimePreset startTime = WeatherTimeResolver.ParseStartTimePreset(ModConfig.StartTimePreset.Value);
-            if (startTime != StartTimePreset.Vanilla)
-            {
-                parts.Add(ModL10n.Get("announce.start_time_preset", new Dictionary<string, object>
-                {
-                    ["preset"] = startTime.ToString(),
-                }));
             }
         }
 

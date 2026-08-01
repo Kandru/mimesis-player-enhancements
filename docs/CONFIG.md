@@ -60,11 +60,11 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host only |
 | [Savegame Preparation](#savegame-preparation--mimesisplayerenhancement_savegamepreparation) | Starting cash and zone when creating a new save | Host only |
 | [Economy](#economy--mimesisplayerenhancement_economy) | Scale scrap value, shop prices, and cycle retention | Host only |
-| [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host only |
+| [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline, start time, tram clock | Host only |
 | [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host only |
 | [Player Tuning](#player-tuning--mimesisplayerenhancement_playertuning) | Movement, stamina, carry weight | Host only |
 | [Dungeon Randomizer](#dungeon-randomizer--mimesisplayerenhancement_dungeonrandomizer) | Randomize dungeon selection layers | Host only |
-| [Weather](#weather--mimesisplayerenhancement_weather) | Weather, cycle, and start time | Host only |
+| [Weather](#weather--mimesisplayerenhancement_weather) | Weather and cycle | Host only |
 | [Web Dashboard](#web-dashboard--mimesisplayerenhancement_webdashboard) | Local HTTP dashboard (cfg-file only) | Host only |
 
 ### Apply timing
@@ -358,15 +358,38 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 
 ## Dungeon Time — `[MimesisPlayerEnhancement_DungeonTime]`
 
-**Host only.** Only the host must turn this on; once enabled, everyone in the run gets the longer shift. When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
+**Host only.** Only the host must turn this on; once enabled, everyone in the run gets the longer shift and any start-time / tram-clock overrides. When a dungeon shift starts (all members entered), extends the real shift deadline by `ExtraShiftSecondsPerPlayerAboveBaseline` for each player above `DungeonTimeBaselinePlayerCount`. Applied once per dungeon room; late Join Anytime arrivals do not add more time.
+
+> **Moved from Weather (breaking):** `StartTimePreset` and `EnableRealtimeTramClock` used to live under `[MimesisPlayerEnhancement_Weather]`. Re-set them here — old Weather keys are not migrated and are dropped on next save.
 
 The in-game day clock (tram/alarm, ~start→24:00) is slowed on the host so that span still fills the longer real shift instead of running past noon/midnight. Clients do not need the mod — they follow the host’s normal hourly time sync (extra sub-hour syncs are avoided because clients snap outdoor `worldTime` to the hour and keep advancing at vanilla speed between packets).
 
+**Start time presets** (`StartTimePreset`) set the **synced in-game clock** when a dungeon starts (tram alarm clock and outdoor lighting). The clock still advances during the shift until **~24:00** at time-over. **Real shift deadline is unchanged** by the preset alone (still based on dungeon duration in real time, plus any shift-extension bonus above).
+
+**Tram clock display:** Vanilla only pushes clock updates when the in-game **hour** changes (~once per real minute at default time scale), so the tram console shows `HH:00` until the next hour. `EnableRealtimeTramClock` (requires `EnableDungeonTime`) syncs every in-game **minute** instead (~once per real second at default scale) via vanilla `TimeSyncSig` — clients without the mod still receive updates. Weather and lighting still change on hour boundaries only.
+
+Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
+
+| Preset | In-game clock at start | Runs until | At dungeon start |
+|--------|------------------------|------------|------------------|
+| `Vanilla` | **~10:00** (from dungeon data) | ~24:00 | Bright daytime (default) |
+| `Morning` | **08:00** | ~24:00 | Bright morning |
+| `Noon` | **12:00** | ~24:00 | Bright midday |
+| `Dusk` | **18:00** | ~24:00 | Sunset / dim |
+| `Night` | **21:00** | ~24:00 | Dark (moonlit) |
+| `Midnight` | **00:00** | ~24:00 | Darkest at start |
+
+A continuous brightness slider is not available; pick a preset above for darker or brighter runs.
+
+Changes to `StartTimePreset` / `EnableRealtimeTramClock` during an active gameplay scene are held until that scene ends, like the other Dungeon Time keys (turning the feature **off** still applies immediately).
+
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `EnableDungeonTime` | bool | `false` | — | Extend dungeon shift length when player count exceeds the baseline. Only the host must enable it; the whole party gets the longer clock. |
+| `EnableDungeonTime` | bool | `false` | — | Extend dungeon shift length when player count exceeds the baseline, and unlock start-time / tram-clock options. Only the host must enable it; the whole party gets the effect. |
 | `DungeonTimeBaselinePlayerCount` | int | `4` | ≥ `1` | No extra shift time at or below this player count (vanilla is 4). Minimum is 1. |
 | `ExtraShiftSecondsPerPlayerAboveBaseline` | float | `10.0` | ≥ `0` | Real seconds added to the shift deadline for each player above the baseline. Minimum is 0. |
+| `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). Requires `EnableDungeonTime`. |
+| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableDungeonTime`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Only the host needs to enable this. |
 
 ## Mimic Tuning — `[MimesisPlayerEnhancement_MimicTuning]`
 
@@ -507,7 +530,7 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 
 ## Weather — `[MimesisPlayerEnhancement_Weather]`
 
-**Only the host needs to enable this — the whole lobby gets the effect.** Controls dungeon weather presets, optional cyclic rotation, random-roll stripping, and synced in-game start hour for lighting. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Joining clients without the mod stay in sync via vanilla network messages.
+**Only the host needs to enable this — the whole lobby gets the effect.** Controls dungeon weather presets, optional cyclic rotation, and random-roll stripping. **All settings apply in real time** during an active dungeon (TOML reload, web dashboard, or quick presets). Joining clients without the mod stay in sync via vanilla network messages. For in-game start hour and tram-clock minute sync, see [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime).
 
 **Weather modes** (`WeatherMode`):
 
@@ -516,23 +539,6 @@ Custom per-action chance %: `EmoteRespondChancePercent` (100), `EmoteSuggestChan
 | `Vanilla` | Game schedule; optional `DisableRandomWeather` removes procedural random blocks |
 | `Fixed` | One preset for the entire run (`FixedWeatherPreset`) |
 | `Cycle` | Rotate through `WeatherCyclePresets` on random real-time delays |
-
-**Start time presets** (`StartTimePreset`) set the **synced in-game clock** when a dungeon starts (tram alarm clock and outdoor lighting). The clock still advances during the shift until **~24:00** at time-over. **Real shift deadline is unchanged** (still based on dungeon duration in real time).
-
-**Tram clock display:** Vanilla only pushes clock updates when the in-game **hour** changes (~once per real minute at default time scale), so the tram console shows `HH:00` until the next hour. `EnableRealtimeTramClock` (requires `EnableWeather`) syncs every in-game **minute** instead (~once per real second at default scale) via vanilla `TimeSyncSig` — clients without the mod still receive updates. Weather and lighting still change on hour boundaries only.
-
-Reference lighting: sunrise ~**06:00**, sunset ~**18:00** (game sky system).
-
-| Preset | In-game clock at start | Runs until | At dungeon start |
-|--------|------------------------|------------|------------------|
-| `Vanilla` | **~10:00** (from dungeon data) | ~24:00 | Bright daytime (default) |
-| `Morning` | **08:00** | ~24:00 | Bright morning |
-| `Noon` | **12:00** | ~24:00 | Bright midday |
-| `Dusk` | **18:00** | ~24:00 | Sunset / dim |
-| `Night` | **21:00** | ~24:00 | Dark (moonlit) |
-| `Midnight` | **00:00** | ~24:00 | Darkest at start |
-
-A continuous brightness slider is not available; pick a preset above for darker or brighter runs.
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
@@ -543,8 +549,6 @@ A continuous brightness slider is not available; pick a preset above for darker 
 | `WeatherCyclePresets` | string | `Sunny,Rain` | — | Cycle mode — ordered comma-separated presets. |
 | `WeatherCycleMinDelaySeconds` | float | `300` | ≥ `0` | Cycle min real seconds between steps. |
 | `WeatherCycleMaxDelaySeconds` | float | `600` | ≥ min | Cycle max real seconds between steps. |
-| `StartTimePreset` | string | `Vanilla` | see table | Synced start hour on the in-game clock (e.g. Vanilla ~10:00→24:00). |
-| `EnableRealtimeTramClock` | bool | `false` | — | Requires `EnableWeather`. Sync tram console clock every in-game minute during dungeon runs (vanilla: hourly only). Only the host needs to enable this. |
 
 ## Web Dashboard — `[MimesisPlayerEnhancement_WebDashboard]`
 
@@ -686,6 +690,8 @@ RetainUnspentCurrencyBetweenCycles = false
 EnableDungeonTime = false
 DungeonTimeBaselinePlayerCount = 4
 ExtraShiftSecondsPerPlayerAboveBaseline = 10.0
+StartTimePreset = "Vanilla"
+EnableRealtimeTramClock = false
 
 [MimesisPlayerEnhancement_MimicTuning]
 EnableMimicTuning = false

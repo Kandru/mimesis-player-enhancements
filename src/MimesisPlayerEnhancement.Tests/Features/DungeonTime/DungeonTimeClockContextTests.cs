@@ -1,9 +1,9 @@
-using MimesisPlayerEnhancement.Features.Weather;
+using MimesisPlayerEnhancement.Features.DungeonTime;
 using Xunit;
 
-namespace MimesisPlayerEnhancement.Tests.Features.Weather
+namespace MimesisPlayerEnhancement.Tests.Features.DungeonTime
 {
-    public sealed class WeatherTimeContextTests
+    public sealed class DungeonTimeClockContextTests
     {
         [Theory]
         [InlineData(36_000L, 36_000L, true)]
@@ -15,7 +15,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Weather
             long roomVanillaStart,
             bool expected)
         {
-            bool result = WeatherTimeContext.ShouldOverrideConvertResult(vanillaSeconds, roomVanillaStart);
+            bool result = DungeonTimeClockContext.ShouldOverrideConvertResult(vanillaSeconds, roomVanillaStart);
 
             Assert.Equal(expected, result);
         }

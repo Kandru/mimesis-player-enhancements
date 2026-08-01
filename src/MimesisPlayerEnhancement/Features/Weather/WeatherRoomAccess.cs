@@ -7,7 +7,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal List<int> WeatherByHour = [];
         internal List<bool> WeatherForecastByHour = [];
         internal bool IsRandomOccured;
-        internal long VanillaStartSeconds;
         internal int DayCount;
         internal int RandomSeed;
         internal int OverrideDefaultWeatherId;
@@ -19,8 +18,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal int CycleIndex;
         internal long NextTransitionTickMs;
         internal bool CycleActive;
-        internal int LastTramClockSyncHour = -1;
-        internal int LastTramClockSyncMinute = -1;
     }
 
     internal static class WeatherRoomAccess
@@ -32,14 +29,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
         private static readonly FieldInfo PrevSyncTimeField =
             AccessTools.Field(typeof(DungeonRoom), "_prevSyncTime")
             ?? throw new InvalidOperationException("DungeonRoom._prevSyncTime not found");
-
-        private static readonly FieldInfo ElapsedTimeField =
-            AccessTools.Field(typeof(DungeonRoom), "_elapsedTime")
-            ?? throw new InvalidOperationException("DungeonRoom._elapsedTime not found");
-
-        private static readonly FieldInfo DungeonMasterInfoField =
-            AccessTools.Field(typeof(DungeonRoom), "_dungeonMasterInfo")
-            ?? throw new InvalidOperationException("DungeonRoom._dungeonMasterInfo not found");
 
         private static readonly FieldInfo StateField =
             AccessTools.Field(typeof(DungeonRoom), "_state")
@@ -68,9 +57,6 @@ namespace MimesisPlayerEnhancement.Features.Weather
             return weather != null;
         }
 
-        internal static DungeonMasterInfo? GetDungeonMasterInfo(DungeonRoom room) =>
-            DungeonMasterInfoField.GetValue(room) as DungeonMasterInfo;
-
         internal static bool IsPlaying(DungeonRoom room) =>
             StateField.GetValue(room) is DungeonState.OnPlaying;
 
@@ -88,60 +74,15 @@ namespace MimesisPlayerEnhancement.Features.Weather
         internal static void ResetPrevSyncTime(DungeonRoom room) =>
             PrevSyncTimeField.SetValue(room, TimeSpan.Zero);
 
-        internal static double GetElapsedGameSeconds(DungeonRoom room)
-        {
-            long elapsedMs = (long)ElapsedTimeField.GetValue(room);
-            long scaleFactor = HubGameDataAccess.Excel?.Consts.C_GameTimeScaleFactor ?? 1000;
-            return elapsedMs * 0.001 * (scaleFactor * 0.001);
-        }
-
-        internal static long GetVanillaStartSeconds(DungeonRoom room)
-        {
-            WeatherRoomState state = GetOrCreateState(room);
-            if (state.VanillaSnapshot != null)
-            {
-                return state.VanillaSnapshot.VanillaStartSeconds;
-            }
-
-            DungeonMasterInfo? info = GetDungeonMasterInfo(room);
-            if (info == null || string.IsNullOrEmpty(info.StartDisplayTime))
-            {
-                return 0;
-            }
-
-            return ParseDisplayTimeToSeconds(info.StartDisplayTime);
-        }
-
-        /// <summary>
-        /// Parses dungeon display times without calling <see cref="VWorldUtil.ConvertTimeToSeconds"/>,
-        /// which is Harmony-patched and must not be invoked reentrantly from that patch.
-        /// </summary>
-        internal static long ParseDisplayTimeToSeconds(string displayTime)
-        {
-            if (string.IsNullOrWhiteSpace(displayTime))
-            {
-                return 0;
-            }
-
-            return TimeSpan.TryParse(displayTime, out TimeSpan parsed)
-                ? (long)parsed.TotalSeconds
-                : 0;
-        }
-
-        internal static WeatherVanillaSnapshot CaptureWeatherSnapshot(DungeonRoom room, DungeonWeather weather)
+        internal static WeatherVanillaSnapshot CaptureWeatherSnapshot(DungeonWeather weather)
         {
             List<int> hours = weather.GetAllWeather();
             List<bool> forecast = (List<bool>)WeatherForecastByHourField.GetValue(weather)!;
-            DungeonMasterInfo? info = GetDungeonMasterInfo(room);
-            string? startDisplayTime = info?.StartDisplayTime;
             return new WeatherVanillaSnapshot
             {
                 WeatherByHour = [.. hours],
                 WeatherForecastByHour = [.. forecast],
                 IsRandomOccured = (bool)IsRandomOccuredField.GetValue(weather)!,
-                VanillaStartSeconds = string.IsNullOrEmpty(startDisplayTime)
-                    ? 0
-                    : ParseDisplayTimeToSeconds(startDisplayTime),
             };
         }
 

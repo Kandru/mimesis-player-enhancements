@@ -1,22 +1,22 @@
-namespace MimesisPlayerEnhancement.Features.Weather
+namespace MimesisPlayerEnhancement.Features.DungeonTime
 {
     /// <summary>
     /// Host-only minute-level <see cref="TimeSyncSig"/> for the tram console clock during dungeon runs.
     /// Vanilla only syncs when the in-game hour changes (~once per real minute at default time scale).
     /// </summary>
-    internal static class WeatherTramClockSync
+    internal static class DungeonTimeTramClockSync
     {
-        private const string Feature = "Weather";
+        private const string Feature = "DungeonTime";
 
         internal static void InvalidateAll()
         {
-            foreach (KeyValuePair<DungeonRoom, WeatherRoomState> entry in WeatherRoomAccess.RoomStates.EnumerateAll())
+            foreach (KeyValuePair<DungeonRoom, DungeonTimeRoomState> entry in DungeonTimeRuntime.RoomStates.EnumerateAll())
             {
                 InvalidateRoom(entry.Value);
             }
         }
 
-        internal static void InvalidateRoom(WeatherRoomState state)
+        internal static void InvalidateRoom(DungeonTimeRoomState state)
         {
             state.LastTramClockSyncHour = -1;
             state.LastTramClockSyncMinute = -1;
@@ -24,17 +24,18 @@ namespace MimesisPlayerEnhancement.Features.Weather
 
         internal static void TrySyncFromUpdate(DungeonRoom room)
         {
+            DungeonTimeSceneConfig config = SceneScopedConfigGate.DungeonTime;
             if (!HostApplyGate.ShouldApplyHostOnlyFeature(() =>
-                    WeatherResolver.IsFeatureEnabled && ModConfig.EnableRealtimeTramClock.Value)
-                || !WeatherRoomAccess.IsPlaying(room))
+                    config.EnableDungeonTime && config.EnableRealtimeTramClock)
+                || !DungeonTimeRoomAccess.IsPlaying(room))
             {
                 return;
             }
 
             try
             {
-                TimeSpan displayTime = WeatherTimeResolver.ComputeDisplayTime(room);
-                WeatherRoomState state = WeatherRoomAccess.GetOrCreateState(room);
+                TimeSpan displayTime = DungeonTimeClockResolver.ComputeDisplayTime(room, config);
+                DungeonTimeRoomState state = DungeonTimeRoomAccess.GetOrCreateState(room);
                 if (state.LastTramClockSyncHour == displayTime.Hours
                     && state.LastTramClockSyncMinute == displayTime.Minutes)
                 {

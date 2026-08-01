@@ -14,6 +14,7 @@ Hint: this mod is still in Alpha - use at your own risk! These updates can break
 - fix: allow the maximum zone to be overriden to 99
 - fix: re-arrange settings for "More Voices"
 - fix: player-count scaling redesign (additive instead of multiplicative)
+- breaking: moved `StartTimePreset` and `EnableRealtimeTramClock` from Weather into Dungeon Time (`[MimesisPlayerEnhancement_DungeonTime]`); re-set them there, old Weather keys are not migrated
 - draft: noise gate feature for microphone
 - draft: audio ducking when dead and talking with other dead players
 
