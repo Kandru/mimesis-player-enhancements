@@ -48,6 +48,7 @@ namespace MimesisPlayerEnhancement.Util.Players
                 _loadedSlotId = slotId;
                 Records.Clear();
                 StatisticsStore.LoadSlot(slotId);
+                StatisticsRunTracker.SyncZoneFromGameSession();
 
                 foreach (KeyValuePair<ulong, PlayerGlobalStats> kvp in StatisticsHistory.Document.Globals)
                 {
@@ -375,7 +376,7 @@ namespace MimesisPlayerEnhancement.Util.Players
 
             _ = StatisticsHistory.Document.Globals.Remove(steamId);
             BumpRevision();
-            StatisticsStore.SaveSlot(_loadedSlotId, StatisticsHistory.Document, waitForCompletion);
+            StatisticsStore.SaveSlot(_loadedSlotId, waitForCompletion);
             SaveSlotDocumentStore.RemovePlayer(steamId);
             SyncRosterToDocument();
             return true;

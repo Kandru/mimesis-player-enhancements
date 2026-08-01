@@ -26,6 +26,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
         private const string Feature = "Statistics";
         internal const int MaxRunsPerZone = 60;
         internal const int MaxZonesRetained = 40;
+        private const int MaxZoneGapFill = 5;
 
         private static SlotStatisticsDocument _document = new();
         private static int _revision;
@@ -173,21 +174,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         internal static void OnZoneAdvanced(int newZone)
         {
-            if (newZone <= 0)
+            if (newZone <= 0 || newZone == CurrentZone)
             {
                 return;
             }
 
-            int previousZone = CurrentZone;
-            if (newZone == previousZone)
-            {
-                return;
-            }
-
-            CloseRun(DungeonRunOutcome.Abandoned, notify: false);
-            CloseZone(previousZone);
-            _document.History.CurrentZone = newZone;
-            EnsureZone(newZone);
+            AdvanceTo(newZone);
 
             foreach (ulong steamId in PlayerRegistry.GetConnectedSteamIds())
             {
@@ -198,8 +190,30 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 }
             }
 
-            TrimZones();
             BumpRevision();
+        }
+
+        /// <summary>
+        /// Reconciles recorded zone state with the live game StageCount. Returns true when state changed.
+        /// </summary>
+        internal static bool SyncCurrentZone(int gameZone)
+        {
+            if (gameZone <= 0 || gameZone == CurrentZone)
+            {
+                return false;
+            }
+
+            if (_document.History.Zones.Count == 0)
+            {
+                // Nothing recorded yet — adopt the game's zone instead of inventing history for zones 1..N-1.
+                _document.History.CurrentZone = gameZone;
+                BumpRevision();
+                return true;
+            }
+
+            AdvanceTo(gameZone);
+            BumpRevision();
+            return true;
         }
 
         internal static void OnRunRestart()
@@ -218,7 +232,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             _document.History = new ZoneHistory { CurrentZone = 1 };
-            EnsureZone(1);
             _openRun = null;
             _lastClosedRun = null;
             BumpRevision();
@@ -312,6 +325,32 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             return null;
+        }
+
+        private static void AdvanceTo(int newZone)
+        {
+            int previousZone = CurrentZone;
+            CloseRun(DungeonRunOutcome.Abandoned, notify: false);
+            CloseZone(previousZone);
+
+            int gap = newZone - previousZone - 1;
+            if (gap > 0 && gap <= MaxZoneGapFill)
+            {
+                for (int zone = previousZone + 1; zone < newZone; zone++)
+                {
+                    ZoneRecord skipped = EnsureZone(zone);
+                    skipped.EndedAtUtc ??= DateTime.UtcNow;
+                }
+            }
+            else if (gap > MaxZoneGapFill)
+            {
+                ModLog.Warn(Feature, $"Zone jumped {previousZone} to {newZone} — intermediate zones not recorded.");
+            }
+
+            _document.History.CurrentZone = newZone;
+            ZoneRecord current = EnsureZone(newZone);
+            current.EndedAtUtc = null;
+            TrimZones();
         }
 
         private static ZoneRecord EnsureZone(int zone)
@@ -433,11 +472,6 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                         StatCounters.EnsureDictionaries(counters);
                     }
                 }
-            }
-
-            if (document.History.Zones.Count == 0)
-            {
-                EnsureZone(document.History.CurrentZone);
             }
         }
 

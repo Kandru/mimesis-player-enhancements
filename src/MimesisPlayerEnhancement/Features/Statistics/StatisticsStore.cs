@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.IO;
 using System.Threading.Tasks;
 using MimesisPlayerEnhancement.Features.Statistics.Models;
 
@@ -9,8 +8,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
     {
         private const string Feature = "Statistics";
 
-        private static int _cachedLoadSlotId = -999;
-        private static SlotStatisticsDocument? _cachedLoadSlot;
+        private static readonly Dictionary<int, SlotStatisticsDocument?> LoadCache = new();
 
         private static readonly ConcurrentDictionary<int, PendingSlotSave> InFlightBySlot = new();
 
@@ -34,7 +32,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             return document;
         }
 
-        internal static void SaveSlot(int slotId, SlotStatisticsDocument document, bool waitForCompletion = false)
+        internal static void SaveSlot(int slotId, bool waitForCompletion = false)
         {
             string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
             if (string.IsNullOrEmpty(path))
@@ -89,6 +87,14 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
+        internal static void InvalidateSlot(int slotId)
+        {
+            lock (LoadCache)
+            {
+                LoadCache.Remove(slotId);
+            }
+        }
+
         private static void PrepareAndWrite(int slotId, string path, PendingSlotSave pending)
         {
             SlotStatisticsDocument? document;
@@ -112,7 +118,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 document.UpdatedAtUtc = DateTime.UtcNow;
                 string json = StatisticsJson.SerializeSlot(document);
                 BackgroundFileWriteQueue.EnqueueText(path, json, Feature, waitForCompletion);
-                InvalidateLoadCache(slotId);
+                InvalidateSlot(slotId);
                 ModLog.Debug(Feature, $"Saved slot {slotId} statistics ({document.Globals.Count} players) -> {path}");
             }
             catch (Exception ex)
@@ -140,20 +146,25 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 
         private static SlotStatisticsDocument? TryLoadSlot(int slotId)
         {
-            if (_cachedLoadSlotId == slotId && _cachedLoadSlot != null)
+            lock (LoadCache)
             {
-                return StatisticsHistory.CloneSlot(_cachedLoadSlot);
+                if (LoadCache.TryGetValue(slotId, out SlotStatisticsDocument? cached))
+                {
+                    return cached == null ? null : StatisticsHistory.CloneSlot(cached);
+                }
             }
 
             string? path = SaveSidecarPaths.GetStatisticsPath(slotId);
             if (string.IsNullOrEmpty(path))
             {
+                CacheMiss(slotId, null);
                 return null;
             }
 
             string? json = AtomicFileIO.ReadText(path, Feature);
             if (string.IsNullOrEmpty(json))
             {
+                CacheMiss(slotId, null);
                 return null;
             }
 
@@ -161,43 +172,27 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             if (slot == null)
             {
                 ModLog.Warn(Feature, $"Corrupt statistics file — ignoring: {path}");
+                CacheMiss(slotId, null);
                 return null;
             }
 
             if (slot.Version != SlotStatisticsDocument.CurrentVersion)
             {
-                TryBackupLegacyFile(path, slot.Version);
+                StatisticsLegacyFileCleanup.Retire(path, slot.Version, Feature);
                 ModLog.Info(Feature, $"Legacy statistics file discarded — schema v{slot.Version} → v{SlotStatisticsDocument.CurrentVersion}.");
+                CacheMiss(slotId, null);
                 return null;
             }
 
-            _cachedLoadSlotId = slotId;
-            _cachedLoadSlot = StatisticsHistory.CloneSlot(slot);
+            CacheMiss(slotId, StatisticsHistory.CloneSlot(slot));
             return slot;
         }
 
-        private static void TryBackupLegacyFile(string path, int version)
+        private static void CacheMiss(int slotId, SlotStatisticsDocument? document)
         {
-            try
+            lock (LoadCache)
             {
-                string backup = $"{path}.legacy-v{version}.bak";
-                if (!File.Exists(backup) && File.Exists(path))
-                {
-                    File.Move(path, backup);
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLog.Warn(Feature, $"Failed to backup legacy statistics file — {ex.Message}");
-            }
-        }
-
-        private static void InvalidateLoadCache(int slotId)
-        {
-            if (_cachedLoadSlotId == slotId)
-            {
-                _cachedLoadSlotId = -999;
-                _cachedLoadSlot = null;
+                LoadCache[slotId] = document;
             }
         }
 

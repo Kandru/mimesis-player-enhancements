@@ -115,6 +115,12 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
 
             StatisticsVoiceCounter.EnsureBaseline(steamId);
+            StatisticsRunTracker.SyncZoneFromGameSession();
+            if (StatisticsHistory.CurrentZone > global.HighestZoneReached)
+            {
+                global.HighestZoneReached = StatisticsHistory.CurrentZone;
+            }
+
             PlayerRegistry.BumpRevision();
 
             bool isNewSession = !resumeSession;
@@ -325,6 +331,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
+            StatisticsRunTracker.SyncZoneFromGameSession();
             StatisticsDeathHandler.OnDungeonStarted();
 
             if (property == null)

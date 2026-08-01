@@ -2,6 +2,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
 {
     internal static class StatisticsRunTracker
     {
+        private const string Feature = "Statistics";
         private static long _lastRestartMs;
 
         internal static int GetCurrentZone() => StatisticsHistory.CurrentZone;
@@ -25,10 +26,41 @@ namespace MimesisPlayerEnhancement.Features.Statistics
             }
         }
 
+        internal static void SyncZoneFromGameSession()
+        {
+            if (!StatisticsTracker.CanTrack())
+            {
+                return;
+            }
+
+            int stageCount = GameSessionAccess.TryGetGameSessionInfo()?.StageCount ?? 0;
+            if (stageCount <= 0)
+            {
+                return;
+            }
+
+            if (StatisticsHistory.SyncCurrentZone(stageCount))
+            {
+                ModLog.Debug(Feature, $"Zone synced from game session — zone={stageCount}.");
+                StatisticsCounterWriter.NotifyChanged();
+            }
+        }
+
         internal static void OnRunRestart()
         {
             if (!StatisticsTracker.CanTrack())
             {
+                return;
+            }
+
+            int sessionSlotId = GameSessionAccess.GetSaveSlotId();
+            if (sessionSlotId >= 0
+                && PlayerRegistry.LoadedSlotId >= 0
+                && sessionSlotId != PlayerRegistry.LoadedSlotId)
+            {
+                ModLog.Debug(
+                    Feature,
+                    $"Ignoring run restart during slot transition — loaded={PlayerRegistry.LoadedSlotId}, session={sessionSlotId}.");
                 return;
             }
 

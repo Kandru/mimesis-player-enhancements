@@ -48,7 +48,7 @@ Default: `true`
 ## Persistence
 
 - File: `MMGameData{N}.mpe-stats.sav` (schema version **10**)
-- Legacy files are backed up once as `*.legacy-v{n}.bak` and ignored (fresh start)
+- Legacy files are backed up once as `*.legacy-v{n}.bak` and ignored (fresh start); atomic `.bak`/`.tmp` siblings are removed so the next read cannot recover the discarded schema
 - Runs are capped at 60 per zone; zones at 40 per save
 
 ## Web dashboard

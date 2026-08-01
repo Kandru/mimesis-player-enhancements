@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics
                 return;
             }
 
-            StatisticsStore.SaveSlot(_loadedSlotId, StatisticsHistory.Document, waitForCompletion);
+            StatisticsStore.SaveSlot(_loadedSlotId, waitForCompletion);
         }
 
         internal static void FlushAllSync()

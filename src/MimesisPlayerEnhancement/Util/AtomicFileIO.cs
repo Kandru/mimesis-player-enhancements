@@ -5,8 +5,8 @@ namespace MimesisPlayerEnhancement.Util
 {
     internal static class AtomicFileIO
     {
-        private const string BackupSuffix = ".bak";
-        private const string TempSuffix = ".tmp";
+        internal const string BackupSuffix = ".bak";
+        internal const string TempSuffix = ".tmp";
 
         internal static void WriteBytes(string filePath, byte[] data, string logFeature = "Persistence")
         {
@@ -82,9 +82,13 @@ namespace MimesisPlayerEnhancement.Util
             return data == null ? null : Encoding.UTF8.GetString(data);
         }
 
-        internal static void Delete(string filePath, string logFeature = "Persistence")
+        /// <summary>
+        /// Removes the atomic write siblings (.bak/.tmp) while leaving the main file untouched.
+        /// Used when the main file has been retired and the siblings would otherwise be recovered.
+        /// </summary>
+        internal static void DeleteVolatileSiblings(string filePath, string logFeature = "Persistence")
         {
-            foreach (string path in new[] { filePath, filePath + BackupSuffix, filePath + TempSuffix })
+            foreach (string path in new[] { filePath + BackupSuffix, filePath + TempSuffix })
             {
                 if (!File.Exists(path))
                 {
@@ -101,6 +105,24 @@ namespace MimesisPlayerEnhancement.Util
                     ModLog.Warn(logFeature, $"Failed to delete {Path.GetFileName(path)}: {ex.Message}");
                 }
             }
+        }
+
+        internal static void Delete(string filePath, string logFeature = "Persistence")
+        {
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                    ModLog.Debug(logFeature, $"Deleted stale file: {Path.GetFileName(filePath)}");
+                }
+                catch (Exception ex)
+                {
+                    ModLog.Warn(logFeature, $"Failed to delete {Path.GetFileName(filePath)}: {ex.Message}");
+                }
+            }
+
+            DeleteVolatileSiblings(filePath, logFeature);
         }
     }
 }

@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using MimesisPlayerEnhancement.Features.Statistics;
+
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 {
     internal static class SaveSlotDeleteService
@@ -26,6 +28,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             // Game removed the .sav; wipe sidecars and any leftover stem files.
             SaveSidecarPaths.DeleteAllFilesForSlot(slotId, Feature);
+            StatisticsStore.InvalidateSlot(slotId);
             ModLog.Info(Feature, $"Deleted save slot {slotId}.");
             return true;
         }
