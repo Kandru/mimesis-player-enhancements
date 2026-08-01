@@ -68,6 +68,8 @@ Default: `Vanilla`
 
 Vanilla only updates the tram console clock when the in-game **hour** changes (~once per real minute at default time scale), so the display shows `HH:00` until the next hour. When enabled, the host syncs every in-game **minute** instead (~once per real second at default scale). Weather and lighting still change on hour boundaries only.
 
+Turning it **off** mid-run snaps the tram/alarm **display** to `HH:00` (one floored `TimeSyncSig`) without changing dungeon elapsed or start time. Progression keeps running; only the shown minutes reset until the next vanilla hourly sync.
+
 | Value | Meaning |
 |---|---|
 | `false` | Hourly tram clock updates (default) |
