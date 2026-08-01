@@ -1363,14 +1363,6 @@ body.dev-verify-shake {
   color: var(--text-muted);
 }
 
-.settings-panel-path {
-  margin-top: 0.5rem;
-  font-family: ui-monospace, Menlo, monospace;
-  font-size: 0.6875rem;
-  color: var(--text-subtle);
-  word-break: break-all;
-}
-
 /* overflow stays visible so picker dropdowns can extend past the card;
    rounded corners are re-applied on the first/last inner elements below. */
 .settings-section-card {

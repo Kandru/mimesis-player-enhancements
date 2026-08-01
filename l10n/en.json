@@ -1745,7 +1745,6 @@
     "settings_search_by_placeholder": "Search by name, key, or value…",
     "settings_config_file_label": "Config file",
     "settings_override_file_label": "Override file",
-    "settings_intro_global": "Edit global mod defaults. These apply everywhere unless overridden for the active save slot.",
     "settings_intro_profile": "Choose how this save slot applies mod settings. Select a preset, use global defaults, or customize every option individually.",
     "settings_intro_save": "Edit settings for save slot {slot}. Values matching global defaults are not stored in the save override file.",
     "settings_save_persist_hint": "Changes apply immediately; use the in-game save button to write them to disk.",

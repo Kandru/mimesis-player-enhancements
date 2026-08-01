@@ -24,11 +24,11 @@
   let {
     settings,
     scope,
-    intro,
+    intro = '',
   }: {
     settings: SettingsDto | null;
     scope: 'global' | 'save';
-    intro: string;
+    intro?: string;
   } = $props();
 
   const query = $derived(dashboard.headerSearchQuery.trim().toLowerCase());
@@ -159,12 +159,11 @@
 </script>
 
 <div class="settings-page">
-  <div class="settings-panel-header">
-    <p class="settings-panel-intro">{intro}</p>
-    {#if settings?.configPath}
-      <p class="settings-panel-path">{settings.configPath}</p>
-    {/if}
-  </div>
+  {#if intro}
+    <div class="settings-panel-header">
+      <p class="settings-panel-intro">{intro}</p>
+    </div>
+  {/if}
 
   {#if isGuest}
     <div class="settings-guest-banner">{t('dashboard.settings_guest_readonly')}</div>

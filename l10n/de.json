@@ -1745,7 +1745,6 @@
     "settings_search_by_placeholder": "Nach Name, Schlüssel oder Wert suchen…",
     "settings_config_file_label": "Konfigurationsdatei",
     "settings_override_file_label": "Override-Datei",
-    "settings_intro_global": "Globale Mod-Standardwerte bearbeiten. Diese gelten überall, sofern nicht für den aktiven Save-Slot überschrieben.",
     "settings_intro_profile": "Wähle, wie dieser Save-Slot Mod-Einstellungen anwendet. Wähle ein Preset, nutze globale Standardwerte oder passe jede Option einzeln an.",
     "settings_intro_save": "Einstellungen für Save-Slot {slot} bearbeiten. Werte, die globalen Standardwerten entsprechen, werden nicht in der Save-Override-Datei gespeichert.",
     "settings_save_persist_hint": "Änderungen gelten sofort; zum Schreiben auf die Festplatte im Spiel speichern.",
