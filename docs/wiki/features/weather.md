@@ -1,6 +1,6 @@
 # Weather
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Control dungeon weather (fixed, cycling, or vanilla), optionally strip random weather rolls, and set the synced in-game start hour for outdoor lighting and the tram clock. All settings apply in real time during an active dungeon.
 

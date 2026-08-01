@@ -1,6 +1,6 @@
 # More Voices
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Mimics copy things players say and replay them later; the base game keeps only a small number of voice lines per player. This feature raises those limits and can record in hub scenes or during mimic possession so mimics build a richer library over a long session.
 

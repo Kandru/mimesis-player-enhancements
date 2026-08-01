@@ -1,6 +1,6 @@
 # Savegame Preparation
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. **Global settings only** — configure in Global Settings before creating a new save; these keys are not available as per-slot overrides.
+**Scope:** host
 
 Settings here apply **only when a new savegame is created**. They do not apply when loading an existing save or after a wipeout/session fail.
 

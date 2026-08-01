@@ -1,6 +1,6 @@
 # Privacy
 
-**Local only** — each player needs to enable this in the settings for this to take effect.
+**Scope:** local
 
 Blocks automatic outbound data from your local game install: Relu session and gameplay logs, replay capture and upload, Unity crash reports, and Krafton creator-code SDK login. Steam lobbies, invites, voice, and multiplayer sync are not blocked. Manual in-game feedback submission still works.
 

@@ -1,6 +1,6 @@
 # Dungeon Randomizer
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Randomizes which dungeon the tram picks, which map variant loads, and — optionally — the procedural layout seed (map flavor). The host applies pick, variant, and seed before departure; all players receive the same choices.
 

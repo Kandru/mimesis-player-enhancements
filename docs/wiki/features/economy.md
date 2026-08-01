@@ -1,6 +1,6 @@
 # Economy
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Scales scrap/sell value, shop and reinforce prices, and optional unspent currency between maintenance cycles during a run. Complements [Loot Multiplicator](./loot-multiplicator.md) (spawn counts, not prices); tram repair quotas stay under [More Players](./more-players.md).
 

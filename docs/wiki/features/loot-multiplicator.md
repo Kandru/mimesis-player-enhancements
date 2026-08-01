@@ -1,6 +1,6 @@
 # Loot Multiplicator
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Scales map loot and enemy death drops, optionally filters which items can spawn, and can turn mimic inventory decoys into real pickup loot. Use it when you want more loot in larger groups or tighter control over what appears. Most settings apply at the start of the next dungeon scene; turning the feature off applies immediately.
 

@@ -1,6 +1,6 @@
 # Spawn Scaling
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Scales dungeon monster and trap spawn budgets by type, optionally with party size. Changes inside the dungeon wait until the dungeon ends; turning the feature off applies immediately.
 

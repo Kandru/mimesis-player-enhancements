@@ -1,6 +1,6 @@
 # Statistics
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Tracks per-player statistics for each save in a **save → zone → dungeon run → player** hierarchy, plus **global totals** that survive zone-1 restarts.
 

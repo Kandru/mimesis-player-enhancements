@@ -1,6 +1,6 @@
 # Persistence
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Keeps mimic voice recordings across save and load. Once you save ingame (including auto-save), recordings go to `MMGameData{N}.mpe-speech.sav`. Everything is restored when that save is loaded. Use it with [More Voices](./more-voices.md) — Persistence stores what More Voices lets the game keep in the first place.
 

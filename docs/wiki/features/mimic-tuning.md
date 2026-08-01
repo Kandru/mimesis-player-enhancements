@@ -1,6 +1,6 @@
 # Mimic Tuning
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Tune mimic voice, trust/chase, social mimicry, inventory copy, possession, emotes/props, and horn imitation. Off by default. Each subgroup uses **Vanilla** or **Custom**. Changes apply live on the next relevant game action — no restart necessary. Trust, social, emote, and horn settings sync to active mimics when you save config; voice replies and possession sessions already in progress are not reverted.
 

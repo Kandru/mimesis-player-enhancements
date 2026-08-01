@@ -1,6 +1,6 @@
 # Join Anytime
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Normally, friends have to be in the lobby before a run starts. Join Anytime lets people connect after you've already begun — while the party is on the tram between dungeons. Players cannot connect during a dungeon. When the lobby is public, the browse list shows whether you can join now or how long until the party is back at the tram (for example `[join now]` or `[join in ~12 min]`). Hosts can also toggle public matchmaking and edit the lobby title from the ESC menu in the tram or during a dungeon run.
 

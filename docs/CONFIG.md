@@ -58,7 +58,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | [Join Anytime](#join-anytime--mimesisplayerenhancement_joinanytime) | Late join after session start | Host only |
 | [Spawn Scaling](#spawn-scaling--mimesisplayerenhancement_spawnscaling) | Scale monster/trap spawn budgets | Host only |
 | [Loot Multiplicator](#loot-multiplicator--mimesisplayerenhancement_lootmultiplicator) | Scale map and drop loot | Host only |
-| [Savegame Preparation](#savegame-preparation--mimesisplayerenhancement_savegamepreparation) | Starting cash and zone when creating a new save | Host only (global settings) |
+| [Savegame Preparation](#savegame-preparation--mimesisplayerenhancement_savegamepreparation) | Starting cash and zone when creating a new save | Host only |
 | [Economy](#economy--mimesisplayerenhancement_economy) | Scale scrap value, shop prices, and cycle retention | Host only |
 | [Dungeon Time](#dungeon-time--mimesisplayerenhancement_dungeontime) | Extend shift deadline by player count | Host only |
 | [Mimic Tuning](#mimic-tuning--mimesisplayerenhancement_mimictuning) | Mimic voice, inventory copy, and possession timing | Host only |

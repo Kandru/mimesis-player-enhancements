@@ -1,6 +1,6 @@
 # User Interface
 
-**Local only** — each player needs to enable this in the settings for this to take effect.
+**Scope:** local
 
 Adjusts the user interface in different parts to make the game more appealing or usable with more players.
 

@@ -19,6 +19,40 @@ const GITHUB_REPO =
 
 marked.setOptions({ gfm: true, breaks: false });
 
+/**
+ * Wiki sidebar order + groups — mirrors ModConfigSectionGroups.PreferredSectionOrder
+ * (settings-mirrored IDs). Client extras (custom-assets, web-dashboard) are wiki-only.
+ * Overview (README) is injected separately as the General slot in Client.
+ */
+const WIKI_NAV_ORDER = [
+  // Client (after Overview): Privacy, User Interface, then wiki-only extras
+  { id: 'privacy', groupId: 'client' },
+  { id: 'user-interface', groupId: 'client' },
+  { id: 'custom-assets', groupId: 'client' },
+  { id: 'web-dashboard', groupId: 'client' },
+
+  // Session: Prep first, then A–Z
+  { id: 'savegame-preparation', groupId: 'session' },
+  { id: 'join-anytime', groupId: 'session' },
+  { id: 'more-players', groupId: 'session' },
+  { id: 'more-voices', groupId: 'session' },
+  { id: 'persistence', groupId: 'session' },
+  { id: 'player-announcements', groupId: 'session' },
+  { id: 'statistics', groupId: 'session' },
+
+  // Balance: A–Z
+  { id: 'dungeon-time', groupId: 'balance' },
+  { id: 'economy', groupId: 'balance' },
+  { id: 'loot-multiplicator', groupId: 'balance' },
+  { id: 'spawn-scaling', groupId: 'balance' },
+
+  // World: A–Z
+  { id: 'dungeon-randomizer', groupId: 'world' },
+  { id: 'mimic-tuning', groupId: 'world' },
+  { id: 'player-tuning', groupId: 'world' },
+  { id: 'weather', groupId: 'world' },
+];
+
 function slugify(text) {
   return text
     .toLowerCase()
@@ -44,24 +78,70 @@ function extractSubSections(markdown) {
   return sections;
 }
 
+/**
+ * Badge metadata from markdown. Preferred form:
+ *   **Scope:** host
+ *   **Scope:** local
+ *   **Scope:** host,local
+ * Optional trailing " · **Config:** ..." is ignored for badges.
+ * Falls back to a leading **Host only** / **Local only** line when **Scope:** is absent.
+ */
 function extractScopes(markdown) {
-  const match = markdown.match(/\*\*Scope:\*\*\s*([^\n]+)/);
-  if (!match) return [];
-  const raw = match[1].trim().toLowerCase();
   const scopes = [];
-  if (raw.includes('host process') || raw.includes('host only') || raw.includes('host')) scopes.push('host');
-  if (raw.includes('local') || raw.includes('your game')) scopes.push('local');
-  return [...new Set(scopes)];
+  const push = (token) => {
+    if (token === 'host' || token === 'local') {
+      if (!scopes.includes(token)) scopes.push(token);
+    }
+  };
+
+  const parseScopeValue = (raw) => {
+    const text = raw.toLowerCase();
+    const parts = text.split(/\s*,\s*/);
+    let matchedPart = false;
+    for (const part of parts) {
+      const p = part.trim();
+      if (!p) continue;
+      if (p === 'local' || /\blocal only\b/.test(p) || /\byour game only\b/.test(p)) {
+        push('local');
+        matchedPart = true;
+        continue;
+      }
+      if (p === 'host' || /\bhost only\b/.test(p)) {
+        push('host');
+        matchedPart = true;
+        continue;
+      }
+    }
+    if (!matchedPart) {
+      if (/\blocal\b/.test(text) || /\byour game\b/.test(text)) push('local');
+      if (/\bhost\b/.test(text)) push('host');
+    }
+  };
+
+  const scopeLine = markdown.match(/^\*\*Scope:\*\*\s*([^\n]+)/m);
+  if (scopeLine) {
+    // Drop trailing "· **Config:** ..." (and similar) so only the badge value is parsed.
+    const value = scopeLine[1].split(/\s*·\s*\*\*/)[0].trim();
+    parseScopeValue(value);
+    return scopes;
+  }
+
+  // Fallback: first **Host only** / **Local only** lead-in near the top of the article.
+  const head = markdown.slice(0, 800);
+  if (/\*\*Host only\*\*/i.test(head)) push('host');
+  if (/\*\*Local only\*\*/i.test(head)) push('local');
+  return scopes;
 }
 
-function parseNavOrder(readmeContent) {
-  const order = [];
-  const re = /\]\((?:\.\/)?features\/([a-z0-9-]+)\.md\)/g;
-  let m;
-  while ((m = re.exec(readmeContent)) !== null) {
-    if (!order.includes(m[1])) order.push(m[1]);
-  }
-  return order;
+/** Remove badge metadata from body HTML; keep trailing **Config:** when present. */
+function stripScopeMetadata(markdown) {
+  return markdown.replace(
+    /^\*\*Scope:\*\*\s*([^\n]*)$/m,
+    (_, rest) => {
+      const config = rest.match(/(?:\s*·\s*)?(\*\*Config:\*\*[^\n]*)/);
+      return config ? config[1].trim() : '';
+    },
+  ).replace(/\n{3,}/g, '\n\n');
 }
 
 function rewriteLinks(html) {
@@ -110,14 +190,14 @@ function addHeadingIds(html, subSections) {
   });
 }
 
-function processArticle(id, markdown) {
+function processArticle(id, markdown, groupId = '') {
   const title = extractTitle(markdown);
   const subSections = extractSubSections(markdown);
   const scopes = extractScopes(markdown);
-  let html = marked.parse(markdown);
+  let html = marked.parse(stripScopeMetadata(markdown));
   html = rewriteLinks(html);
   html = addHeadingIds(html, subSections);
-  return { id, title, html, subSections, scopes };
+  return { id, title, html, subSections, scopes, groupId };
 }
 
 function main() {
@@ -134,8 +214,7 @@ function main() {
   }
 
   const readmeContent = fs.readFileSync(readmePath, 'utf8');
-  const navOrder = parseNavOrder(readmeContent);
-  const overview = processArticle('overview', readmeContent);
+  const overview = processArticle('overview', readmeContent, 'client');
 
   const featuresDir = path.join(WIKI_ROOT, 'features');
   const featureFiles = fs.existsSync(featuresDir)
@@ -150,9 +229,11 @@ function main() {
   }
 
   const ordered = [];
-  for (const id of navOrder) {
+  for (const { id, groupId } of WIKI_NAV_ORDER) {
     if (byId.has(id)) {
-      ordered.push(byId.get(id));
+      const article = byId.get(id);
+      article.groupId = groupId;
+      ordered.push(article);
       byId.delete(id);
     }
   }
@@ -179,6 +260,7 @@ export interface WikiArticle {
   html: string;
   subSections: WikiSubSection[];
   scopes: ('host' | 'local')[];
+  groupId: string;
 }
 
 export const wikiOverview: WikiArticle = ${JSON.stringify(overview, null, 2)};

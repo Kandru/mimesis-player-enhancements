@@ -1,6 +1,8 @@
 # Player Tuning
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host,local
+
+Most options are **host only** — only the host must enable them for the whole lobby. **Disable player collision** is **local** (each client chooses pass-through for themselves).
 
 Scale how players move, use stamina, and carry loot. Changes apply at runtime when config is saved (no restart necessary).
 

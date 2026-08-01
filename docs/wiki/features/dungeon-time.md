@@ -1,6 +1,6 @@
 # Dungeon Time
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 Extends the real dungeon shift clock when more players are present than a baseline. Once enabled, everyone in the run gets the longer shift. Applied once when all members have entered the dungeon room. Useful so larger groups get a fairer time window to finish a run.
 

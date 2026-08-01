@@ -1,6 +1,6 @@
 # More Players
 
-**Host only** — only the host must enable this for the whole lobby to get the effect. Joining clients do not need the mod.
+**Scope:** host
 
 The base game limits sessions to four players. This feature raises that cap so larger groups can play together.
 

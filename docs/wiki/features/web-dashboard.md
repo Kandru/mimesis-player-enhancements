@@ -1,6 +1,6 @@
 # Web Dashboard
 
-**Local only** — each player needs to enable this in the settings for this to take effect.
+**Scope:** local
 
 Serves a local browser page for connected players, a live minimap, leaderboards, moderation, host cheats, and mod settings. Default URL: `http://127.0.0.1:8001/` — or use the yellow Management button on the main/ESC menu (opens the webinterface via the steam overlay browser).
 
