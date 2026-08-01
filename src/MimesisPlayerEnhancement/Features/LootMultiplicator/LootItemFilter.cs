@@ -82,9 +82,14 @@ namespace MimesisPlayerEnhancement.Features.LootMultiplicator
 
         internal static void ApplyToDropList(List<int>? result, ItemDropInfo? dropInfo)
         {
+            ApplyToDropList(result, dropInfo, ShouldApply());
+        }
+
+        internal static void ApplyToDropList(List<int>? result, ItemDropInfo? dropInfo, bool shouldApply)
+        {
             _ = dropInfo;
 
-            if (!ShouldApply() || result == null || result.Count == 0)
+            if (!shouldApply || result == null || result.Count == 0)
             {
                 return;
             }

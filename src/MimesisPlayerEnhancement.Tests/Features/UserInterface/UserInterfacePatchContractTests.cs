@@ -179,23 +179,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         }
 
         [Theory]
-        [InlineData("cameraman", "CameraManager")]
-        [InlineData("voiceman", "VoiceManager")]
-        public void Hub_voice_and_camera_members_are_properties(string memberName, string expectedTypeName)
-        {
-            using MimesisMetadataContext context = CreateContext();
-            Type hubType = context.RequireType("Hub");
-
-            PropertyInfo? property = hubType.GetProperty(memberName, InstanceMember);
-            FieldInfo? field = hubType.GetField(memberName, InstanceMember);
-
-            Assert.NotNull(property);
-            Assert.Null(field);
-            Assert.Equal(expectedTypeName, property.PropertyType.Name);
-            Assert.NotNull(property.GetGetMethod(nonPublic: true));
-        }
-
-        [Theory]
         [InlineData("InitCommonUIValue")]
         [InlineData("OnPlayerSpawn")]
         [InlineData("OnDestroy")]

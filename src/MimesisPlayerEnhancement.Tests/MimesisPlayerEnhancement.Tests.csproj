@@ -29,26 +29,60 @@
     </ProjectReference>
   </ItemGroup>
 
+  <!-- MelonLoader stays Private=false — loading it into vstest hangs the host. -->
   <ItemGroup>
     <Reference Include="MelonLoader">
       <HintPath>$(MelonLoaderPath)/MelonLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!-- Private=true so discovery/runtime can load live game types; AssemblyResolve covers transitive Managed deps. -->
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameAssemblyPath)/Assembly-CSharp.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine" Condition="Exists('$(GameAssemblyPath)/UnityEngine.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.CoreModule.dll')">
       <HintPath>$(GameAssemblyPath)/UnityEngine.CoreModule.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UI.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UI.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UIModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UIModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.AudioModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UnityWebRequestModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule" Condition="Exists('$(GameAssemblyPath)/UnityEngine.UnityWebRequestAudioModule.dll')">
+      <HintPath>$(GameAssemblyPath)/UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="UniTask" Condition="Exists('$(GameAssemblyPath)/UniTask.dll')">
       <HintPath>$(GameAssemblyPath)/UniTask.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
     </Reference>
     <Reference Include="FishNet.Runtime" Condition="Exists('$(GameAssemblyPath)/FishNet.Runtime.dll')">
       <HintPath>$(GameAssemblyPath)/FishNet.Runtime.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net" Condition="Exists('$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll')">
+      <HintPath>$(GameAssemblyPath)/com.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
 </Project>

@@ -112,19 +112,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
         [Fact]
         public void C_MaxPlayerCount_field_exists_in_game_assembly()
         {
-            bool found = typeof(VRoomManager).Assembly.GetTypes()
-                .Any(type =>
-                {
-                    try
-                    {
-                        return type.GetFields(InstanceMember | StaticMember)
-                            .Any(field => string.Equals(field.Name, "C_MaxPlayerCount", StringComparison.Ordinal));
-                    }
-                    catch (ReflectionTypeLoadException)
-                    {
-                        return false;
-                    }
-                });
+            using MimesisMetadataContext context = CreateContext();
+
+            bool found = context.AssemblyCSharp.GetTypes()
+                .Any(type => type.GetFields(InstanceMember | StaticMember)
+                    .Any(field => string.Equals(field.Name, "C_MaxPlayerCount", StringComparison.Ordinal)));
 
             Assert.True(found);
         }
@@ -274,7 +266,8 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
         [Fact]
         public void FishySteamworks_ServerSocket_GetMaximumClients_exists()
         {
-            Type socketType = typeof(FishySteamworks.Server.ServerSocket);
+            using MimesisMetadataContext context = CreateContext();
+            Type socketType = context.RequireType("FishySteamworks.Server.ServerSocket");
 
             MethodInfo? method = socketType.GetMethod("GetMaximumClients", InstanceMember | BindingFlags.Public);
 
@@ -285,7 +278,8 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
         [Fact]
         public void FishySteamworks_ServerSocket_SetMaximumClients_exists()
         {
-            Type socketType = typeof(FishySteamworks.Server.ServerSocket);
+            using MimesisMetadataContext context = CreateContext();
+            Type socketType = context.RequireType("FishySteamworks.Server.ServerSocket");
 
             MethodInfo? method = socketType.GetMethod("SetMaximumClients", InstanceMember | BindingFlags.Public);
 
@@ -298,7 +292,8 @@ namespace MimesisPlayerEnhancement.Tests.Features.MorePlayers
         [Fact]
         public void FishySteamworks_ServerSocket_parameterless_constructor_exists()
         {
-            Type socketType = typeof(FishySteamworks.Server.ServerSocket);
+            using MimesisMetadataContext context = CreateContext();
+            Type socketType = context.RequireType("FishySteamworks.Server.ServerSocket");
 
             ConstructorInfo? ctor = socketType.GetConstructor(Type.EmptyTypes);
 

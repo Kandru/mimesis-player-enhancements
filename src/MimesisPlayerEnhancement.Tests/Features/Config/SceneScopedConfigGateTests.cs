@@ -1,4 +1,3 @@
-using System.Reflection;
 using MimesisPlayerEnhancement.Util;
 using Xunit;
 
@@ -6,16 +5,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 {
     public sealed class SceneScopedConfigGateTests
     {
-        private static readonly FieldInfo ActiveLootField =
-            typeof(SceneScopedConfigGate).GetField("_activeLoot", BindingFlags.Static | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("SceneScopedConfigGate._activeLoot not found");
-
         [Fact]
         public void TransitionToScene_same_kind_does_not_recapture_snapshot()
         {
-            SceneScopedConfigGate.Initialize();
-            SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Dungeon);
-
             var sentinel = new LootMultiplicatorSceneConfig(
                 enableLootMultiplicator: false,
                 lootMultiplicatorPlayerCountScaleRate: 0.10f,
@@ -28,8 +20,8 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                 lootBlocklist: "",
                 autoScaleMapLootBudgetForFilter: true,
                 convertFakeActorDyingDropChancePercent: 30);
-            ActiveLootField.SetValue(null, sentinel);
 
+            SceneScopedConfigGate.SeedActiveForTests(SceneScopeKind.Dungeon, sentinel);
             SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Dungeon);
 
             Assert.Equal(9.5f, SceneScopedConfigGate.Loot.MapLootMultiplier);
@@ -39,10 +31,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         [Fact]
         public void TransitionToScene_different_kind_recaptures_snapshot()
         {
-            SceneScopedConfigGate.Initialize();
-            SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Tram);
-
-            var sentinel = new LootMultiplicatorSceneConfig(
+            var tramLoot = new LootMultiplicatorSceneConfig(
                 enableLootMultiplicator: true,
                 lootMultiplicatorPlayerCountScaleRate: 0.10f,
                 autoScaleMapLootByPlayerCount: true,
@@ -54,11 +43,24 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                 lootBlocklist: "",
                 autoScaleMapLootBudgetForFilter: true,
                 convertFakeActorDyingDropChancePercent: 30);
-            ActiveLootField.SetValue(null, sentinel);
+            var dungeonLoot = new LootMultiplicatorSceneConfig(
+                enableLootMultiplicator: true,
+                lootMultiplicatorPlayerCountScaleRate: 0.10f,
+                autoScaleMapLootByPlayerCount: true,
+                mapLootMultiplier: 1f,
+                autoScaleDropLootByPlayerCount: true,
+                dropLootMultiplier: 1f,
+                lootItemFilterMode: "All",
+                lootAllowlist: "",
+                lootBlocklist: "",
+                autoScaleMapLootBudgetForFilter: true,
+                convertFakeActorDyingDropChancePercent: 30);
 
-            SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Dungeon);
+            SceneScopedConfigGate.SeedActiveForTests(SceneScopeKind.Tram, tramLoot);
+            SceneScopedConfigGate.TransitionToScene(SceneScopeKind.Dungeon, dungeonLoot);
 
             Assert.NotEqual(4f, SceneScopedConfigGate.Loot.MapLootMultiplier);
+            Assert.Equal(1f, SceneScopedConfigGate.Loot.MapLootMultiplier);
         }
     }
 }

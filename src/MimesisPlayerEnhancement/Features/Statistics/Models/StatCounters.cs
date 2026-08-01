@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace MimesisPlayerEnhancement.Features.Statistics.Models
 {
     public sealed class StatCounters
@@ -25,10 +27,13 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Models
         public Dictionary<string, long> DeathsByTrap = [];
         public List<long> LifetimesOnDeathMs = [];
 
+        [JsonIgnore]
         public long MonsterKillTotal => SumValues(MonsterKills);
 
+        [JsonIgnore]
         public long TrapDeathTotal => SumValues(DeathsByTrap);
 
+        [JsonIgnore]
         public long MonsterDeathTotal => SumValues(DeathsByMonster);
 
         public bool HasAny()

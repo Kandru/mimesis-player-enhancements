@@ -71,6 +71,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance
             };
         }
 
-        private static float Clamp01(float value) => UnityEngine.Mathf.Clamp01(value);
+        private static float Clamp01(float value) =>
+            value < 0f ? 0f : value > 1f ? 1f : value;
     }
 }

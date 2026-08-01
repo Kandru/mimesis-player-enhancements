@@ -6,16 +6,21 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
 {
     public sealed class LoadingWaitPlayerListDisplayNamesTests
     {
-        private const ulong SteamId = 0xA11CE;
-
         [Fact]
         public void Resolve_prefers_nick_name_over_registry()
         {
-            PlayerRegistry.UpdateDisplayName(SteamId, "Registry Name");
+            const ulong steamId = 0xA1101;
+            PlayerRegistry.UpdateDisplayName(steamId, "Registry Name");
+            try
+            {
+                string result = LoadingWaitPlayerListDisplayNames.Resolve("Live Nick", steamId);
 
-            string result = LoadingWaitPlayerListDisplayNames.Resolve("Live Nick", SteamId);
-
-            Assert.Equal("Live Nick", result);
+                Assert.Equal("Live Nick", result);
+            }
+            finally
+            {
+                _ = PlayerRegistry.RemoveIfNeverConnected(steamId);
+            }
         }
 
         [Theory]
@@ -24,17 +29,27 @@ namespace MimesisPlayerEnhancement.Tests.Features.UserInterface
         [InlineData("   ")]
         public void Resolve_uses_registry_when_nick_name_missing(string? nickName)
         {
-            PlayerRegistry.UpdateDisplayName(SteamId, "Registry Name");
+            const ulong steamId = 0xA1102;
+            PlayerRegistry.UpdateDisplayName(steamId, "Registry Name");
+            try
+            {
+                string result = LoadingWaitPlayerListDisplayNames.Resolve(nickName, steamId);
 
-            string result = LoadingWaitPlayerListDisplayNames.Resolve(nickName, SteamId);
-
-            Assert.Equal("Registry Name", result);
+                Assert.Equal("Registry Name", result);
+            }
+            finally
+            {
+                _ = PlayerRegistry.RemoveIfNeverConnected(steamId);
+            }
         }
 
         [Fact]
         public void Resolve_returns_empty_when_no_sources_available()
         {
-            string result = LoadingWaitPlayerListDisplayNames.Resolve(null, SteamId);
+            const ulong steamId = 0xA1103;
+            _ = PlayerRegistry.RemoveIfNeverConnected(steamId);
+
+            string result = LoadingWaitPlayerListDisplayNames.Resolve(null, steamId);
 
             Assert.Equal(string.Empty, result);
         }

@@ -91,6 +91,42 @@ namespace MimesisPlayerEnhancement.Util
             _deferInfoLogged = false;
         }
 
+        /// <summary>
+        /// Seeds active scene snapshots without reading MelonPreferences — for unit tests.
+        /// </summary>
+        internal static void SeedActiveForTests(
+            SceneScopeKind kind,
+            LootMultiplicatorSceneConfig loot)
+        {
+            _activeKind = kind;
+            _activeLoot = loot;
+            _pendingLoot = loot;
+            DeferredModules.Clear();
+            _deferInfoLogged = false;
+        }
+
+        /// <summary>
+        /// Transitions scene kind using an explicit loot snapshot instead of MelonPreferences.
+        /// </summary>
+        internal static void TransitionToScene(SceneScopeKind kind, LootMultiplicatorSceneConfig loot)
+        {
+            if (_activeKind == kind)
+            {
+                return;
+            }
+
+            if (_activeKind != SceneScopeKind.None)
+            {
+                EndScene();
+            }
+
+            _activeKind = kind;
+            _activeLoot = loot;
+            _pendingLoot = loot;
+            DeferredModules.Clear();
+            _deferInfoLogged = false;
+        }
+
         internal static void OnConfigChangePrepared(ModConfigChangeInfo change)
         {
             CaptureAllPendingFromModConfig();

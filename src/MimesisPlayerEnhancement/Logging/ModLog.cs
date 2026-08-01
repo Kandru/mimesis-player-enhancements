@@ -101,14 +101,18 @@ namespace MimesisPlayerEnhancement
             return onlyColor.Length == 1 ? onlyColor[0] : Neutral;
         }
 
+        private static bool IsDebugEnabled =>
+            ModConfig.IsInitialized
+            && ModConfig.EnableDebugLogging is { Value: true };
+
         public static void Info(string feature, string message)
         {
-            MelonLogger.Msg($"[{feature}] {message}");
+            TryMelonLog(() => MelonLogger.Msg($"[{feature}] {message}"));
         }
 
         public static void Warn(string feature, string message)
         {
-            MelonLogger.Warning($"[{feature}] {message}");
+            TryMelonLog(() => MelonLogger.Warning($"[{feature}] {message}"));
         }
 
         public static void WarnRed(string feature, string message)
@@ -120,7 +124,7 @@ namespace MimesisPlayerEnhancement
                 try
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    MelonLogger.Warning(body);
+                    TryMelonLog(() => MelonLogger.Warning(body));
                 }
                 finally
                 {
@@ -130,20 +134,22 @@ namespace MimesisPlayerEnhancement
                 return;
             }
 
-            MelonLogger.Warning(body.Pastel(FailureRed));
+            TryMelonLog(() => MelonLogger.Warning(body.Pastel(FailureRed)));
         }
 
         public static void Error(string feature, string message)
         {
-            MelonLogger.Error($"[{feature}] {message}");
+            TryMelonLog(() => MelonLogger.Error($"[{feature}] {message}"));
         }
 
         public static void Debug(string feature, string message)
         {
-            if (ModConfig.EnableDebugLogging.Value)
+            if (!IsDebugEnabled)
             {
-                MelonLogger.Msg($"[{feature}:debug] {message}");
+                return;
             }
+
+            TryMelonLog(() => MelonLogger.Msg($"[{feature}:debug] {message}"));
         }
 
         /// <summary>
@@ -152,9 +158,26 @@ namespace MimesisPlayerEnhancement
         /// </summary>
         public static void Debug(string feature, Func<string> messageFactory)
         {
-            if (ModConfig.EnableDebugLogging.Value)
+            if (!IsDebugEnabled)
             {
-                MelonLogger.Msg($"[{feature}:debug] {messageFactory()}");
+                return;
+            }
+
+            TryMelonLog(() => MelonLogger.Msg($"[{feature}:debug] {messageFactory()}"));
+        }
+
+        /// <summary>
+        /// MelonLogger is not bootstrapped under vstest; swallow NREs so unit tests can exercise
+        /// production paths that log without stubbing MelonLoader (which hangs the host).
+        /// </summary>
+        private static void TryMelonLog(Action write)
+        {
+            try
+            {
+                write();
+            }
+            catch (NullReferenceException)
+            {
             }
         }
     }

@@ -1,6 +1,5 @@
 using System.Reflection;
 using MimesisPlayerEnhancement.Features.LootMultiplicator;
-using MimesisPlayerEnhancement.Util;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.LootMultiplicator
@@ -41,10 +40,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.LootMultiplicator
                 LootItemFilterMode.BlocklistOnly,
                 allowlist: [],
                 blocklist: [20]);
-            ConfigureActiveLoot(enabled: true, filterMode: "BlocklistOnly", blocklist: "20");
 
             List<int> drops = [10, 20, 30];
-            LootItemFilter.ApplyToDropList(drops, dropInfo: null);
+            LootItemFilter.ApplyToDropList(drops, dropInfo: null, shouldApply: true);
 
             Assert.Equal([10, 30], drops);
         }
@@ -57,10 +55,9 @@ namespace MimesisPlayerEnhancement.Tests.Features.LootMultiplicator
                 allowlist: [30],
                 blocklist: [],
                 validAllowlist: [30]);
-            ConfigureActiveLoot(enabled: true, filterMode: "AllowlistOnly", allowlist: "30");
 
             List<int> drops = [10, 20];
-            LootItemFilter.ApplyToDropList(drops, dropInfo: null);
+            LootItemFilter.ApplyToDropList(drops, dropInfo: null, shouldApply: true);
 
             Assert.Equal([30, 30], drops);
         }
@@ -76,36 +73,6 @@ namespace MimesisPlayerEnhancement.Tests.Features.LootMultiplicator
             SetFilterField("_cachedBlocklist", blocklist);
             SetFilterField("_validAllowlistIds", validAllowlist ?? [.. allowlist]);
             SetFilterField("_masterdataValidated", true);
-        }
-
-        private static void ConfigureActiveLoot(
-            bool enabled,
-            string filterMode,
-            string allowlist = "",
-            string blocklist = "")
-        {
-            FieldInfo activeLootField =
-                typeof(SceneScopedConfigGate).GetField("_activeLoot", BindingFlags.Static | BindingFlags.NonPublic)
-                ?? throw new InvalidOperationException("SceneScopedConfigGate._activeLoot not found");
-            FieldInfo activeKindField =
-                typeof(SceneScopedConfigGate).GetField("_activeKind", BindingFlags.Static | BindingFlags.NonPublic)
-                ?? throw new InvalidOperationException("SceneScopedConfigGate._activeKind not found");
-
-            activeLootField.SetValue(
-                null,
-                new LootMultiplicatorSceneConfig(
-                    enabled,
-                    0.10f,
-                    true,
-                    1f,
-                    true,
-                    1f,
-                    filterMode,
-                    allowlist,
-                    blocklist,
-                    true,
-                    30));
-            activeKindField.SetValue(null, SceneScopeKind.Dungeon);
         }
 
         private static void SetFilterField(string name, object value)

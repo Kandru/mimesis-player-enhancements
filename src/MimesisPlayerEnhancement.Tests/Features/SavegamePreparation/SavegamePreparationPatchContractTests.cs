@@ -15,21 +15,15 @@ namespace MimesisPlayerEnhancement.Tests.Features.SavegamePreparation
             using MimesisMetadataContext context = CreateContext();
             Type type = context.RequireType("MainMenu");
 
-            MethodInfo? newTram = type.GetMethod(
-                "CreateNewGameInSlot",
-                InstanceMember,
-                binder: null,
-                [typeof(UIPrefab_NewTram), typeof(int)],
-                modifiers: null);
-            MethodInfo? loadTram = type.GetMethod(
-                "CreateNewGameInSlot",
-                InstanceMember,
-                binder: null,
-                [typeof(UIPrefab_LoadTram), typeof(int)],
-                modifiers: null);
+            MethodInfo[] overloads = type.GetMethods(InstanceMember)
+                .Where(candidate =>
+                    candidate.Name == "CreateNewGameInSlot"
+                    && candidate.GetParameters().Length == 2
+                    && candidate.GetParameters()[1].ParameterType.Name == "Int32")
+                .ToArray();
 
-            Assert.NotNull(newTram);
-            Assert.NotNull(loadTram);
+            Assert.Contains(overloads, method => method.GetParameters()[0].ParameterType.Name == "UIPrefab_NewTram");
+            Assert.Contains(overloads, method => method.GetParameters()[0].ParameterType.Name == "UIPrefab_LoadTram");
         }
 
         [Fact]
@@ -67,6 +61,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.SavegamePreparation
             Assert.NotNull(method);
         }
 
-        private static MimesisMetadataContext CreateContext() => new();
+        private static MimesisMetadataContext CreateContext()
+        {
+            string managedPath = ManagedAssemblyPaths.Resolve();
+            return new MimesisMetadataContext(managedPath);
+        }
     }
 }

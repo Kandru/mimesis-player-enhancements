@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -45,6 +47,13 @@ namespace MimesisPlayerEnhancement.Util
             public FieldCamelCaseContractResolver()
             {
                 NamingStrategy = new CamelCaseNamingStrategy();
+            }
+
+            protected override List<MemberInfo> GetSerializableMembers(Type objectType)
+            {
+                const BindingFlags flags =
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                return [.. objectType.GetFields(flags).Where(field => !field.IsDefined(typeof(NonSerializedAttribute)))];
             }
 
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)

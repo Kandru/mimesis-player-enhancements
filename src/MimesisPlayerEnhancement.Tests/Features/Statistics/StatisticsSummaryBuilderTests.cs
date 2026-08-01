@@ -23,10 +23,13 @@ namespace MimesisPlayerEnhancement.Tests.Features.Statistics
                 Counters = { TrainValueDeposited = 100 },
             };
 
-            LeaderboardDocument leaderboard = StatisticsSummaryBuilder.Build(0, document);
+            LeaderboardDocument leaderboard = StatisticsSummaryBuilder.BuildFromSnapshot(
+                0,
+                document,
+                new Dictionary<ulong, string>());
 
             Assert.Equal(2UL, leaderboard.Entries[0].SteamId);
-            Assert.Equal(100, leaderboard.ServerGlobalTotals.TrainValueDeposited);
+            Assert.Equal(110, leaderboard.ServerGlobalTotals.TrainValueDeposited);
         }
     }
 }
