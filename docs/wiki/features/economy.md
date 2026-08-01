@@ -21,7 +21,7 @@ Default: `false`
 
 ### `EconomyPlayerCountScaleRate`
 
-Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each money multiplier: `multiplier × (1 + (players − 4) × rate)`. At 4 or fewer players, player-count scaling is `1` (no change). Also used by **Savegame Preparation** startup-money scaling.
+Extra multiplier per player above 4 when an **Auto Scale … By Player Count** toggle is on. Stacks with each money multiplier: `multiplier × (1 + (players − 4) × rate)`. At 4 or fewer players, player-count scaling is `1` (no change).
 
 | Value | Meaning |
 |---|---|

@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
                     new ModConfigKeyChange
                     {
                         SectionId = "mimesisplayerenhancement_economy",
-                        Key = "StartupMoneyMultiplier",
+                        Key = "ScrapSellValueMultiplier",
                     },
                 ],
             };

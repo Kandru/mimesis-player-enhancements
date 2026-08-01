@@ -1,3 +1,4 @@
+using MimesisPlayerEnhancement.Features.SavegamePreparation;
 using MimesisPlayerEnhancement.Features.UserInterface;
 using MimesisPlayerEnhancement.Features.WebDashboard.Models;
 using Xunit;
@@ -45,6 +46,29 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
 
             string expectedGroup = $"{UiConfig.SectionId}::spectatorVoiceBalance";
             Assert.All(section.Entries, entry => Assert.Equal(expectedGroup, entry.EntryGroup));
+        }
+
+        [Fact]
+        public void AssignEntryGroups_savegame_preparation_keys_have_separate_groups()
+        {
+            WebDashboardConfigSectionDto section = new()
+            {
+                Id = SavegamePreparationConfig.SectionId,
+                Entries =
+                [
+                    new WebDashboardConfigEntryDto { Key = "StartupMoney" },
+                    new WebDashboardConfigEntryDto { Key = "StartingZone" },
+                ],
+            };
+
+            ModConfigEntryUiHints.AssignEntryGroups(section);
+
+            Assert.Equal(
+                $"{SavegamePreparationConfig.SectionId}::startupMoney",
+                section.Entries[0].EntryGroup);
+            Assert.Equal(
+                $"{SavegamePreparationConfig.SectionId}::startingZone",
+                section.Entries[1].EntryGroup);
         }
     }
 }

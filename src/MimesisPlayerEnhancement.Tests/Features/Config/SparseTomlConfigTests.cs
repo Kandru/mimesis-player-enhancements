@@ -10,7 +10,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
             const string text = """
                 # comment
                 [MimesisPlayerEnhancement_SavegamePreparation]
-                StartupMoneyMultiplier = "2.5"
+                StartupMoney = "240"
                 """;
 
             SparseTomlConfig.Document doc = SparseTomlConfig.Load(text);
@@ -19,7 +19,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
             Assert.Equal("MimesisPlayerEnhancement_SavegamePreparation", doc.SectionOrder[0]);
             Assert.True(doc.Sections.TryGetValue("MimesisPlayerEnhancement_SavegamePreparation", out Dictionary<string, string>? keys));
             Assert.NotNull(keys);
-            Assert.Equal("2.5", keys["StartupMoneyMultiplier"]);
+            Assert.Equal("240", keys["StartupMoney"]);
         }
 
         [Fact]

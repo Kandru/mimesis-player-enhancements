@@ -309,8 +309,7 @@ Map events / trigger spawns are **not** scaled (vanilla). Does **not** scale: sh
 
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
-| `StartupMoneyMultiplier` | float | `1.0` | ≥ `0` | Starting maintenance-room cash when a new save is created (`1` = vanilla, `2` = double). Uses `EconomyPlayerCountScaleRate` when Auto Scale is on. |
-| `AutoScaleStartupMoneyByPlayerCount` | bool | `true` | — | Player-count scaling for startup money (stacks with `StartupMoneyMultiplier`). |
+| `StartupMoney` | int | `120` | ≥ `0` | Starting maintenance-room cash when a new save is created (`120` = vanilla). Absolute dollars, not a multiplier. |
 | `StartingZone` | int | `1` | `1`–`99` | Zone (stage) to begin on when a new save is created (`1` = vanilla). Clamped to the game's max stage at apply time. |
 
 ## Economy — `[MimesisPlayerEnhancement_Economy]`
@@ -331,7 +330,7 @@ Does **not** change saved player balances or shop prices on save load. Shop pric
 | Key | Type | Default | Range | Description |
 |-----|------|---------|-------|-------------|
 | `EnableEconomy` | bool | `false` | — | Scale scrap/sell values, shop buy prices, and reinforce costs. Optionally retain unspent currency between maintenance cycles. |
-| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Also used by Savegame Preparation startup-money scaling. Minimum is 0. |
+| `EconomyPlayerCountScaleRate` | float | `0.10` | ≥ `0` | Extra multiplier per player above 4 when an Auto Scale … by Player Count toggle is enabled (0.10 = +10% per extra player, stacks with money multipliers). Minimum is 0. |
 | `AutoScaleScrapSellValueByPlayerCount` | bool | `true` | — | Player-count scaling for scrap/sell values. |
 | `ScrapSellValueMultiplier` | float | `1.0` | ≥ `0` | Scrap/sell value multiplier. |
 | `AutoScaleShopBuyPriceByPlayerCount` | bool | `true` | — | Player-count scaling for shop buy prices. |
@@ -651,7 +650,7 @@ DropLootMultiplier = 1.0
 ConvertFakeActorDyingDropChancePercent = 30
 
 [MimesisPlayerEnhancement_SavegamePreparation]
-StartupMoneyMultiplier = 1.0
+StartupMoney = 120
 StartingZone = 1
 
 [MimesisPlayerEnhancement_Economy]

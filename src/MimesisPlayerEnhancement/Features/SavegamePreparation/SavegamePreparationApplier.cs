@@ -66,7 +66,7 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             }
         }
 
-        internal static void TryApplyStartupMoney(MaintenanceRoom room, ref int currency)
+        internal static void TryApplyStartupMoney(ref int currency)
         {
             if (!SavegamePreparationNewGameGate.IsArmed
                 || StartupMoneyLoadGuard.IsActive
@@ -80,21 +80,14 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
                 return;
             }
 
-            int playerCount = SessionPlayerCountHelper.ResolveFromRoom(room);
-            float effective = SavegamePreparationResolver.GetStartupMoneyEffectiveMultiplier(playerCount);
-            if (effective == FeatureToggleGate.NeutralMultiplier)
+            int configured = SavegamePreparationResolver.ResolveStartupMoney();
+            if (configured == currency)
             {
                 return;
             }
 
-            int scaled = SavegamePreparationResolver.ScaleStartupMoney(currency, playerCount);
-            if (scaled == currency)
-            {
-                return;
-            }
-
-            currency = scaled;
-            SavegamePreparationLog.InfoStartupMoneyApplied(vanillaInitial, scaled, playerCount, effective);
+            currency = configured;
+            SavegamePreparationLog.InfoStartupMoneyApplied(vanillaInitial, configured);
         }
 
         internal static void OnFirstSaveWritten()

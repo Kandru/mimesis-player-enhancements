@@ -10,6 +10,9 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
     {
         internal const string SectionId = "MimesisPlayerEnhancement_SavegamePreparation";
 
+        /// <summary>Vanilla <c>C_InitialMoney</c> / masterdata <c>INITIAL_MONEY</c>.</summary>
+        internal const int DefaultStartupMoney = 120;
+
         private static MelonPreferences_Category _category = null!;
 
         internal static void CreateCategory()
@@ -19,13 +22,9 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
 
         internal static void CreateEntries()
         {
-            ModConfig.AutoScaleStartupMoneyByPlayerCount = ModConfig.CreateTrackedEntry(_category,
-                "AutoScaleStartupMoneyByPlayerCount",
-                true);
-
-            ModConfig.StartupMoneyMultiplier = ModConfig.CreateTrackedEntry(_category,
-                "StartupMoneyMultiplier",
-                1f);
+            ModConfig.StartupMoney = ModConfig.CreateTrackedEntry(_category,
+                "StartupMoney",
+                DefaultStartupMoney);
 
             ModConfig.StartingZone = ModConfig.CreateTrackedEntry(_category,
                 "StartingZone",
@@ -34,17 +33,22 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
 
         internal static void WireValidation(MelonLogger.Instance logger)
         {
-            ModConfig.AutoScaleStartupMoneyByPlayerCount.OnEntryValueChanged.Subscribe((_, _) =>
-                ModConfig.NotifyChanged(ModConfig.AutoScaleStartupMoneyByPlayerCount));
-            ModConfig.StartupMoneyMultiplier.OnEntryValueChanged.Subscribe((_, value) =>
-                ModConfig.OnSpawnMultiplierChanged(logger, value, ModConfig.StartupMoneyMultiplier));
+            ModConfig.StartupMoney.OnEntryValueChanged.Subscribe((_, value) =>
+                OnStartupMoneyChanged(logger, value));
             ModConfig.StartingZone.OnEntryValueChanged.Subscribe((_, value) =>
                 OnStartingZoneChanged(logger, value));
         }
 
-        internal static void RegisterFloatEntries()
+        private static void OnStartupMoneyChanged(MelonLogger.Instance logger, int value)
         {
-            ModConfig.TrackFloatEntry(ModConfig.StartupMoneyMultiplier);
+            if (value < 0)
+            {
+                logger.Warning("StartupMoney must be at least 0; resetting to 0.");
+                ModConfig.StartupMoney.Value = 0;
+                return;
+            }
+
+            ModConfig.NotifyChanged(ModConfig.StartupMoney);
         }
 
         private static void OnStartingZoneChanged(MelonLogger.Instance logger, int value)

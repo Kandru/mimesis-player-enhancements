@@ -8,30 +8,19 @@ Settings here apply **only when a new savegame is created**. They do not apply w
 
 Section: `[MimesisPlayerEnhancement_SavegamePreparation]`
 
-### `StartupMoneyMultiplier`
+### `StartupMoney`
 
-Scales starting maintenance-room currency when a new save is created.
+Starting maintenance-room currency when a new save is created. Absolute dollar amount (not a multiplier).
 
 | Value | Meaning |
 |---|---|
-| `1` | Vanilla starting cash |
-| `2` | Double starting cash |
+| `120` | Vanilla starting cash |
+| `240` | Double vanilla starting cash |
 | `0` | No starting cash |
 
-Default: `1`
+Default: `120`
 
-Does not require `EnableEconomy`.
-
-### `AutoScaleStartupMoneyByPlayerCount`
-
-When on, startup money also uses `EconomyPlayerCountScaleRate` from the Economy section for players above 4.
-
-| Value | Meaning |
-|---|---|
-| `false` | Startup money uses only `StartupMoneyMultiplier` |
-| `true` | Stack player-count scaling on startup money |
-
-Default: `true`
+Does not require `EnableEconomy`. Applied when the host creates the save (lobby size at that moment does not matter).
 
 ### `StartingZone`
 

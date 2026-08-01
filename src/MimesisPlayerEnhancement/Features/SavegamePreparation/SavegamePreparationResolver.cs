@@ -15,24 +15,10 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
                 && ResolveStartingZone() > 1;
         }
 
-        internal static float GetStartupMoneyEffectiveMultiplier(int playerCount)
+        internal static int ResolveStartupMoney()
         {
-            return ComputeStartupMoneyEffectiveMultiplier(
-                ModConfig.StartupMoneyMultiplier.Value,
-                ModConfig.AutoScaleStartupMoneyByPlayerCount.Value,
-                ModConfig.EconomyPlayerCountScaleRate.Value,
-                playerCount);
-        }
-
-        internal static int ScaleStartupMoney(int vanilla, int playerCount)
-        {
-            float effective = GetStartupMoneyEffectiveMultiplier(playerCount);
-            if (effective == FeatureToggleGate.NeutralMultiplier)
-            {
-                return vanilla;
-            }
-
-            return ScalingMath.ScaleCount(vanilla, effective);
+            int configured = ModConfig.StartupMoney.Value;
+            return configured < 0 ? 0 : configured;
         }
 
         internal static int ClampStartingZone(int requested, int maxStageCount)
@@ -44,25 +30,6 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
 
             int cap = maxStageCount < 1 ? ConfigStartingZoneMax : maxStageCount;
             return Math.Min(requested, cap);
-        }
-
-        internal static float ComputeStartupMoneyEffectiveMultiplier(
-            float startupMultiplier,
-            bool autoScaleByPlayerCount,
-            float economyPlayerCountScaleRate,
-            int playerCount)
-        {
-            if (startupMultiplier == FeatureToggleGate.NeutralMultiplier)
-            {
-                return FeatureToggleGate.NeutralMultiplier;
-            }
-
-            float playerScale = ScalingMath.GetPlayerScale(
-                playerCount,
-                autoScaleByPlayerCount,
-                economyPlayerCountScaleRate);
-
-            return startupMultiplier * playerScale;
         }
 
         private static int GetMaxStageCount()

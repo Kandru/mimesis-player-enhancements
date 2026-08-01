@@ -74,7 +74,7 @@ namespace MimesisPlayerEnhancement
                 "ScrapSellValueMultiplier",
                 "ShopBuyPriceMultiplier",
                 "ReinforcePriceMultiplier");
-            MinZeroFloat(SavegamePreparation, "StartupMoneyMultiplier");
+            Int(SavegamePreparation, "StartupMoney", 0);
             IntRange(SavegamePreparation, "StartingZone", 1, 99);
             IntRange(Economy, "ShopDiscountMinPercent", 0, 100);
             IntRange(Economy, "ShopDiscountMaxPercent", 0, 100);

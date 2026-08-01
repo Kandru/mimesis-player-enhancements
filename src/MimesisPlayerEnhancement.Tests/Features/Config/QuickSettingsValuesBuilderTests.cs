@@ -10,11 +10,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         {
             Dictionary<string, Dictionary<string, string>> map = QuickSettingsValuesBuilder.CreateMap();
 
-            QuickSettingsValuesBuilder.Set(map, "MimesisPlayerEnhancement_Economy", "StartupMoneyMultiplier", "2.0");
+            QuickSettingsValuesBuilder.Set(map, "MimesisPlayerEnhancement_Economy", "ScrapSellValueMultiplier", "2.0");
 
             Assert.True(map.TryGetValue("mimesisplayerenhancement_economy", out Dictionary<string, string>? keys));
             Assert.NotNull(keys);
-            Assert.Equal("2.0", keys["startupmoneymultiplier"]);
+            Assert.Equal("2.0", keys["scrapsellvaluemultiplier"]);
         }
 
         [Fact]
@@ -29,15 +29,15 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         }
 
         [Fact]
-        public void SetEconomyMultipliers_formats_floats_invariant()
+        public void SetEconomyMultipliers_formats_values_invariant()
         {
             Dictionary<string, Dictionary<string, string>> map = QuickSettingsValuesBuilder.CreateMap();
 
-            QuickSettingsValuesBuilder.SetEconomyMultipliers(map, 1.5f, 2f, 0.8f, 1.25f);
+            QuickSettingsValuesBuilder.SetEconomyMultipliers(map, 150, 2f, 0.8f, 1.25f);
 
             Dictionary<string, string> savePrep = map["MimesisPlayerEnhancement_SavegamePreparation"];
             Dictionary<string, string> economy = map["MimesisPlayerEnhancement_Economy"];
-            Assert.Equal("1.5", savePrep["StartupMoneyMultiplier"]);
+            Assert.Equal("150", savePrep["StartupMoney"]);
             Assert.Equal("2.0", economy["ScrapSellValueMultiplier"]);
             Assert.Equal("0.8", economy["ShopBuyPriceMultiplier"]);
             Assert.Equal("1.25", economy["ReinforcePriceMultiplier"]);

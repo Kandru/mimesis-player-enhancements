@@ -13,6 +13,7 @@ namespace MimesisPlayerEnhancement
         private const string WeatherSectionId = "MimesisPlayerEnhancement_Weather";
         private const string SpawnScalingSectionId = "MimesisPlayerEnhancement_SpawnScaling";
         private const string MimicTuningSectionId = "MimesisPlayerEnhancement_MimicTuning";
+        private const string SavegamePreparationSectionId = SavegamePreparationConfig.SectionId;
         private const string UiSectionId = UiConfig.SectionId;
 
         private static readonly Dictionary<(string SectionId, string Key), string[]> SelectValuesByEntry =
@@ -437,6 +438,15 @@ namespace MimesisPlayerEnhancement
                     ["BlockCrashReports"] = "crashReports",
                     ["StripCrashReportMetadata"] = "crashReports",
                     ["BlockKraftonGppSdk"] = "thirdParty",
+                };
+            }
+
+            if (sectionId == SavegamePreparationSectionId)
+            {
+                return new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["StartupMoney"] = "startupMoney",
+                    ["StartingZone"] = "startingZone",
                 };
             }
 

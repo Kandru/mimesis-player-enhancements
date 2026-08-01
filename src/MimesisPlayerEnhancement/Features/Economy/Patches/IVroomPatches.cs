@@ -11,12 +11,12 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         {
             try
             {
-                if (__instance is not MaintenanceRoom room)
+                if (__instance is not MaintenanceRoom)
                 {
                     return;
                 }
 
-                EconomyApplier.ApplyStartupMoney(room, ref value);
+                EconomyApplier.ApplyStartupMoney(ref value);
             }
             catch (Exception ex)
             {

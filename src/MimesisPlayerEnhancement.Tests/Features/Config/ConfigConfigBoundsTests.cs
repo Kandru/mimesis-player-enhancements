@@ -1,4 +1,3 @@
-using System.Globalization;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.Config
@@ -6,7 +5,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
     public sealed class ConfigConfigBoundsTests
     {
         [Theory]
-        [InlineData("MimesisPlayerEnhancement_SavegamePreparation", "StartupMoneyMultiplier", "0.0", null)]
+        [InlineData("MimesisPlayerEnhancement_SavegamePreparation", "StartupMoney", "0", null)]
         [InlineData("MimesisPlayerEnhancement_Economy", "ShopDiscountChancePercent", "0", "100")]
         [InlineData("MimesisPlayerEnhancement_LootMultiplicator", "ConvertFakeActorDyingDropChancePercent", "0", "100")]
         [InlineData("MimesisPlayerEnhancement_MorePlayers", "MaxPlayers", "1", null)]
@@ -26,10 +25,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         public void TryGet_is_case_insensitive_for_section_and_key()
         {
             Assert.True(ModConfigEntryBounds.TryGet(
-                "mimesisplayerenhancement_economy",
-                "startupmoneymultiplier",
+                "mimesisplayerenhancement_savegamepreparation",
+                "startupmoney",
                 out ModConfigEntryBound bound));
-            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.Equal("0", bound.MinValue);
         }
 
         [Fact]

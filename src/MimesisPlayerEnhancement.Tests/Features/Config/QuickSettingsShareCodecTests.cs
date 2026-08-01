@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
         public void EncodePayload_TryDecodePayload_round_trips_name_and_values()
         {
             Dictionary<string, Dictionary<string, string>> values = QuickSettingsValuesBuilder.CreateMap();
-            QuickSettingsValuesBuilder.Set(values, "MimesisPlayerEnhancement_SavegamePreparation", "StartupMoneyMultiplier", "2.5");
+            QuickSettingsValuesBuilder.Set(values, "MimesisPlayerEnhancement_SavegamePreparation", "StartupMoney", "240");
             QuickSettingsValuesBuilder.SetBool(values, "MimesisPlayerEnhancement_Economy", "EnableEconomy", true);
 
             string share = QuickSettingsShareCodec.EncodePayload("Picnic", values);
@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Tests.Features.Config
             Assert.True(QuickSettingsShareCodec.TryDecodePayload(share, out QuickSettingsShareCodec.SharePayload payload, out string? error));
             Assert.Null(error);
             Assert.Equal("Picnic", payload.Name);
-            Assert.Equal("2.5", payload.Values["MimesisPlayerEnhancement_SavegamePreparation"]["StartupMoneyMultiplier"]);
+            Assert.Equal("240", payload.Values["MimesisPlayerEnhancement_SavegamePreparation"]["StartupMoney"]);
             Assert.Equal("true", payload.Values["MimesisPlayerEnhancement_Economy"]["EnableEconomy"]);
         }
 

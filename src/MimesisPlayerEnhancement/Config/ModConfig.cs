@@ -107,8 +107,7 @@ namespace MimesisPlayerEnhancement
 
         public static MelonPreferences_Entry<bool> EnableEconomy { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> EconomyPlayerCountScaleRate { get; internal set; } = null!;
-        public static MelonPreferences_Entry<bool> AutoScaleStartupMoneyByPlayerCount { get; internal set; } = null!;
-        public static MelonPreferences_Entry<float> StartupMoneyMultiplier { get; internal set; } = null!;
+        public static MelonPreferences_Entry<int> StartupMoney { get; internal set; } = null!;
         public static MelonPreferences_Entry<int> StartingZone { get; internal set; } = null!;
         public static MelonPreferences_Entry<bool> AutoScaleScrapSellValueByPlayerCount { get; internal set; } = null!;
         public static MelonPreferences_Entry<float> ScrapSellValueMultiplier { get; internal set; } = null!;
@@ -433,7 +432,6 @@ namespace MimesisPlayerEnhancement
             SpawnScalingConfig.RegisterFloatEntries();
             LootMultiplicatorConfig.RegisterFloatEntries();
             EconomyConfig.RegisterFloatEntries();
-            SavegamePreparationConfig.RegisterFloatEntries();
             DungeonTimeConfig.RegisterFloatEntries();
             MimicTuningConfig.RegisterFloatEntries();
             PlayerTuningConfig.RegisterFloatEntries();

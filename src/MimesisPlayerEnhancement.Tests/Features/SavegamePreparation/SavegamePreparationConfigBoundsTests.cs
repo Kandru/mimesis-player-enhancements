@@ -1,4 +1,3 @@
-using System.Globalization;
 using Xunit;
 
 namespace MimesisPlayerEnhancement.Tests.Features.SavegamePreparation
@@ -8,10 +7,11 @@ namespace MimesisPlayerEnhancement.Tests.Features.SavegamePreparation
         private const string SectionId = "MimesisPlayerEnhancement_SavegamePreparation";
 
         [Fact]
-        public void StartupMoneyMultiplier_has_minimum_zero()
+        public void StartupMoney_has_minimum_zero()
         {
-            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "StartupMoneyMultiplier", out ModConfigEntryBound bound));
-            Assert.Equal(0f, float.Parse(bound.MinValue!, CultureInfo.InvariantCulture));
+            Assert.True(ModConfigEntryBounds.TryGet(SectionId, "StartupMoney", out ModConfigEntryBound bound));
+            Assert.Equal("0", bound.MinValue);
+            Assert.Null(bound.MaxValue);
         }
 
         [Fact]

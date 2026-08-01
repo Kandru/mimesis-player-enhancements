@@ -9,11 +9,11 @@ namespace MimesisPlayerEnhancement.Features.SavegamePreparation
             ModLog.Info(Feature, $"Starting zone applied on new save — zone={zone}");
         }
 
-        internal static void InfoStartupMoneyApplied(int vanilla, int scaled, int playerCount, float effectiveMultiplier)
+        internal static void InfoStartupMoneyApplied(int vanilla, int configured)
         {
             ModLog.Info(
                 Feature,
-                $"Startup money applied on new save — vanilla={vanilla}, scaled={scaled}, players={playerCount}, multiplier={effectiveMultiplier:0.###}");
+                $"Startup money applied on new save — vanilla={vanilla}, configured={configured}");
         }
     }
 }

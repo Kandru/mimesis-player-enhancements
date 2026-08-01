@@ -69,9 +69,9 @@ namespace MimesisPlayerEnhancement.Features.Economy
             return scaled;
         }
 
-        internal static void ApplyStartupMoney(MaintenanceRoom room, ref int currency)
+        internal static void ApplyStartupMoney(ref int currency)
         {
-            SavegamePreparationApplier.TryApplyStartupMoney(room, ref currency);
+            SavegamePreparationApplier.TryApplyStartupMoney(ref currency);
         }
 
         internal static void InvalidateScrapScaling()

@@ -1,3 +1,4 @@
+using System.Globalization;
 using MelonLoader;
 
 namespace MimesisPlayerEnhancement.Config.QuickSettings
@@ -137,12 +138,12 @@ namespace MimesisPlayerEnhancement.Config.QuickSettings
 
         internal static void SetEconomyMultipliers(
             Dictionary<string, Dictionary<string, string>> map,
-            float startup,
+            int startupMoney,
             float scrap,
             float shop,
             float reinforce)
         {
-            Set(map, SavegamePreparationConfig.SectionId, "StartupMoneyMultiplier", ModConfigFloatHelper.Format(startup));
+            Set(map, SavegamePreparationConfig.SectionId, "StartupMoney", startupMoney.ToString(CultureInfo.InvariantCulture));
             Set(map, "MimesisPlayerEnhancement_Economy", "ScrapSellValueMultiplier", ModConfigFloatHelper.Format(scrap));
             Set(map, "MimesisPlayerEnhancement_Economy", "ShopBuyPriceMultiplier", ModConfigFloatHelper.Format(shop));
             Set(map, "MimesisPlayerEnhancement_Economy", "ReinforcePriceMultiplier", ModConfigFloatHelper.Format(reinforce));

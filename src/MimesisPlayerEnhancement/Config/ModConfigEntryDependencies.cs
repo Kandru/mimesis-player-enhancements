@@ -60,11 +60,6 @@ namespace MimesisPlayerEnhancement
                 return TryGetEconomyDependency(key, out dependency);
             }
 
-            if (sectionId == SavegamePreparationConfig.SectionId)
-            {
-                return TryGetSavegamePreparationDependency(key, out dependency);
-            }
-
             if (sectionId == "MimesisPlayerEnhancement_DungeonRandomizer")
             {
                 return TryGetDungeonRandomizerDependency(key, out dependency);
@@ -306,18 +301,6 @@ namespace MimesisPlayerEnhancement
             }
         }
 
-        private static bool TryGetSavegamePreparationDependency(string key, out ModConfigEntryDependency dependency)
-        {
-            dependency = default;
-            if (IsAutoScaleMultiplier(key))
-            {
-                dependency = new ModConfigEntryDependency(GetAutoScaleToggleKey(key));
-                return true;
-            }
-
-            return false;
-        }
-
         private static bool TryGetEconomyDependency(string key, out ModConfigEntryDependency dependency)
         {
             dependency = default;
@@ -398,7 +381,6 @@ namespace MimesisPlayerEnhancement
                 ["OtherSpawnMultiplier"] = "AutoScaleOtherSpawnsByPlayerCount",
                 ["MapLootMultiplier"] = "AutoScaleMapLootByPlayerCount",
                 ["DropLootMultiplier"] = "AutoScaleDropLootByPlayerCount",
-                ["StartupMoneyMultiplier"] = "AutoScaleStartupMoneyByPlayerCount",
                 ["ScrapSellValueMultiplier"] = "AutoScaleScrapSellValueByPlayerCount",
                 ["ShopBuyPriceMultiplier"] = "AutoScaleShopBuyPriceByPlayerCount",
                 ["ReinforcePriceMultiplier"] = "AutoScaleReinforcePriceByPlayerCount",
