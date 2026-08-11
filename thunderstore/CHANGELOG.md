@@ -1,5 +1,8 @@
 Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## 26.8.2
+- small bugfix regarding changed patch
+
 ## 26.8.1
 - feature: Added "Savegame Preparation" to allow easy changes of the startup money, starting zone and what upgrades should already be enabled when creating a new savegame
 - improvement: better loading screens
