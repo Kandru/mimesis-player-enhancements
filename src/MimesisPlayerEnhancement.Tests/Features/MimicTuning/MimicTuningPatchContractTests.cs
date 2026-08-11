@@ -22,7 +22,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
 
             Assert.NotNull(method);
             Assert.Equal("Boolean", method.ReturnType.Name);
-            Assert.Single(method.GetParameters());
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("steamID", parameters[0].Name);
+            Assert.Equal("UInt64", parameters[0].ParameterType.Name);
         }
 
         [Fact]
@@ -48,6 +51,22 @@ namespace MimesisPlayerEnhancement.Tests.Features.MimicTuning
             Assert.NotNull(method);
             Assert.Equal("ProtoActor", method.ReturnType.Name);
             Assert.Single(method.GetParameters());
+        }
+
+        [Fact]
+        public void VoiceManager_GetActorBySteamID_exists()
+        {
+            using MimesisMetadataContext context = CreateContext();
+            Type type = context.RequireType("VoiceManager");
+
+            MethodInfo? method = type.GetMethod("GetActorBySteamID", InstanceMember);
+
+            Assert.NotNull(method);
+            Assert.Equal("ProtoActor", method.ReturnType.Name);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Single(parameters);
+            Assert.Equal("steamID", parameters[0].Name);
+            Assert.Equal("UInt64", parameters[0].ParameterType.Name);
         }
 
         [Theory]

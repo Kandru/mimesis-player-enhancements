@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
         internal static class TrySpawnMimicReplyPatch
         {
             [HarmonyPrefix]
-            internal static bool Prefix(VoiceManager __instance, long playerUID, ref bool __result)
+            internal static bool Prefix(VoiceManager __instance, ulong steamID, ref bool __result)
             {
                 try
                 {
@@ -68,7 +68,7 @@ namespace MimesisPlayerEnhancement.Features.MimicTuning.Patches
                         return false;
                     }
 
-                    ProtoActor? actor = __instance.GetActorByPlayerUID(playerUID);
+                    ProtoActor? actor = __instance.GetActorBySteamID(steamID);
                     if (actor == null)
                     {
                         __result = false;
