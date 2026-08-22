@@ -317,6 +317,16 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             ModUiText.SetText(text, ModL10n.Get("saveslots.host_button"));
         }
 
+        internal static void RefreshLocalizedLabels()
+        {
+            if (_menuMode == MenuMode.Extended)
+            {
+                ApplyHostButtonLabel();
+            }
+
+            _panel?.RefreshLocalizedLabels();
+        }
+
 #pragma warning disable CS0618
         private static MainMenu? FindMainMenu() => UnityEngine.Object.FindObjectOfType<MainMenu>();
 #pragma warning restore CS0618

@@ -7,7 +7,9 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private ModUiAssets _assets = ModUiAssets.Fallback;
         private ModScrollList _scrollList = null!;
-        private GameObject? _emptyLabel;
+        private Component? _emptyLabel;
+        private Component? _titleLabel;
+        private GameObject? _backLabelSource;
         private readonly List<SaveSlotPickerRow> _rows = [];
         private SaveSlotPickerRow? _selectedRow;
         private Coroutine? _line3PopulateCoroutine;
@@ -57,20 +59,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
             if (entries.Count == 0)
             {
-                if (_emptyLabel == null)
-                {
-                    _emptyLabel = _scrollList
-                        .CreatePlaceholderLabel(_assets, ModL10n.Get("saveslots.empty_list"))
-                        .gameObject;
-                }
-
-                _emptyLabel.SetActive(true);
+                EnsureEmptyLabel();
+                _emptyLabel!.gameObject.SetActive(true);
                 return;
             }
 
             if (_emptyLabel != null)
             {
-                _emptyLabel.SetActive(false);
+                _emptyLabel.gameObject.SetActive(false);
             }
 
             foreach (SaveSlotEntry entry in entries)
@@ -121,6 +117,33 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             ModButton.SetEnabled(NewTramButton, newTramEnabled, _assets.TextColor, _assets.DisabledTextColor);
         }
 
+        internal void RefreshLocalizedLabels()
+        {
+            string loadLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_LOAD_TRAM");
+            string newLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_NEW_TRAM");
+            ModUiText.SetText(_titleLabel, loadLabel + " / " + newLabel);
+            SetButtonLabel(NewTramButton, newLabel);
+            SetButtonLabel(DeleteButton, ModL10n.Get("saveslots.delete"));
+            SetButtonLabel(LoadButton, loadLabel);
+            SetButtonLabel(BackButton, ReadButtonLabel(_backLabelSource) ?? "Back");
+
+            if (_emptyLabel != null)
+            {
+                ModUiText.SetText(_emptyLabel, ModL10n.Get("saveslots.empty_list"));
+            }
+
+            foreach (SaveSlotPickerRow row in _rows)
+            {
+                if (row == null)
+                {
+                    continue;
+                }
+
+                row.Entry.Line3Text = SaveSlotPickerExtraStats.FormatLine3(row.SlotId);
+                row.RefreshText();
+            }
+        }
+
         private IEnumerator PopulateLine3Coroutine(IReadOnlyList<SaveSlotEntry> entries)
         {
             for (int i = 0; i < entries.Count; i++)
@@ -152,43 +175,37 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private void Build(Transform root, UIPrefab_LoadTram loadTram)
         {
+            _backLabelSource = loadTram.UE_ButtonClose.gameObject;
             ModPage page = ModPage.Create(root, _assets);
             page.ContentBand.SetAsLastSibling();
 
-            string loadLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_LOAD_TRAM");
-            string newLabel = SaveSlotGameAccess.GetL10NText("UI_PREFAB_MAIN_MENU_NEW_TRAM");
-            page.CreateTitle(_assets, loadLabel + " / " + newLabel);
-
+            _titleLabel = page.CreateTitle(_assets, string.Empty);
             _scrollList = ModScrollList.Create(page.ContentBand);
 
             RectTransform actionRow = page.CreateActionButtonRow();
-            NewTramButton = ModButton.Create(
-                actionRow,
-                _assets,
-                newLabel,
-                expandWidth: true,
-                () => NewTramClicked?.Invoke());
-            DeleteButton = ModButton.Create(
-                actionRow,
-                _assets,
-                ModL10n.Get("saveslots.delete"),
-                expandWidth: true,
-                () => DeleteClicked?.Invoke());
-            LoadButton = ModButton.Create(
-                actionRow,
-                _assets,
-                loadLabel,
-                expandWidth: true,
-                () => LoadClicked?.Invoke());
+            NewTramButton = ModButton.Create(actionRow, _assets, string.Empty, expandWidth: true, () => NewTramClicked?.Invoke());
+            DeleteButton = ModButton.Create(actionRow, _assets, string.Empty, expandWidth: true, () => DeleteClicked?.Invoke());
+            LoadButton = ModButton.Create(actionRow, _assets, string.Empty, expandWidth: true, () => LoadClicked?.Invoke());
 
             RectTransform backRow = page.CreateBackButtonRow();
-            string backLabel = ReadButtonLabel(loadTram.UE_ButtonClose.gameObject) ?? "Back";
-            BackButton = ModButton.Create(
-                backRow,
-                _assets,
-                backLabel,
-                expandWidth: false,
-                () => BackClicked?.Invoke());
+            BackButton = ModButton.Create(backRow, _assets, string.Empty, expandWidth: false, () => BackClicked?.Invoke());
+
+            RefreshLocalizedLabels();
+        }
+
+        private void EnsureEmptyLabel()
+        {
+            if (_emptyLabel != null)
+            {
+                return;
+            }
+
+            _emptyLabel = _scrollList.CreatePlaceholderLabel(_assets, ModL10n.Get("saveslots.empty_list"));
+        }
+
+        private static void SetButtonLabel(Button button, string label)
+        {
+            ModUiText.SetText(ModUiText.FindTextComponent(button.gameObject), label);
         }
 
         private void OnRowSelected(SaveSlotPickerRow row)
@@ -228,10 +245,14 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _line3PopulateCoroutine = null;
         }
 
-        private static string? ReadButtonLabel(GameObject buttonRoot)
+        private static string? ReadButtonLabel(GameObject? buttonRoot)
         {
-            Component? text = ModUiText.FindTextComponent(buttonRoot);
-            return ModUiText.GetText(text);
+            if (buttonRoot == null)
+            {
+                return null;
+            }
+
+            return ModUiText.GetText(ModUiText.FindTextComponent(buttonRoot));
         }
 
         private void OnDestroy()

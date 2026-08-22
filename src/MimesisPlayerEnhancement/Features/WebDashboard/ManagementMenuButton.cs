@@ -3,7 +3,7 @@ using UnityEngine;
 namespace MimesisPlayerEnhancement.Features.WebDashboard
 {
     /// <summary>
-    /// Yellow "Management" button on the main menu and ESC menu that opens the web
+    /// Yellow management button on the main menu and ESC menu that opens the web
     /// dashboard in the Steam overlay browser (system browser as fallback).
     /// Shown exactly while the dashboard server is running.
     /// </summary>
@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static readonly Color ManagementYellow = new(1f, 0.8f, 0.1f, 1f);
 
-        private static bool _registered;
+        private static string _listenUrl = "";
 
         internal static void SyncVisibility(bool dashboardRunning, string listenUrl)
         {
@@ -28,9 +28,19 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             }
         }
 
+        internal static void RefreshLocalizedLabels()
+        {
+            if (!string.IsNullOrEmpty(_listenUrl))
+            {
+                Register(_listenUrl);
+            }
+        }
+
         private static void Register(string listenUrl)
         {
             string url = BuildBrowserUrl(listenUrl);
+            _listenUrl = listenUrl;
+            string label = ModL10n.Get("dashboard.management_button");
 
             foreach (MenuKind kind in new[] { MenuKind.MainMenu, MenuKind.InGameMenu })
             {
@@ -41,26 +51,24 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 MenuMirrorRegistry.SetCustomization(
                     kind,
                     Feature,
-                    new MenuCustomization().AddCustom(new CustomMenuButton(ButtonId, "Management", () => OpenDashboard(url))
+                    new MenuCustomization().AddCustom(new CustomMenuButton(ButtonId, label, () => OpenDashboard(url))
                     {
                         LabelColor = ManagementYellow,
                         AfterButtonId = settingsButtonId,
                     }));
             }
-
-            _registered = true;
         }
 
         private static void Unregister()
         {
-            if (!_registered)
+            if (string.IsNullOrEmpty(_listenUrl))
             {
                 return;
             }
 
             MenuMirrorRegistry.ClearCustomization(MenuKind.MainMenu, Feature);
             MenuMirrorRegistry.ClearCustomization(MenuKind.InGameMenu, Feature);
-            _registered = false;
+            _listenUrl = "";
         }
 
         private static void OpenDashboard(string url)

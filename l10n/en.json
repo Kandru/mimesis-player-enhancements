@@ -1454,6 +1454,7 @@
     }
   },
   "dashboard": {
+    "management_button": "Management",
     "title_default": "Mimesis Player Enhancement",
     "brand_title": "Player Enhancements",
     "brand_subtitle": "for Mimesis",

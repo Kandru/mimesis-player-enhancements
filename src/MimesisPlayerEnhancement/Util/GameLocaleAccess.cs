@@ -4,17 +4,17 @@ namespace MimesisPlayerEnhancement.Util
 {
     internal static class GameLocaleAccess
     {
-        private const BindingFlags InstanceFlags =
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         private static readonly MethodInfo? GetL10NTextMethod =
             AccessTools.Method(typeof(Hub), "GetL10NText", [typeof(string), typeof(object[])]);
 
-        private static readonly PropertyInfo? L10NManagerLanguageProperty =
-            typeof(L10NManager).GetProperty("language", InstanceFlags);
+        // game@0.3.1 Assembly-CSharp/Hub.cs:L344
+        private static readonly FieldInfo? HubLcmanField =
+            AccessTools.Field(typeof(Hub), "lcman");
 
         private static volatile string _cachedLanguage = "en";
         private static int _mainThreadId;
+
+        internal static event Action? LanguageChanged;
 
         internal static bool IsMainThread
         {
@@ -48,14 +48,19 @@ namespace MimesisPlayerEnhancement.Util
             return _cachedLanguage;
         }
 
+        internal static void NotifyLanguageChanged()
+        {
+            _cachedLanguage = ResolveLanguageFromUnity();
+            LanguageChanged?.Invoke();
+        }
+
         private static string ResolveLanguageFromUnity()
         {
             try
             {
-                L10NManager? manager = UnityEngine.Object.FindAnyObjectByType<L10NManager>();
-                if (manager != null
-                    && L10NManagerLanguageProperty?.GetValue(manager) is string language
-                    && TryResolveSupportedLocale(language, out string locale))
+                if (Hub.s != null
+                    && HubLcmanField?.GetValue(Hub.s) is L10NManager manager
+                    && TryResolveSupportedLocale(manager.language, out string locale))
                 {
                     return locale;
                 }
@@ -82,15 +87,28 @@ namespace MimesisPlayerEnhancement.Util
                 return false;
             }
 
-            foreach (string available in ModL10n.GetAvailableLocales())
+            if (TryMatchAvailable(normalized, out locale))
             {
-                if (string.Equals(available, normalized, StringComparison.OrdinalIgnoreCase))
+                return true;
+            }
+
+            string prefix = GetLanguagePrefix(normalized);
+            return !string.Equals(prefix, normalized, StringComparison.Ordinal)
+                   && TryMatchAvailable(prefix, out locale);
+        }
+
+        private static bool TryMatchAvailable(string tag, out string locale)
+        {
+            foreach (string candidate in ModL10n.GetAvailableLocales())
+            {
+                if (string.Equals(candidate, tag, StringComparison.OrdinalIgnoreCase))
                 {
-                    locale = available;
+                    locale = candidate;
                     return true;
                 }
             }
 
+            locale = "en";
             return false;
         }
 
@@ -116,14 +134,13 @@ namespace MimesisPlayerEnhancement.Util
                 return string.Empty;
             }
 
-            string normalized = language.Trim().Replace('_', '-').ToLowerInvariant();
-            int dash = normalized.IndexOf('-', StringComparison.Ordinal);
-            if (dash > 0)
-            {
-                normalized = normalized[..dash];
-            }
+            return language.Trim().Replace('-', '_').ToLowerInvariant();
+        }
 
-            return normalized;
+        private static string GetLanguagePrefix(string normalized)
+        {
+            int separator = normalized.IndexOf('_', StringComparison.Ordinal);
+            return separator > 0 ? normalized[..separator] : normalized;
         }
     }
 }

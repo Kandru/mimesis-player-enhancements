@@ -186,6 +186,11 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             _ui.RebuildRows(snapshot.Entries, populateLine3Lazily: true);
         }
 
+        internal void RefreshLocalizedLabels()
+        {
+            _ui?.RefreshLocalizedLabels();
+        }
+
         private void WireUiHandlers(SaveSlotPickerUi ui)
         {
             ui.BackClicked += () =>

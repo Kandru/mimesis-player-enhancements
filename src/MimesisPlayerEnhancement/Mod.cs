@@ -13,7 +13,6 @@ namespace MimesisPlayerEnhancement
     {
         private HarmonyLib.Harmony? _harmony;
         private float _nextEncounterSpawnProcessTime;
-        private float _nextLocaleRefreshTime;
         private bool _isInitializing;
         private static bool _globalConfigFlushed;
         private readonly object _pendingSyncLock = new();
@@ -42,6 +41,8 @@ namespace MimesisPlayerEnhancement
                 }
 
                 SceneScopedConfigPatches.Apply(_harmony);
+                GameLocalePatches.Apply(_harmony);
+                GameLocaleAccess.LanguageChanged += OnGameLanguageChanged;
                 SyncFromConfig(ModConfigChangeInfo.FullReload);
                 LogStartupSummary();
                 ModConfig.Changed += SyncFromConfig;
@@ -50,6 +51,20 @@ namespace MimesisPlayerEnhancement
             finally
             {
                 _isInitializing = false;
+            }
+        }
+
+        private static void OnGameLanguageChanged()
+        {
+            try
+            {
+                ModConfigLocalization.RefreshIfLanguageChanged();
+                TramSavePickerController.RefreshLocalizedLabels();
+                ManagementMenuButton.RefreshLocalizedLabels();
+            }
+            catch (Exception ex)
+            {
+                ModLog.Warn("Locale", $"Failed to refresh UI after language change — {ex.Message}");
             }
         }
 
@@ -129,17 +144,12 @@ namespace MimesisPlayerEnhancement
             }
 
             SessionLifecycle.Tick();
-
-            if (Time.time >= _nextLocaleRefreshTime)
-            {
-                _nextLocaleRefreshTime = Time.time + 2f;
-                ModConfigLocalization.RefreshIfLanguageChanged();
-            }
         }
 
         public override void OnDeinitializeMelon()
         {
             Application.quitting -= OnApplicationQuitting;
+            GameLocaleAccess.LanguageChanged -= OnGameLanguageChanged;
             FlushGlobalConfigOnShutdown();
             SessionLifecycle.NotifySessionEndedIfActive();
 

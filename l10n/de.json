@@ -1320,7 +1320,7 @@
     "sessions": "{count} Sitzung",
     "sessions_plural": "{count} Sitzungen",
     "playtime": "{time} gespielt",
-    "host_button": "Savegames"
+    "host_button": "Spielstände"
   },
   "entities": {
     "player": "Freund",
@@ -1454,6 +1454,7 @@
     }
   },
   "dashboard": {
+    "management_button": "Verwaltung",
     "title_default": "Mimesis Player Enhancement",
     "brand_title": "Player Enhancements",
     "brand_subtitle": "für Mimesis",
