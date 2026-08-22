@@ -7,46 +7,53 @@
 
 ![Mimesis Player Enhancement Logo](images/logo.png)
 
-> [!NOTE]  
-> **Note — AI disclosure.** This project is being built with help of AI. This includes assets like sounds and images...
+> [!NOTE]
+> **AI-made extras.** Sounds, images, and screens in this mod were made with AI. They are **not** part of the base game. You can turn them off in the web dashboard.
 
-> [!CAUTION]  
-> **IMPORTANT** Before complaining to the Developers, remove all plug-ins and test your issues in-game again!
+> [!CAUTION]
+> **Not a game bug?** Uninstall this mod (and other plugins), then test again **before** reporting to the developers. If the problem disappears, it was a mod.
 
-> [!CAUTION]  
-> **Alpha — under heavy development.** This plugin is not finished and things may not work as expected. Please report bugs and share feedback via [GitHub issues](https://github.com/Kandru/mimesis-player-enhancements/issues).  
-> I am not responsible for any damage, data loss, bans, or other problems that come from using this mod. Mods change how the game runs, and things can break.
+> [!CAUTION]
+> **Mod bugs?** Tell me via [GitHub issues](https://github.com/Kandru/mimesis-player-enhancements/issues).
+> I am not responsible for damage, data loss, bans, or other problems. Mods change how the game runs, and things can break.
 
-Mimesis Player Enhancement is a mod for Mimesis that consolidates and extends a lot of tweaks into one maintained package. Hosts can raise the player limits, expand mimic voice recording and persistence (across game sessions), allow players to join at any time, scale spawns/loot/money to match their needs, randomize dungeons, tune player and mimic behavior, control weather, and track session statistics — all from one config file. Clients do not need the mod; only the host does. It also replaces the save-game UI with a scrollable picker (up to 99 manual slots) and always shows the installed mod version in the main and in-game menus.
+Host-side toolkit for **Mimesis**. Friends join as usual — **only the host needs the mod**.
+
+Bigger lobbies (past 4 players), join between dungeon runs, and more mimic voices that persist across saves. Scale enemies, loot, money, and dungeon time with lobby size. Tune mimic replay/inventory/possession and player speed, stamina, and carry weight. Randomize dungeons, control weather, and start new saves with chosen cash, zone, and tram upgrades. Per-save stats and leaderboards. Optional privacy blocks for telemetry, replays, and crash reports.
+
+On your PC: a savegame menu with up to 99 savegames, extra HUD (spectator list, damage numbers, FPS vitals), plus custom **tram disco-ball music** and **dungeon landing sounds**.
+
+**Settings live in the web dashboard** (game must be running): [http://127.0.0.1:8001](http://127.0.0.1:8001)  
+Lobby, live minimap, leaderboards, kick/ban, and every feature toggle — per save or globally. You can also edit the config file; most people never need to.
 
 Tested with **MIMESIS 0.3.1** and **MelonLoader 0.7.3**.
 
 ## Features
 
-Most features only need to be installed on the **host** — friends can join without the mod. See the **[Wiki](docs/wiki/README.md)** for detailed explanations of each feature and sub-feature.
+See the **[Wiki](docs/wiki/README.md)** for details on each feature.
 
-| Feature | What it does | Who needs the mod? |
-|---------|--------------|-------------------|
-| [More Players](docs/wiki/features/more-players.md) | Play with larger groups beyond the four-player limit | Host only |
-| [More Voices](docs/wiki/features/more-voices.md) | Let mimics remember many more player voice lines | Host only |
-| [Persistence](docs/wiki/features/persistence.md) | Keep mimic voice recordings across gaming sessions | Host only |
-| [Join Anytime](docs/wiki/features/join-anytime.md) | Let friends join at the service station or tram between dungeons | Host only |
-| [User Interface](docs/wiki/features/user-interface.md) | Save picker, HUD overlays, damage effects, FPS UI, loading screens, landing sounds | Local only |
-| [Custom Assets](docs/wiki/features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Local only |
-| [Privacy](docs/wiki/features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local only |
-| [Statistics](docs/wiki/features/statistics.md) | Track deaths, kills, play time, and more per save | Host only |
-| [Web Dashboard](docs/wiki/features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
-| [Player Announcements](docs/wiki/features/player-announcements.md) | On-screen tips for dungeon settings, bosses, and death stats | Host only |
-| [Spawn Scaling](docs/wiki/features/spawn-scaling.md) | More or fewer enemies and traps in dungeons | Host only |
-| [Loot Multiplicator](docs/wiki/features/loot-multiplicator.md) | Scale map loot and enemy drops; filter items; convert mimic decoys to real loot | Host only |
-| [Economy](docs/wiki/features/economy.md) | Adjust starting cash, scrap value, shop prices, and currency retention | Host only |
-| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra time inside the dungeon when you have more players | Host only |
-| [Mimic Tuning](docs/wiki/features/mimic-tuning.md) | Tune mimic voice frequency, inventory copy, and possession timing | Host only |
-| [Player Tuning](docs/wiki/features/player-tuning.md) | Change movement speed, stamina, and carry weight (collision pass-through is local per client) | Host only |
-| [Dungeon Randomizer](docs/wiki/features/dungeon-randomizer.md) | Randomize dungeons, map variants, and procedural map flavor (24 curated layout styles) | Host only |
-| [Weather](docs/wiki/features/weather.md) | Fixed, cycling, or vanilla weather | Host only |
+| Feature | In short | Who? |
+|---------|----------|------|
+| [More Players](docs/wiki/features/more-players.md) | Raise the 4-player cap (e.g. 32) | Host |
+| [More Voices](docs/wiki/features/more-voices.md) | Mimics keep many more copied player lines | Host |
+| [Persistence](docs/wiki/features/persistence.md) | Those recordings survive quit/reload | Host |
+| [Join Anytime](docs/wiki/features/join-anytime.md) | Friends can join between dungeon runs | Host |
+| [User Interface](docs/wiki/features/user-interface.md) | Savegame menu with up to 99 savegames, extra HUD | Your PC |
+| [Custom Assets](docs/wiki/features/custom-assets.md) | Tram disco-ball music and dungeon landing sounds | Your PC |
+| [Savegame Preparation](docs/wiki/features/savegame-preparation.md) | Starting cash, zone, and tram upgrades on new saves | Host |
+| [Privacy](docs/wiki/features/privacy.md) | Block telemetry, replays, crash reports (off by default) | Your PC |
+| [Statistics](docs/wiki/features/statistics.md) | Deaths, kills, play time, leaderboards per save | Host |
+| [Web Dashboard](docs/wiki/features/web-dashboard.md) | Browser UI for players, map, stats, and settings | Host |
+| [Spawn Scaling](docs/wiki/features/spawn-scaling.md) | More/fewer enemies and traps | Host |
+| [Loot Multiplicator](docs/wiki/features/loot-multiplicator.md) | Scale map loot and enemy drops | Host |
+| [Economy](docs/wiki/features/economy.md) | Starting cash, quota, scrap value, shop prices | Host |
+| [Dungeon Time](docs/wiki/features/dungeon-time.md) | Extra clock time when the lobby is large | Host |
+| [Mimic Tuning](docs/wiki/features/mimic-tuning.md) | Voice replay, decoy inventory, possession timing | Host |
+| [Player Tuning](docs/wiki/features/player-tuning.md) | Speed, stamina, carry weight for the whole lobby | Host |
+| [Dungeon Randomizer](docs/wiki/features/dungeon-randomizer.md) | Random dungeon, layout, variant, and seed | Host |
+| [Weather](docs/wiki/features/weather.md) | Fixed, cycling, or vanilla; set start hour | Host |
 
-**Host only** — only the host must enable it (or needs the mod, if always-on) for the whole lobby to get the effect. Joiners do not need the mod. **Local only** — applies on each player's own client; does not change the lobby for others.
+**Host** — only the host needs the mod; joiners get the effect. **Your PC** — local client only; does not change the lobby for others.
 
 Inspired by community mods like [MorePlayers from NeoMimicry](https://github.com/NeoMimicry/MorePlayers), [MoreVoices from Risikus](https://thunderstore.io/c/mimesis/p/Risikus/More_Voices/), [MimesisPersistence from JoanR](https://github.com/JoanRLopez/MimesisPersistence), and [MimesisJoinAnytime from Shlygly](https://github.com/Shlygly/MimesisJoinAnytime). Thanks for your ideas and initial work :)
 
@@ -103,7 +110,7 @@ You can edit it anytime. The game reloads the file while running; most settings 
 Settings are grouped into TOML sections:
 
 - **`[MimesisPlayerEnhancement]`** — global debug logging
-- **`[MimesisPlayerEnhancement_Ui]`** — local UI preferences (save picker, spectator list, toast duration)
+- **`[MimesisPlayerEnhancement_Ui]`** — local UI preferences (savegame menu, spectator list, toast duration)
 - **`[MimesisPlayerEnhancement_FeatureName]`** — one section per gameplay feature (e.g. `[MimesisPlayerEnhancement_MorePlayers]`)
 
 Each gameplay feature section has its own master toggle plus feature-specific options. The web dashboard can edit global defaults and per-save-slot overrides; Web Dashboard listen settings are cfg-file only.

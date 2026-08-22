@@ -1,4 +1,4 @@
-Hint: this mod is still in Alpha - use at your own risk! These updates can break things that worked before. Still needs extensive testing. In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
+In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
 ## 26.8.3
 - removed the loading screen overlays because people don't understand they come from a plug-in and thinks its from the developers even though I clearly stated that in the Wiki, Readme and this Changelog. So be it. Gone they are. I don't want the developers to be blamed for something they didn't do.
