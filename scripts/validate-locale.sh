@@ -9,8 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "MimesisPlayerEnhancement"
-EN_JSON = ROOT / "l10n" / "en.json"
-DE_JSON = ROOT / "l10n" / "de.json"
+L10N_DIR = ROOT / "l10n"
+EN_JSON = L10N_DIR / "en.json"
 
 METADATA_KEYS = {"_section", "_description", "_groups", "title", "description", "options"}
 
@@ -130,6 +130,47 @@ def validate_locale_tree(path: Path, csharp_entries: dict[str, set[str]]) -> lis
     return errors
 
 
+def validate_translation_parity(locale_path: Path, en_config: dict, errors: list[str]) -> None:
+    locale_name = locale_path.name
+    locale_data = json.loads(locale_path.read_text(encoding="utf-8"))
+    locale_config = locale_data.get("config", {})
+
+    for section_id, section in en_config.items():
+        if not isinstance(section, dict):
+            continue
+        locale_section = locale_config.get(section_id, {})
+        if not isinstance(locale_section, dict):
+            locale_section = {}
+
+        if not locale_section.get("_description"):
+            print(f"warning: {locale_name} missing config.{section_id}._description")
+
+        en_groups = section.get("_groups")
+        if isinstance(en_groups, dict):
+            locale_groups = locale_section.get("_groups")
+            if not isinstance(locale_groups, dict):
+                errors.append(
+                    f"missing config.{section_id}._groups in {locale_name} (present in en.json)"
+                )
+            else:
+                en_group_keys = set(en_groups)
+                locale_group_keys = set(locale_groups)
+                for group_id in sorted(en_group_keys - locale_group_keys):
+                    errors.append(
+                        f"missing config.{section_id}._groups.{group_id} in {locale_name}"
+                    )
+                for group_id in sorted(locale_group_keys - en_group_keys):
+                    errors.append(
+                        f"orphan config.{section_id}._groups.{group_id} in {locale_name}"
+                    )
+
+        for key, value in section.items():
+            if key in METADATA_KEYS or not isinstance(value, dict):
+                continue
+            if key not in locale_section:
+                print(f"warning: {locale_name} missing config.{section_id}.{key}")
+
+
 def main() -> int:
     if not EN_JSON.exists():
         print(f"error: missing {EN_JSON}", file=sys.stderr)
@@ -138,45 +179,15 @@ def main() -> int:
     csharp_entries = scan_csharp_entries()
     errors = validate_locale_tree(EN_JSON, csharp_entries)
 
-    if DE_JSON.exists():
-        de_data = json.loads(DE_JSON.read_text(encoding="utf-8"))
-        en_data = json.loads(EN_JSON.read_text(encoding="utf-8"))
-        en_config = en_data.get("config", {})
-        de_config = de_data.get("config", {})
-
-        for section_id, section in en_config.items():
-            if not isinstance(section, dict):
-                continue
-            de_section = de_config.get(section_id, {})
-            if not de_section.get("_description"):
-                print(f"warning: de.json missing config.{section_id}._description")
-
-            en_groups = section.get("_groups")
-            if isinstance(en_groups, dict):
-                de_groups = de_section.get("_groups")
-                if not isinstance(de_groups, dict):
-                    errors.append(
-                        f"missing config.{section_id}._groups in de.json (present in en.json)"
-                    )
-                else:
-                    en_group_keys = set(en_groups)
-                    de_group_keys = set(de_groups)
-                    missing_in_de = sorted(en_group_keys - de_group_keys)
-                    extra_in_de = sorted(de_group_keys - en_group_keys)
-                    for group_id in missing_in_de:
-                        errors.append(
-                            f"missing config.{section_id}._groups.{group_id} in de.json"
-                        )
-                    for group_id in extra_in_de:
-                        errors.append(
-                            f"orphan config.{section_id}._groups.{group_id} in de.json"
-                        )
-
-            for key, value in section.items():
-                if key in METADATA_KEYS or not isinstance(value, dict):
-                    continue
-                if key not in de_section:
-                    print(f"warning: de.json missing config.{section_id}.{key}")
+    en_data = json.loads(EN_JSON.read_text(encoding="utf-8"))
+    en_config = en_data.get("config", {})
+    translation_files = sorted(
+        path
+        for path in L10N_DIR.glob("*.json")
+        if path.name != "en.json"
+    )
+    for locale_path in translation_files:
+        validate_translation_parity(locale_path, en_config, errors)
 
     if errors:
         print("locale validation failed:", file=sys.stderr)

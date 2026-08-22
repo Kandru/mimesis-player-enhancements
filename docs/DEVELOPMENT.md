@@ -112,7 +112,7 @@ Reference: `Features/ExtendedSaveSlots/` (save slot picker), `Features/WebDashbo
 
 ## Localization
 
-User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale source JSON lives in [`l10n/`](../l10n/) (for example `en.json`, `de.json`); `make debug` / `make release` embed them directly at compile time. Config registration resolves titles and descriptions from the same files — see [TRANSLATIONS.md](TRANSLATIONS.md). Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
+User-facing strings: `ModL10n.Get("key")` with `{named}` placeholders. Locale source JSON lives in [`l10n/`](../l10n/) (for example `en.json`, `de.json`, `es.json`); `make debug` / `make release` embed them directly at compile time. Config registration resolves titles and descriptions from the same files — see [TRANSLATIONS.md](TRANSLATIONS.md). Pick locale via `GameLocaleAccess.GetCurrentLanguage()`.
 
 ## Per-save sidecars
 

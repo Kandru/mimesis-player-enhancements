@@ -1,0 +1,1967 @@
+{
+  "config": {
+    "MimesisPlayerEnhancement": {
+      "_section": "General",
+      "_description": "Opciones globales del mod, incluido el registro de depuración detallado.",
+      "_groups": {
+        "EnableDebugLogging": "Registro de depuración",
+        "UiOverlayDebug": "Vista previa de superposiciones de UI"
+      },
+      "EnableDebugLogging": {
+        "title": "Activar registro de depuración",
+        "description": "Escribe mensajes de diagnóstico adicionales en la consola de MelonLoader. Útil para resolver problemas."
+      },
+      "LastSeenModVersion": {
+        "title": "Última versión del mod vista",
+        "description": "Última versión del mod cuyo changelog confirmaste en el panel web."
+      }
+    },
+    "MimesisPlayerEnhancement_Ui": {
+      "_section": "Interfaz de usuario",
+      "_description": "Selector de partidas ampliado, lista de espectadores escalable y ajustes locales del HUD. Solo se aplica a tu cliente.",
+      "_groups": {
+        "modToasts": "Mensajes del mod",
+        "extendedSaveSlots": "Ranuras de guardado ampliadas",
+        "extendedSpectatorList": "Lista de jugadores espectadores",
+        "extendedInGameMenuPlayerList": "Lista de jugadores del menú en partida",
+        "damageHealthGlow": "Contorno de salud por daño",
+        "floatingDamage": "Números de daño flotantes",
+        "fpsUi": "UI de FPS",
+        "inventorySlotOptimization": "Optimización de ranuras de inventario",
+        "inventoryNumberKeys": "Teclas numéricas de inventario",
+        "roundStartSound": "Sonido de llegada al Dungeon",
+        "discoBallSound": "Música de la bola de discoteca",
+        "loadingWaitPlayerList": "Lista de jugadores durante la carga",
+        "spectatorVoiceBalance": "Balance de voz de espectadores",
+        "voiceNoiseGate": "Puerta de ruido de activación por voz"
+      },
+      "ModToastDurationSeconds": {
+        "title": "Duración de los mensajes (segundos)",
+        "description": "Cuánto tiempo permanecen visibles los mensajes del mod antes de desvanecerse. Los mensajes Vanilla de entrada/salida no cambian (~2 segundos)."
+      },
+      "EnableExtendedSaveSlots": {
+        "title": "Activar ranuras de guardado ampliadas",
+        "description": "Reemplaza los menús separados de nueva partida y cargar del Tram por un único selector de partidas (hasta 99 ranuras manuales)."
+      },
+      "EnableExtendedSpectatorPlayerList": {
+        "title": "Activar lista de espectadores ampliada",
+        "description": "Muestra una lista de espectadores en dos columnas que se adapta a la altura de la pantalla. Primero los jugadores vivos y después los muertos."
+      },
+      "EnableLoadingWaitPlayerList": {
+        "title": "Lista de jugadores durante la carga",
+        "description": "Muestra una lista de jugadores sombreada en la parte inferior mientras se espera a que los demás terminen de cargar."
+      },
+      "EnableExtendedInGameMenuPlayerList": {
+        "title": "Activar lista de menú ampliada",
+        "description": "Fija el botón del código de unión arriba y amplía la lista de jugadores del menú ESC con una barra de desplazamiento cuando sea necesario."
+      },
+      "EnableDamageHealthGlow": {
+        "title": "Activar contorno de salud por daño",
+        "description": "Contornea brevemente a otros jugadores, Mimics y monstruos con un brillo del color de su salud cuando reciben daño — verde si están sanos, rojo si están bajos y rojo sangre al morir. Nunca en tu propio personaje."
+      },
+      "EnableFloatingDamageNumbers": {
+        "title": "Activar números de daño flotantes",
+        "description": "Muestra números de daño flotantes en rojo cuando otros reciben daño. Nunca en tu propio personaje."
+      },
+      "FloatingDamageDurationSeconds": {
+        "title": "Duración de los números de daño (segundos)",
+        "description": "Cuánto tiempo permanecen visibles los números de daño flotantes."
+      },
+      "EnableFpsUi": {
+        "title": "Activar UI de FPS",
+        "description": "Reemplaza la barra de salud de la esquina superior izquierda por valores numéricos de salud y toxicidad junto a la barra rápida."
+      },
+      "EnableFpsUiInventoryNetWorth": {
+        "title": "Activar valor total del inventario",
+        "description": "Muestra el valor de venta total de tu inventario encima de la barra rápida. Funciona con o sin la UI de FPS."
+      },
+      "EnableInventorySlotOptimization": {
+        "title": "Activar optimización de ranuras de inventario",
+        "description": "Visualización de la barra rápida y selección de ranuras solo en el cliente: barra rápida compactada a la izquierda, selección al recoger y selección de la siguiente ranura al soltar. No modifica el inventario del servidor ni a los demás jugadores."
+      },
+      "InventoryPickupSelectMode": {
+        "title": "Selección de ranura al recoger",
+        "description": "Después de recoger un objeto en otra ranura, cambiar a esa ranura.",
+        "options": {
+          "Vanilla": "Vanilla (mantener la ranura actual)",
+          "WeaponsOnly": "Solo armas",
+          "Always": "Seleccionar siempre el objeto recogido"
+        }
+      },
+      "EnableInventorySelectNextOnRemove": {
+        "title": "Seleccionar la siguiente ranura al vaciarse",
+        "description": "Cuando la ranura seleccionada queda vacía (soltar, inodoro, inserción en máquina expendedora), avanza a la siguiente ranura ocupada."
+      },
+      "EnableInventoryNumberKeySelection": {
+        "title": "Teclas numéricas de inventario",
+        "description": "Usa las teclas 1–4 para seleccionar ranuras de inventario en lugar de emotes rápidos. Los emotes se mantienen en la rueda de la tecla Q."
+      },
+      "RoundStartSoundMode": {
+        "title": "Sonido de llegada al Dungeon",
+        "description": "Reemplaza la melodía que suena justo después de que el Tram se detiene. Las bocinas de salida y de fin de partida se mantienen Vanilla.",
+        "options": {
+          "Vanilla": "Vanilla (sonido del juego)",
+          "Random": "Sonido aleatorio",
+          "Specific": "Sonido específico"
+        }
+      },
+      "RoundStartSoundVariant": {
+        "title": "Sonido de llegada",
+        "description": "Sonido que suena cuando el modo es Sonido específico."
+      },
+      "RoundStartSoundRandomPool": {
+        "title": "Conjunto de sonidos de llegada",
+        "description": "Solo en el modo Sonido aleatorio — qué sonidos se pueden elegir. Déjalo vacío para todos los sonidos."
+      },
+      "RoundStartSoundVolume": {
+        "title": "Volumen del sonido de llegada",
+        "description": "Volumen de reproducción de los sonidos personalizados de llegada al Dungeon (modo Aleatorio o Específico). No afecta al efecto de parada del Tram ni al modo Vanilla."
+      },
+      "DiscoBallSoundMode": {
+        "title": "Música de la bola de discoteca",
+        "description": "Reemplaza el bucle que suena cuando se enciende la bola de discoteca del Tram. El clic del botón de la bola de espejos se mantiene Vanilla.",
+        "options": {
+          "Vanilla": "Vanilla (sonido del juego)",
+          "Random": "Sonido aleatorio",
+          "Specific": "Sonido específico"
+        }
+      },
+      "DiscoBallSoundVariant": {
+        "title": "Pista de la bola de discoteca",
+        "description": "Pista que suena cuando el modo es Sonido específico."
+      },
+      "DiscoBallSoundRandomPool": {
+        "title": "Conjunto de pistas de la bola de discoteca",
+        "description": "Solo en el modo Sonido aleatorio — qué pistas se pueden elegir. Déjalo vacío para todas las pistas. La pista elegida se mantiene durante todo el Dungeon."
+      },
+      "DiscoBallSoundVolume": {
+        "title": "Volumen de la bola de discoteca",
+        "description": "Volumen de reproducción de la música personalizada de la bola de discoteca (modo Aleatorio o Específico). No afecta al modo Vanilla."
+      },
+      "SpectatorVoiceBalanceMode": {
+        "title": "Balance de voz de espectadores",
+        "description": "Mientras estás muerto y como espectador, reequilibra el volumen de voz de los jugadores remotos en tu cliente. Baja el volumen de los jugadores vivos para que el chat de los muertos se oiga mejor.",
+        "options": {
+          "Vanilla": "Vanilla (sin cambios)",
+          "SpeechDucking": "Atenuar a los vivos cuando hablan los muertos",
+          "StaticAttenuation": "Atenuar siempre a los vivos"
+        }
+      },
+      "SpectatorVoiceAttenuation": {
+        "title": "Nivel de atenuación de espectador",
+        "description": "Volumen que se mantiene para los jugadores vivos en el modo Atenuar siempre a los vivos."
+      },
+      "SpectatorVoiceDuckLevel": {
+        "title": "Nivel de atenuación temporal de espectador",
+        "description": "Volumen que se mantiene para los jugadores vivos mientras habla un jugador muerto."
+      },
+      "EnableVoiceNoiseGate": {
+        "title": "Puerta de ruido de activación por voz",
+        "description": "Al usar activación por voz o micrófono abierto, ajusta la detección de voz del chat en vivo y la reducción de ruido para evitar activaciones falsas por sonido de fondo."
+      },
+      "VoiceNoiseGateStrength": {
+        "title": "Intensidad de la puerta de ruido",
+        "description": "Con qué agresividad se suprime el ruido de fondo. Los valores más altos usan una detección de voz más estricta y una reducción de ruido más fuerte."
+      }
+    },
+    "MimesisPlayerEnhancement_Privacy": {
+      "_section": "Privacidad",
+      "_description": "Bloquea los datos salientes automáticos de tu cliente de juego. Cada jugador controla esto localmente. Los informes de comentarios que envías tú nunca se bloquean.",
+      "_groups": {
+        "telemetry": "Telemetría de Relu",
+        "replay": "Archivos de repetición",
+        "crashReports": "Informes de fallos",
+        "thirdParty": "Servicios de terceros"
+      },
+      "EnablePrivacy": {
+        "title": "Activar controles de privacidad",
+        "description": "Cuando está activo, las opciones siguientes bloquean las subidas automáticas y el seguimiento. Cuando está inactivo, el comportamiento Vanilla no cambia."
+      },
+      "BlockReluTelemetry": {
+        "title": "Bloquear telemetría de Relu",
+        "description": "Detiene el envío de registros de sesión y de partida a mimesisapi.relugameservice.com."
+      },
+      "BlockReplayUpload": {
+        "title": "Bloquear subida de repeticiones",
+        "description": "Evita que los archivos de repetición se suban al almacenamiento de Relu."
+      },
+      "BlockReplayRecording": {
+        "title": "Bloquear grabación de repeticiones",
+        "description": "Deja de crear archivos de repetición por completo, incluida la captura de voz y de red."
+      },
+      "BlockCrashReports": {
+        "title": "Bloquear informes de fallos",
+        "description": "Desactiva la subida de informes de fallos de Unity."
+      },
+      "StripCrashReportMetadata": {
+        "title": "Eliminar metadatos de fallos",
+        "description": "Cuando los informes de fallos están activos, omite el apodo, el ID de sesión y la semilla del Dungeon. Se oculta mientras los informes de fallos están bloqueados."
+      },
+      "BlockKraftonGppSdk": {
+        "title": "Bloquear el SDK de creadores de Krafton",
+        "description": "Omite el inicio de sesión con código de creador de Krafton al arrancar."
+      }
+    },
+    "MimesisPlayerEnhancement_DungeonRandomizer": {
+      "_section": "Aleatorizador de Dungeon",
+      "_description": "Aleatoriza la elección de Dungeon del Tram, las variantes de mapa y el estilo del mapa procedural.",
+      "_groups": {
+        "dungeonPick": "Selección de Dungeon",
+        "dungeonSeed": "Estilo de diseño del mapa"
+      },
+      "EnableDungeonRandomizer": {
+        "title": "Activar aleatorizador de Dungeon",
+        "description": "Aleatoriza la elección de Dungeon, las variantes de mapa y el estilo de diseño del mapa."
+      },
+      "RandomizeDungeonPick": {
+        "title": "Aleatorizar elección de Dungeon",
+        "description": "Anula qué Dungeon sale sorteado en el Tram."
+      },
+      "DungeonPickPoolMode": {
+        "title": "Modo del conjunto de Dungeons",
+        "description": "Cómo se eligen los Dungeons del conjunto. Consulta las opciones a continuación.",
+        "options": {
+          "WidenVanilla": "Ampliar el ciclo Vanilla",
+          "AllActiveUniform": "Todos los activos (uniforme)"
+        }
+      },
+      "DungeonAllowlist": {
+        "title": "Lista de Dungeons permitidos",
+        "description": "IDs de Dungeon separados por comas. Si se definen, solo se podrán elegir estos Dungeons."
+      },
+      "DungeonBlocklist": {
+        "title": "Lista de Dungeons bloqueados",
+        "description": "IDs de Dungeon separados por comas que se excluirán del conjunto."
+      },
+      "IgnoreDungeonExcludeList": {
+        "title": "Ignorar Dungeons recientes",
+        "description": "Con Ampliar el ciclo Vanilla, permite que los Dungeons jugados recientemente vuelvan a aparecer."
+      },
+      "RandomizeMapVariant": {
+        "title": "Aleatorizar variante de mapa",
+        "description": "Elige las variantes de mapa de forma equitativa en lugar de usar la selección Vanilla."
+      },
+      "DungeonSeedFlavor": {
+        "title": "Estilo de diseño del mapa",
+        "description": "Estilo del mapa procedural. Las opciones que no son Vanilla se eligen entre semillas ya probadas para cada Dungeon.",
+        "options": {
+          "Vanilla": "Vanilla — semilla predeterminada del juego",
+          "Compact": "Compacto — menos salas",
+          "Expansive": "Expansivo — más salas",
+          "ShortMainPath": "Ruta principal corta — eje inicio-meta más corto",
+          "LongMainPath": "Ruta principal larga — eje inicio-meta más largo",
+          "Sprawling": "Extenso — mayor superficie geográfica",
+          "Dense": "Denso — salas concentradas en poco espacio",
+          "Cramped": "Apretado — muchas salas en un espacio reducido",
+          "Linear": "Lineal — ruta principal larga, pocas ramificaciones",
+          "MinimalBranches": "Ramificación mínima — menos salas laterales",
+          "Branching": "Ramificado — muchas rutas laterales",
+          "BroadBranches": "Ramificaciones amplias — muchas alas laterales poco profundas",
+          "Deep": "Profundo — cadenas de ramificaciones más profundas",
+          "Open": "Abierto — muy conectado",
+          "Maze": "Laberíntico — muchos callejones sin salida",
+          "Loopy": "Circular — rutas cíclicas entre salas",
+          "DeadEnds": "Callejones sin salida — muchos pasillos truncados",
+          "TightCorridor": "Pasillo estrecho — pequeño y lineal",
+          "Labyrinth": "Laberinto — grande, ramificado y profundo",
+          "Honeycomb": "Panal — conectado en un espacio compacto",
+          "WideOpen": "Muy abierto — conectado y extendido",
+          "StableCompact": "Compacto estable — fiable y pequeño",
+          "DeepMaze": "Laberinto profundo — ramificaciones profundas con callejones sin salida",
+          "Reliable": "Fiable — generación estable",
+          "Balanced": "Equilibrado — diseño intencionadamente promedio"
+        }
+      }
+    },
+    "MimesisPlayerEnhancement_DungeonTime": {
+      "_section": "Tiempo de Dungeon",
+      "_description": "Amplía los plazos del turno y controla la hora de inicio en el juego y el reloj del Tram.",
+      "_groups": {
+        "startTime": "Hora de inicio"
+      },
+      "EnableDungeonTime": {
+        "title": "Activar tiempo de Dungeon",
+        "description": "Añade tiempo de turno adicional cuando hay más jugadores en la sesión."
+      },
+      "DungeonTimeBaselinePlayerCount": {
+        "title": "Número de jugadores de referencia",
+        "description": "Sin tiempo de turno adicional con este número de jugadores o menos (en Vanilla es 4). El mínimo es 1."
+      },
+      "ExtraShiftSecondsPerPlayerAboveBaseline": {
+        "title": "Tiempo de turno adicional (segundos)",
+        "description": "Segundos reales añadidos por cada jugador por encima de la referencia. El mínimo es 0."
+      },
+      "StartTimePreset": {
+        "title": "Hora de inicio",
+        "description": "Reloj del juego al comenzar el Dungeon; la duración real del turno se escala para que la partida siga terminando cerca de las 24:00.",
+        "options": {
+          "Vanilla": "Vanilla (~10:00 → 24:00, predeterminado)",
+          "Morning": "Mañana (08:00 → 24:00, luminoso)",
+          "Noon": "Mediodía (12:00 → 24:00, mediodía luminoso)",
+          "Dusk": "Atardecer (18:00 → 24:00, puesta de sol)",
+          "Night": "Noche (21:00 → 24:00, oscuro)",
+          "Midnight": "Medianoche (00:00 → 24:00, lo más oscuro)"
+        }
+      },
+      "TimeMultiplier": {
+        "title": "Multiplicador de tiempo",
+        "description": "Ritmo en vivo del reloj real del turno y de su visualización (−5…5). 1 = normal, 0 = congelado, negativo = en retroceso (puede terminar antes o recuperar tiempo). Se aplica de inmediato."
+      },
+      "EnableRealtimeTramClock": {
+        "title": "Reloj del Tram en tiempo real",
+        "description": "Muestra un reloj del Tram en tiempo real."
+      }
+    },
+    "MimesisPlayerEnhancement_Weather": {
+      "_section": "Clima",
+      "_description": "Clima fijo, cíclico o Vanilla durante una partida.",
+      "_groups": {
+        "weatherMode": "Modo de clima",
+        "weatherCycle": "Ciclo de clima"
+      },
+      "EnableWeather": {
+        "title": "Activar clima",
+        "description": "Controla el clima del Dungeon y los ajustes predefinidos del ciclo."
+      },
+      "WeatherMode": {
+        "title": "Modo de clima",
+        "description": "Cómo cambia el clima durante una partida.",
+        "options": {
+          "Vanilla": "Vanilla (programación del juego)",
+          "Fixed": "Fijo (un solo ajuste)",
+          "Cycle": "Cíclico (rotar la lista)"
+        }
+      },
+      "FixedWeatherPreset": {
+        "title": "Clima fijo",
+        "description": "Ajuste de clima cuando el modo es Fijo.",
+        "options": {
+          "Sunny": "Soleado",
+          "Rain": "Lluvia",
+          "HeavyRain": "Lluvia intensa",
+          "Squall": "Chubasco"
+        }
+      },
+      "DisableRandomWeather": {
+        "title": "Desactivar clima aleatorio",
+        "description": "Solo en el modo Vanilla — mantiene los cambios programados pero elimina el clima aleatorio."
+      },
+      "WeatherCyclePresets": {
+        "title": "Ajustes del ciclo",
+        "description": "Solo en el modo Cíclico — nombres de los ajustes separados por comas y en orden (Sunny, Rain, HeavyRain, Squall)."
+      },
+      "WeatherCycleMinDelaySeconds": {
+        "title": "Retardo mínimo del ciclo (segundos)",
+        "description": "Espera más corta antes del siguiente cambio de clima."
+      },
+      "WeatherCycleMaxDelaySeconds": {
+        "title": "Retardo máximo del ciclo (segundos)",
+        "description": "Espera más larga antes del siguiente cambio de clima."
+      }
+    },
+    "MimesisPlayerEnhancement_JoinAnytime": {
+      "_section": "Unirse en cualquier momento",
+      "_description": "Permite que tus amigos se unan después de que la sesión ya haya comenzado.",
+      "EnableJoinAnytime": {
+        "title": "Activar unirse en cualquier momento",
+        "description": "Permite que los jugadores se unan después de que la sesión ya haya comenzado."
+      },
+      "JoinConnectionGraceSeconds": {
+        "title": "Periodo de gracia para unirse (segundos)",
+        "description": "Bloquea la salida del Tram mientras carga un jugador que se está conectando. Los jugadores que no estén listos a tiempo son expulsados (al Host nunca se lo expulsa)."
+      }
+    },
+    "MimesisPlayerEnhancement_LootMultiplicator": {
+      "_section": "Multiplicador de botín",
+      "_description": "Ajusta el botín del mapa y los objetos que sueltan los enemigos; escala según el número de jugadores o filtra tipos de objetos.",
+      "_groups": {
+        "lootFilter": "Filtro de objetos",
+        "playerScaling": "Escalado por jugadores",
+        "mapLoot": "Escalado del botín del mapa",
+        "dropLoot": "Escalado del botín soltado"
+      },
+      "EnableLootMultiplicator": {
+        "title": "Activar multiplicador de botín",
+        "description": "Escala el botín del mapa y el que sueltan los enemigos y, opcionalmente, convierte el botín falso de los Mimics en botín real."
+      },
+      "MapLootMultiplier": {
+        "title": "Multiplicador de botín del mapa",
+        "description": "Multiplicador del presupuesto de botín colocado en el mapa (1 = vanilla, 2 = el doble)."
+      },
+      "DropLootMultiplier": {
+        "title": "Multiplicador de botín soltado",
+        "description": "Multiplicador del botín de enemigos y objetos soltados (1 = vanilla, 2 = el doble)."
+      },
+      "LootItemFilterMode": {
+        "title": "Modo de filtro de objetos",
+        "description": "Qué objetos pueden aparecer en los conjuntos de botín aleatorio. Consulta las opciones a continuación.",
+        "options": {
+          "All": "Todos los objetos",
+          "AllowlistOnly": "Solo lista de permitidos",
+          "BlocklistOnly": "Solo lista de bloqueados"
+        }
+      },
+      "LootAllowlist": {
+        "title": "Lista de botín permitido",
+        "description": "IDs de objeto separados por comas (p. ej. 12345,67890). Solo aparecerán estos objetos cuando el modo de filtro sea Solo lista de permitidos. Consulta docs/LOOT_ITEM_IDS.md para ver la lista completa."
+      },
+      "LootBlocklist": {
+        "title": "Lista de botín bloqueado",
+        "description": "IDs de objeto separados por comas que nunca aparecerán. Se usa cuando el modo de filtro es Solo lista de bloqueados. Consulta docs/LOOT_ITEM_IDS.md para ver la lista completa."
+      },
+      "AutoScaleMapLootBudgetForFilter": {
+        "title": "Escalado del filtro de botín del mapa",
+        "description": "Mantiene el Multiplicador de botín del mapa referido al número de apariciones cuando un filtro solo permite objetos caros o baratos. Solo se aplica cuando hay un filtro activo."
+      },
+      "ConvertFakeActorDyingDropChancePercent": {
+        "title": "Probabilidad de botín falso (porcentaje)",
+        "description": "Probabilidad (0–100) de que los objetos falsos del inventario de un Mimic se conviertan en botín real al morir. 0 = vanilla, 100 = siempre real."
+      },
+      "LootMultiplicatorBaselinePlayerCount": {
+        "title": "Número de jugadores de referencia",
+        "description": "Sin bonificación de botín por jugador con este número de jugadores o menos (en Vanilla es 4). Los multiplicadores por jugador se aplican a partir del siguiente jugador. El mínimo es 1."
+      },
+      "MapLootPerPlayerMultiplier": {
+        "title": "Bonificación de botín del mapa por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "DropLootPerPlayerMultiplier": {
+        "title": "Bonificación de botín soltado por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      }
+    },
+    "MimesisPlayerEnhancement_MimicTuning": {
+      "_section": "Ajuste de Mimics",
+      "_description": "Ajusta la voz, la confianza, la imitación social, la copia de inventario, la posesión, los emotes y la imitación de la bocina de los Mimics.",
+      "_groups": {
+        "mimicVoice": "Voz",
+        "mimicTrust": "Confianza y persecución",
+        "mimicSocial": "Imitación social",
+        "mimicPossession": "Posesión de Mimics",
+        "mimicEmoteProps": "Emotes y objetos",
+        "mimicHorn": "Imitación de la bocina"
+      },
+      "EnableMimicTuning": {
+        "title": "Activar ajuste de Mimics",
+        "description": "Interruptor principal de los subgrupos de ajuste de Mimics."
+      },
+      "MimicVoiceTuningMode": {
+        "title": "Modo de ajuste de voz",
+        "description": "Vanilla mantiene los tiempos de voz del juego. Personalizado usa los ajustes de voz de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "PeriodicVoiceIntervalMultiplier": {
+        "title": "Multiplicador del intervalo ambiental",
+        "description": "Solo en Personalizado: escala las esperas ambientales periódicas entre frases (1 = vanilla). No afecta a los retardos posteriores a una respuesta."
+      },
+      "PlayerVoiceResponseChancePercent": {
+        "title": "Probabilidad de respuesta de voz (%)",
+        "description": "Solo en Personalizado: probabilidad de que un Mimic cercano repita una frase de un jugador después de que hable."
+      },
+      "PlayerVoiceResponseCooldownSeconds": {
+        "title": "Tiempo de espera de respuesta de voz (segundos)",
+        "description": "Solo en Personalizado: segundos mínimos entre respuestas de los Mimics cuando hablas."
+      },
+      "PlayerVoiceResponseDelayMinSeconds": {
+        "title": "Retardo mínimo de respuesta de voz (segundos)",
+        "description": "Solo en Personalizado: pausa más corta antes de que un Mimic responda a lo que dices."
+      },
+      "PlayerVoiceResponseDelayMaxSeconds": {
+        "title": "Retardo máximo de respuesta de voz (segundos)",
+        "description": "Solo en Personalizado: pausa más larga antes de que un Mimic responda. Debe ser ≥ el mínimo."
+      },
+      "PlayerVoiceResponseMaxDistance": {
+        "title": "Alcance de respuesta de voz (m)",
+        "description": "Solo en Personalizado: a qué distancia pueden oírte y responderte los Mimics cuando hablas (vanilla 20)."
+      },
+      "ClipReuseCooldownSeconds": {
+        "title": "Espera para reutilizar un clip (segundos)",
+        "description": "Solo en Personalizado: segundos antes de que el mismo clip de voz pueda volver a reproducirse (vanilla 60)."
+      },
+      "DeathMatchClipReuseCooldownSeconds": {
+        "title": "Espera para reutilizar un clip en DM (segundos)",
+        "description": "Solo en Personalizado: espera para reutilizar clips en zonas de deathmatch (vanilla 3)."
+      },
+      "SpeakAudienceRangeMeters": {
+        "title": "Alcance del público ambiental (m)",
+        "description": "Solo en Personalizado: un jugador debe estar dentro de este alcance para que un Mimic hable por su cuenta (vanilla 15)."
+      },
+      "PostReplyIntervalMode": {
+        "title": "Modo de espera tras una respuesta",
+        "description": "Solo en Personalizado: espera después de que un Mimic te responde (vanilla aleatorio 2–4 s).",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fijo",
+          "Random": "Aleatorio"
+        }
+      },
+      "PostReplyIntervalFixedSeconds": {
+        "title": "Espera fija tras una respuesta (segundos)",
+        "description": "Modo Fijo: segundos de espera después de que un Mimic te responde."
+      },
+      "PostReplyIntervalMinSeconds": {
+        "title": "Espera aleatoria mínima tras una respuesta (segundos)",
+        "description": "Modo Aleatorio: espera más corta tras una respuesta."
+      },
+      "PostReplyIntervalMaxSeconds": {
+        "title": "Espera aleatoria máxima tras una respuesta (segundos)",
+        "description": "Modo Aleatorio: espera más larga tras una respuesta."
+      },
+      "MinRequiredSpeechClips": {
+        "title": "Mínimo de clips preparados",
+        "description": "Solo en Personalizado: clips de jugador ya preparados que se necesitan antes de que los Mimics hablen (vanilla 3)."
+      },
+      "HearOwnVoiceFromMimic": {
+        "title": "Oír tu propia voz en los Mimics",
+        "description": "Solo en Personalizado: si oyes tus propias grabaciones en los Mimics.",
+        "options": {
+          "Vanilla": "Vanilla (normalmente silenciado)",
+          "AlwaysHear": "Oír siempre",
+          "OnlyWhenSingleplayer": "Solo en Lobbies de un jugador"
+        }
+      },
+      "VoiceInitIntervalMode": {
+        "title": "Modo de la primera espera ambiental",
+        "description": "Solo en Personalizado: primera espera ambiental después de que aparece un Mimic.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Aleatorio"
+        }
+      },
+      "VoiceInitIntervalMin": {
+        "title": "Espera inicial mínima (segundos)",
+        "description": "Mínimo de la espera inicial aleatoria (vanilla 4)."
+      },
+      "VoiceInitIntervalMax": {
+        "title": "Espera inicial máxima (segundos)",
+        "description": "Máximo de la espera inicial aleatoria (vanilla 7)."
+      },
+      "VoicePeriodicIntervalMode": {
+        "title": "Modo de espera ambiental periódica",
+        "description": "Solo en Personalizado: esperas ambientales posteriores entre frases.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Aleatorio"
+        }
+      },
+      "VoicePeriodicIntervalMin": {
+        "title": "Espera periódica mínima (segundos)",
+        "description": "Mínimo de la espera periódica aleatoria (vanilla 2)."
+      },
+      "VoicePeriodicIntervalMax": {
+        "title": "Espera periódica máxima (segundos)",
+        "description": "Máximo de la espera periódica aleatoria (vanilla 8)."
+      },
+      "VoiceDeathMatchIntervalMode": {
+        "title": "Modo de espera ambiental en DM",
+        "description": "Solo en Personalizado: esperas ambientales en zonas de deathmatch.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Random": "Aleatorio"
+        }
+      },
+      "VoiceDeathMatchIntervalMin": {
+        "title": "Espera mínima en DM (segundos)",
+        "description": "Mínimo de la espera aleatoria en DM (vanilla 2)."
+      },
+      "VoiceDeathMatchIntervalMax": {
+        "title": "Espera máxima en DM (segundos)",
+        "description": "Máximo de la espera aleatoria en DM (vanilla 8)."
+      },
+      "MimicTrustMode": {
+        "title": "Modo de ajuste de confianza",
+        "description": "Vanilla mantiene la confianza del juego. Personalizado usa los ajustes de confianza y persecución de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "TrustOutdoorMultiplier": {
+        "title": "Multiplicador de confianza en exteriores",
+        "description": "Solo en Personalizado: multiplica los cambios de confianza en exteriores (vanilla 2)."
+      },
+      "TrustLookingDelta": {
+        "title": "Cambio de confianza: mirando",
+        "description": "Solo en Personalizado: cambio de confianza cuando el jugador mira al Mimic (vanilla -3)."
+      },
+      "TrustNotLookingDelta": {
+        "title": "Cambio de confianza: sin mirar",
+        "description": "Solo en Personalizado: cambio de confianza cuando el jugador no mira (vanilla +3)."
+      },
+      "TrustApproachDelta": {
+        "title": "Cambio de confianza: acercándose",
+        "description": "Solo en Personalizado: cambio de confianza cuando el jugador se acerca."
+      },
+      "TrustMaintainDelta": {
+        "title": "Cambio de confianza: manteniendo la distancia",
+        "description": "Solo en Personalizado: cambio de confianza mientras la distancia se mantiene estable."
+      },
+      "TrustWalkAwayDelta": {
+        "title": "Cambio de confianza: alejándose caminando",
+        "description": "Solo en Personalizado: cambio de confianza cuando el jugador se aleja caminando."
+      },
+      "TrustSprintAwayDelta": {
+        "title": "Cambio de confianza: alejándose corriendo",
+        "description": "Solo en Personalizado: cambio de confianza cuando el jugador se aleja corriendo."
+      },
+      "TrustHitDamageMultiplier": {
+        "title": "Multiplicador de confianza por daño recibido",
+        "description": "Solo en Personalizado: impacto en la confianza por cada punto de daño al ser golpeado."
+      },
+      "TrustFriendlyThreshold": {
+        "title": "Umbral de confianza amistosa",
+        "description": "Solo en Personalizado: puntuación de confianza que se considera amistosa (vanilla 90)."
+      },
+      "TrustDistrustThreshold": {
+        "title": "Umbral de desconfianza",
+        "description": "Solo en Personalizado: puntuación de confianza que se considera desconfianza (vanilla 10)."
+      },
+      "TrustScoreValueMode": {
+        "title": "Modo de puntuación de confianza",
+        "description": "Solo en Personalizado: cómo se eligen las puntuaciones de confianza inicial y de comportamiento (0–100 puntos).",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Fijo",
+          "Random": "Aleatorio"
+        }
+      },
+      "TrustInitialFixed": {
+        "title": "Confianza inicial (fija)",
+        "description": "Modo Fijo: puntuación de confianza inicial (vanilla 50)."
+      },
+      "TrustInitialRandomMin": {
+        "title": "Confianza inicial aleatoria mínima",
+        "description": "Modo Aleatorio: valor mínimo del sorteo de confianza inicial."
+      },
+      "TrustInitialRandomMax": {
+        "title": "Confianza inicial aleatoria máxima",
+        "description": "Modo Aleatorio: valor máximo del sorteo de confianza inicial."
+      },
+      "TrustBehaviorFixed": {
+        "title": "Confianza de comportamiento (fija)",
+        "description": "Modo Fijo: umbral de confianza de comportamiento (vanilla 70)."
+      },
+      "TrustBehaviorRandomMin": {
+        "title": "Confianza de comportamiento aleatoria mínima",
+        "description": "Modo Aleatorio: valor mínimo del sorteo de confianza de comportamiento."
+      },
+      "TrustBehaviorRandomMax": {
+        "title": "Confianza de comportamiento aleatoria máxima",
+        "description": "Modo Aleatorio: valor máximo del sorteo de confianza de comportamiento."
+      },
+      "ChaseActivationDistanceMeters": {
+        "title": "Distancia de activación de la persecución (m)",
+        "description": "Solo en Personalizado: distancia a partir de la cual el seguimiento considera que el objetivo está demasiado lejos (vanilla 8)."
+      },
+      "ChaseForceRunDistanceMeters": {
+        "title": "Distancia que fuerza a correr en la persecución (m)",
+        "description": "Solo en Personalizado: distancia que fuerza a correr durante la evaluación de confianza (vanilla 10)."
+      },
+      "MimicSocialMode": {
+        "title": "Modo de imitación social",
+        "description": "Vanilla mantiene la imitación social del juego. Personalizado usa los ajustes de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "MimicRunawayChance": {
+        "title": "Probabilidad de que las criaturas huyan de un Mimic",
+        "description": "Solo en Personalizado: con qué frecuencia huyen otras criaturas cuando ven a un Mimic (0–1, vanilla 0.5)."
+      },
+      "JumpCopyChancePercent": {
+        "title": "Probabilidad de copiar el salto (%)",
+        "description": "Solo en Personalizado: probabilidad de que los Mimics copien el salto de un jugador cercano."
+      },
+      "SlotFollowChangeChancePercent": {
+        "title": "Probabilidad de imitar el cambio de ranura (%)",
+        "description": "Solo en Personalizado: probabilidad de que los Mimics imiten los cambios de ranura de inventario."
+      },
+      "MimicInventoryCopyMode": {
+        "title": "Modo de copia de inventario",
+        "description": "Vanilla usa las reglas del juego. Personalizado usa la regla de elección de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "MimicInventoryCopyPickRule": {
+        "title": "Objetivo de la copia de inventario",
+        "description": "Solo en Personalizado: de qué jugador copian el inventario los Mimics.",
+        "options": {
+          "MinDistance": "Jugador más cercano",
+          "MaxDistance": "Jugador más lejano",
+          "Random": "Jugador aleatorio"
+        }
+      },
+      "EnableMimicPossessionTuning": {
+        "title": "Activar ajuste de posesión",
+        "description": "Ajusta el alcance de la posesión con E, el filtro de BT, la duración y el tiempo de espera."
+      },
+      "RandomizeMimicPossessionDuration": {
+        "title": "Aleatorizar la duración de la posesión",
+        "description": "Sortea la duración del habla entre el mínimo y el máximo en cada posesión."
+      },
+      "MimicPossessionMinTimeSeconds": {
+        "title": "Tiempo mínimo de posesión (segundos)",
+        "description": "Duración del habla más corta cuando se aleatoriza."
+      },
+      "MimicPossessionMaxTimeSeconds": {
+        "title": "Tiempo máximo de posesión (segundos)",
+        "description": "Duración del habla más larga cuando se aleatoriza."
+      },
+      "MimicPossessionCooltimeMultiplier": {
+        "title": "Multiplicador del tiempo de espera de posesión",
+        "description": "Multiplicador del tiempo de espera después de una posesión (1 = vanilla)."
+      },
+      "PossessionRangeMeters": {
+        "title": "Alcance de posesión (m)",
+        "description": "Distancia máxima para poseer un Mimic con E (predeterminado 10)."
+      },
+      "PossessionBtGateMode": {
+        "title": "Filtro de BT para la posesión",
+        "description": "Vanilla requiere BTs en calma. Siempre permite cualquier Mimic vivo que no esté silenciado.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Always": "Siempre"
+        }
+      },
+      "MimicEmotePropsMode": {
+        "title": "Modo de emotes y objetos",
+        "description": "Vanilla mantiene las probabilidades del juego. Personalizado define porcentajes por acción.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "EmoteRespondChancePercent": {
+        "title": "Probabilidad de responder a emotes (%)",
+        "description": "Solo en Personalizado: probabilidad de responder a los emotes de los jugadores."
+      },
+      "EmoteSuggestChancePercent": {
+        "title": "Probabilidad de sugerir emotes (%)",
+        "description": "Solo en Personalizado: probabilidad de sugerir emotes."
+      },
+      "ReactToSprinklerChancePercent": {
+        "title": "Probabilidad de reaccionar a los aspersores (%)",
+        "description": "Solo en Personalizado: probabilidad de reaccionar a los aspersores."
+      },
+      "UseTrapSwitchChancePercent": {
+        "title": "Probabilidad de usar interruptores de trampa (%)",
+        "description": "Solo en Personalizado: probabilidad de usar interruptores de trampa."
+      },
+      "UseChargerChancePercent": {
+        "title": "Probabilidad de usar cargadores (%)",
+        "description": "Solo en Personalizado: probabilidad de usar cargadores."
+      },
+      "UseTransmitterChancePercent": {
+        "title": "Probabilidad de usar transmisores (%)",
+        "description": "Solo en Personalizado: probabilidad de usar transmisores."
+      },
+      "UseShutterSwitchChancePercent": {
+        "title": "Probabilidad de usar interruptores de persiana (%)",
+        "description": "Solo en Personalizado: probabilidad de usar interruptores de persiana."
+      },
+      "HornImitationMode": {
+        "title": "Modo de imitación de la bocina",
+        "description": "Vanilla mantiene la grabación de bocina del juego. Personalizado usa los ajustes de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Custom": "Personalizado"
+        }
+      },
+      "AllowHornImitation": {
+        "title": "Permitir imitación de la bocina",
+        "description": "Solo en Personalizado: si los Mimics pueden reproducir las bocinas del Tram grabadas."
+      },
+      "HornMaxRecordSeconds": {
+        "title": "Grabación máxima de bocina (segundos)",
+        "description": "Solo en Personalizado: duración máxima de una grabación de bocina."
+      },
+      "HornRecordingGapSeconds": {
+        "title": "Pausa entre grabaciones de bocina (segundos)",
+        "description": "Solo en Personalizado: pausa de inactividad antes de iniciar una nueva grabación de bocina."
+      },
+      "HornMaxStoredRecords": {
+        "title": "Máximo de grabaciones de bocina guardadas",
+        "description": "Solo en Personalizado: cuántos patrones de bocina se conservan."
+      }
+    },
+    "MimesisPlayerEnhancement_SavegamePreparation": {
+      "_section": "Preparación de la partida guardada",
+      "_description": "Ajustes que solo se aplican al crear una nueva partida guardada. Configúralos en los ajustes globales antes de empezar una partida nueva.",
+      "_groups": {
+        "startupMoney": "Dinero inicial",
+        "startingZone": "Zona inicial",
+        "upgrades": "Mejoras"
+      },
+      "StartupMoney": {
+        "title": "Dinero inicial",
+        "description": "Dinero inicial de la sala de mantenimiento (120 = vanilla)."
+      },
+      "StartingZone": {
+        "title": "Zona inicial",
+        "description": "Zona (fase) en la que empezar (1 = vanilla, hasta 99). Sin la opción Anular el número máximo de fases de Más jugadores, se limita a la zona 7."
+      },
+      "EnableUpgradeTramHorn": {
+        "title": "Bocina del Tram",
+        "description": "Desbloquea la mejora de la bocina del Tram."
+      },
+      "EnableUpgradeScrapScanner": {
+        "title": "Escáner de chatarra",
+        "description": "Desbloquea la mejora del escáner de chatarra."
+      },
+      "EnableUpgradeTramBooster": {
+        "title": "Propulsor",
+        "description": "Desbloquea la mejora del propulsor del Tram."
+      },
+      "EnableUpgradeTramLight": {
+        "title": "Luz del Tram",
+        "description": "Desbloquea la luz del Tram (bola de discoteca)"
+      }
+    },
+    "MimesisPlayerEnhancement_Economy": {
+      "_section": "Economía",
+      "_description": "Escala el valor de la chatarra, los precios de la tienda y la retención opcional de dinero durante una partida.",
+      "_groups": {
+        "playerScaling": "Escalado por jugadores",
+        "scrapSellValue": "Escalado del valor de la chatarra",
+        "shopBuyPrice": "Escalado de precios de la tienda",
+        "reinforcePrice": "Escalado del precio de refuerzo"
+      },
+      "EnableEconomy": {
+        "title": "Activar economía",
+        "description": "Escala el valor de la chatarra, los precios de la tienda y los costes de refuerzo. Opcionalmente conserva el dinero no gastado entre ciclos."
+      },
+      "ScrapSellValueMultiplier": {
+        "title": "Multiplicador del valor de venta de la chatarra",
+        "description": "Multiplicador del valor de venta de la chatarra (1 = vanilla, 2 = el doble)."
+      },
+      "ShopBuyPriceMultiplier": {
+        "title": "Multiplicador del precio de compra en la tienda",
+        "description": "Multiplicador del precio de compra en la tienda (1 = vanilla, 2 = el doble)."
+      },
+      "ShopDiscountMinPercent": {
+        "title": "Descuento mínimo de la tienda (porcentaje)",
+        "description": "Descuento más bajo cuando se sortea uno (0–100). Solo se usa cuando la probabilidad de descuento es mayor que 0."
+      },
+      "ShopDiscountMaxPercent": {
+        "title": "Descuento máximo de la tienda (porcentaje)",
+        "description": "Descuento más alto cuando se sortea uno (0–100). Debe ser ≥ el mínimo."
+      },
+      "ShopDiscountChancePercent": {
+        "title": "Probabilidad de descuento en la tienda (porcentaje)",
+        "description": "Probabilidad por objeto de la tienda de recibir un descuento entre el mínimo y el máximo (0 = vanilla, 100 = todos los objetos)."
+      },
+      "ReinforcePriceMultiplier": {
+        "title": "Multiplicador del precio de refuerzo",
+        "description": "Multiplicador del precio de refuerzo (1 = vanilla, 2 = el doble)."
+      },
+      "RetainUnspentCurrencyBetweenCycles": {
+        "title": "Conservar el dinero no gastado",
+        "description": "Conserva el dinero de mantenimiento sobrante al partir hacia el siguiente Dungeon. No afecta al coste de reparación del Tram."
+      },
+      "EconomyBaselinePlayerCount": {
+        "title": "Número de jugadores de referencia",
+        "description": "Sin bonificación económica por jugador con este número de jugadores o menos (en Vanilla es 4). Los multiplicadores por jugador se aplican a partir del siguiente jugador. El mínimo es 1."
+      },
+      "ScrapSellValuePerPlayerMultiplier": {
+        "title": "Bonificación del valor de venta de la chatarra por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "ShopBuyPricePerPlayerMultiplier": {
+        "title": "Bonificación del precio de compra en la tienda por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "ReinforcePricePerPlayerMultiplier": {
+        "title": "Bonificación del precio de refuerzo por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      }
+    },
+    "MimesisPlayerEnhancement_MorePlayers": {
+      "_section": "Más jugadores",
+      "_description": "Eleva el límite Vanilla de cuatro jugadores por sesión para grupos más grandes.",
+      "_groups": {
+        "EnableScalingRoundGoals": "Objetivos de ronda escalados"
+      },
+      "EnableMorePlayers": {
+        "title": "Activar más jugadores",
+        "description": "Eleva el límite de jugadores por encima de 4."
+      },
+      "MaxPlayers": {
+        "title": "Máximo de jugadores",
+        "description": "Máximo de jugadores incluyendo al Host (1 = en solitario, 2 = Host + 1, etc.)."
+      },
+      "EnableScalingRoundGoals": {
+        "title": "Activar objetivos de ronda escalados",
+        "description": "Escala la cuota de reparación del Tram según la zona en lugar de limitarla en la fase 5 de Vanilla. Requiere Más jugadores."
+      },
+      "OverrideMaxStageCount": {
+        "title": "Anular el número máximo de fases",
+        "description": "Permite una zona inicial superior a la zona 7. Requiere Más jugadores."
+      },
+      "RoundGoalBasePerZone": {
+        "title": "Base del objetivo de ronda",
+        "description": "Dólares base multiplicados por la curva de zona (la zona 1 con los valores predeterminados ≈ $200)."
+      },
+      "RoundGoalMoneyMultiplier": {
+        "title": "Multiplicador del objetivo de ronda",
+        "description": "Multiplicador global de la cuota de reparación del Tram (1 = solo la fórmula, 2 = el doble)."
+      },
+      "RoundGoalRandomSpreadPercent": {
+        "title": "Variación del objetivo de ronda (porcentaje)",
+        "description": "±% aleatorio en torno a la cuota calculada al salir de mantenimiento."
+      },
+      "RoundGoalCurveExponent": {
+        "title": "Curva del objetivo de ronda",
+        "description": "Curva de crecimiento por zona: 1 = lineal, menos de 1 = más plana en la fase avanzada, más de 1 = más pronunciada."
+      }
+    },
+    "MimesisPlayerEnhancement_MoreVoices": {
+      "_section": "Más voces",
+      "_description": "Guarda muchas más frases de voz grabadas de los jugadores para los Mimics en cada partida.",
+      "_groups": {
+        "voiceLimits": "Límites de voz",
+        "voiceRecording": "Grabación",
+        "EnableVoicePerformanceCache": "Caché de rendimiento"
+      },
+      "EnableMoreVoices": {
+        "title": "Activar más voces",
+        "description": "Guarda más frases de voz grabadas de los jugadores para los Mimics."
+      },
+      "UnifyIndoorOutdoorVoices": {
+        "title": "Unificar voces de interior y exterior",
+        "description": "Comparte el almacenamiento de voces de interior y exterior. El deathmatch se mantiene aparte."
+      },
+      "MaxIndoorVoiceEvents": {
+        "title": "Máximo de voces en interiores",
+        "description": "Máximo de frases de voz guardadas por jugador en las partidas de Dungeon."
+      },
+      "MaxDeathMatchVoiceEvents": {
+        "title": "Máximo de voces en deathmatch",
+        "description": "Máximo de frases de voz guardadas por jugador en deathmatch."
+      },
+      "MaxOutdoorVoiceEvents": {
+        "title": "Máximo de voces en exteriores",
+        "description": "Máximo de frases de voz guardadas por jugador en exteriores."
+      },
+      "RecordVoiceInMaintenance": {
+        "title": "Grabar en mantenimiento",
+        "description": "Graba frases de voz para los Mimics en la sala de mantenimiento."
+      },
+      "RecordVoiceInTram": {
+        "title": "Grabar en el Tram",
+        "description": "Graba frases de voz para los Mimics en la escena de espera del Tram."
+      },
+      "RecordVoiceDuringMimicPossession": {
+        "title": "Grabar durante la posesión",
+        "description": "Sigue grabando mientras un jugador posee a un Mimic."
+      },
+      "EnableVoicePerformanceCache": {
+        "title": "Activar caché de rendimiento",
+        "description": "Almacena en caché los datos de voz para reducir los tirones con grandes conjuntos de voces."
+      },
+      "VoiceClipCacheMaxEntries": {
+        "title": "Tamaño de la caché de voz",
+        "description": "Máximo de clips de voz decodificados que se mantienen en memoria."
+      }
+    },
+    "MimesisPlayerEnhancement_Persistence": {
+      "_section": "Persistencia",
+      "_description": "Guarda y restaura las grabaciones de voz de los Mimics al guardar y cargar.",
+      "EnablePersistence": {
+        "title": "Activar persistencia de voz",
+        "description": "Guarda y restaura las grabaciones de voz de los Mimics al guardar y cargar."
+      }
+    },
+    "MimesisPlayerEnhancement_PlayerAnnouncements": {
+      "_section": "Avisos para el jugador",
+      "_description": "Avisos en pantalla sobre los ajustes del Dungeon, la aparición de jefes y tus estadísticas de muerte.",
+      "ShowPlayerAnnouncements": {
+        "title": "Mostrar mensajes para el jugador",
+        "description": "Muestra avisos sobre los ajustes del Dungeon, la aparición de jefes y tus estadísticas al morir. No reemplaza los mensajes del juego."
+      }
+    },
+    "MimesisPlayerEnhancement_PlayerTuning": {
+      "_section": "Ajuste de jugadores",
+      "_description": "Ajusta la velocidad de movimiento, la resistencia y la capacidad de carga de todos los jugadores de la sesión.",
+      "EnablePlayerTuning": {
+        "title": "Activar ajuste de jugadores",
+        "description": "Escala la velocidad de movimiento, la resistencia y la capacidad de carga de todos. Los clientes no necesitan el mod."
+      },
+      "MoveSpeedMultiplier": {
+        "title": "Multiplicador de velocidad de movimiento",
+        "description": "Velocidad al caminar y al correr (1 = vanilla, 2 = el doble)."
+      },
+      "NoClipSpeedMultiplier": {
+        "title": "Multiplicador de velocidad de Noclip",
+        "description": "Velocidad de vuelo del Noclip del panel en relación con caminar/correr (3 = el triple). Solo mientras Noclip está activo."
+      },
+      "MaxStaminaMultiplier": {
+        "title": "Multiplicador de resistencia máxima",
+        "description": "Resistencia máxima (1 = vanilla, 2 = el doble)."
+      },
+      "StaminaDrainMultiplier": {
+        "title": "Multiplicador de consumo de resistencia",
+        "description": "Coste de resistencia al esprintar (1 = vanilla, 0.5 = la mitad del consumo)."
+      },
+      "StaminaRegenMultiplier": {
+        "title": "Multiplicador de regeneración de resistencia",
+        "description": "Velocidad de recuperación de la resistencia (1 = vanilla, 2 = el doble)."
+      },
+      "StaminaRegenDelayMultiplier": {
+        "title": "Multiplicador del retardo de regeneración de resistencia",
+        "description": "Espera antes de que la resistencia se regenere después de esprintar (1 = vanilla, 0.5 = antes)."
+      },
+      "MaxCarryWeightMultiplier": {
+        "title": "Multiplicador de capacidad de carga",
+        "description": "Capacidad de carga máxima y umbral de sobrecarga (1 = vanilla, 2 = el doble)."
+      },
+      "DisablePlayerCollision": {
+        "title": "Desactivar colisión entre jugadores",
+        "description": "Atraviesa a otros jugadores y Mimics en tu cliente (p. ej. en un Tram abarrotado). Los monstruos y las paredes siguen siendo sólidos."
+      }
+    },
+    "MimesisPlayerEnhancement_SpawnScaling": {
+      "_section": "Escalado de apariciones",
+      "_description": "Escala los presupuestos de aparición de monstruos y trampas por tipo o según el número de jugadores.",
+      "_groups": {
+        "trapRespawn": "Reaparición de trampas",
+        "bonusEncounterTiming": "Apariciones extra de jefes y especiales",
+        "playerScaling": "Escalado por jugadores",
+        "mimicSpawn": "Escalado de aparición de Mimics",
+        "bossSpawn": "Escalado de aparición de jefes",
+        "specialSpawn": "Escalado de apariciones especiales",
+        "trapSpawn": "Escalado de aparición de trampas",
+        "otherSpawn": "Escalado de otras apariciones",
+        "mimicWaveTiming": "Oleadas de Mimics",
+        "gruntWaveTiming": "Oleadas de secuaces",
+        "gruntSpawn": "Escalado de aparición de secuaces"
+      },
+      "EnableSpawnScaling": {
+        "title": "Activar escalado de apariciones",
+        "description": "Escala la aparición de monstruos y trampas por tipo o según el número de jugadores."
+      },
+      "MimicSpawnMultiplier": {
+        "title": "Multiplicador de aparición de Mimics",
+        "description": "Total de Mimics que aparecen por partida, incluidas las oleadas periódicas (1 = vanilla, 2 = el doble)."
+      },
+      "BossSpawnMultiplier": {
+        "title": "Multiplicador de aparición de jefes",
+        "description": "Jefes colocados en el mapa y encuentros extra después de una muerte (1 = vanilla, 2 = el doble)."
+      },
+      "SpecialSpawnMultiplier": {
+        "title": "Multiplicador de apariciones especiales",
+        "description": "Monstruos especiales periódicos y colocados en el mapa (1 = vanilla, 2 = el doble)."
+      },
+      "TrapSpawnMultiplier": {
+        "title": "Multiplicador de aparición de trampas",
+        "description": "Trampas colocadas en el mapa: marcadores alternativos sin usar al cargar y encuentros extra tras activarlas o eliminarlas (1 = vanilla, 2 = el doble)."
+      },
+      "TrapRespawnMode": {
+        "title": "Modo de reaparición de trampas",
+        "description": "Si las trampas del mapa ya eliminadas reaparecen en su marcador. Es independiente de las oleadas de Mimics y secuaces y de las apariciones extra de jefes y especiales. Vanilla usa los datos del Dungeon; Fijo y Aleatorio usan los ajustes de retardo de trampas de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Segundos fijos",
+          "Random": "Segundos aleatorios"
+        }
+      },
+      "TrapRespawnDelaySeconds": {
+        "title": "Retardo de reaparición de trampas (segundos)",
+        "description": "Modo Fijo: segundos después de eliminar una trampa antes de que pueda reaparecer en el marcador."
+      },
+      "TrapRespawnDelayMinSeconds": {
+        "title": "Retardo mínimo de reaparición de trampas (segundos)",
+        "description": "Modo Aleatorio: espera más corta después de eliminar una trampa antes de que pueda reaparecer."
+      },
+      "TrapRespawnDelayMaxSeconds": {
+        "title": "Retardo máximo de reaparición de trampas (segundos)",
+        "description": "Modo Aleatorio: espera más larga después de eliminar una trampa antes de que pueda reaparecer."
+      },
+      "TrapRespawnMinPlayerDistanceMeters": {
+        "title": "Distancia mínima para reaparición de trampas (m)",
+        "description": "Modos Fijo y Aleatorio: retiene la reaparición de la trampa hasta que no haya jugadores dentro de este radio. Se comprueba aproximadamente una vez por segundo. 0 = aparece en cuanto termina el retardo."
+      },
+      "BonusEncounterDelayMinSeconds": {
+        "title": "Retardo mínimo del encuentro extra (segundos)",
+        "description": "Espera más corta después de eliminar un jefe o un especial escalado colocado en el mapa antes de que pueda aparecer un encuentro extra. No se usa para las trampas."
+      },
+      "BonusEncounterDelayMaxSeconds": {
+        "title": "Retardo máximo del encuentro extra (segundos)",
+        "description": "Espera más larga para ese retardo del encuentro extra. No se usa para las trampas."
+      },
+      "BonusEncounterMinPlayerDistanceMeters": {
+        "title": "Distancia mínima del encuentro extra (m)",
+        "description": "Retiene las apariciones extra de jefes y especiales hasta que no haya jugadores dentro de este radio. 0 = aparecen en cuanto termina el retardo. No se usa para las trampas."
+      },
+      "OtherSpawnMultiplier": {
+        "title": "Multiplicador de otras apariciones",
+        "description": "Otros presupuestos de aparición no cubiertos por las categorías anteriores (1 = vanilla, 2 = el doble)."
+      },
+      "SpawnScalingBaselinePlayerCount": {
+        "title": "Número de jugadores de referencia",
+        "description": "Sin bonificación de apariciones por jugador con este número de jugadores o menos (en Vanilla es 4). Los multiplicadores por jugador se aplican a partir del siguiente jugador. El mínimo es 1."
+      },
+      "MimicSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de Mimics por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "BossSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de jefes por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "SpecialSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de especiales por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "TrapSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de trampas por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "OtherSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de otras apariciones por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "GruntSpawnMultiplier": {
+        "title": "Multiplicador de aparición de secuaces",
+        "description": "Apariciones de los monstruos básicos de ambiente del Dungeon (secuaces) (1 = vanilla, 2 = el doble)."
+      },
+      "GruntSpawnPerPlayerMultiplier": {
+        "title": "Bonificación de secuaces por jugador",
+        "description": "Se suma al multiplicador general por cada jugador por encima de la referencia (0.10 = +0.10 por jugador adicional, 0 = sin escalado por jugadores). El mínimo es 0."
+      },
+      "MimicWaveMode": {
+        "title": "Modo de tiempos de las oleadas de Mimics",
+        "description": "Tiempos solo de las oleadas periódicas de aparición ambiental de Mimics. No afecta a las trampas, los jefes, los especiales ni a otros encuentros colocados en el mapa. Vanilla usa los datos del Dungeon; Fijo y Aleatorio usan los ajustes de oleadas de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Segundos fijos",
+          "Random": "Segundos aleatorios"
+        }
+      },
+      "MimicWaveInitialDelaySeconds": {
+        "title": "Retardo de la primera oleada de Mimics (segundos)",
+        "description": "Modo Fijo: segundos desde el inicio del Dungeon hasta la primera oleada de aparición ambiental de Mimics."
+      },
+      "MimicWaveInitialDelayMinSeconds": {
+        "title": "Retardo mínimo de la primera oleada de Mimics (segundos)",
+        "description": "Modo Aleatorio: espera más corta antes de la primera oleada de aparición ambiental de Mimics."
+      },
+      "MimicWaveInitialDelayMaxSeconds": {
+        "title": "Retardo máximo de la primera oleada de Mimics (segundos)",
+        "description": "Modo Aleatorio: espera más larga antes de la primera oleada de aparición ambiental de Mimics."
+      },
+      "MimicWaveIntervalSeconds": {
+        "title": "Intervalo entre oleadas de Mimics (segundos)",
+        "description": "Modo Fijo: segundos entre las siguientes oleadas de aparición ambiental de Mimics."
+      },
+      "MimicWaveIntervalMinSeconds": {
+        "title": "Intervalo mínimo entre oleadas de Mimics (segundos)",
+        "description": "Modo Aleatorio: tiempo más corto entre oleadas de aparición ambiental de Mimics."
+      },
+      "MimicWaveIntervalMaxSeconds": {
+        "title": "Intervalo máximo entre oleadas de Mimics (segundos)",
+        "description": "Modo Aleatorio: tiempo más largo entre oleadas de aparición ambiental de Mimics."
+      },
+      "GruntWaveMode": {
+        "title": "Modo de tiempos de las oleadas de secuaces",
+        "description": "Tiempos solo de las oleadas periódicas de aparición ambiental de secuaces. No afecta a las trampas, los jefes, los especiales ni a otros encuentros colocados en el mapa. Vanilla usa los datos del Dungeon; Fijo y Aleatorio usan los ajustes de oleadas de más abajo.",
+        "options": {
+          "Vanilla": "Vanilla",
+          "Fixed": "Segundos fijos",
+          "Random": "Segundos aleatorios"
+        }
+      },
+      "GruntWaveInitialDelaySeconds": {
+        "title": "Retardo de la primera oleada de secuaces (segundos)",
+        "description": "Modo Fijo: segundos desde el inicio del Dungeon hasta la primera oleada de aparición ambiental de secuaces."
+      },
+      "GruntWaveInitialDelayMinSeconds": {
+        "title": "Retardo mínimo de la primera oleada de secuaces (segundos)",
+        "description": "Modo Aleatorio: espera más corta antes de la primera oleada de aparición ambiental de secuaces."
+      },
+      "GruntWaveInitialDelayMaxSeconds": {
+        "title": "Retardo máximo de la primera oleada de secuaces (segundos)",
+        "description": "Modo Aleatorio: espera más larga antes de la primera oleada de aparición ambiental de secuaces."
+      },
+      "GruntWaveIntervalSeconds": {
+        "title": "Intervalo entre oleadas de secuaces (segundos)",
+        "description": "Modo Fijo: segundos entre las siguientes oleadas de aparición ambiental de secuaces."
+      },
+      "GruntWaveIntervalMinSeconds": {
+        "title": "Intervalo mínimo entre oleadas de secuaces (segundos)",
+        "description": "Modo Aleatorio: tiempo más corto entre oleadas de aparición ambiental de secuaces."
+      },
+      "GruntWaveIntervalMaxSeconds": {
+        "title": "Intervalo máximo entre oleadas de secuaces (segundos)",
+        "description": "Modo Aleatorio: tiempo más largo entre oleadas de aparición ambiental de secuaces."
+      }
+    },
+    "MimesisPlayerEnhancement_Statistics": {
+      "_section": "Estadísticas",
+      "_description": "Registra muertes, bajas, tiempo de juego, encuentros con Mimics y más en cada partida guardada.",
+      "EnableStatistics": {
+        "title": "Activar estadísticas de jugador",
+        "description": "Registra muertes, bajas, tiempo de juego y más en cada ranura de guardado."
+      },
+      "SessionReconnectGraceMinutes": {
+        "title": "Gracia de reconexión (minutos)",
+        "description": "Reutiliza la sesión anterior cuando un jugador se reconecta dentro de este tiempo."
+      },
+      "ShowStatisticsToasts": {
+        "title": "Mostrar mensajes de estadísticas",
+        "description": "Muestra mensajes de estadísticas al entrar o salir y en la introducción de la sesión. No reemplaza los mensajes de conexión del juego."
+      }
+    },
+    "MimesisPlayerEnhancement_WebDashboard": {
+      "_section": "Panel web",
+      "_description": "Vista en el navegador con jugadores, estadísticas, ajustes y moderación mientras el juego está en marcha.",
+      "WebDashboardListenAddress": {
+        "title": "Dirección de escucha",
+        "description": "Dirección de enlace HTTP. Usa 127.0.0.1 para acceso solo local."
+      },
+      "WebDashboardListenPort": {
+        "title": "Puerto de escucha",
+        "description": "Puerto TCP del panel web."
+      }
+    }
+  },
+  "stats": {
+    "session_started": "Se inició una nueva sesión de estadísticas.",
+    "session_resumed": "Sesión de estadísticas reanudada.",
+    "session_resumed_reconnect": "Sesión de estadísticas reanudada (reconexión {count}).",
+    "dungeon_completed": "Ronda de dungeon registrada (ciclo {cycle}).",
+    "intro_version": "v{version}, desarrollado por {author}, descargable en {url}",
+    "no_stats": "aún no hay estadísticas registradas",
+    "summary_separator": " — ",
+    "sessions": "{count} sesiones",
+    "cycles": "{count} ciclos",
+    "survival_wins": "{count} victorias en supervivencia",
+    "left_behind": "{count} veces abandonado",
+    "survival_deaths": "{count} muertes en supervivencia",
+    "deathmatch_wins": "{count} victorias en deathmatch",
+    "deathmatch_deaths": "{count} muertes en deathmatch",
+    "revives": "{count} reanimaciones",
+    "voices_recorded": "{count} voces grabadas",
+    "currency": "{count} de moneda",
+    "playtime_seconds": "{seconds}s de juego",
+    "playtime_hours_minutes": "{hours}h {minutes}m de juego",
+    "playtime_hours": "{hours}h de juego",
+    "playtime_minutes": "{minutes}m de juego",
+    "list_separator": ", "
+  },
+  "announce": {
+    "map_run_empty": "Tu ronda en este mapa: aún no hay actividad registrada.",
+    "map_run_prefix": "Tu ronda en este mapa: {summary}.",
+    "deaths": "{count} muerte",
+    "deaths_plural": "{count} muertes",
+    "wins": "{count} victoria",
+    "wins_plural": "{count} victorias",
+    "left_behind": "{count} veces abandonado",
+    "revives": "{count} reanimación",
+    "revives_plural": "{count} reanimaciones",
+    "monster_kills": "{count} {name} eliminado",
+    "monster_kills_plural": "{count} {name} eliminados",
+    "friends_killed": "{count} amigo eliminado",
+    "friends_killed_plural": "{count} amigos eliminados",
+    "items_carried": "{count} objeto transportado",
+    "items_carried_plural": "{count} objetos transportados",
+    "items_saved": "{count} objeto guardado",
+    "items_saved_plural": "{count} objetos guardados",
+    "mimic_encounters": "{count} encuentro con Mimic",
+    "mimic_encounters_plural": "{count} encuentros con Mimic",
+    "friend_damage": "{count} de daño a amigos",
+    "dungeon_run_prefix": "Esta ronda: {summary}.",
+    "players_count": "{count} jugadores",
+    "boss_spawns": "spawns de jefes",
+    "special_spawns": "spawns especiales",
+    "monster_spawns": "spawns de monstruos",
+    "map_loot": "botín del mapa",
+    "drop_loot": "botín de drops",
+    "quota": "cuota",
+    "scrap_value": "valor de chatarra",
+    "shift_time_bonus": "+{seconds}s de tiempo de turno",
+    "dungeon_randomizer_on": "aleatorizador de dungeon activo",
+    "weather_fixed": "clima: {preset}",
+    "weather_cycle": "clima cambiante",
+    "start_time_preset": "hora de inicio: {preset}",
+    "multiplier_prefix": "{label} {multiplier}",
+    "spawn_appeared": "{entities} aparecieron. ¡Tengan cuidado!",
+    "spawn_join_two": "{first} y {second}",
+    "spawn_join_many": "{rest} y {last}"
+  },
+  "economy": {
+    "tram_leave_cash_kept": "El dinero no gastado se conservará.",
+    "tram_screen_cash_kept": "Se conservarán ${amount} no gastados."
+  },
+  "joinanytime": {
+    "blocked_dungeon": "Aún no se puede partir — otros jugadores siguen en el dungeon.",
+    "blocked_split": "Aún no se puede partir — otros jugadores siguen fuera del tram.",
+    "blocked_connecting": "Aún no se puede partir — un jugador todavía se está conectando.",
+    "late_join_in_maintenance": "en mantenimiento",
+    "late_join_joining_tram": "uniéndose al tram",
+    "late_join_routing_tram": "en ruta al tram",
+    "late_join_awaiting_tram": "esperando la carga del tram"
+  },
+  "saveslots": {
+    "empty_list": "No se encontraron partidas guardadas.",
+    "delete": "Eliminar",
+    "no_statistics": "Aún no hay estadísticas disponibles",
+    "survival_wins": "{count} victorias en supervivencia",
+    "survival_deaths": "{count} muertes en supervivencia",
+    "revives": "{count} reanimaciones",
+    "voice_events": "{count} eventos de voz",
+    "players": "{count} jugador",
+    "players_plural": "{count} jugadores",
+    "sessions": "{count} sesión",
+    "sessions_plural": "{count} sesiones",
+    "playtime": "{time} de juego",
+    "host_button": "Guardados"
+  },
+  "entities": {
+    "player": "amigo",
+    "invisible_mine": "Mina invisible",
+    "sprinkler": "Aspersor",
+    "weight_trap": "Trampa de peso",
+    "repeating_weight_trap": "Trampa de peso repetitiva",
+    "corridor_trap": "Trampa de pasillo",
+    "trap": "Trampa"
+  },
+  "api": {
+    "host_only": "Solo host.",
+    "internal_error": "Error interno del servidor.",
+    "not_found": "No encontrado.",
+    "not_connected": "No conectado a una partida.",
+    "action_queued": "Acción en cola.",
+    "config_not_initialized": "La configuración no está inicializada.",
+    "web_dashboard_readonly": "Los ajustes del panel web no se pueden cambiar desde la interfaz web. Edita el archivo de configuración en su lugar.",
+    "web_dashboard_no_save_override": "Los ajustes del panel web no se pueden sobrescribir por ranura de guardado.",
+    "invalid_value": "Valor no válido.",
+    "invalid_settings_request": "Solicitud de actualización de ajustes no válida.",
+    "invalid_steam_id": "ID de Steam no válido.",
+    "invalid_focus_steam_id": "focusSteamId no válido.",
+    "method_not_allowed": "Método no permitido.",
+    "no_active_save_slot": "No hay ranura de guardado activa.",
+    "player_stats_not_found": "No se encontraron las estadísticas del jugador.",
+    "saved_global": "Guardado en la configuración global.",
+    "saved_save": "Aplicado — usa el guardado del juego para escribirlo en el disco.",
+    "save_slot_not_loaded": "Ranura de guardado no cargada.",
+    "save_override_not_allowed": "Este ajuste no se puede sobrescribir por ranura de guardado.",
+    "save_slot_path_unavailable": "Ruta de la ranura de guardado no disponible.",
+    "unknown_setting": "Ajuste desconocido.",
+    "failed_apply": "No se pudo aplicar el ajuste.",
+    "failed_save_global": "No se pudo guardar la configuración global.",
+    "setting_not_complete": "La actualización del ajuste no se completó.",
+    "unknown_scope": "Ámbito de ajustes desconocido.",
+    "player_kicked": "Jugador expulsado.",
+    "player_banned": "Jugador baneado.",
+    "player_already_banned": "El jugador ya está baneado.",
+    "player_banned_offline": "Jugador baneado (la desconexión pudo fallar si ya estaba desconectado).",
+    "kick_failed": "La expulsión falló.",
+    "ban_failed": "No se pudo agregar el baneo.",
+    "heal_failed": "La curación falló.",
+    "player_healed": "Jugador curado.",
+    "player_respawned": "Jugador reaparecido.",
+    "respawn_failed": "La reaparición falló.",
+    "revive_failed": "La reanimación falló.",
+    "revive_not_allowed": "No se permite reanimar en el estado actual de la sala.",
+    "no_revive_point": "No hay punto de reanimación disponible.",
+    "player_not_dead": "El jugador no está muerto.",
+    "player_still_dying": "El jugador aún está en la secuencia de muerte — reaparición disponible en unos {seconds}s.",
+    "player_dead_use_respawn": "El jugador está muerto. Usa reaparición en su lugar.",
+    "player_not_in_game": "El jugador no está en la partida.",
+    "player_not_found": "Jugador no encontrado.",
+    "player_stats_unavailable": "Estadísticas del jugador no disponibles.",
+    "cannot_moderate_host": "No se puede moderar al jugador host local.",
+    "host_player_unavailable": "El jugador host no está disponible.",
+    "host_cheats_require_alive": "Los trucos de host requieren un jugador host vivo.",
+    "player_cheats_require_alive": "Los trucos de jugador requieren un jugador vivo en la partida.",
+    "player_cheats_require_blind_off": "Desactiva el modo ciego antes de habilitar los trucos de jugador.",
+    "player_godmode_enabled": "Godmode activado.",
+    "player_godmode_disabled": "Godmode desactivado.",
+    "player_noclip_enabled": "Noclip activado.",
+    "player_noclip_disabled": "Noclip desactivado.",
+    "invalid_host_cheats_request": "Solicitud de trucos de host no válida.",
+    "web_dashboard_disabled": "El panel web no está en ejecución.",
+    "session_manager_unavailable": "Gestor de sesión no disponible.",
+    "host_context_unavailable": "Contexto del jugador host no disponible.",
+    "session_id_unavailable": "ID de sesión no disponible.",
+    "unknown_action": "Acción desconocida.",
+    "ban_removed": "Baneo eliminado.",
+    "player_not_banned": "El jugador no estaba baneado.",
+    "timed_out": "Se agotó el tiempo de espera del hilo del juego.",
+    "reset_global": "Restablecido a los valores globales predeterminados.",
+    "reset_defaults": "Restablecido a los valores predeterminados.",
+    "done": "Listo.",
+    "debug_not_ingame": "Únete primero a una sesión de juego.",
+    "debug_not_alive": "Tu jugador debe estar vivo en la partida para usar las vistas previas de superposición de UI.",
+    "debug_unknown_overlay": "Superposición de depuración desconocida.",
+    "debug_overlay_unavailable": "Esta UI no está disponible en este momento.",
+    "invalid_spawn_item_request": "Solicitud de generación de objeto no válida.",
+    "invalid_spawn_monster_request": "Solicitud de generación de monstruo no válida.",
+    "invalid_item": "Objeto desconocido.",
+    "invalid_monster": "Monstruo desconocido.",
+    "invalid_item_percent": "Potencia del objeto no válida.",
+    "item_spawn_failed": "No se pudo generar el objeto.",
+    "monster_spawn_failed": "No se pudo generar el monstruo.",
+    "monster_spawn_blocked": "No hay espacio frente al jugador — hay una pared o una caída en el camino.",
+    "item_spawned_inventory": "Objeto añadido al inventario.",
+    "item_spawned_world": "Inventario lleno — objeto generado frente al jugador.",
+    "monster_spawned": "Monstruo generado a unos metros frente al jugador.",
+    "player_delete_success": "Datos del jugador eliminados.",
+    "player_delete_not_found": "No se encontraron datos guardados para este ID de Steam.",
+    "player_delete_connected": "No se pueden eliminar los datos del jugador mientras está conectado.",
+    "cannot_delete_host": "No se puede eliminar al jugador host local.",
+    "quick_preset_not_found": "Preajuste rápido no encontrado.",
+    "quick_preset_builtin_readonly": "Los preajustes rápidos integrados no se pueden modificar.",
+    "quick_preset_exists": "Ya existe un preajuste de usuario con este ID.",
+    "quick_preset_invalid_id": "ID de preajuste de usuario no válido.",
+    "quick_preset_imported": "Preajuste rápido importado.",
+    "quick_preset_deleted": "Preajuste rápido eliminado.",
+    "quick_share_invalid": "Cadena para compartir no válida.",
+    "quick_share_unsupported_version": "Versión de cadena para compartir no compatible.",
+    "quick_share_empty": "La cadena para compartir no contiene ajustes.",
+    "quick_profile_global_applied": "La partida guardada ahora usa los ajustes globales.",
+    "quick_profile_preset_applied": "Preajuste rápido aplicado a esta partida guardada.",
+    "quick_profile_custom_applied": "La partida guardada cambió a ajustes personalizados."
+  },
+  "quicksettings": {
+    "profile": {
+      "global": "Configuración global",
+      "custom": "Configuración personalizada"
+    },
+    "presets": {
+      "loot_picnic": {
+        "name": "Picnic de botín",
+        "description": "Mucho botín, pocos spawns — para explorar y acumular sin mucho peligro."
+      },
+      "as_intended": {
+        "name": "Como debe ser™",
+        "description": "Jugabilidad vanilla con Más jugadores y Unirse en cualquier momento activados."
+      },
+      "full_house": {
+        "name": "Casa llena",
+        "description": "La mayoría de las funciones activas con +10 % de escalado por jugador por encima de 4."
+      },
+      "abandon_hope": {
+        "name": "Abandonen toda esperanza",
+        "description": "Spawns brutales, objetivos de dinero más altos y fuerte escalado por número de jugadores."
+      }
+    }
+  },
+  "dashboard": {
+    "management_button": "Gestión",
+    "title_default": "Mimesis Player Enhancement",
+    "brand_title": "Player Enhancements",
+    "brand_subtitle": "para Mimesis",
+    "easter_egg_newYear_flavor": "¡Feliz año nuevo!",
+    "easter_egg_christmas_flavor": "¡Jo, jo, jo!",
+    "easter_egg_valentines_flavor": "Comparte el amor.",
+    "easter_egg_starTrek_flavor": "Larga vida y prosperidad.",
+    "easter_egg_piDay_flavor": "π ≈ 3,14159…",
+    "easter_egg_aprilFools_flavor": "Hoy no confíes en nada.",
+    "easter_egg_mayTheFourth_flavor": "Que la fuerza te acompañe.",
+    "easter_egg_towelDay_flavor": "No entres en pánico — lleva una toalla.",
+    "easter_egg_talkLikeAPirate_flavor": "¡Arrr, bribón!",
+    "easter_egg_programmersDay_flavor": "¡Hello, World! (Día 256)",
+    "easter_egg_halloween_flavor": "¡Bu!",
+    "subtitle_api_error": "No se puede acceder a la API del panel",
+    "subtitle_waiting": "Esperando al juego",
+    "subtitle_host": "Host",
+    "subtitle_client": "Cliente",
+    "subtitle_savegame": "Partida guardada {slot}",
+    "nav_game": "Juego",
+    "nav_global_settings": "Ajustes globales",
+    "nav_section_lobby": "Lobby",
+    "nav_section_global": "Global",
+    "settings_group_client": "Cliente",
+    "settings_group_session": "Sesión",
+    "settings_group_balance": "Balance",
+    "settings_group_world": "Mundo",
+    "nav_settings_global": "Ajustes",
+    "nav_statistics": "Estadísticas",
+    "nav_lobby": "Lobby",
+    "nav_donation": "Donación",
+    "nav_changelog": "Changelog",
+    "nav_wiki": "Wiki",
+    "changelog_heading": "Novedades",
+    "changelog_lead": "Actualizaste a la v{version}. Aquí está todo lo que cambió en las versiones recientes.",
+    "changelog_continue": "Continuar",
+    "changelog_acknowledging": "Guardando…",
+    "changelog_ack_failed": "No se pudo guardar la confirmación del changelog.",
+    "changelog_pending_badge": "Nueva actualización — changelog aún no confirmado",
+    "page_desc_changelog": "Cambios recientes del mod y notas de la versión.",
+    "nav_players": "Jugadores",
+    "nav_minimap": "Minimapa",
+    "nav_leaderboard": "Clasificación",
+    "nav_settings": "Ajustes",
+    "nav_lobby_disabled_hint": "Únete a un Lobby para acceder a esta página",
+    "nav_host_only_hint": "Solo host — no disponible como invitado",
+    "home_title": "Wiki",
+    "home_heading": "Mimesis Player Enhancement",
+    "home_lead": "Un mod mantenido para MIMESIS que reúne ajustes de la comunidad y añade funciones propias: Lobbys más grandes, persistencia de voces de Mimic, unirse en cualquier momento, escalado de generación/botín/economía, aleatorización de Dungeon, control del clima, estadísticas de sesión y este panel web — todo configurable desde un mismo lugar. Solo el host necesita tener el mod instalado.",
+    "home_status_connected": "En el Lobby",
+    "home_status_waiting": "No estás en un Lobby",
+    "home_status_hint": "Primero crea o únete a una partida en Mimesis. Este panel se conecta automáticamente cuando entras a un Lobby.",
+    "home_section_web": "Panel web",
+    "home_section_web_lead": "Herramientas dentro del Lobby en tu navegador mientras el juego está en ejecución.",
+    "home_section_mod": "Funciones del mod",
+    "home_section_mod_lead": "Mejoras de juego aplicadas por el host. Los invitados pueden unirse sin instalar el mod.",
+    "home_web_players_title": "Jugadores",
+    "home_web_players_desc": "Mira quién está conectado, consulta los signos vitales y las estadísticas de sesión, y usa las herramientas de moderación del host como expulsar, banear, curar, reaparecer y generar objetos.",
+    "home_web_minimap_title": "Minimapa",
+    "home_web_minimap_desc": "Sigue las posiciones de los jugadores en un mapa del Dungeon en vivo durante las partidas. Los invitados pueden usar el modo ciego para ocultar spoilers.",
+    "home_web_stats_title": "Estadísticas",
+    "home_web_stats_desc": "Explora las clasificaciones por partida guardada y abre estadísticas detalladas de los jugadores a lo largo de las sesiones.",
+    "home_web_settings_title": "Ajustes",
+    "home_web_settings_desc": "Edita los valores predeterminados globales y las sobrescrituras por partida guardada, cambia entre preajustes rápidos y ajusta cada función sin editar el archivo de configuración a mano.",
+    "home_mod_more_players_title": "Más jugadores",
+    "home_mod_more_players_desc": "Aumenta el límite vanilla de cuatro jugadores por sesión para que grupos más grandes puedan jugar juntos.",
+    "home_mod_more_voices_title": "Más voces",
+    "home_mod_more_voices_desc": "Permite que los Mimic almacenen muchas más líneas de voz grabadas de los jugadores por partida.",
+    "home_mod_persistence_title": "Persistencia",
+    "home_mod_persistence_desc": "Conserva las grabaciones de voz de los Mimic al guardar y cargar una partida.",
+    "home_mod_join_anytime_title": "Unirse en cualquier momento",
+    "home_mod_join_anytime_desc": "Permite que tus amigos se unan después de que la sesión ya haya comenzado.",
+    "home_mod_ui_title": "Interfaz de usuario",
+    "home_mod_ui_desc": "Selector de partidas guardadas ampliado, lista de espectadores escalable y duración configurable de los mensajes del mod.",
+    "home_mod_statistics_title": "Estadísticas",
+    "home_mod_statistics_desc": "Registra muertes, bajas, tiempo de juego, encuentros con Mimic y más por partida guardada.",
+    "home_mod_announcements_title": "Anuncios de jugador",
+    "home_mod_announcements_desc": "Avisos en pantalla sobre los ajustes del Dungeon, las apariciones de jefes y las estadísticas personales de muerte.",
+    "home_mod_spawn_scaling_title": "Escalado de generación",
+    "home_mod_spawn_scaling_desc": "Escala los presupuestos de generación de monstruos y trampas por tipo o por número de jugadores.",
+    "home_mod_loot_title": "Multiplicador de botín",
+    "home_mod_loot_desc": "Ajusta cuánto botín aparece en el mapa y cuánto sueltan los enemigos.",
+    "home_mod_economy_title": "Economía",
+    "home_mod_economy_desc": "Ajusta el dinero inicial, las cuotas, el valor de la chatarra, los precios de la tienda y la retención opcional de dinero.",
+    "home_mod_dungeon_time_title": "Tiempo de Dungeon",
+    "home_mod_dungeon_time_desc": "Amplía los plazos del turno y controla la hora de inicio dentro del juego / el reloj del Tram.",
+    "home_mod_mimic_tuning_title": "Ajuste de Mimic",
+    "home_mod_mimic_tuning_desc": "Ajusta la frecuencia de voz de los Mimic, la preferencia al copiar inventarios y los tiempos de posesión.",
+    "home_mod_player_tuning_title": "Ajuste de jugador",
+    "home_mod_player_tuning_desc": "Cambia la velocidad de movimiento, la resistencia y la capacidad de carga.",
+    "home_mod_dungeon_randomizer_title": "Aleatorizador de Dungeon",
+    "home_mod_dungeon_randomizer_desc": "Aleatoriza qué Dungeons aparecen y cómo están distribuidos.",
+    "home_mod_weather_title": "Clima",
+    "home_mod_weather_desc": "Clima fijo, cíclico o vanilla durante una partida.",
+    "page_desc_home": "Ayuda del mod y guías de funciones",
+    "page_desc_donation": "Apoya el desarrollo continuo",
+    "page_desc_global_settings": "Para todas las partidas guardadas",
+    "page_desc_players": "Ver los jugadores conectados",
+    "page_desc_minimap": "Sigue las posiciones en vivo de los jugadores",
+    "page_desc_leaderboard": "Explora las clasificaciones por partida guardada",
+    "page_desc_settings": "Gestiona preajustes rápidos y ajustes",
+    "page_desc_settings_customize": "Ajusta las opciones individuales de cada función",
+    "page_desc_player": "Estadísticas detalladas",
+    "blind_mode": "Modo ciego",
+    "blind_mode_title": "Oculta el estado vivo/muerto, la salud, la toxicidad y las acciones de reaparición para evitar spoilers durante las partidas de Dungeon y deathmatch mientras estás vivo. Inactivo en la bahía de mantenimiento y en la escena del Tram. Se desactiva temporalmente mientras estás muerto para que puedas revisar las estadísticas de los demás.",
+    "god_mode": "Godmode",
+    "god_mode_title": "Activa o desactiva la invulnerabilidad y bloquea la acumulación de toxicidad para este jugador (la curación sigue funcionando).",
+    "noclip": "Noclip",
+    "noclip_title": "Activa o desactiva el movimiento libre para este jugador.",
+    "on": "Activado",
+    "off": "Desactivado",
+    "donation_heading": "Apoya el mod",
+    "donation_lead": "Si disfrutas Mimesis Player Enhancement, una pequeña propina ayuda a mantenerlo — pero nunca es obligatoria.",
+    "donation_why_title": "¿Por qué apoyar?",
+    "donation_reason_time_title": "Tiempo y dedicación",
+    "donation_reason_time": "Los parches, las pruebas y el trabajo de compatibilidad para cada actualización de MIMESIS toman tiempo real.",
+    "donation_reason_ai_title": "IA y herramientas",
+    "donation_reason_ai": "Este proyecto también usa herramientas de IA — las suscripciones y el cómputo no son gratis.",
+    "donation_reason_community_title": "Gratis para todos",
+    "donation_reason_community": "El apoyo ayuda a mantener el mod gratuito y de código abierto para todos.",
+    "donation_cta": "Elige la plataforma que prefieras:",
+    "donation_button_paypal": "Donar con PayPal",
+    "donation_button_kofi": "Apoyar en Ko-fi",
+    "donation_footnote": "De cualquier forma, el mod sigue siendo gratuito y de código abierto.",
+    "waiting_unavailable": "Panel no disponible",
+    "waiting_not_connected": "No conectado",
+    "waiting_api_error": "No se puede acceder a la API del panel. Asegúrate de que el juego esté en ejecución con el mod cargado.",
+    "waiting_connect_hint": "Primero crea o únete a una partida en Mimesis. Este panel se conectará automáticamente cuando estés en una partida.",
+    "players_heading": "Jugadores",
+    "connected_count": "{count} conectados",
+    "late_join_routing": "{count} en enrutamiento de ingreso tardío",
+    "no_players": "No hay jugadores conectados.",
+    "badge_host": "Host",
+    "badge_you": "Tú",
+    "badge_alive": "Vivo",
+    "badge_dead": "Muerto",
+    "badge_banned": "Baneado",
+    "badge_stats": "Estadísticas",
+    "badge_steam": "Steam",
+    "badge_online": "En línea",
+    "badge_dev": "Dev",
+    "badge_dev_verify": "Verificar desarrollador",
+    "dev_verify_line_auth": "Autenticando ID de Steam {steamId}...",
+    "dev_verify_line_patches": "Cargando parches de Harmony...",
+    "dev_verify_line_mod_version": "Versión del mod: {version}",
+    "dev_verify_line_save_slot": "Ranura de guardado: {slot}",
+    "dev_verify_line_sse": "SSE del WebDashboard: conectado",
+    "dev_verify_line_punchline": "git blame: confirmado — este escribió JoinAnytime",
+    "dev_verify_line_confirmed": "DESARROLLADOR VERIFICADO",
+    "dev_verify_ok": "OK",
+    "heal": "Curar",
+    "respawn": "Reaparecer",
+    "kick": "Expulsar",
+    "ban": "Banear",
+    "unban": "Desbanear",
+    "spawn_item": "Dar objeto",
+    "spawn_item_give": "Dar",
+    "spawn_item_percent_option": "{percent}%",
+    "spawn_item_category_consumable": "Consumibles",
+    "spawn_item_category_equipment": "Equipo",
+    "spawn_item_category_miscellany": "Objetos",
+    "spawn_item_category_developer": "Objetos de desarrollo / prueba",
+    "spawn_monster_category_mimic": "Mimics",
+    "spawn_monster_category_boss": "Jefes",
+    "spawn_monster_category_special": "Especiales",
+    "monster_name_mimic_alpha_base": "Mimic alfa",
+    "item_label_2531": "Pistola de pintura (prueba)",
+    "item_label_3001": "Caja de cartuchos de escopeta (prueba)",
+    "item_label_59998": "Prueba de física de proyectiles",
+    "item_label_59999": "Prueba de rayo de proyectiles",
+    "item_label_772030": "Bola de pintura falsa (prueba)",
+    "item_label_775161": "Pulverizador — reducir contaminación (prueba)",
+    "item_label_785161": "Pulverizador — aumentar contaminación (prueba)",
+    "item_label_777777": "Bate de un golpe (prueba DL)",
+    "item_label_10000": "Sonaja dorada (prueba DL)",
+    "item_label_9999": "Objeto de prueba",
+    "session_line_currency": "{count} monedas",
+    "session_line_survival": "{wins}V/{deaths}M/{left}A",
+    "session_line_deathmatch": "{wins}/{deaths} DM V/M",
+    "session_line_revives": "{count} reanimaciones",
+    "session_line_mimics": "{count} Mimics",
+    "session_line_items": "{count} objetos",
+    "session_line_friend_damage": "{count} daño a amigos",
+    "session_line_friends_killed": "{count} amigos eliminados",
+    "vital_health": "Salud",
+    "vital_toxic": "Toxicidad",
+    "leaderboard_host_only": "La clasificación solo está disponible para el host.",
+    "leaderboard_no_data": "Aún no hay datos de clasificación para esta ranura de guardado.",
+    "leaderboard_updated": "Actualizado {time}",
+    "leaderboard_col_player": "Jugador",
+    "leaderboard_col_currency": "Moneda",
+    "leaderboard_col_mimics": "Mimics",
+    "leaderboard_col_items": "Objetos",
+    "leaderboard_col_deaths_revives": "M/R",
+    "leaderboard_col_time": "Tiempo",
+    "leaderboard_col_actions": "Acciones",
+    "minimap_layout_hint": "El diseño del Dungeon aún se está generando o no está disponible. Los marcadores de jugadores aparecerán cuando se conozcan las posiciones.",
+    "previously_connected": "Conectado anteriormente",
+    "connection_label": "Conexión: {label}",
+    "minimap_heading": "Minimapa",
+    "minimap_focus": "Enfocar jugador",
+    "minimap_area": "Área",
+    "minimap_session": "Sesión",
+    "minimap_following": "Siguiendo al jugador",
+    "minimap_no_map_tram": "El jugador enfocado está en el Tram — no hay mapa disponible.",
+    "minimap_no_map": "No hay mapa disponible para esta escena.",
+    "minimap_you_suffix": " (tú)",
+    "leaderboard_heading": "Clasificación",
+    "settings_heading": "Ajustes",
+    "settings_customize_heading": "Personalizar ajustes de la partida guardada",
+    "settings_profile_heading": "Perfil de ajustes de la partida guardada",
+    "settings_profile_intro": "Elige un preajuste rápido para esta ranura de guardado, usa tus valores predeterminados globales o personaliza cada valor.",
+    "settings_profile_current": "Perfil activo",
+    "settings_profile_global_title": "Usar ajustes globales",
+    "settings_profile_global_desc": "Sigue los valores predeterminados de Ajustes globales sin sobrescrituras por partida guardada.",
+    "settings_profile_customize": "Personalizar ajustes",
+    "settings_profile_back": "Volver a los perfiles",
+    "quick_profile_applied": "Perfil de la partida guardada actualizado.",
+    "quick_customize_banner": "Usando el preajuste: {label} — editar cualquier valor cambia esta partida guardada a ajustes personalizados.",
+    "quick_preset_load_placeholder": "Cargar un preajuste…",
+    "quick_preset_load": "Cargar preajuste",
+    "quick_preset_save_new": "Guardar como nuevo preajuste",
+    "quick_preset_overwrite": "Sobrescribir el preajuste seleccionado",
+    "quick_preset_delete": "Eliminar el preajuste seleccionado",
+    "quick_preset_builtin_readonly": "Los preajustes integrados no se pueden cambiar ni eliminar.",
+    "quick_preset_name_prompt": "Nombre del preajuste",
+    "quick_preset_overwrite_prompt": "Nombre del preajuste (sobrescribir el seleccionado)",
+    "quick_preset_saved": "Preajuste \"{name}\" guardado.",
+    "quick_preset_deleted": "Preajuste eliminado.",
+    "quick_preset_delete_confirm": "¿Eliminar el preajuste \"{name}\"?",
+    "quick_preset_imported": "Preajuste importado.",
+    "quick_share_export": "Exportar cadena para compartir",
+    "quick_share_import": "Importar cadena para compartir",
+    "quick_share_export_heading": "Exportar ajustes",
+    "quick_share_import_heading": "Importar ajustes",
+    "quick_share_placeholder": "Pega aquí una cadena para compartir MPE1:…",
+    "quick_share_copy": "Copiar al portapapeles",
+    "quick_share_copied": "Cadena para compartir copiada.",
+    "quick_share_copy_failed": "No se pudo copiar al portapapeles.",
+    "quick_share_close": "Cerrar",
+    "cancel": "Cancelar",
+    "settings_global_heading": "Ajustes globales",
+    "settings_search_label": "Buscar ajustes",
+    "settings_search_placeholder": "Buscar ajustes…",
+    "settings_search_by_placeholder": "Buscar por nombre, clave o valor…",
+    "settings_config_file_label": "Archivo de configuración",
+    "settings_override_file_label": "Archivo de sobrescritura",
+    "settings_intro_profile": "Elige cómo aplica esta ranura de guardado los ajustes del mod. Selecciona un preajuste, usa los valores predeterminados globales o personaliza cada opción por separado.",
+    "settings_intro_save": "Edita los ajustes de la ranura de guardado {slot}. Los valores que coinciden con los predeterminados globales no se almacenan en el archivo de sobrescritura de la partida guardada.",
+    "settings_save_persist_hint": "Los cambios se aplican de inmediato; usa el botón de guardado dentro del juego para escribirlos en el disco.",
+    "settings_no_results": "Ningún ajuste coincide con tu búsqueda.",
+    "settings_loot_filter_budget_hint_on": "Los marcadores de grupos aleatorios usan un presupuesto de valor de chatarra para todo el Dungeon (no un número de apariciones). Con un filtro activo, el escalado automático del presupuesto de botín del mapa para el filtro aumenta ese presupuesto cuando los objetos permitidos valen más, de modo que el multiplicador de botín del mapa siga aumentando cuántos objetos aparecen.",
+    "settings_loot_filter_budget_hint_off": "Los marcadores de grupos aleatorios usan un presupuesto de valor de chatarra para todo el Dungeon. Con un filtro activo y el escalado automático del presupuesto desactivado, las listas de permitidos de alto valor generan menos objetos a menos que aumentes aún más el multiplicador de botín del mapa.",
+    "settings_no_entries": "No se encontraron entradas de configuración.",
+    "settings_reset": "Restablecer",
+    "settings_reset_all": "Restablecer todo",
+    "settings_reset_all_global_title": "Restablecer todo a los valores globales",
+    "settings_reset_all_defaults_title": "Restablecer todo a los valores predeterminados",
+    "settings_default_hint": "Predeterminado: {value}",
+    "settings_global_hint": "Global: {value}",
+    "settings_overridden_badge": "Sobrescrito",
+    "settings_hidden": "Oculto",
+    "settings_keys_count": "{count} claves",
+    "settings_loading_aria": "Cargando ajustes",
+    "picker_search_placeholder": "Buscar por nombre o ID…",
+    "picker_no_results": "Sin coincidencias",
+    "picker_empty_means_all": "Déjalo vacío para permitir todo",
+    "picker_selected_items": "Objetos seleccionados",
+    "picker_remove_item": "Eliminar {label}",
+    "picker_reorder_hint": "Arrastra para reordenar — {label}",
+    "picker_catalog_unavailable": "Catálogo no disponible — conéctate a una sesión de juego con datos cargados.",
+    "settings_token_placeholder": "Buscar por nombre o ID…",
+    "settings_token_remove": "Eliminar {label}",
+    "settings_local_badge": "Local",
+    "settings_local_hint": "Este ajuste solo afecta a tu cliente de juego local.",
+    "settings_host_badge": "Host",
+    "settings_host_badge_hint": "Este ajuste solo afecta a la sesión de juego del host.",
+    "settings_host_only": "Solo host",
+    "settings_host_only_hint": "Solo el host puede cambiar este ajuste.",
+    "settings_guest_readonly": "Estás conectado como invitado. Los ajustes exclusivos del host se muestran como referencia, pero no se pueden cambiar.",
+    "debug_overlays_heading": "Vista previa de superposición de UI",
+    "debug_overlay_spectator": "Lista de espectadores",
+    "debug_overlay_spectator_desc": "Fuerza la visualización de la lista de jugadores espectadores llena de jugadores ficticios para comprobar el diseño.",
+    "debug_overlay_loading_wait": "Lista de espera de carga",
+    "debug_overlay_loading_wait_desc": "Fuerza la visualización de la lista inferior de jugadores de la fase de espera llena de jugadores ficticios para comprobar el diseño.",
+    "debug_overlay_esc_menu": "Lista del menú ESC",
+    "debug_overlay_esc_menu_desc": "Fuerza la visualización de la lista de jugadores del menú dentro del juego llena de jugadores ficticios para comprobar el diseño.",
+    "debug_overlay_survival_result": "Resultado de supervivencia / lista del Tram",
+    "debug_overlay_survival_result_desc": "Fuerza la visualización de la cuadrícula de jugadores del resultado de supervivencia llena de jugadores ficticios para comprobar el diseño.",
+    "settings_sections_nav": "Grupos de ajustes",
+    "settings_unavailable": "Ajustes no disponibles.",
+    "settings_overridden": "Sobrescrito",
+    "failed_load": "No se pudieron cargar los datos",
+    "dialog_cancel": "Cancelar",
+    "dialog_confirm": "Confirmar",
+    "confirm_action_title": "¿{action} al jugador?",
+    "confirm_action_message": "{name} ({steamId})",
+    "confirm_delete_title": "¿Eliminar los datos del jugador?",
+    "confirm_delete": "Eliminar",
+    "confirm_moderation": "¿Confirmar {action} para el jugador {steamId}?",
+    "delete_player": "Eliminar datos del jugador",
+    "confirm_delete_player": "¿Eliminar permanentemente todos los datos almacenados de {name} ({steamId})? Esto borra las estadísticas, las grabaciones de voz y los nombres mostrados.",
+    "give_items": "Objetos",
+    "give_item_title": "Dar objeto",
+    "give_item_recipients": "Destinatarios",
+    "give_item_select": "Objeto",
+    "give_item_submit": "Dar",
+    "give_item_submit_and_close": "Dar y cerrar",
+    "give_item_none_selected": "Selecciona al menos un jugador",
+    "give_item_result": "Objeto entregado a {count} jugador(es)",
+    "spawn_monsters": "Monstruos",
+    "spawn_monster_title": "Generar monstruo",
+    "spawn_monster_recipients": "Destinatarios",
+    "spawn_monster_select": "Monstruo",
+    "spawn_monster_submit": "Generar",
+    "spawn_monster_submit_and_close": "Generar y cerrar",
+    "spawn_monster_none_selected": "Selecciona al menos un jugador",
+    "spawn_monster_result": "Monstruo generado para {count} jugador(es)",
+    "late_join_prefix": "Ingreso tardío: {label}",
+    "late_join_attempts": "{count} intentos",
+    "ping_unknown": "Desconocido",
+    "grade_broken": "Roto",
+    "grade_terrible": "Terrible",
+    "grade_slow": "Lento",
+    "grade_medium": "Medio",
+    "grade_fine": "Bueno",
+    "stat_currency": "Moneda",
+    "stat_mimic_encounters": "Encuentros con Mimic",
+    "stat_items_carried": "Objetos transportados",
+    "stat_survival_wins": "Victorias de supervivencia",
+    "stat_left_behind": "Abandonados",
+    "stat_survival_deaths": "Muertes en supervivencia",
+    "stat_deathmatch_wins": "Victorias en deathmatch",
+    "stat_deathmatch_deaths": "Muertes en deathmatch",
+    "stat_revives": "Reanimaciones",
+    "stat_voices_recorded": "Voces grabadas",
+    "stat_friend_damage": "Daño a amigos",
+    "stat_friends_killed": "Amigos eliminados",
+    "stat_connected_time": "Tiempo conectado",
+    "stat_sessions": "Sesiones",
+    "stat_team_score": "Valor del equipo",
+    "stat_train_value": "Valor del tren",
+    "stat_trap_deaths": "Muertes por trampas",
+    "stat_dungeon_exits_alive": "Salidas con vida",
+    "stat_dungeon_exits_dead": "Muertes en el Dungeon",
+    "stat_median_lifetime": "Tiempo de vida medio",
+    "stat_run_restarts": "Reinicios de partida",
+    "stat_items_saved": "Objetos salvados",
+    "stat_value_saved": "Valor salvado",
+    "stat_killed_by_friends": "Eliminado por amigos",
+    "stat_monsters_killed": "Monstruos eliminados",
+    "stat_deaths": "Muertes",
+    "stat_highest_zone": "Zona más alta",
+    "stat_runs_played": "Partidas jugadas",
+    "statistics_global": "Estadísticas globales",
+    "statistics_runs": "Partidas de Dungeon",
+    "statistics_run_label": "{map} · semilla {seed}",
+    "statistics_run_cycle": "Ciclo {cycle}",
+    "statistics_run_duration": "{duration}",
+    "statistics_outcome_success": "Éxito",
+    "statistics_outcome_failed": "Fallida",
+    "statistics_outcome_abandoned": "Abandonada",
+    "statistics_outcome_in_progress": "En curso",
+    "statistics_runs_empty": "Aún no hay partidas de Dungeon registradas.",
+    "statistics_trimmed_runs": "{count} partidas anteriores no mostradas",
+    "statistics_trimmed_zones": "{count} zonas anteriores no mostradas",
+    "statistics_current_run": "Partida actual",
+    "statistics_by_zone": "Estadísticas por zona",
+    "statistics_zone": "Zona {zone}",
+    "statistics_zone_current": "Zona actual {zone}",
+    "statistics_zone_empty": "Aún no hay estadísticas de zona.",
+    "statistics_zone_players": "Jugadores en la zona",
+    "statistics_combat_breakdown": "Desglose de combate",
+    "statistics_kills": "Bajas",
+    "statistics_deaths": "Muertes",
+    "killed_entity": "Eliminó {count} {name}",
+    "killed_entity_plural": "Eliminó {count} {name}s",
+    "killed_by_entity": "Eliminado por {count} {name}",
+    "killed_by_entity_plural": "Eliminado por {count} {name}s",
+    "killed_by": "Eliminado por {name}",
+    "voice_lines": "{count} líneas de voz",
+    "voice_lines_short": "{count} lv",
+    "stat_short_currency": "{count} M",
+    "stat_short_survival": "{wins}V/{deaths}M/{left}A",
+    "stat_short_deathmatch": "{wins}/{deaths} DM",
+    "stat_short_revives": "{count} rean.",
+    "saved": "Guardado",
+    "failed_save": "No se pudo guardar el ajuste",
+    "reset_settings_toast": "Se restablecieron {count} ajuste(s) a {target}",
+    "reset_target_global": "global",
+    "reset_target_defaults": "predeterminados",
+    "failed_reset": "No se pudieron restablecer los ajustes",
+    "player_stats_heading": "Estadísticas del jugador",
+    "global_stats": "Estadísticas globales",
+    "session_stats": "Sesión actual",
+    "back_to_players": "Volver a los jugadores",
+    "minimap_tooltip_room": "Sala",
+    "minimap_tooltip_train": "Tren",
+    "minimap_tooltip_vending": "Máquina expendedora",
+    "minimap_tooltip_shower": "Ducha",
+    "minimap_tooltip_save": "Botón de guardado",
+    "minimap_tooltip_tram_start": "Palanca de arranque del Tram",
+    "minimap_tooltip_area": "Área",
+    "minimap_tooltip_teleporter": "Teletransportador → {target}",
+    "minimap_tooltip_stairs": "Escaleras",
+    "minimap_unavailable": "Mapa no disponible",
+    "minimap_follow_local": "Seguir al jugador local",
+    "minimap_follow_none": "Navegación libre",
+    "minimap_multi_floor": "Sala de varios pisos",
+    "minimap_zoom": "Zoom",
+    "minimap_zoom_in": "Acercar",
+    "minimap_zoom_out": "Alejar",
+    "minimap_tile_Room": "Sala",
+    "minimap_tile_Outdoor": "Exterior",
+    "minimap_tile_Sector": "Sector exterior",
+    "minimap_tile_Stairs": "Escaleras",
+    "minimap_tile_TrapCorridor": "Pasillo con trampa",
+    "minimap_tile_TrapHole": "Foso con trampa",
+    "minimap_tile_CorridorSwitches": "Pasillo de interruptores",
+    "minimap_tile_Dungeon_SmallRoom": "Dungeon · Sala pequeña",
+    "minimap_tile_Dungeon_MediumRoom": "Dungeon · Sala mediana",
+    "minimap_tile_Dungeon_LargeRoom": "Dungeon · Sala grande",
+    "minimap_tile_Dungeon_HighRoom": "Dungeon · Sala alta",
+    "minimap_tile_Factory_SmallRoom": "Fábrica · Sala pequeña",
+    "minimap_tile_Factory_MediumRoom": "Fábrica · Sala mediana",
+    "minimap_tile_Factory_LargeRoom": "Fábrica · Sala grande",
+    "minimap_tile_Factory_HighRoom": "Fábrica · Sala alta",
+    "minimap_tile_Mansion_SmallRoom": "Mansión · Sala pequeña",
+    "minimap_tile_Mansion_MediumRoom": "Mansión · Sala mediana",
+    "minimap_tile_Mansion_LargeRoom": "Mansión · Sala grande",
+    "minimap_tile_Mansion_HighRoom": "Mansión · Sala alta",
+    "minimap_tile_Subway_SmallRoom": "Metro · Sala pequeña",
+    "minimap_tile_Subway_MediumRoom": "Metro · Sala mediana",
+    "minimap_tile_Subway_LargeRoom": "Metro · Sala grande",
+    "minimap_tile_Subway_HighRoom": "Metro · Sala alta",
+    "minimap_tile_Tunnel_SmallRoom": "Túnel · Sala pequeña",
+    "minimap_tile_Tunnel_MediumRoom": "Túnel · Sala mediana",
+    "minimap_tile_Tunnel_LargeRoom": "Túnel · Sala grande",
+    "minimap_tile_Tunnel_HighRoom": "Túnel · Sala alta",
+    "minimap_tile_Warehouse_SmallRoom": "Almacén · Sala pequeña",
+    "minimap_tile_Warehouse_MediumRoom": "Almacén · Sala mediana",
+    "minimap_tile_Warehouse_LargeRoom": "Almacén · Sala grande",
+    "minimap_tile_Warehouse_HighRoom": "Almacén · Sala alta",
+    "role_host": "Host",
+    "role_guest": "Invitado",
+    "theme_dark": "Oscuro",
+    "theme_light": "Claro",
+    "players_connected_heading": "Jugadores conectados",
+    "players_stored_heading": "Jugadores almacenados",
+    "players_stored_count": "{count} almacenados",
+    "players_stored_empty": "No hay jugadores almacenados.",
+    "table_show": "Mostrar",
+    "table_entries": "entradas",
+    "table_search": "Buscar jugadores…",
+    "leaderboard_search": "Buscar estadísticas…",
+    "menu_open": "Abrir menú",
+    "header_search_placeholder": "Buscar…",
+    "table_player": "Jugador",
+    "table_ping": "Ping",
+    "table_connection": "Conexión",
+    "table_details": "Detalles",
+    "table_statistics": "Estadísticas",
+    "table_session": "Sesión",
+    "statistics_total": "Total",
+    "statistics_session": "Sesión",
+    "statistics_total_prefix": "Total: {stats}",
+    "statistics_session_prefix": "Sesión: {stats}",
+    "player_state_connecting": "Conectando",
+    "player_state_loading": "Cargando {scene}",
+    "player_state_tram": "En la sala de espera del Tram",
+    "player_state_maintenance": "En mantenimiento",
+    "player_state_maintenance_room": "En la sala de mantenimiento",
+    "player_state_maintenance_bay": "En la bahía de mantenimiento",
+    "player_state_dungeon": "En el Dungeon",
+    "player_state_dungeon_room": "En el Dungeon — {room}",
+    "player_state_death_match": "En deathmatch",
+    "player_state_online": "En la sesión",
+    "player_state_offline": "Desconectado",
+    "player_state_scene_tram": "escena del Tram",
+    "player_state_scene_maintenance": "escena de mantenimiento",
+    "player_state_scene_dungeon": "Dungeon",
+    "player_state_scene_death_match": "escena de deathmatch",
+    "player_state_scene_session": "sesión",
+    "settings_feature_disabled": "Función desactivada",
+    "settings_feature_disabled_hint": "Activa esta función para editar estos ajustes",
+    "table_vitals": "Signos vitales",
+    "table_actions": "Acciones",
+    "table_showing": "Mostrando {from} a {to} de {total} entradas",
+    "table_prev": "Anterior",
+    "table_next": "Siguiente",
+    "no_players_connected": "No hay jugadores conectados.",
+    "alive": "Vivo",
+    "dead": "Muerto",
+    "health": "Salud",
+    "toxic": "Toxicidad",
+    "view_stats": "Estadísticas",
+    "loading": "Cargando…",
+    "player": "Jugador",
+    "leaderboard_empty": "Aún no hay entradas en la clasificación.",
+    "player_stats_not_found": "No se encontraron las estadísticas del jugador.",
+    "quick_export": "Exportar preajuste",
+    "quick_import": "Importar preajuste",
+    "quick_export_help": "Crea una cadena para compartir a partir de los ajustes aplicados actualmente a esta ranura de guardado. Cópiala para respaldar tu preajuste o compartirlo con otros hosts.",
+    "quick_import_help": "Pega una cadena para compartir de otra ranura de guardado o de otro host. El preajuste se guarda en tu lista de preajustes de usuario y se puede aplicar desde las tarjetas de arriba.",
+    "quick_active_profile": "Perfil activo: {label}",
+    "quick_preset_user": "Preajuste de usuario",
+    "waiting_for_session": "Esperando la sesión de juego…",
+    "spawn_monster_category_grunt": "Grunt"
+  }
+}

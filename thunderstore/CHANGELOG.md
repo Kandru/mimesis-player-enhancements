@@ -4,6 +4,7 @@ In case of any errors please create an issue: https://github.com/Kandru/mimesis-
 - removed the loading screen overlays because people don't understand they come from a plug-in and thinks its from the developers even though I clearly stated that in the Wiki, Readme and this Changelog. So be it. Gone they are. I don't want the developers to be blamed for something they didn't do.
 - Keep in mind: you can **disable anything** in the settings of this mod. This includes sounds, overlays and general features. Most features are disabled by default but some I find nice are enabled by default. Use the **Management Button** ingame to change stuff.
 - Simplify the naming of the Savegame-View feature by simply calling it "Savegames".
+- added (automatic) spanish translation due to a lot of players speaking spanish lately. But: I cannot speak spanish. Please help improve this translation by gifting me a better translation file via Github.
 
 ## 26.8.2
 - small bugfix regarding changed patch

@@ -10,6 +10,10 @@ namespace MimesisPlayerEnhancement.Tests.Util
         [InlineData("DE", "de")]
         [InlineData("de-DE", "de")]
         [InlineData("de_DE", "de")]
+        [InlineData("es", "es")]
+        [InlineData("ES", "es")]
+        [InlineData("es-ES", "es")]
+        [InlineData("es_MX", "es")]
         [InlineData("en", "en")]
         [InlineData("en-US", "en")]
         public void TryResolveSupportedLocale_maps_supported_tags(string input, string expected)
@@ -49,6 +53,8 @@ namespace MimesisPlayerEnhancement.Tests.Util
         [Theory]
         [InlineData("de", "de")]
         [InlineData("de-DE", "de")]
+        [InlineData("es", "es")]
+        [InlineData("es-ES", "es")]
         [InlineData("fr", "en")]
         [InlineData("ko", "en")]
         [InlineData("zh_cn", "en")]
@@ -67,9 +73,17 @@ namespace MimesisPlayerEnhancement.Tests.Util
         }
 
         [Fact]
+        public void ModL10n_spanish_host_button_is_translated()
+        {
+            Assert.Equal("Guardados", ModL10n.GetForLocale("es", "saveslots.host_button"));
+            Assert.Equal("Savegames", ModL10n.GetForLocale("en", "saveslots.host_button"));
+        }
+
+        [Fact]
         public void ModL10n_management_button_is_translated()
         {
             Assert.Equal("Verwaltung", ModL10n.GetForLocale("de", "dashboard.management_button"));
+            Assert.Equal("Gestión", ModL10n.GetForLocale("es", "dashboard.management_button"));
             Assert.Equal("Management", ModL10n.GetForLocale("en", "dashboard.management_button"));
         }
     }

@@ -1,6 +1,6 @@
 # Translations
 
-All user-facing strings for the mod and web dashboard live in a single source tree at [`l10n/`](../l10n/). English (`en.json`) is the canonical source; other languages mirror the same structure.
+All user-facing strings for the mod and web dashboard live in a single source tree at [`l10n/`](../l10n/). English (`en.json`) is the canonical source; other languages (`de.json`, `es.json`, …) mirror the same structure.
 
 ## Layout
 
@@ -71,11 +71,11 @@ Settings sidebar section groups (Client / Session / Balance / World) use `dashbo
 
 ## Adding a language
 
-1. Copy `l10n/en.json` to `l10n/<lang>.json` (for example `fr.json`).
+1. Copy `l10n/en.json` to `l10n/<lang>.json` (for example `es.json` or `fr.json`).
 2. Translate string values only; keep keys, section IDs, and option value keys unchanged.
 3. Run `make check` and `make debug`.
 
-No C# or web code changes are required — embedded locale discovery picks up new `l10n/*.json` files at build time.
+No C# or web code changes are required — embedded locale discovery picks up new `l10n/*.json` files at build time. Locale validation checks every non-English `l10n/*.json` for config key and `_groups` parity with `en.json`.
 
 ## Contributing via GitHub
 

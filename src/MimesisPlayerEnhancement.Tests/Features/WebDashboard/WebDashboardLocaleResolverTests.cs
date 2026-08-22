@@ -25,6 +25,14 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
         }
 
         [Fact]
+        public void ResolveAcceptLanguage_returns_spanish_for_region_tag()
+        {
+            string locale = WebDashboardLocaleResolver.ResolveAcceptLanguage("es-ES, en;q=0.8");
+
+            Assert.Equal("es", locale);
+        }
+
+        [Fact]
         public void ResolveAcceptLanguage_prefers_higher_quality_value()
         {
             string locale = WebDashboardLocaleResolver.ResolveAcceptLanguage("de;q=0.5, en;q=0.9");
@@ -54,6 +62,14 @@ namespace MimesisPlayerEnhancement.Tests.Features.WebDashboard
             string locale = WebDashboardLocaleResolver.ResolveAcceptLanguage("de, en");
 
             Assert.Equal("de", locale);
+        }
+
+        [Fact]
+        public void ResolveAcceptLanguage_preserves_spanish_preference_order_on_equal_quality()
+        {
+            string locale = WebDashboardLocaleResolver.ResolveAcceptLanguage("es, en");
+
+            Assert.Equal("es", locale);
         }
     }
 }

@@ -36,9 +36,16 @@ namespace MimesisPlayerEnhancement.Util
                 return string.Empty;
             }
 
-            if (GameLocaleAccess.GetCurrentLanguage() == "de")
+            string language = GameLocaleAccess.GetCurrentLanguage();
+            if (language == "de")
             {
                 string article = capitalizeArticle ? "Ein" : "ein";
+                return $"{article} {humanizedName}";
+            }
+
+            if (language == "es")
+            {
+                string article = capitalizeArticle ? "Un" : "un";
                 return $"{article} {humanizedName}";
             }
 
