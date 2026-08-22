@@ -26,12 +26,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 return true;
             }
 
-            UIPrefab_Spectator_PlayerListView? listView = FindSpectatorListTemplate();
-            if (listView == null)
-            {
-                return false;
-            }
-
             Root = new GameObject(RootObjectName);
             Root.transform.SetParent(parent, worldPositionStays: false);
             ModUiLayout.Stretch(Root.AddComponent<RectTransform>());
@@ -70,7 +64,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             flowRect.pivot = Vector2.zero;
 
             if (!LoadingWaitPlayerListGrid.TryInitialize(
-                    listView,
                     boundsRect,
                     flowRect,
                     shadeRect,
@@ -109,31 +102,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
 
             CanvasGroup = null;
-        }
-
-        private static UIPrefab_Spectator_PlayerListView? FindSpectatorListTemplate()
-        {
-            UIPrefab_Spectator_PlayerListView[] views =
-                UnityEngine.Object.FindObjectsByType<UIPrefab_Spectator_PlayerListView>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-            for (int i = 0; i < views.Length; i++)
-            {
-                UIPrefab_Spectator_PlayerListView view = views[i];
-                if (view == null)
-                {
-                    continue;
-                }
-
-                UIPrefab_Spectator_PlayerListViewItem[] rows =
-                    view.GetComponentsInChildren<UIPrefab_Spectator_PlayerListViewItem>(includeInactive: true);
-                if (rows is { Length: > 0 })
-                {
-                    return view;
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -118,8 +118,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
         internal static bool DebugShow(IReadOnlyList<string> fakeNames)
         {
-            SpectatorPlayerGrid.EnsureSpectatorHudAvailable();
-
             Transform parent = EnsureDebugHost();
             _overlay ??= new LoadingWaitPlayerListOverlay();
             if (!_overlay.TryEnsure(parent))

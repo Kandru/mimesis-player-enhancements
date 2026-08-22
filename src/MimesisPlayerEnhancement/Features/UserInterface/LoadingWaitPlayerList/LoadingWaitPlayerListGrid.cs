@@ -13,25 +13,31 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         private static readonly Color SpeakingColor = new(0.35f, 0.95f, 0.45f, 1f);
 
         internal static bool TryInitialize(
-            UIPrefab_Spectator_PlayerListView listView,
             RectTransform boundsRect,
             RectTransform flowRect,
             RectTransform shadeRect,
             out GridState state)
         {
             state = null!;
-            UIPrefab_Spectator_PlayerListViewItem[] rows =
-                listView.GetComponentsInChildren<UIPrefab_Spectator_PlayerListViewItem>(includeInactive: true);
-            if (rows == null || rows.Length == 0)
+            if (boundsRect == null || flowRect == null || shadeRect == null)
             {
                 return false;
             }
 
-            UIPrefab_Spectator_PlayerListViewItem templateRow = rows[0];
-            SpectatorPlayerRowBinder.CacheColors(listView, out Color liveColor, out Color deadColor);
+            Color liveColor = Color.white;
+            Color deadColor = Color.red;
+            ModUiAssets assets = ModUiAssets.Fallback;
+            float fontSize = FallbackFontSize;
 
-            ModUiAssets assets = ModUiAssets.FromTextSource(templateRow.gameObject);
-            float fontSize = ResolveFontSize(templateRow, FallbackFontSize);
+            if (TryResolveSpectatorTemplate(
+                    out UIPrefab_Spectator_PlayerListView listView,
+                    out UIPrefab_Spectator_PlayerListViewItem templateRow))
+            {
+                SpectatorPlayerRowBinder.CacheColors(listView, out liveColor, out deadColor);
+                assets = ModUiAssets.FromTextSource(templateRow.gameObject);
+                fontSize = ResolveFontSize(templateRow, FallbackFontSize);
+            }
+
             ConfigureFlowRect(flowRect);
             Component? measureText = CreateMeasureText(flowRect, assets, fontSize);
 
@@ -51,6 +57,40 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             };
 
             return true;
+        }
+
+        private static bool TryResolveSpectatorTemplate(
+            out UIPrefab_Spectator_PlayerListView listView,
+            out UIPrefab_Spectator_PlayerListViewItem templateRow)
+        {
+            listView = null!;
+            templateRow = null!;
+
+            UIPrefab_Spectator_PlayerListView[] views =
+                UnityEngine.Object.FindObjectsByType<UIPrefab_Spectator_PlayerListView>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+            for (int i = 0; i < views.Length; i++)
+            {
+                UIPrefab_Spectator_PlayerListView view = views[i];
+                if (view == null)
+                {
+                    continue;
+                }
+
+                UIPrefab_Spectator_PlayerListViewItem[] rows =
+                    view.GetComponentsInChildren<UIPrefab_Spectator_PlayerListViewItem>(includeInactive: true);
+                if (rows is not { Length: > 0 })
+                {
+                    continue;
+                }
+
+                listView = view;
+                templateRow = rows[0];
+                return true;
+            }
+
+            return false;
         }
 
         internal static void Update(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)

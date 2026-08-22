@@ -257,6 +257,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
                 return;
             }
 
+            // CreateSpectatorHUD needs UIManager + CameraManager; skip when unavailable.
+            if (ModUiGameAccess.TryGetUiManager() == null)
+            {
+                return;
+            }
+
             MethodInfo? createSpectatorHud =
                 AccessTools.Method(typeof(GameMainBase), "CreateSpectatorHUD");
             if (createSpectatorHud == null)
@@ -270,7 +276,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.SpectatorPlayerList
             }
             catch (Exception ex)
             {
-                ModLog.Warn(Feature, $"Spectator HUD create failed — {ex.Message}");
+                Exception root = ex is TargetInvocationException { InnerException: { } inner }
+                    ? inner
+                    : ex;
+                ModLog.Warn(Feature, $"Spectator HUD create failed — {root.Message}");
             }
         }
 
