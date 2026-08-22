@@ -239,12 +239,14 @@ release: DOTNET_CONFIG=Release
 release: DIST_SUBDIR=prod
 release: mod
 else
+# Embed path needs dist/webinterface first — keep ordered so `make -j debug` cannot race.
+mod: webinterface
 debug: DOTNET_CONFIG=Debug
 debug: DIST_SUBDIR=debug
-debug: webinterface mod
+debug: mod
 release: DOTNET_CONFIG=Release
 release: DIST_SUBDIR=prod
-release: webinterface mod
+release: mod
 endif
 
 # ---------------------------------------------------------------------------
