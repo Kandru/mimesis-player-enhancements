@@ -8,7 +8,10 @@
 ![Mimesis Player Enhancement Logo](images/logo.png)
 
 > [!NOTE]  
-> Disclosure: this project is being build with help of AI!
+> **Note — AI disclosure.** This project is being built with help of AI. This includes assets like sounds and images...
+
+> [!CAUTION]  
+> **IMPORTANT** Before complaining to the Developers, remove all plug-ins and test your issues in-game again!
 
 > [!CAUTION]  
 > **Alpha — under heavy development.** This plugin is not finished and things may not work as expected. Please report bugs and share feedback via [GitHub issues](https://github.com/Kandru/mimesis-player-enhancements/issues).  
