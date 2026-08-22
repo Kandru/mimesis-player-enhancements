@@ -17,7 +17,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
         private const float MaxDiscoBallSoundVolume = 1f;
         private static readonly string[] ValidRoundStartSoundModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidDiscoBallSoundModes = ["Vanilla", "Random", "Specific"];
-        private static readonly string[] ValidCustomLoadingScreenModes = ["Vanilla", "Random", "Specific"];
         private static readonly string[] ValidInventoryPickupSelectModes = ["Vanilla", "WeaponsOnly", "Always"];
         private static readonly string[] ValidSpectatorVoiceBalanceModes =
         [
@@ -129,22 +128,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 "DiscoBallSoundVolume",
                 DiscoBallSoundResolver.DefaultVolume);
 
-            ModConfig.CustomLoadingScreenMode = ModConfig.CreateTrackedEntry(_category,
-                "CustomLoadingScreenMode",
-                "Random");
-
-            ModConfig.CustomLoadingScreenVariant = ModConfig.CreateTrackedEntry(_category,
-                "CustomLoadingScreenVariant",
-                CustomLoadingScreenResolver.GetDefaultVariantOptionValue());
-
-            ModConfig.CustomLoadingScreenRandomPool = ModConfig.CreateTrackedEntry(_category,
-                "CustomLoadingScreenRandomPool",
-                "");
-
-            ModConfig.CustomLoadingScreenMotion = ModConfig.CreateTrackedEntry(_category,
-                "CustomLoadingScreenMotion",
-                true);
-
             ModConfig.SpectatorVoiceBalanceMode = ModConfig.CreateTrackedEntry(_category,
                 "SpectatorVoiceBalanceMode",
                 "Vanilla");
@@ -227,18 +210,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                     DiscoBallSoundResolver.NormalizeRandomPoolValue, value));
             ModConfig.DiscoBallSoundVolume.OnEntryValueChanged.Subscribe((_, value) =>
                 OnDiscoBallSoundVolumeChanged(logger, value));
-            ModConfig.CustomLoadingScreenMode.OnEntryValueChanged.Subscribe((_, value) =>
-                OnCustomLoadingScreenModeChanged(logger, value));
-            ModConfig.CustomLoadingScreenVariant.OnEntryValueChanged.Subscribe((_, value) =>
-                OnCustomLoadingScreenVariantChanged(logger, value));
-            ModConfig.CustomLoadingScreenRandomPool.OnEntryValueChanged.Subscribe((_, value) =>
-                OnRandomPoolChanged(ModConfig.CustomLoadingScreenRandomPool,
-                    CustomLoadingScreenResolver.NormalizeRandomPoolValue, value));
-            ModConfig.CustomLoadingScreenMotion.OnEntryValueChanged.Subscribe((_, _) =>
-            {
-                CustomLoadingScreenApplier.RefreshMotionFromConfig();
-                ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenMotion);
-            });
             ModConfig.SpectatorVoiceBalanceMode.OnEntryValueChanged.Subscribe((_, value) =>
                 OnSpectatorVoiceBalanceModeChanged(logger, value));
             ModConfig.SpectatorVoiceAttenuation.OnEntryValueChanged.Subscribe((_, value) =>
@@ -252,13 +223,10 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
 
             SanitizeRoundStartSoundVariant(logger);
             SanitizeDiscoBallSoundVariant(logger);
-            SanitizeCustomLoadingScreenVariant(logger);
             SanitizeRandomPool(ModConfig.RoundStartSoundRandomPool,
                 RoundStartSoundResolver.NormalizeRandomPoolValue);
             SanitizeRandomPool(ModConfig.DiscoBallSoundRandomPool,
                 DiscoBallSoundResolver.NormalizeRandomPoolValue);
-            SanitizeRandomPool(ModConfig.CustomLoadingScreenRandomPool,
-                CustomLoadingScreenResolver.NormalizeRandomPoolValue);
         }
 
         internal static void RegisterFloatEntries()
@@ -559,56 +527,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             {
                 entry.Value = normalized;
             }
-        }
-
-        private static void OnCustomLoadingScreenModeChanged(MelonLogger.Instance logger, string value)
-        {
-            if (!ContainsIgnoreCase(ValidCustomLoadingScreenModes, value))
-            {
-                logger.Warning("CustomLoadingScreenMode must be Vanilla, Random, or Specific; resetting to Random.");
-                ModConfig.CustomLoadingScreenMode.Value = "Random";
-                return;
-            }
-
-            ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenMode);
-        }
-
-        private static void OnCustomLoadingScreenVariantChanged(MelonLogger.Instance logger, string value)
-        {
-            string normalized = CustomLoadingScreenResolver.NormalizeVariantOptionValue(value);
-            string current = value?.Trim() ?? "";
-            if (!string.Equals(current, normalized, StringComparison.Ordinal))
-            {
-                if (!string.IsNullOrEmpty(current))
-                {
-                    logger.Warning(
-                        $"CustomLoadingScreenVariant must match an embedded theme; resetting to {normalized}.");
-                }
-
-                ModConfig.CustomLoadingScreenVariant.Value = normalized;
-                return;
-            }
-
-            ModConfig.NotifyChanged(ModConfig.CustomLoadingScreenVariant);
-        }
-
-        private static void SanitizeCustomLoadingScreenVariant(MelonLogger.Instance logger)
-        {
-            string normalized = CustomLoadingScreenResolver.NormalizeVariantOptionValue(
-                ModConfig.CustomLoadingScreenVariant.Value);
-            string current = ModConfig.CustomLoadingScreenVariant.Value?.Trim() ?? "";
-            if (string.Equals(current, normalized, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(current))
-            {
-                logger.Warning(
-                    $"CustomLoadingScreenVariant '{current}' is not available; resetting to {normalized}.");
-            }
-
-            ModConfig.CustomLoadingScreenVariant.Value = normalized;
         }
 
         private static bool ContainsIgnoreCase(string[] values, string? candidate)

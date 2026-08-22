@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList.
             {
                 if (LoadingWaitPlayerListRuntime.IsVisible)
                 {
-                    LoadingWaitPlayerListRuntime.Hide(fadeWithOverlay: true);
+                    LoadingWaitPlayerListRuntime.Hide();
                 }
             }
             catch (Exception ex)

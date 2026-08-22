@@ -31,7 +31,7 @@
         "inventoryNumberKeys": "Inventory number keys",
         "roundStartSound": "Dungeon landing sound",
         "discoBallSound": "Disco ball music",
-        "customLoadingScreen": "Custom loading screens",
+        "loadingWaitPlayerList": "Loading wait player list",
         "spectatorVoiceBalance": "Spectator voice balance",
         "voiceNoiseGate": "Voice activation noise gate"
       },
@@ -49,7 +49,7 @@
       },
       "EnableLoadingWaitPlayerList": {
         "title": "Loading Wait Player List",
-        "description": "Show a player roster on the loading screen while waiting for others."
+        "description": "Show a shaded bottom player roster while waiting for others to finish loading."
       },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Enable Extended Menu List",
@@ -162,27 +162,6 @@
       "VoiceNoiseGateStrength": {
         "title": "Noise Gate Strength",
         "description": "How aggressively to suppress background noise. Higher values use stricter voice detection and stronger denoise."
-      },
-      "CustomLoadingScreenMode": {
-        "title": "Loading Screen Mode",
-        "description": "Replace loading screen art with custom themes.",
-        "options": {
-          "Vanilla": "Vanilla (game art)",
-          "Random": "Random Theme",
-          "Specific": "Specific Theme"
-        }
-      },
-      "CustomLoadingScreenVariant": {
-        "title": "Loading Screen Theme",
-        "description": "Theme to use when mode is Specific Theme."
-      },
-      "CustomLoadingScreenRandomPool": {
-        "title": "Loading Screen Pool",
-        "description": "Random Theme mode only — which themes can be picked. Leave empty for all themes."
-      },
-      "CustomLoadingScreenMotion": {
-        "title": "Loading Screen Motion",
-        "description": "Slow pan/zoom on single-frame loading images. Frame sequences always animate."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -1788,7 +1767,7 @@
     "debug_overlay_spectator": "Spectator list",
     "debug_overlay_spectator_desc": "Force-show the spectator player list filled with fake players for layout checks.",
     "debug_overlay_loading_wait": "Loading wait list",
-    "debug_overlay_loading_wait_desc": "Force-show the loading-screen player roster filled with fake players for layout checks.",
+    "debug_overlay_loading_wait_desc": "Force-show the bottom wait-phase player roster filled with fake players for layout checks.",
     "debug_overlay_esc_menu": "ESC menu list",
     "debug_overlay_esc_menu_desc": "Force-show the in-game menu player list filled with fake players for layout checks.",
     "debug_overlay_survival_result": "Survival result / tram list",

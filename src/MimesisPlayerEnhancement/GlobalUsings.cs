@@ -1,5 +1,6 @@
 global using System;
 global using System.Collections.Generic;
+global using MimesisPlayerEnhancement.Ui;
 global using MimesisPlayerEnhancement.Util.Players;
 global using Mimic.Actors;
 global using ReluProtocol;

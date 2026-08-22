@@ -47,7 +47,6 @@ namespace MimesisPlayerEnhancement
                 [(MimicTuningSectionId, "HornImitationMode")] = ["Vanilla", "Custom"],
                 [(UiSectionId, "RoundStartSoundMode")] = ["Vanilla", "Random", "Specific"],
                 [(UiSectionId, "DiscoBallSoundMode")] = ["Vanilla", "Random", "Specific"],
-                [(UiSectionId, "CustomLoadingScreenMode")] = ["Vanilla", "Random", "Specific"],
                 [(UiSectionId, "InventoryPickupSelectMode")] = ["Vanilla", "WeaponsOnly", "Always"],
                 [(UiSectionId, "SpectatorVoiceBalanceMode")] = ["Vanilla", "SpeechDucking", "StaticAttenuation"],
             };
@@ -76,8 +75,7 @@ namespace MimesisPlayerEnhancement
 
             if (sectionId == UiSectionId
                 && (string.Equals(key, "RoundStartSoundRandomPool", StringComparison.Ordinal)
-                    || string.Equals(key, "DiscoBallSoundRandomPool", StringComparison.Ordinal)
-                    || string.Equals(key, "CustomLoadingScreenRandomPool", StringComparison.Ordinal)))
+                    || string.Equals(key, "DiscoBallSoundRandomPool", StringComparison.Ordinal)))
             {
                 return "VariantIdList";
             }
@@ -90,12 +88,6 @@ namespace MimesisPlayerEnhancement
 
             if (sectionId == UiSectionId
                 && string.Equals(key, "DiscoBallSoundVariant", StringComparison.Ordinal))
-            {
-                return "Select";
-            }
-
-            if (sectionId == UiSectionId
-                && string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
             {
                 return "Select";
             }
@@ -124,11 +116,6 @@ namespace MimesisPlayerEnhancement
                 {
                     entry.SelectOptions = BuildDiscoBallSoundVariantOptions();
                 }
-                else if (sectionId == UiSectionId
-                    && string.Equals(key, "CustomLoadingScreenRandomPool", StringComparison.Ordinal))
-                {
-                    entry.SelectOptions = BuildCustomLoadingScreenVariantOptions();
-                }
 
                 return;
             }
@@ -149,13 +136,6 @@ namespace MimesisPlayerEnhancement
                 && string.Equals(key, "DiscoBallSoundVariant", StringComparison.Ordinal))
             {
                 entry.SelectOptions = BuildDiscoBallSoundVariantOptions();
-                return;
-            }
-
-            if (sectionId == UiSectionId
-                && string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
-            {
-                entry.SelectOptions = BuildCustomLoadingScreenVariantOptions();
                 return;
             }
 
@@ -427,7 +407,7 @@ namespace MimesisPlayerEnhancement
                     ["ModToastDurationSeconds"] = "modToasts",
                     ["EnableExtendedSaveSlots"] = "extendedSaveSlots",
                     ["EnableExtendedSpectatorPlayerList"] = "extendedSpectatorList",
-                    ["EnableLoadingWaitPlayerList"] = "customLoadingScreen",
+                    ["EnableLoadingWaitPlayerList"] = "loadingWaitPlayerList",
                     ["EnableExtendedInGameMenuPlayerList"] = "extendedInGameMenuPlayerList",
                     ["EnableDamageHealthGlow"] = "damageHealthGlow",
                     ["EnableFloatingDamageNumbers"] = "floatingDamage",
@@ -446,10 +426,6 @@ namespace MimesisPlayerEnhancement
                     ["DiscoBallSoundRandomPool"] = "discoBallSound",
                     ["DiscoBallSoundVariant"] = "discoBallSound",
                     ["DiscoBallSoundVolume"] = "discoBallSound",
-                    ["CustomLoadingScreenMode"] = "customLoadingScreen",
-                    ["CustomLoadingScreenRandomPool"] = "customLoadingScreen",
-                    ["CustomLoadingScreenVariant"] = "customLoadingScreen",
-                    ["CustomLoadingScreenMotion"] = "customLoadingScreen",
                     ["SpectatorVoiceBalanceMode"] = "spectatorVoiceBalance",
                     ["SpectatorVoiceAttenuation"] = "spectatorVoiceBalance",
                     ["SpectatorVoiceDuckLevel"] = "spectatorVoiceBalance",
@@ -530,24 +506,6 @@ namespace MimesisPlayerEnhancement
                     Value = value,
                     Label = string.IsNullOrWhiteSpace(label)
                         ? DiscoBallSoundResolver.FormatVariantDisplayName(value)
-                        : label,
-                });
-            }
-
-            return options;
-        }
-
-        private static List<WebDashboardConfigSelectOptionDto> BuildCustomLoadingScreenVariantOptions()
-        {
-            List<WebDashboardConfigSelectOptionDto> options = [];
-            foreach (string value in CustomLoadingScreenResolver.ListVariantOptionValues())
-            {
-                string? label = WebDashboardL10n.GetConfigSelectOptionLabel(UiSectionId, "CustomLoadingScreenVariant", value);
-                options.Add(new WebDashboardConfigSelectOptionDto
-                {
-                    Value = value,
-                    Label = string.IsNullOrWhiteSpace(label)
-                        ? CustomLoadingScreenResolver.FormatVariantDisplayName(value)
                         : label,
                 });
             }

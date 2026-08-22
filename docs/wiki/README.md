@@ -9,8 +9,8 @@ This is the all-in-one Tutorial / Explanation for my Mimesis Modification. Read 
 | Feature | What it does | Who needs the mod? |
 |---------|--------------|-------------------|
 | [Privacy](./features/privacy.md) | Block automatic telemetry, replay uploads, crash reports, and third-party SDK calls | Local only |
-| [User Interface](./features/user-interface.md) | Save picker, HUD overlays, damage effects, FPS UI, loading screens, landing sounds | Local only |
-| [Custom Assets](./features/custom-assets.md) | Custom loading screen themes and dungeon landing sounds | Local only |
+| [User Interface](./features/user-interface.md) | Save picker, HUD overlays, damage effects, FPS UI, wait roster, landing sounds | Local only |
+| [Custom Assets](./features/custom-assets.md) | Custom dungeon landing sounds and disco ball music | Local only |
 | [Web Dashboard](./features/web-dashboard.md) | Browser view for players, stats, settings, and moderation | Host only |
 | [Savegame Preparation](./features/savegame-preparation.md) | Starting cash and zone when creating a new save | Host only |
 | [Join Anytime](./features/join-anytime.md) | Let friends join at the service station or tram between dungeons | Host only |

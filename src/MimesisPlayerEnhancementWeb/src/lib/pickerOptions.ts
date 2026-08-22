@@ -156,7 +156,6 @@ export function matchesPickerQuery(option: PickerOption, query: string): boolean
 const SEARCHABLE_VARIANT_KEYS = new Set([
   'RoundStartSoundVariant',
   'DiscoBallSoundVariant',
-  'CustomLoadingScreenVariant',
 ]);
 
 const SEARCHABLE_SELECT_MIN_OPTIONS = 10;

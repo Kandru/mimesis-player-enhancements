@@ -110,18 +110,6 @@ namespace MimesisPlayerEnhancement
                 return true;
             }
 
-            if (string.Equals(key, "CustomLoadingScreenVariant", StringComparison.Ordinal))
-            {
-                dependency = new ModConfigEntryDependency("CustomLoadingScreenMode", "Specific");
-                return true;
-            }
-
-            if (string.Equals(key, "CustomLoadingScreenRandomPool", StringComparison.Ordinal))
-            {
-                dependency = new ModConfigEntryDependency("CustomLoadingScreenMode", "Random");
-                return true;
-            }
-
             if (string.Equals(key, "SpectatorVoiceAttenuation", StringComparison.Ordinal))
             {
                 dependency = new ModConfigEntryDependency("SpectatorVoiceBalanceMode", "StaticAttenuation");

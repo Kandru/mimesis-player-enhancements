@@ -75,7 +75,7 @@ User quick presets are stored account-wide in `MMGameData.mpe-quick-presets.sav`
 | **Deferred until scene end** | Economy (scrap/shop), Spawn Scaling, Loot Multiplicator, Dungeon Time (except `EnableRealtimeTramClock` / `TimeMultiplier`), Dungeon Randomizer — value changes during maintenance/tram/dungeon/deathmatch apply when that scene ends; `Enable*` off applies immediately |
 | **Next dungeon / room init** | Spawn Scaling budgets, Loot scaling/filter pools, Dungeon Time bonus, Dungeon Randomizer rolls (use scene snapshot captured at enter) |
 | **Event-triggered** | Economy shop prices on next maintenance round after deferred flush |
-| **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, custom loading screens and landing sounds, **Savegame Preparation** (startup money and starting zone) |
+| **Your game only (global)** | Extended save picker, spectator list layout, toast duration, damage health outline, floating damage numbers, FPS HUD, landing sounds, **Savegame Preparation** (startup money and starting zone) |
 
 ---
 
@@ -102,7 +102,7 @@ Mod-wide settings that are not owned by a single feature.
 | `ModToastDurationSeconds` | float | `5.0` | ≥ `1` | How long mod messages stay visible in the bottom-left corner before fading. Vanilla join/leave connect messages are unchanged (~2 seconds). Each player controls this locally. |
 | `EnableExtendedSaveSlots` | bool | `true` | — | Replace vanilla New/Load Tram with the unified save picker (up to 99 manual slots). When `false`, vanilla Tram menus return. |
 | `EnableExtendedSpectatorPlayerList` | bool | `true` | — | Replace the 4-player spectator death list with a two-column layout that scales to screen height. Independent of More Players. Living players are shown first, then dead; each group is sorted alphabetically. |
-| `EnableLoadingWaitPlayerList` | bool | `true` | — | During multiplayer dungeon loading, show a spectator-style player roster while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; still-loading players are red. Fades out with the custom loading screen. |
+| `EnableLoadingWaitPlayerList` | bool | `true` | — | During multiplayer dungeon loading, show a spectator-style player roster on a shaded bottom strip while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; still-loading players are red. |
 | `EnableExtendedInGameMenuPlayerList` | bool | `true` | — | Show the ESC menu player list in a right-side overlay (join-code on top, scrollable rows with scrollbar). Does not reshape vanilla lobby/public controls. Independent of More Players. |
 | `EnableDamageHealthGlow` | bool | `true` | — | Tint other players, mimics, and monsters with a health-colored glow for one second after they take damage, then fade out. Color shifts from green (full health) to red (low health); kills use a blood-red tint. Never shown on your own avatar. |
 | `EnableFloatingDamageNumbers` | bool | `true` | — | Show animated floating damage numbers when other players, mimics, or monsters take damage. Never shown on your own avatar. |
@@ -121,10 +121,6 @@ Mod-wide settings that are not owned by a single feature.
 | `DiscoBallSoundVariant` | string | first embedded variant | embedded variant id | Used when `DiscoBallSoundMode = Specific`. Must match an embedded file in the mod DLL (without extension). Supported formats: `.wav`, `.ogg`. Empty or invalid values reset to the first embedded variant. |
 | `DiscoBallSoundRandomPool` | string | *(empty)* | comma-separated variant ids | Random mode only. When empty, any embedded track may be picked. When set, only listed variant ids are eligible. The pick is held for the whole dungeon and survives toggling the ball off and on. |
 | `DiscoBallSoundVolume` | float | `0.8` | `0`–`1` | Playback volume for custom disco ball music (`Random` or `Specific` mode). Does not affect vanilla mode. |
-| `CustomLoadingScreenMode` | string | `Random` | `Vanilla`, `Random`, `Specific` | Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). |
-| `CustomLoadingScreenVariant` | string | first embedded theme | embedded theme folder name | Used when `CustomLoadingScreenMode = Specific`. Must match a theme folder that has assets under the current transition context (for example `GTA/Dungeon/background.png`). Empty or invalid values reset to the first discovered theme. |
-| `CustomLoadingScreenRandomPool` | string | *(empty)* | comma-separated theme folder names | Random mode only. When empty, any theme available for the current transition context may be picked. When set, only listed themes are eligible (per context). |
-| `CustomLoadingScreenMotion` | bool | `true` | — | Enable slow pan/zoom motion on single-frame loading images. Frame sequences always animate when authored. |
 | `SpectatorVoiceBalanceMode` | string | `Vanilla` | `Vanilla`, `SpeechDucking`, `StaticAttenuation` | While dead and spectating, rebalance remote VoIP volumes on your client. `Vanilla` leaves volumes unchanged. |
 | `SpectatorVoiceAttenuation` | float | `0.8` | `0`–`1` | In `StaticAttenuation` mode, volume kept for living players (fraction of their ESC-menu preferred volume). |
 | `SpectatorVoiceDuckLevel` | float | `0.2` | `0`–`1` | In `SpeechDucking` mode, volume kept for living players while a dead player has been speaking continuously for more than 0.2 s. |

@@ -4,16 +4,12 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 {
     internal sealed class LoadingWaitPlayerListOverlay
     {
-        internal const string RootObjectName = "MPE_LoadingWaitPlayerList";
-        internal const string BoundsObjectName = "MPE_LoadingWaitPlayerListBounds";
-        internal const string FlowObjectName = "MPE_LoadingWaitPlayerListFlow";
-
-        private const int CanvasSortOrder = CustomLoadingScreenConstants.OverlayCanvasSortOrder + 1;
+        private const string RootObjectName = "MPE_LoadingWaitPlayerList";
+        private const int CanvasSortOrder = 32001;
 
         internal GameObject? Root { get; private set; }
         internal CanvasGroup? CanvasGroup { get; private set; }
         internal LoadingWaitPlayerListGrid.GridState? GridState { get; private set; }
-        internal RectTransform? BoundsRect { get; private set; }
 
         internal bool TryEnsure(Transform parent)
         {
@@ -38,44 +34,50 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             Root = new GameObject(RootObjectName);
             Root.transform.SetParent(parent, worldPositionStays: false);
-            RectTransform rootRect = Root.AddComponent<RectTransform>();
-            StretchRect(rootRect);
+            ModUiLayout.Stretch(Root.AddComponent<RectTransform>());
 
             Canvas canvas = Root.AddComponent<Canvas>();
             canvas.overrideSorting = true;
             canvas.sortingOrder = CanvasSortOrder;
-
-            Root.AddComponent<GraphicRaycaster>();
 
             CanvasGroup = Root.AddComponent<CanvasGroup>();
             CanvasGroup.alpha = 1f;
             CanvasGroup.interactable = false;
             CanvasGroup.blocksRaycasts = false;
 
-            GameObject boundsObject = new(BoundsObjectName);
-            boundsObject.transform.SetParent(Root.transform, worldPositionStays: false);
-            BoundsRect = boundsObject.AddComponent<RectTransform>();
-            StretchRect(BoundsRect);
+            RectTransform boundsRect = ModUiLayout.CreateChild(
+                    "MPE_LoadingWaitPlayerListBounds",
+                    Root.transform)
+                .GetComponent<RectTransform>();
+            ModUiLayout.Stretch(boundsRect);
 
-            GameObject flowObject = new(FlowObjectName);
-            flowObject.transform.SetParent(BoundsRect, worldPositionStays: false);
-            RectTransform flowRect = flowObject.AddComponent<RectTransform>();
+            RectTransform shadeRect = ModUiLayout.CreateChild(
+                    "MPE_LoadingWaitPlayerListShade",
+                    boundsRect)
+                .GetComponent<RectTransform>();
+            Image shadeImage = shadeRect.gameObject.AddComponent<Image>();
+            shadeImage.color = LoadingWaitPlayerListBandLayout.ShadeColor;
+            shadeImage.raycastTarget = false;
+
+            RectTransform flowRect = ModUiLayout.CreateChild(
+                    "MPE_LoadingWaitPlayerListFlow",
+                    boundsRect)
+                .GetComponent<RectTransform>();
             flowRect.anchorMin = Vector2.zero;
             flowRect.anchorMax = Vector2.one;
             flowRect.offsetMin = Vector2.zero;
             flowRect.offsetMax = Vector2.zero;
-            flowRect.pivot = new Vector2(0f, 0f);
-            flowRect.anchoredPosition = Vector2.zero;
+            flowRect.pivot = Vector2.zero;
 
             if (!LoadingWaitPlayerListGrid.TryInitialize(
                     listView,
-                    BoundsRect,
+                    boundsRect,
                     flowRect,
+                    shadeRect,
                     out LoadingWaitPlayerListGrid.GridState? gridState))
             {
                 UnityEngine.Object.Destroy(Root);
                 Root = null;
-                BoundsRect = null;
                 CanvasGroup = null;
                 return false;
             }
@@ -106,7 +108,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 Root = null;
             }
 
-            BoundsRect = null;
             CanvasGroup = null;
         }
 
@@ -133,15 +134,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
 
             return null;
-        }
-
-        private static void StretchRect(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.pivot = new Vector2(0.5f, 0.5f);
         }
     }
 }

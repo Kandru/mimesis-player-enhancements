@@ -56,7 +56,7 @@ Config titles and descriptions are user-facing. Keep them short and plain:
 - **Descriptions:** 1–2 short sentences. Lead with what the player or host will see or control.
 - **Avoid:** implementation jargon (`scrap-value budget`, `master ID`, `embedded`), literal `…` in auto-scale descriptions, and repo-internal details unless needed (e.g. `docs/LOOT_ITEM_IDS.md` on allow/block lists).
 - **Keep:** `Host only.` / client-only notes, numeric baselines (`1 = vanilla`), and option labels for enum values.
-- **Sounds and themes:** describe round-start sounds and loading-screen themes as things users can apply — not as “embedded” assets.
+- **Sounds:** describe round-start and disco-ball sounds as things users can apply — not as “embedded” assets.
 
 When adding a new entry group in `ModConfigEntryUiHints.cs`, add matching `config.{section}._groups.{groupId}` strings in every locale file.
 

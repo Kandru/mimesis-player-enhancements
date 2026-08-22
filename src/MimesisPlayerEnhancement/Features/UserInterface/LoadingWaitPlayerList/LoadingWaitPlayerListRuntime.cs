@@ -5,25 +5,30 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
     internal static class LoadingWaitPlayerListRuntime
     {
         private const string Feature = "Ui";
+        private const string WaitTextKey = "STRING_LOADING_WAIT";
         private const float RefreshIntervalSeconds = 0.15f;
+        private const float FadeInSeconds = 0.75f;
+        private const float DefaultFadeOutSeconds = 1f;
+        private const int DebugCanvasSortOrder = 32000;
 
-        private static UIPrefab_Scene_Loading? _activeLoading;
         private static LoadingWaitPlayerListOverlay? _overlay;
-        private static bool _waitTextActive;
-        private static bool _dismissing;
+        private static GameObject? _debugHost;
+        private static bool _waitActive;
+        private static bool _debugActive;
         private static bool _loggedShow;
         private static float _nextRefreshTime;
-        private static float _vanillaFadeStartAlpha = 1f;
-        private static float _vanillaFadeElapsed;
-        private static float _vanillaFadeDuration;
-        private static bool _vanillaFadingOut;
-        private static bool _fadingIn;
-        private static float _fadeInElapsed;
-        private static float _fadeInDuration;
-        private static bool _debugActive;
+
+        private static bool _fading;
+        private static bool _hideAfterFade;
+        private static float _fadeElapsed;
+        private static float _fadeDuration;
+        private static float _fadeFrom;
+        private static float _fadeTo;
 
         internal static bool IsVisible =>
-            _overlay?.Root != null && _overlay.Root.activeSelf && (_waitTextActive || _dismissing);
+            _overlay?.Root != null
+            && _overlay.Root.activeSelf
+            && (_waitActive || _debugActive || (_fading && _hideAfterFade));
 
         internal static bool IsEnabled() =>
             ModConfig.IsInitialized && ModConfig.EnableLoadingWaitPlayerList.Value;
@@ -35,7 +40,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 return;
             }
 
-            if (string.Equals(textKey, CustomLoadingScreenConstants.WaitTextKey, StringComparison.Ordinal))
+            if (string.Equals(textKey, WaitTextKey, StringComparison.Ordinal))
             {
                 if (!SessionPlayerCountHelper.IsMultiplayerLobby())
                 {
@@ -47,7 +52,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 return;
             }
 
-            if (_waitTextActive || _dismissing)
+            if (_waitActive || (_fading && _hideAfterFade))
             {
                 HideImmediate();
             }
@@ -60,25 +65,16 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 return;
             }
 
-            Transform? parent = ResolveParent(loading);
-            if (parent == null)
-            {
-                ModLog.Debug(Feature, "Skipping loading wait player list — no overlay parent");
-                return;
-            }
-
             _overlay ??= new LoadingWaitPlayerListOverlay();
-            if (!_overlay.TryEnsure(parent))
+            if (!_overlay.TryEnsure(loading.transform))
             {
                 ModLog.Debug(Feature, "Skipping loading wait player list — spectator row template unavailable");
                 return;
             }
 
-            _activeLoading = loading;
-            _waitTextActive = true;
-            _dismissing = false;
-            _vanillaFadingOut = false;
-            BeginFadeIn();
+            _waitActive = true;
+            _debugActive = false;
+            BeginFade(from: 0f, to: 1f, FadeInSeconds, hideAfter: false);
             Refresh(force: true);
 
             if (!_loggedShow)
@@ -88,50 +84,34 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
         }
 
-        internal static void OnLoadingDismissStarted()
+        internal static void Hide()
         {
-            if (_overlay == null || (!_waitTextActive && !_dismissing))
+            if (_overlay == null || (!_waitActive && !_debugActive))
             {
                 return;
             }
 
-            _waitTextActive = false;
-            _dismissing = true;
-            _fadingIn = false;
-
-            if (!CustomLoadingScreenSession.IsActive)
+            if (_debugActive)
             {
-                BeginVanillaFadeOut();
-            }
-        }
-
-        internal static void Hide(bool fadeWithOverlay = true)
-        {
-            if (_overlay == null || (!_waitTextActive && !_dismissing))
-            {
+                HideImmediate();
                 return;
             }
 
-            if (fadeWithOverlay)
-            {
-                OnLoadingDismissStarted();
-                return;
-            }
-
-            HideImmediate();
+            _waitActive = false;
+            float from = _overlay.CanvasGroup != null ? _overlay.CanvasGroup.alpha : 1f;
+            BeginFade(from, to: 0f, ResolveFadeOutSeconds(), hideAfter: true);
         }
 
         internal static void HideImmediate()
         {
+            _waitActive = false;
             _debugActive = false;
-            _waitTextActive = false;
-            _dismissing = false;
             _loggedShow = false;
-            _vanillaFadingOut = false;
-            _fadingIn = false;
-            _activeLoading = null;
+            _fading = false;
+            _hideAfterFade = false;
             _overlay?.Destroy();
             _overlay = null;
+            DestroyDebugHost();
         }
 
         internal static void OnSessionEnded() => HideImmediate();
@@ -140,65 +120,36 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         {
             SpectatorPlayerGrid.EnsureSpectatorHudAvailable();
 
-            UIPrefab_Scene_Loading? loading = ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
-            if (loading == null)
-            {
-                return false;
-            }
-
-            if (!CustomLoadingScreenApplier.DebugBeginWaitPreview(loading))
-            {
-                return false;
-            }
-
-            Transform? parent = ResolveParent(loading);
-            if (parent == null)
-            {
-                CustomLoadingScreenApplier.DebugEndWaitPreview(loading);
-                return false;
-            }
-
+            Transform parent = EnsureDebugHost();
             _overlay ??= new LoadingWaitPlayerListOverlay();
             if (!_overlay.TryEnsure(parent))
             {
-                CustomLoadingScreenApplier.DebugEndWaitPreview(loading);
+                DestroyDebugHost();
                 return false;
             }
 
-            _activeLoading = loading;
-            _waitTextActive = true;
-            _dismissing = false;
-            _vanillaFadingOut = false;
-            _fadingIn = false;
+            _waitActive = false;
             _debugActive = true;
-            ApplyOverlayAlpha(1f);
-
-            List<LoadingWaitPlayerEntry> entries = LoadingWaitPlayerListDebugEntries.BuildScrambled(fakeNames);
+            _fading = false;
+            _overlay.ApplyAlpha(1f);
 
             try
             {
                 LoadingWaitPlayerListGrid.Update(
                     _overlay.GridState!,
-                    loading.transform,
-                    entries);
+                    LoadingWaitPlayerListDebugEntries.BuildScrambled(fakeNames));
             }
             catch (Exception ex)
             {
                 ModLog.Warn(Feature, $"Loading wait debug preview failed — {ex.Message}");
-                DebugHide();
+                HideImmediate();
                 return false;
             }
 
             return true;
         }
 
-        internal static void DebugHide()
-        {
-            UIPrefab_Scene_Loading? loading = _activeLoading
-                ?? ModUiGameAccess.TryGetUiManager()?.ui_sceneloading;
-            HideImmediate();
-            CustomLoadingScreenApplier.DebugEndWaitPreview(loading);
-        }
+        internal static void DebugHide() => HideImmediate();
 
         internal static void RefreshFromConfig()
         {
@@ -208,35 +159,14 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
         }
 
-        internal static void ApplyOverlayAlpha(float alpha)
-        {
-            // External alpha (custom overlay fades) owns the list — stop fighting it.
-            _fadingIn = false;
-            _overlay?.ApplyAlpha(alpha);
-            if (_dismissing && alpha <= 0.001f)
-            {
-                HideImmediate();
-            }
-        }
-
         internal static void OnUpdate()
         {
-            if (_fadingIn)
+            if (_fading)
             {
-                TickFadeIn();
+                TickFade();
             }
 
-            if (_vanillaFadingOut)
-            {
-                TickVanillaFade();
-            }
-
-            if (_debugActive)
-            {
-                return;
-            }
-
-            if (!_waitTextActive || _overlay?.GridState == null)
+            if (_debugActive || !_waitActive || _overlay?.GridState == null)
             {
                 return;
             }
@@ -252,7 +182,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
         private static void Refresh(bool force)
         {
-            if (_overlay?.GridState == null || !_waitTextActive)
+            if (_overlay?.GridState == null || !_waitActive)
             {
                 return;
             }
@@ -265,16 +195,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
             try
             {
-                Transform? loadingRoot = _activeLoading?.transform;
-                if (loadingRoot == null)
-                {
-                    return;
-                }
-
-                LoadingWaitPlayerListGrid.Update(
-                    _overlay.GridState,
-                    loadingRoot,
-                    players);
+                LoadingWaitPlayerListGrid.Update(_overlay.GridState, players);
             }
             catch (Exception ex)
             {
@@ -282,68 +203,67 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
         }
 
-        private static Transform? ResolveParent(UIPrefab_Scene_Loading loading)
+        private static Transform EnsureDebugHost()
         {
-            Transform? customOverlay = loading.transform.Find(CustomLoadingScreenConstants.OverlayObjectName);
-            if (customOverlay != null)
+            DestroyDebugHost();
+
+            _debugHost = new GameObject("MPE_LoadingWaitPlayerListDebugHost");
+            UnityEngine.Object.DontDestroyOnLoad(_debugHost);
+
+            RectTransform hostRect = _debugHost.AddComponent<RectTransform>();
+            ModUiLayout.Stretch(hostRect);
+
+            Canvas canvas = _debugHost.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = DebugCanvasSortOrder;
+            return _debugHost.transform;
+        }
+
+        private static void DestroyDebugHost()
+        {
+            if (_debugHost == null)
             {
-                return customOverlay;
+                return;
             }
 
-            return loading.transform;
+            UnityEngine.Object.Destroy(_debugHost);
+            _debugHost = null;
         }
 
-        private static void BeginFadeIn()
+        private static void BeginFade(float from, float to, float duration, bool hideAfter)
         {
-            _fadingIn = true;
-            _fadeInElapsed = 0f;
-            _fadeInDuration = CustomLoadingScreenConstants.DefaultPhaseCrossfadeSeconds;
-            _overlay?.ApplyAlpha(0f);
+            _fading = true;
+            _hideAfterFade = hideAfter;
+            _fadeElapsed = 0f;
+            _fadeDuration = Mathf.Max(duration, 0.05f);
+            _fadeFrom = from;
+            _fadeTo = to;
+            _overlay?.ApplyAlpha(from);
         }
 
-        private static void TickFadeIn()
+        private static void TickFade()
         {
-            _fadeInElapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(_fadeInElapsed / _fadeInDuration);
-            // Write alpha directly so ApplyOverlayAlpha does not clear fade-in mid-tick.
-            _overlay?.ApplyAlpha(Mathf.Lerp(0f, 1f, t));
-            if (t >= 1f)
+            _fadeElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(_fadeElapsed / _fadeDuration);
+            _overlay?.ApplyAlpha(Mathf.Lerp(_fadeFrom, _fadeTo, t));
+            if (t < 1f)
             {
-                _fadingIn = false;
+                return;
             }
-        }
 
-        private static void BeginVanillaFadeOut()
-        {
-            _fadingIn = false;
-            _vanillaFadingOut = true;
-            _vanillaFadeElapsed = 0f;
-            _vanillaFadeStartAlpha = _overlay?.CanvasGroup != null ? _overlay.CanvasGroup.alpha : 1f;
-            _vanillaFadeDuration = ResolveVanillaFadeSeconds();
-            if (_vanillaFadeDuration <= 0.05f)
+            _fading = false;
+            if (_hideAfterFade)
             {
                 HideImmediate();
             }
         }
 
-        private static void TickVanillaFade()
-        {
-            _vanillaFadeElapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(_vanillaFadeElapsed / _vanillaFadeDuration);
-            float alpha = Mathf.Lerp(_vanillaFadeStartAlpha, 0f, t);
-            _overlay?.ApplyAlpha(alpha);
-            if (t >= 1f)
-            {
-                HideImmediate();
-            }
-        }
-
-        private static float ResolveVanillaFadeSeconds()
+        private static float ResolveFadeOutSeconds()
         {
             UIManager? uiManager = ModUiGameAccess.TryGetUiManager();
             if (uiManager == null)
             {
-                return CustomLoadingScreenConstants.DefaultArrivalFadeSeconds;
+                return DefaultFadeOutSeconds;
             }
 
             float seconds = uiManager.InGameFadeInSec > 0.05f

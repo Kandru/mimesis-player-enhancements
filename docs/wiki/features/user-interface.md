@@ -40,7 +40,7 @@ Default: `true`
 
 ### `EnableLoadingWaitPlayerList`
 
-During multiplayer dungeon loading, show a spaced player list centered in a bottom roster strip on `wait.png` (~**70px** tall at 1080p, **10px** from bottom/left/right) while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; players still loading are red; names turn green while that player is talking. Names wrap into at most **2** rows centered in that strip. The list fades in with the wait-image crossfade and fades out with the custom loading screen overlay. Works best with custom loading screen themes; see [Custom Assets](./custom-assets.md).
+During multiplayer dungeon loading, show a spaced player list centered in a shaded bottom roster strip (~**70px** tall at 1080p, **10px** from bottom/left/right) while the game waits for other players (`STRING_LOADING_WAIT`). Loaded players are white; players still loading are red; names turn green while that player is talking. Names wrap into at most **2** rows centered in that strip. The list fades in when the wait text appears and fades out with the loading UI.
 
 | Value | Meaning |
 |-------|---------|
@@ -225,45 +225,5 @@ Volume fraction kept for the non-priority group in `SpeechDucking` mode while th
 | `0`–`1` | Fraction of each player's ESC-menu preferred volume |
 
 Default: `0.2`
-
-### `CustomLoadingScreenMode`
-
-Replace scene loading overlay art with embedded PNG themes. Dungeon entry can crossfade from `loading.png`/`background.png` to `wait.png` while waiting for other players (multiplayer only; skipped when solo or when `wait.png` is absent). Your game only — other players see their own themes. See [Custom Assets](./custom-assets.md) for folder layout and image sizes.
-
-| Value | Meaning |
-|-------|---------|
-| `Vanilla` | Game loading art |
-| `Random` | Pick a theme per transition (optionally filtered by `CustomLoadingScreenRandomPool`) |
-| `Specific` | Always use `CustomLoadingScreenVariant` when that theme exists for the context |
-
-Default: `Random`
-
-### `CustomLoadingScreenVariant`
-
-Which embedded theme folder to use when `CustomLoadingScreenMode` is `Specific`. Must match a theme that has assets for the current transition context (for example `GTA/DungeonStart/background.png`). Empty or invalid values reset to the first discovered theme.
-
-Default: first embedded theme folder name (build-dependent)
-
-### `CustomLoadingScreenRandomPool`
-
-Limits which themes `Random` mode can pick for each transition context. Comma-separated theme folder names. When empty, any theme available for that context may be chosen.
-
-| Value | Meaning |
-|-------|---------|
-| *(empty)* | All themes eligible per context |
-| `theme1,theme2,…` | Only listed themes eligible |
-
-Default: *(empty)*
-
-### `CustomLoadingScreenMotion`
-
-Enable slow pan/zoom (Ken Burns) motion on single-frame loading images. Frame sequences still animate when authored in the theme. Global `false` disables pan/zoom; per-theme `theme.json` can override further.
-
-| Value | Meaning |
-|-------|---------|
-| `true` | Pan/zoom on single-frame images |
-| `false` | Static single-frame images |
-
-Default: `true`
 
 **Full config keys →** [User Interface](../CONFIG.md#user-interface--mimesisplayerenhancement_ui)

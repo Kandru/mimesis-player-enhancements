@@ -38,7 +38,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
                 patchTypes);
             RoundStartSoundPatches.Apply(harmony);
             DiscoBallSoundPatches.Apply(harmony);
-            CustomLoadingScreenPatches.Apply(harmony);
         }
     }
 
@@ -56,7 +55,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             FpsUiNetWorthOverlay.RefreshFromConfig();
             RoundStartSoundRuntime.RefreshFromConfig();
             DiscoBallSoundRuntime.RefreshFromConfig();
-            CustomLoadingScreenRuntime.RefreshFromConfig();
             SpectatorVoiceBalanceRuntime.RefreshFromConfig();
             VoiceNoiseGateRuntime.RefreshFromConfig();
         }
@@ -80,7 +78,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface
             SurvivalResultDebugPreview.OnSessionEnded();
             LoadingWaitMovementLockRuntime.OnSessionEnded();
             LoadingWaitPlayerListRuntime.OnSessionEnded();
-            CustomLoadingScreenRuntime.OnSessionEnded();
             ExtendedSaveSlotsRuntime.OnSessionEnded();
             WorldOverlayRuntime.OnSessionEnded();
             FpsUiOverlay.OnSessionEnded();

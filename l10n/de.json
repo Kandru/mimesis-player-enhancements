@@ -31,7 +31,7 @@
         "inventoryNumberKeys": "Inventar-Zahlentasten",
         "roundStartSound": "Dungeon-Landesound",
         "discoBallSound": "Discokugel-Musik",
-        "customLoadingScreen": "Benutzerdefinierte Ladebildschirme",
+        "loadingWaitPlayerList": "Warte-Spielerliste",
         "spectatorVoiceBalance": "Zuschauer-Sprachbalance",
         "voiceNoiseGate": "Sprachaktivierungs-Rauschsperre"
       },
@@ -49,7 +49,7 @@
       },
       "EnableLoadingWaitPlayerList": {
         "title": "Lade-Warte-Spielerliste",
-        "description": "Spielerliste auf dem Ladebildschirm während des Wartens auf andere."
+        "description": "Zeigt unten eine abgedunkelte Spielerliste, während auf andere Spieler gewartet wird."
       },
       "EnableExtendedInGameMenuPlayerList": {
         "title": "Erweiterte Menü-Liste aktivieren",
@@ -162,27 +162,6 @@
       "VoiceNoiseGateStrength": {
         "title": "Rauschsperren-Stärke",
         "description": "Wie aggressiv Hintergrundgeräusche unterdrückt werden. Höhere Werte = strengere Spracherkennung und stärkere Rauschunterdrückung."
-      },
-      "CustomLoadingScreenMode": {
-        "title": "Ladebildschirm-Modus",
-        "description": "Ersetzt Ladebildschirm-Grafiken durch eigene Themes.",
-        "options": {
-          "Vanilla": "Vanilla (Spielgrafik)",
-          "Random": "Zufälliges Theme",
-          "Specific": "Bestimmtes Theme"
-        }
-      },
-      "CustomLoadingScreenVariant": {
-        "title": "Ladebildschirm-Theme",
-        "description": "Theme bei Modus „Bestimmtes Theme“."
-      },
-      "CustomLoadingScreenRandomPool": {
-        "title": "Ladebildschirm-Pool",
-        "description": "Nur bei Modus „Zufälliges Theme“ — welche Themes gewählt werden dürfen. Leer lassen = alle Themes."
-      },
-      "CustomLoadingScreenMotion": {
-        "title": "Ladebildschirm-Bewegung",
-        "description": "Langsames Pan/Zoom bei Einzelbild-Ladegrafiken. Frame-Sequenzen animieren immer."
       }
     },
     "MimesisPlayerEnhancement_Privacy": {
@@ -1788,7 +1767,7 @@
     "debug_overlay_spectator": "Zuschauerliste",
     "debug_overlay_spectator_desc": "Zeigt die Zuschauer-Spielerliste mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_loading_wait": "Warte-Ladeliste",
-    "debug_overlay_loading_wait_desc": "Zeigt die Spielerliste auf dem Ladebildschirm mit Fake-Spielern für Layout-Checks an.",
+    "debug_overlay_loading_wait_desc": "Zeigt die untere Warte-Spielerliste mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_esc_menu": "ESC-Menü-Liste",
     "debug_overlay_esc_menu_desc": "Zeigt die Spielerliste im Spielmenü mit Fake-Spielern für Layout-Checks an.",
     "debug_overlay_survival_result": "Überlebensergebnis / Tram-Liste",

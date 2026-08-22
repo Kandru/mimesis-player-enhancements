@@ -1,4 +1,5 @@
 using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
@@ -15,6 +16,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             UIPrefab_Spectator_PlayerListView listView,
             RectTransform boundsRect,
             RectTransform flowRect,
+            RectTransform shadeRect,
             out GridState state)
         {
             state = null!;
@@ -37,6 +39,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             {
                 BoundsRect = boundsRect,
                 FlowRect = flowRect,
+                ShadeRect = shadeRect,
                 Assets = assets,
                 FontSize = fontSize,
                 LiveColor = liveColor,
@@ -50,23 +53,20 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             return true;
         }
 
-        internal static void Update(
-            GridState state,
-            Transform loadingRoot,
-            IReadOnlyList<LoadingWaitPlayerEntry> players)
+        internal static void Update(GridState state, IReadOnlyList<LoadingWaitPlayerEntry> players)
         {
             if (state.FlowRect == null || state.BoundsRect == null)
             {
                 return;
             }
 
-            ApplyContentBounds(state, loadingRoot);
-            RefreshLayoutMetrics(state, loadingRoot);
+            RefreshLayoutMetrics(state);
+            LoadingWaitPlayerListBandLayout.ApplyShadeRect(
+                state.ShadeRect,
+                state.LastBoundsWidth,
+                state.LastBoundsHeight);
             EnsureSlots(state, players.Count);
-
-            // Always re-pack: speaking/color bind is cheap; positions must stay correct
-            // after bounds/band settle across the first frames of the wait screen.
-            PackAndPositionSlots(state, loadingRoot, players);
+            PackAndPositionSlots(state, players);
 
             for (int slotIndex = 0; slotIndex < state.Slots.Count; slotIndex++)
             {
@@ -100,90 +100,61 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             flowRect.anchorMax = Vector2.one;
             flowRect.offsetMin = Vector2.zero;
             flowRect.offsetMax = Vector2.zero;
-            flowRect.pivot = new Vector2(0f, 0f);
+            flowRect.pivot = Vector2.zero;
             flowRect.anchoredPosition = Vector2.zero;
             flowRect.localScale = Vector3.one;
         }
 
-        private static void ApplyContentBounds(GridState state, Transform loadingRoot)
+        private static void RefreshLayoutMetrics(GridState state)
         {
-            RectTransform? layoutParent = ResolveLayoutParent(loadingRoot, state.BoundsRect);
-            if (layoutParent == null)
-            {
-                return;
-            }
-
-            float imageAspect = CustomLoadingScreenImageLayout.FallbackImageAspect;
-            CustomLoadingScreenImageLayout.TryResolveImageAspect(loadingRoot, out imageAspect);
-            CustomLoadingScreenImageLayout.ApplyContentBoundsInset(state.BoundsRect, layoutParent, imageAspect);
-            ConfigureFlowRect(state.FlowRect);
+            ResolveBoundsSize(state, out float width, out float height);
+            float horizontalInset = LoadingWaitPlayerListBandLayout.ResolveHorizontalInset(width);
+            state.LastBoundsWidth = width;
+            state.LastBoundsHeight = height;
+            state.LastAvailableWidth = Mathf.Max(width - (2f * horizontalInset), 32f);
         }
 
-        private static RectTransform? ResolveLayoutParent(Transform loadingRoot, RectTransform boundsRect)
+        private static void ResolveBoundsSize(GridState state, out float width, out float height)
         {
-            if (loadingRoot != null)
-            {
-                Transform? overlay = loadingRoot.Find(CustomLoadingScreenConstants.OverlayObjectName);
-                if (overlay is RectTransform overlayRect)
-                {
-                    return overlayRect;
-                }
-            }
-
-            return boundsRect.parent as RectTransform;
-        }
-
-        private static void RefreshLayoutMetrics(GridState state, Transform loadingRoot)
-        {
-            float boundsWidth = ResolveBoundsWidth(state, loadingRoot);
-            float horizontalInset = CustomLoadingScreenImageLayout.ResolveWaitPlayerBandHorizontalInset(boundsWidth);
-            state.LastBoundsWidth = boundsWidth;
-            state.LastAvailableWidth = Mathf.Max(boundsWidth - (2f * horizontalInset), 32f);
-        }
-
-        private static float ResolveBoundsWidth(GridState state, Transform loadingRoot)
-        {
-            if (CustomLoadingScreenImageLayout.TryResolveContentWidth(
-                    loadingRoot,
-                    state.BoundsRect,
-                    out float contentWidth))
-            {
-                return contentWidth;
-            }
-
             Canvas.ForceUpdateCanvases();
             RectTransform boundsRect = state.BoundsRect;
-            float width = boundsRect.rect.width;
-            if (width > 1f)
-            {
-                return width;
-            }
+            width = boundsRect.rect.width;
+            height = boundsRect.rect.height;
 
-            if (boundsRect.parent is RectTransform parentRect)
+            if ((width <= 1f || height <= 1f) && boundsRect.parent is RectTransform parentRect)
             {
-                width = parentRect.rect.width + boundsRect.offsetMin.x + boundsRect.offsetMax.x;
-                if (width > 1f)
+                if (width <= 1f)
                 {
-                    return width;
+                    width = parentRect.rect.width;
+                }
+
+                if (height <= 1f)
+                {
+                    height = parentRect.rect.height;
                 }
             }
 
-            return Screen.width;
+            if (width <= 1f)
+            {
+                width = Screen.width;
+            }
+
+            if (height <= 1f)
+            {
+                height = Screen.height;
+            }
         }
 
         private static void PackAndPositionSlots(
             GridState state,
-            Transform loadingRoot,
             IReadOnlyList<LoadingWaitPlayerEntry> players)
         {
             float boundsWidth = state.LastBoundsWidth;
             float availableWidth = state.LastAvailableWidth;
-            CustomLoadingScreenImageLayout.ResolveWaitPlayerBand(
-                state.BoundsRect,
-                loadingRoot,
+            LoadingWaitPlayerListBandLayout.ResolveBand(
+                state.LastBoundsHeight,
                 out float bandBottomY,
                 out float bandHeight);
-            bandHeight = ResolveBandHeight(state, bandHeight);
 
             LoadingWaitLayoutMetrics metrics = LoadingWaitPlayerListLayout.Resolve(
                 state.MeasureText,
@@ -196,10 +167,6 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             EnsureRowContainers(state, metrics.Rows.Count);
 
             int rowCount = metrics.Rows.Count;
-            ModLog.Debug(
-                Feature,
-                $"Loading wait player list rows — count={rowCount}, rowHeight={metrics.RowHeight:F1}, bandY={bandBottomY:F1}, bandH={bandHeight:F1}");
-
             for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
                 LoadingWaitLayoutRow row = metrics.Rows[rowIndex];
@@ -220,9 +187,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
 
                 RectTransform rowRect = state.RowRects[rowIndex];
                 rowRect.gameObject.SetActive(true);
-                rowRect.anchorMin = new Vector2(0f, 0f);
-                rowRect.anchorMax = new Vector2(0f, 0f);
-                rowRect.pivot = new Vector2(0f, 0f);
+                rowRect.anchorMin = Vector2.zero;
+                rowRect.anchorMax = Vector2.zero;
+                rowRect.pivot = Vector2.zero;
                 rowRect.anchoredPosition = new Vector2(0f, rowY);
                 rowRect.sizeDelta = new Vector2(boundsWidth, metrics.RowHeight);
 
@@ -248,45 +215,18 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             }
         }
 
-        private static float ResolveBandHeight(GridState state, float bandHeight)
-        {
-            if (bandHeight > 0.5f)
-            {
-                return bandHeight;
-            }
-
-            float boundsHeight = state.BoundsRect.rect.height;
-            if (boundsHeight < 0.5f && state.BoundsRect.parent is RectTransform parentRect)
-            {
-                boundsHeight = parentRect.rect.height;
-            }
-
-            if (boundsHeight < 0.5f)
-            {
-                boundsHeight = Screen.height;
-            }
-
-            return CustomLoadingScreenImageLayout.ResolveWaitPlayerBandFallbackHeight(boundsHeight);
-        }
-
         private static void PositionSlot(PlayerSlot slot, float itemWidth, float x, float rowHeight)
         {
             RectTransform rootRect = slot.RootRect;
-            rootRect.anchorMin = new Vector2(0f, 0f);
-            rootRect.anchorMax = new Vector2(0f, 0f);
-            rootRect.pivot = new Vector2(0f, 0f);
+            rootRect.anchorMin = Vector2.zero;
+            rootRect.anchorMax = Vector2.zero;
+            rootRect.pivot = Vector2.zero;
             rootRect.anchoredPosition = new Vector2(x, 0f);
             rootRect.sizeDelta = new Vector2(itemWidth, rowHeight);
             rootRect.localScale = Vector3.one;
 
-            RectTransform nameRect = slot.NameRect;
-            nameRect.anchorMin = Vector2.zero;
-            nameRect.anchorMax = Vector2.one;
-            nameRect.offsetMin = Vector2.zero;
-            nameRect.offsetMax = Vector2.zero;
-            nameRect.anchoredPosition = Vector2.zero;
-            nameRect.sizeDelta = Vector2.zero;
-            nameRect.localScale = Vector3.one;
+            ModUiLayout.Stretch(slot.NameRect);
+            slot.NameRect.localScale = Vector3.one;
         }
 
         private static void BindSlot(GridState state, PlayerSlot slot, LoadingWaitPlayerEntry entry)
@@ -312,8 +252,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
                 int index = state.RowRects.Count;
                 GameObject rowObject = new($"LoadingWaitPlayerRow_{index + 1}");
                 rowObject.transform.SetParent(state.FlowRect, worldPositionStays: false);
-                RectTransform rowRect = rowObject.AddComponent<RectTransform>();
-                state.RowRects.Add(rowRect);
+                state.RowRects.Add(rowObject.AddComponent<RectTransform>());
             }
         }
 
@@ -369,9 +308,9 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             GameObject measureObject = new("MeasureText");
             measureObject.transform.SetParent(parent, worldPositionStays: false);
             RectTransform measureRect = measureObject.AddComponent<RectTransform>();
-            measureRect.anchorMin = new Vector2(0f, 0f);
-            measureRect.anchorMax = new Vector2(0f, 0f);
-            measureRect.pivot = new Vector2(0f, 0f);
+            measureRect.anchorMin = Vector2.zero;
+            measureRect.anchorMax = Vector2.zero;
+            measureRect.pivot = Vector2.zero;
             measureRect.anchoredPosition = new Vector2(-10000f, -10000f);
             measureRect.sizeDelta = new Vector2(2048f, 128f);
 
@@ -474,6 +413,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
         {
             internal RectTransform BoundsRect = null!;
             internal RectTransform FlowRect = null!;
+            internal RectTransform ShadeRect = null!;
             internal ModUiAssets Assets = ModUiAssets.Fallback;
             internal Component? MeasureText;
             internal List<PlayerSlot> Slots = [];
@@ -484,6 +424,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList
             internal float RowHeight = FallbackRowHeight;
             internal float LastAvailableWidth;
             internal float LastBoundsWidth;
+            internal float LastBoundsHeight;
         }
     }
 }
