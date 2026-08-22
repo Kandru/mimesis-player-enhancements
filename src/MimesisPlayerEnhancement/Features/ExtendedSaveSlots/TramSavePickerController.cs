@@ -18,7 +18,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private static MainMenu? _mainMenu;
         private static UIPrefab_MainMenu? _mainMenuUi;
         private static SaveSlotPickerPanel? _panel;
-        private static string? _hostButtonLabel;
         private static MenuMode _menuMode = MenuMode.Unknown;
 
         internal static bool IsActive => ModConfig.EnableExtendedSaveSlots.Value;
@@ -37,7 +36,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             ResetMenuSession();
             _mainMenu = null;
             _mainMenuUi = null;
-            _hostButtonLabel = null;
             _menuMode = MenuMode.Unknown;
             SaveSlotGameAccess.ClearCachedUi();
             SaveSlotPickerExtraStats.ClearCache();
@@ -58,7 +56,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         {
             _mainMenu = mainMenu;
             _mainMenuUi = mainMenuUi;
-            _hostButtonLabel = null;
             ResetMenuSession();
             RestoreMainMenuRoot();
             RefreshMenuMode();
@@ -89,7 +86,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             }
 
             ConfigureExtendedMainMenuButtons();
-            ApplyFunnyHostButtonLabel();
+            ApplyHostButtonLabel();
             HideLoadButtonViaMirror();
             _menuMode = MenuMode.Extended;
         }
@@ -105,8 +102,6 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             {
                 SaveSlotPickerChrome.ForceRestoreMainMenuDimming(_mainMenuUi);
             }
-
-            _hostButtonLabel = null;
 
             // Never applied extended wiring — leave the game's MainMenu.Start handlers alone.
             if (_menuMode != MenuMode.Extended)
@@ -305,27 +300,21 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             }
         }
 
-        private static void ApplyFunnyHostButtonLabel()
+        private static void ApplyHostButtonLabel()
         {
             if (_mainMenuUi?.UE_HostButton == null)
             {
                 return;
             }
 
-            _hostButtonLabel ??= FunnyTramMenuLabels.PickRandom();
-            ApplyLabelToButton(_mainMenuUi.UE_HostButton.gameObject, _hostButtonLabel);
-        }
-
-        private static void ApplyLabelToButton(GameObject buttonRoot, string label)
-        {
-            Component? text = Ui.ModUiText.FindTextComponent(buttonRoot);
+            Component? text = ModUiText.FindTextComponent(_mainMenuUi.UE_HostButton.gameObject);
             if (text == null)
             {
                 ModLog.Warn(Feature, "Could not find button label text to replace.");
                 return;
             }
 
-            Ui.ModUiText.SetText(text, label);
+            ModUiText.SetText(text, ModL10n.Get("saveslots.host_button"));
         }
 
 #pragma warning disable CS0618
