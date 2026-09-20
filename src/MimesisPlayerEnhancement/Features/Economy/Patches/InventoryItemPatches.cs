@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic/InventoryItem.cs:L118-128
+    // game@0.3.2 Assembly-CSharp/Mimic/InventoryItem.cs:L118-128
     [HarmonyPatch(typeof(InventoryItem), nameof(InventoryItem.ReinforceCost), MethodType.Getter)]
     internal static class InventoryItemReinforceCostPatch
     {

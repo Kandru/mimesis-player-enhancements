@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_Scene_Loading.cs:L132-135
+    // game@0.3.2 Assembly-CSharp/UIPrefab_Scene_Loading.cs:L132-135
     [HarmonyPatch(typeof(UIPrefab_Scene_Loading), nameof(UIPrefab_Scene_Loading.SetLoadingText))]
     internal static class UIPrefabSceneLoadingWaitPlayerListSetLoadingTextPatch
     {
@@ -19,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList.
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L97-116
+    // game@0.3.2 Assembly-CSharp/UIPrefabScript.cs:L97-116
     [HarmonyPatch(typeof(UIPrefabScript), nameof(UIPrefabScript.Hide))]
     internal static class UIPrefabSceneLoadingWaitPlayerListHidePatch
     {

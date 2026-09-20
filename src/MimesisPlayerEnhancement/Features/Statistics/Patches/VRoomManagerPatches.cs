@@ -2,7 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L602-624
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L705-727
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.TerminateSession))]
     internal static class VRoomManagerTerminateSessionPatches
     {
@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L748-759
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L894-905
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnRegistPlayer))]
     public static class VRoomManagerRegisterPatches
     {

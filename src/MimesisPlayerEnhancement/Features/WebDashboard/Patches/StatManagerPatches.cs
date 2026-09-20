@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/StatManager.cs:L663-672
+    // game@0.3.2 Assembly-CSharp/StatManager.cs:L675-684
     [HarmonyPatch(typeof(StatManager), nameof(StatManager.AddMutableStat))]
     internal static class BlockContaAddMutableStatPatch
     {
@@ -19,7 +19,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/StatManager.cs:L655-661
+    // game@0.3.2 Assembly-CSharp/StatManager.cs:L667-673
     [HarmonyPatch(typeof(StatManager), nameof(StatManager.SetMutableStat))]
     internal static class BlockContaSetMutableStatPatch
     {

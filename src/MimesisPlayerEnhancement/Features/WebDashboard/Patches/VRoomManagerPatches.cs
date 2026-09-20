@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L474-508
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L562-596
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
     internal static class PendMoveToDungeonCheatsPatch
     {
@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
             WebDashboardHostCheatsRuntime.BeginRoomTransition("tram to dungeon");
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L572-581
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L675-684
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToWaitingRoom))]
     internal static class PendMoveToWaitingRoomCheatsPatch
     {
@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
             WebDashboardHostCheatsRuntime.BeginRoomTransition("maintenance to tram");
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L525-570
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L628-673
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToMaintenance))]
     internal static class PendMoveToMaintenanceCheatsPatch
     {
@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
             WebDashboardHostCheatsRuntime.BeginRoomTransition("dungeon to maintenance");
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L510-523
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L598-611
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDeathMatch))]
     internal static class PendMoveToDeathMatchCheatsPatch
     {

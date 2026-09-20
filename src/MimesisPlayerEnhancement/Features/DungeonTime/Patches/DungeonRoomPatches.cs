@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L100-119
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L100-119
     [HarmonyPatch(typeof(DungeonRoom), MethodType.Constructor, [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty)])]
     internal static class DungeonRoomConstructorPatch
     {
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L1018-1021
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L1018-1021
     [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
     internal static class DungeonRoomOnAllMemberEnteredPatch
     {
@@ -41,7 +41,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L871-876
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L871-876
     [HarmonyPatch(typeof(DungeonRoom), "GetCurrentTime")]
     internal static class DungeonRoomGetCurrentTimePatch
     {
@@ -66,7 +66,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L707-766
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L705-766
     // Adjust pending _currentTime / _elapsedTime by TimeMultiplier (and stretch on display).
     [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
     [HarmonyPriority(HarmonyLib.Priority.First)]
@@ -88,7 +88,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L705-748
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L705-766
     [HarmonyPatch(typeof(DungeonRoom), "OnUpdate")]
     internal static class DungeonRoomOnUpdateClockPatch
     {

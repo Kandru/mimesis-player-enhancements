@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L245-255
+    // game@0.3.2 Assembly-CSharp/GameSessionInfo.cs:L245-255
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.IncreaseStageCount))]
     internal static class GameSessionInfoIncreaseStageCountPatches
     {

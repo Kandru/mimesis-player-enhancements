@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_PublicRoomList.cs:L252-321
+    // game@0.3.2 Assembly-CSharp/UIPrefab_PublicRoomList.cs:L252-321
     [HarmonyPatch(typeof(UIPrefab_PublicRoomList), nameof(UIPrefab_PublicRoomList.SetRoomList))]
     internal static class PublicRoomListSetRoomListTranspiler
     {

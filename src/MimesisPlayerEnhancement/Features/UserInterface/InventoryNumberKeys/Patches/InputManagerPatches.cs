@@ -2,7 +2,7 @@ using Mimic.InputSystem;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.InputSystem/InputManager.cs:L526-535
+    // game@0.3.2 Assembly-CSharp/Mimic.InputSystem/InputManager.cs:L526-535
     [HarmonyPatch(typeof(InputManager), nameof(InputManager.PressKey))]
     internal static class InputManagerPressKeyPostfix
     {

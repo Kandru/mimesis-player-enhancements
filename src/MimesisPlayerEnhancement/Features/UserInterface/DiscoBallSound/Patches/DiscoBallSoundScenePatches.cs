@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GamePlayScene.cs:L265-319
+    // game@0.3.2 Assembly-CSharp/GamePlayScene.cs:L265-319
     [HarmonyPatch(typeof(GamePlayScene), "Start")]
     internal static class DiscoBallSoundGamePlaySceneStartPatch
     {
@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1115-1158
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1152-1195
     [HarmonyPatch(typeof(GameMainBase), "OnDestroy")]
     internal static class DiscoBallSoundGameMainBaseOnDestroyPatch
     {

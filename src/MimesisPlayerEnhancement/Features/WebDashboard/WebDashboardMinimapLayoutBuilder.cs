@@ -760,6 +760,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
             return main?.GetType().Name switch
             {
                 nameof(DeathMatchScene) => "Death match",
+                nameof(LogisticsScene) => "Logistics",
                 null => "Session",
                 _ => main.GetType().Name,
             };

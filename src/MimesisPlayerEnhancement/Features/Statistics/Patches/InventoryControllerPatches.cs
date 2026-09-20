@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/InventoryController.cs:L1956-1977
+    // game@0.3.2 Assembly-CSharp/InventoryController.cs:L2019-2040
     [HarmonyPatch]
     internal static class InventoryControllerOnAddItemByLootingPatches
     {

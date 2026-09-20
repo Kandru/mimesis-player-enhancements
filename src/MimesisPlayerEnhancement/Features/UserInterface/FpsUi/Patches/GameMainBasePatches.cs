@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L2446-2465
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L2559-2578
     [HarmonyPatch(typeof(GameMainBase), "InitCommonUIValue")]
     internal static class InitCommonUiValuePostfix
     {
@@ -34,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1669-1688
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1720-1739
     [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.OnPlayerSpawn))]
     internal static class OnPlayerSpawnPostfix
     {
@@ -78,7 +78,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1115-1158
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1152-1195
     [HarmonyPatch]
     internal static class GameMainOnDestroyPostfix
     {

@@ -1,5 +1,9 @@
 In case of any errors please create an issue: https://github.com/Kandru/mimesis-player-enhancements/issues
 
+## Unreleased
+- compatibility: MIMESIS 0.3.2 (Logistics play mode left vanilla — Join Anytime / Economy / scene-scoped config / dashboard do not apply there)
+- fix: MenuMirror keeps the new Logistics main-menu button visible when Management/Savegames inject buttons
+
 ## 26.8.3
 - removed the loading screen overlays because people don't understand they come from a plug-in and thinks its from the developers even though I clearly stated that in the Wiki, Readme and this Changelog. So be it. Gone they are. I don't want the developers to be blamed for something they didn't do.
 - Keep in mind: you can **disable anything** in the settings of this mod. This includes sounds, overlays and general features. Most features are disabled by default but some I find nice are enabled by default. Use the **Management Button** ingame to change stuff.

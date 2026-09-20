@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.DiscoBallSound.Patches
 {
-    // game@0.3.1 Assembly-CSharp/PartyButtonLevelObject.cs:L106-125
+    // game@0.3.2 Assembly-CSharp/PartyButtonLevelObject.cs:L106-113
     [HarmonyPatch(typeof(PartyButtonLevelObject), "PlayPartySound")]
     internal static class PartyButtonPlayPartySoundPatch
     {

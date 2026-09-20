@@ -3,8 +3,8 @@ using ReluReplay;
 
 namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/ReluReplay/ReplayManager.cs:L264-279
-    // game@0.3.1 Assembly-CSharp/ReluReplay/ReplayManager.cs:L44 (_requireFeedbackReplayFile)
+    // game@0.3.2 Assembly-CSharp/ReluReplay/ReplayManager.cs:L264-279
+    // game@0.3.2 Assembly-CSharp/ReluReplay/ReplayManager.cs:L264-279 (_requireFeedbackReplayFile)
     [HarmonyPatch]
     internal static class BlockReplayManagerSetFeedbackUploadedPatch
     {

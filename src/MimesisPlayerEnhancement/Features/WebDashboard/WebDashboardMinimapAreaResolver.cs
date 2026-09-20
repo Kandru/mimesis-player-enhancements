@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
         internal const string IndoorAreaId = "indoor";
         internal const string HubAreaId = "hub";
 
-        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L79
+        // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L79
         private static readonly FieldInfo? DungeonSpaceGroupField =
             AccessTools.Field(typeof(DungeonRoom), "_dungeonSpaceGroup");
 
@@ -84,7 +84,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         internal static bool ShouldHideMap(GameMainBase? main)
         {
-            return main is InTramWaitingScene or MaintenanceScene or DeathMatchScene;
+            return main is InTramWaitingScene or MaintenanceScene or DeathMatchScene or LogisticsScene;
         }
 
         internal static ISpaceGroup? TryGetOutdoorSpaceGroup(DungeonRoom room)

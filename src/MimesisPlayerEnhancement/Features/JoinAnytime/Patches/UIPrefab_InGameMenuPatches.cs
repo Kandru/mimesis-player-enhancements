@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L489-580
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L489-583
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "Start")]
     internal static class UIPrefabInGameMenuStartJoinAnytimePatch
     {
@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L607-656
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L610-664
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
     internal static class UIPrefabInGameMenuOnEnableJoinAnytimePatch
     {
@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L658-672
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L666-680
     [HarmonyPatch]
     internal static class UIPrefabInGameMenuSetPublicRoomNamePatch
     {

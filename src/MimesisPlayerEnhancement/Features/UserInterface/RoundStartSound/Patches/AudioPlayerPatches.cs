@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.RoundStartSound.Patches
 {
-    // game@0.3.1 Assembly-CSharp/AudioPlayer.cs:L11-17
+    // game@0.3.2 Assembly-CSharp/AudioPlayer.cs:L11-17
     [HarmonyPatch(typeof(AudioPlayer), "Start")]
     internal static class AudioPlayerStartPatch
     {

@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/NewTramLeverLevelObject.cs:L522-534
+    // game@0.3.2 Assembly-CSharp/NewTramLeverLevelObject.cs:L522-534
     [HarmonyPatch]
     internal static class NewTramLeverLevelObjectGetAddtionalSimpleTextPatch
     {

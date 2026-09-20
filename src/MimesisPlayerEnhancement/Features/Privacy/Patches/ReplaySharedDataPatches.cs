@@ -3,7 +3,7 @@ using ReluReplay.Shared;
 
 namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/ReluReplay.Shared/ReplaySharedData.cs:L388-391
+    // game@0.3.2 Assembly-CSharp/ReluReplay.Shared/ReplaySharedData.cs:L388-391
     [HarmonyPatch]
     internal static class BlockReplaySharedDataSetRecordModePatch
     {

@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
                 HarmonyPatchHelper.GetNestedPatchTypes(typeof(SceneScopedConfigPatches)));
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L372-409
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L429-466
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
         internal static class VRoomManagerEnterWaitingRoomScenePatch
         {
@@ -30,7 +30,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L332-370
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L389-427
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))]
         internal static class VRoomManagerEnterMaintenenceRoomScenePatch
         {
@@ -48,7 +48,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L167-189
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L220-243
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.CreateGameRoom))]
         internal static class VRoomManagerCreateGameRoomScenePatch
         {
@@ -66,7 +66,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L411-439
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L468-496
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterDungeon))]
         internal static class VRoomManagerEnterDungeonScenePatch
         {
@@ -84,7 +84,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L441-467
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L498-524
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterDeathMatchRoom))]
         internal static class VRoomManagerEnterDeathMatchRoomScenePatch
         {
@@ -102,7 +102,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L607-697
+        // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L607-697
         [HarmonyPatch(typeof(DungeonRoom), "SetDungeonState")]
         internal static class DungeonRoomSetDungeonStateScenePatch
         {
@@ -127,7 +127,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
             }
         }
 
-        // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L583-600
+        // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L686-703
         [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))]
         internal static class VRoomManagerOnDungeonFinishedScenePatch
         {

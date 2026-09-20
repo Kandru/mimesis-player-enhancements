@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_TramScreen.cs:L417-431
+    // game@0.3.2 Assembly-CSharp/UIPrefab_TramScreen.cs:L434-449
     [HarmonyPatch]
     internal static class UIPrefabTramScreenRefreshRepairGuideTextPatch
     {

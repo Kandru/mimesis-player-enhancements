@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.SpawnScaling
     {
         private const string Feature = "SpawnScaling";
 
-        // game@0.3.1 Assembly-CSharp/IVroom.cs:L3920-3930
+        // game@0.3.2 Assembly-CSharp/IVroom.cs:L3978-3988
         private static readonly MethodInfo SpawnMonsterMethod =
             AccessTools.Method(typeof(IVroom), "SpawnMonster",
             [

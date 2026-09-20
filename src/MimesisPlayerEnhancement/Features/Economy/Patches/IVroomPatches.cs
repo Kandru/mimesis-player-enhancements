@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L125
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L125
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.Currency), MethodType.Setter)]
     internal static class IVroomSetCurrencyPatch
     {
@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L897-921
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L898-922
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.GetNewItemElement))]
     internal static class IVroomGetNewItemElementPatch
     {

@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
         private const BindingFlags InstanceFlags =
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        // game@0.3.1 Assembly-CSharp PlatformMgr.Load (generic)
+        // game@0.3.2 Assembly-CSharp PlatformMgr.Load (generic)
         private static readonly MethodInfo? LoadSaveMethod =
             AccessTools.Method(typeof(PlatformMgr), "Load")?.MakeGenericMethod(typeof(MMSaveGameData));
 
@@ -34,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
             return GameSessionAccess.TryGetPdata();
         }
 
-        // game@0.3.1 Assembly-CSharp/Hub.cs inputman
+        // game@0.3.2 Assembly-CSharp/Hub.cs inputman
         internal static object? TryGetInputManager()
         {
             if (Hub.s == null)

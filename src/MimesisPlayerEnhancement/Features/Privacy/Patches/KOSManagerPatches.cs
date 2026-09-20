@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/KOSManager.cs:L22-35
+    // game@0.3.2 Assembly-CSharp/KOSManager.cs:L22-35
     [HarmonyPatch]
     internal static class BlockKraftonGppSdkPatch
     {

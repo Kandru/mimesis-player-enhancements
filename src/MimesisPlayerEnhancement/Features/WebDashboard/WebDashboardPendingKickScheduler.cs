@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
     {
         private const string Feature = "WebDashboard";
 
-        // game@0.3.1 SessionManager.HandleKickPlayerReq — _reservedForceKickSessions delay
+        // game@0.3.2 SessionManager.HandleKickPlayerReq — _reservedForceKickSessions delay
         internal const long ForceRemoveDelayMs = 5000L;
 
         private static readonly Dictionary<long, long> PendingDueTicks = new();

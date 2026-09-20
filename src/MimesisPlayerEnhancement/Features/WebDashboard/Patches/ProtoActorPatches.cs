@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5651-5793
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5687-5829
     [HarmonyPatch(typeof(ProtoActor), "UpdateControl")]
     internal static class NoClipUpdateControlPatch
     {

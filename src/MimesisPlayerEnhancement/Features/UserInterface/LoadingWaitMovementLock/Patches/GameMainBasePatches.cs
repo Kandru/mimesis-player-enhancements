@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLock.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L2298-2303
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L2380-2386
     [HarmonyPatch(typeof(GameMainBase), "SetEnableInputForMyAvatar")]
     internal static class GameMainBaseSetEnableInputForMyAvatarMovementLockPatch
     {
@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitMovementLoc
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1184-1194
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1221-1231
     [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.EndSceneLoading))]
     internal static class GameMainBaseEndSceneLoadingMovementLockPatch
     {

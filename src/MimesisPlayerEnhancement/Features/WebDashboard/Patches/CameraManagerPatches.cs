@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/CameraManager.cs:L240-245
+    // game@0.3.2 Assembly-CSharp/CameraManager.cs:L245-250
     [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEnterDungeon))]
     internal static class OnEnterDungeonCheatsPatch
     {
@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
             WebDashboardHostCheatsRuntime.EndRoomTransition("dungeon entered");
     }
 
-    // game@0.3.1 Assembly-CSharp/CameraManager.cs:L247-250
+    // game@0.3.2 Assembly-CSharp/CameraManager.cs:L252-255
     [HarmonyPatch(typeof(CameraManager), nameof(CameraManager.OnEndDungeon))]
     internal static class OnEndDungeonCheatsPatch
     {

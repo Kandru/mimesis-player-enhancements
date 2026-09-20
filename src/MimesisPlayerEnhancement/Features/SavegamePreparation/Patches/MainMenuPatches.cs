@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SavegamePreparation.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MainMenu.cs:L87-104
+    // game@0.3.2 Assembly-CSharp/MainMenu.cs:L102-110
     [HarmonyPatch(typeof(MainMenu), "CreateNewGameInSlot", typeof(UIPrefab_NewTram), typeof(int))]
     internal static class MainMenuCreateNewGameInSlotNewTramPatch
     {

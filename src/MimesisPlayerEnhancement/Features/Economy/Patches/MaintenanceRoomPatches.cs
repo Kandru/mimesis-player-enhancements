@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L491-500
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L501-510
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.TryGetShopItemPrice))]
     internal static class MaintenanceRoomTryGetShopItemPricePatch
     {
@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L62-82
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L62-82
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.InitShopItems))]
     internal static class MaintenanceRoomInitShopItemsPatch
     {
@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L757-895
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L767-905
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.ApplyLoadedGameData))]
     internal static class MaintenanceRoomApplyLoadedGameDataPatch
     {
@@ -73,7 +73,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L95-115
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L95-115
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnEnterChannel))]
     internal static class MaintenanceRoomOnEnterChannelPatch
     {
@@ -93,7 +93,7 @@ namespace MimesisPlayerEnhancement.Features.Economy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L117-147
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L117-147
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.OnRequestStartSession))]
     internal static class MaintenanceRoomOnRequestStartSessionPatch
     {

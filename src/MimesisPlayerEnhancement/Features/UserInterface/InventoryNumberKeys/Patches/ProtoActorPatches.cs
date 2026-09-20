@@ -3,7 +3,7 @@ using Mimic.InputSystem;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5183-5191
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5219-5227
     [HarmonyPatch(typeof(ProtoActor), "ProcessEmoteKey")]
     internal static class ProtoActorProcessEmoteKeyPrefix
     {
@@ -60,7 +60,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys.Pa
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5193-5208
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5229-5244
     [HarmonyPatch(typeof(ProtoActor), "ProcessUISelectKey")]
     internal static class ProtoActorProcessUiSelectKeyPrefix
     {
@@ -104,7 +104,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventoryNumberKeys.Pa
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5193-5208
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L5229-5244
     [HarmonyPatch(typeof(ProtoActor), "ProcessUISelectKey")]
     internal static class ProtoActorProcessUiSelectKeyPostfix
     {

@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
     /// This ensures hallucination voices work even when playing solo
     /// with warmed-up events in the local archive.
     /// </summary>
-    // game@0.3.1 Assembly-CSharp/VoiceManager.cs:L1336-1346
+    // game@0.3.2 Assembly-CSharp/VoiceManager.cs:L1348-1358
     [HarmonyPatch(typeof(VoiceManager), "GetRandomOtherSpeechEventArchive")]
     internal static class VoiceManagerPatches
     {

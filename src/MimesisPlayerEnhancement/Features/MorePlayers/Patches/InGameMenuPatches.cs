@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L931-993
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L939-1000
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class SetRemoteVolumeControllerPrefix
     {
@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L706-741
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L714-748
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetPingImage))]
     internal static class SetPingImageTranspiler
     {
@@ -32,7 +32,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L607-657
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L610-664
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
     internal static class OnEnablePostfix
     {
@@ -43,7 +43,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L931-993
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L939-1000
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class SetRemoteVolumeControllerPostfix
     {

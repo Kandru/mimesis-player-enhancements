@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L474-508
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L562-596
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
     internal static class VRoomManagerPendMoveToDungeonPatch
     {
@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L681-691
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L784-794
     [HarmonyPatch(typeof(VRoomManager), "BroadcastRoomReady")]
     internal static class VRoomManagerBroadcastRoomReadyPatch
     {
@@ -29,7 +29,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L114-140
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L116-142
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.InitWaitingRoom))]
     internal static class VRoomManagerInitWaitingRoomPatch
     {
@@ -41,7 +41,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L583-600
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L686-703
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnDungeonFinished))]
     internal static class VRoomManagerOnDungeonFinishedPatch
     {
@@ -57,7 +57,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L372-409
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L429-466
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
     internal static class VRoomManagerEnterWaitingRoomPatch
     {
@@ -89,7 +89,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L332-370
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L389-427
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterMaintenenceRoom))]
     internal static class VRoomManagerEnterMaintenenceRoomPatch
     {

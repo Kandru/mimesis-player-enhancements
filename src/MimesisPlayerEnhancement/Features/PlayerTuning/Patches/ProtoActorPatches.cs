@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4561-4575
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4580-4594
     [HarmonyPatch(typeof(ProtoActor), "SetControlMode")]
     internal static class ProtoActorSetControlModePatch
     {
@@ -25,7 +25,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4212-4234
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4218-4241
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsOtherPlayer))]
     internal static class ProtoActorSetAsOtherPlayerPatch
     {
@@ -50,7 +50,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4236-4254
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4243-4261
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.SetAsMonster))]
     internal static class ProtoActorSetAsMonsterPatch
     {
@@ -75,7 +75,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4678-4694
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L4697-4713
     [HarmonyPatch(typeof(ProtoActor), "SetupMonsterCapsuleCollider")]
     internal static class ProtoActorSetupMonsterCapsuleColliderPatch
     {
@@ -100,7 +100,7 @@ namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L6908-6950
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor.cs:L6955-6997
     [HarmonyPatch(typeof(ProtoActor), nameof(ProtoActor.OnActorRevive))]
     internal static class ProtoActorOnActorRevivePatch
     {

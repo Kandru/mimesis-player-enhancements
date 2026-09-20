@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MaintenanceScene.cs:L243-258
+    // game@0.3.2 Assembly-CSharp/MaintenanceScene.cs:L243-258
     [HarmonyPatch(typeof(MaintenanceScene), "TryInitHostMaintenenceRoom")]
     internal static class MaintenanceSceneTryInitHostMaintenenceRoomPatch
     {

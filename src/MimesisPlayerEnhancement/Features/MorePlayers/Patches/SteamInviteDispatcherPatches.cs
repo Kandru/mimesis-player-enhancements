@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L786-799
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L788-800
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.CreateLobby), typeof(bool), typeof(bool))]
     internal static class SteamLobbyCreationTranspiler
     {
@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L1015-1042
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L1017-1043
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdatePlayerGroupSize))]
     internal static class UpdatePlayerGroupSizeTranspiler
     {

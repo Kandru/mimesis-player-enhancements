@@ -11,7 +11,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
 
         private static string L(string key, params object[] args) => WebDashboardL10n.Get($"api.{key}", args);
 
-        // game@0.3.1 GameMainBase.CorDying — deadCameraDuration, then +4s while any player is alive.
+        // game@0.3.2 GameMainBase.CorDying — deadCameraDuration, then +4s while any player is alive.
         private const float DeathPresentationExtraWaitSeconds = 5f;
         private const float FallbackDeadCameraDurationSeconds = 5f;
 

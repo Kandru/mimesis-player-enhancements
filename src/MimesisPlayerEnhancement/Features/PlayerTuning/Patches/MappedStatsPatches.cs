@@ -2,7 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MappedStats.cs:L12-49
+    // game@0.3.2 Assembly-CSharp/MappedStats.cs:L12-49
     [HarmonyPatch(typeof(MappedStats), nameof(MappedStats.LoadBaseStats))]
     internal static class MappedStatsLoadBaseStatsPatch
     {

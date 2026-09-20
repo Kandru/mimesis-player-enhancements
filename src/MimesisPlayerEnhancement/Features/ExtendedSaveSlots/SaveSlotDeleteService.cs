@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private const string Feature = "ExtendedSaveSlots";
 
-        // game@0.3.1 Assembly-CSharp/MainMenu.cs:L661-674
+        // game@0.3.2 Assembly-CSharp/MainMenu.cs:L661-674
         private static MethodInfo? _tryDeleteSaveGameData;
 
         internal static bool TryDeleteSave(MainMenu mainMenu, int slotId)

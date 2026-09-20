@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MiscellanyItemElement.cs:L16-26
+    // game@0.3.2 Assembly-CSharp/MiscellanyItemElement.cs:L24-35
     [HarmonyPatch(typeof(MiscellanyItemElement), nameof(MiscellanyItemElement.toItemInfo))]
     internal static class MiscellanyItemElementToItemInfoPatch
     {

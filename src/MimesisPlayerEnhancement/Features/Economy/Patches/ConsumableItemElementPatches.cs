@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/ConsumableItemElement.cs:L27-38
+    // game@0.3.2 Assembly-CSharp/ConsumableItemElement.cs:L51-63
     [HarmonyPatch(typeof(ConsumableItemElement), nameof(ConsumableItemElement.toItemInfo))]
     internal static class ConsumableItemElementToItemInfoPatch
     {

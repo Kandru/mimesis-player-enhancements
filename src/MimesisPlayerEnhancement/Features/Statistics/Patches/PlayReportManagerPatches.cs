@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/PlayReportManager.cs:L125-149
+    // game@0.3.2 Assembly-CSharp/PlayReportManager.cs:L125-149
     [HarmonyPatch(typeof(PlayReportManager), nameof(PlayReportManager.FlushCurrentToAccumulated))]
     public static class PlayReportManagerFlushPatches
     {
@@ -15,7 +15,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/PlayReportManager.cs:L115-118
+    // game@0.3.2 Assembly-CSharp/PlayReportManager.cs:L115-118
     [HarmonyPatch(typeof(PlayReportManager), nameof(PlayReportManager.SetDeathMatchSurvivor))]
     public static class PlayReportManagerDeathMatchSurvivorPatches
     {

@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Util.Patches
                 HarmonyPatchHelper.GetNestedPatchTypes(typeof(GameLocalePatches)));
         }
 
-        // game@0.3.1 Assembly-CSharp/L10NManager.cs:L80-97
+        // game@0.3.2 Assembly-CSharp/L10NManager.cs:L80-92
         [HarmonyPatch(typeof(L10NManager), nameof(L10NManager.ChangeLanguage))]
         internal static class L10NManagerChangeLanguagePostfix
         {

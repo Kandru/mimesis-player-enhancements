@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L688-697
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L689-698
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.SendToAllPlayers), typeof(IMsg), typeof(VActor))]
     internal static class VroomSendToAllPlayersSeedPatch
     {

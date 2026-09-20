@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Config.HostConfigSync.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VWorld.cs:L72-100
+    // game@0.3.2 Assembly-CSharp/VWorld.cs:L72-100
     [HarmonyPatch(typeof(VWorld), nameof(VWorld.RegisterAdminProtocol))]
     internal static class VWorldRegisterAdminProtocolPatch
     {

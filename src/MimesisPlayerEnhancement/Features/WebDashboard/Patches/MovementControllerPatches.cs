@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1008-1028
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L1008-1028
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.CheckFallDamage))]
     internal static class CheckFallDamagePatch
     {
@@ -28,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1030-1119
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L1030-1119
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStart))]
     internal static class DirectMoveStartPatch
     {
@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L1121-1161
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L1121-1161
     [HarmonyPatch(typeof(MovementController), nameof(MovementController.DirectMoveStop))]
     internal static class DirectMoveStopPatch
     {

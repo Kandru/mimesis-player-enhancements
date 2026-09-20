@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L136-155
+    // game@0.3.2 Assembly-CSharp/GameSessionInfo.cs:L136-154
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.AddPlayerSteamID))]
     internal static class GameSessionInfoAddPlayerSteamIDTranspiler
     {
@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L267-280
+    // game@0.3.2 Assembly-CSharp/GameSessionInfo.cs:L267-279
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.RefreshTargetCurrency))]
     internal static class GameSessionInfoRefreshTargetCurrencyPatch
     {
@@ -53,7 +53,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L281-294
+    // game@0.3.2 Assembly-CSharp/GameSessionInfo.cs:L281-293
     [HarmonyPatch(typeof(GameSessionInfo), "ClampTargetCurrencyToMin")]
     internal static class GameSessionInfoClampTargetCurrencyToMinPatch
     {

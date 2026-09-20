@@ -3,11 +3,11 @@ using FishNet.Object.Synchronizing;
 
 namespace MimesisPlayerEnhancement.Util.Players
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L60,L73-79
-    // game@0.3.1 Assembly-CSharp/SessionContext.cs:L38,L48,L54,L304-307
-    // game@0.3.1 Assembly-CSharp/Hub.cs:L90,L114
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1068-1071
-    // game@0.3.1 Assembly-CSharp/ISession.cs:L27
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L60,L73-79
+    // game@0.3.2 Assembly-CSharp/SessionContext.cs:L38,L48,L54,L304-307
+    // game@0.3.2 Assembly-CSharp/Hub.cs:L90,L114
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1068-1071
+    // game@0.3.2 Assembly-CSharp/ISession.cs:L27
     internal static class VoiceEventStats
     {
         internal static int GetVoiceLineCount(SpeechEventArchive? archive)

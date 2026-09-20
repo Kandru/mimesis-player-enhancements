@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L2571-2574
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L2575-2578
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.DamageAppliable))]
     internal static class MaintenanceDashboardMonsterDamageAppliablePatch
     {
@@ -22,7 +22,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VWorldCombatUtil.cs:L7-34
+    // game@0.3.2 Assembly-CSharp/VWorldCombatUtil.cs:L7-34
     [HarmonyPatch(typeof(VWorldCombatUtil), nameof(VWorldCombatUtil.CalculateDamage))]
     internal static class MaintenanceDashboardMonsterCalculateDamagePatch
     {
@@ -39,7 +39,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/StatManager.cs:L923-928
+    // game@0.3.2 Assembly-CSharp/StatManager.cs:L925-928
     [HarmonyPatch(typeof(StatManager), "OnChangeAbnormalStat", [typeof(ApplyMutableStatsAbnormalArgs)])]
     internal static class MaintenanceDashboardMonsterAbnormalDamagePatch
     {
@@ -64,7 +64,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VProjectileObject.cs:L391-446
+    // game@0.3.2 Assembly-CSharp/VProjectileObject.cs:L417-499
     [HarmonyPatch(typeof(VProjectileObject), nameof(VProjectileObject.OnDamageImpl))]
     internal static class MaintenanceDashboardMonsterProjectileDamagePatch
     {

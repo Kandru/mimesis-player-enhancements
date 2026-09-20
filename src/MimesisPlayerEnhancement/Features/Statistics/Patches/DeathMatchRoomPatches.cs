@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/DeathMatchRoom.cs:L252-321
+    // game@0.3.2 Assembly-CSharp/DeathMatchRoom.cs:L252-321
     [HarmonyPatch(typeof(DeathMatchRoom), nameof(DeathMatchRoom.OnActorEvent))]
     public static class DeathMatchRoomActorDeathPatches
     {

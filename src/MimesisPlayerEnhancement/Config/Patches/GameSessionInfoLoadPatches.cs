@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Config.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameSessionInfo.cs:L225-243
+    // game@0.3.2 Assembly-CSharp/GameSessionInfo.cs:L225-243
     [HarmonyPatch(typeof(GameSessionInfo), nameof(GameSessionInfo.ApplyLoadedGameData))]
     internal static class GameSessionInfoLoadPatches
     {

@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.PlayerTuning.Patches
 {
-    // game@0.3.1 Assembly-CSharp/InventoryController.cs:L1877-1900
+    // game@0.3.2 Assembly-CSharp/InventoryController.cs:L1940-1963
     [HarmonyPatch(typeof(InventoryController), nameof(InventoryController.OnChangeInventory))]
     internal static class InventoryControllerOnChangeInventoryPatch
     {

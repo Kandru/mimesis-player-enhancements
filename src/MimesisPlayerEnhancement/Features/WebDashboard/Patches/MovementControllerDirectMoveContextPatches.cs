@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L53-63
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L53-63
     [HarmonyPatch]
     internal static class ValidateMoveSpeedPatch
     {
@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L106-173
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L106-173
     [HarmonyPatch]
     internal static class DirectMoveStartMovePatch
     {
@@ -63,7 +63,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/MovementController.cs:L76-104
+    // game@0.3.2 Assembly-CSharp/MovementController.cs:L76-104
     [HarmonyPatch]
     internal static class DirectMoveStopMovePatch
     {

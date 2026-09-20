@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VCreature.cs:L258-265
+    // game@0.3.2 Assembly-CSharp/VCreature.cs:L269-278
     [HarmonyPatch(typeof(VCreature), nameof(VCreature.ForcedDying))]
     internal static class BlockForcedDyingPatch
     {

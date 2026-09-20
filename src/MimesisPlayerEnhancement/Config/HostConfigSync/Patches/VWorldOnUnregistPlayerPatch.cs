@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Config.HostConfigSync.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VWorld.cs:L1655-1658
+    // game@0.3.2 Assembly-CSharp/VWorld.cs:L1880-1883
     [HarmonyPatch(typeof(VWorld), nameof(VWorld.OnUnregistPlayer))]
     internal static class VWorldOnUnregistPlayerPatch
     {

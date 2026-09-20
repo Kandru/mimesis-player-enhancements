@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Config.HostConfigSync.Patches
 {
-    // game@0.3.1 Assembly-CSharp/NetworkManagerV2.cs:L103-120
+    // game@0.3.2 Assembly-CSharp/NetworkManagerV2.cs:L103-120
     [HarmonyPatch(typeof(NetworkManagerV2), nameof(NetworkManagerV2.OnRecvPacket))]
     internal static class NetworkManagerV2ConfigSyncPacketPatch
     {

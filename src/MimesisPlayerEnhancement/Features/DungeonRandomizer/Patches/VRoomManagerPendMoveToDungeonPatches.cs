@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonRandomizer.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L474-508
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L562-596
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.PendMoveToDungeon))]
     internal static class VRoomManagerPendMoveToDungeonSeedPatch
     {

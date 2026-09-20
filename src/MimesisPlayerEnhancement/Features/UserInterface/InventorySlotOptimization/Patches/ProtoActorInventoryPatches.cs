@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimization.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2519-2522
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2519-2522
     [HarmonyPatch]
     internal static class ProtoActorInventoryOnUpdateInvenSigPatches
     {
@@ -49,7 +49,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2568-2584
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2568-2584
     [HarmonyPatch]
     internal static class ProtoActorInventoryOnChangeItemLooksSigPatches
     {

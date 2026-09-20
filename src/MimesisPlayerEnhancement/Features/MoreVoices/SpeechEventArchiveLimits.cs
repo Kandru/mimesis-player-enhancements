@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// <summary>
     /// Maps mod config to <see cref="SpeechEventArchive"/> voice pool fields.
     /// Game logic: indoor cap = maxEvents - maxDeathMatchEvents - maxOutDoorEvents
-    /// (game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L210-255).
+    /// (game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L210-255).
     /// </summary>
     internal static class SpeechEventArchiveLimits
     {

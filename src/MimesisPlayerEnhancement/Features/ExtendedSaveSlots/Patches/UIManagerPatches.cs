@@ -2,11 +2,11 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIManager.cs:L998-1163
+    // game@0.3.2 Assembly-CSharp/UIManager.cs:L1048-1217
     [HarmonyPatch(typeof(UIManager), "Update")]
     internal static class UiManagerUpdateEscapePrefix
     {
-        // game@0.3.1 Mimic.InputSystem.InputAction Escape + inputman.wasPressedThisFrame
+        // game@0.3.2 Mimic.InputSystem.InputAction Escape + inputman.wasPressedThisFrame
         private static Type? _inputActionType;
         private static object? _escapeActionValue;
         private static MethodInfo? _wasPressedThisFrameMethod;

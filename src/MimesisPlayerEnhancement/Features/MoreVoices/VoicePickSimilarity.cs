@@ -17,7 +17,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
         private const int WeightCrowShop = 1;
         private const int WeightPlayTime = 1;
 
-        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventAdditionalGameData.cs:L486-508
+        // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventAdditionalGameData.cs:L486-508
         private static readonly Func<int, bool>? IsOneHandScrap =
             CreateIsOneHandScrapDelegate();
 

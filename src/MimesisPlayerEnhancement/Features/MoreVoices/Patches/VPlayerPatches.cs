@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L117-154
+    // game@0.3.2 Assembly-CSharp/VPlayer.cs:L117-154
     [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.HandleLevelLoadComplete))]
     internal static class VPlayerHandleLevelLoadCompleteRecordingPatch
     {

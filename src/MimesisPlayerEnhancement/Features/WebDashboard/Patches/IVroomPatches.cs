@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L1097-1100
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L1098-1101
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.ValidPosition))]
     internal static class ValidPositionPatch
     {

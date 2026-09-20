@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VWorldUtil.cs:L102-109
+    // game@0.3.2 Assembly-CSharp/VWorldUtil.cs:L102-109
     [HarmonyPatch(typeof(VWorldUtil), nameof(VWorldUtil.ConvertTimeToSeconds), [typeof(string)])]
     internal static class VWorldUtilConvertTimeToSecondsPatch
     {

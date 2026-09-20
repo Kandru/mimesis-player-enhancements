@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Persistence.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L111-126
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L113-128
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
     internal static class SpeechEventArchivePatches
     {
@@ -146,7 +146,7 @@ namespace MimesisPlayerEnhancement.Features.Persistence.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L128-140
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L130-142
     [HarmonyPatch(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))]
     internal static class SpeechEventArchiveDisconnectPatches
     {

@@ -1,5 +1,4 @@
 using MelonLoader;
-using MimesisPlayerEnhancement.Features.UserInterface.LoadingWaitPlayerList;
 using MimesisPlayerEnhancement.Features.UserInterface.SpectatorVoiceBalance;
 using MimesisPlayerEnhancement.Features.UserInterface.VoiceNoiseGate;
 

@@ -5,7 +5,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices
     /// <summary>
     /// Unified voice pool eviction when indoor/outdoor caps are merged.
     /// Deathmatch keeps its own cap; all other events share one bucket.
-    /// Ranking matches vanilla EvaluateValue (game@0.3.1 …/SpeechEventArchive.cs:L312-315).
+    /// Ranking matches vanilla EvaluateValue (game@0.3.2 …/SpeechEventArchive.cs:L312-315).
     /// </summary>
     internal static class SpeechEventArchiveUnifiedEviction
     {

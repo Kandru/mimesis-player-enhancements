@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/NewTramLeverLevelObject.cs:L131-158
+    // game@0.3.2 Assembly-CSharp/NewTramLeverLevelObject.cs:L131-158
     [HarmonyPatch]
     internal static class NewTramLeverLevelObjectIsTriggerablePatch
     {
@@ -31,7 +31,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/NewTramLeverLevelObject.cs:L196-233
+    // game@0.3.2 Assembly-CSharp/NewTramLeverLevelObject.cs:L196-233
     [HarmonyPatch(typeof(NewTramLeverLevelObject), nameof(NewTramLeverLevelObject.OnChangeLevelObjectStateSig))]
     internal static class NewTramLeverLevelObjectOnChangeLevelObjectStateSigPatch
     {

@@ -9,7 +9,7 @@ namespace MimesisPlayerEnhancement
         public const string ModuleVersion = "26.8.3";
 
         /// <summary>MIMESIS game version this release was built and tested against.</summary>
-        public const string GameVersion = "0.3.1";
+        public const string GameVersion = "0.3.2";
 
         internal const string ReleasesUrl = "https://github.com/Kandru/mimesis-player-enhancements/releases";
     }

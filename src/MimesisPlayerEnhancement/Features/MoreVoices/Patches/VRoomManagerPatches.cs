@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L372-409
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L429-466
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.EnterWaitingRoom))]
     internal static class VRoomManagerEnterWaitingRoomRecordingPatch
     {

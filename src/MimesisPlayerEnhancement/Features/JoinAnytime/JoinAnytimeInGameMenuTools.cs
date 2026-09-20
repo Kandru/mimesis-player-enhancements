@@ -16,7 +16,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void OnMenuStart(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
+            if (!ShouldCustomize(menu))
             {
                 return;
             }
@@ -28,7 +28,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void InstallHostPublicRoomListener(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
+            if (!ShouldCustomize(menu))
             {
                 return;
             }
@@ -47,7 +47,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 
         internal static void EnsurePublicRoomControlsAccessible(UIPrefab_InGameMenu menu)
         {
-            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
+            if (!ShouldCustomize(menu))
             {
                 return;
             }
@@ -84,6 +84,18 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
             {
                 _programmaticSyncDepth--;
             }
+        }
+
+        private static bool ShouldCustomize(UIPrefab_InGameMenu? menu)
+        {
+            if (!ModConfig.EnableJoinAnytime.Value || !JoinAnytimeHub.IsHost() || menu == null)
+            {
+                return false;
+            }
+
+            // Logistics hub owns its public-room UI — leave vanilla alone.
+            Hub.PersistentData? pdata = GameSessionAccess.TryGetPdata();
+            return pdata?.main is not LogisticsScene;
         }
 
         private static void OnPublicRoomToggleChanged(bool isPublic)

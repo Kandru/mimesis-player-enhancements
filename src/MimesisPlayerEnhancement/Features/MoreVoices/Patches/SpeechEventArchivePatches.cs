@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
             AccessTools.Method(typeof(VoiceWarmCache), nameof(VoiceWarmCache.TryGetSpeechEventById));
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L111-126
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L113-128
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
     [HarmonyPriority(-100)]
     internal static class SpeechEventArchiveOnStartClientPatch
@@ -49,7 +49,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L210-255
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L212-257
     [HarmonyPatch(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")]
     internal static class RemoveLowerValueEventsIfExceededPrefix
     {
@@ -74,7 +74,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L210-255
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L212-257
     [HarmonyPatch(typeof(SpeechEventArchive), "RemoveLowerValueEventsIfExceeded")]
     [HarmonyPriority(500)]
     internal static class RemoveLowerValueEventsIfExceededUnifiedPatch
@@ -102,7 +102,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L204-208
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L206-210
     [HarmonyPatch(typeof(SpeechEventArchive), "AddEvent")]
     internal static class SpeechEventArchiveAddEventPatch
     {
@@ -118,7 +118,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L317-341
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L319-343
     [HarmonyPatch(typeof(SpeechEventArchive), "OnSpeechEventRecorded")]
     internal static class SpeechEventArchiveOnSpeechEventRecordedPatch
     {
@@ -157,7 +157,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L264-268
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L266-270
     [HarmonyPatch(typeof(SpeechEventArchive), nameof(SpeechEventArchive.GetWarmedUpSpeechEvents))]
     internal static class GetWarmedUpSpeechEventsPatch
     {
@@ -174,7 +174,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L81
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L81
     [HarmonyPatch(typeof(SpeechEventArchive), "get_WarmedUpCount")]
     internal static class WarmedUpCountPatch
     {
@@ -191,7 +191,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L111-126
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L113-128
     [HarmonyPatch(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStartClient))]
     internal static class OnStartClientVoiceCachePatch
     {
@@ -211,7 +211,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L128-140
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L130-142
     [HarmonyPatch(typeof(SpeechEventArchive), nameof(SpeechEventArchive.OnStopClient))]
     internal static class OnStopClientPatch
     {
@@ -231,7 +231,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L275-282
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L277-284
     [HarmonyPatch(typeof(SpeechEventArchive), "CreateAudioClip")]
     internal static class CreateAudioClipPatch
     {
@@ -264,7 +264,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L561-625
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L563-627
     [HarmonyPatch(typeof(SpeechEventArchive), "RpcLogic___ObserverRpcPlayOnActor_1543699021")]
     internal static class ObserverRpcPlayOnActorLookupPatch
     {
@@ -283,7 +283,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L688-704
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L690-706
     [HarmonyPatch(typeof(SpeechEventArchive), "RpcLogic___ObserverRpcPlayOnNonMimicMonster_1543699021")]
     internal static class ObserverRpcPlayOnNonMimicLookupPatch
     {

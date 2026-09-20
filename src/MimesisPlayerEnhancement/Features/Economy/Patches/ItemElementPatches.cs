@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Economy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/ItemElement.cs:L39-56
+    // game@0.3.2 Assembly-CSharp/ItemElement.cs:L39-56
     [HarmonyPatch(typeof(ItemElement), nameof(ItemElement.FinalPrice), MethodType.Getter)]
     internal static class ItemElementFinalPricePatch
     {

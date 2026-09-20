@@ -2,8 +2,8 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L958-972
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L332-410 (EnterMaintenenceRoom / EnterWaitingRoom closures)
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L959-972
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L332-410 (EnterMaintenenceRoom / EnterWaitingRoom closures)
     [HarmonyPatch]
     internal static class MaxPlayerCountFieldTranspiler
     {

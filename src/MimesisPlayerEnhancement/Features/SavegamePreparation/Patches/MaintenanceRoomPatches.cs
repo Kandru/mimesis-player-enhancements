@@ -2,7 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.SavegamePreparation.Patches
 {
-    // game@0.3.1 Assembly-CSharp/MaintenanceRoom.cs:L997-1005
+    // game@0.3.2 Assembly-CSharp/MaintenanceRoom.cs:L1007-1110
     [HarmonyPatch(typeof(MaintenanceRoom), nameof(MaintenanceRoom.SaveGameData))]
     internal static class MaintenanceRoomSaveGameDataSavePrepPatch
     {

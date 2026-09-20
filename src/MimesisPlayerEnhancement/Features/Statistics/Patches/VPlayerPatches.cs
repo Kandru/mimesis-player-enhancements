@@ -2,7 +2,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L369-395
+    // game@0.3.2 Assembly-CSharp/VPlayer.cs:L375-401
     [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.HandlePutIntoToilet))]
     internal static class VPlayerHandlePutIntoToiletPatches
     {
@@ -30,7 +30,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VPlayer.cs:L586-602
+    // game@0.3.2 Assembly-CSharp/VPlayer.cs:L592-608
     [HarmonyPatch(typeof(VPlayer), nameof(VPlayer.Revive))]
     public static class VPlayerRevivePatches
     {

@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimization.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_Inventory.cs:L164-230
+    // game@0.3.2 Assembly-CSharp/UIPrefab_Inventory.cs:L165-232
     [HarmonyPatch(typeof(UIPrefab_Inventory), nameof(UIPrefab_Inventory.UpdateSlot))]
     internal static class UIPrefabInventoryUpdateSlotDisplayPackPrefix
     {

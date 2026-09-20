@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.SpawnScaling.Patches
 {
-    // game@0.3.1 Assembly-CSharp/SpawnedActorData.cs:L136-140
+    // game@0.3.2 Assembly-CSharp/SpawnedActorData.cs:L136-140
     [HarmonyPatch(typeof(SpawnedActorData), "OnActorDead")]
     internal static class SpawnedActorDataOnActorDeadPatch
     {

@@ -7,7 +7,7 @@ namespace MimesisPlayerEnhancement.Util
         private static readonly MethodInfo? GetL10NTextMethod =
             AccessTools.Method(typeof(Hub), "GetL10NText", [typeof(string), typeof(object[])]);
 
-        // game@0.3.1 Assembly-CSharp/Hub.cs:L344
+        // game@0.3.2 Assembly-CSharp/Hub.cs:L344
         private static readonly FieldInfo? HubLcmanField =
             AccessTools.Field(typeof(Hub), "lcman");
 

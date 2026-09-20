@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.ModVersionDisplay.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L674-684
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L682-692
     [HarmonyPatch]
     internal static class UIPrefabInGameMenuSetVersionTextPatch
     {

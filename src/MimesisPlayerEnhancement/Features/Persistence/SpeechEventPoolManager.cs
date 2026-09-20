@@ -58,11 +58,11 @@ namespace MimesisPlayerEnhancement.Features.Persistence
 
         private static readonly HashSet<ulong> _restoreGiveUpWarnedSteamIds = [];
 
-        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L35
+        // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L35
         private static readonly System.Reflection.FieldInfo? RecordedTimeField =
             AccessTools.Field(typeof(SpeechEvent), "RecordedTime");
 
-        // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L51
+        // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEvent.cs:L51
         private static readonly System.Reflection.FieldInfo? LastPlayedTimeField =
             AccessTools.Field(typeof(SpeechEvent), "LastPlayedTime");
 

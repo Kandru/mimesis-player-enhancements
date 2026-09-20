@@ -6,10 +6,10 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
     {
         private const string Feature = "ExtendedSaveSlots";
 
-        // game@0.3.1 Assembly-CSharp/MainMenu.cs:L51-61
+        // game@0.3.2 Assembly-CSharp/MainMenu.cs:L51-61
         private static MethodInfo? _tryLoadSaveAndCreateRoom;
 
-        // game@0.3.1 Assembly-CSharp/MainMenu.cs:L106-117
+        // game@0.3.2 Assembly-CSharp/MainMenu.cs:L106-117
         private static MethodInfo? _handleNewGameSlotSelection;
 
         internal static void TryLoadSaveAndCreateRoom(

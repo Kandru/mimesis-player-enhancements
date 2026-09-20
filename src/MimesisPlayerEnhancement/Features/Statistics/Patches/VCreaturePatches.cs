@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VCreature.cs:L93-111
+    // game@0.3.2 Assembly-CSharp/VCreature.cs:L98-116
     [HarmonyPatch(typeof(VCreature), nameof(VCreature.OnDying))]
     public static class VCreatureDyingPatches
     {

@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots.Patches
 {
-    // game@0.3.1 Assembly-CSharp/ReluProtocol/MMSaveGameData.cs:L111-122
+    // game@0.3.2 Assembly-CSharp/ReluProtocol/MMSaveGameData.cs:L111-122
     [HarmonyPatch(typeof(MMSaveGameData), nameof(MMSaveGameData.CheckSaveSlotID))]
     internal static class CheckSaveSlotIdPrefix
     {

@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_PlayerEnterInfo.cs:L59-73
+    // game@0.3.2 Assembly-CSharp/UIPrefab_PlayerEnterInfo.cs:L59-73
     [HarmonyPatch(typeof(UIPrefab_PlayerEnterInfo), nameof(UIPrefab_PlayerEnterInfo.AddPlayerInfo))]
     internal static class UIPrefabPlayerEnterInfoAddPlayerInfoPatches
     {
@@ -13,7 +13,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_PlayerEnterInfo.cs:L75-119
+    // game@0.3.2 Assembly-CSharp/UIPrefab_PlayerEnterInfo.cs:L75-119
     [HarmonyPatch(typeof(UIPrefab_PlayerEnterInfo), "UpdatePlayerInfos")]
     internal static class UIPrefabPlayerEnterInfoDurationPatches
     {

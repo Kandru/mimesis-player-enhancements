@@ -6,7 +6,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     // Vanilla IVroom.OnUpdate gates AllMemberEnterRoomSig on session count vs per-room load IDs;
     // prefix starts once in-room players are loaded *and* cover session expected count
     // (see JoinAnytimeRoomLoadingHandshake).
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L769-826
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L770-827
     [HarmonyPatch]
     internal static class IVroomOnUpdateRoomLoadingHandshakePatch
     {
@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
     /// Route after SyncEnterRoom sends AllMemberEnterRoomSig — client needs that flag before
     /// MoveToWaitingRoomSig (CycleCount != 0 waits on EnteringCompleteAll in MaintenanceScene).
     /// </summary>
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L2498-2506
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L3136-3788
     [HarmonyPatch]
     internal static class IVroomOnAllMemberEnteredLateJoinPatch
     {
@@ -50,7 +50,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L3078-3730
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L3136-3788
     [HarmonyPatch(typeof(IVroom), "RunEventActionInternal")]
     internal static class IVroomRunEventActionInternalPatch
     {
@@ -94,7 +94,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/IVroom.cs:L1650-1907
+    // game@0.3.2 Assembly-CSharp/IVroom.cs:L1651-1915
     [HarmonyPatch(typeof(IVroom), nameof(IVroom.HandleLevelObject))]
     internal static class IVroomHandleLevelObjectTramLeverPatch
     {

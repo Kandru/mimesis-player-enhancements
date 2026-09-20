@@ -164,7 +164,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots
 
         private static void TryOpenVanillaNewTram()
         {
-            // game@0.3.1 Assembly-CSharp/UIPrefab_NewTram.cs InitSaveInfoList
+            // game@0.3.2 Assembly-CSharp/UIPrefab_NewTram.cs InitSaveInfoList
             Type? newTramType = AccessTools.TypeByName("UIPrefab_NewTram");
             if (newTramType == null)
             {

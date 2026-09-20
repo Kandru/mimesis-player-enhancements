@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L890-929
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L898-937
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.GetSteamAvatar))]
     internal static class SteamAvatarLoadedPatch
     {
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L931-992
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L939-1000
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), nameof(UIPrefab_InGameMenu.SetRemoteVolumeController_v2))]
     internal static class VolumeControllerAvatarSyncPatch
     {

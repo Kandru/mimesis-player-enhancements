@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L80-95
+    // game@0.3.2 Assembly-CSharp/UIPrefabScript.cs:L80-95
     [HarmonyPatch]
     internal static class InventoryShowPostfix
     {
@@ -49,7 +49,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefabScript.cs:L97-116
+    // game@0.3.2 Assembly-CSharp/UIPrefabScript.cs:L97-116
     [HarmonyPatch]
     internal static class InventoryHidePostfix
     {
@@ -82,7 +82,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.FpsUi.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_Inventory.cs:L164-230
+    // game@0.3.2 Assembly-CSharp/UIPrefab_Inventory.cs:L165-232
     [HarmonyPatch(typeof(UIPrefab_Inventory), nameof(UIPrefab_Inventory.UpdateSlot))]
     internal static class InventoryUpdateSlotPostfix
     {

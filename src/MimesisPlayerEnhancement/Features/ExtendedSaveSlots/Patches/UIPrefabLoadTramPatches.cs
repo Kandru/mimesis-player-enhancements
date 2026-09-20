@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_LoadTram.cs:L305-313
+    // game@0.3.2 Assembly-CSharp/UIPrefab_LoadTram.cs:L305-313
     [HarmonyPatch(typeof(UIPrefab_LoadTram), nameof(UIPrefab_LoadTram.GetLoadedSaveData))]
     internal static class GetLoadedSaveDataPrefix
     {
@@ -22,7 +22,7 @@ namespace MimesisPlayerEnhancement.Features.ExtendedSaveSlots.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_LoadTram.cs:L295-303
+    // game@0.3.2 Assembly-CSharp/UIPrefab_LoadTram.cs:L295-303
     [HarmonyPatch(typeof(UIPrefab_LoadTram), nameof(UIPrefab_LoadTram.IsSlotVersionCompatible))]
     internal static class IsSlotVersionCompatiblePrefix
     {

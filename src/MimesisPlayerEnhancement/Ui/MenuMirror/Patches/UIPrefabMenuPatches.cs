@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Ui.MenuMirror.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_MainMenu.cs:L424-445
+    // game@0.3.2 Assembly-CSharp/UIPrefab_MainMenu.cs:L466-490
     [HarmonyPatch(typeof(UIPrefab_MainMenu), "Start")]
     internal static class MainMenuStartPostfix
     {
@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_MainMenu.cs:L411-414
+    // game@0.3.2 Assembly-CSharp/UIPrefab_MainMenu.cs:L453-456
     [HarmonyPatch(typeof(UIPrefab_MainMenu), "OnEnable")]
     internal static class MainMenuOnEnablePostfix
     {
@@ -24,7 +24,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L489-580
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L489-583
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "Start")]
     internal static class InGameMenuStartPostfix
     {
@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L607-673
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L610-664
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
     internal static class InGameMenuOnEnablePostfix
     {

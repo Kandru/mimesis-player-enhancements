@@ -35,6 +35,10 @@ namespace MimesisPlayerEnhancement.Tests.Features.JoinAnytime
 
             Assert.NotNull(method);
             Assert.Equal("Void", method.ReturnType.Name);
+            ParameterInfo[] parameters = method.GetParameters();
+            Assert.Equal(9, parameters.Length);
+            Assert.Equal("Boolean", parameters[7].ParameterType.Name);
+            Assert.Equal("isReconnect", parameters[7].Name);
         }
 
         [Fact]

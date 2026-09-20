@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs:L378-382
+    // game@0.3.2 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs:L378-382
     [HarmonyPatch(typeof(FishySteamworks.Server.ServerSocket), "GetMaximumClients")]
     internal static class GetMaximumClientsPatch
     {
@@ -18,7 +18,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs:L373-377
+    // game@0.3.2 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs:L373-377
     [HarmonyPatch(typeof(FishySteamworks.Server.ServerSocket), "SetMaximumClients")]
     internal static class SetMaximumClientsPatch
     {
@@ -36,7 +36,7 @@ namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs (parameterless ctor)
+    // game@0.3.2 Assembly-CSharp/FishySteamworks.Server/ServerSocket.cs (parameterless ctor)
     [HarmonyPatch(typeof(FishySteamworks.Server.ServerSocket), MethodType.Constructor)]
     internal static class ServerSocketConstructorPatch
     {

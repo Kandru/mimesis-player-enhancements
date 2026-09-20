@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GamePlayScene.cs:L1153-1167
+    // game@0.3.2 Assembly-CSharp/GamePlayScene.cs:L1153-1167
     [HarmonyPatch(typeof(GamePlayScene), "OnTimeChanged")]
     internal static class GamePlaySceneOnTimeChangedPatch
     {
@@ -20,7 +20,7 @@ namespace MimesisPlayerEnhancement.Features.DungeonTime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SkyAndWeatherSystem.cs:L489
+    // game@0.3.2 Assembly-CSharp/SkyAndWeatherSystem.cs:L494-505
     [HarmonyPatch(typeof(SkyAndWeatherSystem), nameof(SkyAndWeatherSystem.SetTime))]
     internal static class SkyAndWeatherSystemSetTimePatch
     {

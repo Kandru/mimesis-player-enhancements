@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L2896-2902
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L2993-3008
     [HarmonyPatch]
     internal static class NetworkGradeSigPatch
     {
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1273-1303
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1310-1340
     [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.OnPlayerDeath))]
     internal static class PlayerDeathSnapshotPatch
     {
@@ -33,7 +33,7 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/GameMainBase.cs:L1635-1667
+    // game@0.3.2 Assembly-CSharp/GameMainBase.cs:L1677-1709
     [HarmonyPatch(typeof(GameMainBase), nameof(GameMainBase.OnPlayerRevive))]
     internal static class PlayerReviveSnapshotPatch
     {

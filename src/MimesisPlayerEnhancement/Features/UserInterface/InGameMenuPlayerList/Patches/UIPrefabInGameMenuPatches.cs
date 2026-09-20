@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L607-656
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L610-664
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnEnable")]
     internal static class InGameMenuOnEnablePostfix
     {
@@ -21,7 +21,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InGameMenuPlayerList.P
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/UIPrefab_InGameMenu.cs:L582-586
+    // game@0.3.2 Assembly-CSharp/UIPrefab_InGameMenu.cs:L585-589
     [HarmonyPatch(typeof(UIPrefab_InGameMenu), "OnDisable")]
     internal static class InGameMenuOnDisablePostfix
     {

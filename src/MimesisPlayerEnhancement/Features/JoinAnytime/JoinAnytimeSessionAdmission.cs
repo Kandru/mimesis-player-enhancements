@@ -2,8 +2,9 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime
 {
     internal static class JoinAnytimeSessionAdmission
     {
-        // VGameSessionState values from game metadata (Ready=1, WaitStartSession=2, PreGame=3,
-        // OnPlaying=4, AfterGame=5, EndGame=6, DeathMatch=7).
+        // VGameSessionState: Ready=1, WaitStartSession=2, PreGame=3, OnPlaying=4,
+        // AfterGame=5, EndGame=6, DeathMatch=7. Logistics is not handled here —
+        // GameSessionInfoCanEnterSessionPatch defers that state to vanilla.
         internal static bool ResolveCanEnter(int stateValue, bool joinsOpen) =>
             stateValue switch
             {

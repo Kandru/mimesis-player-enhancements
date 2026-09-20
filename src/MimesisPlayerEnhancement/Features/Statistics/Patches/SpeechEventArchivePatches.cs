@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Statistics.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L111-126
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventArchive.cs:L113-128
     [HarmonyPatch(typeof(SpeechEventArchive), "OnStartClient")]
     internal static class StatisticsSpeechEventArchivePatches
     {

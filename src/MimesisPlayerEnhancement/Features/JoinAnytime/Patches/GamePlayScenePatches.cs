@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/GamePlayScene.cs:L265-319
+    // game@0.3.2 Assembly-CSharp/GamePlayScene.cs:L265-319
     [HarmonyPatch]
     internal static class GamePlaySceneStartPatch
     {

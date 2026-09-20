@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UIPrefab_PublicRoomList.cs:L252-320
+    // game@0.3.2 Assembly-CSharp/UIPrefab_PublicRoomList.cs:L252-321
     [HarmonyPatch]
     internal static class UIPrefabPublicRoomListSetRoomListPatch
     {

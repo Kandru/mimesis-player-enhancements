@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.Privacy.Patches
 {
-    // game@0.3.1 Assembly-CSharp/APIRequestHandler.cs:L41-45
+    // game@0.3.2 Assembly-CSharp/APIRequestHandler.cs:L41-45
     [HarmonyPatch]
     internal static class BlockReluTelemetryAwakePatch
     {
@@ -26,7 +26,7 @@ namespace MimesisPlayerEnhancement.Features.Privacy.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/APIRequestHandler.cs:L67-77
+    // game@0.3.2 Assembly-CSharp/APIRequestHandler.cs:L67-77
     [HarmonyPatch]
     internal static class BlockReluTelemetryUpdatePatch
     {

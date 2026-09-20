@@ -3,7 +3,7 @@ using ReluProtocol.Enum;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/SessionManager.cs:L84-90
+    // game@0.3.2 Assembly-CSharp/SessionManager.cs:L84-90
     [HarmonyPatch(typeof(SessionManager), nameof(SessionManager.Remove))]
     internal static class SessionManagerRemovePatch
     {
@@ -12,7 +12,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
             JoinAnytimeSessionDisconnect.OnSessionLeaving(__instance, sessionID, abandonIfDeferred: true);
     }
 
-    // game@0.3.1 Assembly-CSharp/SessionManager.cs:L92-105
+    // game@0.3.2 Assembly-CSharp/SessionManager.cs:L92-105
     // Transport drops may enter a dormant snapshot (grace reconnect) without calling Remove.
     [HarmonyPatch(typeof(SessionManager), nameof(SessionManager.HandleTransportDrop))]
     internal static class SessionManagerHandleTransportDropPatch
@@ -32,7 +32,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SessionManager.cs:L189-199
+    // game@0.3.2 Assembly-CSharp/SessionManager.cs:L193-203
     [HarmonyPatch]
     internal static class SessionManagerFinalizeDormantExpiryPatch
     {

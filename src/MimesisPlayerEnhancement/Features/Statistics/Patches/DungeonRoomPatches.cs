@@ -8,7 +8,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
             AccessTools.Field(typeof(IVroom), "_vPlayerDict");
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L607-697
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L607-697
     [HarmonyPatch(typeof(DungeonRoom), "SetDungeonState")]
     public static class DungeonRoomSurvivalOutcomePatches
     {
@@ -38,7 +38,7 @@ namespace MimesisPlayerEnhancement.Features.Statistics.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L768-778
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L768-778
     [HarmonyPatch(typeof(DungeonRoom), nameof(DungeonRoom.OnActorEvent))]
     public static class DungeonRoomActorDeathPatches
     {

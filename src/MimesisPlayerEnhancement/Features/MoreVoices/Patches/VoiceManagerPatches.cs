@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VoiceManager.cs:L789-825
+    // game@0.3.2 Assembly-CSharp/VoiceManager.cs:L789-825
     [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.SetVoiceMode))]
     internal static class VoiceManagerSetVoiceModePatch
     {
@@ -27,7 +27,7 @@ namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/VoiceManager.cs:L605-644
+    // game@0.3.2 Assembly-CSharp/VoiceManager.cs:L605-644
     [HarmonyPatch(typeof(VoiceManager), nameof(VoiceManager.EndPossessionToMimic))]
     internal static class VoiceManagerEndPossessionToMimicPatch
     {

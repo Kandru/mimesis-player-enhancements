@@ -16,6 +16,8 @@ namespace MimesisPlayerEnhancement.Features.Economy
             AccessTools.Field(typeof(UIPrefab_TramScreen), "_repairing");
         private static readonly FieldInfo? TramCurrentCurrencyField =
             AccessTools.Field(typeof(UIPrefab_TramScreen), "_currentCurrency");
+        private static readonly FieldInfo? TramLogisticsTextOverrideField =
+            AccessTools.Field(typeof(UIPrefab_TramScreen), "_logisticsTextOverride");
         private static readonly PropertyInfo? TramCautionTextProperty =
             AccessTools.Property(typeof(UIPrefab_TramScreen), "UE_CautionText");
 
@@ -53,6 +55,12 @@ namespace MimesisPlayerEnhancement.Features.Economy
         internal static void TryApplyTramScreenGuide(UIPrefab_TramScreen screen)
         {
             if (!IsConfigured())
+            {
+                return;
+            }
+
+            // Skip while vanilla logistics HUD owns the caution text.
+            if (TramLogisticsTextOverrideField?.GetValue(screen) is true)
             {
                 return;
             }

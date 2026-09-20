@@ -2,7 +2,7 @@ using System.Reflection.Emit;
 
 namespace MimesisPlayerEnhancement.Features.MorePlayers.Patches
 {
-    // game@0.3.1 Assembly-CSharp/UiPrefab_RoomCard.cs:L110-188
+    // game@0.3.2 Assembly-CSharp/UiPrefab_RoomCard.cs:L110-181
     [HarmonyPatch(typeof(UiPrefab_RoomCard), "SetRoomData")]
     internal static class RoomCardSetRoomDataTranspiler
     {

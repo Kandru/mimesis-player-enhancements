@@ -26,7 +26,7 @@ On your PC: a savegame menu with up to 99 savegames, extra HUD (spectator list, 
 **Settings live in the web dashboard** (game must be running): [http://127.0.0.1:8001](http://127.0.0.1:8001)  
 Lobby, live minimap, leaderboards, kick/ban, and every feature toggle — per save or globally. You can also edit the config file; most people never need to.
 
-Tested with **MIMESIS 0.3.1** and **MelonLoader 0.7.3**.
+Tested with **MIMESIS 0.3.2** and **MelonLoader 0.7.3**.
 
 ## Features
 

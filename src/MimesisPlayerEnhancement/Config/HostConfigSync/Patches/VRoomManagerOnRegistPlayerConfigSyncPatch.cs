@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Config.HostConfigSync.Patches
 {
-    // game@0.3.1 Assembly-CSharp/VRoomManager.cs:L748-761
+    // game@0.3.2 Assembly-CSharp/VRoomManager.cs:L894-905
     [HarmonyPatch(typeof(VRoomManager), nameof(VRoomManager.OnRegistPlayer))]
     internal static class VRoomManagerOnRegistPlayerConfigSyncPatch
     {

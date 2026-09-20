@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.WebDashboard.Patches
 {
-    // game@0.3.1 Assembly-CSharp/InTramWaitingScene.cs:L68-92
+    // game@0.3.2 Assembly-CSharp/InTramWaitingScene.cs:L68-92
     [HarmonyPatch]
     internal static class InTramWaitingSceneReadyCheatsPatch
     {

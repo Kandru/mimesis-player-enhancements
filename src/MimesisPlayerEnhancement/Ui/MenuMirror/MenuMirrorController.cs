@@ -28,6 +28,7 @@ namespace MimesisPlayerEnhancement.Ui.MenuMirror
         [
             UIPrefab_MainMenu.UEID_HostButton,
             UIPrefab_MainMenu.UEID_LoadButton,
+            UIPrefab_MainMenu.UEID_LogisticsButton,
             UIPrefab_MainMenu.UEID_JoinButton,
             UIPrefab_MainMenu.UEID_SteamInventory,
             UIPrefab_MainMenu.UEID_SettingButton,

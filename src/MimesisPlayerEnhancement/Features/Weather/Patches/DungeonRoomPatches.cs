@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.Weather.Patches
 {
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L100-119
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L100-119
     [HarmonyPatch(typeof(DungeonRoom), MethodType.Constructor, [typeof(VRoomManager), typeof(long), typeof(IVRoomProperty)])]
     internal static class DungeonRoomConstructorPatch
     {
@@ -34,7 +34,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L1018-1021
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L1018-1021
     [HarmonyPatch(typeof(DungeonRoom), "OnAllMemberEntered")]
     internal static class DungeonRoomOnAllMemberEnteredPatch
     {
@@ -54,7 +54,7 @@ namespace MimesisPlayerEnhancement.Features.Weather.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/DungeonRoom.cs:L607-617
+    // game@0.3.2 Assembly-CSharp/DungeonRoom.cs:L607-697
     [HarmonyPatch(typeof(DungeonRoom), "SetDungeonState")]
     internal static class DungeonRoomSetDungeonStatePatch
     {

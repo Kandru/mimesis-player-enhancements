@@ -10,11 +10,12 @@ namespace MimesisPlayerEnhancement.Features.WebDashboard
                 MaintenanceScene => "maintenance",
                 GamePlayScene => "dungeon",
                 DeathMatchScene => "death_match",
+                LogisticsScene => "logistics",
                 _ => "",
             };
         }
 
         internal static bool IsBlindModeScene(GameMainBase? main) =>
-            main is GamePlayScene or DeathMatchScene;
+            main is GamePlayScene or DeathMatchScene or LogisticsScene;
     }
 }

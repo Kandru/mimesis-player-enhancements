@@ -3,7 +3,7 @@ using System.Reflection.Emit;
 
 namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
 {
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L786-798
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L788-800
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.CreateLobby), typeof(bool), typeof(bool))]
     internal static class SteamInviteDispatcherCreateLobbyPatch
     {
@@ -14,7 +14,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L441-454
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L443-456
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetLobbyPublic))]
     internal static class SteamInviteDispatcherSetLobbyPublicPatch
     {
@@ -48,7 +48,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L456-511
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L456-511
     [HarmonyPatch]
     internal static class SteamInviteDispatcherSetLobbyPublicCoroutineTranspiler
     {
@@ -127,7 +127,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L513-516
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L515-518
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdateLobbyData))]
     internal static class SteamInviteDispatcherUpdateLobbyDataPatch
     {
@@ -161,7 +161,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L961-968
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L963-970
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresenceInLobby))]
     internal static class SteamInviteDispatcherSetLobbyPublicPresencePatch
     {
@@ -183,7 +183,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L988-995
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L990-997
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.SetPresencePlaying))]
     internal static class SteamInviteDispatcherSetPresencePlayingPatch
     {
@@ -206,7 +206,7 @@ namespace MimesisPlayerEnhancement.Features.JoinAnytime.Patches
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/SteamInviteDispatcher.cs:L1015-1041
+    // game@0.3.2 Assembly-CSharp/SteamInviteDispatcher.cs:L1017-1043
     [HarmonyPatch(typeof(SteamInviteDispatcher), nameof(SteamInviteDispatcher.UpdatePlayerGroupSize))]
     internal static class SteamInviteDispatcherUpdatePlayerGroupSizePatch
     {

@@ -1,6 +1,6 @@
 namespace MimesisPlayerEnhancement.Features.MoreVoices.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventAdditionalGameData.cs:L302-449
+    // game@0.3.2 Assembly-CSharp/Mimic.Voice.SpeechSystem/SpeechEventAdditionalGameData.cs:L302-449
     [HarmonyPatch(typeof(SpeechEventAdditionalGameData), nameof(SpeechEventAdditionalGameData.PickBestMatch))]
     internal static class PickBestMatchPatch
     {

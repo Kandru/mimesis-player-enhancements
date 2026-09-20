@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimization.Patches
 {
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2356-2365
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2356-2365
     [HarmonyPatch]
     internal static class ProtoActorInventorySelectNextSlotPrefix
     {
@@ -16,7 +16,7 @@ namespace MimesisPlayerEnhancement.Features.UserInterface.InventorySlotOptimizat
         }
     }
 
-    // game@0.3.1 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2356-2365
+    // game@0.3.2 Assembly-CSharp/Mimic.Actors/ProtoActor+Inventory.cs:L2356-2365
     [HarmonyPatch]
     internal static class ProtoActorInventorySelectPreviousSlotPrefix
     {
